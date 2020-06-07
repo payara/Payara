@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.results;
 
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import org.glassfish.admin.rest.resources.LeafResource;
 import org.glassfish.admin.rest.resources.LeafResource.LeafContent;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
@@ -54,9 +55,9 @@ import org.jvnet.hk2.config.ConfigBean;
  * @author Ludovic Champenois
  */
 public class ActionReportResult extends Result {
-    private RestActionReporter __message;
-    private OptionsResult __metaData;
-    private ConfigBean __entity;
+    private final RestActionReporter reporter;
+    private final OptionsResult metaData;
+    private ConfigBean entity;
     private String commandDisplayName = null;
     private LeafResource.LeafContent leafContent = null;
 
@@ -68,11 +69,6 @@ public class ActionReportResult extends Result {
         this.leafContent = leafContent;
     }
 
-
-    /**
-     * Constructor
-     */
-
     public ActionReportResult(RestActionReporter r) {
         this(null, r);
     }
@@ -83,30 +79,30 @@ public class ActionReportResult extends Result {
 
     public ActionReportResult(RestActionReporter r, ConfigBean entity,  OptionsResult metaData) {
         this(r, metaData);
-        __entity = entity;
+        this.entity = entity;
     }
 
     public ActionReportResult(String name, RestActionReporter r) {
-        this(name, r, new OptionsResult());    
+        this(name, r, new OptionsResult());
     }
 
     public ActionReportResult(String name, RestActionReporter r,  OptionsResult metaData) {
-        __name = name;
-        __message = r;
-        __metaData = metaData;
+        super(name);
+        reporter = r;
+        this.metaData = metaData;
     }
 
     public ActionReportResult(String name, RestActionReporter r,  OptionsResult metaData, String displayName) {
-        __name = name;
-        __message = r;
-        __metaData = metaData;
+        super(name);
+        reporter = r;
+        this.metaData = metaData;
         commandDisplayName = displayName;
     }
     /**
      * Returns the result string this object represents
      */
     public ActionReporter getActionReport() {
-        return __message;
+        return reporter;
     }
 
     /**
@@ -115,7 +111,7 @@ public class ActionReportResult extends Result {
     public String getCommandDisplayName() {
         return commandDisplayName;
     }
-    
+
     /**
      * change display name for command associated with the command resource.
      */
@@ -126,10 +122,16 @@ public class ActionReportResult extends Result {
      * Returns OptionsResult - the meta-data of this resource.
      */
     public OptionsResult getMetaData() {
-        return __metaData;
+        return metaData;
     }
 
     public ConfigBean getEntity() {
-        return __entity;
+        return entity;
+    }
+
+
+    @Override
+    public String toString() {
+        return super.toString() + "[actionReport: " + getActionReport() + "]";
     }
 }

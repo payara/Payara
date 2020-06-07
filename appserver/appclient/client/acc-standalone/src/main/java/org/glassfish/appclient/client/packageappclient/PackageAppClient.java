@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.client.packageappclient;
 
@@ -95,8 +95,6 @@ public class PackageAppClient {
 
     private final static String GLASSFISH_CONFIG = "glassfish/config";
 
-    private final static String MODULES_ENDORSED_DIR = "glassfish/modules/endorsed";
-
     private final static String MQ_LIB = "mq/lib";
 
     private final static String DOMAIN_1_CONFIG = "glassfish/domains/domain1/config";
@@ -113,18 +111,6 @@ public class PackageAppClient {
         GLASSFISH_LIB + "/schemas",
         GLASSFISH_LIB + "/appclient"
         };
-
-    /*
-     * relative path to the endorsed directory of the app server.  Handled
-     * separately from other directorys because we do not include all files from
-     * the endorsed directory.
-     */
-    private final static String LIB_ENDORSED_DIR = GLASSFISH_LIB + "/endorsed";
-
-    private final static String[] ENDORSED_DIRS_TO_COPY = new String[] {
-        LIB_ENDORSED_DIR,
-        MODULES_ENDORSED_DIR
-    };
 
     /* default sun-acc.xml is relative to the installation directory */
     private final static String DEFAULT_ACC_XML =
@@ -231,11 +217,6 @@ public class PackageAppClient {
                     "");
         }
 
-        for (String endorsedDirToCopy : ENDORSED_DIRS_TO_COPY) {
-            addEndorsedFiles(os, installDir.toURI(),
-                    installDir.toURI().resolve(endorsedDirToCopy), tempFile);
-        }
-
         for (String singleFileToCopy : SINGLE_FILES_TO_COPY) {
             addFile(os, installDir.toURI(),
                     installDir.toURI().resolve(singleFileToCopy), tempFile,
@@ -274,33 +255,6 @@ public class PackageAppClient {
         if ( ! tempFile.renameTo(outputFile)) {
             throw new RuntimeException(strings.get("errRenaming", tempFile.getAbsolutePath(), outputFile.getAbsolutePath()));
         }
-    }
-
-    /**
-     * Adds all endorsed JAR files in the app server's endorsed directory to
-     * the output JAR file.
-     * @param os
-     * @param installDirURI
-     * @param endorsedDirURI
-     * @param outputFile
-     * @throws java.io.IOException
-     */
-    private void addEndorsedFiles(
-            final JarOutputStream os,
-            final URI installDirURI,
-            final URI endorsedDirURI,
-            final File outputFile) throws IOException {
-        addDir(os, installDirURI, endorsedDirURI,
-                new FileFilter() {
-
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.getName().endsWith(".jar") ||
-                    pathname.isDirectory();
-            }
-
-                },
-                outputFile, "");
     }
 
     /**

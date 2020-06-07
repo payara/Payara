@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.jdo.api.persistence.mapping.ejb;
 
 import java.util.ArrayList;
@@ -176,24 +176,23 @@ public class SunCmpMappingsUtils {
      * @param propVal the value of the element
      * @param type The expected type of the value to be returned.
      * @throws IllegalArgumentException If the bean is not part of a complete bean graph.
-     */    
-    protected static List findCompatibleBeansWithValue(BaseBean root, String propName, String propVal, Class type) throws IllegalArgumentException {
-        List retVal = null; 
+     */
+    protected static List<?> findCompatibleBeansWithValue(BaseBean root, String propName, String propVal, Class<?> type) throws IllegalArgumentException {
         GraphManager gm = root.graphManager();
-        if (null == gm) 
-            throw new IllegalArgumentException(
-                    bundle.getString("ERR_DISCONNECTED_NOT_SUPPORTED"));
+        if (null == gm) {
+            throw new IllegalArgumentException(bundle.getString("ERR_DISCONNECTED_NOT_SUPPORTED"));
+        }
         String[] props = root.findPropertyValue(propName, propVal);
-        int len = 0;
-        if (null != props)
-            len = props.length;
-        if (len > 0)
-            retVal = new ArrayList(); 
-        for (int i = 0; i < len; i++) {
+        if (props == null) {
+            return null;
+        }
+        List<BaseBean> retVal = new ArrayList<>(); 
+        for (int i = 0; i < props.length; i++) {
             // get the bean that is the property's parent.
-            BaseBean candidate = gm.getPropertyParent(props[i]); 
-            if (type.isInstance(candidate))
+            BaseBean candidate = gm.getPropertyParent(props[i]);
+            if (type.isInstance(candidate)) {
                 retVal.add(candidate);
+            }
         }
         return retVal;
     }

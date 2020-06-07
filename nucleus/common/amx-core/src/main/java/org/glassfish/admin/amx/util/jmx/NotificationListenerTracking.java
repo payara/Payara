@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -49,46 +50,31 @@ import java.util.List;
 
 /**
  */
-public class NotificationListenerTracking
-{
+public class NotificationListenerTracking {
     // NotificationListeners are not unique, so we can't use a Map
     private final List<NotificationListenerInfo> mInfos;
 
-    public NotificationListenerTracking(boolean synchronize)
-    {
-        final List<NotificationListenerInfo> infos =
-                new ArrayList<NotificationListenerInfo>();
+    public NotificationListenerTracking(boolean synchronize) {
+        final List<NotificationListenerInfo> infos = new ArrayList<NotificationListenerInfo>();
 
         mInfos = synchronize ? Collections.synchronizedList(infos) : infos;
     }
 
-    public void addNotificationListener(
-            NotificationListener listener,
-            NotificationFilter filter,
-            Object handback)
-    {
-        final NotificationListenerInfo info =
-                new NotificationListenerInfo(listener, filter, handback);
+    public void addNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) {
+        final NotificationListenerInfo info = new NotificationListenerInfo(listener, filter, handback);
 
         mInfos.add(info);
     }
 
-    public int getListenerCount()
-    {
+    public int getListenerCount() {
         return mInfos.size();
     }
 
-    private final boolean listenersEqual(
-            final NotificationListener listener1,
-            final NotificationListener listener2)
-    {
+    private boolean listenersEqual(final NotificationListener listener1, final NotificationListener listener2) {
         return (listener1 == listener2);
     }
 
-    private final boolean handbacksEqual(
-            final Object handback1,
-            final Object handback2)
-    {
+    private boolean handbacksEqual(final Object handback1, final Object handback2) {
         return (handback1 == handback2);
     }
 
@@ -100,19 +86,15 @@ public class NotificationListenerTracking
 
     @return list of NotificationListenerInfo
      */
-    public List<NotificationListenerInfo> removeNotificationListener(final NotificationListener listener)
-    {
+    public List<NotificationListenerInfo> removeNotificationListener(final NotificationListener listener) {
         final Iterator iter = mInfos.iterator();
 
         final List<NotificationListenerInfo> results = new ArrayList<NotificationListenerInfo>();
 
-        while (iter.hasNext())
-        {
-            final NotificationListenerInfo info =
-                    (NotificationListenerInfo) iter.next();
+        while (iter.hasNext()) {
+            final NotificationListenerInfo info = (NotificationListenerInfo) iter.next();
 
-            if (listenersEqual(listener, info.getListener()))
-            {
+            if (listenersEqual(listener, info.getListener())) {
                 iter.remove();
                 results.add(info);
             }
@@ -129,22 +111,14 @@ public class NotificationListenerTracking
 
     @return list of NotificationListenerInfo
      */
-    public NotificationListenerInfo removeNotificationListener(
-            final NotificationListener listener,
-            final NotificationFilter filter,
-            final Object handback)
-    {
+    public NotificationListenerInfo removeNotificationListener(final NotificationListener listener, final NotificationFilter filter, final Object handback) {
         final Iterator iter = mInfos.iterator();
         NotificationListenerInfo result = null;
 
-        while (iter.hasNext())
-        {
-            final NotificationListenerInfo info =
-                    (NotificationListenerInfo) iter.next();
+        while (iter.hasNext()) {
+            final NotificationListenerInfo info = (NotificationListenerInfo) iter.next();
 
-            if (listenersEqual(listener, info.getListener()) &&
-                handbacksEqual(handback, info.getHandback()))
-            {
+            if (listenersEqual(listener, info.getListener()) && handbacksEqual(handback, info.getHandback())) {
                 iter.remove();
                 result = info;
                 break;
@@ -155,27 +129,3 @@ public class NotificationListenerTracking
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

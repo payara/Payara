@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -49,21 +51,15 @@ import org.glassfish.admin.amx.util.TimingDelta;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import javax.management.StandardMBean;
-
 
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
-import org.glassfish.admin.amx.config.AMXConfigConstants;
-import org.glassfish.admin.amx.impl.config.AMXConfigLoader;
 import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 import org.glassfish.admin.amx.util.AMXLoggerInfo;
 
-import org.glassfish.admin.amx.util.FeatureAvailability;
 import org.glassfish.admin.mbeanserver.PendingConfigBeans;
 import org.glassfish.api.amx.AMXLoader;
 import org.jvnet.hk2.config.Transactions;
@@ -79,9 +75,6 @@ public final class AMXConfigStartupService
         org.glassfish.hk2.api.PreDestroy,
         AMXLoader {
 
-    private static void debug(final String s) {
-        System.out.println(s);
-    }
     @Inject
     InjectedValues mInjectedValues;
     @Inject//(name=AppserverMBeanServerFactory.OFFICIAL_MBEANSERVER)
@@ -93,10 +86,7 @@ public final class AMXConfigStartupService
     private volatile AMXConfigLoader mLoader;
     private volatile PendingConfigBeans mPendingConfigBeansBackup;
 
-    public AMXConfigStartupService() {
-        //debug( "AMXStartupService.AMXStartupService()" );
-    }
-
+    @Override
     public void postConstruct() {
         final TimingDelta delta = new TimingDelta();
 
@@ -111,6 +101,7 @@ public final class AMXConfigStartupService
         AMXLoggerInfo.getLogger().log(Level.FINE, "Initialized AMXConfig Startup service in {0} ms", delta.elapsedMillis());
     }
 
+    @Override
     public void preDestroy() {
         AMXLoggerInfo.getLogger().info(AMXLoggerInfo.stoppingAMX);
         unloadAMXMBeans();
@@ -132,9 +123,9 @@ public final class AMXConfigStartupService
         return ProxyFactory.getInstance(mMBeanServer).getProxy(getDomainConfig(), AMXProxy.class);
     }
     
+    @Override
     public synchronized ObjectName loadAMXMBeans() {
         if (mLoader == null) {
-            //getDomainRootProxy().waitAMXReady();
             if(mPendingConfigBeans.size() == 0)  {
                 mPendingConfigBeans = mPendingConfigBeansBackup;
             }
@@ -145,6 +136,7 @@ public final class AMXConfigStartupService
         return getDomainConfig();
     }
 
+    @Override
     public synchronized void unloadAMXMBeans() {
         final AMXProxy domainConfigProxy = getDomainConfigProxy();
         if (domainConfigProxy != null) {

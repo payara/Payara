@@ -1,0 +1,12 @@
+[
+{
+   "summary": "A foo example",
+   "value": {
+      "foo": "bar"
+   }
+},
+{
+   "summary": "This is a text example",
+   "externalValue": "http://foo.bar/examples/address-example.txt"
+}
+]

@@ -39,9 +39,6 @@
  */
 
 package com.sun.enterprise.admin.monitor.stats;
- 
-import org.glassfish.j2ee.statistics.CountStatistic;
-
 
 /**
  * A Stats interface to represent the statistical data exposed by a JDBC 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.util;
 
@@ -46,10 +47,10 @@ package com.sun.jdo.api.persistence.enhancer.util;
 //@olsen: added: support for I18N
 //@olsen: subst: FilterError -> UserException, assert()
 
-import java.util.zip.ZipFile;
-import java.util.zip.ZipEntry;
 import java.io.*;
-import java.util.*;
+import java.util.StringTokenizer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 //@yury: added ability to get the class bytecode from the Forte4J archive entry
 //import org.openidex.jarpackager.ArchiveEntry;
 
@@ -216,7 +217,7 @@ public class ClassFileSource
    * Constructor
    * @param className The expected name of the class
    * @param byteCodeStream containing the class file.
-   * 
+   *
    */
   //@olsen: added constructor
   public ClassFileSource(String className, InputStream byteCodeStream) {
@@ -344,7 +345,7 @@ public class ClassFileSource
    */
   private File computeDestinationDir(File rootDestDir)  throws IOException, FileNotFoundException {
 
-    StringBuffer buf = new StringBuffer(rootDestDir.getPath());
+    StringBuilder buf = new StringBuilder(rootDestDir.getPath());
     String prevToken = null;
     StringTokenizer parser
         = new StringTokenizer(theExpectedClassName, "/", false);//NOI18N

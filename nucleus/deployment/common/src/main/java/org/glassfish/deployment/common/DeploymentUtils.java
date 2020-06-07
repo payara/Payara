@@ -241,9 +241,8 @@ public class DeploymentUtils {
         if (pathName.endsWith("/")) {
             pathName = pathName.substring(0, pathName.length() - 1);
         }
-        if (pathName.lastIndexOf("/") != -1) {
-            pathName = pathName.substring(pathName.lastIndexOf(
-                "/") + 1);
+        if (pathName.lastIndexOf('/') != -1) {
+            pathName = pathName.substring(pathName.lastIndexOf('/') + 1);
         }
         if (pathName.endsWith(".jar") || pathName.endsWith(".war")
             || pathName.endsWith(".rar") || pathName.endsWith(".ear")) {

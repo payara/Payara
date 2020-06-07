@@ -96,7 +96,7 @@ public final class SMFService extends ServiceAdapter {
     private static final String REL_PATH_TEMPLATES = "lib/install/templates";
 
     /**
-     * Creates SMFService instance. All the tokens are initialized to default values. 
+     * Creates SMFService instance. All the tokens are initialized to default values.
      * Callers must verify that the tokens are properly token-replaced before
      * using this instance.
      */
@@ -195,7 +195,7 @@ public final class SMFService extends ServiceAdapter {
     /** Sets the OS-level user-id who should start and own the processes started
      * by this service. This user is the same as the value returned by
      * System.getProperty("user.name"). The idea is that the method is
-     * called by the user who actually wants to own the service. 
+     * called by the user who actually wants to own the service.
      * @throws IllegalArgumentException if the user can not modify MANIFEST_HOME
      * @throws IllegalArgumentException if solaris.smf.modify Authorization is not implied by the authorizations available for the user.
      */
@@ -281,7 +281,7 @@ public final class SMFService extends ServiceAdapter {
     }
 
     /** Returns the absolute location of the manifest file as SMF understands it.
-     * It takes into account the name, type and configuration location of the 
+     * It takes into account the name, type and configuration location of the
      * service. It is expected that these are set before calling this method.
      * If the <b> Fully Qualified Service Name </b> is invalid, a RuntimeException results.
      */
@@ -493,15 +493,13 @@ public final class SMFService extends ServiceAdapter {
     private void cleanupManifest() throws RuntimeException {
         final File manifest = new File(getManifestFilePath());
         if (manifest.exists()) {
-            if (!manifest.delete())
-                manifest.deleteOnExit();
+            FileUtils.deleteFileNowOrLater(manifest);
             if (info.trace)
                 printOut("Attempted deleting failed service manifest: " + manifest.getAbsolutePath());
         }
         final File failedServiceNode = manifest.getParentFile();
         if (failedServiceNode.exists()) {
-            if (!failedServiceNode.delete())
-                failedServiceNode.deleteOnExit();
+            FileUtils.deleteFileNowOrLater(failedServiceNode);
             if (info.trace)
                 printOut("Attempted deleting failed service folder: " + failedServiceNode.getAbsolutePath());
         }

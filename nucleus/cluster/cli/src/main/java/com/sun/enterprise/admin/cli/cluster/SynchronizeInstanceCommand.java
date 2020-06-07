@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import java.io.*;
 import java.net.ConnectException;
@@ -75,7 +77,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
 
     private RemoteCLICommand syncCmd = null;
 
-    private static enum SyncLevel { TOP, FILES, DIRECTORY, RECURSIVE };
+    private enum SyncLevel { TOP, FILES, DIRECTORY, RECURSIVE }
 
     // the name of the sync state file, relative to the instance directory
     private static final String SYNC_STATE_FILE = ".syncstate";
@@ -91,10 +93,10 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
      */
     @Override
     protected int executeCommand() throws CommandException {
-        
-        if (synchronizeInstance())
+
+        if (synchronizeInstance()) {
             return SUCCESS;
-        else {
+        } else {
             logger.info(Strings.get("Sync.failed",
                                     programOpts.getHost(),
                                     Integer.toString(programOpts.getPort())));
@@ -103,10 +105,10 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
     }
 
     /**
-     * Synchronize this server instance.  Return true if server is synchronized. 
+     * Synchronize this server instance.  Return true if server is synchronized.
      * Return false if synchronization failed, but no files were changed
      * (meaning that it is ok to bring the server up).
-     * Throw a CommandException if synchronization failed in such a way that 
+     * Throw a CommandException if synchronization failed in such a way that
      * instance startup should not be attempted.
      */
     protected boolean synchronizeInstance() throws CommandException {
@@ -181,12 +183,14 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             removeSubdirectory("generated");
             removeSubdirectory("lib");
             removeSubdirectory("docroot");
+            removeSubdirectory("endpoints");
         }
 
         File domainXml =
                     new File(new File(instanceDir, "config"), "domain.xml");
         long dtime = domainXml.exists() ? domainXml.lastModified() : -1;
         File docroot = new File(instanceDir, "docroot");
+        File endpoints = new File(instanceDir, "endpoints");
 
         CommandException exc = null;
         try {
@@ -204,8 +208,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
                 if (logger.isLoggable(Level.FINE))
                     logger.fine(Strings.get("Sync.alreadySynced"));
                 if (!syncState.delete())
-                    logger.warning(
-                        Strings.get("Sync.cantDeleteSyncState", syncState));
+                    logger.warning(Strings.get("Sync.cantDeleteSyncState", syncState));
                 /*
                  * Note that we earlier marked the token for reuse.  It's OK
                  * to return immediately here with the DAS still willing to
@@ -233,14 +236,13 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
                 File[] af = FileUtils.listFiles(adir);
                 if (af.length != 1) {
                     if (logger.isLoggable(Level.FINER))
-                        logger.finer("IGNORING " + adir + ", # files " +
-                                                                    af.length);
+                        logger.log(Level.FINER, "IGNORING {0}, # files {1}", new Object[]{adir, af.length});
                     continue;
                 }
                 File archive = af[0];
                 File appDir = new File(appsDir, adir.getName());
                 if (logger.isLoggable(Level.FINER))
-                    logger.finer("UNZIP " + archive + " TO " + appDir);
+                    logger.log(Level.FINER, "UNZIP {0} TO {1}", new Object[]{archive, appDir});
                 try {
                     expand(appDir, archive);
                 } catch (Exception ex) { }
@@ -262,6 +264,14 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
              * one level.
              */
             sr = getModTimes("docroot", SyncLevel.DIRECTORY);
+            synchronizeFiles(sr);
+
+            /*
+             * Next, the endpoints.
+             * The endpoints too could be full of files, so we only check
+             * one level.
+             */
+            sr = getModTimes("endpoints", SyncLevel.DIRECTORY);
             synchronizeFiles(sr);
 
             /*
@@ -298,14 +308,13 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
              * it was a connect failure and will list the closest matching
              * local command.  Not what we want here.
              */
-            exc = new CommandException(
-                        Strings.get("Sync.connectFailed", cex.getMessage()));
+            exc = new CommandException(Strings.get("Sync.connectFailed", cex.getMessage()));
         } catch (CommandException ex) {
             if (logger.isLoggable(Level.FINER))
                 logger.finer("Exception during synchronization: " + ex);
             exc = ex;
         }
-        
+
         if (exc != null) {
             /*
              * Some unexpected failure.  If the domain.xml hasn't
@@ -316,7 +325,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
              * If nothing has changed, allow the server to come up.
              */
             if (domainXml.exists() && domainXml.lastModified() == dtime &&
-                    docroot.isDirectory()) {
+                    docroot.isDirectory() && endpoints.isDirectory()) {
                 // nothing changed and sync has completed at least once
                 if (!syncState.delete())
                     logger.warning(
@@ -394,7 +403,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
         File tempFile = null;
         try {
             tempFile = File.createTempFile("mt.", ".xml");
-            tempFile.deleteOnExit();
+            FileUtils.deleteOnExit(tempFile);
 
             JAXBContext context = JAXBContext.newInstance(SyncRequest.class);
             Marshaller marshaller = context.createMarshaller();
@@ -406,10 +415,26 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             File syncdir = new File(instanceDir, sr.dir);
             if (logger.isLoggable(Level.FINER))
                 logger.finer("Sync directory: " + syncdir);
-            // _synchronize-files takes a single operand of type File
+
+            // Determine if this is a docker node
+            boolean dockerNode = false;
+            File nodePropertiesFile = getServerDirs().getNodePropertiesFile();
+
+            if (nodePropertiesFile.exists()) {
+                Properties nodeProperties = getNodeProperties(nodePropertiesFile);
+                dockerNode = Boolean.valueOf(nodeProperties.getProperty(CLIConstants.K_DOCKER_NODE, "false"));
+            }
+
+            // _synchronize-files takes a single operand of type File, though when working with files a hidden
+            // "upload" parameter option gets added
             // Note: we throw the output away to avoid printing a blank line
-            syncCmd.executeAndReturnOutput("_synchronize-files",
-                tempFile.getPath());
+            if (dockerNode) {
+                syncCmd.executeAndReturnOutput("_synchronize-files", "--upload=true",
+                        tempFile.getPath());
+            } else {
+                syncCmd.executeAndReturnOutput("_synchronize-files",
+                        tempFile.getPath());
+            }
 
             // the returned files are automatically saved by the command
         } catch (IOException ex) {
@@ -425,8 +450,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
         } catch (CommandException cex) {
             Throwable cause = cex.getCause();
             if (logger.isLoggable(Level.FINER)) {
-                logger.finer("Got exception: " + cex);
-                logger.finer("  cause: " + cause);
+                logger.log(Level.FINER, "Got exception: {0}", cex);
+                logger.log(Level.FINER, "  cause: {0}", cause);
             }
             if (cause instanceof ConnectException)
                 throw (ConnectException)cause;
@@ -458,32 +483,24 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
      * but it's good enough for now for some performance testing
      */
     private static void expand(File dir, File archive) throws Exception {
-        if (!dir.mkdir())
-            logger.warning(
-                Strings.get("Sync.cantCreateDirectory", dir));
+        if (!dir.mkdir()) {
+            logger.warning(Strings.get("Sync.cantCreateDirectory", dir));
+        }
         long modtime = archive.lastModified();
-        ZipFile zf = new ZipFile(archive);
-	try {
+	try (ZipFile zf = new ZipFile(archive)) {
 	    Enumeration<? extends ZipEntry> e = zf.entries();
 	    while (e.hasMoreElements()) {
 		ZipEntry ze = e.nextElement();
 		File entry = new File(dir, ze.getName());
 		if (ze.isDirectory()) {
 		    if (!entry.mkdir())
-			logger.warning(
-			    Strings.get("Sync.cantCreateDirectory", dir));
+			logger.warning(Strings.get("Sync.cantCreateDirectory", dir));
 		} else {
-		    FileUtils.copy(zf.getInputStream(ze),
-				    new FileOutputStream(entry), 0);
+		    FileUtils.copy(zf.getInputStream(ze), new FileOutputStream(entry), 0);
 		}
 	    }
-	} finally {
-	    try {
-		zf.close();
-	    } catch (IOException ex) { }
 	}
         if (!dir.setLastModified(modtime))
-            logger.warning(
-                Strings.get("Sync.cantSetModTime", dir));
+            logger.warning(Strings.get("Sync.cantSetModTime", dir));
     }
 }

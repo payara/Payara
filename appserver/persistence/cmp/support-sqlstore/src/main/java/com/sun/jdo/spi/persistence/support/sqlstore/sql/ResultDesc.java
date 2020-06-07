@@ -89,9 +89,9 @@ public class ResultDesc {
     /** Indicates whether this ResultDesc is prefetching relationship fields. */
     private boolean prefetching;
 
-    /** 
-     * Maps ForeignFieldDesc to ResultDesc. The ForeignFieldDesc correspond to 
-     * prefetched collection relationship fields. The ResultDesc is the 
+    /**
+     * Maps ForeignFieldDesc to ResultDesc. The ForeignFieldDesc correspond to
+     * prefetched collection relationship fields. The ResultDesc is the
      * associated result descriptor.
      */
     private Map prefetchedCollectionFields;
@@ -263,7 +263,7 @@ public class ResultDesc {
                 case FieldTypeEnumeration.BOOLEAN  :
                         boolean booleanValue = resultData.getBoolean(index);
                         if(!resultData.wasNull() )
-                            retVal = new Boolean(booleanValue);
+                            retVal = Boolean.valueOf(booleanValue);
                         break;
                 case FieldTypeEnumeration.CHARACTER_PRIMITIVE :
                 case FieldTypeEnumeration.CHARACTER  :
@@ -275,37 +275,37 @@ public class ResultDesc {
                 case FieldTypeEnumeration.BYTE  :
                         byte byteValue = resultData.getByte(index);
                         if(!resultData.wasNull() )
-                            retVal = new Byte(byteValue);
+                            retVal = Byte.valueOf(byteValue);
                         break;
                 case FieldTypeEnumeration.SHORT_PRIMITIVE :
                 case FieldTypeEnumeration.SHORT  :
                         short shortValue = resultData.getShort(index);
                         if(!resultData.wasNull() )
-                            retVal = new Short(shortValue);
+                            retVal = Short.valueOf(shortValue);
                         break;
                 case FieldTypeEnumeration.INTEGER_PRIMITIVE :
                 case FieldTypeEnumeration.INTEGER  :
                         int intValue = resultData.getInt(index);
                         if(!resultData.wasNull() )
-                            retVal = new Integer(intValue);
+                            retVal = Integer.valueOf(intValue);
                         break;
                 case FieldTypeEnumeration.LONG_PRIMITIVE :
                 case FieldTypeEnumeration.LONG  :
                         long longValue = resultData.getLong(index);
                         if(!resultData.wasNull() )
-                            retVal = new Long(longValue);
+                            retVal = Long.valueOf(longValue);
                         break;
                 case FieldTypeEnumeration.FLOAT_PRIMITIVE :
                 case FieldTypeEnumeration.FLOAT  :
                         float floatValue = resultData.getFloat(index);
                         if(!resultData.wasNull() )
-                            retVal = new Float(floatValue);
+                            retVal = Float.valueOf(floatValue);
                         break;
                 case FieldTypeEnumeration.DOUBLE_PRIMITIVE :
                 case FieldTypeEnumeration.DOUBLE  :
                         double doubleValue = resultData.getDouble(index);
                         if(!resultData.wasNull() )
-                            retVal = new Double(doubleValue);
+                            retVal = Double.valueOf(doubleValue);
                         break;
                 case FieldTypeEnumeration.BIGDECIMAL :
                 case FieldTypeEnumeration.BIGINTEGER :
@@ -363,7 +363,7 @@ public class ResultDesc {
         } catch (SQLException e) {
             if(logger.isLoggable(Logger.WARNING) ) {
                 Object items[] =
-                    { new Integer(index), new Integer(resultType), new Integer(columnType), e};
+                    { index, resultType, columnType, e};
                 logger.log(Logger.WARNING,"sqlstore.resultdesc.errorgettingvalefromresulset",items);
             }
             throw e;
@@ -457,7 +457,7 @@ public class ResultDesc {
         String retVal = null;
         if(reader != null) {
             BufferedReader buffReader = new BufferedReader(reader);
-            StringBuffer buff = new StringBuffer();
+            StringBuilder buff = new StringBuilder();
             try {
                 int charRead;
                 while( (charRead = buffReader.read() ) != -1) {
@@ -529,7 +529,7 @@ public class ResultDesc {
                 // each result object is guaranteed to be instance of PersistenceCapable
                 PersistenceCapable pc = (PersistenceCapable) resultItr.next();
 
-                // pc can be null if this is a projection query 
+                // pc can be null if this is a projection query
                 if (pc != null) {
                     applyDeferredUpdatesToPrefetchedCollections(pc);
                 }
@@ -692,7 +692,7 @@ public class ResultDesc {
     }
 
     /**
-     * Adds <code>value</code> to the collection for the given field <code>f</code> 
+     * Adds <code>value</code> to the collection for the given field <code>f</code>
      * and statemanager <code>sm</code>.
      * Also sets presence mask bit for the field in given <code>sm</code>, if not already set.
      * @param sm Given StateManager, is always a SQLStateManager
@@ -711,7 +711,7 @@ public class ResultDesc {
         // Set the presence mask if necessary.
         // SCOCollections might be != null and presence mask not set.
         if (!sm.getPresenceMaskBit(f.absoluteID)) {
-            sm.setPresenceMaskBit(f.absoluteID);                                    
+            sm.setPresenceMaskBit(f.absoluteID);
         }
 
         if (value != null) {

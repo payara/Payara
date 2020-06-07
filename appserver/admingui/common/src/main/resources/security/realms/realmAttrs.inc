@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017] Payara Foundation and/or affiliates
+    Portions Copyright [2017-2019] Payara Foundation and/or affiliates
 -->
 
 <!-- security/realms/realmAttrs.inc -->
@@ -194,3 +194,39 @@
             <sun:textField id="charset" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.charset']}" text="#{attrMap.charset}"  />
         </sun:property> 
     </sun:propertySheetSection>
+
+    <sun:propertySheetSection id="loginModuleSection" label="Login module" visible="#{attrMap.createNew}" styleClass="login-module-disabled">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{loginModuleSection});
+        />
+        <sun:property styleClass="toggle" id="registerLoginModule"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.loginmodule.register}" helpText="$resource{i18nc.realm.loginmodule.help}" >
+           <sun:checkbox id="registerLoginModule" label="" selected="#{attrMap.registerLoginModule}" selectedValue="true"
+                onClick="toggleLoginModule(event.target.checked)">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{registerLoginModule});
+                />
+           </sun:checkbox>
+        </sun:property>
+        <sun:property id="jaax" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.jaax}" helpText="$resource{i18nc.realm.jaaxHelp} $resource{i18nc.realm.loginmodule.jaaxNote}" >
+            <!afterCreate
+                getClientId(component="$this{component}" clientId=>$page{loginModuleJaax});
+            />
+            <sun:textField id="jaax" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.jaax']}" text="#{attrMap.loginModuleJaax}"/>
+        </sun:property>
+        <sun:property id="loginModule" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.realm.loginmodule.class}" helpText="$resource{i18nc.realm.loginmodule.classHelp}" >
+            <sun:textField id="loginModule" text="#{attrMap.loginModuleClass}" columns="$int{57}" maxLength="#{sessionScope.fieldLengths['maxLength.realm.Classname']}" />
+        </sun:property>
+    </sun:propertySheetSection>
+
+<f:verbatim>
+    <style type="text/css">
+        .login-module-disabled tr, .login-module-enabled tr.not-required {
+            display: none;
+        }
+
+        .login-module-disabled tr.toggle {
+            display: inherit;
+        }
+
+    </style>
+</f:verbatim>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.readers;
 
@@ -47,11 +47,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
 
@@ -78,29 +80,25 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
     public ParameterMap readFrom(Class<ParameterMap> type, Type genericType,
             Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers,
             InputStream in) throws IOException {
-
-
         JsonObject obj;
-        try {
-            JsonParser parser = Json.createParser(in);
+        try (JsonParser parser = Json.createParser(in)) {
             if (parser.hasNext()){
                 parser.next();
                 obj = parser.getObject();
             } else {
                 obj = JsonValue.EMPTY_JSON_OBJECT;
             }
-            
+
             ParameterMap map = new ParameterMap();
-            for (String k : obj.keySet()) {
-                Object value = obj.get(k);
+            for (Entry<String, JsonValue> entry : obj.entrySet()) {
+                JsonValue value = entry.getValue();
                 if (value instanceof JsonArray) {
                     JsonArray array = (JsonArray) value;
                     for (int i = 0; i < array.size(); i++) {
-                        map.add(k, "" + array.get(i));
+                        map.add(entry.getKey(), getStringValue(array.get(i)));
                     }
-
                 } else {
-                    map.add(k, "" + value);
+                    map.add(entry.getKey(), getStringValue(value));
                 }
             }
             return map;
@@ -112,19 +110,30 @@ public class JsonParameterMapProvider implements MessageBodyReader<ParameterMap>
 
             return map;
         }
+    }
 
-
+    /**
+     * @return a string representation of the passed JsonValue.
+     */
+    private static String getStringValue(JsonValue json) {
+        if (json == null) {
+            return "";
+        }
+        if (json instanceof JsonString) {
+            return ((JsonString)json).getString();
+        }
+        return json.toString();
     }
 
     public static String inputStreamAsString(InputStream stream) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
+        StringBuilder sb;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(stream))) {
+            sb = new StringBuilder();
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
         }
-        br.close();
         return sb.toString();
     }
 }

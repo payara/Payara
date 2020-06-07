@@ -92,47 +92,16 @@ import org.jvnet.hk2.config.Dom;
  * @author Susan Rai
  */
 //@Path("notification-log-view/")
-public class NotificationLogViewer {
+public class NotificationLogViewer extends LogViewerResource {
 
     private static final Logger logger = Logger.getLogger("NotificationLogViewer");
     List<String> fileBody = new ArrayList<>();
 
-    @Context
-    protected ServiceLocator injector;
-    @Context
-    protected UriInfo ui;
-
-    @Context
-    protected LocatorBridge habitat;
-
-    /**
-     * Represents the data source of this text.
-     */
-    private interface Source {
-
-        Session open() throws IOException;
-
-        long length();
-
-        boolean exists();
-    }
-
     private Source source;
-    protected Charset charset;
-    private volatile boolean completed;
-
-    public void setEntity(Dom p) {
-        // ugly no-op hack. For now.
-    }
-
-    @Path("details/")
-    public StructuredLogViewerResource getDomainUptimeResource() {
-        StructuredLogViewerResource resource = injector.createAndInitialize(StructuredLogViewerResource.class);
-        return resource;
-    }
 
     @GET
     @Produces("text/plain;charset=UTF-8")
+    @Override
     public Response get(@QueryParam("start")
             @DefaultValue("0") long start,
             @QueryParam("instanceName") @DefaultValue("server") String instanceName,
@@ -140,16 +109,15 @@ public class NotificationLogViewer {
         boolean gzipOK = true;
         MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
         String acceptEncoding = headerParams.getFirst("Accept-Encoding");
-        if (acceptEncoding == null || acceptEncoding.indexOf("gzip") == -1) {
+        if (acceptEncoding == null || !acceptEncoding.contains("gzip")) {
             gzipOK = false;
         }
 
         // getting logFilter object from habitat
         LogFilter logFilter = habitat.getRemoteLocator().getService(LogFilter.class);
-        String logLocation = "";
 
         // getting log file location on DAS for server/local instance/remote instance
-        logLocation = logFilter.getLogFileForGivenTarget(instanceName);
+        String logLocation = logFilter.getLogFileForGivenTarget(instanceName);
 
         readServerLogFile(logLocation);
         String logFolderLocation = logLocation.replace("server.log", "");
@@ -220,235 +188,6 @@ public class NotificationLogViewer {
         }
     }
 
-    public void initLargeText(File file, boolean completed) {
-        initLargeText(file, Charset.defaultCharset(), completed);
-    }
-
-    public void initLargeText(final File file, Charset charset, boolean completed) {
-        this.charset = charset;
-        this.source = new Source() {
-
-            @Override
-            public Session open() throws IOException {
-                return new FileSession(file);
-            }
-
-            @Override
-            public long length() {
-                return file.length();
-            }
-
-            @Override
-            public boolean exists() {
-                return file.exists();
-            }
-        };
-        this.completed = completed;
-    }
-
-    public void markAsComplete() {
-        completed = true;
-    }
-
-    public boolean isComplete() {
-        return completed;
-    }
-
-    private long writeLogTo(long start, Writer w) throws IOException {
-        return writeLogTo(start, new WriterOutputStream(w, charset));
-    }
-
-    /**
-     * Writes the tail portion of the file to the {@link OutputStream}.
-     *
-     * @param start The byte offset in the input file where the write operation
-     * starts.
-     * @return if the file is still being written, this method writes the file
-     * until the last newline character and returns the offset to start the next
-     * write operation.
-     */
-    private long writeLogTo(long start, OutputStream os) throws IOException {
-        /// CountingOutputStream os = new CountingOutputStream(out);
-        long count = 0;
-        Session f = source.open();
-        f.skip(start);
-
-        if (completed) {
-            // write everything till EOF
-            byte[] buf = new byte[1024];
-            int sz;
-            while ((sz = f.read(buf)) >= 0) {
-                os.write(buf, 0, sz);
-            }
-            count += sz;
-        } else {
-            ByteBuf buf = new ByteBuf(null, f);
-            HeadMark head = new HeadMark(buf);
-            TailMark tail = new TailMark(buf);
-
-            while (tail.moveToNextLine(f)) {
-                count += head.moveTo(tail, os);
-            }
-            count += head.finish(os);
-        }
-
-        f.close();
-        os.flush();
-
-        return count + start;
-    }
-
-    /**
-     * Points to a byte in the buffer.
-     */
-    private static class Mark {
-
-        protected ByteBuf buf;
-        protected int pos;
-
-        public Mark(ByteBuf buf) {
-            this.buf = buf;
-        }
-    }
-
-    /**
-     * Points to the start of the region that's not committed to the output yet.
-     */
-    private static final class HeadMark extends Mark {
-
-        public HeadMark(ByteBuf buf) {
-            super(buf);
-        }
-
-        /**
-         * Moves this mark to 'that' mark, and writes the data to
-         * {@link OutputStream} if necessary.
-         */
-        long moveTo(Mark that, OutputStream os) throws IOException {
-            long count = 0;
-            while (this.buf != that.buf) {
-                os.write(buf.buf, 0, buf.size);
-                count += buf.size;
-                buf = buf.next;
-                pos = 0;
-            }
-
-            this.pos = that.pos;
-            return count;
-        }
-
-        long finish(OutputStream os) throws IOException {
-            os.write(buf.buf, 0, pos);
-            return pos;
-        }
-    }
-
-    /**
-     * Points to the end of the region.
-     */
-    private static final class TailMark extends Mark {
-
-        public TailMark(ByteBuf buf) {
-            super(buf);
-        }
-
-        boolean moveToNextLine(Session f) throws IOException {
-            while (true) {
-                while (pos == buf.size) {
-                    if (!buf.isFull()) {
-                        // read until EOF
-                        return false;
-                    } else {
-                        // read into the next buffer
-                        buf = new ByteBuf(buf, f);
-                        pos = 0;
-                    }
-                }
-                byte b = buf.buf[pos++];
-                if (b == '\r' || b == '\n') {
-                    return true;
-                }
-            }
-        }
-    }
-
-    /**
-     * Variable length byte buffer implemented as a linked list of fixed length
-     * buffer.
-     */
-    private static final class ByteBuf {
-
-        private final byte[] buf = new byte[1024];
-        private int size = 0;
-        private ByteBuf next;
-
-        public ByteBuf(ByteBuf previous, Session f) throws IOException {
-            if (previous != null) {
-                assert previous.next == null;
-                previous.next = this;
-            }
-
-            while (!this.isFull()) {
-                int chunk = f.read(buf, size, buf.length - size);
-                if (chunk == -1) {
-                    return;
-                }
-                size += chunk;
-            }
-        }
-
-        public boolean isFull() {
-            return buf.length == size;
-        }
-    }
-
-    /**
-     * Represents the read session of the {@link Source}. Methods generally
-     * follow the contracts of {@link InputStream}.
-     */
-    private interface Session {
-
-        void close() throws IOException;
-
-        void skip(long start) throws IOException;
-
-        int read(byte[] buf) throws IOException;
-
-        int read(byte[] buf, int offset, int length) throws IOException;
-    }
-
-    /**
-     * {@link Session} implementation over {@link RandomAccessFile}.
-     */
-    private static final class FileSession implements Session {
-
-        private final RandomAccessFile file;
-
-        public FileSession(File file) throws IOException {
-            this.file = new RandomAccessFile(file, "r");
-        }
-
-        @Override
-        public void close() throws IOException {
-            file.close();
-        }
-
-        @Override
-        public void skip(long start) throws IOException {
-            file.seek(file.getFilePointer() + start);
-        }
-
-        @Override
-        public int read(byte[] buf) throws IOException {
-            return file.read(buf);
-        }
-
-        @Override
-        public int read(byte[] buf, int offset, int length) throws IOException {
-            return file.read(buf, offset, length);
-        }
-    }
-
     public void createNotificationLogFolder(String FolderName) {
         File notificationFolder = new File(FolderName);
         if (!notificationFolder.exists()) {
@@ -461,9 +200,7 @@ public class NotificationLogViewer {
     }
 
     public void writeToNotificationLogFile(String fileName) {
-        PrintWriter pw = null;
-        try {
-            pw = new PrintWriter(new FileOutputStream(fileName));
+        try (PrintWriter pw = new PrintWriter(new FileOutputStream(fileName))) {
             for (String text : fileBody) {
                 if (text.contains("WARNING") || text.contains("SEVERE") || text.contains("FINE")
                         || text.contains("CONFIG") || text.contains("INFO")) {
@@ -472,11 +209,8 @@ public class NotificationLogViewer {
                     pw.println(text);
                 }
             }
-            pw.close();
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
-        } finally {
-            pw.close();
         }
 
     }

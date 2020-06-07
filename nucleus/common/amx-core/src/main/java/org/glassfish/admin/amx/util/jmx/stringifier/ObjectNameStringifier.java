@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -55,16 +56,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
-Stringifier for an ObjectName which sorts the properties in the ObjectName
-for more consistent and readable output.
+ * Stringifier for an {@link ObjectName} which sorts the properties in the ObjectName
+ * for more consistent and readable output.
  */
-public final class ObjectNameStringifier implements Stringifier
-{
-    public final static ObjectNameStringifier DEFAULT = new ObjectNameStringifier();
+public final class ObjectNameStringifier implements Stringifier {
+    public static final ObjectNameStringifier DEFAULT = new ObjectNameStringifier();
 
     private static List<String> PROPS = null;
 
-    private synchronized static List<String> getPROPS()
+    private static synchronized List<String> getPROPS()
     {
         if (PROPS == null)
         {
@@ -126,9 +126,9 @@ public final class ObjectNameStringifier implements Stringifier
     {
         return (name + "=" + value);
     }
-
-    public String stringify(Object o)
-    {
+    
+    @Override
+    public String stringify(Object o) {
         if (o == null)
         {
             return ("null");
@@ -137,15 +137,15 @@ public final class ObjectNameStringifier implements Stringifier
 
         final ObjectName on = (ObjectName) o;
 
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         if (!mOmitDomain)
         {
-            buf.append(on.getDomain() + ":");
+            buf.append(on.getDomain()).append(":");
         }
 
         final Map<String, String> props = TypeCast.asMap(on.getKeyPropertyList());
 
-        final List<String> ordered = new ArrayList<String>(mOrderedProps);
+        final List<String> ordered = new ArrayList<>(mOrderedProps);
         ordered.retainAll(props.keySet());
 
         // go through each ordered property, and if it exists, emit it
@@ -156,7 +156,7 @@ public final class ObjectNameStringifier implements Stringifier
             final String value = props.get(key);
             if (value != null)
             {
-                buf.append(makeProp(key, value) + ",");
+                buf.append(makeProp(key, value)).append(",");
                 props.remove(key);
             }
         }
@@ -167,11 +167,9 @@ public final class ObjectNameStringifier implements Stringifier
         remainingSet.toArray(remaining);
         Arrays.sort(remaining);
 
-        for (int i = 0; i < remaining.length; ++i)
-        {
-            final String key = remaining[i];
+        for (final String key : remaining) {
             final String value = props.get(key);
-            buf.append(makeProp(key, value) + ",");
+            buf.append(makeProp(key, value)).append(",");
         }
 
         final String result = StringUtil.stripSuffix(buf.toString(), ",");
@@ -200,27 +198,3 @@ public final class ObjectNameStringifier implements Stringifier
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -37,23 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jts.utils;
 
 
-import org.omg.CosTransactions.*;
-import javax.transaction.xa.*;
-import java.util.*;
-import java.util.logging.*;
-import java.text.*;
+import javax.transaction.xa.Xid;
+import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * This class is used to format the trace record. 
+ * This class is used to format the trace record.
  *
  * @author <a href="mailto:k.venugopal@sun.comi,kannan.srinivasan@sun.com">K Venugopal</a>
  * @version 1.0
  */
-public class LogFormatter 
+public class LogFormatter
 {
   /**
    * Helper method to convert a byte arror to string. This is typically used for printing Xids.
@@ -61,15 +64,15 @@ public class LogFormatter
    * @param byteArray a <code>byte[]</code> value
    * @return a <code>String</code> value
    */
-  
+
     public static String convertToString(byte[] byteArray)
     {
         int i;
-        StringBuffer strBuf=new StringBuffer();
+        StringBuilder strBuf=new StringBuilder();
         for(i = 0; i < byteArray.length; i++)
          {
-            strBuf.append(byteArray[i]);    
-        }    
+            strBuf.append(byteArray[i]);
+        }
         return strBuf.toString();
     }
 
@@ -84,7 +87,7 @@ public class LogFormatter
 	if(xidArray.length != 0)
 	{
         	int i;
-        	StringBuffer strBuf = new StringBuffer("Xid class name is " + xidArray[0].getClass().getName() + " Number of Xids are " + xidArray.length + " [ ");
+        	StringBuilder strBuf = new StringBuilder("Xid class name is " + xidArray[0].getClass().getName() + " Number of Xids are " + xidArray.length + " [ ");
         	for(i = 0; i < xidArray.length - 1; i++)
         	{
             		strBuf.append(xidArray[i]).append("\n");
@@ -107,7 +110,7 @@ public class LogFormatter
         if(prop==null){
 	    return "{null}";
         }
-        StringBuffer strBuf =  new StringBuffer("{ ");
+        StringBuilder strBuf =  new StringBuilder("{ ");
         for(Enumeration enum1 = prop.propertyNames(); enum1.hasMoreElements(); )
         {
             Object obj = enum1.nextElement();
@@ -116,9 +119,9 @@ public class LogFormatter
             if(val==null)
 	        strBuf.append("null");
             else
-                strBuf.append((String)val);        
+                strBuf.append((String)val);
             strBuf.append(" ] ");
-        }        
+        }
         strBuf.append("}");
         return strBuf.toString();
     }
@@ -138,7 +141,7 @@ public class LogFormatter
 			return key;
 		}
 	}
-	
+
 	/**
 	    getLocalizedMessage is used to localize the messages being used in
 		exceptions with arguments inserted appropriately.

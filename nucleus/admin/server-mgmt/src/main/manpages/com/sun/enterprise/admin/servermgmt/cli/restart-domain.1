@@ -1,0 +1,116 @@
+restart-domain(1)         asadmin Utility Subcommands        restart-domain(1)
+
+NAME
+       restart-domain - restarts the DAS of the specified domain
+
+SYNOPSIS
+           restart-domain [--help] [--debug ={true|false}]
+           [--domaindir domaindir]
+           [--force={true|false}] [--kill={false|true}]
+           [domain-name]
+
+DESCRIPTION
+       The restart-domain subcommand stops and then restarts the domain
+       administration server (DAS) of the specified domain. If a domain is not
+       specified, the default domain is assumed. If the domains directory
+       contains two or more domains, the domain-name operand must be
+       specified. If the DAS is not already running, the subcommand attempts
+       to start it.
+
+       The restart-domain subcommand does not exit until the subcommand has
+       verified that the domain has been stopped and restarted.
+
+       This subcommand is supported in local or remote mode. If you specify a
+       host name, the subcommand assumes you are operating in remote mode,
+       which means you must correctly authenticate to the remote server. In
+       local mode, you normally do not need to authenticate to the server as
+       long as you are running the subcommand as the same user who started the
+       server.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --debug
+           Specifies whether the domain is restarted with Java Platform
+           Debugger Architecture (JPDA)
+
+           (http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html)
+
+           debugging enabled.
+
+           Possible values are as follows:
+
+           true
+               The domain is restarted with JPDA debugging enabled and the
+               port number for JPDA debugging is displayed.
+
+           false
+               The domain is restarted with JPDA debugging disabled (default).
+
+           The default is the current setting of this option for the domain
+           that is being restarted.
+
+       --domaindir
+           The domain root directory, which contains the directory of the
+           domain that is to be restarted. If specified, the path must be
+           accessible in the file system. The default location of the domain
+           root directory is as-install/domains.
+
+       --force
+           Specifies whether the domain is forcibly stopped immediately before
+           it is restarted.
+
+           Possible values are as follows:
+
+           true
+               The domain is forcibly stopped immediately (default).
+
+           false
+               The subcommand waits until all threads that are associated with
+               the domain are exited before stopping the domain.
+
+       --kill
+           Specifies whether the domain is killed before it is restarted by
+           using functionality of the operating system to terminate the domain
+           process.
+
+           Possible values are as follows:
+
+           false
+               The domain is not killed. The subcommand uses functionality of
+               the Java platform to terminate the domain process (default).
+
+           true
+               The domain is killed. The subcommand uses functionality of the
+               operating system to terminate the domain process.
+
+OPERANDS
+       domain-name
+           The name of the domain you want to restart. Default is the name
+           specified during installation, usually domain1.
+
+EXAMPLES
+       Example 1, Restarting a Domain
+           This example restarts mydomain4 in the default domains directory.
+
+               asadmin> restart-domain mydomain4
+               Successfully restarted the domain
+               Command restart-domain executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-domain(1), list-domains(1), start-domain(1), stop-domain(1)
+
+       asadmin(1M)
+
+       Java Platform Debugger Architecture (JPDA)
+       (http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html)
+
+Java EE 8                         21 Aug 2017                restart-domain(1)

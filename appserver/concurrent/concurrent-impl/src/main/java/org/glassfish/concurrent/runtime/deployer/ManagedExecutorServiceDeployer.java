@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime.deployer;
 
@@ -210,6 +210,8 @@ public class ManagedExecutorServiceDeployer implements ResourceDeployer {
      * managedExecutorServiceProbeLister from the monitoring tree.
      */
     private void unregisterMonitorableComponent() {
-        managedExecutorServiceProbeListener.unregister();
+        if (managedExecutorServiceProbeListener != null) {
+            managedExecutorServiceProbeListener.unregister();
+        }
     }
 }

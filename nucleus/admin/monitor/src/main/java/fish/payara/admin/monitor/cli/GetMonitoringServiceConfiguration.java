@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -103,16 +103,18 @@ public class GetMonitoringServiceConfiguration implements AdminCommand {
         AMXConfiguration amxConfiguration = config.getExtensionByType(AMXConfiguration.class);
 
         final ActionReport actionReport = context.getActionReport();
-        final String[] headers= {"Enabled", "AMX Enabled", "MBeans Enabled"};
+        final String[] headers= {"Monitoring Enabled", "AMX Enabled", "MBeans Enabled", "DTrace Enabled"};
 
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        columnFormatter.addRow(new Object[]{monitoringService.getMonitoringEnabled(), amxConfiguration.getEnabled(), monitoringService.getMbeanEnabled()});
+        columnFormatter.addRow(new Object[]{monitoringService.getMonitoringEnabled(), amxConfiguration.getEnabled(), 
+            monitoringService.getMbeanEnabled(), monitoringService.getDtraceEnabled()});
         actionReport.appendMessage(columnFormatter.toString());
 
         Map<String, Object> extraPropertiesMap = new HashMap<>();
-        extraPropertiesMap.put("enabled", monitoringService.getMonitoringEnabled());
+        extraPropertiesMap.put("monitoringEnabled", monitoringService.getMonitoringEnabled());
         extraPropertiesMap.put("amxEnabled", amxConfiguration.getEnabled());
-        extraPropertiesMap.put("mbeansEnabled", monitoringService.getMbeanEnabled());
+        extraPropertiesMap.put("mbeanEnabled", monitoringService.getMbeanEnabled());
+        extraPropertiesMap.put("dtraceEnabled", monitoringService.getDtraceEnabled());
 
         Properties extraProperties = new Properties();
         extraProperties.put("getMonitoringServiceConfiguration", extraPropertiesMap);

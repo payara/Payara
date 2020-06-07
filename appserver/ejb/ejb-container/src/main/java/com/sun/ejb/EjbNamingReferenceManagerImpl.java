@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb;
 
 import com.sun.ejb.containers.EJBContextImpl;
-import com.sun.ejb.containers.EJBTimerServiceWrapper;
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.enterprise.container.common.spi.EjbNamingReferenceManager;
 import com.sun.enterprise.deployment.EjbReferenceDescriptor;
@@ -50,13 +50,10 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-
 import javax.inject.Provider;
 import javax.naming.Context;
 import com.sun.enterprise.util.Utility;
-
 import org.omg.CORBA.ORB;
-
 import javax.naming.NamingException;
 
 /**
@@ -200,6 +197,7 @@ public class EjbNamingReferenceManagerImpl
         return resolved ? jndiObj : EJBUtils.resolveEjbRefObject(ejbRefDesc, jndiObj);
     }
 
+    @Override
     public boolean isEjbReferenceCacheable(EjbReferenceDescriptor ejbRefDesc) {
         // Ejb-ref is only eligible for caching if it refers to the legacy
         // Home view and it is resolved to an ejb within the same application.
@@ -211,6 +209,7 @@ public class EjbNamingReferenceManagerImpl
     }
 
 
+    @Override
     public Object getEJBContextObject(String contextType) {
 
         ComponentInvocation currentInv = invMgr.getCurrentInvocation();
@@ -228,15 +227,9 @@ public class EjbNamingReferenceManagerImpl
 
         Object returnObject = ejbInv.context;
 
-        if( contextType.equals("javax.ejb.TimerService") ) {
-            if (EJBTimerService.getEJBTimerService() == null ) {
-                throw new IllegalStateException("EJB Timer Service not " +
-                                                "available");
-            }
-            returnObject = new EJBTimerServiceWrapper
-                (EJBTimerService.getEJBTimerService(), (EJBContextImpl) ejbInv.context);
+        if (contextType.equals("javax.ejb.TimerService")) {
+            returnObject = EJBTimerService.getEJBTimerServiceWrapper((EJBContextImpl) ejbInv.context);
         }
-
 
         return returnObject;
     }

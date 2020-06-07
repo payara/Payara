@@ -1,0 +1,306 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-jacc-provider</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-jacc-provider</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-instance.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-javamail-resource.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-jacc-provider-1"></a><a id="GSRFM00034"></a><a id="create-jacc-provider"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_jacc_provider">create-jacc-provider</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>enables administrators to create a JACC provider that can be used by
+third-party authorization modules for applications running in
+\{product---name}</p>
+</div>
+<div id="sthref304" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-jacc-provider [--help]
+[--policyproviderclass pol-provider-class]
+[--policyconfigfactoryclass pc-factory-class]
+[--property name=value)[:name=value]*]
+[--target target] jacc-provider-name</code></pre>
+</div>
+</div>
+<div id="sthref305" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-jacc-provider</code> subcommand creates a JSR-115—compliant Java
+Authorization Contract for Containers (JACC) provider that can be used
+for authorization of applications running in \{product---name}. The JACC
+provider is created as a <code>jacc-provider</code> element within the
+<code>security-service</code> element in the domain&#8217;s <code>domain.xml</code> file.</p>
+</div>
+<div class="paragraph">
+<p>The default \{product---name} installation includes two JACC providers,
+named <code>default</code> and <code>simple</code>. Any JACC providers created with the
+<code>create-jacc-provider</code> subcommand are in addition to these two default
+providers. The default \{product---name} JACC providers implement a
+simple, file-based authorization engine that complies with the JACC
+specification. The <code>create-jacc-provider</code> subcommand makes it possible
+to specify additional third-party JACC providers.</p>
+</div>
+<div class="paragraph">
+<p>You can create any number of JACC providers within the
+<code>security-service</code> element, but the \{product---name} runtime uses only
+one of them at any given time. The <code>jacc-provider</code> element in the
+<code>security-service</code> element points to the name of the provider that is
+currently in use by \{product---name}. If you change this element to
+point to a different JACC provider, restart \{product---name}.</p>
+</div>
+<div class="paragraph">
+<p>This command is supported in remote mode only.</p>
+</div>
+<div id="sthref306" class="paragraph">
+<p>Options</p>
+</div>
+<div class="paragraph">
+<p>If an option has a short option name, then the short option precedes the
+long option name. Short options have one dash whereas long options have
+two dashes.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--policyproviderclass</code></dt>
+<dd>
+<p>Specifies the fully qualified class name for the
+<code>javax.security.jacc.policy.provider</code> that implements the
+<code>java.security.Policy</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--policyconfigfactoryclass</code></dt>
+<dd>
+<p>Specifies the fully qualified class name for the
+<code>javax.security.jacc.PolicyConfigurationFactory.provider</code> that
+implements the provider-specific
+<code>javax.security.jacc.PolicyConfigurationFactory</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Optional attribute name/value pairs for configuring the JACC provider.
+The following properties are available:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>repository</code></dt>
+<dd>
+<p>The directory containing the JACC policy file. For the <code>default</code>
+\{product---name} JACC provider, the default directory is
+<code>${com.sun.aas.instanceRoot}/generated/policy</code>. This property is not
+defined by default for the <code>simple</code> \{product---name} JACC provider.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target for which you are creating the JACC provider. The
+following values are valid:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the JACC provider on the default server instance. This is
+the default value.</p>
+</dd>
+<dt class="hdlist1">configuration_name</dt>
+<dd>
+<p>Creates the JACC provider in the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Creates the JACC provider on all server instances in the specified
+cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Creates the JACC provider on a specified server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref307" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">jacc-provider-name</dt>
+<dd>
+<p>The name of the provider used to reference the <code>jacc-provider</code> element
+in <code>domain.xml</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref308" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM491"></a><a id="sthref309"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a JACC Provider</p>
+</div>
+<div class="paragraph">
+<p>The following example shows how to create a JACC provider named
+<code>testJACC</code> on the default <code>server</code> target.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jacc-provider
+--policyproviderclass com.sun.enterprise.security.provider.PolicyWrapper
+--policyconfigfactoryclass com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl
+testJACC
+
+Command create-jacc-provider executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref310" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref311" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-jacc-provider.html#delete-jacc-provider-1"><code>delete-jacc-provider</code>(1)</a>,
+<a href="list-jacc-providers.html#list-jacc-providers-1"><code>list-jacc-providers</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-instance.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-javamail-resource.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,12 +68,8 @@ public final class CollectionUtil
     /**
     @return a String
      */
-    public static <T> String toString(
-            final Collection<T> c,
-            final String delim)
-    {
+    public static <T> String toString(final Collection<T> c, final String delim) {
         final String[] strings = toStringArray(c);
-        //Arrays.sort( strings );
 
         return StringUtil.toString(delim, (Object[]) strings);
     }
@@ -81,8 +77,7 @@ public final class CollectionUtil
     /**
     @return String[]
      */
-    public static <T> String[] toStringArray(final Collection<T> c)
-    {
+    public static <T> String[] toStringArray(final Collection<T> c) {
         final String[] strings = new String[c.size()];
 
         int i = 0;
@@ -154,16 +149,3 @@ public final class CollectionUtil
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

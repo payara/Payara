@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * Statement.java
@@ -67,7 +68,7 @@ import java.util.ResourceBundle;
  */
 public abstract class Statement extends Object implements Cloneable {
 
-    private static final Integer ONE = new Integer(1);
+    private static final Integer ONE = 1;
 
     protected static final int OP_PREFIX_MASK =     0x001; // 1
 
@@ -93,7 +94,7 @@ public abstract class Statement extends Object implements Cloneable {
 
     protected static final int OP_PCOUNT_MASK = 3 * OP_PARAM_MASK; // 768
 
-    protected StringBuffer statementText;
+    protected StringBuilder statementText;
 
     private String quoteCharStart;
 
@@ -131,7 +132,7 @@ public abstract class Statement extends Object implements Cloneable {
         tableList = new ArrayList();
         this.vendorType = vendorType;
 
-        if (vendorType.getQuoteSpecialOnly() == false) {
+        if (!vendorType.getQuoteSpecialOnly()) {
             // DO NOT SUPPORT QUOTING OTHERWISE
             this.quoteCharStart = vendorType.getQuoteCharStart();
             this.quoteCharEnd = vendorType.getQuoteCharEnd();
@@ -197,7 +198,7 @@ public abstract class Statement extends Object implements Cloneable {
         return vendorType;
     }
 
-    public void appendTableText(StringBuffer text, QueryTable table) {
+    public void appendTableText(StringBuilder text, QueryTable table) {
         appendQuotedText(text, table.getTableDesc().getName());
         text.append(" t"); // NOI18N
         text.append(table.getTableIndex());
@@ -208,7 +209,7 @@ public abstract class Statement extends Object implements Cloneable {
      * @param buffer The given buffer
      * @param text The given text
      */
-    protected void appendQuotedText(StringBuffer buffer, String text) {
+    protected void appendQuotedText(StringBuilder buffer, String text) {
         buffer.append(quoteCharStart);
         buffer.append(text);
         buffer.append(quoteCharEnd);
@@ -241,8 +242,8 @@ public abstract class Statement extends Object implements Cloneable {
      *
      * @return Where clause based on the constraint stack.
      */
-    public StringBuffer processConstraints() {
-        StringBuffer whereText = new StringBuffer();
+    public StringBuilder processConstraints() {
+        StringBuilder whereText = new StringBuilder();
         List stack = constraint.getConstraints();
 
         while (stack.size() > 0) {
@@ -262,7 +263,7 @@ public abstract class Statement extends Object implements Cloneable {
 
     protected void processRootConstraint(ConstraintOperation opNode,
                                          List stack,
-                                         StringBuffer whereText) {
+                                         StringBuilder whereText) {
         int op = opNode.operation;
         int opInfo = operationFormat(op);
 
@@ -299,7 +300,7 @@ public abstract class Statement extends Object implements Cloneable {
      */
     protected String getWhereText(List stack) {
 
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         ConstraintNode node;
 
         if (stack.size() == 0) {
@@ -329,14 +330,14 @@ public abstract class Statement extends Object implements Cloneable {
         return result.toString();
     }
 
-    protected void processConstraintParamIndex(ConstraintParamIndex node, StringBuffer result) {
+    protected void processConstraintParamIndex(ConstraintParamIndex node, StringBuilder result) {
         // DB2 requires cast for parameter markers involved in numeric expressions.
         result.append(vendorType.getParameterMarker(node.getType()));
         Integer index = node.getIndex();
         inputDesc.values.add(new InputParamValue(index, getColumnElementForValueNode(node) ));
     }
 
-    protected void processConstraintValue(ConstraintValue node, StringBuffer result) {
+    protected void processConstraintValue(ConstraintValue node, StringBuilder result) {
         boolean generateValueInSQLStatement = false;
         String strToAppend = "?"; // NOI18N
 
@@ -366,7 +367,7 @@ public abstract class Statement extends Object implements Cloneable {
         return (fieldNode.originalPlan != null) ? fieldNode.originalPlan : getQueryPlan();
     }
 
-    private void processConstraintField(ConstraintField fieldNode, StringBuffer result) {
+    private void processConstraintField(ConstraintField fieldNode, StringBuilder result) {
         LocalFieldDesc desc = null;
 
         QueryPlan thePlan = getOriginalPlan(fieldNode);
@@ -396,7 +397,7 @@ public abstract class Statement extends Object implements Cloneable {
      * @param sb String buffer taking the resulting text.
      */
     protected void generateColumnText(LocalFieldDesc desc, QueryPlan thePlan,
-                                      StringBuffer sb) {
+                                      StringBuilder sb) {
         QueryTable table = null;
         ColumnElement column = null;
         Iterator iter = desc.getColumnElements();
@@ -455,7 +456,7 @@ public abstract class Statement extends Object implements Cloneable {
 
     private void processConstraintOperation(ConstraintOperation opNode,
                                             List stack,
-                                            StringBuffer result) {
+                                            StringBuilder result) {
         int opCode = opNode.operation;
         int format = operationFormat(opCode);
 
@@ -469,7 +470,7 @@ public abstract class Statement extends Object implements Cloneable {
     private void processFunctionOrBinaryOperation(int format,
                                                   int opCode,
                                                   List stack,
-                                                  StringBuffer result) {
+                                                  StringBuilder result) {
 
         if ((format & OP_PREFIX_MASK) > 0) {
             result.append(prefixOperator(opCode));
@@ -507,7 +508,7 @@ public abstract class Statement extends Object implements Cloneable {
     protected void processIrregularOperation(ConstraintOperation opNode,
                                              int opCode,
                                              List stack,
-                                             StringBuffer result) {
+                                             StringBuilder result) {
         switch (opCode) {
             case ActionDesc.OP_NULL:
             case ActionDesc.OP_NOTNULL:
@@ -683,7 +684,7 @@ public abstract class Statement extends Object implements Cloneable {
     }
 
     private void processConcatOperation(int opCode, List stack,
-            StringBuffer result) {
+                                        StringBuilder result) {
 
         if (stack.size() < 2) {
             throw new JDOFatalInternalException(I18NHelper.getMessage(messages,
@@ -711,7 +712,7 @@ public abstract class Statement extends Object implements Cloneable {
         }
     }
 
-    private void processMaybeNullOperation(List stack, StringBuffer result) {
+    private void processMaybeNullOperation(List stack, StringBuilder result) {
         ConstraintValue valueNode = null;
         ConstraintField fieldNode = null;
 
@@ -788,7 +789,7 @@ public abstract class Statement extends Object implements Cloneable {
         }
     }
 
-    private void processNullOperation(int opCode, List stack, StringBuffer result) {
+    private void processNullOperation(int opCode, List stack, StringBuilder result) {
         String nullComparisionFunctionName =
             vendorType.getNullComparisonFunctionName();
         if( nullComparisionFunctionName.length() != 0) {
@@ -821,12 +822,12 @@ public abstract class Statement extends Object implements Cloneable {
         result.append(str);
     }
 
-    private void processInOperation(int opCode, List stack, StringBuffer result) {
+    private void processInOperation(int opCode, List stack, StringBuilder result) {
         //We are trying to construct a where clause like following in the quotes here
         // where "(t0.field1, t0.field2, t0.field3,...) in
         //        ( select t1.fld1, t1.fld2, t2.fld3,...where ....)"
 
-        StringBuffer c = new StringBuffer();
+        StringBuilder c = new StringBuilder();
 
         if (stack.size() < 2) {
             throw new JDOFatalInternalException(I18NHelper.getMessage(messages,
@@ -932,7 +933,7 @@ public abstract class Statement extends Object implements Cloneable {
         //		The operation parameter specifies which operation for which to return
         //		SQL text.  Legal values are defined by the ConstraintOperation class.
         //
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         switch (operation) {
             case ActionDesc.OP_ADD:
@@ -1111,7 +1112,7 @@ public abstract class Statement extends Object implements Cloneable {
         //		The operation parameter specifies which operation for which to return
         //		SQL text.  Legal values are defined by the ConstraintOperation class.
         //
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         switch (operation) {
             case ActionDesc.OP_RTRIM:
@@ -1142,7 +1143,7 @@ public abstract class Statement extends Object implements Cloneable {
         //      The operation parameter specifies which operation for which to return
         //      SQL text.  Legal values are defined by the ConstraintOperation class.
         //
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         switch (operation) {
             case ActionDesc.OP_ABS:
@@ -1271,7 +1272,7 @@ public abstract class Statement extends Object implements Cloneable {
      * string.
      */
     static protected String formatSqlText(String sqlText, Object[] input) {
-        StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
 
         str.append(I18NHelper.getMessage(messages,
                 "sqlstore.sql.generator.statement.sqlStatement") );   //NOI18N

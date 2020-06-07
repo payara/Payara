@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,15 +43,17 @@ package fish.payara.enterprise.server.logging;
 import com.sun.enterprise.server.logging.LogRotationTimerTask;
 import java.util.Timer;
 
+import java.util.concurrent.ScheduledFuture;
+
 /**
  *
  * @author Susan Rai
  */
 public class PayaraNotificationLogRotationTimer {
 
-    private Timer rotationTimer;
-
     private LogRotationTimerTask rotationTimerTask;
+    private ScheduledFuture<?> logRotationFuture;
+    private Timer rotationTimer;
 
     private static PayaraNotificationLogRotationTimer instance = new PayaraNotificationLogRotationTimer();
 
@@ -65,8 +67,7 @@ public class PayaraNotificationLogRotationTimer {
 
     public void startTimer(LogRotationTimerTask timerTask) {
         rotationTimerTask = timerTask;
-        rotationTimer.schedule(rotationTimerTask,
-                timerTask.getRotationTimerValue());
+        rotationTimer.schedule(rotationTimerTask, timerTask.getRotationTimerValue());
     }
 
     public void stopTimer() {
@@ -79,10 +80,9 @@ public class PayaraNotificationLogRotationTimer {
         if (rotationTimerTask != null) {
             rotationTimerTask.cancel();
             rotationTimerTask = new LogRotationTimerTask(
-                    rotationTimerTask.task,
-                    rotationTimerTask.getRotationTimerValueInMinutes());
-            rotationTimer.schedule(rotationTimerTask,
-                    rotationTimerTask.getRotationTimerValue());
+                rotationTimerTask.task,
+                rotationTimerTask.getRotationTimerValueInMinutes());
+            rotationTimer.schedule(rotationTimerTask, rotationTimerTask.getRotationTimerValue());
         }
     }
 
@@ -92,10 +92,9 @@ public class PayaraNotificationLogRotationTimer {
         if (rotationTimerTask != null) {
             rotationTimerTask.cancel();
             rotationTimerTask = new  LogRotationTimerTask(
-                    rotationTimerTask.task,
-                    60 * 24);
-            rotationTimer.schedule(rotationTimerTask,
-                    1000 * 60 * 60 * 24);
+                rotationTimerTask.task,
+                60 * 24);
+            rotationTimer.schedule(rotationTimerTask, 1000 * 60 * 60 * 24);
         }
     }
 }

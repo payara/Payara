@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.classfile;
 
-import java.util.Stack;
 import java.util.Map;
+import java.util.Stack;
 
 //@olsen: subst: Hashtable -> Map, HashMap
 
@@ -51,8 +52,8 @@ import java.util.Map;
  */
 
 public class Descriptor implements VMConstants {
-  /** 
-   * Return the number of words of arguments to the method 
+  /**
+   * Return the number of words of arguments to the method
    * based on the method signature
    */
   public static int countMethodArgWords(String sig) {
@@ -92,7 +93,7 @@ public class Descriptor implements VMConstants {
     return count;
   }
 
-  /** 
+  /**
    * Return the number of words of return value for the method
    * based on the method signature
    */
@@ -142,17 +143,17 @@ public class Descriptor implements VMConstants {
    * element will be first.
    */
   public static String extractReversedArgSig(String methodSig) {
-    StringBuffer buf = new StringBuffer();;
+    StringBuilder buf = new StringBuilder();;
     reverseArgSig(buf, methodSig, 1);
     return buf.toString();
   }
 
   /**
-   * Given a StringBuffer, a method descriptor, and a index to the 
+   * Given a StringBuilder, a method descriptor, and a index to the
    * start of an argument descriptor, append the arguments to the
    * string buffer in reverse order.
    */
-  private static void reverseArgSig(StringBuffer buf, String methodSig, 
+  private static void reverseArgSig(StringBuilder buf, String methodSig,
 				    int idx) {
     char c = methodSig.charAt(idx);
     if (c == ')')
@@ -190,7 +191,7 @@ public class Descriptor implements VMConstants {
       buf.append(methodSig.charAt(startIdx++));
   }
 
-  /** 
+  /**
    * Return the number of words of a field based on its signature.
    */
   //@olsen: added method
@@ -392,7 +393,7 @@ public class Descriptor implements VMConstants {
    */
   public static String remapTypes(String sig, Map classTranslations) {
     /* Defer allocation of the string buffer until it's needed */
-    StringBuffer buf = null;
+    StringBuilder buf = null;
 
     for (int idx = 0; idx < sig.length(); idx++) {
       char c;
@@ -420,7 +421,7 @@ public class Descriptor implements VMConstants {
 	  /* This type needs translation - allocate the string buffer
 	     now if needed and copy in all up to this type name. */
 	  if (buf == null) {
-	    buf = new StringBuffer(sig.length() + 20);
+	    buf = new StringBuilder(sig.length() + 20);
 	    buf.append(sig.substring(0,idx-1));
 	  }
 	  typeName = mapTo;
@@ -528,9 +529,9 @@ public class Descriptor implements VMConstants {
       return sigElement;
 
     /* array types need a little more work */
-    StringBuffer buf = new StringBuffer(sigElement.length() + 2 * arrayDims);
+    StringBuilder buf = new StringBuilder(sigElement.length() + 2 * arrayDims);
     buf.append(sigElement);
-    while (arrayDims-- > 0) 
+    while (arrayDims-- > 0)
         buf.append("[]");//NOI18N
 
     return buf.toString();
@@ -545,7 +546,7 @@ public class Descriptor implements VMConstants {
     if (methodSig.charAt(0) != '(')
         throw new InsnError("Invalid method signature");//NOI18N
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
 
     buf.append('(');
 
@@ -556,7 +557,7 @@ public class Descriptor implements VMConstants {
 	firstArg = false;
       else
           buf.append(", ");//NOI18N
-	
+
       buf.append(userFieldSig(methodSig, idx));
       idx = nextSigElement(methodSig, idx);
     }

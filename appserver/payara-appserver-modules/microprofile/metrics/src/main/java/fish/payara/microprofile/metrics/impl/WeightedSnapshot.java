@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -94,7 +94,7 @@ public class WeightedSnapshot extends Snapshot {
 
         for (int i = 0; i < copy.length; i++) {
             this.values[i] = copy[i].value;
-            this.normWeights[i] = copy[i].weight / sumWeight;
+            this.normWeights[i] = sumWeight == 0d ? 0d : copy[i].weight / sumWeight;
         }
 
         for (int i = 1; i < copy.length; i++) {

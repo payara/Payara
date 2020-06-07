@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,6 @@
  */
 package fish.payara.nucleus.healthcheck.admin.notifier;
 
-import com.google.common.collect.ObjectArrays;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
@@ -123,11 +122,10 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
         ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
         notifierClass = (Class<C>) genericSuperclass.getActualTypeArguments()[0];
 
-        C c = healthCheckServiceConfiguration.getNotifierByType(notifierClass);
-        final C[] config = ObjectArrays.newArray(notifierClass, 1);
+        C notifier = healthCheckServiceConfiguration.getNotifierByType(notifierClass);
 
         try {
-            if (c == null) {
+            if (notifier == null) {
                 ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
                     @Override
                     public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy)
@@ -141,14 +139,13 @@ public abstract class BaseHealthCheckNotifierConfigurer<C extends Notifier> impl
                 }, healthCheckServiceConfiguration);
             }
             else {
-                config[0] = c;
                 ConfigSupport.apply(new SingleConfigCode<C>() {
                     public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
                         applyValues(cProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return cProxy;
                     }
-                }, c);
+                }, notifier);
             }
 
             if (dynamic) {

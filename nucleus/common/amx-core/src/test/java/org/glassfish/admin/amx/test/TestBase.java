@@ -67,9 +67,3 @@ class TestBase extends junit.framework.TestCase {
         checkAssertsOn();
     }
 }
-
-
-
-
-
-

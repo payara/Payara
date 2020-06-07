@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.data;
 
@@ -44,6 +45,7 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import org.jvnet.hk2.annotations.Service;
+
 import javax.inject.Singleton;
 
 import javax.inject.Inject;
@@ -97,5 +99,4 @@ public class ContainerRegistry {
         copy.addAll(containers.values());
         return copy;
     }
-        
 }

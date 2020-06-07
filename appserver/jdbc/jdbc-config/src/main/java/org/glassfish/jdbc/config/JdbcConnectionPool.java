@@ -37,12 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbc.config;
 
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
+
+import java.beans.PropertyVetoException;
+import java.util.List;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
+
+import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.config.PropertiesDesc;
@@ -51,18 +59,15 @@ import org.glassfish.config.support.datatypes.Port;
 import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
 import org.glassfish.jdbc.config.validators.JdbcConnectionPoolConstraint;
 import org.glassfish.jdbc.config.validators.JdbcConnectionPoolConstraints;
-import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 import org.glassfish.resourcebase.resources.ResourceTypeOrder;
-import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Pattern;
-import java.beans.PropertyVetoException;
-import java.util.List;
 
 /**
  * Defines configuration used to create and manage a pool physical database
@@ -71,17 +76,12 @@ import java.util.List;
  * Each named pool definition results in a pool instantiated at server start-up.
  * Pool is populated when accessed for the first time. If two or more
  * jdbc-resource elements point to the same jdbc-connection-pool element,
- * they are using the same pool of connections, at run time.         
+ * they are using the same pool of connections, at run time.
  */
-
-/* @XmlType(name = "", propOrder = {
-    "description",
-    "property"
-}) */
-
 @Configured
 @JdbcConnectionPoolConstraints ({
-    @JdbcConnectionPoolConstraint(value = ConnectionPoolErrorMessages.MAX_STEADY_INVALID),
+    @JdbcConnectionPoolConstraint(value = ConnectionPoolErrorMessages.POOL_SIZE_STEADY),
+    @JdbcConnectionPoolConstraint(value = ConnectionPoolErrorMessages.POOL_SIZE_MAX),
     @JdbcConnectionPoolConstraint(value = ConnectionPoolErrorMessages.STMT_WRAPPING_DISABLED),
     @JdbcConnectionPoolConstraint(value = ConnectionPoolErrorMessages.RES_TYPE_MANDATORY),
     @JdbcConnectionPoolConstraint(value = ConnectionPoolErrorMessages.TABLE_NAME_MANDATORY),
@@ -99,12 +99,12 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     /**
      *
      * Gets the value of the datasourceClassname property.
-     * 
+     *
      * Name of the vendor supplied JDBC datasource resource manager.
      * An XA or global transactions capable datasource class will implement
      * javax.sql.XADatasource interface. Non XA or Local transactions only
      * datasources will implement javax.sql.Datasource interface.
-     * 
+     *
      @return possible object is
      *         {@link String }
      */
@@ -122,10 +122,10 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     /**
      *
      * Gets the value of the driverClassname property.
-     * 
+     *
      * Name of the vendor supplied JDBC driver resource manager.
      * Get classnames that implement java.sql.Driver.
-     * 
+     *
      @return possible object is
      *         {@link String }
      */
@@ -150,7 +150,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * or more of these interfaces. An error is produced when this attribute has
      * a legal value and the indicated interface is not implemented by the
      * datasource class. This attribute has no default value.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -170,13 +170,11 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * Gets the value of the steadyPoolSize property.
      *
      * Minimum and initial number of connections maintained in the pool
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
     @Attribute (defaultValue="8")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getSteadyPoolSize();
 
     /**
@@ -190,14 +188,12 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     /**
      * Gets the value of the maxPoolSize property.
      *
-     * Maximum number of conections that can be created
-     * 
+     * Maximum number of connections that can be created
+     *
      * @return possible object is
      *         {@link String }
      */
     @Attribute (defaultValue="32")
-    @Min(value=1)
-    @Max(value=Integer.MAX_VALUE)
     String getMaxPoolSize();
 
     /**
@@ -218,8 +214,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="60000")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getMaxWaitTimeInMillis();
 
     /**
@@ -237,13 +231,11 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * expires. Connections that have idled for longer than the timeout are
      * candidates for removal. When the pool size reaches steady-pool-size,
      * the connection removal stops.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
     @Attribute (defaultValue="2")
-    @Min(value=1)
-    @Max(value=Integer.MAX_VALUE)
     String getPoolResizeQuantity();
 
     /**
@@ -260,7 +252,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * maximum time in seconds, that a connection can remain idle in the pool.
      * After this time, the pool implementation can close this connection.
      * Note that this does not control connection timeouts enforced at the
-     * database server side. Adminsitrators are advised to keep this timeout
+     * database server side. Administrators are advised to keep this timeout
      * shorter than the database server side timeout (if such timeouts are
      * configured on the specific vendor's database), to prevent accumulation of
      * unusable connection in Application Server.
@@ -269,8 +261,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="300")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getIdleTimeoutInSeconds();
 
     /**
@@ -293,12 +283,12 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * Applications that change the Isolation level on a pooled connection
      * programmatically, risk polluting the pool and this could lead to program
      * errors. Also see: is-isolation-level-guaranteed
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
     @Attribute
-    @Pattern(regexp="(read-uncommitted||read-committed|repeatable-read|serializable)")
+    @Pattern(regexp="(read-uncommitted||read-committed|repeatable-read|serializable|snapshot)")
     String getTransactionIsolationLevel();
 
     /**
@@ -360,7 +350,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * specifies the type of validation to be performed when
      * is-connection-validation-required is true. The following types of
      * validation are supported:
-     * 
+     *
      * auto-commit
      *   using connection.autoCommit()
      * meta-data
@@ -389,9 +379,9 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * Specifies the table name to be used to perform a query to validate a
      * connection. This parameter is mandatory, if connection-validation-type is
      * set to table. Verification by accessing a user specified table may become
-     * necessary for connection validation, particularly if database driver 
+     * necessary for connection validation, particularly if database driver
      * caches calls to setAutoCommit() and getMetaData().
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -409,10 +399,10 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     /**
      * Gets the value of the validationClassName property.
      *
-     * Specifies the custom validation class name to be used to perform 
+     * Specifies the custom validation class name to be used to perform
      * connection validation. This parameter is mandatory, if connection-validation-type is
-     * set to custom-validation. 
-     * 
+     * set to custom-validation.
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -454,7 +444,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * A pool with this property set to true returns non-transactional
      * connections. This connection does not get automatically enlisted
      * with the transaction manager.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -502,13 +492,11 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * Used to set the time-interval within which a connection is validated
      * atmost once. Default is 0 which implies that it is  not enabled.
      * TBD: Documentation is to be corrected.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getValidateAtmostOncePeriodInSeconds();
 
     /**
@@ -535,8 +523,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getConnectionLeakTimeoutInSeconds();
 
     /**
@@ -577,8 +563,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getConnectionCreationRetryAttempts();
 
     /**
@@ -595,13 +579,11 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * The time interval between retries while attempting to create a connection
      * Default is 10 seconds. Effective when connection-creation-retry-attempts
      * is greater than 0.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
     @Attribute (defaultValue="10")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getConnectionCreationRetryIntervalInSeconds();
 
     /**
@@ -611,14 +593,14 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setConnectionCreationRetryIntervalInSeconds(String value) throws PropertyVetoException;
-    
+
     /**
      * Gets the value of the statementTimeoutInSeconds property.
      *
      * Sets the timeout property of a connection to enable termination of
      * abnormally long running queries. Default value of -1 implies that it is
      * not enabled.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -633,13 +615,13 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setStatementTimeoutInSeconds(String value) throws PropertyVetoException;
-   
+
     /**
      * Gets the value of the sloqSQLLogThreshold property.
      *
      * gets the SLow SQL Log Threshold property if a query exceeds this time in seconds
      * it will be logged as a WARNING
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -654,7 +636,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setSlowQueryThresholdInSeconds(String value) throws PropertyVetoException;
-    
+
     /**
      * Gets the value of the lazyConnectionEnlistment property.
      *
@@ -662,7 +644,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * method, which avoids enlistment of connections that are not used in a
      * transaction. This also prevents unnecessary enlistment of connections
      * cached in the calling components. Default value is false
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -684,7 +666,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * Also, they are disassociated when the transaction is completed and a
      * component method ends, which helps reuse of the physical connections.
      * Default value is false.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -706,7 +688,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * in need of a connection, it can reuse the connection already associated
      * with that thread, thereby not incurring the overhead of getting a
      * connection from the pool. Default value is false
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -725,7 +707,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * Gets the value of the pooling property.
      *
      * Property to disable pooling for the pool.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -744,17 +726,15 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     /**
      * Gets the value of the statementCacheSize property.
      *
-     * When specified, statement caching is turned on to cache statements, 
-     * prepared statements, callable statements that are repeatedly executed by 
+     * When specified, statement caching is turned on to cache statements,
+     * prepared statements, callable statements that are repeatedly executed by
      * applications. Default value is 0, which implies the
      * feature is not enabled.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getStatementCacheSize();
 
     /**
@@ -768,10 +748,10 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     /**
      * Gets the value of the statementCacheType property.
      *
-     * When specified, statement caching type is set to cache statements, 
-     * prepared statements, callable statements that are repeatedly executed by 
-     * applications. 
-     *  
+     * When specified, statement caching type is set to cache statements,
+     * prepared statements, callable statements that are repeatedly executed by
+     * applications.
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -792,8 +772,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getStatementLeakTimeoutInSeconds();
 
     /**
@@ -819,10 +797,10 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     /**
      * Gets the value of the initSql property.
      *
-     * Init sql is executed whenever a connection created from the pool. 
+     * Init sql is executed whenever a connection created from the pool.
      * This is mostly useful when the state of a
-     * connection is to be initialized
-     * 
+     * connection is to be initialised
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -844,7 +822,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * if the administrator knows that the connections in the pool will always
      * be homogeneous and hence a connection picked from the pool need not be
      * matched by the resource adapter. Default value is false.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -866,13 +844,11 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * number of times after which it will be closed. This is useful for
      * instance, to avoid statement-leaks. Default value is 0, which implies the
      * feature is not enabled.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
     @Attribute (defaultValue="0")
-    @Min(value=0)
-    @Max(value=Integer.MAX_VALUE)
     String getMaxConnectionUsageCount();
 
     /**
@@ -882,14 +858,14 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setMaxConnectionUsageCount(String value) throws PropertyVetoException;
-    
+
         /**
      * Gets the value of the wrapJdbcObjects property.
      *
      * When set to true, application will get wrapped jdbc objects for
      * Statement, PreparedStatement, CallableStatement, ResultSet,
      * DatabaseMetaData. Defaults to false.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -908,7 +884,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * Gets the value of the logJDBCCalls property.
      *
      * When set to true, application log all JDBC method calls. Defaults to false.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -922,15 +898,15 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setLogJdbcCalls(String value) throws PropertyVetoException;
-    
+
     /**
      * Gets the value of the SqlTraceListeners property.
      *
-     * Comma separated list of SQL trace listener implementations to be used to 
-     * trace the SQL statements executed by the applications. The default 
-     * logger used by the system logs the SQL statements based on a set of 
+     * Comma separated list of SQL trace listener implementations to be used to
+     * trace the SQL statements executed by the applications. The default
+     * logger used by the system logs the SQL statements based on a set of
      * values stored in SQLTraceRecord object.
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -971,7 +947,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * properties, according to the specification, several of these properties
      * may be necessary for most databases. See Section 5.3 of JDBC 2.0 Standard
      * Extension API.
-     * 
+     *
      * The following are the names and corresponding values for these properties
      * databaseName
      *      Name of the Database
@@ -994,7 +970,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *      The initial SQL role name.
      * datasourceName
      *      used to name an underlying XADataSource, or ConnectionPoolDataSource
-     *      when pooling of connections is done 
+     *      when pooling of connections is done
      * description
      *      Textual Description
      *
@@ -1006,6 +982,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * deployment descriptors.
      *
      */
+@Override
 @PropertiesDesc(
     props={
         @PropertyDesc(name="PortNumber", defaultValue="1527", dataType=Port.class,
@@ -1030,6 +1007,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
     @Element
     List<Property> getProperty();
 
+    @Override
     @DuckTyped
     String getIdentity();
 

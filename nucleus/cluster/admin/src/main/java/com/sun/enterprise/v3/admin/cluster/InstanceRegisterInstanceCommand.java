@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -85,7 +86,7 @@ import org.glassfish.api.admin.*;
 })
 public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCommandParameters implements AdminCommand {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceRegisterInstanceCommand.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceRegisterInstanceCommand.class);
 
     @Inject
     Domain domain;
@@ -118,38 +119,6 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
                         if (nodehost != null && !"".equals(nodehost))
                             newNode.setNodeHost(nodehost);
                         newNode.setType(type);
-                        //comment out - not needed
-                        /*if (type.equals("SSH")) {
-                            SshConnector sshC = param.createChild(SshConnector.class);
-                            if (sshHost != null && sshHost != "") {
-                                sshC.setSshHost(sshHost);
-
-                            }
-                            if (sshPort != "-1" && sshPort != "") {
-                                sshC.setSshPort(sshPort);
-
-                            }
-                            if (sshuser != null || sshkeyfile != null || sshpassword != null
-                                    || sshkeypassphrase != null) {
-                                SshAuth sshA = sshC.createChild(SshAuth.class);
-                                if (sshuser != null && sshuser != "") {
-                                    sshA.setUserName(sshuser);
-                                }
-                                if (sshkeyfile != null && sshkeyfile != "") {
-                                    sshA.setKeyfile(sshkeyfile);
-                                }
-                                if (sshpassword != null && sshpassword != "") {
-                                    sshA.setPassword(sshpassword);
-                                }
-                                if (sshkeypassphrase != null && sshkeypassphrase != "") {
-                                    sshA.setKeyPassphrase(sshkeypassphrase);
-                                }
-                                sshC.setSshAuth(sshA);
-                            }
-                            if (sshC != null) {
-                                newNode.setSshConnector(sshC);
-                            }
-                        }*/
 
                         param.getNode().add(newNode);
                         return newNode;
@@ -167,33 +136,14 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
                         Server newServer = param.createChild(Server.class);
 
                         newServer.setConfigRef(config);
-                        //newServer.setLbWeight(lbWeight);
                         newServer.setName(instanceName);
                         newServer.setNodeRef(node);
-
-                        // comment out - not needed
-                        /*if (resourceRefs != null && !resourceRefs.isEmpty()) {
-                            for (String ref: resourceRefs) {
-                                ResourceRef newRR = newServer.createChild(ResourceRef.class);
-                                newRR.setRef(ref);
-                                newServer.getResourceRef().add(newRR);
-                            }
-                        }
-
-                        if (appRefs != null && !appRefs.isEmpty()) {
-                            for (String ar : appRefs) {
-                                ApplicationRef newAR = newServer.createChild(ApplicationRef.class);
-                                newAR.setRef(ar);
-                                newServer.getApplicationRef().add(newAR);
-                            }
-                        }*/
 
                         if (systemProperties != null) {
                             for (final Map.Entry<Object, Object> entry : systemProperties.entrySet()) {
                                 final String propName = (String) entry.getKey();
                                 final String propValue = (String) entry.getValue();
                                 SystemProperty newSP = newServer.createChild(SystemProperty.class);
-                                //newSP.setDescription(sp.getDescription());
                                 newSP.setName(propName);
                                 newSP.setValue(propValue);
                                 newServer.getSystemProperty().add(newSP);
@@ -210,6 +160,7 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
                 if (thisCluster != null) {
                     ConfigSupport.apply(new SingleConfigCode<Cluster>() {
 
+                        @Override
                         public Object run(Cluster param) throws PropertyVetoException, TransactionFailure {
 
                             ServerRef newServerRef = param.createChild(ServerRef.class);
@@ -229,16 +180,12 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
                     "Instance {0} registration failed on {1}", instanceName, server.getName()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
-            return;
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("register.instance.failed",
                     "Instance {0} registration failed on {1}", instanceName, server.getName()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
-            return;
         }
-
-
 
     }
 

@@ -151,7 +151,7 @@ public final class SavedRequest {
      * The set of request parameters associated with this Request. Each entry is keyed by the parameter name, pointing at a
      * String array of the corresponding values.
      */
-    private HashMap<String, String[]> parameters = new HashMap<String, String[]>();
+    private final HashMap<String, String[]> parameters = new HashMap<String, String[]>();
 
     public void addParameter(String name, String values[]) {
         parameters.put(name, values);

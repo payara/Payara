@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,7 @@ package fish.payara.micro.cmd.options;
 public enum RUNTIME_OPTION {
     nocluster(false),
     deploydir(true, new DirectoryValidator(true, true, false)),
-    deploy(true, new FileSystemItemValidator(true, true, false, true, true)),
+    deploy(true, new DeploymentFileValidator(true, true, false, true, true)),
     port(true, new PortValidator()),
     sslport(true, new PortValidator()),
     name(true),
@@ -78,6 +78,7 @@ public enum RUNTIME_OPTION {
     deployfromgav(true),
     additionalrepository(true),
     outputuberjar(true, new FileValidator(false, false, false)),
+    outputlauncher(false),
     copytouberjar(true, new DirectoryValidator(true,true, false)),
     systemproperties(true, new FileValidator(true, true, false)),
     disablephonehome(false),
@@ -86,6 +87,9 @@ public enum RUNTIME_OPTION {
     logproperties(true, new FileValidator(true, true, false)),
     accesslog(true, new DirectoryValidator(true, true, true)),
     accesslogformat(true),
+    accessloginterval(true),
+    accesslogsuffix(true),
+    accesslogprefix(true),
     enablerequesttracing(false),
     requesttracingthresholdunit(true),
     requesttracingthresholdvalue(true),
@@ -98,12 +102,16 @@ public enum RUNTIME_OPTION {
     postdeploycommandfile(true, new FileValidator(true,true,false)),
     nested(false),
     unpackdir(true, new DirectoryValidator(true, true, true)),
-    clustermode(true,new PrefixStringListValidator("tcpip","domain","multicast")),
+    clustermode(true, new PrefixStringListValidator("tcpip","domain","multicast","dns")),
     interfaces(true),
     sslcert(true),
     help(false),
     enablesni(false),
-    hzpublicaddress(true);
+    hzpublicaddress(true),
+    shutdowngrace(true, new IntegerValidator(1, Integer.MAX_VALUE)),
+    hzinitialjoinwait(true, new IntegerValidator(0,100000)),
+    contextroot(true),
+    warmup(false);
 
     private RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());

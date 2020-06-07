@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import static com.sun.enterprise.security.webservices.PipeConstants.SECURITY_PIPE;
@@ -56,9 +56,9 @@ import javax.security.auth.message.config.ClientAuthContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.ws.WebServiceException;
 
-import com.sun.enterprise.security.jmac.provider.PacketMapMessageInfo;
-import com.sun.enterprise.security.jmac.provider.PacketMessageInfo;
-import com.sun.enterprise.security.jmac.provider.config.PipeHelper;
+import com.sun.enterprise.security.jauth.jaspic.provider.PacketMapMessageInfo;
+import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
+import com.sun.enterprise.security.jauth.jaspic.provider.config.PipeHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Packet;

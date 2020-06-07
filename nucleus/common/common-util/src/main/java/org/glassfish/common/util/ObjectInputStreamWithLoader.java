@@ -60,9 +60,7 @@ public class ObjectInputStreamWithLoader extends ObjectInputStream {
      * @throws IOException              on io error
      * @throws StreamCorruptedException on a corrupted stream
      */
-
-    public ObjectInputStreamWithLoader(InputStream in, ClassLoader loader)
-            throws IOException, StreamCorruptedException {
+    public ObjectInputStreamWithLoader(InputStream in, ClassLoader loader) throws IOException {
 
         super(in);
         if (loader == null) {
@@ -103,6 +101,7 @@ public class ObjectInputStreamWithLoader extends ObjectInputStream {
      *
      * @throws ClassNotFoundException if class can not be loaded
      */
+    @Override
     protected Class resolveClass(ObjectStreamClass classDesc)
             throws IOException, ClassNotFoundException {
 
@@ -122,7 +121,7 @@ public class ObjectInputStreamWithLoader extends ObjectInputStream {
                     }
                     component = primitiveType(cname.charAt(dcount));
                 }
-                int dim[] = new int[dcount];
+                int[] dim = new int[dcount];
                 for (int i = 0; i < dcount; i++) {
                     dim[i] = 0;
                 }

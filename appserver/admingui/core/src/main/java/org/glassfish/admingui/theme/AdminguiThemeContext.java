@@ -36,7 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.theme;
 
@@ -44,12 +46,10 @@ import com.sun.webui.jsf.theme.JSFThemeContext;
 import com.sun.webui.theme.ServletThemeContext;
 import com.sun.webui.theme.ThemeContext;
 
-import org.glassfish.admingui.common.util.GuiUtil;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Enumeration;
+import java.util.logging.Logger;
 
 import javax.faces.context.FacesContext;
 
@@ -66,120 +66,131 @@ import javax.faces.context.FacesContext;
  */
 public class AdminguiThemeContext extends ServletThemeContext {
 
-    /**
-     *	<p> This constructor takes in the theme name and version to use by
-     *	    default.</p>
-     *
-     *	@param	themeName	The theme name (i.e. suntheme).
-     *	@param	themeVersion	The version number (i.e. 4.2).
-     */
-    protected AdminguiThemeContext(String themeName, String themeVersion) {
-	super(setThemeParams(themeName, themeVersion));
-
-	// The following ThemeContext is created to allow us to delegate our
-	// logic to it.
-	jsfThemeCtx = JSFThemeContext.getInstance(FacesContext.getCurrentInstance());
-        jsfThemeCtx.setThemeServletContext("/theme");
-    }
-
-    
-    /**
-     *	<p> Return an instance of <code>ThemeContext</code> creating one
-     *	    if necessary and persisting it in the <code>ApplicationMap</code>.
-     */
-    public synchronized static ThemeContext getInstance(FacesContext context, String themeName, String themeVersion) {
-	Map map = context.getExternalContext().getApplicationMap();
-	String themeKey = THEME_CONTEXT + themeName + themeVersion;
-	ThemeContext themeContext = (ThemeContext) map.get(themeKey);
-	if (themeContext == null) {
-	    themeContext = new AdminguiThemeContext(themeName, themeVersion);
-	    map.put(themeKey, themeContext);
-	}
-	return themeContext;
-    }
-    
-/**
-     *	<p> Return an instance of <code>ThemeContext</code> 
-     *	    using properties provided via <code>Integration point</code>.
-     */
-    public synchronized static ThemeContext getInstance(FacesContext context,  Properties propMap) {
-	Map map = context.getExternalContext().getApplicationMap();        
-        String themeName = (String)propMap.get(THEME_NAME_KEY);
-        String themeVersion = (String)propMap.get(THEME_VERSION_KEY);
-	String themeKey = THEME_CONTEXT + themeName + themeVersion;
-	ThemeContext themeContext = (ThemeContext) map.get(themeKey);
-	if (themeContext == null) {
-	    themeContext = new AdminguiThemeContext(themeName, themeVersion);
-	    map.put(themeKey, themeContext);
-	}
-	return themeContext;
-    }    
-
-    
-    /**
-     *	<p> Creates a <code>Map</code> object with the theme name and
-     *	    version.</p>
-     */
-    public static Map setThemeParams(String theme, String version) {
-	Map map = new HashMap();
-	if (theme == null) {
-	    theme = "suntheme";
-	}
-	map.put(ThemeContext.DEFAULT_THEME, theme);
-	if (version == null) {
-	    version = "4.2";
-	}
-	map.put(ThemeContext.DEFAULT_THEME_VERSION, version);
-	return map;
-    }
-    
-    
-    /**
-     *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
-     */
-    public ClassLoader getDefaultClassLoader() {
-	return jsfThemeCtx.getDefaultClassLoader();
-    }
+    private static final Logger LOG = Logger.getLogger(AdminguiThemeContext.class.getName());
 
     /**
-     *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
-     */
-    public void setDefaultClassLoader(ClassLoader classLoader) {
-	jsfThemeCtx.setDefaultClassLoader(classLoader);
-    }
-
-    /**
-     *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
-     */
-    public String getRequestContextPath() {
-	return jsfThemeCtx.getRequestContextPath();
-    }
-
-    /**
-     *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
-     */
-    public void setRequestContextPath(String path) {
-	jsfThemeCtx.setRequestContextPath(path);
-    }
-
-    /**
-     *	<p> This method delegates to <code>JSFThemeContext</code>.</p>
-     */
-    public String getResourcePath(String path) {
-	return jsfThemeCtx.getResourcePath(path);
-    }
-
-
-    /**
-     *	<p> This hold a reference to an instance of JSFThemeContext which
-     *	    will help us implement the functionality of this class.</p>
-     */
-    private ThemeContext jsfThemeCtx = null;
-    
-    /**
-     *	<p> These keys are used when getting the property values
-     *	    provided in the custom theme plugin properties file.</p>
+     * These keys are used when getting the property values
+     * provided in the custom theme plugin properties file.
      */
     public static final String THEME_NAME_KEY = "com.sun.webui.theme.DEFAULT_THEME";
     public static final String THEME_VERSION_KEY = "com.sun.webui.theme.DEFAULT_THEME_VERSION";
+
+    /**
+     * This hold a reference to an instance of JSFThemeContext which
+     * will help us implement the functionality of this class.
+     */
+    private ThemeContext jsfThemeCtx = null;
+
+
+    /**
+     * This constructor takes in the theme name and version to use by default.
+     *
+     * @param themeName The theme name (i.e. suntheme).
+     * @param themeVersion The version number (i.e. 4.2).
+     */
+    protected AdminguiThemeContext(String themeName, String themeVersion) {
+        super(setThemeParams(themeName, themeVersion));
+
+        // The following ThemeContext is created to allow us to delegate our
+        // logic to it.
+        jsfThemeCtx = JSFThemeContext.getInstance(FacesContext.getCurrentInstance());
+        jsfThemeCtx.setThemeServletContext("/theme");
+    }
+
+
+    /**
+     * @return an instance of <code>ThemeContext</code> creating one
+     * if necessary and persisting it in the <code>ApplicationMap</code>.
+     */
+    public synchronized static ThemeContext getInstance(FacesContext context, String themeName, String themeVersion) {
+        LOG.finest(() -> String.format("getInstance(context=%s, themeName=%s, themeVersion=%s)", context, themeName,
+            themeVersion));
+        Map map = context.getExternalContext().getApplicationMap();
+        String themeKey = THEME_CONTEXT + themeName + themeVersion;
+        ThemeContext themeContext = (ThemeContext) map.get(themeKey);
+        if (themeContext == null) {
+            themeContext = new AdminguiThemeContext(themeName, themeVersion);
+            map.put(themeKey, themeContext);
+        }
+        return themeContext;
+    }
+
+
+    /**
+     * @return an instance of <code>ThemeContext</code>
+     * using properties provided via <code>Integration point</code>.
+     */
+    public synchronized static ThemeContext getInstance(FacesContext context, Properties propMap) {
+        Map<String, Object> map = context.getExternalContext().getApplicationMap();
+        String themeName = (String) propMap.get(THEME_NAME_KEY);
+        String themeVersion = (String) propMap.get(THEME_VERSION_KEY);
+        String themeKey = THEME_CONTEXT + themeName + themeVersion;
+        LOG.finest(() -> "theme context key: " + themeKey);
+        ThemeContext themeContext = (ThemeContext) map.get(themeKey);
+        if (themeContext == null) {
+            themeContext = new AdminguiThemeContext(themeName, themeVersion);
+            map.put(themeKey, themeContext);
+        }
+        return themeContext;
+    }
+
+
+    /**
+     * Creates a <code>Map</code> object with the theme name and
+     * version.
+     */
+    private static Map<String, String> setThemeParams(final String theme, final String version) {
+        LOG.finest(() -> String.format("setThemeParams(theme=%s, version=%s)", theme, version));
+        final Map<String, String> map = new HashMap<>();
+        final String themeForMap = theme == null ? "suntheme" : theme;
+        map.put(ThemeContext.DEFAULT_THEME, themeForMap);
+        final String versionForMap = version == null ? "4.2" : version;
+        map.put(ThemeContext.DEFAULT_THEME_VERSION, versionForMap);
+        return map;
+    }
+
+
+    /**
+     * This method delegates to <code>JSFThemeContext</code>.
+     */
+    @Override
+    public ClassLoader getDefaultClassLoader() {
+        return jsfThemeCtx.getDefaultClassLoader();
+    }
+
+
+    /**
+     * This method delegates to <code>JSFThemeContext</code>.
+     */
+    @Override
+    public void setDefaultClassLoader(ClassLoader classLoader) {
+        jsfThemeCtx.setDefaultClassLoader(classLoader);
+    }
+
+
+    /**
+     * This method delegates to <code>JSFThemeContext</code>.
+     */
+    @Override
+    public String getRequestContextPath() {
+        return jsfThemeCtx.getRequestContextPath();
+    }
+
+
+    /**
+     * This method delegates to <code>JSFThemeContext</code>.
+     */
+    @Override
+    public void setRequestContextPath(String path) {
+        jsfThemeCtx.setRequestContextPath(path);
+    }
+
+
+    /**
+     * This method delegates to <code>JSFThemeContext</code>.
+     */
+    @Override
+    public String getResourcePath(String path) {
+        return jsfThemeCtx.getResourcePath(path);
+    }
 }

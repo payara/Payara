@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,12 +38,12 @@
  */
 package fish.payara.nucleus.notification.service;
 
-import com.google.common.collect.EvictingQueue;
 import fish.payara.nucleus.notification.NotificationService;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.inject.Inject;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author mertcaliskan
@@ -53,10 +53,15 @@ public abstract class MessageQueue<M extends Message> {
 
     @Inject
     private NotificationService notificationService;
-
-    private Queue<M> messageQueue = EvictingQueue.create(200);
+    
+    
+    private static final int QUEUE_SIZE = 200;
+    private final Queue<M> messageQueue = new LinkedBlockingQueue(QUEUE_SIZE);
 
     public synchronized void addMessage(M message) {
+        if (messageQueue.size() == QUEUE_SIZE) {
+            messageQueue.poll();
+        }
         messageQueue.add(message);
     }
 

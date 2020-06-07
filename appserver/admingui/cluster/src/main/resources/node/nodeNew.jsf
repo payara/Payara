@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
 <!initPage
@@ -45,7 +46,7 @@
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.node.NewPageTitle}" 
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.node.NewPageTitle}"
         guiOnLoad="showSshPswdSection('#{pageSession.psSelected}', '#{pageSession.ps1PropId}',  '#{pageSession.pswdAliasPropId}');
                    showPswdSection('#{pageSession.winPsSelected}', '#{pageSession.winPs1PropId}',  '#{pageSession.winPswdAliasPropId}'); " >
 <!define name="content">
@@ -65,6 +66,8 @@
         mapPut(map="#{pageSession.valueMap}", key="validateDcom" value="true");
         mapPut(map="#{pageSession.valueMap}", key="type" value="SSH");
         mapPut(map="#{pageSession.valueMap}", key="installdirConfig" value="");
+        mapPut(map="#{pageSession.valueMap}", key="installdirDocker" value="/opt/payara/payara5");
+        mapPut(map="#{pageSession.valueMap}", key="dockerimage" value="payara/server-node");
         mapPut(map="#{pageSession.valueMap}", key="setupSsh" value="false");
 
         setPageSessionAttribute(key="showInstalldirSSH" value="#{true}");
@@ -84,9 +87,13 @@
         setPageSessionAttribute(key="psSelected" value="1");
         setPageSessionAttribute(key="winPsSelected" value="2");
 
+        setPageSessionAttribute(key="convertToFalseList" value={"usetls"});
+        setPageSessionAttribute(key="usetlsSelected", value="false");
+
     />
     </event>
-<sun:form id="propertyForm" autoComplete="off">
+
+<sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
 #include "/cluster/node/nodeAttr.inc"
 

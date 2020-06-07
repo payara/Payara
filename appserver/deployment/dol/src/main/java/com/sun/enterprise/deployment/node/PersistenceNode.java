@@ -37,23 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node;
 
-import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
-import com.sun.enterprise.deployment.PersistenceUnitsDescriptor;
-import com.sun.enterprise.deployment.xml.PersistenceTagNames;
+import static java.util.Collections.emptyMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
+import com.sun.enterprise.deployment.PersistenceUnitsDescriptor;
+import com.sun.enterprise.deployment.xml.PersistenceTagNames;
+
 /**
- * Represents the top level node, i.e. persistence node in persistence.xsd.
- * Since this is a top level node, it extends {@link AbstractBundleNode}. This class
- * registers a handler {@link PersistenceNode} which is responsible for reading
+ * Represents the top level node, i.e. persistence node in persistence.xsd. Since this is a top level node, it extends
+ * {@link AbstractBundleNode}. This class registers a handler {@link PersistenceNode} which is responsible for reading
  * the persistence-unit elements.
  *
  * @author Sanjeeb.Sahoo@Sun.COM
@@ -61,8 +63,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 public class PersistenceNode extends AbstractBundleNode {
 
-    public final static String SCHEMA_NS =
-            "http://java.sun.com/xml/ns/persistence"; // NOI18N
+    public final static String SCHEMA_NS = "http://java.sun.com/xml/ns/persistence"; // NOI18N
 
     public final static String SCHEMA_ID_1_0 = "persistence_1_0.xsd"; // NOI18N
 
@@ -71,8 +72,7 @@ public class PersistenceNode extends AbstractBundleNode {
     private final static List<String> systemIDs = initSystemIDs();
 
     // The XML tag associated with this Node
-    public final static XMLElement ROOT_ELEMENT = new XMLElement(
-            PersistenceTagNames.PERSISTENCE);
+    public final static XMLElement ROOT_ELEMENT = new XMLElement(PersistenceTagNames.PERSISTENCE);
 
     private PersistenceUnitsDescriptor persistenceUnitsDescriptor;
 
@@ -84,21 +84,18 @@ public class PersistenceNode extends AbstractBundleNode {
         systemIDs.add(SCHEMA_ID_1_0);
         return Collections.unmodifiableList(systemIDs);
     }
-    
+
     /**
-     * This is the default constructor which is also called from other
-     * constructors of this class. Inside this constructor, we clear the
-     * handlers set up by super classes' constructors because they are
-     * not applicable in the context of PersistenceNode because
-     * unlike standard Java EE schemas, persistence.xsd does not include
-     * javaee_5.xsd for things like description, version etc.
+     * This is the default constructor which is also called from other constructors of this class. Inside this constructor,
+     * we clear the handlers set up by super classes' constructors because they are not applicable in the context of
+     * PersistenceNode because unlike standard Java EE schemas, persistence.xsd does not include javaee_5.xsd for things
+     * like description, version etc.
      */
     public PersistenceNode() {
         // clear all the handlers set up by super classes.
-        if (handlers != null) handlers.clear();
-        registerElementHandler(
-                new XMLElement(PersistenceTagNames.PERSISTENCE_UNIT),
-                PersistenceUnitNode.class);
+        if (handlers != null)
+            handlers.clear();
+        registerElementHandler(new XMLElement(PersistenceTagNames.PERSISTENCE_UNIT), PersistenceUnitNode.class);
         SaxParserHandler.registerBundleNode(this, PersistenceTagNames.PERSISTENCE);
     }
 
@@ -125,10 +122,10 @@ public class PersistenceNode extends AbstractBundleNode {
     }
 
     @Override
-    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping, final Map<String, List<Class>> versionUpgrades) {
-        return Collections.EMPTY_MAP;
+    public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
+        return emptyMap();
     }
-    
+
     public String getDocType() {
         return null;
     }

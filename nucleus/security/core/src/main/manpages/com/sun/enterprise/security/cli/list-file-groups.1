@@ -1,0 +1,66 @@
+list-file-groups(1)       asadmin Utility Subcommands      list-file-groups(1)
+
+NAME
+       list-file-groups - lists file groups
+
+SYNOPSIS
+           list-file-groups [--help] [--name username] [--authrealmname auth_realm_name]
+           [--target target]
+
+DESCRIPTION
+       The list-file-groups subcommand lists the file users and groups
+       supported by the file realm authentication. This subcommand lists
+       available groups in the file user. If the --name option is not
+       specified, all groups are listed.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --name
+           Identifies the name of the file user for whom the groups will be
+           listed.
+
+       --authrealmname
+           The name of the authentication realm for which to list available
+           groups.
+
+       --target
+           This option specifies which configurations you can list. Valid
+           targets are:
+
+           server
+               Lists the file groups in the current server. This is the
+               default value.
+
+           cluster_name
+               Lists the file groups in a cluster.
+
+           instance_name
+               Lists the file groups for a particular instance.
+
+EXAMPLES
+       Example 1, Listing Groups in all File Realms
+           This example list all file realm groups defined for the server.
+
+               asadmin> list-file-groups
+               staff
+               manager
+               Command list-file-groups executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-file-user(1), update-file-user(1), create-file-user(1),
+       list-file-users(1)
+
+       asadmin(1M)
+
+Java EE 8                      01 December 2010            list-file-groups(1)

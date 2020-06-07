@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.utils;
 
 import java.util.ArrayList;
@@ -47,7 +49,7 @@ import java.util.List;
  */
 public class PropertyExceptions extends Exception {
 
-    private List<PropertyException> propertyExceptions = new ArrayList<PropertyException>();
+    private final List<PropertyException> propertyExceptions = new ArrayList<PropertyException>();
 
     public PropertyExceptions() {
         super();

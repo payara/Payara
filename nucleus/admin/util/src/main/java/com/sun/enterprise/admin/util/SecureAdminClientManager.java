@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -46,18 +46,19 @@ import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.util.io.ServerDirs;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -70,7 +71,7 @@ import org.jvnet.hk2.config.DomDocument;
  * <p>
  * A process that needs to send admin messages to another server and might not
  * have a user-provided username and password should inject this class and
- * invoke {@link #initClientAuthentication(char[], boolean) } before it
+ * invoke {@link #initClientAuthentication(char[], boolean, String, String, String, File)} before it
  * sends a message to the admin listener.  The code which actually prepares
  * the message can then retrieve the initialized information from this
  * class in constructing the outbound admin message.
@@ -121,7 +122,8 @@ public class SecureAdminClientManager {
     /**
      * Returns KeyManagers which access the SSL key store for use in
      * performing client cert authentication.  The returned KeyManagers will
-     * most likely be passed to {@link SSLContext.init }.
+     * most likely be passed to {@link SSLContext#init(KeyManager[], TrustManager[], SecureRandom)}.
+     *
      * @return KeyManagers
      */
     public static KeyManager[] getKeyManagers() {
@@ -297,7 +299,7 @@ public class SecureAdminClientManager {
     }
 
     private KeyManager[] prepareKeyManagers(final char[] commandMasterPassword,
-            final boolean isPromptable) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
+            final boolean isPromptable) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
 
         /*
          * The configuration specifies what alias we should use for SSL client
@@ -328,9 +330,9 @@ public class SecureAdminClientManager {
         return ks;
     }
 
-    private Certificate getCertForConfiguredAlias(
-            final char[] commandMasterPassword,
-            final boolean isPromptable) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+
+    private Certificate getCertForConfiguredAlias(final char[] commandMasterPassword, final boolean isPromptable)
+        throws KeyStoreException {
         final KeyStore permanentKS = AsadminSecurityUtil
                 .getInstance(commandMasterPassword, isPromptable)
                 .getAsadminKeystore();

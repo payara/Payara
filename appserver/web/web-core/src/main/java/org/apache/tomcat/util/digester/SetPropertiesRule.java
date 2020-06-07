@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -192,18 +193,16 @@ public class SetPropertiesRule extends Rule {
      *
      * @param attributes The attribute list of this element
      */
+    @Override
     public void begin(Attributes attributes) throws Exception {
         
         // Populate the corresponding properties of the top object
         Object top = digester.peek();
         if (digester.log.isLoggable(Level.FINE)) {
             if (top != null) {
-                digester.log.log(Level.FINE, "[SetPropertiesRule]{" + digester.match +
-                        "} Set " + top.getClass().getName() +
-                        " properties");
+                digester.log.log(Level.FINE, "[SetPropertiesRule]'{'{0}'}' Set {1} properties", new Object[]{digester.match, top.getClass().getName()});
             } else {
-                digester.log.log(Level.FINE, "[SetPropertiesRule]{" + digester.match +
-                        "} Set NULL properties");
+                digester.log.log(Level.FINE, "[SetPropertiesRule]'{'{0}'}' Set NULL properties", digester.match);
             }
         }
         
@@ -241,9 +240,7 @@ public class SetPropertiesRule extends Rule {
             } 
             
             if (digester.log.isLoggable(Level.FINE)) {
-                digester.log.log(Level.FINE, "[SetPropertiesRule]{" + digester.match +
-                        "} Setting property '" + name + "' to '" +
-                        value + "'");
+                digester.log.log(Level.FINE, "[SetPropertiesRule]'{'{0}'}' Setting property ''{1}'' to ''{2}''", new Object[]{digester.match, name, value});
             }
             if (!digester.isFakeAttribute(top, name) 
                     && !IntrospectionUtils.setProperty(top, name, value) 
@@ -275,9 +272,7 @@ public class SetPropertiesRule extends Rule {
         } else {
             int length = attributeNames.length;
             String [] tempAttributes = new String[length + 1];
-            for (int i=0; i<length; i++) {
-                tempAttributes[i] = attributeNames[i];
-            }
+            System.arraycopy(attributeNames, 0, tempAttributes, 0, length);
             tempAttributes[length] = attributeName;
             
             String [] tempProperties = new String[length + 1];
@@ -295,6 +290,7 @@ public class SetPropertiesRule extends Rule {
     /**
      * Render a printable version of this Rule.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("SetPropertiesRule[");

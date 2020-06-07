@@ -1,0 +1,81 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-ejbtimerservice" name="task-ejbtimerservice"></a><a id="GHEJB00005" name="GHEJB00005"></a></p>
+
+<h4><a id="sthref6" name="sthref6"></a><a id="sthref7" name="sthref7"></a><a id="sthref8" name="sthref8"></a>To Configure the EJB Timer Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The timer service is a persistent and transactional notification service that is provided by the enterprise bean container and is used to schedule notifications or events used by enterprise beans. All enterprise beans except stateful session beans can receive notifications from the timer service. Persistent imers set by the service are not destroyed when the server is shut down or restarted.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the EJB Container node.</p>
+<p>The Enterprise Java Beans (EJB) page opens.</p>
+</li>
+<li>
+<p>Click the EJB Timer Service tab.</p>
+<p>The EJB Timer Service page opens.</p>
+</li>
+<li>
+<p>In the Minimum Delivery Interval field, type the minimum number of milliseconds allowed before the next timer expiration for a particular timer can occur.</p>
+<p>Setting this interval too low can cause server overload. The default value is 1000.</p>
+</li>
+<li>
+<p>In the Maximum Redeliveries field, type the maximum number of attempts the timer service makes to deliver a timer expiration due for exception or rollback.</p>
+<p>The default value is 1.</p>
+</li>
+<li>
+<p>In the Redelivery Interval field, type the interval, in milliseconds, between redelivery attempts.</p>
+<p>The default value is 5000.</p>
+</li>
+<li>
+<p>In the Timer Datasource field, type the JNDI name of the JDBC resource that will be used as the timer datasource.</p>
+<p>If specified, this value overrides the default value of <code>jdbc/__TimerPool</code> for the timer service system application.</p>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+<li>
+<p>Restart the GlassFish Server.</p>
+</li>
+</ol>
+<a id="sthref9" name="sthref9"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="../../../ejb-lite/en/help/task-ejbgeneral.html">To Configure EJB Settings</a></p>
+</li>
+<li>
+<p><a href="task-ejbmdbpoolsettings.html">To Configure MDB Pool Settings</a></p>
+</li>
+<li>
+<p><a href="task-ejbcontaineravailability.html">To Configure Availability Settings for the EJB Container</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

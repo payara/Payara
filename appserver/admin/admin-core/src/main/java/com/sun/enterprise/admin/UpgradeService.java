@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin;
 
@@ -51,6 +52,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Module;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Optional;

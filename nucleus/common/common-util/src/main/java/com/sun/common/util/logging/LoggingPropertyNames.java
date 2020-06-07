@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
@@ -82,6 +82,7 @@ public class LoggingPropertyNames {
 
     public static final String alarms = GFFileHandler + "alarms";
 
+    public static final String logStandardStreams = GFFileHandler + "logStandardStreams";
 
     public static final String MAX_QUEUE_SIZE = GFFileHandler + "maxQueueSize";
 

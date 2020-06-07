@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.registry;
 
@@ -70,7 +71,7 @@ public interface MonitoringLevelListener {
 	 * is guaranteed that it will be unchanged by monitoring framework.
 	 */
 	public void changeLevel(MonitoringLevel from, MonitoringLevel to, 
-		org.glassfish.j2ee.statistics.Stats handback);
+		javax.management.j2ee.statistics.Stats handback);
 
 	/**
 	 * Method to convey the change in monitoring level. The configuration

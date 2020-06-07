@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -93,7 +93,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
     protected List<Dom> entity;
     protected Dom parent;
     protected String tagName;
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateListOfResource.class);
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateListOfResource.class);
 
     @GET
     @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -195,7 +195,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
      * allows for remote files to be put in a tmp area and we pass the
      * local location of this file to the corresponding command instead of the content of the file
      * * Yu need to add  enctype="multipart/form-data" in the form
-     * for ex:  <form action="http://localhost:4848/management/domain/applications/application" method="post" enctype="multipart/form-data">
+     * for ex:  &lt;form action="http://localhost:4848/management/domain/applications/application" method="post" enctype="multipart/form-data"&gt;
      * then any param of type="file" will be uploaded, stored locally and the param will use the local location
      * on the server side (ie. just the path)
      */
@@ -334,15 +334,14 @@ public abstract class TemplateListOfResource extends AbstractResource {
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
                     String successMessage = localStrings.getLocalString("rest.resource.create.message",
-                            "\"{0}\" created successfully.", new Object[]{resourceToCreate});
+                            "\"{0}\" created successfully.", resourceToCreate);
                     return Response.ok().entity(ResourceUtil.getActionReportResult(actionReport, successMessage, requestHeaders, uriInfo)).build();
                 }
 
                 String errorMessage = getErrorMessage(data, actionReport);
                 return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, errorMessage, requestHeaders, uriInfo)).build();
             }
-            String message = localStrings.getLocalString("rest.resource.post.forbidden",
-                    "POST on \"{0}\" is forbidden.", new Object[]{resourceToCreate});
+            String message = localStrings.getLocalString("rest.resource.post.forbidden", "POST on \"{0}\" is forbidden.", resourceToCreate);
             return Response.status(403).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, message, requestHeaders, uriInfo)).build();
 
         } catch (Exception e) {

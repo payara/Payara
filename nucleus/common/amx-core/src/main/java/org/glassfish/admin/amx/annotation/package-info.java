@@ -43,6 +43,3 @@ package org.glassfish.admin.amx.annotation;
 
 import org.glassfish.external.arc.Taxonomy;
 import org.glassfish.external.arc.Stability;
-
-
-

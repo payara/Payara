@@ -1,0 +1,57 @@
+list-connector-work-security-maps(1)  asadmin Utility Subcommands  list-connector-work-security-maps(1)
+
+NAME
+       list-connector-work-security-maps - lists the work security maps
+       belonging to the specified resource adapter
+
+SYNOPSIS
+           list-connector-work-security-maps [--help] [--securitymap securitymap]
+           resource_adapter_name
+
+DESCRIPTION
+       The list-connector-work-security-maps subcommand lists the work
+       security maps belonging to the specified resource adapter.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --securitymap
+           Specifies the name of the security map contained within the
+           resource adapter from which the identity and principals should be
+           listed.
+
+OPERANDS
+       resource_adapter_name
+           The name of the resource adapter for which you want to list
+           security maps.
+
+EXAMPLES
+       Example 1, Listing Connector Work Security Maps
+           This example lists the current connector work security maps for the
+           resource adapter named my_resource_adapter.
+
+               asadmin> list-connector-work-security-maps my_resource_adapter
+               workSecurityMap1: EIS principal=eis-principal-2, mapped principal=server-principal-2
+               workSecurityMap1: EIS principal=eis-principal-1, mapped principal=server-principal-1
+               workSecurityMap2: EIS principal=eis-principal-2, mapped principal=server-principal-2
+               workSecurityMap2: EIS principal=eis-principal-1, mapped principal=server-principal-1
+               Command list-connector-work-security-maps executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-work-security-map(1),
+       delete-connector-work-security-map(1),
+       update-connector-work-security-map(1)
+
+       asadmin(1M)
+
+Java EE 8             09 Aug 2017      list-connector-work-security-maps(1)

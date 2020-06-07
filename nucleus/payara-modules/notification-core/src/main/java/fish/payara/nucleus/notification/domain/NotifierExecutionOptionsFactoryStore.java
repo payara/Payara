@@ -47,6 +47,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author mertcaliskan
@@ -56,7 +57,7 @@ import java.util.Map;
 public class NotifierExecutionOptionsFactoryStore {
 
     private Map<NotifierType, NotifierExecutionOptionsFactory> execOptionsFactoryStore =
-            new HashMap<NotifierType, NotifierExecutionOptionsFactory>();
+            new ConcurrentHashMap<NotifierType, NotifierExecutionOptionsFactory>();
 
     public NotifierExecutionOptionsFactory<Notifier> get(NotifierType type) {
         return execOptionsFactoryStore.get(type);

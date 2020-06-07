@@ -40,33 +40,51 @@
 package fish.payara.microprofile.openapi.impl.rest.app.provider.mixin;
 
 import java.util.List;
+import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.Paths;
+import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
+import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 
 public interface ExtensionsMixin {
 
     @JsonProperty("enum")
-    public abstract void getEnumeration();
+    void getEnumeration();
 
     @JsonProperty("default")
-    public abstract void getDefaultValue();
+    void getDefaultValue();
 
     @JsonProperty("$ref")
-    public abstract void getRef();
+    void getRef();
 
     @JsonIgnore
-    public abstract void setAdditionalProperties(Boolean additionalProperties);
+    void setAdditionalProperties(Boolean additionalProperties);
 
     @JsonInclude(Include.NON_EMPTY)
-    public abstract List<SecurityRequirement> getSecurity();
+    List<SecurityRequirement> getSecurity();
 
     @JsonInclude(Include.ALWAYS)
-    public abstract Paths getPaths();
+    Paths getPaths();
+
+    @JsonAnyGetter
+    Map<String, Object> getExtensions();
+
+    @JsonIgnore
+    Map<HttpMethod, Operation> getOperations();
+
+    @JsonIgnore
+    void setVariables(ServerVariables variables);
+
+    @JsonProperty("variables")
+    void setVariables(Map<String, ServerVariable> variables);
 
 }

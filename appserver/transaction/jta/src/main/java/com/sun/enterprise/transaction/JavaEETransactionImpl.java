@@ -37,26 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.transaction;
 
-import java.util.*;
-import java.util.logging.*;
-
-import javax.transaction.*;
-import javax.transaction.xa.*;
-import javax.persistence.EntityManagerFactory;
-
+import com.sun.enterprise.transaction.api.JavaEETransaction;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.transaction.api.SimpleResource;
+import com.sun.enterprise.transaction.spi.TransactionInternal;
+import com.sun.enterprise.transaction.spi.TransactionalResource;
 import com.sun.enterprise.util.Utility;
 import com.sun.enterprise.util.i18n.StringManager;
-
-import com.sun.enterprise.transaction.api.JavaEETransaction;
-import com.sun.enterprise.transaction.api.SimpleResource;
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-
-import com.sun.enterprise.transaction.spi.TransactionalResource;
-import com.sun.enterprise.transaction.spi.TransactionInternal;
 import com.sun.logging.LogDomains;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.persistence.EntityManagerFactory;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 /**
  * This class implements the JTA Transaction API for the J2EE RI.
@@ -68,40 +80,38 @@ import com.sun.logging.LogDomains;
  *
 
  * Time out capability is added to the local transactions. This class extends the TimerTask.
- * When the transaction needs to be timedout, this schedules with the timer. At the commit 
+ * When the transaction needs to be timedout, this schedules with the timer. At the commit
  * and rollback time, task will be cancelled.  If the transaction is timedout, run() method
  * will be called and transaction will be marked for rollback.
  */
-public final class JavaEETransactionImpl extends TimerTask implements
-        JavaEETransaction {
+public final class JavaEETransactionImpl implements Runnable, JavaEETransaction {
 
-    static Logger _logger = LogDomains.getLogger(JavaEETransactionImpl.class, LogDomains.JTA_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(JavaEETransactionImpl.class, LogDomains.JTA_LOGGER);
 
     // Sting Manager for Localization
-    private static StringManager sm = StringManager.getManager(JavaEETransactionImpl.class);
-
-    JavaEETransactionManager javaEETM; 
+    private static final StringManager sm = StringManager.getManager(JavaEETransactionImpl.class);
 
     // Local Tx ids are just numbers: they dont need to be unique across
     // processes or across multiple activations of this server process.
-    private static long txIdCounter = 1;
+    private static final AtomicLong TX_ID_COUNTER = new AtomicLong(1L);
 
     // Fall back to the old (wrong) behavior for the case when setRollbackOnly
     // was called before XA transaction started
-    private static boolean DISABLE_STATUS_CHECK_ON_SWITCH_TO_XA = 
-            Boolean.getBoolean("com.sun.jts.disable_status_check_on_switch_to_xa");
+    private static final boolean DISABLE_STATUS_CHECK_ON_SWITCH_TO_XA = //
+        Boolean.getBoolean("com.sun.jts.disable_status_check_on_switch_to_xa");
 
-    private long txId;
-    private JavaEEXid xid;
+    private final JavaEETransactionManager javaEETM;
+    private final long txId;
+    private final JavaEEXid xid;
     private TransactionInternal jtsTx;
     private TransactionalResource nonXAResource;
     private TransactionalResource laoResource;
     private int localTxStatus;
-    private Vector syncs = new Vector();
-    private Vector interposedSyncs = new Vector();
+    private final Vector syncs = new Vector();
+    private final Vector interposedSyncs = new Vector();
     private boolean commitStarted = false;
     // START 4662745
-    private long startTime;
+    private final long startTime;
     // END 4662745
 
     // START: local transaction timeout
@@ -111,8 +121,8 @@ public final class JavaEETransactionImpl extends TimerTask implements
     // END: local transaction timeout
     private boolean imported = false;
 
-    private HashMap resourceTable;
-    private HashMap<Object, Object> userResourceMap;
+    private final Map resourceTable;
+    private Map<Object, Object> userResourceMap;
 
     //This cache contains the EntityContexts in this Tx
     private Object activeTxCache;
@@ -123,41 +133,28 @@ public final class JavaEETransactionImpl extends TimerTask implements
     // SimpleResource mapping for EMs with EXTENDED persistence context type
     private Map<EntityManagerFactory, SimpleResource> extendedEntityManagerMap;
     private String componentName = null;
-    private ArrayList<String> resourceNames = null;
+    private List<String> resourceNames = null;
 
     // tx-specific ejb container info associated with this tx
     private Object containerData = null;
 
-    static private boolean isTimerInitialized = false;
-    static private Timer timer = null;
-    static private long timerTasksScheduled = 0; // Global counter
-
-    static synchronized private void initializeTimer() {
-        if (isTimerInitialized)
-            return;
-        timer = new Timer("JTA TX Timer",true); // daemon 
-        isTimerInitialized = true;
-    }
+    private ScheduledFuture<?> scheduledTimeoutFuture;
 
     JavaEETransactionImpl(JavaEETransactionManager javaEETM) {
         this.javaEETM = javaEETM;
         this.txId = getNewTxId();
         this.xid = new JavaEEXid(txId);
-        this.resourceTable = new HashMap();
+        this.resourceTable = new HashMap<>();
         localTxStatus = Status.STATUS_ACTIVE;
         startTime=System.currentTimeMillis();
         if (_logger != null && _logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,"--Created new JavaEETransactionImpl, txId = "+txId);
+            _logger.log(Level.FINE, "--Created new JavaEETransactionImpl, txId = " + txId);
         }
     }
 
     // START: local transaction timeout
     JavaEETransactionImpl(int timeout, JavaEETransactionManager javaEETM) {
         this(javaEETM);
-        if (!isTimerInitialized)
-            initializeTimer();
-        timer.schedule(this,timeout * 1000L);
-        timerTasksScheduled++;
         isTimerTask = true;
         this.timeout = timeout;
     }
@@ -169,10 +166,17 @@ public final class JavaEETransactionImpl extends TimerTask implements
         imported = true;
     }
 
+    void setScheduledTimeoutFuture(ScheduledFuture<?> scheduledTimeoutFuture) {
+        this.scheduledTimeoutFuture = scheduledTimeoutFuture;
+    }
+
     // START: local transaction timeout
     // TimerTask run() method implementation
+    @Override
     public void run() {
         timedOut = true;
+        final long time = System.currentTimeMillis() - startTime;
+        _logger.warning(() -> String.format("Transaction with id=%s timed out after %s ms.", txId, time));
         try {
             setRollbackOnly();
         } catch (Exception e) {
@@ -180,10 +184,12 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
     }
 
+    @Override
     public Object getContainerData() {
         return containerData;
     }
 
+    @Override
     public void setContainerData(Object data) {
         containerData = data;
     }
@@ -195,29 +201,33 @@ public final class JavaEETransactionImpl extends TimerTask implements
     // Cancels the timertask and returns the timeout
     public int cancelTimerTask() {
         cancel();
-        int mod = javaEETM.getPurgeCancelledTtransactionsAfter();
-        if (mod > 0 && timerTasksScheduled % mod == 0) {
-            int purged = timer.purge();
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Purged " + purged + " timer tasks from canceled queue");
-            } 
-        }
         return timeout;
     }
 
+    private void cancel() {
+        if (scheduledTimeoutFuture != null) {
+            if(!scheduledTimeoutFuture.isCancelled() && !scheduledTimeoutFuture.isDone()) {
+                scheduledTimeoutFuture.cancel(false);
+            }
+            scheduledTimeoutFuture = null;
+        }
+    }
+
+    @Override
     public boolean isTimedOut() {
         return timedOut;
     }
     // END: local transaction timeout
 
-    private static synchronized long getNewTxId() {
-        long newTxId = txIdCounter++;
-        return newTxId;
+    private static long getNewTxId() {
+        return TX_ID_COUNTER.getAndIncrement();
     }
 
+    @Override
     public boolean equals(Object other) {
-        if ( other == this )
+        if ( other == this ) {
             return true;
+        }
         if ( other instanceof JavaEETransactionImpl ) {
             JavaEETransactionImpl othertx = (JavaEETransactionImpl)other;
             return ( txId == othertx.txId );
@@ -225,6 +235,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         return false;
     }
 
+    @Override
     public int hashCode() {
         return (int)txId;
     }
@@ -234,6 +245,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         return xid;
     }
 
+    @Override
     public TransactionalResource getNonXAResource() {
         return nonXAResource;
     }
@@ -242,10 +254,12 @@ public final class JavaEETransactionImpl extends TimerTask implements
         nonXAResource = h;
     }
 
+    @Override
     public TransactionalResource getLAOResource() {
         return laoResource;
     }
 
+    @Override
     public void setLAOResource(TransactionalResource h) {
         laoResource = h;
     }
@@ -255,51 +269,57 @@ public final class JavaEETransactionImpl extends TimerTask implements
     }
 
     synchronized void putUserResource(Object key, Object value) {
-        if (userResourceMap == null)
-            userResourceMap = new HashMap<Object, Object>();
+        if (userResourceMap == null) {
+            userResourceMap = new HashMap<>();
+        }
         userResourceMap.put(key, value);
     }
 
     synchronized Object getUserResource(Object key) {
-        if (userResourceMap == null)
+        if (userResourceMap == null) {
             return null;
+        }
         return userResourceMap.get(key);
     }
 
-    void registerInterposedSynchronization(Synchronization sync) 
+    void registerInterposedSynchronization(Synchronization sync)
                                           throws RollbackException,
                                           SystemException {
         interposedSyncs.add(sync);
-        if (jtsTx != null)
+        if (jtsTx != null) {
             jtsTx.registerInterposedSynchronization(sync);
+        }
     }
 
     void setComponentName(String componentName) {
         this.componentName = componentName;
     }
-    
+
     String getComponentName() {
         return componentName;
     }
- 
+
     synchronized void addResourceName(String resourceName) {
-        if (resourceNames == null)
-            resourceNames = new ArrayList<String>();
+        if (resourceNames == null) {
+            resourceNames = new ArrayList<>();
+        }
         if( !resourceNames.contains(resourceName) ) {
             resourceNames.add(resourceName);
         }
     }
 
-    synchronized ArrayList<String> getResourceNames() {
+    synchronized List<String> getResourceNames() {
         return resourceNames;
     }
 
 
+    @Override
     public void addTxEntityManagerMapping(EntityManagerFactory emf,
                                           SimpleResource em) {
         getTxEntityManagerMap().put(emf, em);
     }
 
+    @Override
     public SimpleResource getTxEntityManagerResource(EntityManagerFactory emf) {
         return getTxEntityManagerMap().get(emf);
     }
@@ -307,12 +327,11 @@ public final class JavaEETransactionImpl extends TimerTask implements
     private Map<EntityManagerFactory, SimpleResource>
         getTxEntityManagerMap() {
         if( txEntityManagerMap == null ) {
-            txEntityManagerMap =
-                new HashMap<EntityManagerFactory, SimpleResource>();
+            txEntityManagerMap = new HashMap<>();
         }
         return txEntityManagerMap;
     }
-    
+
     protected void onTxCompletion(boolean status) {
         if( txEntityManagerMap == null ) {
             return;
@@ -320,7 +339,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
 
         for (Map.Entry<EntityManagerFactory, SimpleResource> entry :
             getTxEntityManagerMap().entrySet()) {
-            
+
             SimpleResource em = entry.getValue();
             if (em.isOpen()) {
                 try {
@@ -328,21 +347,24 @@ public final class JavaEETransactionImpl extends TimerTask implements
                 } catch (Throwable th) {
                     if (_logger.isLoggable(Level.FINE)) {
                         _logger.log(Level.FINE, "Exception while closing em.", th);
-                    } 
+                    }
                 }
             }
         }
     }
 
+    @Override
     public void addExtendedEntityManagerMapping(EntityManagerFactory emf,
                                                 SimpleResource em) {
         getExtendedEntityManagerMap().put(emf, em);
     }
 
+    @Override
     public void removeExtendedEntityManagerMapping(EntityManagerFactory emf) {
         getExtendedEntityManagerMap().remove(emf);
     }
 
+    @Override
     public SimpleResource getExtendedEntityManagerResource(EntityManagerFactory emf) {
         return getExtendedEntityManagerMap().get(emf);
     }
@@ -350,12 +372,12 @@ public final class JavaEETransactionImpl extends TimerTask implements
     private Map<EntityManagerFactory, SimpleResource>
         getExtendedEntityManagerMap() {
         if( extendedEntityManagerMap == null ) {
-            extendedEntityManagerMap = 
-                new HashMap<EntityManagerFactory, SimpleResource>();
+            extendedEntityManagerMap = new HashMap<>();
         }
         return extendedEntityManagerMap;
     }
 
+    @Override
     public boolean isLocalTx() {
         return (jtsTx==null);
     }
@@ -368,12 +390,14 @@ public final class JavaEETransactionImpl extends TimerTask implements
 
         if ( !commitStarted ) {
             // register syncs
-            for ( int i=0; i<syncs.size(); i++ )
+            for ( int i=0; i<syncs.size(); i++ ) {
                 jtsTx.registerSynchronization((Synchronization)syncs.elementAt(i));
+            }
 
-            for ( int i=0; i<interposedSyncs.size(); i++ )
+            for ( int i=0; i<interposedSyncs.size(); i++ ) {
                 jtsTx.registerInterposedSynchronization(
                         (Synchronization)interposedSyncs.elementAt(i));
+            }
         }
 
         // Now adjust the status
@@ -387,6 +411,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
     }
 
 
+    @Override
     public void commit() throws RollbackException,
                 HeuristicMixedException, HeuristicRollbackException,
                 SecurityException, IllegalStateException, SystemException {
@@ -395,13 +420,14 @@ public final class JavaEETransactionImpl extends TimerTask implements
 
         // START local transaction timeout
         // If this transaction is set for timeout, cancel it as it is in the commit state
-        if (isTimerTask)
+        if (isTimerTask) {
             cancelTimerTask();
+        }
 
         // END local transaction timeout
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,"--In JavaEETransactionImpl.commit, jtsTx="+jtsTx
-                +" nonXAResource="+ nonXAResource);
+            _logger.log(Level.FINE,
+                "--In JavaEETransactionImpl.commit, jtsTx=" + jtsTx + " nonXAResource=" + nonXAResource);
         }
 
         commitStarted = true;
@@ -430,16 +456,18 @@ public final class JavaEETransactionImpl extends TimerTask implements
             try {
                 if ( timedOut ) {
                     // rollback nonXA resource
-                    if ( nonXAResource != null )
+                    if ( nonXAResource != null ) {
                         nonXAResource.getXAResource().rollback(xid);
+                    }
                     localTxStatus = Status.STATUS_ROLLEDBACK;
                     throw new RollbackException(sm.getString("enterprise_distributedtx.rollback_timeout"));
                 }
 
                 if ( isRollbackOnly() ) {
                     // rollback nonXA resource
-                    if ( nonXAResource != null )
+                    if ( nonXAResource != null ) {
                         nonXAResource.getXAResource().rollback(xid);
+                    }
 
                     localTxStatus = Status.STATUS_ROLLEDBACK;
                     throw new RollbackException(sm.getString("enterprise_distributedtx.mark_rollback"));
@@ -450,15 +478,15 @@ public final class JavaEETransactionImpl extends TimerTask implements
                     try {
                         Synchronization sync = (Synchronization)syncs.elementAt(i);
                         sync.beforeCompletion();
-                    } catch ( RuntimeException ex ) { 
+                    } catch ( RuntimeException ex ) {
                         _logger.log(Level.WARNING, "enterprise_distributedtx.before_completion_excep", ex);
                         setRollbackOnly();
                         caughtException = ex;
                         break;
-                    } catch (Exception ex) { 
+                    } catch (Exception ex) {
                         _logger.log(Level.WARNING, "enterprise_distributedtx.before_completion_excep", ex);
                         // XXX-V2 no setRollbackOnly() ???
-                    } 
+                    }
 
                 }
 
@@ -468,10 +496,10 @@ public final class JavaEETransactionImpl extends TimerTask implements
                         sync.beforeCompletion();
                     } catch ( RuntimeException ex ) {
                         _logger.log(Level.WARNING, "enterprise_distributedtx.before_completion_excep", ex);
-                        setRollbackOnly();  
+                        setRollbackOnly();
                         caughtException = ex;
                         break;
-                    } catch (Exception ex) { 
+                    } catch (Exception ex) {
                         _logger.log(Level.WARNING, "enterprise_distributedtx.before_completion_excep", ex);
                         // XXX-V2 no setRollbackOnly() ???
                     }
@@ -484,8 +512,9 @@ public final class JavaEETransactionImpl extends TimerTask implements
                     //Check if it is a Local Transaction
                     RollbackException rbe = null;
                     if(jtsTx == null) {
-                        if ( nonXAResource != null )
+                        if ( nonXAResource != null ) {
                             nonXAResource.getXAResource().rollback(xid);
+                        }
                         localTxStatus = Status.STATUS_ROLLEDBACK;
                         rbe = new RollbackException(sm.getString("enterprise_distributedtx.mark_rollback"));
 
@@ -514,8 +543,9 @@ public final class JavaEETransactionImpl extends TimerTask implements
 
                 } else {
                     // do single-phase commit on nonXA resource
-                    if ( nonXAResource != null )
+                    if ( nonXAResource != null ) {
                         nonXAResource.getXAResource().commit(xid, true);
+                    }
 
                 }
                 // V2-XXX should this be STATUS_NO_TRANSACTION ?
@@ -542,7 +572,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
                 ((JavaEETransactionManagerSimplified) javaEETM).monitorTxCompleted(this, success);
                 ((JavaEETransactionManagerSimplified) javaEETM).clearThreadTx();
                 for ( int i=0; i<interposedSyncs.size(); i++ ) {
-                    try { 
+                    try {
                         Synchronization sync = (Synchronization)interposedSyncs.elementAt(i);
                         sync.afterCompletion(localTxStatus);
                     } catch ( Exception ex ) {
@@ -566,35 +596,37 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
     }
 
+    @Override
     public void rollback() throws IllegalStateException, SystemException {
 
         // START local transaction timeout
         // If this transaction is set for timeout, cancel it as it is in the rollback state
-        if (isTimerTask)
+        if (isTimerTask) {
             cancelTimerTask();
-        // END local transaction timeout
-
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,"--In JavaEETransactionImpl.rollback, jtsTx="+jtsTx
-                    +" nonXAResource="+nonXAResource);
+            // END local transaction timeout
         }
 
-        if ( jtsTx == null )
-            checkTransationActive(); // non-xa transaction can't be in prepared state, xa code will do its check
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE,
+                "--In JavaEETransactionImpl.rollback, jtsTx=" + jtsTx + " nonXAResource=" + nonXAResource);
+        }
+
+        if (jtsTx == null) {
+            // non-xa transaction can't be in prepared state, xa code will do its check
+            checkTransationActive();
+        }
 
         try {
-            if ( jtsTx != null )
-                jtsTx.rollback();
-
-            else { // rollback nonXA resource
-                if ( nonXAResource != null )
+            if (jtsTx == null) { // rollback nonXA resource
+                if (nonXAResource != null) {
                     nonXAResource.getXAResource().rollback(xid);
+                }
 
+            } else {
+                jtsTx.rollback();
             }
 
-        } catch ( SystemException ex ) {
-            throw ex;
-        } catch ( IllegalStateException ex ) {
+        } catch ( SystemException | IllegalStateException ex ) {
             throw ex;
         } catch ( Exception ex ) {
             _logger.log(Level.WARNING, "enterprise_distributedtx.some_excep", ex);
@@ -606,7 +638,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
             ((JavaEETransactionManagerSimplified) javaEETM).clearThreadTx();
             if ( jtsTx == null ) {
                 for ( int i=0; i<interposedSyncs.size(); i++ ) {
-                    try { 
+                    try {
                         Synchronization sync = (Synchronization)interposedSyncs.elementAt(i);
                         sync.afterCompletion(Status.STATUS_ROLLEDBACK);
                     } catch ( Exception ex ) {
@@ -631,6 +663,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
     }
 
+    @Override
     public boolean delistResource(XAResource xaRes, int flag)
             throws IllegalStateException, SystemException {
         // START OF IASRI 4660742
@@ -641,12 +674,13 @@ public final class JavaEETransactionImpl extends TimerTask implements
         // END OF IASRI 4660742
 
         checkTransationActive();
-        if ( jtsTx != null )
-            return jtsTx.delistResource(xaRes, flag);
-        else
+        if (jtsTx == null) {
             throw new IllegalStateException(sm.getString("enterprise_distributedtx.deleteresource_for_localtx"));
+        }
+        return jtsTx.delistResource(xaRes, flag);
     }
 
+    @Override
     public boolean enlistResource(XAResource xaRes)
             throws RollbackException, IllegalStateException,
             SystemException {
@@ -656,63 +690,63 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
 
         checkTransationActive();
-        if ( jtsTx != null )
+        if (jtsTx != null) {
             return jtsTx.enlistResource(xaRes);
-        else if ( nonXAResource != null )
+        } else if (nonXAResource != null) {
             throw new IllegalStateException(sm.getString("enterprise_distributedtx.already_has_nonxa"));
-        // IASRI END 4723068
-        /***
-        else  // V2-XXX what to do ? Start a new JTS tx ?
-            throw new IllegalStateException("JavaEETransactionImpl.enlistResource called for local tx");
-        ***/
-        else  { //  Start a new JTS tx
+        } else { // Start a new JTS tx
             ((JavaEETransactionManagerSimplified) javaEETM).startJTSTx(this);
             return jtsTx.enlistResource(xaRes);
         }
         // IASRI END 4723068
     }
 
+    @Override
     public int getStatus() throws SystemException {
-        if ( jtsTx != null )
-            return jtsTx.getStatus();
-        else
+        if (jtsTx == null) {
             return localTxStatus;
+        }
+        return jtsTx.getStatus();
     }
 
+    @Override
     public void registerSynchronization(Synchronization sync)
                 throws RollbackException, IllegalStateException,
                 SystemException {
         // START OF IASRI 4660742
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,"--In JavaEETransactionImpl.registerSynchronization, jtsTx=" 
+            _logger.log(Level.FINE,"--In JavaEETransactionImpl.registerSynchronization, jtsTx="
                     +jtsTx+" nonXAResource="+nonXAResource);
         }
         // END OF IASRI 4660742
 
         checkTransationActive();
-        if ( jtsTx != null )
-            jtsTx.registerSynchronization(sync);
-        else
+        if (jtsTx == null) {
             syncs.add(sync);
+        } else {
+            jtsTx.registerSynchronization(sync);
+        }
     }
 
+    @Override
     public void setRollbackOnly() throws IllegalStateException, SystemException {
         checkTransationActive();
-        if ( jtsTx != null )
-            jtsTx.setRollbackOnly();
-        else
+        if (jtsTx == null) {
             localTxStatus = Status.STATUS_MARKED_ROLLBACK;
+        } else {
+            jtsTx.setRollbackOnly();
+        }
     }
 
     private boolean isRollbackOnly() throws IllegalStateException,
             SystemException {
-        int status;
-        if ( jtsTx != null )
-            status = jtsTx.getStatus();
-        else
+        final int status;
+        if (jtsTx == null) {
             status = localTxStatus;
-
-        return (status == Status.STATUS_MARKED_ROLLBACK);
+        } else {
+            status = jtsTx.getStatus();
+        }
+        return status == Status.STATUS_MARKED_ROLLBACK;
     }
 
     private void checkTransationActive() throws SystemException {
@@ -724,6 +758,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
         }
     }
 
+    @Override
     public String toString() {
         return "JavaEETransactionImpl: txId="+txId+" nonXAResource="+nonXAResource
                 +" jtsTx="+jtsTx+" localTxStatus="+localTxStatus
@@ -747,10 +782,12 @@ public final class JavaEETransactionImpl extends TimerTask implements
     }
     // END IASRI 4662745
 
+    @Override
     public void setResources(Set resources, Object poolInfo) {
         resourceTable.put(poolInfo, resources);
     }
 
+    @Override
     public Set getResources(Object poolInfo) {
         return (Set) resourceTable.get(poolInfo);
     }
@@ -761,8 +798,9 @@ public final class JavaEETransactionImpl extends TimerTask implements
      * is called by the PoolManagerImpl. This method will return
      * only those pools that have ever participated in a tx
      */
+    @Override
     public Set getAllParticipatingPools() {
-        return (Set) resourceTable.keySet();
+        return resourceTable.keySet();
     }
 
     // Assume that there is only one instance of this class per local tx.
@@ -771,47 +809,53 @@ public final class JavaEETransactionImpl extends TimerTask implements
 
         private static final byte[] bqual = new byte[]{0};
 
-        private byte[] gtrId;
-    
+        private final byte[] gtrId;
+
         // START IASRI 4662745
         private String stringForm=null;
         // END IASRI 4662745
-    
+
         JavaEEXid(long txId) {
             gtrId = new byte[8];
             Utility.longToBytes(txId, gtrId, 0);
         }
-    
+
+        @Override
         public int getFormatId() {
             return formatId;
         }
-    
+
+        @Override
         public byte[] getGlobalTransactionId() {
             return gtrId;
         }
-    
+
+        @Override
         public byte[] getBranchQualifier() {
             return bqual; // V2-XXX check if its ok to always have same bqual
         }
-    
+
         // START IASRI 4662745
         /*
          * returens the Transaction id of this transaction
          */
+        @Override
         public String toString(){
-    
+
             // If we have a cached copy of the string form of the global identifier, return
             // it now.
-            if( stringForm != null ) return stringForm;
-    
+            if( stringForm != null ) {
+                return stringForm;
+            }
+
             // Otherwise format the global identifier.
             //char[] buff = new char[gtrId.length*2 + 2/*'[' and ']'*/ + 3/*bqual and ':'*/];
             char[] buff = new char[gtrId.length*2 + 3/*bqual and ':'*/];
             int pos = 0;
             //buff[pos++] = '[';
-    
+
             // Convert the global transaction identifier into a string of hex digits.
-    
+
             int globalLen = gtrId.length ;
             for( int i = 0; i < globalLen; i++ ) {
                 int currCharHigh = (gtrId[i]&0xf0) >> 4;
@@ -819,7 +863,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
                 buff[pos++] = (char)(currCharHigh + (currCharHigh > 9 ? 'A'-10 : '0'));
                 buff[pos++] = (char)(currCharLow  + (currCharLow  > 9 ? 'A'-10 : '0'));
             }
-    
+
             //buff[pos++] = ':';
             buff[pos++] = '_';
             int currCharHigh = (0&0xf0) >> 4;
@@ -827,10 +871,10 @@ public final class JavaEETransactionImpl extends TimerTask implements
             buff[pos++] = (char)(currCharHigh + (currCharHigh > 9 ? 'A'-10 : '0'));
             buff[pos++] = (char)(currCharLow  + (currCharLow  > 9 ? 'A'-10 : '0'));
             //buff[pos] = ']';
-    
+
             // Cache the string form of the global identifier.
             stringForm = new String(buff);
-    
+
             return stringForm;
         }
         // END IASRI 4662745
@@ -843,7 +887,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
     public Object getActiveTxCache() {
         return this.activeTxCache;
     }
-    
+
     /**
      * Return duration in seconds before transaction would timeout.
      *

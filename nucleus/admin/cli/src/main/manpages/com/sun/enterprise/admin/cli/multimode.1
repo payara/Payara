@@ -1,0 +1,81 @@
+multimode(1)              asadmin Utility Subcommands             multimode(1)
+
+NAME
+       multimode - allows multiple subcommands to be run while preserving
+       environment settings and remaining in the asadmin utility
+
+SYNOPSIS
+           multimode [--help] [--file filename]
+           [--printprompt={true|false}] [--encoding encode]
+
+DESCRIPTION
+       The multimode subcommand processes asadmin subcommands sequentially in
+       a single session. The command-line interface prompts for a subcommand,
+       runs that subcommand, displays the results of that subcommand, and then
+       prompts for the next subcommand. All the asadmin options set in
+       multimode apply to subsequent commands until the multimode session is
+       exited. You exit multimode by typing exit, quit, or Ctrl-D.
+
+       You can use the export subcommand to set your environment, or use the
+       unset subcommand to remove environment variables from the multimode
+       environment.
+
+       You can also provide subcommands by passing a previously prepared list
+       of subcommands from a file or standard input (pipe). When you use a
+       file, you can include comment lines in the file by entering the hash
+       symbol (#) as the first character of the line.
+
+       You can invoke multimode from within a multimode session. When you exit
+       the second multimode environment, you return to your original multimode
+       environment.
+
+       All the remote asadmin utility options can be supplied when invoking
+       the multimode subcommand. The settings will apply as defaults for all
+       subcommands that are run within the multimode session. For a list of
+       the asadmin utility options, see the asadmin(1M) help page.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --file, -f
+           Reads the subcommands in the specified file.
+
+       --printprompt
+           Controls printing of the asadmin prompt. By default, this option is
+           set to the same value as the --interactive asadmin utility option.
+           Normally you will not need to specify this option. Default is true.
+
+       --encoding
+           Specifies the character set for the file to be decoded. By default,
+           the system character set is used.
+
+EXAMPLES
+       Example 1, Starting a Multimode Session
+           This example starts a multimode session where: % is the system
+           prompt.
+
+               % asadmin multimode
+               asadmin>
+           You can also start a multimode session by typing asadmin without
+           options or subcommands at the system prompt.
+
+       Example 2, Running Multiple Commands From a File
+           This example runs a sequence of subcommands from the
+           commands_file.txt file.
+
+               % asadmin multimode --file commands_file.txt
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       export(1), unset(1)
+
+       asadmin(1M)
+
+Java EE 8                         20 Dec 2010                     multimode(1)

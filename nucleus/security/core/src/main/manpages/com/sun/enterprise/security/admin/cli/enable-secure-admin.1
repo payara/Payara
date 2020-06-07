@@ -1,0 +1,89 @@
+enable-secure-admin(1)    asadmin Utility Subcommands   enable-secure-admin(1)
+
+NAME
+       enable-secure-admin - enables secure admin (if it is not already
+       enabled), optionally changing the alias used for DAS-to-instance admin
+       messages or the alias used for instance-to-DAS admin messages.
+
+SYNOPSIS
+           enable-secure-admin [--help]
+           [--adminalias=alias]
+           [--instancealias=alias]
+
+DESCRIPTION
+       The enable-secure-admin subcommand causes the DAS and the instances in
+       the domain to use SSL certificates for encrypting the messages they
+       send to each other. This subcommand also allows the DAS to accept
+       administration messages from remote admin clients such as the asadmin
+       utility and IDEs.
+
+           Note
+           +----------------------------------------+
+           |           You must restart any running |
+           |           servers in the domain after  |
+           |           you enable or disable secure |
+           |           admin. It is simpler to      |
+           |           enable or disable secure     |
+           |           admin with only the DAS      |
+           |           running, then restart the    |
+           |           DAS, and then start any      |
+           |           other instances.             |
+           +----------------------------------------+
+
+       By default, when secure admin is enabled the DAS and the instances use
+       these SSL certificates to authenticate to each other as security
+       "principals" and to authorize admin access. The --asadminalias value
+       indicates to the DAS which SSL certificate it should use to identify
+       itself to the instances. The --instancealias value determines for
+       instances which SSL certificate they should use to identify themselves
+       to the DAS.
+
+       The enable-secure-admin subcommand fails if any administrative user in
+       the domain has a blank password.
+
+       Alternatively, you can use the enable-secure-admin-internal-user
+       subcommand to cause the servers to identify themselves using a secure
+       admin user name and password.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --adminalias
+           The alias that refers to the SSL/TLS certificate on the DAS. This
+           alias is used by the DAS to identify itself to instances. The
+           default value is s1as.
+
+       --instancealias
+           The alias that refers to the SSL/TLS certificate on the instances.
+           This alias is used by the instances to identify themselves to the
+           DAS. The default value is glassfish-instance.
+
+EXAMPLES
+       Example 1, Enabling secure admin for a domain
+           The following example shows how to enable secure admin for a domain
+           using an admin alias adtest and an instance alias intest
+
+               asadmin> enable-secure-admin --adminalias adtest --instancealias intest
+               server-config
+               default-config
+
+               Command enable-secure-admin executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       disable-secure-admin(1)
+
+       enable-secure-admin-principal(1)
+
+       enable-secure-admin-internal-user(1)
+
+       asadmin(1M)
+
+Java EE 8                         25 Jun 2011           enable-secure-admin(1)

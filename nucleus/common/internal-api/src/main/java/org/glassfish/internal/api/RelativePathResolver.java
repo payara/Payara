@@ -37,12 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.internal.api;
 
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.i18n.StringManagerBase;
+import org.glassfish.api.admin.PasswordAliasStore;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -51,41 +54,40 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.api.admin.PasswordAliasStore;
 
 /**
- * The purpose of this class is to expand paths that contain embedded 
- * system properties of the form ${property-name}. The result must be 
+ * The purpose of this class is to expand paths that contain embedded
+ * system properties of the form ${property-name}. The result must be
  * an absolute path, or messages are logged. Here are some examples:
  *
  *      ${com.sun.aas.installRoot}/config/domain.xml
  *      /foo/${config}/domain.xml
  *      /foo/${config}/${domain-name}
- * 
- * This class is used to map paths containing system properties in 
+ *
+ * This class is used to map paths containing system properties in
  * domain.xml and used so that absolute paths (which are installation
  * directory specific) are not present, making domain.xml portable
- * in an SE/EE environment across many machines (with different 
+ * in an SE/EE environment across many machines (with different
  * installation directories).
  */
 public class RelativePathResolver {
-    
+
     private static Logger _logger = null;
 
     private static RelativePathResolver _instance = null;
-    
+
     private static final String ALIAS_TOKEN = "ALIAS";
     private static final String ALIAS_DELIMITER = "=";
 
-    private static PasswordAliasStore domainPasswordAliasStore = null; 
-    
+    private static PasswordAliasStore domainPasswordAliasStore = null;
+
     private synchronized static PasswordAliasStore getDomainPasswordAliasStore() {
         if (domainPasswordAliasStore == null) {
             domainPasswordAliasStore = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
         }
         return domainPasswordAliasStore;
     }
-    
+
     private synchronized static RelativePathResolver getInstance()
     {
         if (_instance == null) {
@@ -93,70 +95,70 @@ public class RelativePathResolver {
         }
         return _instance;
     }
-    
-    public static String unresolvePath(String path, String[] propNames) 
+
+    public static String unresolvePath(String path, String[] propNames)
     {
-        return getInstance().unresolve(path, propNames);    
+        return getInstance().unresolve(path, propNames);
     }
-    
-    public static String resolvePath(String path) 
+
+    public static String resolvePath(String path)
     {
         return getInstance().resolve(path);
     }
-    
-    public RelativePathResolver() 
+
+    public RelativePathResolver()
     {
     }
 
     /**
      * unresolvePath will replace the first occurrence of the value of the given
-     * system properties with ${propName} in the given path  
+     * system properties with ${propName} in the given path
      **/
     public String unresolve(String path, String[] propNames) {
-        if (path != null) {           
+        if (path != null) {
             int startIdx;
             String propVal;
-            
-            //All paths returned will contain / as the separator. The 
+
+            //All paths returned will contain / as the separator. The
             //assumption is that the File class can convert this to an OS
             //dependent path separator (e.g. \\ on windows).
-            path = path.replace(File.separatorChar, '/');            
+            path = path.replace(File.separatorChar, '/');
             for (int i = 0; i < propNames.length; i++) {
-                propVal = getPropertyValue(propNames[i], true);             
-                if (propVal != null) {                    
+                propVal = getPropertyValue(propNames[i], true);
+                if (propVal != null) {
                     //All paths returned will contain / as the separator. This will allow
-                    //all comparison to be done using / as the separator                       
-                    propVal = propVal.replace(File.separatorChar, '/');                
-                    startIdx = path.indexOf(propVal);                    
+                    //all comparison to be done using / as the separator
+                    propVal = propVal.replace(File.separatorChar, '/');
+                    startIdx = path.indexOf(propVal);
                     if (startIdx >= 0) {
                         path = path.substring(0, startIdx) +
-                            "${" + propNames[i] + "}" + 
+                            "${" + propNames[i] + "}" +
                             path.substring(startIdx + propVal.length());
                     }
                 } else {
-                    InternalLoggerInfo.getLogger().log(Level.SEVERE, 
+                    InternalLoggerInfo.getLogger().log(Level.SEVERE,
                         InternalLoggerInfo.unknownProperty,
                         new Object[] {propNames[i], path});
                 }
-            }            
+            }
         }
         return path;
-    }   
+    }
 
     /**
-     * You would like to think that we could just log and continue (without throwing 
+     * You would like to think that we could just log and continue (without throwing
      a RuntimeException; however, unfortunately anything logged by the logger in the
-     * launcher (PELaucnhFilter) does not appear in server.log, so for now, this 
+     * launcher (PELaucnhFilter) does not appear in server.log, so for now, this
      * will be considered a fatal error.
      */
     protected void fatalError(String message, String path) {
         InternalLoggerInfo.getLogger().log(Level.SEVERE, message, new Object[] {path});
         StringManagerBase sm = StringManagerBase.getStringManager(InternalLoggerInfo.getLogger().getResourceBundleName(),
-                getClass().getClassLoader());        
+                getClass().getClassLoader());
         throw new RuntimeException(sm.getString(message, path));
     }
-       
-    private void appendChar (char c, StringBuffer propName, StringBuffer result)
+
+    private void appendChar (char c, StringBuilder propName, StringBuilder result)
     {
         if (propName == null) {
             result.append(c);
@@ -164,14 +166,14 @@ public class RelativePathResolver {
             propName.append(c);
         }
     }
-    
-   
+
+
     /**
      * check if a given property name matches AS alias pattern ${ALIAS=aliasname}.
      * if so, return the aliasname, otherwise return null.
      * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
      * @return The aliasname or null.
-     */    
+     */
     static public String getAlias(String propName)
     {
        String aliasName=null;
@@ -187,38 +189,38 @@ public class RelativePathResolver {
               if (propName!=null)
                  aliasName = propName.trim();
            }
-       } 
-       return aliasName;    
+       }
+       return aliasName;
     }
 
 
     /**
      * Resolves the given property by returning its value as either
      *  1) a system property of the form ${system-property-name}
-     *  2) a password alias property of the form ${ALIAS=aliasname}. Here the alias name 
+     *  2) a password alias property of the form ${ALIAS=aliasname}. Here the alias name
      *  is mapped to a password.
      * @param propName The property name to resolve
      * @return The resolved value of the property or null.
-     */    
+     */
     protected String getPropertyValue(String propName, boolean bIncludingEnvironmentVariables)
     {
         if(!bIncludingEnvironmentVariables)
           return null;
-        
+
         // Try finding the property as a system property
-        String result = System.getProperty(propName);        
-        if (result == null) {            
+        String result = System.getProperty(propName);
+        if (result == null) {
             //If not found as a system property, the see if it is a password alias.
             int idx1 = propName.indexOf(ALIAS_TOKEN);
             if (idx1 >= 0) {
-                int idx2 = propName.indexOf(ALIAS_DELIMITER, ALIAS_TOKEN.length());                
+                int idx2 = propName.indexOf(ALIAS_DELIMITER, ALIAS_TOKEN.length());
                 if (idx2 > 0) {
-                    String aliasName = propName.substring(idx2 + 1).trim();    
+                    String aliasName = propName.substring(idx2 + 1).trim();
                     //System.err.println("aliasName " + aliasName);
                     try {
                         result = new String(getDomainPasswordAliasStore().get(aliasName));
-                    } catch (Exception ex) {                        
-                        InternalLoggerInfo.getLogger().log(Level.WARNING, InternalLoggerInfo.exceptionResolvingAlias, 
+                    } catch (Exception ex) {
+                        InternalLoggerInfo.getLogger().log(Level.WARNING, InternalLoggerInfo.exceptionResolvingAlias,
                             new Object[] {ex, aliasName, propName});
                     }
                 }
@@ -226,27 +228,27 @@ public class RelativePathResolver {
         }
         return result;
     }
-   
+
     public String resolve(String path) {
         return resolve(path, true);
     }
     /**
      * Replace any system properties of the form ${property} in the given path. Note
      * any mismatched delimiters (e.g. ${property/${property2} is considered a fatal
-     * error and for now causes a fatal RuntimeException to be thrown.     
+     * error and for now causes a fatal RuntimeException to be thrown.
      */
     public String resolve(String path, boolean bIncludingEnvironmentVariables) {
         if (path == null) {
             return path;
-        }        
-        
-        //Now parse through the given string one character at a time looking for the 
+        }
+
+        //Now parse through the given string one character at a time looking for the
         //starting delimiter "${". Occurrences of "$" or "{" are valid characters;
-        //however once an occurrence of "${" is found, then "}" becomes a closing 
-        //delimiter. 
+        //however once an occurrence of "${" is found, then "}" becomes a closing
+        //delimiter.
         int size = path.length();
-        StringBuffer result = new StringBuffer(size);
-        StringBuffer propName = null;
+        StringBuilder result = new StringBuilder(size);
+        StringBuilder propName = null;
         String propVal;
         //keep track of whether we have found at least one occurrence of "${". The
         //significance is that "}" is parsed as a terminating character.
@@ -256,28 +258,28 @@ public class RelativePathResolver {
             c = path.charAt(i);
             switch(c) {
                 case '$': {
-                    if (i < size - 1 && path.charAt(i + 1) == '{') {                         
+                    if (i < size - 1 && path.charAt(i + 1) == '{') {
                         //found "${"
                         foundOne = true;
                         i++;
                         if (propName == null) { // start parsing a new property Name
-                            propName = new StringBuffer();
+                            propName = new StringBuilder();
                             break;
                         } else { // previous property not terminated missing }
                             fatalError(InternalLoggerInfo.referenceMissingTrailingDelim,
                                 path);
                             return path; //can't happen since fatalError throws RuntimeException
-                        }                        
+                        }
                     } else {
                         appendChar(c, propName, result);
                     }
                     break;
                 } case '}': {
-                    if (foundOne) { // we have found at least one occurrence of ${                        
-                        if (propName != null) {                            
+                    if (foundOne) { // we have found at least one occurrence of ${
+                        if (propName != null) {
                             propVal = getPropertyValue(propName.toString(), bIncludingEnvironmentVariables);
-                            if (propVal != null) {                                                                                                                                                         
-                                //Note: when elaborating a system property, we always convert \\ to / to ensure that 
+                            if (propVal != null) {
+                                //Note: when elaborating a system property, we always convert \\ to / to ensure that
                                 //paths created on windows are compatible with unix filesystems.
                                 result.append(propVal.replace(File.separatorChar, '/'));
                             } else {
@@ -302,19 +304,19 @@ public class RelativePathResolver {
                 } default : {
                     appendChar(c, propName, result);
                     break;
-                }                    
+                }
             }
         }
-        
-        if (propName != null) { // missing final } 
+
+        if (propName != null) { // missing final }
             fatalError(InternalLoggerInfo.referenceMissingTrailingDelim,
                 path);
             return path; //can't happen
         }
-        
+
         return result.toString();
     }
-    
+
     /**
      * checks if string does not consist of unresolvable values
      */
@@ -322,12 +324,12 @@ public class RelativePathResolver {
         String resolved = resolve(path, bIncludingEnvironmentVariables);
         return (resolved.indexOf("${")<0);
     }
-    
+
     public static void main(String[] args) {
         if (args[0].equalsIgnoreCase("unresolve")) {
             for (int i = 2; i < args.length; i++) {
                 String result = unresolvePath(args[i], new String[] {args[1]});
-                System.out.println(args[i] + " " + result + " " + resolvePath(result));             
+                System.out.println(args[i] + " " + result + " " + resolvePath(result));
             }
         } else {
             for (int i = 0; i < args.length; i++) {
@@ -340,7 +342,7 @@ public class RelativePathResolver {
      * ${ALIAS=aliasname} where the actual password is stored in given alias name.
      * Following are the returned values:
      * <ul>
-     * <li> Returns a null if given String is null. </li> 
+     * <li> Returns a null if given String is null. </li>
      * <li> Retuns the given String if it is not in the alias form. </li>
      * <li> Returns the real password from store if the given String is
      *      of the alias form and the alias has been created by the
@@ -355,7 +357,7 @@ public class RelativePathResolver {
      *         UnrecoverableKeyException if there is an error is opening or
      *         processing the password store
      */
-    public static String getRealPasswordFromAlias(final String at) throws 
+    public static String getRealPasswordFromAlias(final String at) throws
             KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException,
             UnrecoverableKeyException {
         try {
@@ -374,5 +376,5 @@ public class RelativePathResolver {
         }
         final String real = new String(getDomainPasswordAliasStore().get(an));
         return ( real );
-    }    
+    }
 }

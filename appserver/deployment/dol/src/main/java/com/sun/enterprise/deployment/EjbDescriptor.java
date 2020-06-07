@@ -37,33 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment;
+
+import static java.util.Collections.emptySet;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.glassfish.security.common.Role;
+
 import com.sun.enterprise.deployment.types.EjbReferenceContainer;
 import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
 import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
 import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
 import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
-import org.glassfish.security.common.Role;
 
 /**
  * Interface for information about an EJB
  */
-public interface EjbDescriptor extends NamedDescriptor,
-        WritableJndiNameEnvironment,
-        EjbReferenceContainer,
-        ResourceEnvReferenceContainer,
-        ResourceReferenceContainer,
-        ServiceReferenceContainer,
-        MessageDestinationReferenceContainer {
+public interface EjbDescriptor extends NamedDescriptor, WritableJndiNameEnvironment, EjbReferenceContainer, ResourceEnvReferenceContainer,
+        ResourceReferenceContainer, ServiceReferenceContainer, MessageDestinationReferenceContainer {
 
     /**
      * Indicates the bean will manage its own transactions.
@@ -76,92 +74,93 @@ public interface EjbDescriptor extends NamedDescriptor,
     String CONTAINER_TRANSACTION_TYPE = "Container";
 
     EjbBundleDescriptor getEjbBundleDescriptor();
-
-    boolean isRemoteInterfacesSupported();
-
-    boolean isLocalInterfacesSupported();
-
-    /**
-     * Returns true if the EJB can be accessed remotely
-     * @return 
-     */
-    boolean isRemoteBusinessInterfacesSupported();
-
-    boolean isLocalBusinessInterfacesSupported();
-
-    boolean hasWebServiceEndpointInterface();
-
-    boolean isLocalBean();
-
-    String getHomeClassName();
-
-    String getLocalHomeClassName();
-
-    String getEjbImplClassName();
-
-    String getWebServiceEndpointInterfaceName();
-
-    void setWebServiceEndpointInterfaceName(String name);
-
-    void addEjbReferencer(EjbReferenceDescriptor ref);
-
-    Set<String> getLocalBusinessClassNames();
-
-    Set<String> getRemoteBusinessClassNames();
-
-    String getLocalClassName();
-
-    Set getMethodDescriptors();
-
-    Map getMethodPermissionsFromDD();
-
-    String getEjbClassName();
-
-    String getType();
-
+    
     /**
      * Gets the application which the EJB is in
-     * @return 
+     * 
+     * @return
      */
     Application getApplication();
 
     long getUniqueId();
-
     void setUniqueId(long id);
+    
+    boolean isLocalBean();
+    
+    // ### Interfaces supported
 
+    boolean isRemoteInterfacesSupported();
+    boolean isLocalInterfacesSupported();
+
+    /**
+     * Returns true if the EJB can be accessed remotely
+     * 
+     * @return
+     */
+    boolean isRemoteBusinessInterfacesSupported();
+    boolean isLocalBusinessInterfacesSupported();
+    boolean hasWebServiceEndpointInterface();
+    
+    String getWebServiceEndpointInterfaceName();
+    void setWebServiceEndpointInterfaceName(String name);
+    
+    
+    // ### Class names
+
+    String getHomeClassName();
+    String getLocalHomeClassName();
+    String getEjbImplClassName();
+    Set<String> getLocalBusinessClassNames();
+    Set<String> getRemoteBusinessClassNames();
+    String getLocalClassName();
+    String getEjbClassName();
+    String getRemoteClassName();
+
+    String getType();
+    String getEjbTypeForDisplay();
+    
+    Set<MethodDescriptor> getMethodDescriptors();
+
+    void addEjbReferencer(EjbReferenceDescriptor ref);
+    void removeEjbReferencer(EjbReferenceDescriptor ref);
+    
+    
+    // ### Interceptors
+
+    boolean hasInterceptorClass(String interceptorClassName);
+    void addInterceptorClass(EjbInterceptor interceptor);
+    void appendToInterceptorChain(List<EjbInterceptor> chain);
+    void addMethodLevelChain(List<EjbInterceptor> chain, Method method, boolean aroundInvoke);
+
+    
+    // ### Security related methods
+    
+    Map<MethodPermission, List<MethodDescriptor>> getMethodPermissionsFromDD();
+    
+    Set<MethodPermission> getMethodPermissionsFor(MethodDescriptor methodDescriptor);
+
+    Set<Role> getPermissionedRoles();
+    default Set<RoleReference> getRoleReferences() {
+        return emptySet();
+    }
     RoleReference getRoleReferenceByName(String roleReferenceName);
+    void addRoleReference(RoleReference roleReference);
 
     Set getSecurityBusinessMethodDescriptors();
 
     void addPermissionedMethod(MethodPermission mp, MethodDescriptor md);
 
-    void setUsesCallerIdentity(boolean flag);
-
     Boolean getUsesCallerIdentity();
-
+    void setUsesCallerIdentity(boolean flag);
+    
     RunAsIdentityDescriptor getRunAsIdentity();
-
-    String getRemoteClassName();
-
-    void removeEjbReferencer(EjbReferenceDescriptor ref);
-
-    void addRoleReference(RoleReference roleReference);
-
     void setRunAsIdentity(RunAsIdentityDescriptor desc);
-
-    String getEjbTypeForDisplay();
-
-    boolean hasInterceptorClass(String interceptorClassName);
-
-    void addInterceptorClass(EjbInterceptor interceptor);
-
-    void appendToInterceptorChain(List<EjbInterceptor> chain);
-
-    void addMethodLevelChain(List<EjbInterceptor> chain, Method m, boolean aroundInvoke);
-
-    Set getMethodPermissionsFor(MethodDescriptor methodDescriptor);
-
-    Set<Role> getPermissionedRoles();
+    
+    /**
+     * This method determines if all the mechanisms defined in the CSIV2 CompoundSecMechList structure require protected
+     * invocations.
+     */
+    boolean allMechanismsRequireSSL();
 
     String getTransactionType();
 
@@ -170,11 +169,5 @@ public interface EjbDescriptor extends NamedDescriptor,
     void addFrameworkInterceptor(InterceptorDescriptor interceptor); // FIXME by srini - consider ejb-internal-api
 
     void notifyNewModule(WebBundleDescriptor wbd); // FIXME by srini - can we eliminate the need for this
-
-    /**
-     * This method determines if all the mechanisms defined in the
-     * CSIV2 CompoundSecMechList structure require protected
-     * invocations.
-     */
-    boolean allMechanismsRequireSSL();
+    
 }

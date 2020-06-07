@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!-- applications/appGeneralTabs.inc -->
@@ -70,10 +72,26 @@
             gf.redirect(page="#{request.contextPath}/common/applications/targetListing.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
         />
     </sun:tab>
-     <sun:tab id="propertiesTab" immediate="true" text="$resource{i18nc.headings.ApplicationProperties}" toolTip="$resource{i18nc.headings.ApplicationPropertiesTab}">
+
+    <sun:tab id="applicationProp" immediate="true" text="$resource{i18nc.properties.TabTittle}" toolTip="$resource{i18nc.properties.TabTittleHelp}">
         <!command
-            setSessionAttribute(key="appGeneralTabs" value="propertiesTab");
+            setSessionAttribute(key="appGeneralTabs" value="appliactionConfigurationProps");
             gf.redirect(page="#{request.contextPath}/common/applications/appProperties.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
         />
+        <sun:tab id="appliactionConfigurationProps" immediate="$boolean{true}" text="$resource{i18nc.properties.configurationPropertiesTabTittle}" 
+                 toolTip="$resource{i18nc.properties.configurationPropertiesTabTittleHelp}" >
+	    <!command
+                setSessionAttribute(key="appGeneralTabs" value="appliactionConfigurationProps");
+                gf.redirect(page="#{request.contextPath}/common/applications/appProperties.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
+	    />
+	</sun:tab>
+        <sun:tab id="microProfileProps" immediate="$boolean{true}" text="$resource{i18nc.properties.microProfilePropertiesTabTittle}" 
+                 toolTip="$resource{i18nc.properties.microProfilePropertiesTabTittleHelp}" >
+	    <!command
+                setSessionAttribute(key="appGeneralTabs" value="microProfileProps");
+                gf.redirect(page="#{request.contextPath}/common/applications/appMicroProfileProperties.jsf?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
+	    />
+    </sun:tab>
+
     </sun:tab>
 </sun:tabSet>

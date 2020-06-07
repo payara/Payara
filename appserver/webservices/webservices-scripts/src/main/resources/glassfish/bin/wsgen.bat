@@ -39,6 +39,7 @@ REM  and therefore, elected the GPL Version 2 license, then the option applies
 REM  only if the new code is made subject to such option by the copyright
 REM  holder.
 REM
+REM Portions Copyright [2019] Payara Foundation and/or affiliates
 
 VERIFY OTHER 2>nul
 setlocal ENABLEEXTENSIONS
@@ -56,4 +57,10 @@ goto run
 set JAVA=java
 
 :run
-%JAVA% %WSGEN_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\javax.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar" com.sun.tools.ws.WsGen %*
+CALL %~dp0jdkcheck.bat
+
+if %ENDORSED_AVAILABLE%==true (
+    %JAVA% %WSIMPORT_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\javax.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar" com.sun.tools.ws.WsGen %*
+) else (
+    %JAVA% %WSIMPORT_OPTS% -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\javax.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar;%~dp0..\modules\jakarta.xml.ws-api.jar" com.sun.tools.ws.WsGen %*
+)

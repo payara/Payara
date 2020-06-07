@@ -237,7 +237,7 @@ public class StringManager {
             StringBuilder buf = new StringBuilder();
             buf.append(value);
             for (int i = 0; i < args.length; i++) {
-                buf.append(" arg[" + i + "]=" + args[i]);
+                buf.append(" arg[").append(i).append("]=").append(args[i]);
             }
             iString = buf.toString();
         }
@@ -383,8 +383,7 @@ public class StringManager {
     // STATIC SUPPORT METHODS
     // --------------------------------------------------------------
 
-    private static Hashtable<String, StringManager> managers =
-            new Hashtable<String, StringManager>();
+    private static Hashtable<String, StringManager> managers = new Hashtable<String, StringManager>();
 
     /**
      * Get the StringManager for a particular package. If a manager for

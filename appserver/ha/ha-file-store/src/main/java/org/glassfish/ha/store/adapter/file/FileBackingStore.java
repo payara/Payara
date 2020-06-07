@@ -37,15 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.ha.store.adapter.file;
 
-import org.glassfish.ha.store.api.*;
+import org.glassfish.ha.store.api.BackingStore;
+import org.glassfish.ha.store.api.BackingStoreConfiguration;
+import org.glassfish.ha.store.api.BackingStoreException;
+import org.glassfish.ha.store.api.BackingStoreFactory;
 
 import java.io.*;
-
 import java.util.Map;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An implementation of BackingStore that uses file system to
@@ -84,10 +87,10 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         if (conf.getLogger() != null) {
             logger = conf.getLogger();
         }
-        
+
         super.initialize(conf);
         debugStr = "[FileBackingStore - " + conf.getStoreName() + "] ";
-        
+
         baseDir = conf.getBaseDirectory();
 
         try {
@@ -122,20 +125,17 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
     public V load(K key, String version) throws BackingStoreException {
 
         String fileName = key.toString();
-        V value = null;
-
 
         if (logger.isLoggable(TRACE_LEVEL)) {
             logger.log(TRACE_LEVEL, debugStr + "Entered load(" + key + ", " + version + ")");
         }
 
+        V value = null;
         byte[] data = readFromfile(fileName);
         if (data != null) {
-            try {
-                ByteArrayInputStream bis2 = new ByteArrayInputStream(data);
-                ObjectInputStream ois = super.createObjectInputStream(bis2);
+            try (ObjectInputStream ois =
+                     super.createObjectInputStream(new ByteArrayInputStream(data))) {
                 value = (V) ois.readObject();
-
                 if (logger.isLoggable(TRACE_LEVEL)) {
                     logger.log(TRACE_LEVEL, debugStr + "Done load(" + key + ", " + version + ")");
                 }
@@ -143,7 +143,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
                 logger.log(Level.WARNING,debugStr + "Failed to load(" + key + ", " + version + ")", ex);
             }
         }
-        
+
         return value;
     }
 
@@ -198,7 +198,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         return removeExpired(defaultMaxIdleTimeoutInSeconds * 1000L);
     }
 
-    //TODO: deprecate after next shoal integration   
+    //TODO: deprecate after next shoal integration
     public int removeExpired(long idleForMillis) {
         long threshold = System.currentTimeMillis() - idleForMillis;
         int expiredSessions = 0;
@@ -259,7 +259,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         if (logger.isLoggable(TRACE_LEVEL)) {
             logger.log(TRACE_LEVEL, debugStr + "Entered save(" + sessionKey + ")");
         }
-        writetoFile(sessionKey, fileName, getSerializedState(sessionKey, value));
+        writetoFile(sessionKey, fileName, getSerializedState(value));
         if (logger.isLoggable(TRACE_LEVEL)) {
             logger.log(TRACE_LEVEL, debugStr + "Done save(" + sessionKey + ")");
         }
@@ -271,7 +271,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
             throws BackingStoreException {
         updateTimestamp(k, timeStamp);
     }
-    
+
     public void updateTimestamp(K sessionKey, long time)
             throws BackingStoreException {
         if (logger.isLoggable(TRACE_LEVEL)) {
@@ -326,33 +326,16 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         return success;
     }
 
-    private byte[] getSerializedState(K key, V value)
+    private byte[] getSerializedState(V value)
             throws BackingStoreException {
-
-        byte[] data = null;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = null;
-        try {
-            oos = new ObjectOutputStream(bos);
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(bos)) {
             oos.writeObject(value);
             oos.flush();
-            data = bos.toByteArray();
+            return bos.toByteArray();
         } catch (IOException ioEx) {
             throw new BackingStoreException("Error during getSerializedState", ioEx);
-        } finally {
-            try {
-		if (oos != null) {
-                    oos.close();
-                }
-            } catch (IOException ioEx) {/* Noop */}
-            try {
-                if (bos != null) {
-                    bos.close();
-                }
-            } catch (IOException ioEx) {/* Noop */}
         }
-
-        return data;
     }
 
     private byte[] readFromfile(String fileName) {
@@ -366,11 +349,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
         if (file.exists()) {
             int dataSize = (int) file.length();
             data = new byte[dataSize];
-            BufferedInputStream bis = null;
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(file);
-                bis = new BufferedInputStream(fis);
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
                 int offset = 0;
                 for (int toRead = dataSize; toRead > 0;) {
                     int count = bis.read(data, offset, toRead);
@@ -380,19 +359,6 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
             } catch (Exception ex) {
                 logger.log(Level.WARNING,
                         "FileStore.readFromfile failed", ex);
-            } finally {
-                try {
-                    bis.close();
-                } catch (Exception ex) {
-                    logger.log(Level.FINE, debugStr + " Error while "
-                            + "closing buffered input stream", ex);
-                }
-                try {
-                    fis.close();
-                } catch (Exception ex) {
-                    logger.log(Level.FINE, debugStr + " Error while "
-                            + "closing file input stream", ex);
-                }
             }
         } else {
             if (logger.isLoggable(TRACE_LEVEL)) {
@@ -407,12 +373,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
     private void writetoFile(K sessionKey, String fileName, byte[] data)
             throws BackingStoreException {
         File file = new File(baseDir, fileName);
-        BufferedOutputStream bos = null;
-        FileOutputStream fos = null;
-        try {
-
-            fos = new FileOutputStream(file);
-            bos = new BufferedOutputStream(fos);
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
             bos.write(data, 0, data.length);
             bos.flush();
             if (logger.isLoggable(TRACE_LEVEL)) {
@@ -427,17 +388,6 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
             }
             String errMsg = "Could not save session: " + sessionKey;
             throw new BackingStoreException(errMsg, ex);
-        } finally {
-            try {
-                if (bos != null) bos.close();
-            } catch (Exception ex) {
-                logger.log(Level.FINE, "Error while closing buffered output stream", ex);
-            }
-            try {
-                if (fos != null) fos.close();
-            } catch (Exception ex) {
-                logger.log(Level.FINE, "Error while closing file output stream", ex);
-            }
         }
     }
 }

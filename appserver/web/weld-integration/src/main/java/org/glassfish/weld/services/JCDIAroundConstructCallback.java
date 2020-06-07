@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -51,11 +51,12 @@ import org.jboss.weld.exceptions.WeldException;
 import javax.enterprise.inject.spi.AnnotatedConstructor;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * This calls back into the ejb container to perform the around construct interception.  When that's finished the
- * ejb itself is then created.
+ * Weld object construction callback, which invokes EJB Container's interception logic.
+ * 
+ * 
  * @param <T> instance type
  */
 public class JCDIAroundConstructCallback<T> implements AroundConstructCallback<T> {
@@ -78,15 +79,10 @@ public class JCDIAroundConstructCallback<T> implements AroundConstructCallback<T
     public T aroundConstruct(final ConstructionHandle<T> handle, AnnotatedConstructor<T> constructor, Object[] parameters, Map<String, Object> data) {
         this.handle = handle;
         this.parameters = parameters;
-        T ejb;
         try {
+            // container will end up calling createEjb() if it reaches end of interceptor chain,
+            // and that will set the target reference
             container.intercept( LifecycleCallbackDescriptor.CallbackType.AROUND_CONSTRUCT, ejbContext );
-
-            // all the interceptors were invoked, call the constructor now
-            if ( target.get() == null ) {
-                ejb = handle.proceed( parameters, new HashMap<>() );
-                target.set( ejb );
-            }
         } catch (RuntimeException e) {
             throw e;
         } catch (Throwable e) {
@@ -95,12 +91,16 @@ public class JCDIAroundConstructCallback<T> implements AroundConstructCallback<T
         return target.get();
     }
 
+    /**
+     * This method is invoked at end of EJB interception chain to actually construct the instance.
+     */
     public T createEjb() {
-	T instance =null;
-	if( null != handle ) {
-            instance = handle.proceed(parameters, new HashMap<>() );
-	}        
-	target.set(instance);
+        T instance = null;
+        if (null != handle) {
+            instance = handle.proceed(parameters, new HashMap<>());
+        }
+
+        target.set(instance);
         return instance;
     }
 }

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -80,7 +80,7 @@ public abstract class LeafResource extends AbstractResource {
     protected Dom parent;
     protected String tagName;
 
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LeafResource.class);
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LeafResource.class);
 
     /** Creates a new instance of xxxResource */
     public LeafResource() {

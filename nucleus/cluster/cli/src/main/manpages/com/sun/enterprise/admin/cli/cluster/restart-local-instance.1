@@ -1,0 +1,155 @@
+restart-local-instance(1)  asadmin Utility Subcommands  restart-local-instance(1)
+
+NAME
+       restart-local-instance - restarts a running GlassFish Server instance
+       on the host where the subcommand is run
+
+SYNOPSIS
+           restart-local-instance [--help]
+           [--nodedir nodedir] [--node node]
+           [--debug={false|true}]
+           [--force={true|false}] [--kill={false|true}]
+           [instance-name]
+
+DESCRIPTION
+       The restart-local-instance subcommand restarts a GlassFish Server
+       instance on the host where the subcommand is run. This subcommand does
+       not require secure shell (SSH) to be configured. You must run this
+       command from the host where the instance resides.
+
+       The subcommand can restart any GlassFish Server instance, regardless of
+       how the instance was created. For example, this subcommand can restart
+       an instance that was created by using the create-instance(1)
+       subcommand.
+
+       The restart-local-instance subcommand does not contact the domain
+       administration server (DAS) to determine the node on which the instance
+       resides. To determine the node on which the instance resides, the
+       subcommand searches the directory that contains the node directories.
+       If multiple node directories exist, the node must be specified as an
+       option of the subcommand.
+
+       When this subcommand restarts an instance, the DAS synchronizes the
+       instance with changes since the last synchronization as follows:
+
+       *   For the config directory, the DAS synchronizes the instance with
+           all changes.
+
+       *   For the applications directory and docroot directory, only a change
+           to a top-level subdirectory causes the DAS to synchronize all files
+           under that subdirectory.
+
+           If a file below a top level subdirectory is changed without a
+           change to a file in the top level subdirectory, full
+           synchronization is required. In normal operation, files below the
+           top level subdirectories of these directories are not changed. If
+           an application is deployed and undeployed, full synchronization is
+           not necessary to update the instance with the change.
+
+       If different synchronization behavior is required, the instance must be
+       stopped and restarted by using following sequence of subcommands:
+
+        1. stop-local-instance(1)
+
+        2. start-local-instance(1)
+
+       This subcommand is supported in local mode. However, to synchronize the
+       instance with the DAS, this subcommand must be run in remote mode.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --nodedir
+           Specifies the directory that contains the instance's node
+           directory. The instance's files are stored in the instance's node
+           directory. The default is as-install/nodes.
+
+       --node
+           Specifies the node on which the instance resides. This option may
+           be omitted only if the directory that the --nodedir option
+           specifies contains only one node directory. Otherwise, this option
+           is required.
+
+       --debug
+           Specifies whether the instance is restarted with Java Platform
+           Debugger Architecture (JPDA)
+
+           (http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html)
+
+           debugging enabled.
+
+           Possible values are as follows:
+
+           true
+               The instance is restarted with JPDA debugging enabled and the
+               port number for JPDA debugging is displayed.
+
+           false
+               The instance is restarted with JPDA debugging disabled
+               (default).
+
+           The default is the current setting of this option for the instance
+           that is being restarted.
+
+       --force
+           Specifies whether the instance is forcibly stopped immediately
+           before it is restarted.
+
+           Possible values are as follows:
+
+           true
+               The instance is forcibly stopped immediately (default).
+
+           false
+               The subcommand waits until all threads that are associated with
+               the instance are exited before stopping the instance.
+
+       --kill
+           Specifies whether the instance is killed before it is restarted by
+           using functionality of the operating system to terminate the
+           instance process.
+
+           Possible values are as follows:
+
+           false
+               The instance is not killed. The subcommand uses functionality
+               of the Java platform to terminate the instance process
+               (default).
+
+           true
+               The instance is killed. The subcommand uses functionality of
+               the operating system to terminate the instance process.
+
+OPERANDS
+       instance-name
+           The name of the GlassFish Server instance to restart. If the
+           instance is not running, the subcommand displays a warning message
+           and attempts to start the instance.
+
+EXAMPLES
+       Example 1, Restarting an Instance Locally
+           This example restarts the instance ymlsa1 in the domain domain1 on
+           the host where the subcommand is run.
+
+               asadmin> restart-local-instance --node localhost-domain1 ymlsa1
+               Command restart-local-instance executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-instance(1), create-local-instance(1), delete-instance(1),
+       delete-local-instance(1), restart-instance(1), start-instance(1),
+       start-local-instance(1), stop-instance(1), stop-local-instance(1)
+
+       asadmin(1M)
+
+       Java Platform Debugger Architecture (JPDA)
+       (http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html)
+
+Java EE 8                   21 Aug 2017            restart-local-instance(1)

@@ -1,0 +1,67 @@
+delete-file-user(1)       asadmin Utility Subcommands      delete-file-user(1)
+
+NAME
+       delete-file-user - removes the named file user
+
+SYNOPSIS
+           delete-file-user [--help][--authrealmname auth_realm_name]
+           [--target target]
+           username
+
+DESCRIPTION
+       The delete-file-user subcommand deletes the entry in the keyfile for
+       the specified username.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --authrealmname
+           The name of the authentication realm with which the user was
+           created.
+
+       --target
+           This is the name of the target on which the command operates. The
+           valid targets are:
+
+           server
+               Deletes the file user on the default server instance. This is
+               the default value
+
+           domain
+               Deletes the file user in the domain.
+
+           cluster_name
+               Deletes the file user from every server instance in the
+               cluster.
+
+           instance_name
+               Deletes the file user from a particular server instance.
+
+OPERANDS
+       username
+           This is the name of file user to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a User From a File Realm
+           The following example shows how to delete user named sample_user
+           from a file realm.
+
+               asadmin> delete-file-user
+               sample_user
+               Command delete-file-user executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-file-user(1), list-file-users(1), update-file-user(1),
+       list-file-groups(1)
+
+       asadmin(1M)
+
+Java EE 8                      01 December 2010            delete-file-user(1)

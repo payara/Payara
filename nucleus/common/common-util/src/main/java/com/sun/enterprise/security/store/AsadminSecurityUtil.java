@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.store;
 
@@ -51,6 +52,12 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
 /**
  * Various utility methods related to certificate-based security.
@@ -63,13 +70,33 @@ import java.util.logging.Logger;
  * @author Tim Quinn (with portions refactored from elsewhere)
  */
 public class AsadminSecurityUtil {
-    
-    private static final File DEFAULT_CLIENT_DIR = 
-            new File(System.getProperty("user.home"), ".gfclient");
+
+    private static final File DEFAULT_CLIENT_DIR;
 
     private static AsadminSecurityUtil instance = null;
 
     private static final Logger logger = CULoggerInfo.getLogger();
+
+
+    static {
+
+		/** Patch to make dir $HOME/.gfclient configurable.
+		 *
+		 * To set a different gfclient directory, add in /payara5/glassfish/config/[asenv.bat/asenv.conf]
+		 * the  AS_GFCLIENT variable.
+		 * Example:
+		 * export AS_GFCLIENT="/var/www/html/payara5/.gfclient"
+		 */
+		String AS_GFCLIENT = System.getenv("AS_GFCLIENT");
+		logger.log(Level.FINER, "AS_GFCLIENT: {0}", AS_GFCLIENT);
+		if (AS_GFCLIENT != null) {
+    			DEFAULT_CLIENT_DIR = new File(AS_GFCLIENT);
+		} else {
+    			DEFAULT_CLIENT_DIR = new File(System.getProperty("user.home"), ".gfclient");
+		}
+		logger.log(Level.FINER, "Set .gfclient directory to: {0}", DEFAULT_CLIENT_DIR);
+    }
+
 
     /**
      * Returns the usable instance, creating it if needed.
@@ -101,8 +128,7 @@ public class AsadminSecurityUtil {
 
     private KeyStore asadminKeystore = null;
 
-    private static final LocalStringsImpl strmgr =
-        new LocalStringsImpl(AsadminSecurityUtil.class);
+    private static final LocalStringsImpl strmgr = new LocalStringsImpl(AsadminSecurityUtil.class);
 
 
     /**
@@ -115,14 +141,14 @@ public class AsadminSecurityUtil {
         return System.getProperty(SystemPropertyConstants.CLIENT_TRUSTSTORE_PASSWORD_PROPERTY,
             "changeit").toCharArray();
     }
-    
+
     /**
      * Get the default location for client related files
      */
     public static File getDefaultClientDir() {
         if (!DEFAULT_CLIENT_DIR.isDirectory()) {
             if (DEFAULT_CLIENT_DIR.mkdirs() == false) {
-                logger.log(Level.SEVERE, CULoggerInfo.errorCreatingDirectory, 
+                logger.log(Level.SEVERE, CULoggerInfo.errorCreatingDirectory,
                         DEFAULT_CLIENT_DIR);
                 // return the File anyway, the user of the file will report the failure
             }
@@ -145,11 +171,32 @@ public class AsadminSecurityUtil {
      * the password by calling this method.
      * @return the password to the client side truststore
      */
-    private char[] promptForPassword() throws IOException {
-        Console cons = System.console();
-        if (cons != null) {
-            return cons.readPassword(strmgr.get("certificateDbPrompt"));
+    private char[] promptForPassword() {
+        LineReader lineReader = null;
+        try {
+            char mask = 0;
+            Terminal terminal = TerminalBuilder.builder()
+                    .system(true)
+                    .build();
+            lineReader = LineReaderBuilder.builder()
+                    .terminal(terminal).build();
+
+            String line = lineReader.readLine(strmgr.get("certificateDbPrompt"), mask);
+            return line.toCharArray();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error reading input", ioe);
+        } catch (UserInterruptException | EndOfFileException e) {
+                // Ignore           
+        }finally {
+            if (lineReader != null && lineReader.getTerminal() != null) {
+                try {
+                    lineReader.getTerminal().close();
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error closing terminal", ioe);
+                }
+            }
         }
+
         return null;
     }
 
@@ -165,7 +212,7 @@ public class AsadminSecurityUtil {
         return asadminKeystore;
     }
 
-    private void init(final char[] commandLineMasterPassword, final boolean isPromptable) 
+    private void init(final char[] commandLineMasterPassword, final boolean isPromptable)
             throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
         char[] passwordToUse = chooseMasterPassword(commandLineMasterPassword);
         try {
@@ -174,7 +221,7 @@ public class AsadminSecurityUtil {
              * the standard system property.  That would allow users to add a
              * key to a client-side keystore and use SSL client auth from
              * asadmin to the DAS (if they have added the corresponding cert to
-             * the DAS truststore). 
+             * the DAS truststore).
              */
             asadminKeystore = openKeystore(passwordToUse);
             if (asadminKeystore == null) {
@@ -225,20 +272,12 @@ public class AsadminSecurityUtil {
     private KeyStore openKeystore(final char[] candidateMasterPassword)
             throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         final KeyStore permanentKS = KeyStore.getInstance("JKS");
-        InputStream keyStoreStream = null;
-        try {
-            keyStoreStream = asadminKeyStoreStream();
+        try (InputStream keyStoreStream = asadminKeyStoreStream()) {
             if (keyStoreStream == null) {
                 return null;
             }
-            permanentKS.load(
-                    keyStoreStream,
-                    candidateMasterPassword);
+            permanentKS.load(keyStoreStream, candidateMasterPassword);
             return permanentKS;
-        } finally {
-            if (keyStoreStream != null) {
-                keyStoreStream.close();
-            }
         }
     }
 

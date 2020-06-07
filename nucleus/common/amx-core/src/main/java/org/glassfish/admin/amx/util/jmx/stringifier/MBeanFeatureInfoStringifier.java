@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -45,14 +46,12 @@ import javax.management.MBeanParameterInfo;
 import org.glassfish.admin.amx.util.ClassUtil;
 import org.glassfish.admin.amx.util.stringifier.ArrayStringifier;
 
-public class MBeanFeatureInfoStringifier
-{
+public class MBeanFeatureInfoStringifier {
     final MBeanFeatureInfoStringifierOptions mOptions;
 
-    public static final MBeanFeatureInfoStringifierOptions DEFAULT =
-            new MBeanFeatureInfoStringifierOptions(true, ",");
+    public static final MBeanFeatureInfoStringifierOptions DEFAULT = new MBeanFeatureInfoStringifierOptions(true, ",");
 
-    static final String sOperationDelimiter = ",";
+    static final String OPERATION_DELIMITER = ",";
 
     MBeanFeatureInfoStringifier()
     {

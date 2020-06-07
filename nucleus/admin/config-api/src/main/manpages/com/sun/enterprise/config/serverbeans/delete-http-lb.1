@@ -1,0 +1,50 @@
+delete-http-lb(1)         asadmin Utility Subcommands        delete-http-lb(1)
+
+NAME
+       delete-http-lb - deletes a load balancer
+
+SYNOPSIS
+           delete-http-lb [--help] load_balancer_name
+
+DESCRIPTION
+       Use the delete-http-lb subcommand to delete a physical load balancer.
+
+           Note
+           +----------------------------------------+
+           |           This subcommand is only      |
+           |           applicable to Oracle         |
+           |           GlassFish Server. This       |
+           |           subcommand is not applicable |
+           |           to GlassFish Server Open     |
+           |           Source Edition.              |
+           +----------------------------------------+
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       load_balancer_name
+           The name of the load balancer to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a Load Balancer Configuration
+           This example deletes the load balancer configuration named mylb.
+
+               asadmin> delete-http-lb mylb
+
+               Command delete-http-lb executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-http-lb(1), list-http-lbs(1)
+
+       asadmin(1M)
+
+Java EE 8                         25 Aug 2010                delete-http-lb(1)

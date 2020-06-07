@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
 
 <project name="glassfish v3, app client library fix-up" default="fixup.library" basedir=".">
     <property name="mq.dir.path" value="../../mq"/>
@@ -52,7 +52,7 @@
     <property name="cp-jdbcra.classpath.additions" value="../lib/install/applications/__cp_jdbc_ra/__cp_jdbc_ra.jar"/>
     <property name="xa-jdbcra.classpath.additions" value="../lib/install/applications/__xa_jdbc_ra/__xa_jdbc_ra.jar"/>
     <property name="dm-jdbcra.classpath.additions" value="../lib/install/applications/__dm_jdbc_ra/__dm_jdbc_ra.jar"/>
-    <property name="derby.jar.classpath.additions" value="../../javadb/lib/derby.jar ../../javadb/lib/derbyclient.jar ../../javadb/lib/derbynet.jar ../../javadb/lib/derbytools.jar ../../javadb/lib/derbyrun.jar"/>
+    <property name="h2.jar.classpath.additions" value="../../h2db/bin/h2.jar"/>
     <property name="jaxr-ra.classpath.additions" value="../lib/install/applications/jaxr-ra/jaxr-ra.jar"/>
     <property name="resources-runtime.classpath.additions" value="../modules/resources-runtime.jar"/>
     <property name="javamail-connector.classpath.additions" value="../modules/javamail-connector.jar"/>
@@ -63,7 +63,7 @@
     <property name="entitybean-container.additions" value="../modules/entitybean-container.jar"/>
     <property name="weld.classpath.additions" value="../modules/weld-osgi-bundle.jar"/>
     
-    <property name="classpath.additions" value=" ${resources-runtime.classpath.additions} ${javamail-connector.classpath.additions} ${javamail-runtime.classpath.additions} ${mq.classpath.additions} ${ds-jdbcra.classpath.additions} ${cp-jdbcra.classpath.additions} ${xa-jdbcra.classpath.additions} ${dm-jdbcra.classpath.additions} ${derby.jar.classpath.additions} ${jaxr-ra.classpath.additions} ${entitybean-container.additions} ${jdbc-runtime.classpath.additions} ${jdbc-config.classpath.additions} ${weld.classpath.additions}"/>
+    <property name="classpath.additions" value=" ${resources-runtime.classpath.additions} ${javamail-connector.classpath.additions} ${javamail-runtime.classpath.additions} ${mq.classpath.additions} ${ds-jdbcra.classpath.additions} ${cp-jdbcra.classpath.additions} ${xa-jdbcra.classpath.additions} ${dm-jdbcra.classpath.additions} ${h2.jar.classpath.additions} ${jaxr-ra.classpath.additions} ${entitybean-container.additions} ${jdbc-runtime.classpath.additions} ${jdbc-config.classpath.additions} ${weld.classpath.additions}"/>
     <property name="classpath.conditional.additions" value="${aix.additions}"/>
     <target name="fixup.library">
         <unzip src="${output.dir}/${output.file}" dest="${stage.dir}">
@@ -76,12 +76,6 @@
             <!-- replace the colons used as path separators with blanks -->
             <replacefilter token=":" value=" "/>
 
-            <!-- replace incorrect entries ../modules/x.jar for JARs that will actually reside in the
-                 endorsed subdirectory with ../modules/endorsed/x.jar                -->
-
-            <replacefilter token="../modules/javax.annotation-api.jar" value="../modules/endorsed/javax.annotation-api.jar"/>
-            <replacefilter token="../modules/jaxb-api.jar" value="../modules/endorsed/jaxb-api.jar"/>
-            <replacefilter token="../modules/webservices-api-osgi.jar" value="../modules/endorsed/webservices-api-osgi.jar"/>
             <replacefilter token="../modules/weld-se-shaded.jar" value="../lib/appclient/weld-se-shaded.jar"/>
             <replacefilter token="../modules/weld-environment-common.jar" value="../lib/appclient/weld-environment-common.jar"/>
 
@@ -111,7 +105,7 @@
             manifest file, so we need to explicitly touch it after updating
             the manifest.
         -->
-        <sleep seconds="3"/>
+        <sleep seconds="5"/>
         <manifest mode="update" file="${stage.dir}/META-INF/MANIFEST.MF">
             <attribute name="Class-Path" value="${classpath} ${classpath.additions} ${classpath.conditional.additions}"/>
             <attribute name="GlassFish-Conditional-Additions" value="${classpath.conditional.additions}"/>

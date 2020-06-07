@@ -1,0 +1,66 @@
+jms-ping(1)               asadmin Utility Subcommands              jms-ping(1)
+
+NAME
+       jms-ping - checks if the JMS service is up and running
+
+SYNOPSIS
+           jms-ping [--help]
+           [-- target target]
+
+DESCRIPTION
+       The jms-ping subcommand checks if the Java Message Service (JMS)
+       service (also known as the JMS provider) is up and running. When you
+       start the GlassFish Server, the JMS service starts by default.
+
+       The jms-ping subcommand pings only the default JMS host within the JMS
+       service. It displays an error message when it is unable to ping a
+       built-in JMS service.
+
+       This subcommand is supported in remote mode only. Remote asadmin
+       subcommands require a running domain administration server (DAS).
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which the operation is to be performed.
+           Valid values are as follows:
+
+           server
+               Pings the JMS service for the default server instance. This is
+               the default value
+
+           configuration-name
+               Pings the JMS service for all clusters using the specified
+               configuration.
+
+           cluster-name
+               Pings the JMS service for the specified cluster.
+
+           instance-name
+               Pings the JMS service for the specified server instance.
+
+EXAMPLES
+       Example 1, Verifying that the JMS service is running
+           The following subcommand checks to see if the JMS service is
+           running on the default server.
+
+               asadmin> jms-ping
+               JMS-ping command executed successfully
+               Connector resoure test_jms_adapter created.
+               Command jms-ping executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jms-host(1), list-jms-hosts(1), delete-jms-host(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Feb 2011                      jms-ping(1)

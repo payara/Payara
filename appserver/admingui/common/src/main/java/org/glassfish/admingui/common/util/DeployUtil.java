@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 /*
  * DeploymentHandler.java
@@ -69,8 +69,8 @@ public class DeployUtil {
     static public boolean reloadApplication(String appName, List<String> targets, HandlerContext handlerCtx){
         try{
             String decodedName = URLDecoder.decode(appName, "UTF-8");
-            List clusters =  TargetUtil.getClusters();
-            List dgs =  TargetUtil.getDeploymentGroups();
+            List<String> clusters =  TargetUtil.getClusters();
+            List<String> dgs =  TargetUtil.getDeploymentGroups();
             String clusterEndpoint = GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/";
             String serverEndpoint = GuiUtil.getSessionValue("REST_URL")+"/servers/server/";
             for(String targetName : targets){
@@ -85,7 +85,7 @@ public class DeployUtil {
                 }
                 String status = (String) RestUtil.getAttributesMap(endpoint).get("enabled");
                 if ( Boolean.parseBoolean(status)){
-                    Map attrs = new HashMap();
+                    Map<String, Object> attrs = new HashMap<>();
                     attrs.put("enabled", "false");
                     RestUtil.restRequest(endpoint, attrs, "POST", null, false, true);
                     attrs.put("enabled", "true");
@@ -101,13 +101,13 @@ public class DeployUtil {
 
 
     //This method returns the list of targets (clusters and standalone instances) of any deployed application
-    static public List getApplicationTarget(String appName, String ref){
-        List targets = new ArrayList();
+    static public List<String> getApplicationTarget(String appName, String ref){
+        List<String> targets = new ArrayList<>();
         try{
             //check if any cluster has this application-ref
             List<String> clusters = TargetUtil.getClusters();
             for(String oneCluster:  clusters){
-                List appRefs = new ArrayList(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/"+oneCluster+"/"+ref).keySet());
+                List<String> appRefs = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/"+oneCluster+"/"+ref).keySet());
 
                 if (appRefs.contains(appName)){
                     targets.add(oneCluster);
@@ -116,18 +116,18 @@ public class DeployUtil {
             List<String> servers = TargetUtil.getStandaloneInstances();
             servers.add("server");
             for(String oneServer:  servers){
-                List appRefs = new ArrayList(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + oneServer + "/" + ref).keySet());
+                List<String> appRefs = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + oneServer + "/" + ref).keySet());
                 if (appRefs.contains(appName)){
                     targets.add(oneServer);
                 }
             }
-            
+
             List<String> dgs = TargetUtil.getDeploymentGroups();
             for (String dg : dgs) {
-                List appRefs = new ArrayList(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/" + dg + "/" + ref).keySet());
+                List<String> appRefs = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/" + dg + "/" + ref).keySet());
                 if (appRefs.contains(appName)){
                     targets.add(dg);
-                }                
+                }
             }
 
         }catch(Exception ex){
@@ -138,17 +138,17 @@ public class DeployUtil {
         }
         return targets;
     }
-    
-    static public List<Map> getRefEndpoints(String name, String ref){
-        List endpoints = new ArrayList();
+
+    static public List<Map<String, Object>> getRefEndpoints(String name, String ref){
+        List<Map<String, Object>> endpoints = new ArrayList<>();
         try{
             String encodedName = URLEncoder.encode(name, "UTF-8");
             //check if any cluster has this application-ref
             List<String> clusters = TargetUtil.getClusters();
             for(String oneCluster:  clusters){
-                List appRefs = new ArrayList(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/"+oneCluster+"/"+ref).keySet());
+                List<String> appRefs = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/"+oneCluster+"/"+ref).keySet());
                 if (appRefs.contains(name)){
-                    Map aMap = new HashMap();
+                    Map<String, Object> aMap = new HashMap<>();
                     aMap.put("endpoint", GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/"+oneCluster+"/" + ref + "/" + encodedName);
                     aMap.put("targetName", oneCluster);
                     endpoints.add(aMap);
@@ -157,9 +157,9 @@ public class DeployUtil {
             List<String> servers = TargetUtil.getStandaloneInstances();
             servers.add("server");
             for(String oneServer:  servers){
-                List appRefs = new ArrayList(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + oneServer + "/" + ref).keySet());
+                List<String> appRefs = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + oneServer + "/" + ref).keySet());
                 if (appRefs.contains(name)){
-                    Map aMap = new HashMap();
+                    Map<String, Object> aMap = new HashMap<>();
                     aMap.put("endpoint", GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + oneServer + "/" + ref + "/" + encodedName);
                     aMap.put("targetName", oneServer);
                     endpoints.add(aMap);
@@ -177,9 +177,9 @@ public class DeployUtil {
 
     public static String getTargetEnableInfo(String appName, boolean useImage, boolean isApp){
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
-        List clusters = TargetUtil.getClusters();
-        List standalone = TargetUtil.getStandaloneInstances();
-        List deploymentGroup = TargetUtil.getDeploymentGroups();
+        List<String> clusters = TargetUtil.getClusters();
+        List<String> standalone = TargetUtil.getStandaloneInstances();
+        List<String> deploymentGroup = TargetUtil.getDeploymentGroups();
         String enabled = "true";
         int numEnabled = 0;
         int numDisabled = 0;
@@ -204,7 +204,7 @@ public class DeployUtil {
             }
         }
         standalone.add("server");        
-        List<String> targetList = new ArrayList<String> ();
+        List<String> targetList = new ArrayList<> ();
         try {
             targetList = getApplicationTarget(URLDecoder.decode(appName, "UTF-8"), ref);
         } catch (Exception ex) {

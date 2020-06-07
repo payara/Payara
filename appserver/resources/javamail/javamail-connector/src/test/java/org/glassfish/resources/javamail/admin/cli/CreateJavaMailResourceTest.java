@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
  */
 
 package org.glassfish.resources.javamail.admin.cli;
@@ -70,7 +70,7 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 
 
 public class CreateJavaMailResourceTest extends ConfigApiTest {

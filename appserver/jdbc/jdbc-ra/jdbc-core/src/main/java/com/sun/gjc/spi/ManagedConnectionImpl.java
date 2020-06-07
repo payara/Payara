@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates.]
 
 package com.sun.gjc.spi;
 
@@ -55,8 +55,12 @@ import com.sun.gjc.util.SQLTraceDelegator;
 import com.sun.gjc.util.StatementLeakDetector;
 import com.sun.logging.LogDomains;
 import fish.payara.jdbc.RequestTracingListener;
+import fish.payara.jdbc.SQLTraceStoreAdapter;
 import fish.payara.jdbc.SlowSQLLogger;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+
+import static java.lang.Double.parseDouble;
+
 import java.io.PrintWriter;
 import java.sql.CallableStatement;
 import java.sql.DatabaseMetaData;
@@ -77,6 +81,7 @@ import javax.security.auth.Subject;
 import javax.sql.PooledConnection;
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
+
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.hk2.runlevel.RunLevelController;
@@ -304,8 +309,9 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * Adds a connection event listener to the ManagedConnectionImpl instance.
      *
      * @param listener <code>ConnectionEventListener</code>
-     * @see <code>removeConnectionEventListener</code>
+     * @see #removeConnectionEventListener
      */
+    @Override
     public void addConnectionEventListener(ConnectionEventListener listener) {
         this.listener = listener;
     }
@@ -319,6 +325,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws ResourceException if the physical connection is no more
      *                           valid or the connection handle passed is null
      */
+    @Override
     public void associateConnection(Object connection) throws ResourceException {
         logFine("In associateConnection");
         checkIfValid();
@@ -361,6 +368,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      *
      * @throws ResourceException if the physical connection is no more valid
      */
+    @Override
     public void cleanup() throws ResourceException {
         logFine("In cleanup");
         //commenting this as cleanup is called after destroy in case of markConnectionAsBad()
@@ -413,6 +421,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      *
      * @throws ResourceException if there is an error in closing the physical connection
      */
+    @Override
     public void destroy() throws ResourceException {
         logFine("In destroy");
         //GJCINT
@@ -466,6 +475,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      *                           if there is a mismatch between the
      *                           password credentials or reauthentication is requested
      */
+    @Override
     public Object getConnection(Subject sub, javax.resource.spi.ConnectionRequestInfo cxReqInfo)
             throws ResourceException {
         logFine("In getConnection");
@@ -501,7 +511,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         
         if (sqlTraceDelegator == null) {
             if ((requestTracing != null && requestTracing.isRequestTracingEnabled())
-                    || (connectionPool != null && isSlowQueryLoggingEnabled())) {
+                    || (isSlowQueryLoggingEnabled())) {
                 sqlTraceDelegator = new SQLTraceDelegator(spiMCF.getPoolName(),
                         spiMCF.getApplicationName(), spiMCF.getModuleName());
             }
@@ -523,12 +533,10 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
 
             if (!isSlowQueryLoggingEnabled()) {
                 sqlTraceDelegator.deregisterSQLTraceListener(SlowSQLLogger.class);
-            }
-            if (connectionPool != null && isSlowQueryLoggingEnabled()) {
-                double threshold = Double.valueOf(connectionPool.getSlowQueryThresholdInSeconds());
-                if (threshold > 0) {
-                    sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((int)(threshold * 1000), TimeUnit.MILLISECONDS));
-                }
+                sqlTraceDelegator.deregisterSQLTraceListener(SQLTraceStoreAdapter.class);
+            } else {
+                sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger(getSlowQueryThresholdInMillis(), TimeUnit.MILLISECONDS));
+                sqlTraceDelegator.registerSQLTraceListener(new SQLTraceStoreAdapter());
             }
             /**
              * If there are no longer any listeners registered, set the
@@ -605,6 +613,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @return <code>LocalTransactionImpl</code> instance
      * @throws ResourceException if the physical connection is not valid
      */
+    @Override
     public javax.resource.spi.LocalTransaction getLocalTransaction() throws ResourceException {
         logFine("In getLocalTransaction");
         checkIfValid();
@@ -619,6 +628,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws ResourceException if the physical connection is not valid
      * @see <code>setLogWriter</code>
      */
+    @Override
     public PrintWriter getLogWriter() throws ResourceException {
         logFine("In getLogWriter");
         checkIfValid();
@@ -633,6 +643,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @return <code>ManagedConnectionMetaData</code> instance
      * @throws ResourceException if the physical connection is not valid
      */
+    @Override
     public javax.resource.spi.ManagedConnectionMetaData getMetaData() throws ResourceException {
         logFine("In getMetaData");
         checkIfValid();
@@ -650,6 +661,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws NotSupportedException if underlying datasource is not an
      *                               <code>XADataSource</code>
      */
+    @Override
     public XAResource getXAResource() throws ResourceException {
         logFine("In getXAResource");
         checkIfValid();
@@ -676,8 +688,9 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * <code>ManagedConnectionImpl</code> instance.
      *
      * @param listener <code>ConnectionEventListener</code> to be removed
-     * @see <code>addConnectionEventListener</code>
+     * @see #addConnectionEventListener
      */
+    @Override
     public void removeConnectionEventListener(ConnectionEventListener listener) {
     }
 
@@ -748,6 +761,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws ResourceException if the physical connection is not valid
      * @see <code>getLogWriter</code>
      */
+    @Override
     public void setLogWriter(PrintWriter out) throws ResourceException {
         checkIfValid();
         logWriter = out;
@@ -954,6 +968,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         connectionCount--;
     }
 
+    @Override
     public void dissociateConnections() {
         if(myLogicalConnection != null){
             myLogicalConnection.dissociateConnection();
@@ -983,12 +998,6 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     public javax.resource.spi.ManagedConnectionFactory getMcf() {
         return mcf;
     }
-
-/*
-    public boolean getStatementWrapping(){
-        return statemntWrapping;
-    }
-*/
 
     public int getStatementTimeout() {
         return statementTimeout;
@@ -1343,23 +1352,33 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         statementCache.purge(preparedStatement);
     }
 
-    private JdbcConnectionPool getJdbcConnectionPool(javax.resource.spi.ManagedConnectionFactory mcf) {
+    private static JdbcConnectionPool getJdbcConnectionPool(javax.resource.spi.ManagedConnectionFactory mcf) {
         if(Globals.getDefaultHabitat().getService(ProcessEnvironment.class).getProcessType() != ProcessEnvironment.ProcessType.Server) {
             // this is only applicatble in the server environment,
             // otherwise we bave no domain to draw upon
             return null;
         }
-        JdbcConnectionPool jdbcConnectionPool = null;
         ManagedConnectionFactoryImpl spiMCF = (ManagedConnectionFactoryImpl) mcf;
         Resources resources = Globals.getDefaultHabitat().getService(Domain.class).getResources();
         ResourcePool pool = (ResourcePool) ConnectorsUtil.getResourceByName(resources, ResourcePool.class, spiMCF.getPoolName());
         if (pool instanceof JdbcConnectionPool) {
-            jdbcConnectionPool = (JdbcConnectionPool) pool;
+            return (JdbcConnectionPool) pool;
         }
-        return jdbcConnectionPool;
+        return null;
     }
 
     private boolean isSlowQueryLoggingEnabled() {
-        return !IS_SLOW_SQL_LOGGING_DISABLED.equals(connectionPool.getSlowQueryThresholdInSeconds());
+        return getSlowQueryThresholdInMillis() > 0;
+    }
+
+    private long getSlowQueryThresholdInMillis() {
+        if (connectionPool == null) {
+            return -1;
+        }
+        String thresholdInSeconds = connectionPool.getSlowQueryThresholdInSeconds();
+        if (thresholdInSeconds == null || thresholdInSeconds.isEmpty()) {
+            return -1;
+        }
+        return Math.round(parseDouble(thresholdInSeconds) * 1000);
     }
 }

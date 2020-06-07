@@ -46,10 +46,10 @@ import org.eclipse.microprofile.openapi.models.info.License;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class LicenseImpl extends ExtensibleImpl implements License {
+public class LicenseImpl extends ExtensibleImpl<License> implements License {
 
-    protected String name;
-    protected String url;
+    private String name;
+    private String url;
 
     @Override
     public String getName() {
@@ -62,12 +62,6 @@ public class LicenseImpl extends ExtensibleImpl implements License {
     }
 
     @Override
-    public License name(String name) {
-        setName(name);
-        return this;
-    }
-
-    @Override
     public String getUrl() {
         return url;
     }
@@ -75,12 +69,6 @@ public class LicenseImpl extends ExtensibleImpl implements License {
     @Override
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    @Override
-    public License url(String url) {
-        setUrl(url);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.info.License from, License to,

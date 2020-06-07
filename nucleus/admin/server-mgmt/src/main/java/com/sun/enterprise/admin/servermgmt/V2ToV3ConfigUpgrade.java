@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -183,8 +183,8 @@ public class V2ToV3ConfigUpgrade implements ConfigurationUpgrade, PostConstruct 
         "-Dfelix.fileinstall.disableConfigSave=false",
         "-Dfelix.fileinstall.log.level=2",
         "-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder",
-        "-Dorg.glassfish.web.rfc2109_cookie_names_enforced=false",
-        "-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext",};
+        "-Djava.ext.dirs=${com.sun.aas.javaRoot}/lib/ext${path.separator}${com.sun.aas.javaRoot}/jre/lib/ext${path.separator}${com.sun.aas.instanceRoot}/lib/ext",
+        "-Dorg.glassfish.web.rfc2109_cookie_names_enforced=false"};
     // these are added to DAS only
     private static final String[] ADD_LIST_DAS = new String[]{
         "-Dosgi.shell.telnet.port=6666"

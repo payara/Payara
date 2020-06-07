@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-import org.glassfish.j2ee.statistics.TimeStatistic;
+
+import javax.management.j2ee.statistics.TimeStatistic;
 import com.sun.enterprise.util.i18n.StringManager;
 
 /** An implementation of a TimeStatistic. All instances of this class are
@@ -48,7 +50,6 @@ import com.sun.enterprise.util.i18n.StringManager;
  * @author Kedar Mhaswade
  * @since S1AS8.0
  */
-
 public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
     
     private final long count;
@@ -58,6 +59,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
     private static final StringManager localStrMgr = 
                 StringManager.getManager(TimeStatisticImpl.class);
 
+    @Override
     public final String toString() {
         return super.toString() + NEWLINE + 
             "Count: " + getCount() + NEWLINE +
@@ -121,6 +123,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
      * Returns the number of times an operation was invoked 
      * @return long indicating the number of invocations 
      */
+    @Override
     public long getCount() {
         return count;
     }
@@ -130,6 +133,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
      * operation, since measurement started.
      * @return long indicating the maximum time for one invocation
      */
+    @Override
     public long getMaxTime() {
         return maxTime;
     }
@@ -139,6 +143,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
      * operation, since measurement started.
      * @return long indicating the minimum time for one invocation 
      */
+    @Override
     public long getMinTime() {
         return minTime;
     }    
@@ -148,6 +153,7 @@ public class TimeStatisticImpl extends StatisticImpl implements TimeStatistic {
      * since measurement started.
      * @return long indicating the total time for all invocation 
      */
+    @Override
     public long getTotalTime() {
         return totTime;
     }

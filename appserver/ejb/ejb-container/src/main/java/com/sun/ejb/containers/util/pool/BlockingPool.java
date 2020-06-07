@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers.util.pool;
 
-import static com.sun.ejb.containers.util.pool.AbstractPool._logger;
 import java.util.logging.Level;
 
 /**
@@ -63,7 +63,7 @@ public class BlockingPool extends NonBlockingPool {
     {
         long t1, totalWaitTime = 0;
         synchronized (list) {
-            while (singletonBeanPool == false) {
+            while (!singletonBeanPool) {
                 if (list.size() > 0) {
                     return super.getObject(param);
                 } else if ((createdCount - destroyedCount) < maxPoolSize) {
@@ -84,9 +84,7 @@ public class BlockingPool extends NonBlockingPool {
                     totalWaitTime += System.currentTimeMillis() - t1;
                     if (list.size() > 0) {
                         return super.getObject(param);
-                    } else if (maxWaitTimeInMillis == 0) {
-                        // nothing special to do in this case
-                    } else if (totalWaitTime >= maxWaitTimeInMillis) {
+                    } else if (maxWaitTimeInMillis > 0 && totalWaitTime >= maxWaitTimeInMillis) {
                         throw new PoolException("Pool Instance not obtained" +
                            " within given time interval.");
                     }
@@ -109,7 +107,7 @@ public class BlockingPool extends NonBlockingPool {
     	synchronized (list) {
             poolReturned++;
             if (waitCount > 0) {
-                list.notify();
+                list.notifyAll();
             }
     	}
     }
@@ -127,7 +125,7 @@ public class BlockingPool extends NonBlockingPool {
         super.destroyObject(object);
     	synchronized (list) {
             if (waitCount > 0) {
-                list.notify();
+                list.notifyAll();
             }
     	}
     }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * AugmentationTest.java
@@ -81,7 +82,7 @@ public class AugmentationTest
                            Class type,
                            String name)
     {
-        final StringBuffer s = new StringBuffer();
+        final StringBuilder s = new StringBuilder();
         s.append(Modifier.toString(mods));
         s.append(" ");
         s.append(type.getName());
@@ -94,7 +95,7 @@ public class AugmentationTest
                            String name,
                            Class[] params)
     {
-        final StringBuffer s = new StringBuffer();
+        final StringBuilder s = new StringBuilder();
         s.append(Modifier.toString(mods));
         s.append(" ");
         s.append(name);
@@ -114,7 +115,7 @@ public class AugmentationTest
                            String name,
                            Class[] params)
     {
-        final StringBuffer s = new StringBuffer();
+        final StringBuilder s = new StringBuilder();
         s.append(Modifier.toString(mods));
         s.append(" ");
         s.append(result.getName());

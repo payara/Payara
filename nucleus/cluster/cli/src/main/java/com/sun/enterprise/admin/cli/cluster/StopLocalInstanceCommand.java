@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.cli.cluster;
 
 import java.util.logging.Level;
 import com.sun.enterprise.admin.cli.*;
-import com.sun.enterprise.admin.cli.cluster.Strings;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.HostAndPort;
@@ -57,11 +58,11 @@ import org.jvnet.hk2.annotations.Service;
  * @author Bill Shannon
  * @author Byron Nevins
  *
- *
  */
 @Service(name = "stop-local-instance")
 @PerLookup
 public class StopLocalInstanceCommand extends LocalInstanceCommand {
+
     @Param(optional = true, defaultValue = "true")
     private Boolean force;
     @Param(name = "instance_name", primary = true, optional = true)
@@ -70,8 +71,7 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
     Boolean kill;
 
     @Override
-    protected void validate()
-            throws CommandException, CommandValidationException {
+    protected void validate() throws CommandException, CommandValidationException {
         instanceName = userArgInstanceName;
         super.validate();
     }
@@ -97,27 +97,30 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
     /**
      */
     @Override
-    protected int executeCommand()
-            throws CommandException, CommandValidationException {
+    protected int executeCommand() throws CommandException, CommandValidationException {
         // if the local password isn't available, the instance isn't running
         // (localPassword is set by initInstance)
         File serverDir = getServerDirs().getServerDir();
 
-        if (serverDir == null || !serverDir.isDirectory())
+        if (serverDir == null || !serverDir.isDirectory()) {
             return noSuchInstance();
+        }
 
-        if (getServerDirs().getLocalPassword() == null)
+        if (getServerDirs().getLocalPassword() == null) {
             return instanceNotRunning();
+        }
 
         String serverName = getServerDirs().getServerName();
         HostAndPort addr = getAdminAddress(serverName);
         programOpts.setHostAndPort(addr);
 
-        if (logger.isLoggable(Level.FINER))
+        if (logger.isLoggable(Level.FINER)) {
             logger.finer("Stopping server at " + addr.toString());
+        }
 
-        if (!isRunning())
+        if (!isRunning()) {
             return instanceNotRunning();
+        }
 
         logger.finer("It's the correct Instance");
         return doRemoteCommand();
@@ -128,12 +131,12 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
      * we detect that the DAS is not running.
      */
     protected int instanceNotRunning() throws CommandException {
-        if (kill)
+        if (kill) {
             return kill();
+        }
 
         // by definition this is not an error
         // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8387
-
         logger.warning(Strings.get("StopInstance.instanceNotRunning"));
         return 0;
     }
@@ -144,7 +147,7 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
      */
     private int noSuchInstance() {
         // by definition this is not an error
-        // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8387
+        // https://github.com/eclipse-ee4j/glassfish/issues/8387
         logger.warning(Strings.get("Instance.noSuchInstance"));
         return 0;
     }
@@ -170,15 +173,16 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
         try {
             remoteException = runRemoteStop();
             waitForDeath();
-        }
-        catch (CommandException e) {
-            if(remoteException != null)
+        } catch (CommandException e) {
+            if (remoteException != null) {
                 logger.warning("Remote Exception: " + e);
+            }
 
             // 1.  We can't access the server at all
             // 2.  We timed-out waiting for it to die
-            if(!kill)
+            if (!kill) {
                 throw e;
+            }
         }
 
         if (kill) {
@@ -211,20 +215,19 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
             RemoteCLICommand cmd = new RemoteCLICommand("_stop-instance", programOpts, env);
             cmd.executeAndReturnOutput("_stop-instance", "--force", force.toString());
             return null;
-        }
-        catch (CommandException e) {
+        } catch (CommandException e) {
             // ReST may have thrown a checked Exception because the server died faster than the
             // server could communicate back!   The ReST client misinterprets it
             // to mean the server is not reachable.  This is a special case.  And it
             // is NOT an error.
             return e;
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             // Perhaps Jersey or who-knows-what threw a unchecked Exception.
             // We don't care.  See the huge javadoc comment above...
             return e;
         }
     }
+
     /**
      * Wait for the server to die.
      */
@@ -244,20 +247,20 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
             }
             try {
                 Thread.sleep(100);
-                if (!programOpts.isTerse() && count++ % 10 == 0)
+                if (!programOpts.isTerse() && count++ % 10 == 0) {
                     System.out.print(".");
-            }
-            catch (InterruptedException ex) {
+                }
+            } catch (InterruptedException ex) {
                 // don't care
             }
         }
 
-        if (!programOpts.isTerse())
+        if (!programOpts.isTerse()) {
             System.out.println();
+        }
 
         if (alive) {
-            throw new CommandException(Strings.get("StopInstance.instanceNotDead",
-                    (CLIConstants.DEATH_TIMEOUT_MS / 1000)));
+            throw new CommandException(Strings.get("StopInstance.instanceNotDead", (CLIConstants.DEATH_TIMEOUT_MS / 1000)));
         }
     }
 
@@ -272,21 +275,20 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
         try {
             prevPid = new File(getServerDirs().getPidFile().getPath() + ".prev");
 
-            if (!prevPid.canRead())
+            if (!prevPid.canRead()) {
                 throw new CommandException(Strings.get("StopInstance.nopidprev", prevPid));
+            }
 
             pids = FileUtils.readSmallFile(prevPid).trim();
             String s = ProcessUtils.kill(Integer.parseInt(pids));
 
-            if (s != null && logger.isLoggable(Level.FINER))
+            if (s != null && logger.isLoggable(Level.FINER)) {
                 logger.finer(s);
-        }
-        catch (CommandException ce) {
+            }
+        } catch (CommandException ce) {
             throw ce;
-        }
-        catch (Exception ex) {
-            throw new CommandException(Strings.get("StopInstance.pidprevreaderror",
-                    prevPid, ex.getMessage()));
+        } catch (Exception ex) {
+            throw new CommandException(Strings.get("StopInstance.pidprevreaderror", prevPid, ex.getMessage()));
         }
         return 0;
     }

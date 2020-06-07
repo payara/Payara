@@ -55,14 +55,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-/** 
+/**
  * This class represents the configuration information of the JavaMail
  * Session object within Java EE.
  */
 public class MailConfiguration implements Serializable {
     private static final String PROP_NAME_PREFIX_LEGACY = "mail-";
     private static final char PROP_NAME_DELIM_LEGACY = '-';
- 
+
     private static final String MAIL_STORE_PROTOCOL = "mail.store.protocol";
     private static final String MAIL_TRANSPORT_PROTOCOL =
                                                     "mail.transport.protocol";
@@ -100,16 +100,16 @@ public class MailConfiguration implements Serializable {
     private Properties mailProperties = new Properties();
 
     static Logger _logger = DOLUtils.getDefaultLogger();
- 
-    /** 
+
+    /**
      * Construct a specification of mail configuration with the given username,
-     * Mail From Address and mail hostname. 
+     * Mail From Address and mail hostname.
      * @param the username.
      * @param the from address.
      * @param the mail hostname.
      */
-    public MailConfiguration(String username, 
-			     String mailFrom, 
+    public MailConfiguration(String username,
+			     String mailFrom,
 			     String mailHost) {
         // called from MailConfigurationNode, which is never used
 	this.username = username;
@@ -121,7 +121,7 @@ public class MailConfiguration implements Serializable {
         put(MAIL_HOST, mailHost);
     }
 
-    /** 
+    /**
      * Construct a specification of mail configuration.
      */
     public MailConfiguration(MailResourceIntf mailRes) {
@@ -133,7 +133,7 @@ public class MailConfiguration implements Serializable {
         }
     }
 
-    /** 
+    /**
      * Load all configuration information from the mail resource node in
      * domain.xml for the JavaMail Session object within Java EE.
      */
@@ -145,7 +145,7 @@ public class MailConfiguration implements Serializable {
                 "MailConfiguration: no MailResource object. mailResource=null");
             return;
         }
- 
+
         jndiName = mailResource.getName();
         description = mailResource.getDescription();
         enabled = mailResource.isEnabled();
@@ -221,18 +221,18 @@ public class MailConfiguration implements Serializable {
         if (value != null && value.length() > 0)
             mailProperties.put(name, value);
     }
- 
+
     // XXX - none of the following mail-specific accessor methods
     // seem to be used
 
-    /** 
+    /**
      * Get the username for the mail session the server will provide.
      * @return the username.
      */
     public String getUsername() {
 	return this.username;
     }
-    
+
     /**
      * Get the password for the mail session the server will provide.
      * @return the password.
@@ -240,24 +240,24 @@ public class MailConfiguration implements Serializable {
     public String getPassword(){
         return this.password;
     }
-    
+
     /**
      * Get whether authentication is enabled for the mail session the server will provide
-     * @return the authentication status. 
+     * @return the authentication status.
      */
     public boolean getAuth(){
         return this.auth;
     }
-    
-    /** 
+
+    /**
      * Get the mail from address for the mail session the server will provide.
      * @return the from address.
      */
     public String getMailFrom() {
 	return this.mailFrom;
     }
-    
-    /** 
+
+    /**
      * Get the mail hostname for the mail session the server will provide.
      * @return the hostname of the mail server.
      */
@@ -265,7 +265,7 @@ public class MailConfiguration implements Serializable {
 	return this.mailHost;
     }
 
-    /** 
+    /**
      * Get the default Message Access Protocol for the mail session the  server
      * will provide.
      * @return the store protocol of the mail server.
@@ -274,7 +274,7 @@ public class MailConfiguration implements Serializable {
         return this.storeProtocol;
     }
 
-    /** 
+    /**
      * Get the default Transport Protocol for the mail session the server will
      * provide.
      * @return the transport protocol of the mail server.
@@ -283,7 +283,7 @@ public class MailConfiguration implements Serializable {
         return this.transportProtocol;
     }
 
-    /** 
+    /**
      * Get the default Message Access Protocol class for the mail session the
      * server will provide.
      * @return the store protocol of the mail server.
@@ -292,7 +292,7 @@ public class MailConfiguration implements Serializable {
         return this.storeProtocolClass;
     }
 
-    /** 
+    /**
      * Get the default Transport Protocol class for the mail session the server
      * will provide.
      * @return the transport protocol of the mail server.
@@ -301,7 +301,7 @@ public class MailConfiguration implements Serializable {
         return this.transportProtocolClass;
     }
 
-    /** 
+    /**
      * Get the mail debug flag for the mail session the server will provide.
      * @return the debug flag of the mail server.
      */
@@ -309,7 +309,7 @@ public class MailConfiguration implements Serializable {
         return this.debug;
     }
 
-    /** 
+    /**
      * Get the mail description for the mail session the server will provide.
      * @return the description of the mail server.
      */
@@ -317,7 +317,7 @@ public class MailConfiguration implements Serializable {
         return this.description;
     }
 
-    /** 
+    /**
      * Get the mail JNDI name for the mail session the server will provide.
      * @return the JNDI name of the mail server.
      */
@@ -325,7 +325,7 @@ public class MailConfiguration implements Serializable {
         return this.jndiName;
     }
 
-    /** 
+    /**
      * Get the mail enable flag for the mail session the server will provide.
      * @return the enable flag of the mail server.
      */
@@ -335,35 +335,35 @@ public class MailConfiguration implements Serializable {
 
     // This is the only method that's actually used, to create the Session.
 
-    /** 
+    /**
      * Get the mail session properties as per JavaMail.
      * @return the mail session properties.
      */
     public Properties getMailProperties() {
         return mailProperties;
     }
- 
-    /** 
+
+    /**
      * A formatted representation of my state.
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("MailConfiguration: [");
-        toStringBuffer.append("description=").append(description);
-        toStringBuffer.append( ", jndiName=").append(jndiName);
-        toStringBuffer.append( ", enabled=").append(enabled);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("MailConfiguration: [");
+        toStringBuilder.append("description=").append(description);
+        toStringBuilder.append( ", jndiName=").append(jndiName);
+        toStringBuilder.append( ", enabled=").append(enabled);
 
-        toStringBuffer.append( ", storeProtocol=").append(storeProtocol);
-        toStringBuffer.append( ", transportProtocol=").
+        toStringBuilder.append( ", storeProtocol=").append(storeProtocol);
+        toStringBuilder.append( ", transportProtocol=").
                                                 append(transportProtocol);
-        toStringBuffer.append( ", storeProtocolClass=").
+        toStringBuilder.append( ", storeProtocolClass=").
                                                 append(storeProtocolClass);
-        toStringBuffer.append( ", transportProtocolClass=").
+        toStringBuilder.append( ", transportProtocolClass=").
                                                 append(transportProtocolClass);
-        toStringBuffer.append( ", mailHost=").append(mailHost);
-        toStringBuffer.append( ", username=").append(username);
-        toStringBuffer.append( ", mailFrom=").append(mailFrom);
-        toStringBuffer.append( ", debug=").append(debug);
-        toStringBuffer.append( ", mailProperties: [");
+        toStringBuilder.append( ", mailHost=").append(mailHost);
+        toStringBuilder.append( ", username=").append(username);
+        toStringBuilder.append( ", mailFrom=").append(mailFrom);
+        toStringBuilder.append( ", debug=").append(debug);
+        toStringBuilder.append( ", mailProperties: [");
 
         Enumeration e = mailProperties.propertyNames();
         String name;
@@ -374,10 +374,10 @@ public class MailConfiguration implements Serializable {
             name = (String)e.nextElement();
             value = mailProperties.getProperty(name);
             if (!isFirst)
-                toStringBuffer.append( ", ");
-            toStringBuffer.append(name).append("=").append(value);
+                toStringBuilder.append( ", ");
+            toStringBuilder.append(name).append("=").append(value);
             isFirst = false;
         }
-        toStringBuffer.append( "]]");
+        toStringBuilder.append( "]]");
     }
 }

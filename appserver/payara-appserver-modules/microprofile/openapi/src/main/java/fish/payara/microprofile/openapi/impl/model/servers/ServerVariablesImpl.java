@@ -43,38 +43,47 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnno
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 
-public class ServerVariablesImpl extends LinkedHashMap<String, ServerVariable> implements ServerVariables {
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
+
+public class ServerVariablesImpl extends ExtensibleTreeMap<ServerVariable, ServerVariables> implements ServerVariables {
 
     private static final long serialVersionUID = 8869393484826870024L;
 
-    protected Map<String, Object> extensions = new HashMap<>();
+    public ServerVariablesImpl() {
+        super();
+    }
+
+    public ServerVariablesImpl(Map<String, ServerVariable> variables) {
+        super(variables);
+    }
 
     @Override
     public ServerVariables addServerVariable(String name, ServerVariable item) {
-        this.put(name, item);
+        if (item != null) {
+            this.put(name, item);
+        }
         return this;
     }
 
     @Override
-    public Map<String, Object> getExtensions() {
-        return extensions;
+    public void removeServerVariable(String name) {
+        remove(name);
     }
 
     @Override
-    public void setExtensions(Map<String, Object> extensions) {
-        this.extensions = extensions;
+    public Map<String, ServerVariable> getServerVariables() {
+        return new ServerVariablesImpl(this);
     }
 
     @Override
-    public void addExtension(String name, Object value) {
-        this.extensions.put(name, value);
+    public void setServerVariables(Map<String, ServerVariable> items) {
+        clear();
+        putAll(items);
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.servers.ServerVariable from,
@@ -93,7 +102,7 @@ public class ServerVariablesImpl extends LinkedHashMap<String, ServerVariable> i
                 variable.addEnumeration(value);
             }
         }
-        if ((to.containsKey(from.name()) && override) || !to.containsKey(from.name())) {
+        if ((to.hasServerVariable(from.name()) && override) || !to.hasServerVariable(from.name())) {
             to.addServerVariable(from.name(), variable);
         }
     }

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -47,6 +47,15 @@ import com.sun.enterprise.util.StringUtils;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.validation.constraints.NotNull;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
@@ -60,16 +69,6 @@ import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
-
-import javax.validation.constraints.NotNull;
-import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -917,7 +916,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             // only add non-clustered servers as the cluster 
             // targets will be separately added
             for (Server server : d.getServers().getServer()) {
-                if (server.getCluster() == null && server.getDeploymentGroup().isEmpty()) {
+                if (server.getCluster() == null) {
                     targets.add(server.getName());
                 }
             }
@@ -931,12 +930,36 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             return targets;
         }
 
+        /**
+         * @param me      the current domain
+         * @param appName the name of the application
+         * @return all of the targets that have application-refs for an application. If
+         *         an instance is included by being in a deployment group or cluster it
+         *         won't appear in this list.
+         */
         public static List<String> getAllReferencedTargetsForApplication(
             Domain me, String appName) {
             List<String> referencedTargets = new ArrayList<String>();
             for (String target : me.getAllTargets()) {
                 if (me.getApplicationRefInTarget(appName, target) != null) {
                     referencedTargets.add(target);
+                }
+            }
+
+            // Remove any server targets if they are included by virtue of being in a
+            // deployment group
+            for (String reference : new ArrayList<>(referencedTargets)) {
+                DeploymentGroup dg = me.getDeploymentGroupNamed(reference);
+                if (dg != null) {
+                    for (Server instance : dg.getInstances()) {
+                        referencedTargets.remove(instance.getName());
+                    }
+                }
+                Cluster cluster = me.getClusterNamed(reference);
+                if (cluster != null) {
+                    for (Server instance : cluster.getInstances()) {
+                        referencedTargets.remove(instance.getName());
+                    }
                 }
             }
             return referencedTargets;

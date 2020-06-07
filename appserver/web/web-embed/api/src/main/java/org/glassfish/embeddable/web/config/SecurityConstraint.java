@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.embeddable.web.config;
 
@@ -83,7 +84,7 @@ public class SecurityConstraint {
      * security constrint
      *
      * @see WebResourceCollection
-     * 
+     *
      * @param webResourceCollection the web resource collection
      * for this constraint definition
      */
@@ -106,7 +107,7 @@ public class SecurityConstraint {
      * Sets the roles authorized to access the URL patterns and HTTP methods
      *
      * @param roleNames the roles authorized to access the url patterns
-     * and HTTP methods. 
+     * and HTTP methods.
      */
     public void setAuthConstraint(String... roleNames) {
         this.roleNames = roleNames;
@@ -154,13 +155,13 @@ public class SecurityConstraint {
      * Returns a formatted string of the state.
      */
     public String toString() {
-        StringBuffer toStringBuffer = new StringBuffer();
-	    toStringBuffer.append("SecurityConstraint: ");
-	    toStringBuffer.append(" webResourceCollections: ").append(webResourceCollection);
+        StringBuilder toStringBuilder = new StringBuilder();
+	    toStringBuilder.append("SecurityConstraint: ");
+	    toStringBuilder.append(" webResourceCollections: ").append(webResourceCollection);
         for (String roleName : roleNames) {
-	        toStringBuffer.append(" authorizationConstraint ").append(roleName);
+	        toStringBuilder.append(" authorizationConstraint ").append(roleName);
         }
-	    toStringBuffer.append(" userDataConstraint ").append(tg);
-        return toStringBuffer.toString();
+	    toStringBuilder.append(" userDataConstraint ").append(tg);
+        return toStringBuilder.toString();
     }
 }

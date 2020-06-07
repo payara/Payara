@@ -1,0 +1,114 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-webcontainermanagerprops" name="task-webcontainermanagerprops"></a><a id="GHWEB00032" name="GHWEB00032"></a></p>
+
+<h4><a id="sthref8" name="sthref8"></a><a id="sthref9" name="sthref9"></a><a id="sthref10" name="sthref10"></a>To Configure Manager Properties for the Web Container</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The session manager provides the means to configure how sessions are created and destroyed, where the session state is stored, and the maximum number of sessions that are available.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the configuration that you are changing.</p>
+</li>
+<li>
+<p>Under the configuration's node, select the Web Container node.</p>
+<p>The General Properties page opens.</p>
+</li>
+<li>
+<p>On the General Properties page, click the Manager Properties tab.</p>
+<p>The Manager Properties page opens.</p>
+</li>
+<li>
+<p>In the Reap Interval field, type the number of seconds before the inactive session data is deleted from the store.</p>
+<p>The default value is 60.</p>
+<p>Set this value lower than the frequency at which session data changes. For example, this value should be as low as possible (1 second) for a hit counter servlet on a frequently accessed web site; otherwise, you could lose the last few hits each time you restart the server.</p>
+</li>
+<li>
+<p>In the Max Sessions field, type the maximum number of sessions that can be in cache.</p>
+<p>A value of -1 indicates no limit to the number of sessions. The default value is -1.</p>
+<p>After the limit is reached, an attempt to create a new session causes an <code>IllegalStateException</code> to be thrown.</p>
+</li>
+<li>
+<p>In the Session File Name field, type the absolute or relative path to the directory in which the session state is preserved between application restarts, if preserving the state is possible.</p>
+<p>If this path is not set, the session state is not preserved. By default, this path is not set.</p>
+<p>A relative path is relative to the temporary directory for this web application.</p>
+<p>This setting is applicable only if the Persistence Type is <code>memory</code>. To set the Persistence Type, see <a href="task-webcontaineravailability.html">To Configure Availability Settings for the Web Container</a>.</p>
+</li>
+<li>
+<p>In the Session ID Generator Class Name field, type the value of a custom class for generating unique session IDs.</p>
+<p>Only one session ID generator class per server instance is permitted, and all instances in a cluster must use the same session ID generator to prevent session key collision.</p>
+<p>Custom session ID generator classes must implement the <code>com.sun.enterprise.util.uuid.UuidGenerator</code> interface:</p>
+<pre>
+package com.sun.enterprise.util.uuid;
+
+public interface UuidGenerator {
+
+    public String generateUuid();
+    public String generateUuid(Object obj);  //obj is the session object
+}
+</pre>
+<p>The class must be in the Application Server classpath.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>GlassFish Server does not define any additional properties for the session manager.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+</ol>
+<a id="sthref11" name="sthref11"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-webcontainergeneral.html">To Configure General Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainersessiontimeout.html">To Configure Session Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainerstoreprops.html">To Configure Store Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontaineravailability.html">To Configure Availability Settings for the Web Container</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

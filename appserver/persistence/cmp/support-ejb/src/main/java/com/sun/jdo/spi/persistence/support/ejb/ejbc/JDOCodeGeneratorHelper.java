@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * JDOCodeGeneratorHelper.java
@@ -46,17 +47,15 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbc;
 
-import java.util.ResourceBundle;
-
-import com.sun.jdo.spi.persistence.support.ejb.codegen.GeneratorException;
-
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
-
+import com.sun.jdo.spi.persistence.support.ejb.codegen.GeneratorException;
 import org.glassfish.persistence.common.I18NHelper;
 
+import java.util.ResourceBundle;
+
 /*
- * This is the helper class for JDO code generation 
+ * This is the helper class for JDO code generation
  *
  */
 public class JDOCodeGeneratorHelper {
@@ -104,7 +103,7 @@ public class JDOCodeGeneratorHelper {
             getModuleName(bundle)));
     }
 
-    /** 
+    /**
      * Create GeneratorException for this message key.
      * @param key the message key in the bundle.
      * @param bundle the ejb bundle.
@@ -117,11 +116,11 @@ public class JDOCodeGeneratorHelper {
         return new GeneratorException(I18NHelper.getMessage(
             messages, key,
             bundle.getApplication().getRegistrationName(),
-            getModuleName(bundle), 
+            getModuleName(bundle),
             e.getMessage()));
     }
 
-    /** 
+    /**
      * Create GeneratorException for this message key and bean name.
      * @param key the message key in the bundle.
      * @param bundle the ejb bundle.
@@ -145,7 +144,7 @@ public class JDOCodeGeneratorHelper {
      * @return GeneratorException.
      */
     public static GeneratorException createGeneratorException(
-            String key, String beanName, EjbBundleDescriptor bundle, 
+            String key, String beanName, EjbBundleDescriptor bundle,
             Exception e) {
 
         return createGeneratorException(key, beanName, bundle, e.getMessage());
@@ -153,17 +152,17 @@ public class JDOCodeGeneratorHelper {
 
     /**
      * Create GeneratorException for this message key, bean name,
-     * and a StringBuffer with validation exceptions.
+     * and a StringBuilder with validation exceptions.
      * @param key the message key in the bundle.
      * @param beanName the CMP bean name that caused the exception.
      * @param bundle the ejb bundle.
      * @param e the Exception to use for the message.
-     * @param buf the StringBuffer with validation exceptions.
+     * @param buf the StringBuilder with validation exceptions.
      * @return GeneratorException.
      */
     public static GeneratorException createGeneratorException(
-            String key, String beanName, EjbBundleDescriptor bundle,  
-            Exception e, StringBuffer buf) {
+            String key, String beanName, EjbBundleDescriptor bundle,
+            Exception e, StringBuilder buf) {
 
         String msg = (buf == null) ?
                 e.getMessage() :
@@ -180,13 +179,13 @@ public class JDOCodeGeneratorHelper {
      * @return GeneratorException.
      */
     public static GeneratorException createGeneratorException(
-            String key, String beanName, EjbBundleDescriptor bundle, 
+            String key, String beanName, EjbBundleDescriptor bundle,
             String msg) {
 
         return new GeneratorException(I18NHelper.getMessage(
             messages, key,
             new Object[] {
-                beanName, 
+                beanName,
                 bundle.getApplication().getRegistrationName(),
                 getModuleName(bundle),
                 msg}

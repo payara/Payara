@@ -43,6 +43,7 @@ package com.sun.enterprise.security.webservices;
 import static java.util.Collections.synchronizedMap;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
@@ -72,8 +73,9 @@ public class ClientPipeCloser {
     public void removeListenerWrapper(AuthConfigRegistrationWrapper wrapper) {
         ServiceReferenceDescriptor entryToRemove = null;
 
-        for (ServiceReferenceDescriptor svc : svcRefListenerMap.keySet()) {
-            AuthConfigRegistrationWrapper wrp = svcRefListenerMap.get(svc);
+        for (Entry<ServiceReferenceDescriptor, AuthConfigRegistrationWrapper> entry : svcRefListenerMap.entrySet()) {
+            ServiceReferenceDescriptor svc = entry.getKey();
+            AuthConfigRegistrationWrapper wrp = entry.getValue();
             if (wrp == wrapper) {
                 entryToRemove = svc;
                 break;

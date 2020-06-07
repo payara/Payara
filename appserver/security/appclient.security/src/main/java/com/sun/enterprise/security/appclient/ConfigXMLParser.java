@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.appclient;
 
 import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.security.jmac.config.*;
-import com.sun.enterprise.security.jmac.config.GFServerConfigProvider;
+import com.sun.enterprise.security.jaspic.config.*;
+import com.sun.enterprise.security.jaspic.config.GFServerConfigProvider;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -57,7 +57,7 @@ import java.util.List;
 import javax.xml.bind.JAXBException;
 import org.glassfish.appclient.client.acc.config.*;
 import sun.security.util.PropertyExpander;
-import com.sun.enterprise.security.jmac.AuthMessagePolicy;
+import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import javax.security.auth.message.MessagePolicy;
@@ -178,7 +178,7 @@ public class ConfigXMLParser implements ConfigParser {
                 // log warning and give the provider a chance to 
                 // interpret value itself.
                 if (_logger.isLoggable(Level.WARNING)) {
-                    _logger.warning("jmac.unexpandedproperty");
+                    _logger.warning("jaspic.unexpandedproperty");
                 }
                 options.put(prop.getName(),
                             prop.getValue());

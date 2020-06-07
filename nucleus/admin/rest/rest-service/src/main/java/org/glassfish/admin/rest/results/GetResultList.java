@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.results;
 
@@ -51,47 +52,41 @@ import java.util.List;
  * @author Rajeshwar Patil
  */
 public class GetResultList extends Result {
+    
+    List<Dom> domList;
+    String postCommand;
+    String[][] commandResourcesPaths;
+    OptionsResult metaData;
 
     /**
      * Constructor
      */
     public GetResultList(List<Dom> domList, String postCommand, String[][] commandResourcesPaths,  OptionsResult metaData) {
-        __domList = domList;
-        __postCommand = postCommand;
-        __commandResourcesPaths = commandResourcesPaths;
-        __metaData = metaData;
+        this.domList = domList;
+        this.postCommand = postCommand;
+        this.commandResourcesPaths = commandResourcesPaths;
+        this.metaData = metaData;
     }
 
     /**
      * Returns the List<Dom> object associated with the list resource.
      */
     public List<Dom> getDomList() {
-        return __domList;
+        return domList;
     }
-
-    /**
-     * Returns postCommand associated with the resource.
-     */
-//    public String getPostCommand() {
-//        return __postCommand;
-//    }
 
     /**
      * Returns an array of command resources paths and the operation type.
      */
     public String[][] getCommandResourcesPaths() {
-        return __commandResourcesPaths;
+        return commandResourcesPaths;
     }
 
     /**
      * Returns OptionsResult - the meta-data of this resource.
      */
     public OptionsResult getMetaData() {
-        return __metaData;
+        return metaData;
     }
-
-    List<Dom> __domList;
-    String __postCommand;
-    String[][] __commandResourcesPaths;
-    OptionsResult __metaData;
+    
 }

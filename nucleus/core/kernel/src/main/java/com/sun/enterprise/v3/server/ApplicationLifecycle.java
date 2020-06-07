@@ -38,46 +38,47 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates.]
-  
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates.]
+
 package com.sun.enterprise.v3.server;
 
+import fish.payara.nucleus.hotdeploy.HotDeployService;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-import java.beans.PropertyVetoException;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-import org.glassfish.api.*;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.container.Sniffer;
-import org.glassfish.api.deployment.*;
-import org.glassfish.api.deployment.archive.*;
-import org.glassfish.api.event.*;
+import org.glassfish.api.deployment.ApplicationMetaDataProvider;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.Deployer;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.MetaData;
+import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.api.deployment.UndeployCommandParameters;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
+import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.CompositeHandler;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.api.event.EventListener.Event;
+import org.glassfish.api.event.Events;
 import org.glassfish.api.virtualization.VirtualizationEnv;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
-import org.glassfish.deployment.common.*;
+import org.glassfish.deployment.common.ApplicationConfigInfo;
+import org.glassfish.deployment.common.ClientJarWriter;
+import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.deployment.common.DeploymentException;
+import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.monitor.DeploymentLifecycleProbeProvider;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
@@ -88,25 +89,65 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.ParsingContext;
 import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.internal.api.*;
-import org.glassfish.internal.data.*;
+import org.glassfish.hk2.classmodel.reflect.util.CommonModelRegistry;
+import org.glassfish.hk2.classmodel.reflect.util.ResourceLocator;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.data.ContainerRegistry;
+import org.glassfish.internal.data.EngineInfo;
+import org.glassfish.internal.data.EngineRef;
+import org.glassfish.internal.data.ModuleInfo;
+import org.glassfish.internal.data.ProgressTracker;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.analysis.DeploymentSpan;
+import org.glassfish.internal.deployment.analysis.SpanSequence;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
+import org.glassfish.internal.deployment.analysis.TraceContext;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Optional;
-
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.RetryableException;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import java.beans.PropertyVetoException;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.logging.Level;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
+import static java.util.stream.Collectors.toMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Application Loader is providing useful methods to load applications
@@ -145,8 +186,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     ServerEnvironmentImpl env;
-   
-    @Inject @Optional
+
+    @Inject @org.jvnet.hk2.annotations.Optional
     VirtualizationEnv virtEnv;
 
     @Inject
@@ -155,34 +196,36 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Inject
     ConfigSupport configSupport;
 
+    @Inject
+    CommonClassLoaderServiceImpl commonClassLoaderService;
+
+    @Inject
+    PayaraExecutorService executorService;
+
+    @Inject
+    private HotDeployService hotDeployService;
+
     protected Logger logger = KernelLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
 
-    private final ThreadLocal<Deque<ExtendedDeploymentContext>> currentDeploymentContext = new ThreadLocal<Deque<ExtendedDeploymentContext>>() {
-        @Override
-        protected Deque<ExtendedDeploymentContext> initialValue() {
+    private final ThreadLocal<Deque<ExtendedDeploymentContext>> currentDeploymentContext //
+        = new ThreadLocal<Deque<ExtendedDeploymentContext>>() {
+
+            @Override
+            protected Deque<ExtendedDeploymentContext> initialValue() {
             return new ArrayDeque<>(5);
         }
     };
-    
-    protected <T extends Container, U extends ApplicationContainer> Deployer<T, U> getDeployer(EngineInfo<T, U> engineInfo) {
-        return engineInfo.getDeployer();
-    }
 
-    protected DeploymentLifecycleProbeProvider 
+    protected DeploymentLifecycleProbeProvider
         deploymentLifecycleProbeProvider = null;
 
-    private ExecutorService executorService = null;
-
     private Collection<ApplicationLifecycleInterceptor> alcInterceptors = Collections.EMPTY_LIST;
-    
+
     @Override
     public void postConstruct() {
-        executorService = createExecutorService();
-        deploymentLifecycleProbeProvider = 
-            new DeploymentLifecycleProbeProvider();
-        alcInterceptors = habitat.getAllServices(
-            ApplicationLifecycleInterceptor.class);
+        deploymentLifecycleProbeProvider = new DeploymentLifecycleProbeProvider();
+        alcInterceptors = habitat.getAllServices(ApplicationLifecycleInterceptor.class);
     }
 
     /**
@@ -210,9 +253,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public ArchiveHandler getArchiveHandler(ReadableArchive archive, String type) throws IOException {
         if (type != null) {
-            return habitat.<ArchiveDetector>getService(ArchiveDetector.class, type).getArchiveHandler();
+            ArchiveDetector archiveDetector = habitat.<ArchiveDetector>getService(ArchiveDetector.class, type);
+            if (archiveDetector != null) {
+                return archiveDetector.getArchiveHandler();
+            }
         }
-        List<ArchiveDetector> detectors = new ArrayList<ArchiveDetector>(habitat.<ArchiveDetector>getAllServices(ArchiveDetector.class));
+        List<ArchiveDetector> detectors = new ArrayList<>(habitat.<ArchiveDetector>getAllServices(ArchiveDetector.class));
         Collections.sort(detectors, new Comparator<ArchiveDetector>() {
             // rank 2 is considered lower than rank 1, let's sort them in inceasing order
             @Override
@@ -230,12 +276,18 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Override
     public ApplicationDeployment prepare(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+
+        DeploymentSpan eventSpan = tracing.startSpan(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.DEPLOYMENT_START.type());
         events.send(new Event<>(Deployment.DEPLOYMENT_START, context), false);
+        eventSpan.close();
+
         currentDeploymentContext.get().push(context);
         final ActionReport report = context.getActionReport();
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
         final String appName = commandParams.name();
         ApplicationInfo appInfo;
+        Optional<ApplicationState> appState = hotDeployService.getApplicationState(context);
 
         final ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
         ProgressTracker tracker = new ProgressTracker() {
@@ -269,7 +321,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     ApplicationInfo appInfo = appRegistry.get(appName);
                     if (appInfo != null) {
                         // send the event to close necessary resources
-                        events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, appInfo));
+                        events.send(new Event<>(Deployment.APPLICATION_DISABLED, appInfo));
                     }
                 } catch (Exception e) {
                     // ignore
@@ -297,9 +349,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
         };
 
-        try {
+        try (DeploymentSpan topSpan = tracing.startSpan(DeploymentTracing.AppStage.PREPARE);
+             SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.PREPARE, "ArchiveMetadata")) {
             if (commandParams.origin == OpsParams.Origin.deploy
-                    && appRegistry.get(appName) != null) {
+                    && appRegistry.get(appName) != null
+                    && !commandParams.hotDeploy) {
                 report.setMessage(localStrings.getLocalString("appnamenotunique", "Application name {0} is already in use. Please pick a different name.", appName));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return null;
@@ -327,6 +381,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             context.addTransientAppMetaData(ExtendedDeploymentContext.TRACKER, tracker);
             context.setPhase(DeploymentContextImpl.Phase.PREPARE);
 
+            span.start("ArchiveHandler");
             ArchiveHandler handler = context.getArchiveHandler();
             if (handler == null) {
                 handler = getArchiveHandler(context.getSource(),
@@ -340,60 +395,69 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 return null;
             }
 
-            DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
+            span.start(DeploymentTracing.AppStage.CLASS_SCANNING);
 
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
-            }
 
             if (handler.requiresAnnotationScanning(context.getSource())) {
                 getDeployableTypes(context);
             }
 
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.PARSING_DONE);
-            }
+            span.finish();
 
             // containers that are started are not stopped even if
             // the deployment fail, the main reason
             // is that some container do not support to be restarted.
             if (sniffers != null && logger.isLoggable(Level.FINE)) {
                 for (Sniffer sniffer : sniffers) {
-                    logger.fine("Before Sorting" + sniffer.getModuleType());
+                    logger.log(FINE, "Before Sorting{0}", sniffer.getModuleType());
                 }
             }
 
+            span.start(DeploymentTracing.AppStage.PREPARE, "Sniffer");
+
             sniffers = getSniffers(handler, sniffers, context);
+            final Collection<? extends Sniffer> selectedSniffers = sniffers;
+            appState.ifPresent(s -> s.setSniffers(selectedSniffers));
+
+            span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoaderHierarchy");
 
             ClassLoaderHierarchy clh = habitat.getService(ClassLoaderHierarchy.class);
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_HIERARCHY);
-            }
+
+            span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoader");
 
             context.createDeploymentClassLoader(clh, handler);
-            events.send(new Event<DeploymentContext>(Deployment.AFTER_DEPLOYMENT_CLASSLOADER_CREATION, context), false);
 
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
-            }
+            events.send(new Event<>(Deployment.AFTER_DEPLOYMENT_CLASSLOADER_CREATION, context), false);
 
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
 
-            List<EngineInfo> sortedEngineInfos
-                    = setupContainerInfos(handler, sniffers, context);
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.CONTAINERS_SETUP_DONE);
+            span.start(DeploymentTracing.AppStage.PREPARE, "Container");
+
+            final List<EngineInfo> sortedEngineInfos;
+            if (appState.map(ApplicationState::getEngineInfos).isPresent()) {
+                sortedEngineInfos = appState.get().getEngineInfos();
+                loadDeployers(
+                        sortedEngineInfos.stream()
+                                .collect(toMap(EngineInfo::getDeployer, Function.identity())),
+                        context
+                );
+            } else {
+                sortedEngineInfos = setupContainerInfos(handler, sniffers, context);
+                appState.ifPresent(s -> s.setEngineInfos(sortedEngineInfos));
             }
 
+            // a bit more is happening here, but I cannot quite describe it yet
+            span.start(DeploymentTracing.AppStage.CREATE_CLASSLOADER);
+
+            if (sortedEngineInfos.isEmpty()) {
+                throw new DeploymentException(localStrings.getLocalString("unknowncontainertype",
+                    "There is no installed container capable of handling this application {0}",
+                    context.getSource().getName()));
+            }
             if (logger.isLoggable(Level.FINE)) {
                 for (EngineInfo info : sortedEngineInfos) {
-                    logger.fine("After Sorting " + info.getSniffer().getModuleType());
+                    logger.log(FINE, "After Sorting {0}", info.getSniffer().getModuleType());
                 }
-            }
-            if (sortedEngineInfos == null || sortedEngineInfos.isEmpty()) {
-                report.failure(logger, localStrings.getLocalString("unknowncontainertype", "There is no installed container capable of handling this application {0}", context.getSource().getName()));
-                tracker.actOn(logger);
-                return null;
             }
 
             // create a temporary application info to hold metadata
@@ -415,27 +479,29 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             } catch (Throwable interceptorException) {
                 report.failure(logger, "Exception while invoking the lifecycle interceptor", null);
                 report.setFailureCause(interceptorException);
-                logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, interceptorException);
+                logger.log(SEVERE, KernelLoggerInfo.lifecycleException, interceptorException);
                 tracker.actOn(logger);
                 return null;
             }
 
-            events.send(new Event<DeploymentContext>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
+            events.send(new Event<>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
 
             context.createApplicationClassLoader(clh, handler);
 
-            events.send(new Event<DeploymentContext>(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION, context), false);
-
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
-            }
+            events.send(new Event<>(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION, context), false);
 
             // this is a first time deployment as opposed as load following an unload event,
             // we need to create the application info
             // todo : we should come up with a general Composite API solution
-            ModuleInfo moduleInfo = null;
-            try {
-                moduleInfo = prepareModule(sortedEngineInfos, appName, context, tracker);
+            final ModuleInfo moduleInfo;
+            try (SpanSequence innerSpan = span.start(DeploymentTracing.AppStage.PREPARE, "Module")){
+                if (appState.map(ApplicationState::getModuleInfo).isPresent()) {
+                    moduleInfo = appState.get().getModuleInfo();
+                    moduleInfo.reset();
+                } else {
+                    moduleInfo = prepareModule(sortedEngineInfos, appName, context, tracker);
+                    appState.ifPresent(s -> s.setModuleInfo(moduleInfo));
+                }
                 // Now that the prepare phase is done, any artifacts
                 // should be available.  Go ahead and create the
                 // downloadable client JAR.  We want to do this now, or
@@ -447,21 +513,30 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             } catch (Throwable prepareException) {
                 report.failure(logger, "Exception while preparing the app", null);
                 report.setFailureCause(prepareException);
-                logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, prepareException);
+                logger.log(SEVERE, KernelLoggerInfo.lifecycleException, prepareException);
                 tracker.actOn(logger);
                 return null;
             }
 
+            span.start(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.APPLICATION_PREPARED.type());
+
             // the deployer did not take care of populating the application info, this
             // is not a composite module.
-            appInfo = context.getModuleMetaData(ApplicationInfo.class);
-            if (appInfo == null) {
-                appInfo = new ApplicationInfo(events, context.getSource(), appName);
+            if (appState.map(ApplicationState::getApplicationInfo).isPresent()) {
+                appInfo = appState.get().getApplicationInfo();
+                appInfo.reset(context.getSource());
+                for (Object metadata : context.getModuleMetadata()) {
+                    moduleInfo.addMetaData(metadata);
+                    appInfo.addMetaData(metadata);
+                }
+            } else if ((appInfo = context.getModuleMetaData(ApplicationInfo.class)) == null) {
+                ApplicationInfo applicationInfo = new ApplicationInfo(events, context.getSource(), appName);
+                appInfo = applicationInfo;
                 appInfo.addModule(moduleInfo);
-
-                for (Object m : context.getModuleMetadata()) {
-                    moduleInfo.addMetaData(m);
-                    appInfo.addMetaData(m);
+                appState.ifPresent(s -> s.setApplicationInfo(applicationInfo));
+                for (Object metadata : context.getModuleMetadata()) {
+                    moduleInfo.addMetaData(metadata);
+                    appInfo.addMetaData(metadata);
                 }
             } else {
                 for (EngineRef ref : moduleInfo.getEngineRefs()) {
@@ -477,36 +552,39 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
             notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.PREPARE, context);
 
-            if (tracing != null) {
-                tracing.addMark(DeploymentTracing.Mark.PREPARED);
-            }
-
             // send the APPLICATION_PREPARED event
             // set the phase and thread context classloader properly
             // before sending the event
             context.setPhase(DeploymentContextImpl.Phase.PREPARED);
             Thread.currentThread().setContextClassLoader(context.getClassLoader());
             appInfo.setAppClassLoader(context.getClassLoader());
-            events.send(new Event<DeploymentContext>(Deployment.APPLICATION_PREPARED, context), false);
+            appState.ifPresent(s -> s.setApplicationClassLoader(context.getClassLoader()));
+            events.send(new Event<>(Deployment.APPLICATION_PREPARED, context), false);
 
             if (loadOnCurrentInstance(context)) {
                 appInfo.setLibraries(commandParams.libraries());
-                try {
+                try (SpanSequence innerSpan = span.start(DeploymentTracing.AppStage.LOAD)){
                     notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.LOAD, context);
                     appInfo.load(context, tracker);
                     notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.LOAD, context);
                 } catch (Throwable loadException) {
-                    logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
+                    logger.log(SEVERE, KernelLoggerInfo.lifecycleException, loadException);
                     report.failure(logger, "Exception while loading the app", null);
                     report.setFailureCause(loadException);
                     tracker.actOn(logger);
                     return null;
                 }
             }
+        } catch (DeploymentException de) {
+            report.failure(logger, de.getMessage());
+            tracker.actOn(logger);
+            return null;
         } catch (Exception e) {
-            report.failure(logger, localStrings.getLocalString("error.deploying.app", "Exception while deploying the app [{0}]", appName), null);
+            report.failure(logger,
+                localStrings.getLocalString("error.deploying.app", "Exception while deploying the app [{0}]", appName),
+                null);
             report.setFailureCause(e);
-            logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, e);
+            logger.log(SEVERE, KernelLoggerInfo.lifecycleException, e);
             tracker.actOn(logger);
             return null;
         } finally {
@@ -529,19 +607,21 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         appRegistry.removeTransient(appInfo.getName());
         final ActionReport report = context.getActionReport();
         ProgressTracker tracker = context.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
         // now were falling back into the mainstream loading/starting sequence, at this
         // time the containers are set up, all the modules have been prepared in their
         // associated engines and the application info is created and registered
         if (loadOnCurrentInstance(context)) {
-            try {
+            try (SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.INITIALIZE)){
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
                 appInfo.initialize();
                 appInfo.getModuleInfos().forEach(moduleInfo -> moduleInfo.getEngineRefs()
                         .forEach(engineRef -> tracker.add("initialized", EngineRef.class, engineRef)));
+                span.start(DeploymentTracing.AppStage.START);
                 appInfo.start(context, tracker);
                 notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
             } catch (Throwable loadException) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.lifecycleException, loadException);
+                logger.log(SEVERE, KernelLoggerInfo.lifecycleException, loadException);
                 report.failure(logger, "Exception while loading the app", null);
                 report.setFailureCause(loadException);
                 tracker.actOn(logger);
@@ -565,54 +645,70 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Override
     public ApplicationInfo deploy(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
-        long operationStartTime = Calendar.getInstance().getTimeInMillis();
+        long operationStartTime = System.currentTimeMillis();
         ApplicationDeployment rv = prepare(sniffers, context);
         ApplicationInfo appInfo = rv != null? rv.appInfo : null;
-        if(appInfo != null) {
+        if (appInfo != null) {
             initialize(appInfo, sniffers, context);
-            long operationTime = Calendar.getInstance().getTimeInMillis() - operationStartTime;
-            deploymentLifecycleProbeProvider.applicationDeployedEvent(appInfo.getName(), getApplicationType(appInfo), String.valueOf(operationTime));
+            long operationTime = System.currentTimeMillis() - operationStartTime;
+            deploymentLifecycleProbeProvider.applicationDeployedEvent( //
+                appInfo.getName(), getApplicationType(appInfo), String.valueOf(operationTime));
         }
         return appInfo;
     }
 
     @Override
+    @SuppressWarnings("squid:S2095")
     public Types getDeployableTypes(DeploymentContext context) throws IOException {
-
         synchronized(context) {
             Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
             if (types!=null) {
                 return types;
-            } else {
-
-                try {
-                    // scan the jar and store the result in the deployment context.
-                    ParsingContext parsingContext = new ParsingContext.Builder().logger(context.getLogger()).executorService(executorService).build();
-                    Parser parser = new Parser(parsingContext);
-                    ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, context.getSource());
-                    parser.parse(scannerAdapter, null);
-                    for (ReadableArchive externalLibArchive :
-                        getExternalLibraries(context)) {
-                        ReadableArchiveScannerAdapter libAdapter = null;
-                        try {
-                            libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive);
-                            parser.parse(libAdapter, null);
-                        } finally {
-                            if (libAdapter!=null) {
-                                libAdapter.close();
-                            }
+            }
+            StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+            try {
+                ResourceLocator locator = determineLocator();
+                // scan the jar and store the result in the deployment context.
+                ParsingContext.Builder parsingContextBuilder = new ParsingContext.Builder().logger(context.getLogger())
+                        .executorService(executorService.getUnderlyingExecutorService());
+                // workaround bug in Builder
+                parsingContextBuilder.locator(locator);
+                ParsingContext parsingContext = parsingContextBuilder.build();
+                Parser parser = new Parser(parsingContext);
+                ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, context.getSource());
+                DeploymentSpan mainScanSpan = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, context.getSource().getName());
+                parser.parse(scannerAdapter, () -> mainScanSpan.close());
+                for (ReadableArchive externalLibArchive :
+                    getExternalLibraries(context)) {
+                    ReadableArchiveScannerAdapter libAdapter = null;
+                    try {
+                        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, externalLibArchive.getName());
+                        libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive);
+                        parser.parse(libAdapter, () -> span.close());
+                    } finally {
+                        if (libAdapter!=null) {
+                            libAdapter.close();
                         }
                     }
-                    parser.awaitTermination();
-                    scannerAdapter.close();
-                    context.addTransientAppMetaData(Types.class.getName(), parsingContext.getTypes());
-                    context.addTransientAppMetaData(Parser.class.getName(), parser);
-                    return parsingContext.getTypes();
-                } catch(InterruptedException e) {
-                    throw new IOException(e);
                 }
+
+                parser.awaitTermination();
+                scannerAdapter.close();
+                context.addTransientAppMetaData(Types.class.getName(), parsingContext.getTypes());
+                context.addTransientAppMetaData(Parser.class.getName(), parser);
+                return parsingContext.getTypes();
+            } catch(InterruptedException e) {
+                throw new IOException(e);
             }
         }
+    }
+
+    private ResourceLocator determineLocator() {
+        if (CommonModelRegistry.getInstance().canLoadResources()) {
+            // common model registry will handle our external class dependencies
+            return null;
+        }
+        return new ClassloaderResourceLocatorAdapter(commonClassLoaderService.getCommonClassLoader());
     }
 
     private void notifyLifecycleInterceptorsBefore(final ExtendedDeploymentContext.Phase phase,
@@ -621,26 +717,26 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             i.before(phase, dc);
         }
     }
-    
+
     private void notifyLifecycleInterceptorsAfter(final ExtendedDeploymentContext.Phase phase,
             final ExtendedDeploymentContext dc) {
         for (ApplicationLifecycleInterceptor i : alcInterceptors) {
             i.after(phase, dc);
         }
     }
-    
+
     private List<ReadableArchive> getExternalLibraries(
         DeploymentContext context) throws IOException {
-        List<ReadableArchive> externalLibArchives = new ArrayList<ReadableArchive>();
-        
+        List<ReadableArchive> externalLibArchives = new ArrayList<>();
+
         String skipScanExternalLibProp = context.getAppProps().getProperty(
                 DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB);
 
         if (Boolean.valueOf(skipScanExternalLibProp)) {
-            // if we skip scanning external libraries, we should just 
+            // if we skip scanning external libraries, we should just
             // return an empty list here
-            return Collections.EMPTY_LIST;
-        } 
+            return Collections.emptyList();
+        }
 
         List<URI> externalLibs = DeploymentUtils.getExternalLibraries(context.getSource());
         for (URI externalLib : externalLibs) {
@@ -649,7 +745,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         return externalLibArchives;
     }
-    
+
     /**
      * Suspends this application.
      *
@@ -693,14 +789,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public Collection<? extends Sniffer> getSniffers(final ArchiveHandler handler, Collection<? extends Sniffer> sniffers, DeploymentContext context) {
         if (handler == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         if (sniffers==null) {
             if (handler instanceof CompositeHandler) {
                 ((CompositeHandler)handler).initCompositeMetaData(context);
                 context.getAppProps().setProperty(ServerTags.IS_COMPOSITE, "true");
-            } 
+            }
             sniffers = snifferManager.getSniffers(context);
         }
         context.addTransientAppMetaData(DeploymentProperties.SNIFFERS, sniffers);
@@ -722,165 +818,44 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         final ActionReport report = context.getActionReport();
 
-        DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
 
-        Map<Deployer, EngineInfo> containerInfosByDeployers = new LinkedHashMap<Deployer, EngineInfo>();
+        Map<Deployer, EngineInfo> containerInfosByDeployers = new LinkedHashMap<>();
 
         for (Sniffer sniffer : sniffers) {
             if (sniffer.getContainersNames() == null || sniffer.getContainersNames().length == 0) {
                 report.failure(logger, "no container associated with application of type : " + sniffer.getModuleType(), null);
-                return null;
+                throw new DeploymentException(localStrings.getLocalString("unknowncontainertype", "There is no installed container capable of handling this application {0}", context.getSource().getName()));
             }
 
             final String containerName = sniffer.getContainersNames()[0];
-            if (tracing!=null) {
-                tracing.addContainerMark(DeploymentTracing.ContainerMark.SNIFFER_DONE, containerName );
-            }
-            
 
-            // start all the containers associated with sniffers.
-            EngineInfo engineInfo = containerRegistry.getContainer(containerName);
-            if (engineInfo == null) {
-                // need to synchronize on the registry to not end up starting the same container from
-                // different threads.
-                Collection<EngineInfo> containersInfo=null;
-                synchronized (containerRegistry) {
-                    if (containerRegistry.getContainer(containerName) == null) {
-                        if (tracing!=null) {
-                            tracing.addContainerMark(
-                                DeploymentTracing.ContainerMark.BEFORE_CONTAINER_SETUP, containerName );
-                        }
+            EngineInfo engineInfo = startEngine(context, sniffer, containerName);
 
-                        containersInfo = setupContainer(sniffer, logger, context);
-                        if (tracing!=null) {
-                            tracing.addContainerMark(
-                                DeploymentTracing.ContainerMark.AFTER_CONTAINER_SETUP, containerName );
-                        }
-
-                        if (containersInfo == null || containersInfo.size() == 0) {
-                            String msg = "Cannot start container(s) associated to application of type : " + sniffer.getModuleType();
-                            report.failure(logger, msg, null);
-                            throw new Exception(msg);
-                        }
-                    }
-                }
-
-                // now start all containers, by now, they should be all setup...
-                if (containersInfo != null && !startContainers(containersInfo, logger, context)) {
-                    final String msg = "Aborting, Failed to start container " + containerName;
-                    report.failure(logger, msg, null);
-                    throw new Exception(msg);
-                }
-            }
-            engineInfo = containerRegistry.getContainer(sniffer.getContainersNames()[0]);
-            if (tracing!=null) {
-                tracing.addContainerMark(
-                    DeploymentTracing.ContainerMark.GOT_CONTAINER, containerName );
-            }
-
-            if (engineInfo ==null) {
-                final String msg = "Aborting, Failed to start container " + containerName;
-                report.failure(logger, msg, null);
-                throw new Exception(msg);
-            }
-             Deployer deployer = getDeployer(engineInfo);
-             if (deployer==null) {
-                if (!startContainers(Collections.singleton(engineInfo), logger, context)) {
-                    final String msg = "Aborting, Failed to start container " + containerName;
-                    report.failure(logger, msg, null);
-                    throw new Exception(msg);
-                }
-                deployer = getDeployer(engineInfo);
-
-                if (deployer == null) {
-                     report.failure(logger, "Got a null deployer out of the " + engineInfo.getContainer().getClass() + " container, is it annotated with @Service ?");
-                     return null;
-                }
-             }
-            if (tracing!=null) {
-                tracing.addContainerMark(
-                    DeploymentTracing.ContainerMark.GOT_DEPLOYER, containerName );
-            }
+            Deployer deployer = startDeployer(context, containerName, engineInfo);
 
             containerInfosByDeployers.put(deployer, engineInfo);
         }
 
         // all containers that have recognized parts of the application being deployed
         // have now been successfully started. Start the deployment process.
-
-        List<ApplicationMetaDataProvider> providers = new LinkedList<ApplicationMetaDataProvider>();
-        providers.addAll(habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class));
-
-        List<EngineInfo> sortedEngineInfos = new ArrayList<EngineInfo>();
-
-        Map<Class, ApplicationMetaDataProvider> typeByProvider = new HashMap<Class, ApplicationMetaDataProvider>();
-        for (ApplicationMetaDataProvider provider : habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class)) {
-            if (provider.getMetaData()!=null) {
-                for (Class provided : provider.getMetaData().provides()) {
-                    typeByProvider.put(provided, provider);
-                }
-            }
-        }
-
-        // check if everything is provided.
-        for (ApplicationMetaDataProvider provider : habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class)) {
-            if (provider.getMetaData()!=null) {
-                 for (Class dependency : provider.getMetaData().requires()) {
-                     if (!typeByProvider.containsKey(dependency)) {
-                         // at this point, I only log problems, because it maybe that what I am deploying now
-                         // will not require this application metadata.
-                         logger.log(Level.WARNING, KernelLoggerInfo.applicationMetaDataProvider, 
-                                 new Object[] {provider, dependency});
-                     }
-                 }
-            }
-        }
-
-        Map<Class, Deployer> typeByDeployer = new HashMap<Class, Deployer>();
-        for (Deployer deployer : containerInfosByDeployers.keySet()) {
-            if (deployer.getMetaData()!=null) {
-                for (Class provided : deployer.getMetaData().provides()) {
-                    typeByDeployer.put(provided, deployer);
-                }
-            }
-        }
-
-        for (Deployer deployer : containerInfosByDeployers.keySet()) {
-            if (deployer.getMetaData()!=null) {
-                for (Class dependency : deployer.getMetaData().requires()) {
-                    if (!typeByDeployer.containsKey(dependency) && !typeByProvider.containsKey(dependency)) {
-
-                        Service s = deployer.getClass().getAnnotation(Service.class);
-                        String serviceName;
-                        if (s!=null && s.name()!=null && s.name().length()>0) {
-                            serviceName = s.name();
-                        } else {
-                            serviceName = deployer.getClass().getSimpleName();
-                        }
-                        report.failure(logger, serviceName + " deployer requires " + dependency + " but no other deployer provides it", null);
-                        return null;
-                    }
-                }
-            }
-        }
+        List<EngineInfo> sortedEngineInfos = new ArrayList<>();
 
         // ok everything is satisfied, just a matter of running things in order
-        List<Deployer> orderedDeployers = new ArrayList<Deployer>();
-        for (Deployer deployer : containerInfosByDeployers.keySet()) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Keyed Deployer " + deployer.getClass());   
-            }
-            loadDeployer(orderedDeployers, deployer, typeByDeployer, typeByProvider, context);
-        }
+        List<Deployer> orderedDeployers = loadDeployers(
+                containerInfosByDeployers,
+                context
+        );
 
         // now load metadata from deployers.
         for (Deployer deployer : orderedDeployers) {
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Ordered Deployer " + deployer.getClass());
+                logger.log(FINE, "Ordered Deployer {0}", deployer.getClass());
             }
 
             final MetaData metadata = deployer.getMetaData();
-            try {
+            EngineInfo engineInfo = containerInfosByDeployers.get(deployer);
+            try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE, "MetaData")) {
                 if (metadata!=null) {
                     if (metadata.provides()==null || metadata.provides().length==0) {
                         deployer.loadMetaData(null, context);
@@ -900,16 +875,168 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 report.failure(logger, "Exception while invoking " + deployer.getClass() + " prepare method", e);
                 throw e;
             }
-            
+
             sortedEngineInfos.add(containerInfosByDeployers.get(deployer));
         }
 
         return sortedEngineInfos;
     }
 
+    private Deployer startDeployer(DeploymentContext context, String containerName, EngineInfo engineInfo) throws Exception {
+        final ActionReport report = context.getActionReport();
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+
+        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE, "Deployer"))
+        {
+            Deployer deployer = engineInfo.getDeployer();
+            if (deployer == null) {
+                if (!startContainers(Collections.singleton(engineInfo), logger, context)) {
+                    final String msg = "Aborting, Failed to start container " + containerName;
+                    report.failure(logger, msg, null);
+                    throw new Exception(msg);
+                }
+                deployer = engineInfo.getDeployer();
+
+                if (deployer == null) {
+                    report.failure(logger, "Got a null deployer out of the " + engineInfo.getContainer().getClass() + " container, is it annotated with @Service ?");
+                    throw new DeploymentException("Deployer not found for container " + containerName);
+                }
+            }
+            return deployer;
+        }
+    }
+
+    private EngineInfo startEngine(DeploymentContext context, Sniffer sniffer, String containerName) throws Exception {
+        final ActionReport report = context.getActionReport();
+
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+
+        // start all the containers associated with sniffers.
+        try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, sniffer.getModuleType(), DeploymentTracing.AppStage.PREPARE)) {
+            EngineInfo engineInfo = containerRegistry.getContainer(containerName);
+            if (engineInfo == null) {
+                // need to synchronize on the registry to not end up starting the same container from
+                // different threads.
+                Collection<EngineInfo> containersInfo = null;
+                synchronized (containerRegistry) {
+                    if (containerRegistry.getContainer(containerName) == null) {
+                        DeploymentSpan innerSpan = tracing.startSpan(DeploymentTracing.AppStage.CONTAINER_START);
+
+                        containersInfo = setupContainer(sniffer, logger, context);
+
+                        innerSpan.close();
+
+                        if (containersInfo == null || containersInfo.isEmpty()) {
+                            String msg = "Cannot start container(s) associated to application of type : " + sniffer.getModuleType();
+                            report.failure(logger, msg, null);
+                            throw new Exception(msg);
+                        }
+                    }
+                }
+
+                // now start all containers, by now, they should be all setup...
+                if (containersInfo != null && !startContainers(containersInfo, logger, context)) {
+                    final String msg = "Aborting, Failed to start container " + containerName;
+                    report.failure(logger, msg, null);
+                    throw new Exception(msg);
+                }
+            }
+            engineInfo = containerRegistry.getContainer(containerName);
+
+            if (engineInfo == null) {
+                final String msg = "Aborting, Failed to start container " + containerName;
+                report.failure(logger, msg, null);
+                throw new Exception(msg);
+            }
+            return engineInfo;
+        }
+    }
+
+    private Map<Class, ApplicationMetaDataProvider> getTypeByProvider() {
+        // in reality, there is single implementation of ApplicationMetadataProvider at this point.
+        final Map<Class, ApplicationMetaDataProvider> typeByProvider = new HashMap<>();
+        final List<ApplicationMetaDataProvider> providers = habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class);
+        for (ApplicationMetaDataProvider provider : providers) {
+            if (provider.getMetaData() != null) {
+                for (Class provided : provider.getMetaData().provides()) {
+                    typeByProvider.put(provided, provider);
+                }
+            }
+        }
+
+        // check if everything is provided.
+        for (ApplicationMetaDataProvider provider : providers) {
+            if (provider.getMetaData() != null) {
+                for (Class dependency : provider.getMetaData().requires()) {
+                    if (!typeByProvider.containsKey(dependency)) {
+                        // at this point, I only log problems, because it maybe that what I am deploying now
+                        // will not require this application metadata.
+                        logger.log(WARNING, KernelLoggerInfo.applicationMetaDataProvider,
+                                new Object[]{provider, dependency});
+                    }
+                }
+            }
+        }
+        return typeByProvider;
+    }
+
+    private Map<Class, Deployer> getTypeByDeployer(Map<Deployer, EngineInfo> containerInfosByDeployers) {
+        Map<Class, Deployer> typeByDeployer = new HashMap<>();
+        for (Deployer deployer : containerInfosByDeployers.keySet()) {
+            if (deployer.getMetaData() != null) {
+                for (Class provided : deployer.getMetaData().provides()) {
+                    typeByDeployer.put(provided, deployer);
+                }
+            }
+        }
+        return typeByDeployer;
+    }
+
+    private List<Deployer> loadDeployers(
+            Map<Deployer, EngineInfo> containerInfosByDeployers,
+            DeploymentContext context) throws IOException {
+
+        final ActionReport report = context.getActionReport();
+        final Map<Class, ApplicationMetaDataProvider> typeByProvider = getTypeByProvider();
+        final Map<Class, Deployer> typeByDeployer = getTypeByDeployer(containerInfosByDeployers);
+        final StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+
+        for (Deployer deployer : containerInfosByDeployers.keySet()) {
+            if (deployer.getMetaData() != null) {
+                for (Class dependency : deployer.getMetaData().requires()) {
+                    if (!typeByDeployer.containsKey(dependency) && !typeByProvider.containsKey(dependency)) {
+
+                        Service s = deployer.getClass().getAnnotation(Service.class);
+                        String serviceName;
+                        if (s != null && s.name() != null && s.name().length() > 0) {
+                            serviceName = s.name();
+                        } else {
+                            serviceName = deployer.getClass().getSimpleName();
+                        }
+                        report.failure(logger, serviceName + " deployer requires " + dependency + " but no other deployer provides it", null);
+                        return null;
+                    }
+                }
+            }
+        }
+
+        List<Deployer> orderedDeployers = new ArrayList<>();
+        for (Map.Entry<Deployer, EngineInfo> entry : containerInfosByDeployers.entrySet()) {
+            Deployer deployer = entry.getKey();
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(FINE, "Keyed Deployer {0}", deployer.getClass());
+            }
+            DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, entry.getValue().getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE);
+            loadDeployer(orderedDeployers, deployer, typeByDeployer, typeByProvider, context);
+            span.close();
+        }
+        return orderedDeployers;
+    }
+
     private void loadDeployer(List<Deployer> results, Deployer deployer, Map<Class, Deployer> typeByDeployer,  Map<Class, ApplicationMetaDataProvider> typeByProvider, DeploymentContext dc)
         throws IOException {
 
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(dc);
         if (results.contains(deployer)) {
             return;
         }
@@ -924,18 +1051,21 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 } else {
                     ApplicationMetaDataProvider provider = typeByProvider.get(required);
                     if (provider==null) {
-                        logger.log(Level.SEVERE, KernelLoggerInfo.inconsistentLifecycleState, required);
+                        logger.log(SEVERE, KernelLoggerInfo.inconsistentLifecycleState, required);
                     } else {
-                        LinkedList<ApplicationMetaDataProvider> providers = new LinkedList<ApplicationMetaDataProvider>();
+                        LinkedList<ApplicationMetaDataProvider> providers = new LinkedList<>();
 
                         addRecursively(providers, typeByProvider, provider);
                         for (ApplicationMetaDataProvider p : providers) {
-                            dc.addModuleMetaData(p.load(dc));
+                            // this actually loads all descriptors of the app.
+                            try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.APPLICATION, null, DeploymentTracing.AppStage.LOAD, "DeploymentDescriptor")) {
+                                dc.addModuleMetaData(p.load(dc));
+                            }
                         }
                     }
                 }
             }
-        }                
+        }
     }
 
     private void addRecursively(LinkedList<ApplicationMetaDataProvider> results, Map<Class, ApplicationMetaDataProvider> providers, ApplicationMetaDataProvider provider) {
@@ -956,31 +1086,17 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         ProgressTracker tracker) throws Exception {
 
         ActionReport report = context.getActionReport();
-        List<EngineRef> addedEngines = new ArrayList<EngineRef>();
+        List<EngineRef> addedEngines = new ArrayList<>();
 
-        DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-
-        if (tracing!=null) {
-            tracing.addModuleMark(DeploymentTracing.ModuleMark.PREPARE,
-                        moduleName);
-        }
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
+        tracing.switchToContext(TraceContext.Level.MODULE, moduleName);
 
         for (EngineInfo engineInfo : sortedEngineInfos) {
-
             // get the deployer
             Deployer deployer = engineInfo.getDeployer();
 
-            try {
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.PREPARE,
-                                engineInfo.getSniffer().getModuleType() );
-                }
+            try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE)){
                 deployer.prepare(context);
-                if (tracing!=null) {
-                    tracing.addContainerMark(DeploymentTracing.ContainerMark.PREPARED,
-                                engineInfo.getSniffer().getModuleType() );
-                }
-
 
                 // construct an incomplete EngineRef which will be later
                 // filled in at loading time
@@ -994,24 +1110,20 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 throw e;
             }
         }
-        if (tracing!=null) {
-            tracing.addModuleMark(DeploymentTracing.ModuleMark.PREPARE_EVENTS, moduleName);
-        }
-        
+
         if (events!=null) {
-            events.send(new Event<DeploymentContext>(Deployment.MODULE_PREPARED, context), false);
-        }
-        if (tracing!=null) {
-            tracing.addModuleMark(DeploymentTracing.ModuleMark.PREPARED,moduleName);
+            DeploymentSpan span = tracing.startSpan(TraceContext.Level.MODULE, moduleName, DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.MODULE_PREPARED.type());
+            events.send(new Event<>(Deployment.MODULE_PREPARED, context), false);
+            span.close();
         }
 
         // I need to create the application info here from the context, or something like this.
         // and return the application info from this method for automatic registration in the caller.
 
-        // set isComposite property on module props so we know whether to persist 
+        // set isComposite property on module props so we know whether to persist
         // module level properties inside ModuleInfo
-        String isComposite = context.getAppProps().getProperty(
-            ServerTags.IS_COMPOSITE);
+        String isComposite = context.getAppProps()
+                .getProperty(ServerTags.IS_COMPOSITE);
         if (isComposite != null) {
             context.getModuleProps().setProperty(ServerTags.IS_COMPOSITE, isComposite);
         }
@@ -1022,7 +1134,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         /*
          * Save the application config that is potentially attached to each
          * engine in the corresponding EngineRefs that have already created.
-         * 
+         *
          * Later, in registerAppInDomainXML, the appInfo is saved, which in
          * turn saves the moduleInfo children and their engineRef children.
          * Saving the engineRef assigns the application config to the Engine
@@ -1056,18 +1168,18 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     protected boolean startContainers(Collection<EngineInfo> containersInfo, Logger logger, DeploymentContext context) {
-    	
+
     	ActionReport report = context.getActionReport();
         for (EngineInfo engineInfo : containersInfo) {
             Container container;
             try {
                 container = engineInfo.getContainer();
             } catch(Exception e) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.cantStartContainer, 
+                logger.log(SEVERE, KernelLoggerInfo.cantStartContainer,
                         new Object[] {engineInfo.getSniffer().getModuleType(), e});
                 return false;
             }
-                
+
             Class<? extends Deployer> deployerClass = container.getDeployer();
             Deployer deployer;
             try {
@@ -1093,7 +1205,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 ctrInfo.stop(logger);
             } catch(Exception e) {
                 // this is not a failure per se but we need to document it.
-                logger.log(Level.INFO, KernelLoggerInfo.cantReleaseContainer,
+                logger.log(INFO, KernelLoggerInfo.cantReleaseContainer,
                         new Object[] {ctrInfo.getSniffer().getModuleType(), e});
             }
         }
@@ -1112,13 +1224,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (info.isLoaded()) {
             info.stop(context, context.getLogger());
             notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.STOP, context);
-            
+
             notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.UNLOAD, context);
             info.unload(context);
             notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.UNLOAD, context);
         }
 
-        events.send(new Event<ApplicationInfo>(Deployment.APPLICATION_DISABLED, info), false);
+        events.send(new Event<>(Deployment.APPLICATION_DISABLED, info), false);
 
         try {
             notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.CLEAN, context);
@@ -1152,14 +1264,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // application, especially the classloaders need to be closed to release file handles
         unload(info, context);
 
-        
+
         if (report != null && report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
             events.send(new Event(Deployment.UNDEPLOYMENT_SUCCESS, context));
             deploymentLifecycleProbeProvider.applicationUndeployedEvent(appName, getApplicationType(info));
-        } else {            
-            events.send(new Event(Deployment.UNDEPLOYMENT_FAILURE, context));            
+        } else {
+            events.send(new Event(Deployment.UNDEPLOYMENT_FAILURE, context));
         }
-        
+
         appRegistry.remove(appName);
     }
 
@@ -1170,30 +1282,36 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         throws TransactionFailure {
         final Properties appProps = context.getAppProps();
         final DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
-        Transaction t = new Transaction();
+        Transaction tx = null;
+        Application app_w= null;
 
-        try {
-            // prepare the application element
-            ConfigBean newBean = ((ConfigBean)ConfigBean.unwrap(applications)).allocate(Application.class);
-            Application app = newBean.createProxy();
-            Application app_w = t.enroll(app);
-            setInitialAppAttributes(app_w, deployParams, appProps, context);
-            context.addTransientAppMetaData(ServerTags.APPLICATION, app_w);
-        } catch(TransactionFailure e) {
-            t.rollback();
-            throw e;
-        } catch (Exception e) {
-            t.rollback();
-            throw new TransactionFailure(e.getMessage(), e);
+        if (deployParams.hotDeploy) {
+            app_w = applications.getApplication(deployParams.name);
         }
-
-        return t;
+        if (app_w == null) {
+            try {
+                tx = new Transaction();
+                // prepare the application element
+                ConfigBean newBean = ((ConfigBean) Dom.unwrap(applications)).allocate(Application.class);
+                Application app = newBean.createProxy();
+                app_w = tx.enroll(app);
+                setInitialAppAttributes(app_w, deployParams, appProps, context);
+            } catch (TransactionFailure e) {
+                tx.rollback();
+                throw e;
+            } catch (Exception e) {
+                tx.rollback();
+                throw new TransactionFailure(e.getMessage(), e);
+            }
+        }
+        context.addTransientAppMetaData(ServerTags.APPLICATION, app_w);
+        return tx;
     }
 
     // register application information in domain.xml
     @Override
     public void registerAppInDomainXML(final ApplicationInfo
-        applicationInfo, final DeploymentContext context, Transaction t) 
+        applicationInfo, final DeploymentContext context, Transaction t)
         throws TransactionFailure {
         registerAppInDomainXML(applicationInfo, context, t, false);
     }
@@ -1201,7 +1319,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     // register application information in domain.xml
     @Override
     public void registerAppInDomainXML(final ApplicationInfo
-        applicationInfo, final DeploymentContext context, Transaction t, 
+        applicationInfo, final DeploymentContext context, Transaction t,
         boolean appRefOnly)
         throws TransactionFailure {
         final Properties appProps = context.getAppProps();
@@ -1220,9 +1338,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     }
                 }
 
-                List<String> targets = new ArrayList<String>();
+                List<String> targets = new ArrayList<>();
                 if (!DeploymentUtils.isDomainTarget(deployParams.target)) {
-                    targets.add(deployParams.target);    
+                    targets.add(deployParams.target);
                 } else {
                     List<String> previousTargets = context.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class);
 		    if (previousTargets == null) {
@@ -1239,8 +1357,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     // first reset the virtualservers, enabled attribute
                     deployParams.virtualservers = origVS;
                     deployParams.enabled = origEnabled;
-                    // now if the target is domain target, 
-                    // restore the previous attributes if 
+                    // now if the target is domain target,
+                    // restore the previous attributes if
                     // applicable
                     if (DeploymentUtils.isDomainTarget(deployParams.target)) {
                         String vs = previousVirtualServers.getProperty(target);
@@ -1255,7 +1373,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     if (deployParams.enabled == null) {
                         deployParams.enabled = Boolean.TRUE;
                     }
-                    Server servr = domain.getServerNamed(target); 
+                    Server servr = domain.getServerNamed(target);
                     if (servr != null) {
                         ApplicationRef instanceApplicationRef = domain.getApplicationRefInTarget(deployParams.name, servr.getName());
                         if (instanceApplicationRef == null) {
@@ -1270,7 +1388,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         }
                     }
 
-                    Cluster cluster = domain.getClusterNamed(target); 
+                    Cluster cluster = domain.getClusterNamed(target);
                     if (cluster != null) {
                         // adding the application-ref element to the cluster
                         // and instances
@@ -1286,7 +1404,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                             ((Server)svr_w).getApplicationRef().add(appRef2);
                         }
                     }
-                    
+
                     DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
                     if (dg != null) {
                         ConfigBeanProxy dg_w = t.enroll(dg);
@@ -1301,7 +1419,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                 setAppRefAttributes(appRef2, deployParams);
                                 ((Server) svr_w).getApplicationRef().add(appRef2);
                             }
-                        }                        
+                        }
                     }
                 }
             } catch(TransactionFailure e) {
@@ -1400,8 +1518,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     // application attributes that are set in the beginning of the deployment
     // that will not be changed in the course of the deployment
-    private void setInitialAppAttributes(Application app, 
-        DeployCommandParameters deployParams, Properties appProps, 
+    private void setInitialAppAttributes(Application app,
+        DeployCommandParameters deployParams, Properties appProps,
         DeploymentContext context)
         throws PropertyVetoException {
         Properties previousEnabledAttributes = context.getTransientAppMetaData(DeploymentProperties.PREVIOUS_ENABLED_ATTRIBUTES, Properties.class);
@@ -1438,7 +1556,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             app.setObjectType(appProps.getProperty(
                 ServerTags.OBJECT_TYPE));
         }
-        if (appProps.getProperty(ServerTags.DIRECTORY_DEPLOYED) 
+        if (appProps.getProperty(ServerTags.DIRECTORY_DEPLOYED)
             != null) {
             app.setDirectoryDeployed(appProps.getProperty(
                 ServerTags.DIRECTORY_DEPLOYED));
@@ -1458,24 +1576,23 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // property element
         // trim the properties that have been written as attributes
         // the rest properties will be written as property element
-        for (Iterator itr = appProps.keySet().iterator();
-            itr.hasNext();) {
-            String propName = (String) itr.next();
-            if (!propName.equals(ServerTags.LOCATION) &&
-                !propName.equals(ServerTags.CONTEXT_ROOT) &&
-                !propName.equals(ServerTags.OBJECT_TYPE) &&
-                !propName.equals(ServerTags.DIRECTORY_DEPLOYED) &&
-                !propName.startsWith(
-                    DeploymentProperties.APP_CONFIG))
-                    {
-                if (appProps.getProperty(propName) != null) {
-                    Property prop = app.createChild(Property.class);
-                    app.getProperty().add(prop);
-                    prop.setName(propName);
-                    prop.setValue(appProps.getProperty(propName));
-                }
+        for (Object element : appProps.keySet()) {
+        String propName = (String) element;
+        if (!propName.equals(ServerTags.LOCATION) &&
+            !propName.equals(ServerTags.CONTEXT_ROOT) &&
+            !propName.equals(ServerTags.OBJECT_TYPE) &&
+            !propName.equals(ServerTags.DIRECTORY_DEPLOYED) &&
+            !propName.startsWith(
+                DeploymentProperties.APP_CONFIG))
+                {
+            if (appProps.getProperty(propName) != null) {
+                Property prop = app.createChild(Property.class);
+                app.getProperty().add(prop);
+                prop.setName(propName);
+                prop.setValue(appProps.getProperty(propName));
             }
         }
+      }
     }
 
     @Override
@@ -1485,21 +1602,22 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     @Override
-    public void unregisterAppFromDomainXML(final String appName, 
-        final String tgt, final boolean appRefOnly) 
+    public void unregisterAppFromDomainXML(final String appName,
+        final String tgt, final boolean appRefOnly)
         throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
+            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
                 if (t!=null) {
-                    List<String> targets = new ArrayList<String>();
+                    List<String> targets = new ArrayList<>();
                     if (!DeploymentUtils.isDomainTarget(tgt)) {
-                        targets.add(tgt);    
+                        targets.add(tgt);
                     } else {
                         targets = domain.getAllReferencedTargetsForApplication(appName);
                     }
-              
+
                     Domain dmn;
                     if (param instanceof Domain) {
                         dmn = (Domain)param;
@@ -1510,10 +1628,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     for (String target : targets) {
                         Server servr = dmn.getServerNamed(target);
                         if (servr != null) {
-                            // remove the application-ref from standalone 
+                            // remove the application-ref from standalone
                             // server instance
                             ConfigBeanProxy servr_w = t.enroll(servr);
-                            for (ApplicationRef appRef : 
+                            for (ApplicationRef appRef :
                                 servr.getApplicationRef()) {
                                 if (appRef.getRef().equals(appName)) {
                                     ((Server)servr_w).getApplicationRef().remove(
@@ -1527,7 +1645,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         if (cluster != null) {
                             // remove the application-ref from cluster
                             ConfigBeanProxy cluster_w = t.enroll(cluster);
-                            for (ApplicationRef appRef : 
+                            for (ApplicationRef appRef :
                                 cluster.getApplicationRef()) {
                                 if (appRef.getRef().equals(appName)) {
                                     ((Cluster)cluster_w).getApplicationRef().remove(
@@ -1539,7 +1657,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                             // remove the application-ref from cluster instances
                             for (Server svr : cluster.getInstances() ) {
                                 ConfigBeanProxy svr_w = t.enroll(svr);
-                                for (ApplicationRef appRef : 
+                                for (ApplicationRef appRef :
                                     svr.getApplicationRef()) {
                                     if (appRef.getRef().equals(appName)) {
                                         ((Server)svr_w).getApplicationRef(
@@ -1549,12 +1667,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                 }
                             }
                         }
-                        
+
                         DeploymentGroup dg = dmn.getDeploymentGroupNamed(target);
                         if (dg != null) {
                             // remove the application-ref from cluster
                             ConfigBeanProxy dg_w = t.enroll(dg);
-                            for (ApplicationRef appRef : 
+                            for (ApplicationRef appRef :
                                 dg.getApplicationRef()) {
                                 if (appRef.getRef().equals(appName)) {
                                     ((DeploymentGroup)dg_w).getApplicationRef().remove(
@@ -1567,7 +1685,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                             for (Server svr : dg.getInstances() ) {
                                 if (!targets.contains(svr.getName())) {
                                     ConfigBeanProxy svr_w = t.enroll(svr);
-                                    for (ApplicationRef appRef : 
+                                    for (ApplicationRef appRef :
                                         svr.getApplicationRef()) {
                                         if (appRef.getRef().equals(appName)) {
                                             ((Server)svr_w).getApplicationRef(
@@ -1576,7 +1694,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                         }
                                     }
                                 }
-                            }                            
+                            }
                         }
                     }
 
@@ -1602,6 +1720,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public void updateAppEnabledAttributeInDomainXML(final String appName,
         final String target, final boolean enabled) throws TransactionFailure {
         ConfigSupport.apply(new SingleConfigCode() {
+            @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
@@ -1620,7 +1739,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
                     }
 
-                    List<String> targets = new ArrayList<String>();
+                    List<String> targets = new ArrayList<>();
                     if (!DeploymentUtils.isDomainTarget(target)) {
                         targets.add(target);
                     } else {
@@ -1687,8 +1806,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     private boolean isPaaSEnabled(Boolean isClassicStyle) {
         if (isClassicStyle) {
             return false;
-        } 
- 
+        }
+
         if (virtEnv != null && virtEnv.isPaasEnabled()) {
             return true;
         }
@@ -1700,7 +1819,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public String getDefaultTarget(Boolean isClassicStyle) {
         if (!isPaaSEnabled(isClassicStyle)) {
-            return DeploymentUtils.DAS_TARGET_NAME;     
+            return DeploymentUtils.DAS_TARGET_NAME;
         }
         return null;
     }
@@ -1709,15 +1828,15 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public String getDefaultTarget(String appName, OpsParams.Origin origin, Boolean isClassicStyle) {
         if (!isPaaSEnabled(isClassicStyle)) {
-            return DeploymentUtils.DAS_TARGET_NAME;     
+            return DeploymentUtils.DAS_TARGET_NAME;
         } else {
            // for deploy case, OE will set the deploy target later
            if (origin == OpsParams.Origin.deploy) {
               return null;
            }
            // for other cases, we try to derive it from domain.xml
-           List<String> targets = 
-               domain.getAllReferencedTargetsForApplication(appName); 
+           List<String> targets =
+               domain.getAllReferencedTargetsForApplication(appName);
            if (targets.size() == 0) {
                throw new IllegalArgumentException("Application not registered");
            }
@@ -1788,11 +1907,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             return build(null);
         }
         @Override
-        public Logger logger() { return logger; };
+        public Logger logger() { return logger; }
         @Override
-        public ActionReport report() { return report; };
+        public ActionReport report() { return report; }
         @Override
-        public OpsParams params() { return params; };
+        public OpsParams params() { return params; }
 
         @Override
         public ExtendedDeploymentContext build(ExtendedDeploymentContext initialContext) throws IOException {
@@ -1807,7 +1926,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     /**
      * Updates the "enabled" setting of the cluster's app ref for the
-     * given app if a change to the "enabled" setting of the app ref on one of 
+     * given app if a change to the "enabled" setting of the app ref on one of
      * the cluster's instances implies a cluster-level change.
      * <p>
      * If the app is enabled on any single instance in a cluster
@@ -1815,9 +1934,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
      * the app is disabled on all instances in the cluster
      * then the cluster state should be disabled.  This method makes sure the
      * cluster-level app ref enabled state is correct, given the current values
-     * of the app refs on the cluster's instances combined with the new value 
+     * of the app refs on the cluster's instances combined with the new value
      * for the specified instance.
-     * 
+     *
      * @param t current config Transaction in progress
      * @param servr the Server for which the app ref has been enabled or disabled
      * @param appName the name of the app whose app ref has been enabled or disabled
@@ -1827,7 +1946,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             final Transaction t,
             final Server servr,
             final String appName,
-            final boolean isNewInstanceAppRefStateEnabled) 
+            final boolean isNewInstanceAppRefStateEnabled)
                 throws TransactionFailure, PropertyVetoException {
         final Cluster clusterContainingInstance = servr.getCluster();
         if (clusterContainingInstance != null) {
@@ -1872,7 +1991,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 throw new IOException("Invalid archive type : " + builder.sourceAsFile().getAbsolutePath());
             }
         }
-        return archive;        
+        return archive;
     }
 
     private ExtendedDeploymentContext getContext(ExtendedDeploymentContext initial, DeploymentContextBuilder builder) throws IOException {
@@ -1890,7 +2009,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (archiveHandler == null) {
             String type = null;
             OpsParams params = builder.params();
-            if (params != null) { 
+            if (params != null) {
                 if (params instanceof DeployCommandParameters) {
                     type = ((DeployCommandParameters)params).type;
                 } else if (params instanceof UndeployCommandParameters) {
@@ -1902,11 +2021,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
 
 
-        // this is needed for autoundeploy to find the application 
+        // this is needed for autoundeploy to find the application
         // with the archive name
         File sourceFile = new File(archive.getURI().getSchemeSpecificPart());
-        initial.getAppProps().put(ServerTags.DEFAULT_APP_NAME, 
-            DeploymentUtils.getDefaultEEName(sourceFile.getName()));   
+        initial.getAppProps().put(ServerTags.DEFAULT_APP_NAME,
+            DeploymentUtils.getDefaultEEName(sourceFile.getName()));
 
         if (!(sourceFile.isDirectory())) {
 
@@ -1918,9 +2037,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 report.setMessage(e.getMessage());
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
-            
+
             // create a temporary deployment context
-            File expansionDir = new File(domain.getApplicationRoot(), 
+            File expansionDir = new File(domain.getApplicationRoot(),
                 repositoryBitName);
             if (!expansionDir.mkdirs()) {
                 /*
@@ -1936,21 +2055,21 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 final WritableArchive expandedArchive = archiveFactory.createArchive(expansionDir);
                 archiveHandler.expand(archive, expandedArchive, initial);
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("Deployment expansion took " + (System.currentTimeMillis() - start));
+                    logger.log(FINE, "Deployment expansion took {0}", System.currentTimeMillis() - start);
                 }
 
                 // Close the JAR archive before losing the reference to it or else the JAR remains locked.
                 try {
                     archive.close();
                 } catch(IOException e) {
-                    logger.log(Level.SEVERE, KernelLoggerInfo.errorClosingArtifact, 
+                    logger.log(SEVERE, KernelLoggerInfo.errorClosingArtifact,
                             new Object[] { archive.getURI().getSchemeSpecificPart(), e});
                     throw e;
                 }
                 archive = (FileArchive) expandedArchive;
                 initial.setSource(archive);
             } catch(IOException e) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.errorExpandingFile, e);
+                logger.log(SEVERE, KernelLoggerInfo.errorExpandingFile, e);
                 throw e;
             }
         }
@@ -1958,7 +2077,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return initial;
     }
 
-    private void setAppRefAttributes(ApplicationRef appRef, 
+    private void setAppRefAttributes(ApplicationRef appRef,
         DeployCommandParameters deployParams)
         throws PropertyVetoException {
         appRef.setRef(deployParams.name);
@@ -1979,13 +2098,13 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
         }
         appRef.setEnabled(deployParams.enabled.toString());
-    }        
+    }
 
     @Override
-    public ParameterMap prepareInstanceDeployParamMap(DeploymentContext dc) 
+    public ParameterMap prepareInstanceDeployParamMap(DeploymentContext dc)
         throws Exception {
         final DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
-        final Collection<String> excludedParams = new ArrayList<String>();
+        final Collection<String> excludedParams = new ArrayList<>();
         excludedParams.add(DeploymentProperties.PATH);
         excludedParams.add(DeploymentProperties.DEPLOYMENT_PLAN);
         excludedParams.add(DeploymentProperties.ALT_DD);
@@ -2081,7 +2200,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final File baseDir = dc.getScratchDir("xml").getParentFile().getParentFile();
 
         for (String scratchType : UPLOADED_GENERATED_DIRS) {
-            
+
             zipOS = addScratchContentIfPresent(dc, baseDir, zipOS, generatedContentZip, scratchType);
         }
 
@@ -2098,7 +2217,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     private File createGeneratedContentZip() throws IOException {
         final File tempFile = File.createTempFile("gendContent", ".zip");
-        tempFile.deleteOnExit();
+        FileUtils.deleteOnExit(tempFile);
         return tempFile;
     }
 
@@ -2146,7 +2265,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     @Override
-    public void validateDeploymentTarget(String target, String name, 
+    public void validateDeploymentTarget(String target, String name,
         boolean isRedeploy) {
         List<String> referencedTargets = domain.getAllReferencedTargetsForApplication(name);
         if (referencedTargets.isEmpty()) {
@@ -2161,25 +2280,25 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
             return;
         }
-        if (!isRedeploy) { 
+        if (!isRedeploy) {
             if (DeploymentUtils.isDomainTarget(target)) {
                 throw new IllegalArgumentException(localStrings.getLocalString("application.deploy_domain", "Application with name {0} is already referenced by other target(s). Please specify force option to redeploy to domain.", name));
             }
-            if (referencedTargets.size() == 1 && 
+            if (referencedTargets.size() == 1 &&
                 referencedTargets.contains(target)) {
                 throw new IllegalArgumentException(localStrings.getLocalString("application.alreadyreg.redeploy", "Application with name {0} is already registered. Either specify that redeployment must be forced, or redeploy the application. Or if this is a new deployment, pick a different name.", name));
             } else {
                 throw new IllegalArgumentException(localStrings.getLocalString("use.create_app_ref", "Application {0} is already referenced by other target(s). Please use create application ref to create application reference on target {1}.", name, target));
             }
         } else {
-            if (referencedTargets.size() == 1 && 
+            if (referencedTargets.size() == 1 &&
                 referencedTargets.contains(target)) {
                 return;
             } else {
                 if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
-                    throw new IllegalArgumentException(localStrings.getLocalString("redeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting redeploy operation.", name)); 
+                    throw new IllegalArgumentException(localStrings.getLocalString("redeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting redeploy operation.", name));
                 }
-            } 
+            }
         }
     }
 
@@ -2189,10 +2308,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (referencedTargets.size() > 1) {
             Application app = applications.getApplication(name);
             if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
-                if (app.isLifecycleModule()) {  
-                    throw new IllegalArgumentException(localStrings.getLocalString("delete_lifecycle_on_multiple_targets", "Lifecycle module {0} is referenced by more than one targets. Please remove other references before attempting delete operation.", name)); 
+                if (app.isLifecycleModule()) {
+                    throw new IllegalArgumentException(localStrings.getLocalString("delete_lifecycle_on_multiple_targets", "Lifecycle module {0} is referenced by more than one targets. Please remove other references before attempting delete operation.", name));
                 } else {
-                    throw new IllegalArgumentException(localStrings.getLocalString("undeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting undeploy operation.", name)); 
+                    throw new IllegalArgumentException(localStrings.getLocalString("undeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting undeploy operation.", name));
                 }
             }
         }
@@ -2202,10 +2321,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public void validateSpecifiedTarget(String target) {
         if (env.isDas()) {
             if (target == null) {
-                // we only validate the specified target 
+                // we only validate the specified target
                 return;
             }
-            Cluster cluster = domain.getClusterNamed(target); 
+            Cluster cluster = domain.getClusterNamed(target);
             if (cluster != null) {
                 if (cluster.isVirtual()) {
                     throw new IllegalArgumentException(localStrings.getLocalString("cannot_specify_managed_target", "Cannot specify target {0} for the operation. Target {0} is a managed target.", target));
@@ -2226,8 +2345,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     @Override
-    public ExtendedDeploymentContext disable(UndeployCommandParameters commandParams, 
-        Application app, ApplicationInfo appInfo, ActionReport report, 
+    public ExtendedDeploymentContext disable(UndeployCommandParameters commandParams,
+        Application app, ApplicationInfo appInfo, ActionReport report,
         Logger logger) throws Exception {
         if (appInfo == null) {
             report.failure(logger, "Application not registered", null);
@@ -2263,9 +2382,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     @Override
-    public ExtendedDeploymentContext enable(String target, Application app, ApplicationRef appRef, 
+    public ExtendedDeploymentContext enable(String target, Application app, ApplicationRef appRef,
         ActionReport report, Logger logger) throws Exception {
-        ReadableArchive archive = null; 
+        ReadableArchive archive = null;
         try {
             DeployCommandParameters commandParams = app.getDeployParameters(appRef);
             // if the application is already loaded, do not load again
@@ -2311,7 +2430,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 // ignore
             }
         }
-    } 
+    }
 
     private boolean loadOnCurrentInstance(DeploymentContext context) {
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
@@ -2322,11 +2441,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 return true;
             }
             if (server.isDas()) {
-                String objectType = 
+                String objectType =
                     appProps.getProperty(ServerTags.OBJECT_TYPE);
                 if (objectType != null) {
                     // if it's a system application needs to be loaded on DAS
-                    if (objectType.equals(DeploymentProperties.SYSTEM_ADMIN) || 
+                    if (objectType.equals(DeploymentProperties.SYSTEM_ADMIN) ||
                         objectType.equals(DeploymentProperties.SYSTEM_ALL)) {
                         return true;
                     }
@@ -2337,7 +2456,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     private String getApplicationType(ApplicationInfo appInfo) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (appInfo.getSniffers().size() > 0) {
             for (Sniffer sniffer : appInfo.getSniffers()) {
                 if (sniffer.isUserVisible()) {
@@ -2353,7 +2472,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Override
     public List<Sniffer> getSniffersFromApp(Application app) {
-        List<String> snifferTypes = new ArrayList<String>();
+        List<String> snifferTypes = new ArrayList<>();
         for (com.sun.enterprise.config.serverbeans.Module module : app.getModule()) {
             for (Engine engine : module.getEngines()) {
                 snifferTypes.add(engine.getSniffer());
@@ -2361,23 +2480,23 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
 
         if (snifferTypes.isEmpty()) {
-            // for the upgrade scenario, we cannot get the sniffers from the 
+            // for the upgrade scenario, we cannot get the sniffers from the
             // domain.xml, so we need to re-process it during deployment
             return null;
         }
 
-        List<Sniffer> sniffers = new ArrayList<Sniffer>();
+        List<Sniffer> sniffers = new ArrayList<>();
         if (app.isStandaloneModule()) {
             for (String snifferType : snifferTypes) {
                 Sniffer sniffer = snifferManager.getSniffer(snifferType);
                 if (sniffer != null) {
                     sniffers.add(sniffer);
                 } else {
-                    logger.log(Level.SEVERE, KernelLoggerInfo.cantFindSniffer, snifferType);
+                    logger.log(SEVERE, KernelLoggerInfo.cantFindSniffer, snifferType);
                 }
             }
             if (sniffers.isEmpty()) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.cantFindSnifferForApp, app.getName());
+                logger.log(SEVERE, KernelLoggerInfo.cantFindSnifferForApp, app.getName());
                 return null;
             }
         } else {

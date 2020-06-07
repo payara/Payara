@@ -107,7 +107,7 @@ public class DeploymentHelper
             if (! StringHelper.isEmpty(value)) {
                  if (logger.isLoggable(Logger.FINE))
                      logger.fine(DatabaseConstants.JAVA_TO_DB_FLAG + " property is set."); // NOI18N
-                 return Boolean.valueOf(value).booleanValue();
+                 return Boolean.parseBoolean(value);
             }
         }
         return false;

@@ -1,0 +1,51 @@
+list-jobs(1)              asadmin Utility Subcommands             list-jobs(1)
+
+NAME
+       list-jobs - lists information about subcommands that were started using
+       asadmin --detach or that contain progress information
+
+SYNOPSIS
+           list-jobs [--help]
+           [job_id]
+
+DESCRIPTION
+       The list-jobs subcommand lists information about subcommands that were
+       started using the asadmin utility option --detach or that contain
+       progress information. The --detach option detaches long-running
+       subcommands and executes them in the background in detach mode.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       job_id
+           The ID of the job for which you want to list information.
+
+EXAMPLES
+       Example 1, Checking Job Status
+           This example provides information about subcommands that were
+           started using asadmin --detach or that contain progress
+           information.
+
+               asadmin> list-jobs
+               JOB ID     COMMAND           STATE       EXIT CODE TIME OF COMPLETION
+               1          create-cluster    COMPLETED   SUCCESS   2013-02-15 16:16:16 PST
+               2          deploy            COMPLETED   FAILURE   2013-02-15 18:26:30 PST
+               Command list-jobs executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       configure-managed-jobs(1), attach(1)
+
+       asadmin(1M)
+
+Java EE 8                         06 Feb 2013                     list-jobs(1)

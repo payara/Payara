@@ -55,11 +55,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
-
-import java.io.Serializable;
-
 
 /**
  * Representation of an application environment entry, as represented in
@@ -68,7 +66,6 @@ import java.io.Serializable;
  * @author Craig R. McClanahan
  * @version $Revision: 1.2 $ $Date: 2005/12/08 01:27:39 $
  */
-
 public class ContextEnvironment extends ResourceBase {
 
 
@@ -80,10 +77,12 @@ public class ContextEnvironment extends ResourceBase {
      */
     private String description = null;
 
+    @Override
     public String getDescription() {
         return (this.description);
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
@@ -94,10 +93,12 @@ public class ContextEnvironment extends ResourceBase {
      */
     private String name = null;
 
+    @Override
     public String getName() {
         return (this.name);
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -123,10 +124,12 @@ public class ContextEnvironment extends ResourceBase {
      */
     private String type = null;
 
+    @Override
     public String getType() {
         return (this.type);
     }
 
+    @Override
     public void setType(String type) {
         this.type = type;
     }
@@ -151,6 +154,7 @@ public class ContextEnvironment extends ResourceBase {
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("ContextEnvironment[");

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.web.connector.extension;
 
@@ -49,7 +50,7 @@ import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
 import com.sun.enterprise.web.WebContainer;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.j2ee.statistics.Stats;
+import javax.management.j2ee.statistics.Stats;
 import org.glassfish.web.LogFacade;
 
 import javax.management.ObjectName;

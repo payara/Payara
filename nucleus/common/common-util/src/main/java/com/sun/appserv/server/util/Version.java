@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package com.sun.appserv.server.util;
 
@@ -61,7 +61,7 @@ import java.util.Properties;
  * 
 */
 public class Version {
-
+    
     private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot";
     private static final String PRODUCT_NAME_KEY = "product_name";
     private static final String BRIEF_PRODUCT_NAME_KEY = "brief_product_name";
@@ -77,9 +77,9 @@ public class Version {
     private static final String DEFAULT_DOMAIN_TEMPLATE_JAR = "nucleus-domain.jar";
     private static final String ADMIN_CLIENT_COMMAND_NAME_KEY = "admin_client_command_name";
     private static final String INITIAL_ADMIN_GROUPS_KEY = "initial_admin_user_groups";
-    private static List<Properties> versionProps = new ArrayList<Properties>();
-    private static Map<String,Properties> versionPropsMap = new HashMap<String,Properties>();
-    private static Properties versionProp = getVersionProp();
+    private static final List<Properties> VERSION_PROPS = new ArrayList<Properties>();
+    private static final Map<String,Properties> VERSION_PROPS_MAP = new HashMap<String,Properties>();
+    private static final Properties versionProp = getVersionProp();
 
     private static Properties getVersionProp() {
         String installRoot = System.getProperty(INSTALL_ROOT_PROP_NAME);
@@ -98,10 +98,10 @@ public class Version {
                         fr = new FileReader(f);
                         Properties p = new Properties();
                         p.load(fr);
-                        versionProps.add(p);
+                        VERSION_PROPS.add(p);
                         String apn = p.getProperty(ABBREV_PRODUCT_NAME_KEY);
                         if (apn != null) {
-                            versionPropsMap.put(apn, p);
+                            VERSION_PROPS_MAP.put(apn, p);
                         }
                         fr.close();
                     } catch (IOException ex) {
@@ -119,7 +119,7 @@ public class Version {
             }
             // sort the list based on the based-on property.  If a is based on b,
             // then a is earlier then b in the list.
-            Collections.sort(versionProps, new Comparator<Properties>() {
+            Collections.sort(VERSION_PROPS, new Comparator<Properties>() {
                 @Override
                 public int compare(Properties p1, Properties p2) {
                     String abp1 = p1.getProperty(ABBREV_PRODUCT_NAME_KEY);
@@ -137,8 +137,8 @@ public class Version {
             });
 
             // save the first element in the list for later use
-            if (versionProps.size() > 0) {
-                return versionProps.get(0);
+            if (!VERSION_PROPS.isEmpty()) {
+                return VERSION_PROPS.get(0);
             }
         } else {
             System.out.println("installRoot is null");
@@ -211,7 +211,7 @@ public class Version {
      * Returns Minor version
      */
     public static String getMinorVersion() {
-        return getProperty(MINOR_VERSION_KEY, "0");
+        return getProperty(MINOR_VERSION_KEY, "0").replace("-SNAPSHOT","");
     }
 
     /**
@@ -303,7 +303,7 @@ public class Version {
         }
         String basedon = p.getProperty(BASED_ON_KEY);
         if (basedon != null) {
-            Properties bp = versionPropsMap.get(basedon);
+            Properties bp = VERSION_PROPS_MAP.get(basedon);
             if (bp != null) {
                 return getProperty(bp, key, def);
             }

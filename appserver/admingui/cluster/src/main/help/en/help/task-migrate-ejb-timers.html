@@ -1,0 +1,73 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-migrate-ejb-timers" name="task-migrate-ejb-timers"></a><a id="GHCLU00085" name="GHCLU00085"></a></p>
+
+<h4><a id="sthref240" name="sthref240"></a><a id="sthref241" name="sthref241"></a><a id="sthref242" name="sthref242"></a>To Migrate EJB Timers</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>If a GlassFish Server instance is stopped, Enterprise JavaBeans (EJB) technology timers that are installed on that instance also stop running. If the instance was stopped abnormally or unexpectedly, To enable these timers run while the instance is stopped, you must migrate the timers to a running server instance in the cluster.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Clusters node.</p>
+</li>
+<li>
+<p>Under the Clusters node in the navigation tree, select the cluster.</p>
+<p>The General Information page for the cluster opens.</p>
+</li>
+<li>
+<p>On the General Information page, click Migrate EJB Timers.</p>
+<p>The Migrate EJB Timers page opens.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>If all instances in the cluster are running, the Migrate EJB Timers button is deactivated.</p>
+
+<hr>
+
+<p>To assist you in migrating timers, the Migrate EJB Timers page contains a table of EJB timers with the following information.</p>
+<dl>
+<dt>Server Name</dt>
+<dd>
+<p>List of GlassFish Server instances in the cluster.</p>
+</dd>
+<dt>Timer Count</dt>
+<dd>
+<p>Number of persistent timers on each instance.</p>
+</dd>
+</dl>
+</li>
+<li>
+<p>On the Migrate EJB Timers page, select the instance from which and to which to migrate the timers.</p>
+<ol type="a">
+<li>
+<p>From the Source drop-down list, select the stopped instance from which to migrate the timers.</p>
+</li>
+<li>
+<p>From the Destination drop-down list, select the running instance to which to migrate the timers.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+</li>
+</ol>
+<p>If the source instance is running or if the destination instance is not running, the Administration Console displays an error message.</p>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2018 Payara Foundation and/or affiliates -->
 
 <!-- jdbc/poolPropertyNew.inc -->
 
@@ -134,7 +135,7 @@
    </sun:property>
 
     <sun:property id="transProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.transIsolation}" helpText="$resource{i18njdbc.jdbcPool.transIsolationHelp}" >
-        <sun:dropDown id="transIso" selected="#{sessionScope.wizardMap.transactionIsolationLevel}" labels={"" "read-uncommitted" "read-committed" "repeatable-read" "serializable" } />
+        <sun:dropDown id="transIso" selected="#{sessionScope.wizardMap.transactionIsolationLevel}" labels={"" "read-uncommitted" "read-committed" "repeatable-read" "serializable" "snapshot" } />
     </sun:property>
 
     <sun:property id="levelProp"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.isoLevel}" helpText="$resource{i18njdbc.jdbcPool.isoLevelHelp}">

@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>monitoring</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>monitoring</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="logging.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="passwords.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="monitoring-5asc"></a><a id="GSRFM00271"></a><a id="monitoring"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_monitoring">monitoring</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>reviewing the runtime state of components and services deployed in
+\{product---name}</p>
+</div>
+<div id="sthref2406" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>Monitoring is the process of reviewing the statistics of a system to
+improve performance or solve problems. By monitoring the state of
+various components and services deployed in \{product---name},
+performance bottlenecks can be identified, failures can be anticipated,
+and runtime standards can be established and observed. Data gathered by
+monitoring can also be useful in performance tuning and capacity
+planning.</p>
+</div>
+<div class="paragraph">
+<p>The \{product---name} monitoring service is enabled by default, that is,
+the <code>monitoring-enabled</code> attribute of the <code>monitoring-service</code> element
+is set to true. Once the monitoring service is enabled, a deployed
+module can then be enabled for monitoring by setting its monitoring
+level to HIGH or LOW (default is OFF). Monitoring can be configured
+dynamically by using the Administration Console or the
+<code>enable-monitoring</code> and the <code>disable-monitoring</code> subcommands. The <code>set</code>
+subcommand can also be used with dotted names to enable or disable
+monitoring. However, a server restart is required for changes made by
+using the <code>set</code> subcommand to take affect.</p>
+</div>
+<div class="paragraph">
+<p>Monitoring data can be viewed by using the Administration Console or by
+using the subcommands of the <code>asadmin</code> utility.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>monitor</code> subcommand displays monitoring data for a given type,
+similar to the UNIX <code>top</code> command. The data is presented at given
+intervals.</p>
+</li>
+<li>
+<p>The <code>list</code> and <code>get</code> subcommands display comprehensive data. Both use
+dotted names to specify monitorable objects.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Alternate tools for monitoring \{product---name} components and services
+include JConsole and the REST interface.</p>
+</div>
+<div class="paragraph">
+<p>The Monitoring Scripting Client or DTrace Monitoring can be used to
+start the available monitoring probes. Using these tools is helpful in
+identifying performance issues during runtime. Monitoring Scripting
+Client or DTrace Monitoring are only usable if their modules are
+present.</p>
+</div>
+<div id="sthref2407" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="monitor.html#monitor-1"><code>monitor</code>(1)</a>,
+<a href="enable-monitoring.html#enable-monitoring-1"><code>enable-monitoring</code>(1)</a>,
+<a href="disable-monitoring.html#disable-monitoring-1"><code>disable-monitoring</code>(1)</a>,
+<a href="list.html#list-1"><code>list</code>(1)</a>, <a href="get.html#get-1"><code>get</code>(1)</a>,
+<a href="set.html#set-1"><code>set</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="dotted-names.html#dotted-names-5asc"><code>dotted-names</code>(5ASC)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="logging.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="passwords.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

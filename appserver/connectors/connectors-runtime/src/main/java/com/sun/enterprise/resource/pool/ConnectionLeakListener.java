@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource.pool;
 
@@ -60,7 +61,7 @@ public interface ConnectionLeakListener {
      * to print the stack trace of the caller of getConnection
      * @param stackTrace Stack trace of the caller
      */
-    public void printConnectionLeakTrace(StringBuffer stackTrace);
+    public void printConnectionLeakTrace(StringBuilder stackTrace);
 
     /**
      * reclaim the leaked connection

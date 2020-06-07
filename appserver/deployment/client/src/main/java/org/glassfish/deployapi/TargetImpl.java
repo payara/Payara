@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployapi;
 
@@ -49,63 +50,65 @@ import java.io.IOException;
  * Implements the Target interface as specified by JSR-88.
  * <p>
  * This implementation is independent of the concrete type of its owner.
- * 
+ *
  * @author tjquinn
+ * @author David Matejcek
  */
 public class TargetImpl implements Target {
 
-    private TargetOwner owner;
-    
-    private String name;
-    
-    private String description;
-    
+    private final TargetOwner owner;
+    private final String name;
+    private final String description;
+
     /**
      * Creates a new TargetImpl object.
      * <p>
      * Note that this constructor should normally be used only by a TargetOwner.
-     * Logic that needs to create {@link Target} instances should invoke {@link TargetOwner#createTarget} or 
+     * Logic that needs to create {@link Target} instances should invoke {@link TargetOwner#createTarget} or
      * {@link TargetOwner#createTargets} on the TargetOwner.
-     * 
+     *
      * @param owner
      * @param name
      * @param description
-     */ // XXX It would be nice to move classes around so this could be package-visible and not public
+     */
     public TargetImpl(TargetOwner owner, String name, String description) {
         this.owner = owner;
         this.name = name;
         this.description = description;
     }
 
-    /**
-     * Returns the name of the Target.
-     * @return
-     */
+    @Override
     public String getName() {
         return name;
     }
 
-    /**
-     * Returns the description of the Target.
-     * @return
-     */
+    @Override
     public String getDescription() {
         return description;
     }
-    
+
     public TargetOwner getOwner() {
         return owner;
     }
 
+
     /**
-     *  Exports the Client stub jars to the given location.
-     *  @param appName The name of the application or module.
-     *  @param destDir The directory into which the stub jar file
-     *  should be exported.
-     *  @return the absolute location to the main jar file.
+     * Exports the Client stub jars to the given location.
+     *
+     * @param appName The name of the application or module.
+     * @param destDir The directory into which the stub jar file
+     *            should be exported.
+     * @return the absolute location to the main jar file.
      */
-    public String exportClientStubs(String appName, String destDir) 
-        throws IOException {
+    public String exportClientStubs(String appName, String destDir) throws IOException {
         return owner.exportClientStubs(appName, destDir);
+    }
+
+    /**
+     * Returns the name of this target.
+     */
+    @Override
+    public String toString() {
+        return getName();
     }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
@@ -127,7 +128,7 @@ public class SingletonLifeCycleManager {
 
         Application app = sessionDesc.getEjbBundleDescriptor().getApplication();
         if (fullyQualified) {
-            int indexOfHash = origName.indexOf("#");
+            int indexOfHash = origName.indexOf('#');
             String ejbName = origName.substring(indexOfHash + 1);
             String relativeJarPath = origName.substring(0, indexOfHash);
 
@@ -173,11 +174,10 @@ public class SingletonLifeCycleManager {
 
         }
 
-        return;
     }
 
     public synchronized void initializeSingleton(AbstractSingletonContainer c) {
-        initializeSingleton(c, new ArrayList<String>());
+        initializeSingleton(c, new ArrayList<>());
     }
 
     private void initializeSingleton(AbstractSingletonContainer c, List<String> initList) {

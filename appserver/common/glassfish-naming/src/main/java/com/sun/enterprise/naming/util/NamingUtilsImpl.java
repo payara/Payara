@@ -44,13 +44,10 @@ package com.sun.enterprise.naming.util;
 
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
-
 import org.glassfish.logging.annotation.LogMessageInfo;
-
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;
-
 import javax.naming.Context;
 import java.io.*;
 import java.security.AccessController;
@@ -58,7 +55,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
 
 import static com.sun.enterprise.naming.util.LogFacade.logger;
-import static org.glassfish.common.util.ObjectInputOutputStreamFactoryFactory.getFactory;;
+import static org.glassfish.common.util.ObjectInputOutputStreamFactoryFactory.getFactory;
 
 /**
  * This is a utils class for refactoring the following method.
@@ -107,42 +104,41 @@ public class NamingUtilsImpl implements NamingUtils {
         NamingObjectFactory delegate, boolean cacheResult) {
         return new DelegatingNamingObjectFactory(name, delegate, cacheResult);
     }
-    
+
     @Override
     public Object makeCopyOfObject(Object obj) {
         if ( !(obj instanceof Context) && (obj instanceof Serializable) ) {
             if(logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "** makeCopyOfObject:: " + obj);
             }
-            
             try {
                 // first serialize the object
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ObjectOutputStream oos = getFactory().createObjectOutputStream(bos);
-                oos.writeObject(obj);
-                oos.flush();
-                byte[] data = bos.toByteArray();
-                oos.close();
-                bos.close();
-
+                byte[] data = serialize(obj);
                 // now deserialize it
-                ByteArrayInputStream bis = new ByteArrayInputStream(data);
-                final ObjectInputStream ois = getFactory().createObjectInputStream(bis);
-                obj = AccessController.doPrivileged(new PrivilegedExceptionAction() {
-                    @Override
-                    public Object run() throws IOException, ClassNotFoundException {
-                        return ois.readObject();
-                    }
-                });
-                return obj;
+                return deserialize(data);
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, EXCEPTION_COPY_MUTABLE, ex);
-                RuntimeException re = new RuntimeException("Cant copy Serializable object:", ex);
-                throw re;
+                throw new RuntimeException("Cant copy Serializable object:", ex);
             }
         } else {
             // XXX no copy ?
             return obj;
+        }
+    }
+
+    private Object deserialize(byte[] data) throws IOException, java.security.PrivilegedActionException {
+        try (final ObjectInputStream ois =
+                getFactory().createObjectInputStream(new ByteArrayInputStream(data))){
+            return AccessController.doPrivileged((PrivilegedExceptionAction) () -> ois.readObject());
+        }
+    }
+
+    private byte[] serialize(Object obj) throws IOException {
+        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+           try (final ObjectOutputStream oos = getFactory().createObjectOutputStream(bos)) {
+               oos.writeObject(obj);
+           }
+           return bos.toByteArray();
         }
     }
 }

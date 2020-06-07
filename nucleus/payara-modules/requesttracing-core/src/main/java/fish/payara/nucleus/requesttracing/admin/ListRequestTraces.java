@@ -101,7 +101,7 @@ public class ListRequestTraces implements AdminCommand {
 
         RequestTracingExecutionOptions executionOptions = service.getExecutionOptions();
         if ((historicTraces == null || historicTraces) && !executionOptions.isHistoricTraceStoreEnabled()) {
-            actionReport.setMessage("Request Trace Store is not enabled!");
+            actionReport.setMessage("Historic Request Trace Store is not enabled!");
             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }
         else {

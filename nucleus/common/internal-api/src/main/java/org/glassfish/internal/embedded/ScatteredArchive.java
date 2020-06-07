@@ -334,14 +334,15 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
                     f = new File(url.getPath());
                 }
                 if (f.isFile()) {
-                    JarFile jar = new JarFile(f);
-                    Enumeration<JarEntry> jarEntries = jar.entries();
-                    while (jarEntries.hasMoreElements()) {
-                        JarEntry jarEntry = jarEntries.nextElement();
-                        if (jarEntry.isDirectory()) {
-                            continue;
+                    try (JarFile jar = new JarFile(f)) {
+                        Enumeration<JarEntry> jarEntries = jar.entries();
+                        while (jarEntries.hasMoreElements()) {
+                            JarEntry jarEntry = jarEntries.nextElement();
+                            if (jarEntry.isDirectory()) {
+                                continue;
+                            }
+                            entries.add(jarEntry.getName());
                         }
-                        entries.add(jarEntry.getName());
                     }
                 } else {
                     getListOfFiles(f, prefix, entries);
@@ -360,12 +361,17 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
     private void getListOfFiles(File directory, String prefix, List<String> list) {
         if (!directory.isDirectory())
             return;
-        for (File f : directory.listFiles()) {
-            String name = prefix==null?f.getName():prefix+"/"+f.getName();
-            if (f.isDirectory()) {
-                getListOfFiles(f, name ,list);
-            } else {
-                list.add(name);
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                String name = prefix == null
+                        ? file.getName()
+                        : prefix + "/" + file.getName();
+                if (file.isDirectory()) {
+                    getListOfFiles(file, name ,list);
+                } else {
+                    list.add(name);
+                }
             }
         }
     }
@@ -479,7 +485,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
         if (metadata.containsKey(name)) {
             return metadata.get(name);
         }
-        String shortName = (name.indexOf("/") != -1 ? name.substring(name.indexOf("/") + 1) : name);
+        String shortName = (name.indexOf('/') != -1 ? name.substring(name.indexOf('/') + 1) : name);
         if (metadata.containsKey(shortName)) {
             return metadata.get(shortName);
         }
@@ -511,7 +517,7 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
 
     private JarFile  getJarWithEntry(String name) {
         for (URL url : urls) {
-            File f = null;
+            File f;
             try {
                 f = new File(url.toURI());
             } catch(URISyntaxException e) {
@@ -522,6 +528,8 @@ public class ScatteredArchive extends ReadableArchiveAdapter {
                     JarFile jar = new JarFile(f);
                     if (jar.getEntry(name) != null) {
                         return jar;
+                    } else {
+                        jar.close();
                     }
                 }
             } catch (Exception ex) {

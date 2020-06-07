@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.api;
@@ -146,10 +146,10 @@ public abstract class JavaEEResourceBase implements JavaEEResource, Serializable
      * i.e. [ propname1=value , propname2=othervalue ]
      * <p>
      * If there are no properties an empty string is returned.
-     * @return 
+     * @return
      */
     protected String getPropsString() {
-        StringBuffer propsBuffer = new StringBuffer();
+        StringBuilder propsBuffer = new StringBuilder();
         Set props = getProperties();
         if (!props.isEmpty()) {
             for (Iterator iter = props.iterator(); iter.hasNext();) {
@@ -169,7 +169,7 @@ public abstract class JavaEEResourceBase implements JavaEEResource, Serializable
     /**
      * Creates a JavaEEResource from a specified {@link ResourceInfo}
      * @param resourceInfo
-     * @return 
+     * @return
      *///
     protected abstract JavaEEResource doClone(ResourceInfo resourceInfo);
 }

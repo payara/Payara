@@ -38,25 +38,30 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+import com.sun.enterprise.util.JDK;
 import java.io.IOException;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLConnection;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
 
 public final class HttpConnectorAddress {
@@ -64,7 +69,10 @@ public final class HttpConnectorAddress {
     static final String HTTPS_CONNECTOR = "https";
     public static final String  AUTHORIZATION_KEY     = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic ";
-    private static final String DEFAULT_PROTOCOL = "TLSv1.2";
+    private static final String DEFAULT_PROTOCOL = TLS12;
+    private static final String ZULU_JDK_VENDOR = "Azul";
+    private static final int MINIMUM_MAJOR_VERSION = 9;
+    private static final int MINIMUM_UPDATE_VERSION = 222;
 
     private String host;
     private int    port;
@@ -180,19 +188,33 @@ public final class HttpConnectorAddress {
                 String clientHttpsProtocol = System.getProperty("fish.payara.clientHttpsProtocol");
                 if (clientHttpsProtocol != null) {
                     switch (clientHttpsProtocol) {
-                        case "TLSv1": protocol = "TLSV1";
+                        case TLS1: protocol = TLS1;
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);
                                         break;
                         
-                        case "TLSv1.1": protocol = "TLSv1.1";
+                        case TLS11: protocol = TLS11;
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);
                                         break;
                                         
-                        case "TLSv1.2": protocol = "TLSv1.2";
+                        case TLS12: protocol = TLS12;
+                                        logger.log(Level.FINE,
+                                                AdminLoggerInfo.settingHttpsProtocol,
+                                                protocol);
+                                        break;
+
+                        case TLS13: protocol = TLS13;
+                                        if (JDK.getMajor() < MINIMUM_MAJOR_VERSION) {
+                                            if (JDK.getVendor().contains(ZULU_JDK_VENDOR) && 
+                                                    JDK.getUpdate() >= MINIMUM_UPDATE_VERSION) {
+                                                protocol = TLS13;
+                                            } else {
+                                                protocol = DEFAULT_PROTOCOL;
+                                            }
+                                        }
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);
@@ -306,7 +328,9 @@ public final class HttpConnectorAddress {
     }
 
     private char[] getPassword() {
-        return authInfo != null ? authInfo.getPassword().toCharArray() : "".toCharArray();
+        String password = authInfo != null ? authInfo.getPassword() : "";
+        
+        return password != null ? password.toCharArray() : null;
     }
 
     private URLConnection openConnection(URL url) throws IOException    {
@@ -344,15 +368,16 @@ public final class HttpConnectorAddress {
          * character with empty string "" works. Hence implementing the same.
          * Date: 10/10/2003.
          */
-        String cs = null;
-        String user = this.getUser();
-        String pass = this.getPassword() != null ? new String(this.getPassword()) : null;
-        String up = (user == null) ? "" : user;
-        String pp = (pass == null) ? "" : pass;
-        cs = up + ":" + pp;
-        String enc = this.getBase64Encoded(cs);
-        enc = enc.replaceAll(System.getProperty("line.separator"), "");
-        return ( AUTHORIZATION_TYPE + enc );
+        String user = getUser();
+        char[] password = getPassword();
+        
+        return 
+            AUTHORIZATION_TYPE + 
+            getBase64Encoded(
+                (user == null ? "" : user) + 
+                ":" + 
+                (password == null ? "" : new String(password)))
+                .replaceAll(System.getProperty("line.separator"), "");
     }
   
     private String getBase64Encoded(String clearString) {

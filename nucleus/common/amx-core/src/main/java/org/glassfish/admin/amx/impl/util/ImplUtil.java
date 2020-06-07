@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.util;
 
 import java.util.Set;
@@ -47,10 +49,6 @@ import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 
 public final class ImplUtil {
 
-    private static void debug(final String s) {
-        System.out.println(s);
-    }
-
     /**
     Unload this AMX MBean and all its children.
     MBean should be unloaded at the leafs first, working back to DomainRoot so as to
@@ -60,8 +58,6 @@ public final class ImplUtil {
         if (top == null) {
             throw new IllegalArgumentException();
         }
-
-        //debug( "ImplUtil.unregisterOneMBean: unregistering hierarchy under: " + top.objectName() );
 
         final MBeanServer mbeanServer = (MBeanServer) top.extra().mbeanServerConnection();
 
@@ -86,8 +82,6 @@ public final class ImplUtil {
      */
     public static boolean unregisterOneMBean(final MBeanServer mbeanServer, final ObjectName objectName) {
         boolean success = false;
-        //getLogger().fine( "UNREGISTER MBEAN: " + objectName );
-        //debug( "ImplUtil.unregisterOneMBean: unregistering: " + objectName );
         try {
             mbeanServer.unregisterMBean(objectName);
         } catch (final Exception e) {
@@ -97,34 +91,3 @@ public final class ImplUtil {
         return success;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

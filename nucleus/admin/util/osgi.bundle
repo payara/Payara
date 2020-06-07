@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 -exportcontents: \
                         org.glassfish.admin.cli.resources; \
@@ -51,6 +52,7 @@
                         com.sun.enterprise.admin.remote.writer; \
                         com.sun.enterprise.admin.remote.sse; \
                         com.sun.enterprise.admin.event;\
-                        com.sun.enterprise.admin.util.test; version=${project.osgi.version}
+                        com.sun.enterprise.admin.util.test;\
+                        com.sun.enterprise.admin.report; version=${project.osgi.version}
 DynamicImport-Package: \
                         com.sun.enterprise.security.ssl

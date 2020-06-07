@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.results;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.glassfish.admin.rest.provider.MethodMetaData;
 
@@ -55,6 +55,8 @@ import org.glassfish.admin.rest.provider.MethodMetaData;
  */
 public class OptionsResult extends Result {
 
+    private final Map<String, MethodMetaData> metaData;
+
     /**
      * Default Constructor
      */
@@ -64,8 +66,8 @@ public class OptionsResult extends Result {
 
 
     public OptionsResult(String name) {
-        __name = name;
-        __metaData = new HashMap<String, MethodMetaData>();
+        super(name);
+        metaData = new HashMap<>();
     }
 
 
@@ -73,7 +75,7 @@ public class OptionsResult extends Result {
      * Returns meta-data object for the given method
      */
     public MethodMetaData getMethodMetaData(String method) {
-        return __metaData.get(method);
+        return metaData.get(method);
     }
 
 
@@ -81,7 +83,7 @@ public class OptionsResult extends Result {
      * Adds meta-data object for the given method
      */
     public MethodMetaData putMethodMetaData(String method, MethodMetaData methodMetaData) {
-        return __metaData.put(method, methodMetaData);
+        return metaData.put(method, methodMetaData);
     }
 
     /**
@@ -89,15 +91,13 @@ public class OptionsResult extends Result {
      * Should be equal to the number of methods on resource.
      */
     public int size() {
-        return __metaData.size();
+        return metaData.size();
     }
 
     /**
      * Returns set of method names for which meta-data is available.
      */
     public Set<String> methods() {
-        return __metaData.keySet();
+        return metaData.keySet();
     }
-
-    Map<String, MethodMetaData> __metaData;
 }

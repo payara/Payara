@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,19 +38,16 @@
  */
 package fish.payara.nucleus.notification.admin;
 
-import com.google.common.collect.ObjectArrays;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.internal.api.Target;
-import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;

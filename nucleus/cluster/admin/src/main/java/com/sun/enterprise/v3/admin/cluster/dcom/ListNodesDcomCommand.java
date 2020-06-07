@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster.dcom;
 
 import com.sun.enterprise.config.serverbeans.Nodes;
@@ -47,7 +49,6 @@ import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import javax.inject.Inject;
-import java.util.logging.Logger;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -68,16 +69,15 @@ public class ListNodesDcomCommand implements AdminCommand {
     @Inject
     private Nodes nodes;
     @Param(optional = true, defaultValue = "false", name = "long", shortName = "l")
-    private boolean long_opt;
+    private boolean longOpt;
     @Param(optional = true)
     private boolean terse;
-    private ActionReport report;
 
     @Override
     public void execute(AdminCommandContext context) {
-        report = context.getActionReport();
+        ActionReport report = context.getActionReport();
         ListNodesHelper lnh = new ListNodesHelper(context.getLogger(), servers,
-                nodes, "DCOM", long_opt, terse);
+                nodes, "DCOM", longOpt, terse);
         String nodeList = lnh.getNodeList();
         report.setMessage(nodeList);
         report.setActionExitCode(ExitCode.SUCCESS);

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -61,14 +62,12 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.internal.api.ServerContext;
-import com.sun.enterprise.util.SystemPropertyConstants;
 
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import org.glassfish.api.admin.*;
@@ -135,6 +134,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     SFTPClient ftpClient=null;
     private WindowsRemoteFile wrf;
 
+    @Override
     public void execute(AdminCommandContext context) {
         report = context.getActionReport();
         logger = context.getLogger();
@@ -161,9 +161,27 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             return;
         }
 
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        report.setMessage(Strings.get("stop.instance.success",
+        String nodeName = instance.getNodeRef();
+        Node node = nodes.getNode(nodeName);
+
+        if (node.getType().equals("DOCKER")) {
+            stopDockerContainer(nodeName, instanceName, context);
+        }
+
+        if (node.getType().equals("TEMP")) {
+            deleteTempInstance(instanceName, context);
+        }
+
+        // If we've got any sub-command failures, log a warning
+        if (context.getActionReport().hasFailures()) {
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            report.setMessage(Strings.get("stop.instance.warning",
                     instanceName));
+        } else {
+            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            report.setMessage(Strings.get("stop.instance.success",
+                    instanceName));
+        }
 
         if (kill) {
             // If we killed then stop-local-instance already waited for death
@@ -175,8 +193,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         // if localhost check if files exists
         // else if SSH check if file exists  on remote system
         // else can't check anything else.
-        String nodeName = instance.getNodeRef();
-        Node node = nodes.getNode(nodeName);
         InstanceDirUtils insDU = new InstanceDirUtils(node, serverContext);
         // this should be replaced with method from Node config bean.
         if (node.isLocal()){
@@ -310,8 +326,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
                 instanceName, nodeName, humanCommand);
 
         if (logger.isLoggable(Level.FINE))
-            logger.fine("stop-instance: running " + humanCommand +
-                        " on " + nodeName);
+            logger.log(Level.FINE, "stop-instance: running {0} on {1}", new Object[]{humanCommand, nodeName});
 
         nodeUtils.runAdminCommandOnNode(node, command, context,
                                         firstErrorMessage, humanCommand, null);
@@ -380,5 +395,27 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             fullCommand.append(s);
         }
         return fullCommand.toString().trim();
+    }
+
+    private void stopDockerContainer(String nodeName, String instanceName, AdminCommandContext adminCommandContext) {
+        ParameterMap parameterMap = new ParameterMap();
+
+        parameterMap.add("node", nodeName);
+        parameterMap.add("instanceName", instanceName);
+
+        CommandRunner commandRunner = habitat.getService(CommandRunner.class);
+        commandRunner.getCommandInvocation(
+                "_stop-docker-container", adminCommandContext.getActionReport().addSubActionsReport(),
+                adminCommandContext.getSubject()).parameters(parameterMap).execute();
+    }
+
+    private void deleteTempInstance(String instanceName, AdminCommandContext adminCommandContext) {
+        ParameterMap parameterMap = new ParameterMap();
+        parameterMap.add("instance_name", instanceName);
+
+        CommandRunner commandRunner = habitat.getService(CommandRunner.class);
+        commandRunner.getCommandInvocation(
+                "delete-instance", adminCommandContext.getActionReport().addSubActionsReport(),
+                adminCommandContext.getSubject()).parameters(parameterMap).execute();
     }
 }

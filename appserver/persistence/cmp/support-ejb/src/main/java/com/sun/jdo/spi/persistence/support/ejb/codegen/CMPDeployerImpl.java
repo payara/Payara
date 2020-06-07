@@ -37,22 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.spi.persistence.support.ejb.codegen;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ResourceBundle;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
 
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.deployment.Application;
@@ -71,8 +58,17 @@ import org.glassfish.persistence.common.I18NHelper;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.tools.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ResourceBundle;
+
 /**
- * Generates concrete impls for CMP beans in an archive. 
+ * Generates concrete impls for CMP beans in an archive.
  *
  * @author Nazrul Islam
  * @since  JDK 1.4
@@ -89,7 +85,7 @@ public class CMPDeployerImpl implements CMPDeployer {
      * @throws DeploymentException if this exception was thrown while generating concrete impls
      */
     public void deploy(DeploymentContext ctx) throws DeploymentException {
-        
+
         // deployment descriptor object representation for the archive
         Application application = null;
 
@@ -100,7 +96,7 @@ public class CMPDeployerImpl implements CMPDeployer {
         String beanName = null;
 
         // GeneratorException message if any
-        StringBuffer generatorExceptionMsg = null; 
+        StringBuilder generatorExceptionMsg = null;
 
         try {
             CMPGenerator gen = new JDOCodeGenerator();
@@ -119,7 +115,7 @@ public class CMPDeployerImpl implements CMPDeployer {
             final ClassLoader jcl = application.getClassLoader();
 
             bundle = ctx.getModuleMetaData(EjbBundleDescriptorImpl.class);
-                
+
             // This gives the dir where application is exploded
             String archiveUri = ctx.getSource().getURI().getSchemeSpecificPart();
 
@@ -139,7 +135,7 @@ public class CMPDeployerImpl implements CMPDeployer {
             try {
                 long start = System.currentTimeMillis();
                 gen.init(bundle, ctx, archiveUri, generatedXmlsPath);
-                
+
                 Iterator ejbs=bundle.getEjbs().iterator();
                 while ( ejbs.hasNext() ) {
 
@@ -150,23 +146,23 @@ public class CMPDeployerImpl implements CMPDeployer {
                         _logger.fine("[CMPC] Ejb Class Name: " //NOI18N
                                            + desc.getEjbClassName());
                     }
-    
+
                     if ( desc instanceof IASEjbCMPEntityDescriptor) {
-    
+
                         // generate concrete CMP class implementation
-                        IASEjbCMPEntityDescriptor entd = 
+                        IASEjbCMPEntityDescriptor entd =
                                 (IASEjbCMPEntityDescriptor)desc;
-    
+
                         if (_logger.isLoggable(Logger.FINE)) {
                             _logger.fine(
                                     "[CMPC] Home Object Impl name  is " //NOI18N
                                     + entd.getLocalHomeImplClassName());
                         }
-    
+
                         // The classloader needs to be set else we fail down the road.
                         ClassLoader ocl = entd.getClassLoader();
                         entd.setClassLoader(jcl);
-                    
+
                         try {
                             gen.generate(entd, stubsDir, stubsDir);
                         } catch (GeneratorException e) {
@@ -185,7 +181,7 @@ public class CMPDeployerImpl implements CMPDeployer {
                      * generated.Remote/Home Impl generation depends upon this
                      * value
                      */
-    
+
                     }
 
                 } // end while ejbs.hasNext()
@@ -199,9 +195,9 @@ public class CMPDeployerImpl implements CMPDeployer {
             } catch (GeneratorException e) {
                 String msg = e.getMessage();
                 _logger.warning(msg);
-                generatorExceptionMsg = addGeneratorExceptionMessage(msg, 
+                generatorExceptionMsg = addGeneratorExceptionMessage(msg,
                         generatorExceptionMsg);
-            } 
+            }
 
             bundle = null; // Used in exception processing
 
@@ -222,7 +218,7 @@ public class CMPDeployerImpl implements CMPDeployer {
 
                 end = System.currentTimeMillis();
                 _logger.fine("Java2DB processing: " + (end - start) + " msec");
-                _logger.fine( "cmpc.done_processing_cmp", 
+                _logger.fine( "cmpc.done_processing_cmp",
                         application.getRegistrationName());
             }
 
@@ -273,7 +269,7 @@ public class CMPDeployerImpl implements CMPDeployer {
         CMPProcessor processor = new CMPProcessor(ctx);
         processor.clean();
     }
-        
+
     /**
      * Integration point for application unload
      */
@@ -284,7 +280,7 @@ public class CMPDeployerImpl implements CMPDeployer {
             _logger.log(Logger.WARNING, "cmpc.cmp_cleanup_problems", e);
         }
     }
-        
+
     /**
      * Compile .java files.
      *
@@ -302,13 +298,13 @@ public class CMPDeployerImpl implements CMPDeployer {
         }
 
         // class path for javac
-        String classPath = ctx.getTransientAppMetaData(CMPDeployer.MODULE_CLASSPATH, String.class); 
+        String classPath = ctx.getTransientAppMetaData(CMPDeployer.MODULE_CLASSPATH, String.class);
         List<String> options    = new ArrayList<String>();
         if (javaConfig!=null) {
             options.addAll(javaConfig.getJavacOptionsAsList());
         }
 
-        StringBuffer msgBuffer = new StringBuffer();
+        StringBuilder msgBuffer = new StringBuilder();
         boolean compilationResult = false;
         try {
             // add the rest of the javac options
@@ -324,7 +320,7 @@ public class CMPDeployerImpl implements CMPDeployer {
                                     "cmpc.compile", file.getPath()));
                 }
 
-                StringBuffer sbuf = new StringBuffer();
+                StringBuilder sbuf = new StringBuilder();
                 for ( String s : options) {
                     sbuf.append("\n\t").append(s);
                 }
@@ -333,9 +329,9 @@ public class CMPDeployerImpl implements CMPDeployer {
 
             // Using Java 6 compiler API to compile the generated .java files
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            DiagnosticCollector<JavaFileObject> diagnostics = 
+            DiagnosticCollector<JavaFileObject> diagnostics =
                    new DiagnosticCollector<JavaFileObject>();
-            StandardJavaFileManager manager = 
+            StandardJavaFileManager manager =
                     compiler.getStandardFileManager(diagnostics, null, null);
             Iterable compilationUnits = manager.getJavaFileObjectsFromFiles(files);
 
@@ -375,7 +371,7 @@ public class CMPDeployerImpl implements CMPDeployer {
 
         if (!compilationResult) {
             // Log but throw an exception with a shorter message
-            _logger.warning(I18NHelper.getMessage(messages, 
+            _logger.warning(I18NHelper.getMessage(messages,
                     "cmpc.cmp_complilation_problems", msgBuffer.toString()));
             throw new GeneratorException(I18NHelper.getMessage(
                     messages, "cmpc.cmp_complilation_failed"));
@@ -389,11 +385,11 @@ public class CMPDeployerImpl implements CMPDeployer {
      * @param    buf    the buffer to use.
      * @return    the new or updated buffer.
      */
-    private StringBuffer addGeneratorExceptionMessage(String msg, StringBuffer buf) {
-        StringBuffer rc = buf;
-        if (rc == null) 
-            rc = new StringBuffer(msg);
-        else 
+    private StringBuilder addGeneratorExceptionMessage(String msg, StringBuilder buf) {
+        StringBuilder rc = buf;
+        if (rc == null)
+            rc = new StringBuilder(msg);
+        else
             rc.append('\n').append(msg);
 
         return rc;

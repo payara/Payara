@@ -37,9 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation]
 
 package com.sun.jts.codegen.jtsxa;
 
+
+import org.omg.CORBA.portable.InputStream;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
 * com/sun/jts/codegen/jtsxa/OTSResourceHelper.java .
@@ -53,13 +60,19 @@ package com.sun.jts.codegen.jtsxa;
 abstract public class OTSResourceHelper
 {
   private static String  _id = "IDL:jtsxa/OTSResource:1.0";
+  private static final Logger LOGGER = Logger.getLogger(OTSResourceHelper.class.getName());
 
   public static void insert (org.omg.CORBA.Any a, com.sun.jts.codegen.jtsxa.OTSResource that)
   {
-    org.omg.CORBA.portable.OutputStream out = a.create_output_stream ();
-    a.type (type ());
-    write (out, that);
-    a.read_value (out.create_input_stream (), type ());
+    try (org.omg.CORBA.portable.OutputStream out = a.create_output_stream ()) {
+      a.type (type ());
+      write (out, that);
+      try (InputStream in = out.create_input_stream()) {
+        a.read_value (in, type ());
+      }
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Exception closing streams inserting {0} into {1}.", new Object[]{that, a});
+    }
   }
 
   public static com.sun.jts.codegen.jtsxa.OTSResource extract (org.omg.CORBA.Any a)

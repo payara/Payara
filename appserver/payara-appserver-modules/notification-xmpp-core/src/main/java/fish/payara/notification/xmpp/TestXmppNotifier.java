@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,8 @@
  */
 package fish.payara.notification.xmpp;
 
-import com.google.common.base.Strings;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.notification.BlockingQueueHandler;
 import fish.payara.nucleus.notification.TestNotifier;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
@@ -154,10 +154,10 @@ public class TestXmppNotifier extends TestNotifier {
         options.setHost(hostName);
         options.setPort(port);
         options.setServiceName(serviceName);
-        if (!Strings.isNullOrEmpty(username)){
+        if (StringUtils.ok(username)){
             options.setUsername(username);
         }
-        if (!Strings.isNullOrEmpty(password)){
+        if (StringUtils.ok(password)){
             options.setPassword(password);
         }
         options.setSecurityDisabled(securityDisabled);

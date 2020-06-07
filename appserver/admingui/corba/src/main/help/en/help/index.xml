@@ -1,0 +1,42 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<index version="2.0">
+  <indexitem text="IIOP listeners">
+    <indexitem text="creating (reference)" target="ref-iioplistenernew"></indexitem>
+    <indexitem text="creating (task)" target="task-iioplistenernew"></indexitem>
+    <indexitem text="deleting" target="task-iioplistenerdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-iioplisteneredit"></indexitem>
+    <indexitem text="editing (task)" target="task-iioplisteneredit"></indexitem>
+    <indexitem text="editing SSL settings (reference)" target="ref-editiiopssl"></indexitem>
+    <indexitem text="editing SSL settings (task)" target="task-editiiopssl"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-iioplisteners"></indexitem>
+  </indexitem>
+  <indexitem text="Object Request Broker (ORB)">
+    <indexitem text="configuring (reference)" target="ref-orb"></indexitem>
+    <indexitem text="configuring (task)" target="task-orb"></indexitem>
+  </indexitem>
+  <indexitem text="ORB">
+    <indexitem text="configuring (reference)" target="ref-orb"></indexitem>
+    <indexitem text="configuring (task)" target="task-orb"></indexitem>
+  </indexitem>
+  <indexitem text="SSL settings">
+    <indexitem text="IIOP listeners (reference)" target="ref-editiiopssl"></indexitem>
+    <indexitem text="IIOP listeners (task)" target="task-editiiopssl"></indexitem>
+  </indexitem>
+</index>

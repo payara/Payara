@@ -87,12 +87,13 @@ public class Response {
     }
 
     public JsonObject getJsonBody() throws Exception {
-        JsonParser parser = Json.createParser(new StringReader(getStringBody()));
-        if (parser.hasNext()){
-            parser.next();
-            return parser.getObject();
-        } else {
-            return JsonValue.EMPTY_JSON_OBJECT;
+        try (JsonParser parser = Json.createParser(new StringReader(getStringBody()))){
+            if (parser.hasNext()){
+                parser.next();
+                return parser.getObject();
+            } else {
+                return JsonValue.EMPTY_JSON_OBJECT;
+            }
         }
     }
 

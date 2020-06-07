@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ssl;
 
 import com.sun.enterprise.security.SecurityLoggerInfo;
@@ -112,11 +112,13 @@ public class GlassfishSSLSupport implements SSLSupport {
         if (session == null) {
             return null;
         }
+        
         X509Certificate[] certs = null;
         certs = session.getPeerCertificateChain();
         if (certs == null) {
             certs = new X509Certificate[0];
         }
+        
         if (certs.length == 0 && force) {
             session.invalidate();
             handshake();
@@ -127,6 +129,7 @@ public class GlassfishSSLSupport implements SSLSupport {
                 session = socket.getSession();
             }
         }
+        
         return getX509Certs();
     }
 
@@ -134,6 +137,7 @@ public class GlassfishSSLSupport implements SSLSupport {
         if (session == null) {
             return null;
         }
+        
         Integer keySize = (Integer) session.getValue(KEY_SIZE_KEY);
         if (keySize == null) {
             int size = 0;
@@ -147,6 +151,7 @@ public class GlassfishSSLSupport implements SSLSupport {
             keySize = size;
             session.putValue(KEY_SIZE_KEY, keySize);
         }
+        
         return keySize;
     }
 
@@ -154,10 +159,12 @@ public class GlassfishSSLSupport implements SSLSupport {
         if (session == null) {
             return null;
         }
+        
         byte[] sessionId = session.getId();
         if (sessionId == null) {
             return null;
         }
+        
         StringBuilder Id = new StringBuilder();
         for (byte b : sessionId) {
             String digit = Integer.toHexString(b);
@@ -168,6 +175,7 @@ public class GlassfishSSLSupport implements SSLSupport {
             }
             Id.append(digit);
         }
+        
         return Id.toString();
     }
 

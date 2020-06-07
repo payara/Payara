@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -70,7 +71,7 @@ public class ManagedConnectionMetaDataImpl implements javax.resource.spi.Managed
      * Constructor for <code>ManagedConnectionMetaDataImpl</code>
      *
      * @param mc <code>ManagedConnection</code>
-     * @throws <code>ResourceException</code> if getting the DatabaseMetaData object fails
+     * @throws ResourceException if getting the DatabaseMetaData object fails
      */
     public ManagedConnectionMetaDataImpl(ManagedConnectionImpl mc) throws ResourceException {
         try {

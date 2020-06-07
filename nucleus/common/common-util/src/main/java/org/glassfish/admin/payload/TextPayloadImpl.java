@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -98,19 +99,23 @@ public class TextPayloadImpl {
             this.is = is;
         }
 
+        @Override
         public Iterator<Payload.Part> parts() {
             return new Iterator<Payload.Part>() {
                 private boolean hasReturnedReport = false;
 
+                @Override
                 public boolean hasNext() {
                     return ! hasReturnedReport;
                 }
 
+                @Override
                 public Payload.Part next() {
                     hasReturnedReport = true;
                     return new PayloadImpl.Part.Streamed(contentType, "report", null, is);
                 }
 
+                @Override
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }

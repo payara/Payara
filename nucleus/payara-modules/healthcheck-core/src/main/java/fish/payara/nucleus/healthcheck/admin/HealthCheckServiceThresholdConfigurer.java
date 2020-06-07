@@ -2,7 +2,7 @@
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2019 Payara Foundation. All rights reserved.
 
 
  The contents of this file are subject to the terms of the Common Development
@@ -53,7 +53,9 @@ import javax.validation.constraints.Min;
  * Admin command to enable/disable specific health check service given with its name
  *
  * @author mertcaliskan
+ * @deprecated Replaced by {@link SetHealthCheckServiceConfiguration}
  */
+@Deprecated
 @Service(name = "healthcheck-configure-service-threshold")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

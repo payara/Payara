@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
@@ -94,21 +94,19 @@ public class GlassFishMainActivator implements BundleActivator {
 
     /**
      * The created GlassFish instance - can be null. We currently create GlassFish only in embedded mode.
-     * In non-embedde mode, we let it get created by the launcher.
+     * In non-embedded mode, we let it get created by the launcher.
      */
     private GlassFish gf;
 
     private static final String[] DEFAULT_INSTALLATION_LOCATIONS_RELATIVE = new String[]{
-            // Order is important. endorsed must be ahead of others
-            "modules/endorsed/",
+            // Order is important
             "modules/",
             "modules/autostart/"
     };
 
     private static final String[] DEFAULT_START_LOCATIONS_RELATIVE = new String[]{
-            // Order is important. endorsed must be ahead of others
+            // Order is important.
             // osgi-resource-locator must come ahead of osgi-adapter
-            "modules/endorsed/",
             "modules/osgi-resource-locator.jar",
             "modules/osgi-adapter.jar",
             "modules/autostart/"

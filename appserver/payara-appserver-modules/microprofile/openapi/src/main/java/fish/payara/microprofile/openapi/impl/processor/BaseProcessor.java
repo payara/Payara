@@ -103,16 +103,16 @@ public class BaseProcessor implements OASProcessor {
                 String path = normaliseUrl(entry.getKey());
 
                 // If the path doesn't exist, create it
-                if (!api.getPaths().containsKey(path)) {
+                if (!api.getPaths().hasPathItem(path)) {
                     api.getPaths().addPathItem(path, new PathItemImpl());
                 }
 
                 // Clear the current list of servers
-                api.getPaths().get(path).getServers().clear();
+                api.getPaths().getPathItem(path).getServers().clear();
 
                 // Add each url
                 for (String serverUrl : entry.getValue()) {
-                    api.getPaths().get(path).addServer(new ServerImpl().url(serverUrl));
+                    api.getPaths().getPathItem(path).addServer(new ServerImpl().url(serverUrl));
                 }
             }
         }
@@ -123,7 +123,7 @@ public class BaseProcessor implements OASProcessor {
 
                 // Find the matching operation
                 for (PathItem pathItem : api.getPaths().values()) {
-                    for (Operation operation : pathItem.readOperations()) {
+                    for (Operation operation : pathItem.getOperations().values()) {
                         if (operation.getOperationId().equals(entry.getKey())) {
 
                             // Clear the current list of servers
@@ -139,7 +139,13 @@ public class BaseProcessor implements OASProcessor {
             }
         }
 
+        removeEmptyPaths(api);
+
         return api;
     }
 
+    private static void removeEmptyPaths(OpenAPI api) {
+        PathItem emptyItem = new PathItemImpl();
+        api.getPaths().entrySet().removeIf(entry -> emptyItem.equals(entry.getValue()));
+    }
 }

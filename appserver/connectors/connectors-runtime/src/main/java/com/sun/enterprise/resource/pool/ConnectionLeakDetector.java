@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource.pool;
 
@@ -176,7 +177,7 @@ public class ConnectionLeakDetector {
      */
     private void printConnectionLeakTrace(StackTraceElement[] threadStackTrace,
             ConnectionLeakListener connLeakListener) {
-        StringBuffer stackTrace = new StringBuffer();
+        StringBuilder stackTrace = new StringBuilder();
         String msg = localStrings.getStringWithDefault(
                 "potential.connection.leak.msg",
                 "A potential connection leak detected for connection pool " + connectionPoolInfo +

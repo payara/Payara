@@ -1,0 +1,99 @@
+create-application-ref(1)  asadmin Utility Subcommands  create-application-ref(1)
+
+NAME
+       create-application-ref - creates a reference to an application
+
+SYNOPSIS
+           create-application-ref [--help] [--target target]
+           [--virtualservers virtual_servers] [--enabled=true]
+           [--lbenabled=true] reference_name
+
+DESCRIPTION
+       The create-application-ref subcommand creates a reference from a
+       cluster or an unclustered server instance to a previously deployed
+       application element (for example, a Java EE application, a Web module,
+       or an enterprise bean module). This effectively results in the
+       application element being deployed and made available on the targeted
+       instance or cluster.
+
+       The target instance or instances making up the cluster need not be
+       running or available for this subcommand to succeed. If one or more
+       instances are not available, they will receive the new application
+       element the next time they start.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which you are creating the application
+           reference. Valid values are
+
+           *   server- Specifies the default server instance as the target for
+               creating the application reference.  server is the name of the
+               default server instance and is the default value for this
+               option.
+
+           *   cluster_name- Specifies a particular cluster as the target for
+               creating the application reference.
+
+           *   instance_name- Specifies a particular stand-alone server
+               instance as the target for creating the application reference.
+
+       --virtualservers
+           Specifies a comma-separated list of virtual server IDs on which to
+           deploy. This option applies only to Web modules (either standalone
+           or in a Java EE application). If this option is not specified, the
+           application is deployed to all virtual servers except the
+           administrative server, __asadmin.
+
+       --enabled
+           Indicates whether the application should be enabled (that is,
+           loaded). This value will take effect only if the application is
+           enabled at the global level. The default is true.
+
+       --lbenabled
+           Controls whether the deployed application is available for load
+           balancing. The default is true.
+
+OPERANDS
+       reference_name
+           The name of the application or module, which can be a Java EE
+           application, Web module, EJB module, connector module, application
+           client module, or lifecycle module.
+
+           The name can include an optional version identifier, which follows
+           the name and is separated from the name by a colon (:). The version
+           identifier must begin with a letter or number. It can contain
+           alphanumeric characters plus underscore (_), dash (-), and period
+           (.) characters. If the --enabled option is set to false, you can
+           create references to multiple disabled versions by using an
+           asterisk (*) as a wildcard character. For more information about
+           module and application versions, see "Module and Application
+           Versions" in Oracle GlassFish Server Application Deployment Guide.
+
+EXAMPLES
+       Example 1, Creating an Application Reference
+           The following example creates a reference to the Web module
+           MyWebApp on the unclustered server instance NewServer.
+
+               asadmin> create-application-ref --target NewServer MyWebApp
+               Command create-application-ref executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       delete-application-ref(1), list-application-refs(1)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Application Deployment Guide
+
+Java EE 8                   09 Aug 2017            create-application-ref(1)

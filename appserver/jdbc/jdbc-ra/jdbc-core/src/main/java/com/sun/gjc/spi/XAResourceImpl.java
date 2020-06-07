@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -73,6 +74,7 @@ public class XAResourceImpl implements XAResource {
      * @param onePhase If true, the resource manager should use a one-phase commit
      *                 protocol to commit the work done on behalf of xid.
      */
+    @Override
     public void commit(Xid xid, boolean onePhase) throws XAException {
         //the mc.transactionCompleted call has come here because
         //the transaction *actually* completes after the flow
@@ -98,6 +100,7 @@ public class XAResourceImpl implements XAResource {
      *              was used previously in the start method.
      * @param flags One of TMSUCCESS, TMFAIL, or TMSUSPEND
      */
+    @Override
     public void end(Xid xid, int flags) throws XAException {
         xar.end(xid, flags);
         //GJCINT
@@ -109,6 +112,7 @@ public class XAResourceImpl implements XAResource {
      *
      * @param xid A global transaction identifier
      */
+    @Override
     public void forget(Xid xid) throws XAException {
         xar.forget(xid);
     }
@@ -119,6 +123,7 @@ public class XAResourceImpl implements XAResource {
      *
      * @return the transaction timeout value in seconds
      */
+    @Override
     public int getTransactionTimeout() throws XAException {
         return xar.getTransactionTimeout();
     }
@@ -132,6 +137,7 @@ public class XAResourceImpl implements XAResource {
      *              instance is to be compared with the resource
      * @return true if it's the same RM instance; otherwise false.
      */
+    @Override
     public boolean isSameRM(XAResource xares) throws XAException {
         return xar.isSameRM(xares);
     }
@@ -147,6 +153,7 @@ public class XAResourceImpl implements XAResource {
      *         to roll back the transaction, it should do so
      *         by raising an appropriate <code>XAException</code> in the prepare method.
      */
+    @Override
     public int prepare(Xid xid) throws XAException {
         try {
             int result = xar.prepare(xid);
@@ -175,6 +182,7 @@ public class XAResourceImpl implements XAResource {
      *         completed state. If an error occurs during the operation, the resource
      *         manager should throw the appropriate <code>XAException</code>.
      */
+    @Override
     public Xid[] recover(int flag) throws XAException {
         return xar.recover(flag);
     }
@@ -184,6 +192,7 @@ public class XAResourceImpl implements XAResource {
      *
      * @param xid A global transaction identifier
      */
+    @Override
     public void rollback(Xid xid) throws XAException {
         //the mc.transactionCompleted call has come here becasue
         //the transaction *actually* completes after the flow
@@ -208,6 +217,7 @@ public class XAResourceImpl implements XAResource {
      * @param seconds the transaction timeout value in seconds.
      * @return true if transaction timeout value is set successfully; otherwise false.
      */
+    @Override
     public boolean setTransactionTimeout(int seconds) throws XAException {
         return xar.setTransactionTimeout(seconds);
     }
@@ -216,8 +226,9 @@ public class XAResourceImpl implements XAResource {
      * Start work on behalf of a transaction branch specified in xid.
      *
      * @param xid A global transaction identifier to be associated with the resource
-     * @return flags    One of TMNOFLAGS, TMJOIN, or TMRESUME
+     * @param flags One of {@link #TMNOFLAGS}, {@link #TMJOIN}, or {@link #TMRESUME}
      */
+    @Override
     public void start(Xid xid, int flags) throws XAException {
         //GJCINT
         mc.transactionStarted();

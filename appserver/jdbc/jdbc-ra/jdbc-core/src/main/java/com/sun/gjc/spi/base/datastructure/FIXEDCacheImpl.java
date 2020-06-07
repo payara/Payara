@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.base.datastructure;
 
@@ -45,8 +46,8 @@ import com.sun.gjc.spi.base.PreparedStatementWrapper;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 /**
- * This ia a FIXED size cache implementation.
- * <p/>
+ * This is a FIXED size cache implementation.
+ * <p>
  * If the cache is full the statement is not added to the cache.
  *
  * @author Shalini M

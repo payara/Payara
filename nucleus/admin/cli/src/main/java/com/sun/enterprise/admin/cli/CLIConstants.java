@@ -72,6 +72,7 @@ public class CLIConstants {
     public static final String K_DAS_PROTOCOL = "agent.das.protocol";
     public static final String K_DAS_PORT = "agent.das.port";
     public static final String K_DAS_IS_SECURE = "agent.das.isSecure";
+    public static final String K_DOCKER_NODE = "agent.node.docker";
 
     public static final String K_MASTER_PASSWORD = "agent.masterpassword";
     public static final String K_SAVE_MASTER_PASSWORD = "agent.saveMasterPassword";

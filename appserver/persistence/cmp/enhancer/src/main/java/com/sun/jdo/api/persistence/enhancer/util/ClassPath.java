@@ -37,19 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.util;
 
-import java.util.StringTokenizer;
+import java.io.File;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
-import java.io.File;
-import java.io.IOException;
-import java.io.FilenameFilter;
+import java.util.StringTokenizer;
 
 
 /**
- * ClassPath provides class file lookup according to a classpath 
+ * ClassPath provides class file lookup according to a classpath
  * specification.
  */
 
@@ -98,7 +97,7 @@ public class ClassPath {
    * the specified class.  The name is a "./" relative path.
    */
   public static String fileNameOf(String className, char separator) {
-    StringBuffer path = new StringBuffer();
+    StringBuilder path = new StringBuilder();
     StringTokenizer parser = new StringTokenizer(className, "./", false);//NOI18N
     for (boolean first = true; parser.hasMoreElements(); first = false) {
       if (!first)
@@ -138,7 +137,7 @@ public class ClassPath {
     if (fnlen > 6 && fileName.regionMatches(true, fnlen - 6, ".class", 0, 6)) {//NOI18N
       /* the file name ends with .class */
       fileName = fileName.substring(0, fileName.length()-6);
-      StringBuffer className = new StringBuffer();
+      StringBuilder className = new StringBuilder();
       StringTokenizer parser = new StringTokenizer(fileName, "\\/", false);//NOI18N
       for (boolean first = true; parser.hasMoreElements(); first = false) {
 	if (!first)
@@ -190,9 +189,9 @@ public class ClassPath {
   }
 
   /**
-   * Return an enumeration of all of the class files in the specified 
+   * Return an enumeration of all of the class files in the specified
    * package in this class path.
-   * @param packageName specifies the VM format package name 
+   * @param packageName specifies the VM format package name
    *    to which class files must belong.
    * @return an Enumeration of the VM format class names which
    *    can be found.  Note that the Enumeration value is of type String
@@ -213,12 +212,12 @@ public class ClassPath {
   /* private accessors */
 
   private void parsePath() {
-    StringTokenizer parser = 
+    StringTokenizer parser =
       new StringTokenizer(theClassPathSpec,
 			  java.io.File.pathSeparator,
 			  false /* dont return delimiters */
 			  );
-    
+
     ClassPathElement lastElement = null;
     while (parser.hasMoreElements()) {
       ClassPathElement anElement = ClassPathElement.create(parser.nextToken());
@@ -242,7 +241,7 @@ public class ClassPath {
 class ClassPackageEnumeration implements Enumeration {
   /* The next class path element to look for matches in once
      the current enumeration is complete */
-  private ClassPathElement nextClassPathElement; 
+  private ClassPathElement nextClassPathElement;
 
   /* The package name */
   private String thePackageName;
@@ -265,7 +264,7 @@ class ClassPackageEnumeration implements Enumeration {
     while ((currentElementEnumeration == null ||
 	    !currentElementEnumeration.hasMoreElements()) &&
 	   nextClassPathElement != null) {
-      currentElementEnumeration = 
+      currentElementEnumeration =
 	nextClassPathElement.classesInPackage(thePackageName);
       nextClassPathElement = nextClassPathElement.next();
     }

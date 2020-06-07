@@ -37,59 +37,61 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.StringUtils;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static org.glassfish.api.admin.RestEndpoint.OpType.DELETE;
+
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import javax.inject.Inject;
-
-import org.glassfish.hk2.api.IterableProvider;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
-import java.util.logging.Logger;
+
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
 
 
 /**
- * Remote AdminCommand to create a config node.  This command is run only on DAS.
- *  Register the config node on DAS
+ * Remote AdminCommand to create a config node. This command is run only on DAS.
+ * Register the config node on DAS
  *
  * @author Carla Mott
  */
 @Service(name = "delete-node-config")
 @I18n("delete.node.config")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-    @RestEndpoint(configBean=Nodes.class,
-        opType=RestEndpoint.OpType.DELETE, 
-        path="delete-node-config", 
-        description="Delete Node Config")
+    @RestEndpoint(configBean = Nodes.class,
+        opType = DELETE, 
+        path = "delete-node-config", 
+        description = "Delete Node Config")
 })
 public class DeleteNodeConfigCommand implements AdminCommand {
-    @Inject
-    ServiceLocator habitat;
+
+    @Param(name = "name", primary = true)
+    private String name;
 
     @Inject
-    IterableProvider<Node> nodeList;
+    private Nodes nodes;
 
     @Inject
-    Nodes nodes;
-
-    @Inject
-    private CommandRunner cr;
-
-    @Param(name="name", primary = true)
-    String name;
+    private CommandRunner commandRunner;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -98,28 +100,30 @@ public class DeleteNodeConfigCommand implements AdminCommand {
         Node node = nodes.getNode(name);
 
         if (node == null) {
-            //no node to delete  nothing to do here
+            // No node to delete nothing to do here
             String msg = Strings.get("noSuchNode", name);
             logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
             return;
         }
 
-        if (!(node.getType().equals("CONFIG") )){
-            //no node to delete  nothing to do here
+        if (!(node.getType().equals("CONFIG"))) {
+            // No node to delete nothing to do here
             String msg = Strings.get("notConfigNodeType", name);
             logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
             return;
 
         }
-        CommandInvocation ci = cr.getCommandInvocation("_delete-node", report, context.getSubject());
-        ParameterMap map = new ParameterMap();
-        map.add("DEFAULT", name);
-        ci.parameters(map);
-        ci.execute();
+        
+        CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_delete-node", report, context.getSubject());
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("DEFAULT", name);
+        commandInvocation.parameters(commandParameters);
+        
+        commandInvocation.execute();
     }
 
 }

@@ -37,38 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.javaee.core.deployment;
 
-import org.glassfish.api.deployment.*;
-import org.glassfish.api.container.Container;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.internal.api.JAXRPCCodeGenFacade;
-import org.glassfish.loader.util.ASClassLoaderUtil;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.ApplicationVisitor;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.container.Container;
+import org.glassfish.api.deployment.*;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.DeploymentProperties;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import org.jvnet.hk2.annotations.Optional;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.jar.Manifest;
-import java.util.jar.Attributes;
-import java.util.List;
-import java.net.URL;
+import org.glassfish.internal.api.JAXRPCCodeGenFacade;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.jvnet.hk2.annotations.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * Convenient superclass for JavaEE Deployer implementations.
@@ -102,7 +101,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
         return new MetaData(false, null, null);
     }
 
-     
+
     /**
      * Returns the classpath associated with this module
      * Can be used to compile generated cmp classes,
@@ -118,29 +117,29 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
 
         try {
             // add the module dir
-            classpath.append(ctx.getSourceDir().toURI().getPath());
+            classpath.append(ctx.getSourceDir().toPath().toString());
             classpath.append(File.pathSeparator);
 
             // add the stubs dir
-            classpath.append(ctx.getScratchDir("ejb").toURI().getPath());
+            classpath.append(ctx.getScratchDir("ejb").toPath().toString());
             classpath.append(File.pathSeparator);
 
             // add the ear lib libraries if it's ear
-            Application app = ctx.getModuleMetaData(Application.class); 
+            Application app = ctx.getModuleMetaData(Application.class);
             if (!app.isVirtual()) {
-                ReadableArchive parentArchive = 
+                ReadableArchive parentArchive =
                     ctx.getSource().getParentArchive();
 
                 String compatProp = ctx.getAppProps().getProperty(
                     DeploymentProperties.COMPATIBILITY);
 
-                List<URL> earLibURLs = 
+                List<URL> earLibURLs =
                     ASClassLoaderUtil.getAppLibDirLibrariesAsList(new File(
-                        parentArchive.getURI()), app.getLibraryDirectory(), 
-                        compatProp);  
+                        parentArchive.getURI()), app.getLibraryDirectory(),
+                        compatProp);
 
-                for (URL url : earLibURLs) { 
-                    classpath.append(url.toURI().getPath());
+                for (URL url : earLibURLs) {
+                    classpath.append(Paths.get(url.toURI()).toString());
                     classpath.append(File.pathSeparator);
                 }
             }
@@ -159,7 +158,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
      * @return The instance classpath
      */
     protected String getCommonClassPath() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         File libDir = env.getLibPath();
         String libDirPath = libDir.getAbsolutePath();
@@ -210,7 +209,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
              //In jaxrpc it was required to run
              //Wscompile to generate the artifacts for clients too.
              //service-ref element can be in client in web.xml,  application-client.xml, sun-ejb-jar.xml
-             //Fix for issue 16015 
+             //Fix for issue 16015
             BundleDescriptor bundleDesc = dc.getModuleMetaData(BundleDescriptor.class);
             if (bundleDesc.hasWebServiceClients())     {
                 JAXRPCCodeGenFacade jaxrpcCodeGenFacade = jaxrpcCodeGenFacadeProvider.get();
@@ -273,7 +272,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
 
     // get the object type from the application manifest file if
     // it is present. Application can be user application or system
-    // appliction.
+    // application.
     protected String getObjectType(DeploymentContext context) {
         try{
             Manifest manifest = context.getSource().getManifest();

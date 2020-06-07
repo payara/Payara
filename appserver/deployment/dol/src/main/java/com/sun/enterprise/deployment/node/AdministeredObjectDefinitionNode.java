@@ -94,7 +94,7 @@ public class AdministeredObjectDefinitionNode extends DeploymentDescriptorNode<A
         
         // change the resource adapter name from internal format to standard format
         String resourceAdapterName = desc.getResourceAdapter();
-        int poundIndex = resourceAdapterName.indexOf("#");
+        int poundIndex = resourceAdapterName.indexOf('#');
         if(poundIndex > 0){
             // the internal format of resource adapter name is "appName#raName", remove the appName part
             resourceAdapterName =  resourceAdapterName.substring(poundIndex);

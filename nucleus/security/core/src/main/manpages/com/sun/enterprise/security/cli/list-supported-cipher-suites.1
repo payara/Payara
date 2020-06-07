@@ -1,0 +1,85 @@
+list-supported-cipher-suites(1)  asadmin Utility Subcommands  list-supported-cipher-suites(1)
+
+NAME
+       list-supported-cipher-suites - enables administrators to list the
+       cipher suites that are supported and available to a specified GlassFish
+       Server target
+
+SYNOPSIS
+           list-supported-cipher-suites [--help] [--target target]
+
+DESCRIPTION
+       The list-supported-cipher-suites subcommand enables administrators to
+       list the cipher suites that are supported and available to a specified
+       GlassFish Server target. The cipher suites that may be available in
+       addition to the default SSL/TLS providers that are bundled with
+       GlassFish Server packages will vary depending on the third-party
+       provider.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which you want to list cipher suites. The
+           following values are valid:
+
+           server
+               Lists the cipher suites for the default server instance. This
+               is the default value.
+
+           configuration_name
+               Lists the cipher suites for the specified configuration.
+
+           cluster_name
+               Lists the cipher suites for all server instances in the
+               specified cluster.
+
+           instance_name
+               Lists the cipher suites for a specified server instance.
+
+EXAMPLES
+       Example 1, Listing cipher suites
+           The following example shows how to list cipher suites for the
+           default domain.
+
+               asadmin> list-supported-cipher-suites
+               SSL_RSA_WITH_RC4_128_MD5
+               SSL_RSA_WITH_RC4_128_SHA
+               TLS_RSA_WITH_AES_128_CBC_SHA
+               TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+               TLS_DHE_DSS_WITH_AES_128_CBC_SHA
+               SSL_RSA_WITH_3DES_EDE_CBC_SHA
+               SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
+               SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA
+               SSL_RSA_WITH_DES_CBC_SHA
+               SSL_DHE_RSA_WITH_DES_CBC_SHA
+               SSL_DHE_DSS_WITH_DES_CBC_SHA
+               SSL_RSA_EXPORT_WITH_RC4_40_MD5
+               SSL_RSA_EXPORT_WITH_DES40_CBC_SHA
+               SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA
+               SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA
+               SSL_RSA_WITH_NULL_MD5
+               SSL_RSA_WITH_NULL_SHA
+               SSL_DH_anon_WITH_RC4_128_MD5
+               TLS_DH_anon_WITH_AES_128_CBC_SHA
+               SSL_DH_anon_WITH_3DES_EDE_CBC_SHA
+               SSL_DH_anon_WITH_DES_CBC_SHA
+               SSL_DH_anon_EXPORT_WITH_RC4_40_MD5
+               SSL_DH_anon_EXPORT_WITH_DES40_CBC_SHA
+
+               Command list-supported-cipher-suites executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       asadmin(1M)
+
+Java EE 8                09 Aug 2017         list-supported-cipher-suites(1)

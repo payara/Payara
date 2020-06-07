@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>set-batch-runtime-configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>set-batch-runtime-configuration</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="set.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="set-log-attributes.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="set-batch-runtime-configuration-1"></a><a id="GSRFM897"></a><a id="set-batch-runtime-configuration"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_set_batch_runtime_configuration">set-batch-runtime-configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>configures the batch runtime</p>
+</div>
+<div id="sthref2034" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] set-batch-runtime-configuration [--help]
+[--target target]
+[--datasourcelookupname datasource-lookup-name]
+[--executorservicelookupname executor-service-lookup-name]</code></pre>
+</div>
+</div>
+<div id="sthref2035" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>set-batch-runtime-configuration</code> subcommand configures the batch
+runtime. The runtime uses a data source and a managed executor service
+to execute batch jobs. Batch runtime configuration data is stored in the
+<code>config</code> element in <code>domain.xml</code>.</p>
+</div>
+<div id="sthref2036" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target for which to configure the batch runtime. Valid
+values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Configures the batch runtime for the default server instance
+<code>server</code> and is the default value.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Configures the batch runtime for every server instance in the
+cluster.</p>
+</dd>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>Configures the batch runtime for a particular server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--datasourcelookupname</code></dt>
+<dt class="hdlist1"><code>-d</code></dt>
+<dd>
+<p>The JNDI lookup name of the data source to be used to store job
+information. The default data source is <code>jdbc/__TimerPool</code>.<br>
+Do not change the data source after the first batch job has been
+submitted to the batch runtime for execution. If the data source must
+be changed, stop and restart the domain and then make the change
+before any jobs are started or restarted. However, once the data
+source has been changed, information stored in the previous data
+source becomes inaccessible.</p>
+</dd>
+<dt class="hdlist1"><code>--executorservicelookupname</code></dt>
+<dt class="hdlist1"><code>-x</code></dt>
+<dd>
+<p>The JNDI lookup name of the managed executor service to be used to
+provide threads to jobs. The default managed executor service is
+<code>concurrent/__defaultManagedExecutorService</code>.<br>
+The managed executor service can be changed after a batch job has been
+submitted to the batch runtime without impacting execution of the job.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2037" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM898"></a><a id="sthref2038"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Configuring the Batch Runtime</p>
+</div>
+<div class="paragraph">
+<p>The following example configures the batch runtime for the default
+server instance to use an existing managed executor service named
+<code>concurrent/myExecutor</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; set-batch-runtime-configuration --executorservicelookupname concurrent/myExecutor
+Command set-batch-runtime-configuration executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2039" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2040" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="list-batch-jobs.html#list-batch-jobs-1"><code>list-batch-jobs</code>(1)</a>,
+<a href="list-batch-job-executions.html#list-batch-job-executions-1"><code>list-batch-job-executions</code>(1)</a>,
+<a href="list-batch-job-steps.html#list-batch-job-steps-1"><code>list-batch-job-steps</code>(1)</a>,
+<a href="list-batch-runtime-configuration.html#list-batch-runtime-configuration-1"><code>list-batch-runtime-configuration</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="set.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="set-log-attributes.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

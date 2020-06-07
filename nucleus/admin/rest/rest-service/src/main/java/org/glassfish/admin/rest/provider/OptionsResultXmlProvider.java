@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.provider;
 
@@ -60,9 +61,9 @@ import static org.glassfish.admin.rest.provider.ProviderUtil.quote;
 @Provider
 @Produces(MediaType.APPLICATION_XML)
 public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
-    private final static String QUERY_PARAMETERS = "queryParameters";
-    private final static String MESSAGE_PARAMETERS = "messageParameters";
-    private final static String METHOD = "method";
+    private static final String QUERY_PARAMETERS = "queryParameters";
+    private static final String MESSAGE_PARAMETERS = "messageParameters";
+    private static final String METHOD = "method";
 
      public OptionsResultXmlProvider() {
          super(OptionsResult.class, MediaType.APPLICATION_XML_TYPE);
@@ -83,7 +84,7 @@ public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
 
 
     String getRespresenationForMethodMetaData(OptionsResult proxy, String indent) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         Set<String> methods = proxy.methods();
         Iterator<String> iterator = methods.iterator();
         String method;
@@ -92,7 +93,7 @@ public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
            method = iterator.next();
 
            //method
-           result = result + getMethod(method, indent);
+           result.append(getMethod(method, indent));
 
            MethodMetaData methodMetaData = proxy.getMethodMetaData(method);
 
@@ -101,13 +102,12 @@ public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
 //               indent + Constants.INDENT);
 
            //parameters (message parameters)
-           result = result + getMessageParams(methodMetaData,
-               indent + Constants.INDENT);
+           result.append(getMessageParams(methodMetaData, indent + Constants.INDENT));
 
-           result = result + "\n" + indent;
-           result = result + getEndXmlElement(METHOD);
+           result.append("\n").append(indent);
+           result.append(result).append(getEndXmlElement(METHOD));
         }
-        return result;
+        return result.toString();
     }
 
 
@@ -124,7 +124,7 @@ public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
 //    //get xml representation for the method query parameters
 //    private String getQueryParams(MethodMetaData methodMetaData,
 //            String indent) {
-//        //TODO too many string concatenations happening here. Change this and other methods in this class to use StringBuffer
+//        //TODO too many string concatenations happening here. Change this and other methods in this class to use StringBuilder
 //        String result = "";
 //        if (methodMetaData.sizeQueryParamMetaData() > 0) {
 //            result = result + "\n" + indent;
@@ -150,10 +150,10 @@ public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
     //get xml representation for the method message parameters
     private String getMessageParams(MethodMetaData methodMetaData,
             String indent) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         if (methodMetaData.sizeParameterMetaData() > 0) {
-            result = result + "\n" + indent;
-            result = result + "<" + MESSAGE_PARAMETERS + ">";
+            result.append("\n").append(indent);
+            result.append("<" + MESSAGE_PARAMETERS + ">");
 
             Set<String> parameters = methodMetaData.parameters();
             Iterator<String> iterator = parameters.iterator();
@@ -162,13 +162,12 @@ public class OptionsResultXmlProvider extends BaseProvider<OptionsResult> {
                parameter = iterator.next();
                ParameterMetaData parameterMetaData =
                    methodMetaData.getParameterMetaData(parameter);
-               result = result + getParameter(parameter, parameterMetaData,
-                   indent + Constants.INDENT);
+               result.append(getParameter(parameter, parameterMetaData, indent + Constants.INDENT));
             }
-            result = result + "\n" + indent;
-            result = result + getEndXmlElement(MESSAGE_PARAMETERS);
+            result.append("\n").append(indent);
+            result.append(getEndXmlElement(MESSAGE_PARAMETERS));
         }
-        return result;
+        return result.toString();
     }
 
 

@@ -77,6 +77,8 @@ public class NewSyntaxTest {
         assertNull(po.getPasswordFile());
         assertFalse(po.isEcho());
         assertFalse(po.isTerse());
+        assertFalse(po.isExtraTerse());
+        assertFalse(po.isAutoName());
         // XXX - can't test, depends on how run
         //assertFalse(po.isInteractive());
     }

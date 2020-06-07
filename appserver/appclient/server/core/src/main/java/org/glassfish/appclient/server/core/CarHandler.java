@@ -37,36 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.appclient.server.core;
 
-import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
-import com.sun.enterprise.loader.ASURLClassLoader;
-import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
-import com.sun.enterprise.security.perms.PermsArchiveDelegate;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ArchiveDetector;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.appclient.server.connector.CarDetector;
-import org.jvnet.hk2.annotations.Service;
+import static com.sun.enterprise.security.permissionsxml.CommponentType.car;
+import static java.security.AccessController.doPrivileged;
+import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.net.URL;
 
-import static javax.xml.stream.XMLStreamConstants.*;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.appclient.server.connector.CarDetector;
 import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.loader.ASURLClassLoader;
+import com.sun.enterprise.security.permissionsxml.CommponentType;
+import com.sun.enterprise.security.permissionsxml.SetPermissionsAction;
 
 /**
  * @author sanjeeb.sahoo@oracle.com
@@ -115,18 +120,14 @@ public class CarHandler extends AbstractArchiveHandler {
         });
         try {
             cloader.addURL(context.getSource().getURI().toURL());
-            // add libraries referenced from manifest
+            
+            // Add libraries referenced from manifest
             for (URL url : getManifestLibraries(context)) {
                 cloader.addURL(url);
             }
                        
             try {
-                final DeploymentContext dc = context;
-                final ClassLoader cl = cloader;
-                
-                AccessController.doPrivileged(
-                        new PermsArchiveDelegate.SetPermissionsAction(
-                                SMGlobalPolicyUtil.CommponentType.car, dc, cl));
+                doPrivileged(new SetPermissionsAction(car, context, cloader));
             } catch (PrivilegedActionException e) {
                 throw new SecurityException(e.getException());
             }
@@ -135,6 +136,7 @@ public class CarHandler extends AbstractArchiveHandler {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+        
         return cloader;
     }
 

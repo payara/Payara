@@ -364,7 +364,7 @@ public class MailSessionDeployer implements ResourceDeployer {
         }
 
         public String getValue() {
-            return (String) TranslatedConfigView.getTranslatedValue(value);
+            return TranslatedConfigView.expandValue(value);
         }
 
         public void setValue(String value) throws PropertyVetoException {
@@ -442,7 +442,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getHost() {
-            return (String) TranslatedConfigView.getTranslatedValue(desc.getHost());
+            return TranslatedConfigView.expandValue(desc.getHost());
         }
 
         @Override
@@ -452,7 +452,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getUser() {
-            return (String) TranslatedConfigView.getTranslatedValue(desc.getUser());
+            return TranslatedConfigView.expandValue(desc.getUser());
         }
 
         @Override
@@ -462,7 +462,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getPassword(){
-            return (String) TranslatedConfigView.getTranslatedValue(desc.getPassword());
+            return TranslatedConfigView.expandValue(desc.getPassword());
         }
         
         @Override
@@ -484,7 +484,7 @@ public class MailSessionDeployer implements ResourceDeployer {
         
         @Override
         public String getFrom() {
-            return (String) TranslatedConfigView.getTranslatedValue(desc.getFrom());
+            return TranslatedConfigView.expandValue(desc.getFrom());
         }
 
         @Override

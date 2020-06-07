@@ -1,0 +1,108 @@
+create-jndi-resource(1)   asadmin Utility Subcommands  create-jndi-resource(1)
+
+NAME
+       create-jndi-resource - registers a JNDI resource
+
+SYNOPSIS
+           create-jndi-resource [--help] [--target target]
+           --restype restype --factoryclass factoryclass
+           --jndilookupname jndilookupname [--enabled={true|false}]
+           [--description description]
+           [--property (name=value)[:name=value]*]
+           jndi-name
+
+DESCRIPTION
+       The create-jndi-resource subcommand registers a JNDI resource.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target for which you are registering a
+           JNDI resource. Valid values for target are described below.
+
+               Note
+               +----------------------------------------+
+               |The resource is always created for the  |
+               |domain as a whole, but the resource-ref |
+               |for the resource is only created for    |
+               |the specified --target. This means that |
+               |although the resource is defined at the |
+               |domain level, it is only available at   |
+               |the specified target level. Use the     |
+               |create-resource-ref subcommand to refer |
+               |to the resource in multiple targets if  |
+               |needed.                                 |
+               +----------------------------------------+
+
+           server
+               Creates the resource for the default server instance. This
+               value is the default.
+
+           domain
+               Creates the resource for the domain
+
+           cluster-name
+               Creates the resource for every server instance in the cluster
+
+           instance-name
+               Creates the resource for a particular server instance
+
+       --restype
+           The JNDI resource type. Valid values are topic or queue.
+
+       --factoryclass
+           The class that creates the JNDI resource.
+
+       --jndilookupname
+           The lookup name that the external container uses.
+
+       --enabled
+           Determines whether the resource is enabled at runtime. Default is
+           true.
+
+       --description
+           The text that provides details about the JNDI resource.
+
+       --property
+           Optional properties for configuring the resource. Each property is
+           specified as a name-value pair.
+
+           The available properties are specific to the implementation that is
+           specified by the --factoryclass option and are used by that
+           implementation. GlassFish Server itself does not define any
+           properties for configuring a JNDI resource.
+
+OPERANDS
+       jndi-name
+           The unique name of the JNDI resource to be created.
+
+EXAMPLES
+       Example 1, Creating a JNDI Resource
+           This example creates the JNDI resource my-jndi-resource for the
+           default server instance.
+
+               asadmin> create-jndi-resource
+               --restype com.example.jndi.MyResourceType
+               --factoryclass com.example.jndi.MyInitialContextFactoryClass
+               --jndilookupname remote-jndi-name
+               --description "sample JNDI resource" my-jndi-resource
+               JNDI resource my-jndi-resource created.
+               Command create-jndi-resource executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-jndi-resource(1), list-jndi-resources(1), create-resource-ref(1)
+
+       asadmin(1M)
+
+Java EE 8                         21 Jun 2011          create-jndi-resource(1)

@@ -37,21 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.ejb.base.stats;
 
-import org.glassfish.j2ee.statistics.CountStatistic;
-import org.glassfish.j2ee.statistics.TimeStatistic;
-
-import com.sun.ejb.spi.stats.MonitorableSFSBStoreManager;
-
-import com.sun.enterprise.admin.monitor.stats.CountStatisticImpl;
-import com.sun.enterprise.admin.monitor.stats.MutableCountStatisticImpl;
-import com.sun.enterprise.admin.monitor.stats.MutableTimeStatisticImpl;
-import com.sun.enterprise.admin.monitor.stats.TimeStatisticImpl;
-
 /**
- * An instance of this class is used by the StatefulContainer to update monitoring 
+ * An instance of this class is used by the StatefulContainer to update monitoring
  *  data. There is once instance of this class per StatefulEJBContainer
  *
  * @author Mahesh Kannan
@@ -65,7 +56,7 @@ public class StatefulSessionStoreMonitor {
 	this.statsImpl = delegate;
     }
 
-    final void appendStats(StringBuffer sbuf) {
+    final void appendStats(StringBuilder sbuf) {
 	if (statsImpl != null) {
 	    statsImpl.appendStats(sbuf);
 	}

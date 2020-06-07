@@ -157,7 +157,9 @@ public final class BootAMX implements BootAMXMBean {
     @PreDestroy
     public void shutdown() {
         try {
-            mMBeanServer.unregisterMBean(getBootAMXMBeanObjectName());
+            if (mMBeanServer.isRegistered(getBootAMXMBeanObjectName())) {
+                mMBeanServer.unregisterMBean(getBootAMXMBeanObjectName());
+            }
         } catch (final Exception e) {
             Util.getLogger().log(Level.WARNING, errorDuringShutdown, e);
         }

@@ -66,8 +66,6 @@ import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
@@ -83,7 +81,7 @@ public class AdminMain {
     private String command;
     private ProgramOptions po;
     private CLIContainer cliContainer;
-    private Environment env = new Environment();
+    private final Environment env = new Environment();
     protected Logger logger;
     private final static int SUCCESS = 0;
     private final static int ERROR = 1;
@@ -91,7 +89,7 @@ public class AdminMain {
     private final static int INVALID_COMMAND_ERROR = 3;
     private final static int WARNING = 4;
     private final static String ADMIN_CLI_LOGGER = "com.sun.enterprise.admin.cli";
-    
+
     private static final String[] copyProps = {
         SystemPropertyConstants.INSTALL_ROOT_PROPERTY,
         SystemPropertyConstants.CONFIG_ROOT_PROPERTY,
@@ -109,30 +107,27 @@ public class AdminMain {
             }
         }
     }
-    
-        /**
+
+    /**
      * Get the class loader that is used to load local commands.
      *
      * @return a class loader used to load local commands
      */
     private ClassLoader getExtensionClassLoader(final Set<File> extensions) {
         final ClassLoader ecl = AdminMain.class.getClassLoader();
-        if (extensions != null && !extensions.isEmpty()) {
-            return (ClassLoader) AccessController.doPrivileged(
-                    new PrivilegedAction() {
-                        @Override
-                        public Object run() {
-                            try {
-                                return new DirectoryClassLoader(extensions, ecl);
-                            } catch (IOException ex) {
-                                // any failure here is fatal
-                                logger.info(strings.get("ExtDirFailed", ex));
-                            }
-                            return ecl;
-                        }
-                    });
+        if (extensions == null || extensions.isEmpty()) {
+            return ecl;
         }
-        return ecl;
+        final PrivilegedAction<ClassLoader> action = () -> {
+            try {
+                return new DirectoryClassLoader(extensions, ecl);
+            } catch (final RuntimeException ex) {
+                // any failure here is fatal
+                logger.info(strings.get("ExtDirFailed", ex));
+            }
+            return ecl;
+        };
+        return AccessController.doPrivileged(action);
     }
 
     /*
@@ -142,24 +137,25 @@ public class AdminMain {
      * for different products. Skinning is achieved by extending AdminMain and
      * redefining the methods in this section.
      */
-    
+
     /** Get set of JAR files that is used to locate local commands (CLICommand).
-     * Results can contain JAR files or directories where all JAR files are 
+     * Results can contain JAR files or directories where all JAR files are
      * used. It must return all JARs or directories
      * with acceptable CLICommands excluding admin-cli.jar.
      * Default implementation returns INSTALL_ROOT_PROPERTY/lib/asadmin
-     * 
+     *
      * @return set of JAR files or directories with JAR files
      */
     protected Set<File> getExtensions() {
-        Set<File> result = new HashSet<File>();
+        Set<File> result = new HashSet<>();
         final File inst = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
         final File ext = new File(new File(inst, "lib"), "asadmin");
         if (ext.exists() && ext.isDirectory()) {
             result.add(ext);
         } else {
-            if (logger.isLoggable(Level.FINER))
+            if (logger.isLoggable(Level.FINER)) {
                 logger.finer(strings.get("ExtDirMissing", ext));
+            }
         }
         result.add(new File(new File(inst, "modules"), "admin-cli.jar"));
         return result;
@@ -168,7 +164,7 @@ public class AdminMain {
     protected String getCommandName() {
         return "nadmin";
     }
-    
+
     /*
      * End of skinning methods -------------------------------------------------
      */
@@ -308,9 +304,10 @@ public class AdminMain {
                 break;
 
             case WARNING:
-                if (logger.isLoggable(Level.FINE))
+                if (logger.isLoggable(Level.FINE)) {
                     logger.fine(
                         strings.get("CommandSuccessfulWithWarnings", command));
+                }
                 exitCode = SUCCESS;
                 break;
 
@@ -374,7 +371,7 @@ public class AdminMain {
             // find closest match with local or remote commands
             logger.severe(ice.getMessage());
             try {
-                po.setEcho(false); 
+                po.setEcho(false);
                 CLIUtil.displayClosestMatch(command,
                         CLIUtil.getAllCommands(cliContainer, po, env),
                         strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
@@ -436,17 +433,4 @@ public class AdminMain {
     private static boolean ok(String s) {
         return s != null && s.length() > 0;
     }
-    
-    /** 
-     * Returns source JAR file for given class. 
-     * @param cls Must be classic class - NOT inner class
-     * @return 
-     */
-    public static File getJarForClass(Class cls) {
-        URL resource = cls.getResource("/" + cls.getName().replace('.', '/') + ".class");
-        String filename = resource.getFile();
-        filename = filename.substring(5, filename.indexOf('!'));
-        return new File(filename);
-    }
-    
 }

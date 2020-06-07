@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//  Portion Copyright [2017] Payara Foundation and/or affiliates
+//  Portion Copyright [2017-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -48,13 +48,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.validation.Validator;
 import org.glassfish.api.ExecutionContext;
 import org.glassfish.api.Param;
 import org.glassfish.api.ParamDefaultCalculator;
@@ -70,6 +66,9 @@ import org.jvnet.hk2.config.InjectionResolver;
  * the data to inject.
  */
 public class MapInjectionResolver extends InjectionResolver<Param> {
+    
+    private static final String DEFAULT = "DEFAULT";
+    
     private final CommandModel model;
     private final ParameterMap parameters;
     private ExecutionContext context = null;
@@ -78,14 +77,13 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
 
     public static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(MapInjectionResolver.class);
-    private static Validator beanValidator = null;
 
-    
+
     public MapInjectionResolver(CommandModel model,
 					ParameterMap parameters) {
         this(model, parameters, null);
     }
-    
+
     public MapInjectionResolver(CommandModel model,
 					ParameterMap parameters,
                                         final MultiMap<String,File> optionNameToUploadedFileMap) {
@@ -101,7 +99,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
     public void setContext(ExecutionContext context) {
         this.context = context;
     }
-    
+
     @Override
     public boolean isOptional(AnnotatedElement element, Param annotation) {
        String name = CommandModel.getParamName(annotation, element);
@@ -111,58 +109,54 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
 
     @Override
     public <V> V getValue(Object component, AnnotatedElement target, Type genericType, Class<V> type) throws MultiException {
-	// look for the name in the list of parameters passed.
-	Param param = target.getAnnotation(Param.class);
-	String paramName = CommandModel.getParamName(param, target);
-	if (param.primary()) {
-	    // this is the primary parameter for the command
-            List<String> value = parameters.get("DEFAULT");
-	    if (value != null && value.size() > 0) {
+        // look for the name in the list of parameters passed.
+        Param param = target.getAnnotation(Param.class);
+        String paramName = CommandModel.getParamName(param, target);
+        if (param.primary()) {
+            // this is the primary parameter for the command
+            List<String> value = parameters.get(DEFAULT);
+            if (value != null && !value.isEmpty()) {
                 /*
                  * If the operands are uploaded files, replace the
                  * client-provided values with the paths to the uploaded files.
                  * XXX - assume the lists are in the same order.
                  */
-                final List<String> filePaths = getUploadedFileParamValues(
-                        "DEFAULT",
+                final List<String> filePaths = getUploadedFileParamValues(DEFAULT,
                         type, optionNameToUploadedFileMap);
                 if (filePaths != null) {
                     value = filePaths;
                     // replace the file name operands with the uploaded files
-                    parameters.set("DEFAULT", value); 
+                    parameters.set(DEFAULT, value);
                 } else {
                     for (String s : value) {
                         checkAgainstAcceptableValues(target, s);
                     }
-                    
+
                 }
-		// let's also copy this value to the cmd with a real name
-		parameters.set(paramName, value);
-                V paramValue = (V) convertListToObject(target, type, value);
-                return paramValue;
-	    }
-	}
+                // let's also copy this value to the cmd with a real name
+                parameters.set(paramName, value);
+                return (V) convertListToObject(target, type, value);
+            }
+        }
         if (param.multiple()) {
             List<String> value = parameters.get(paramName);
-            if (value != null && value.size() > 0) {
+            if (value != null && !value.isEmpty()) {
                 final List<String> filePaths = getUploadedFileParamValues(
                         paramName,
                         type, optionNameToUploadedFileMap);
                 if (filePaths != null) {
-                    value = filePaths;
                     // replace the file name operands with the uploaded files
-                    parameters.set(paramName, value); 
+                    value = filePaths;
                 } else {
                     for (String s : value) {
                         checkAgainstAcceptableValues(target, s);
                     }
                 }
+                parameters.set(paramName, value);
+                return (V) convertListToObject(target, type, value);
             }
-            parameters.set(paramName, value);
-            V paramValue = (V) convertListToObject(target, type, value);
-            return paramValue;
         }
-	String paramValueStr = getParamValueString(parameters, param, target, context);
+	    String paramValueStr = getParamValueString(parameters, param, target, context);
 
         /*
          * If the parameter is an uploaded file, replace the client-provided
@@ -174,8 +168,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             paramValueStr = fileParamValueStr;
             parameters.set(paramName, paramValueStr);
         }
-	checkAgainstAcceptableValues(target, paramValueStr);
-        
+	    checkAgainstAcceptableValues(target, paramValueStr);
+
         return paramValueStr != null ?
                 (V) convertStringToObject(target, type, paramValueStr) :
                 (V) getParamField(component, target);
@@ -225,7 +219,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             return null;
         }
         final List<File> uploadedFiles = optionNameToFileMap.get(fieldName);
-        if (uploadedFiles != null && uploadedFiles.size() > 0 &&
+        if (uploadedFiles != null && !uploadedFiles.isEmpty() &&
                 (fieldType.isAssignableFrom(File.class) ||
                  fieldType.isAssignableFrom(File[].class))) {
             final List<String> paths = new ArrayList(uploadedFiles.size());
@@ -266,7 +260,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             // check for shortName
             paramValueStr = parameters.getOne(param.shortName());
         }
-        
+
         // if paramValueStr is still null, then check to
         // see if the defaultValue is defined
         if (paramValueStr == null) {
@@ -281,9 +275,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                 try {
                     ParamDefaultCalculator pdc = dc.newInstance();
                     paramValueStr = pdc.defaultValue(context);
-                } catch (InstantiationException ex) { // @todo Java SE 7 - use multi catch
-                    Logger.getLogger(MapInjectionResolver.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
+                } catch (InstantiationException | IllegalAccessException ex) {
                     Logger.getLogger(MapInjectionResolver.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -369,11 +361,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                                     Class type, String paramValStr) {
         Param param = target.getAnnotation(Param.class);
         Object paramValue = paramValStr;
-        if (type.isAssignableFrom(String.class)) {
-            paramValue = paramValStr;
-        } else if (type.isAssignableFrom(Properties.class)) {
-            paramValue =
-                convertStringToProperties(paramValStr, param.separator());
+        if (type.isAssignableFrom(Properties.class)) {
+            paramValue = convertStringToProperties(paramValStr, param.separator());
         } else if (type.isAssignableFrom(List.class)) {
             paramValue = convertStringToList(paramValStr, param.separator());
         } else if (type.isAssignableFrom(Boolean.class) ||
@@ -385,8 +374,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             String paramName = CommandModel.getParamName(param, target);
             paramValue = convertStringToInteger(paramName, paramValStr);
         } else if (type.isAssignableFrom(String[].class)) {
-            paramValue =
-                convertStringToStringArray(paramValStr, param.separator());
+            paramValue = convertStringToStringArray(paramValStr, param.separator());
         } else if (type.isAssignableFrom(File.class)) {
             return new File(paramValStr);
         }
@@ -485,7 +473,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
      * name1=value1:name2=value2:name3=value3:...
      * The Properties object contains elements:
      * {name1=value1, name2=value2, name3=value3, ...}
-     * 
+     *
      * Whitespace around names is ignored.
      *
      * @param propsString the String to convert
@@ -500,7 +488,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             while (stoken.hasMoreTokens()) {
                 String token = stoken.nextTokenKeepEscapes();
                 final ParamTokenizer nameTok = new ParamTokenizer(token, '=');
-                String name = null, value = null;
+                String name = null;
+                String value = null;
                 if (nameTok.hasMoreTokens()){
                     name = nameTok.nextToken().trim();
                 }
@@ -530,8 +519,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                     } else {
                         value = secPart;
                     }
-                    
-                    
+
+
                 }
                 properties.setProperty(name, value);
             }
@@ -564,7 +553,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
         if (propsList != null) {
             for (String prop : propsList) {
                 final ParamTokenizer nameTok = new ParamTokenizer(prop, '=');
-                String name = null, value = null;
+                String name = null;
+                String value = null;
                 if (nameTok.hasMoreTokens())
                     name = nameTok.nextToken();
                 if (nameTok.hasMoreTokens())

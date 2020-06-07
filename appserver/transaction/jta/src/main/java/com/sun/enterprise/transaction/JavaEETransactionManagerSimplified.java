@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.transaction;
 
@@ -57,9 +57,8 @@ import com.sun.enterprise.transaction.spi.TransactionInternal;
 import com.sun.enterprise.transaction.spi.TransactionalResource;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
-import org.glassfish.api.admin.ProcessEnvironment;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationException;
@@ -84,13 +83,18 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.rmi.RemoteException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Implementation of javax.transaction.TransactionManager interface.
- * This class provides non-XA local transaction support and delegates 
- * to implementation of the JavaEETransactionManagerDelegate for XA 
+ * This class provides non-XA local transaction support and delegates
+ * to implementation of the JavaEETransactionManagerDelegate for XA
  * or LAO optimization, and complete JTS implementation.
  *
  * @author Tony Ng
@@ -99,7 +103,7 @@ import java.util.logging.Logger;
 @Service
 @ContractsProvided({TransactionManager.class, JavaEETransactionManager.class})
 @Rank(Constants.DEFAULT_IMPLEMENTATION_RANK) // This should be the default impl if it is available
-public class JavaEETransactionManagerSimplified 
+public class JavaEETransactionManagerSimplified
         implements JavaEETransactionManager, PostConstruct {
 
     protected Logger _logger = LogDomains.getLogger(JavaEETransactionManagerSimplified.class, LogDomains.JTA_LOGGER);
@@ -109,19 +113,19 @@ public class JavaEETransactionManagerSimplified
     @Inject protected InvocationManager invMgr;
 
     @Inject private Provider<RequestTracingService> requestTracing;
-    
+
     private JavaEETransactionManagerDelegate delegate;
 
     // Sting Manager for Localization
-    private static StringManager sm 
+    private static StringManager sm
            = StringManager.getManager(JavaEETransactionManagerSimplified.class);
 
     // Note: this is not inheritable because we dont want transactions
     // to be inherited by child threads.
-    private ThreadLocal<JavaEETransaction> transactions;
+    private final ThreadLocal<JavaEETransaction> transactions;
 
-    private ThreadLocal localCallCounter;
-    private ThreadLocal<JavaEETransactionManagerDelegate> delegates;
+    private final ThreadLocal<int[]> localCallCounter;
+    private final ThreadLocal<JavaEETransactionManagerDelegate> delegates;
 
     // If multipleEnlistDelists is set to true, with in the transaction, for the same
     //  - connection multiple enlistments and delistments might happen
@@ -130,21 +134,26 @@ public class JavaEETransactionManagerSimplified
     private boolean multipleEnlistDelists = false;
 
     private int transactionTimeout;
-    private ThreadLocal<Integer> txnTmout = new ThreadLocal();
+    private final ThreadLocal<Integer> txnTmout = new ThreadLocal<>();
 
     private int purgeCancelledTtransactions = 0;
 
     // admin and monitoring related parameters
-    private  static final Hashtable statusMap = new Hashtable();
-    private List activeTransactions = Collections.synchronizedList(new ArrayList());
+    private  static final Map<Integer, String> statusMap = new HashMap<>();
+    private final List<Transaction> activeTransactions = Collections.synchronizedList(new ArrayList<>());
     private boolean monitoringEnabled = false;
+    private ScheduledFuture<?> statisticsMonitoringFuture;
 
     private TransactionServiceProbeProvider monitor;
-    private Hashtable txnTable = null;
+    private Map<String, Transaction> txnTable = null;
 
     private Cache resourceTable;
 
-    private  Timer _timer = new Timer("transaction-manager", true);
+    private final ScheduledThreadPoolExecutor scheduledTransactionManagerExecutor;
+
+    private final AtomicLong scheduledTransactionTimeouts = new AtomicLong(0);
+    private volatile long scheduledTransactionTimeoutsAtLastPurge = 0;
+    private ScheduledFuture<?> purgeScheduledTransactionsFuture;
 
     static {
         statusMap.put(Status.STATUS_ACTIVE, "Active");
@@ -159,16 +168,31 @@ public class JavaEETransactionManagerSimplified
         statusMap.put(Status.STATUS_ROLLING_BACK, "RollingBack");
 
     }
-    
-    @Inject
-    private ProcessEnvironment processEnvironment;
-    
+
+
     public JavaEETransactionManagerSimplified() {
-        transactions = new ThreadLocal<JavaEETransaction>();
-        localCallCounter = new ThreadLocal();
-        delegates = new ThreadLocal<JavaEETransactionManagerDelegate>();
-    }      
-    
+        transactions = new ThreadLocal<>();
+        localCallCounter = new ThreadLocal<>();
+        delegates = new ThreadLocal<>();
+        scheduledTransactionManagerExecutor = new ScheduledThreadPoolExecutor(
+            Math.min(Runtime.getRuntime().availableProcessors(), 3)
+        );
+        if (getPurgeCancelledTtransactionsAfter() > 0) {
+            purgeScheduledTransactionsFuture = scheduledTransactionManagerExecutor.scheduleAtFixedRate(
+                    this::purgeCancelledTransactionTimeouts, 5, 5, TimeUnit.SECONDS
+            );
+        }
+    }
+
+    private void purgeCancelledTransactionTimeouts() {
+        long currentTransactionTimeouts = scheduledTransactionTimeouts.get();
+        if(currentTransactionTimeouts - scheduledTransactionTimeoutsAtLastPurge >= getPurgeCancelledTtransactionsAfter()) {
+            scheduledTransactionTimeoutsAtLastPurge = currentTransactionTimeouts;
+            scheduledTransactionManagerExecutor.purge();
+        }
+    }
+
+    @Override
     public void postConstruct() {
         initDelegates();
         initProperties();
@@ -191,10 +215,11 @@ public class JavaEETransactionManagerSimplified
         try {
             String mEnlistDelists
                 = System.getProperty("ALLOW_MULTIPLE_ENLISTS_DELISTS");
-            if ("true".equals(mEnlistDelists)) {
+            if ("true".equalsIgnoreCase(mEnlistDelists)) {
                 multipleEnlistDelists = true;
-                if (_logger.isLoggable(Level.FINE))
+                if (_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE, "TM: multiple enlists, delists are enabled");
+                }
             }
             String maxEntriesValue
                 = System.getProperty("JTA_RESOURCE_TABLE_MAX_ENTRIES");
@@ -233,7 +258,7 @@ public class JavaEETransactionManagerSimplified
                     purgeCancelledTtransactions = Integer.parseInt(v);
                 }
 
-                TransactionServiceConfigListener listener = 
+                TransactionServiceConfigListener listener =
                         habitat.getService(TransactionServiceConfigListener.class);
                 listener.setTM(this);
             }
@@ -248,8 +273,9 @@ public class JavaEETransactionManagerSimplified
         }
 
         // ENF OF BUG 4665539
-                if (_logger.isLoggable(Level.FINE))
-                _logger.log(Level.FINE, "TM: Tx Timeout = " + transactionTimeout);
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "TM: Tx Timeout = " + transactionTimeout);
+                }
 
         // START IASRI 4705808 TTT004 -- monitor resource table stats
         try {
@@ -272,6 +298,7 @@ public class JavaEETransactionManagerSimplified
     /**
      * Clears the transaction associated with the caller thread
      */
+    @Override
     public void clearThreadTx() {
         setCurrentTransaction(null);
         delegates.set(null);
@@ -279,12 +306,14 @@ public class JavaEETransactionManagerSimplified
 
     /** {@inheritDoc}
     */
+    @Override
     public String getTxLogLocation() {
         return getDelegate().getTxLogLocation();
     }
 
     /** {@inheritDoc}
     */
+    @Override
     public void registerRecoveryResourceHandler(XAResource xaResource) {
         getDelegate().registerRecoveryResourceHandler(xaResource);
     }
@@ -300,31 +329,44 @@ public class JavaEETransactionManagerSimplified
      * that the client had an active
      * tx but the client container did not support tx interop.
      */
+    @Override
     public boolean isNullTransaction() {
         return getDelegate().isNullTransaction();
     }
 
+    @Override
     public void shutdown() {
-        _timer.cancel();
+        if (statisticsMonitoringFuture != null) {
+            statisticsMonitoringFuture.cancel(false);
+        }
+        if (purgeScheduledTransactionsFuture != null) {
+            purgeScheduledTransactionsFuture.cancel(false);
+        }
+        scheduledTransactionManagerExecutor.shutdown();
     }
+
+    @Override
     public void initRecovery(boolean force) {
         getDelegate().initRecovery(force);
     }
 
+    @Override
     public void recover(XAResource[] resourceList) {
         getDelegate().recover(resourceList);
     }
 
+    @Override
     public boolean enlistResource(Transaction tran, TransactionalResource h)
             throws RollbackException, IllegalStateException, SystemException {
        if(_logger.isLoggable(Level.FINE)) {
-           _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistResource, h=" 
+           _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistResource, h="
                    + h + " h.xares=" + h.getXAResource()
                    /** +" h.alloc=" +h.getResourceAllocator() **/ +" tran=" + tran);
        }
 
-        if ( !h.isTransactional() )
+        if ( !h.isTransactional() ) {
             return true;
+        }
 
         //If LazyEnlistment is suspended, do not enlist resource.
         if(h.isEnlistmentSuspended()){
@@ -354,8 +396,6 @@ public class JavaEETransactionManagerSimplified
                if(_logger.isLoggable(Level.FINE)) {
                    _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistResource, isSameRM? " + isSameRM);
                }
-           } catch ( XAException xex ) {
-               throw new SystemException(sm.getString("enterprise_distributedtx.samerm_excep",xex));
            } catch ( Exception ex ) {
                throw new SystemException(sm.getString("enterprise_distributedtx.samerm_excep",ex));
            }
@@ -388,9 +428,10 @@ public class JavaEETransactionManagerSimplified
            }
            return enlistXAResource(tx, h);
        } else { // non-XA resource
-            if (tx.isImportedTransaction())
+            if (tx.isImportedTransaction()) {
                 throw new IllegalStateException(
                         sm.getString("enterprise_distributedtx.nonxa_usein_jts"));
+            }
             if (tx.getNonXAResource() == null) {
                 tx.setNonXAResource(h);
             }
@@ -423,14 +464,17 @@ public class JavaEETransactionManagerSimplified
         }
     }
 
+    @Override
     public void unregisterComponentResource(TransactionalResource h) {
         if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.unregisterComponentResource, h=" 
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.unregisterComponentResource, h="
                    + h + " h.xares=" + h.getXAResource());
         }
 
         Object instance = h.getComponentInstance();
-        if (instance == null) return;
+        if (instance == null) {
+            return;
+        }
         h.setComponentInstance(null);
         ComponentInvocation inv = invMgr.getCurrentInvocation();
         List l = getExistingResourceList(instance, inv);
@@ -463,13 +507,15 @@ public class JavaEETransactionManagerSimplified
      * @param inv Calling component's invocation information
      * @return List of resources
      */
+    @Override
     public List getResourceList(Object instance, ComponentInvocation inv) {
-        if (inv == null)
+        if (inv == null) {
             return new ArrayList(0);
+        }
         List l = null;
 
 /** XXX EJB CONTAINER ONLY XXX -- NEED TO CHECK THE NEW CODE BELOW **
-        if (inv.getInvocationType() == 
+        if (inv.getInvocationType() ==
                 ComponentInvocation.ComponentInvocationType.EJB_INVOCATION) {
             ComponentContext ctx = inv.context;
             if (ctx != null)
@@ -495,8 +541,9 @@ public class JavaEETransactionManagerSimplified
         }
         else {
             Object key = getResourceTableKey(instance, inv);
-            if (key == null)
+            if (key == null) {
                 return new ArrayList(0);
+            }
             l = (List) resourceTable.get(key);
             if (l == null) {
                 l = new ArrayList(); //FIXME: use an optimum size?
@@ -506,16 +553,19 @@ public class JavaEETransactionManagerSimplified
         return l;
     }
 
+    @Override
     public void enlistComponentResources() throws RemoteException {
-        if (_logger.isLoggable(Level.FINE))
+        if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "TM: enlistComponentResources");
+        }
 
         ComponentInvocation inv = invMgr.getCurrentInvocation();
-        if (inv == null)
+        if (inv == null) {
             return;
+        }
         try {
             Transaction tran = getTransaction();
-            inv.setTransaction((JavaEETransaction)tran);
+            inv.setTransaction(tran);
             enlistComponentResources(inv);
         } catch (InvocationException ex) {
             _logger.log(Level.SEVERE, "enterprise_distributedtx.excep_in_enlist" ,ex);
@@ -526,17 +576,21 @@ public class JavaEETransactionManagerSimplified
         }
     }
 
+    @Override
     public boolean delistResource(Transaction tran, TransactionalResource h, int flag)
             throws IllegalStateException, SystemException {
         if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.delistResource, h=" 
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.delistResource, h="
                    + h + " h.xares=" + h.getXAResource() + " tran=" + tran);
         }
 
-        if (!h.isTransactional()) return true;
+        if (!h.isTransactional()) {
+            return true;
+        }
 
-        if ( !(tran instanceof JavaEETransaction) )
+        if ( !(tran instanceof JavaEETransaction) ) {
             return delistJTSResource(tran, h, flag);
+        }
 
         JavaEETransactionImpl tx = (JavaEETransactionImpl)tran;
         if ( tx.isLocalTx() ) {
@@ -547,15 +601,17 @@ public class JavaEETransactionManagerSimplified
                 throw new RuntimeException(sm.getString("enterprise_distributedtx.xaresource_end_excep", ex),ex);
             }
             return true;
-        }
-        else
+        } else {
             return delistJTSResource(tran, h, flag);
+        }
     }
 
+    @Override
     public void delistComponentResources(boolean suspend)
             throws RemoteException {
-        if (_logger.isLoggable(Level.FINE))
+        if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "TM: delistComponentResources");
+        }
         ComponentInvocation inv = invMgr.getCurrentInvocation();
         // BEGIN IASRI# 4646060
         if (inv == null) {
@@ -574,29 +630,35 @@ public class JavaEETransactionManagerSimplified
     }
 
 
+    @Override
     public void registerComponentResource(TransactionalResource h) {
         ComponentInvocation inv = invMgr.getCurrentInvocation();
         if (inv != null) {
             Object instance = inv.getInstance();
-            if (instance == null) return;
-            h.setComponentInstance(instance);
-            List l = getResourceList(instance, inv);
-            if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.registerComponentResource, h=" 
-                       + h + " h.xares=" + h.getXAResource());
+            if (instance == null) {
+                return;
             }
-
-            l.add(h);
+            h.setComponentInstance(instance);
+            List resourceList = getResourceList(instance, inv);
+            if(_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.registerComponentResource, h=" + h
+                    + " h.xares=" + h.getXAResource());
+            }
+            resourceList.add(h);
         }
     }
 
     private JavaEETransactionImpl initJavaEETransaction(int timeout) {
-        JavaEETransactionImpl tx = null;
+        JavaEETransactionImpl tx;
         // Do not need to use injection.
-        if (timeout > 0)
+        if (timeout > 0) {
             tx = new JavaEETransactionImpl(timeout, this);
-        else
+            ScheduledFuture<?> scheduledFuture = scheduledTransactionManagerExecutor.schedule(tx, timeout, TimeUnit.SECONDS);
+            tx.setScheduledTimeoutFuture(scheduledFuture);
+            scheduledTransactionTimeouts.incrementAndGet();
+        } else {
             tx = new JavaEETransactionImpl(this);
+        }
 
         setCurrentTransaction(tx);
 
@@ -604,25 +666,16 @@ public class JavaEETransactionManagerSimplified
             RequestTraceSpanLog spanLog = constructJTABeginSpanLog(tx);
             getRequestTracing().addSpanLog(spanLog);
         }
-        
+
         return tx;
     }
 
+    @Override
     public List getExistingResourceList(Object instance, ComponentInvocation inv) {
-       if (inv == null)
-           return null;
+       if (inv == null) {
+        return null;
+    }
         List l = null;
-
-/** XXX EJB CONTAINER ONLY XXX -- NEED TO CHECK THE NEW CODE BELOW **
-        if (inv.getInvocationType() == 
-                ComponentInvocation.ComponentInvocationType.EJB_INVOCATION) {
-            ComponentContext ctx = inv.context;
-            if (ctx != null)
-                l = ctx.getResourceList();
-            return l;
-        }
-** XXX EJB CONTAINER ONLY XXX **/
-
         ResourceHandler rh = inv.getResourceHandler();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.getExistingResourceList, "
@@ -635,16 +688,19 @@ public class JavaEETransactionManagerSimplified
         }
         else {
             Object key = getResourceTableKey(instance, inv);
-            if (key != null)
+            if (key != null) {
                 l =  (List) resourceTable.get(key);
+            }
         }
         return l;
     }
 
+    @Override
     public void preInvoke(ComponentInvocation prev)
             throws InvocationException {
-        if ( prev != null && prev.getTransaction() != null &&
-            prev.isTransactionCompleting() == false) {
+        if ( prev != null
+                && prev.getTransaction() != null
+                && !prev.isTransactionCompleting()) {
             // do not worry about delisting previous invocation resources
             // if transaction is being completed
             delistComponentResources(prev, true);  // delist with TMSUSPEND
@@ -652,13 +708,17 @@ public class JavaEETransactionManagerSimplified
 
     }
 
+    @Override
     public void postInvoke(ComponentInvocation curr, ComponentInvocation prev)
             throws InvocationException {
 
         if ( curr != null && curr.getTransaction() != null )
+         {
             delistComponentResources(curr, false);  // delist with TMSUCCESS
-        if ( prev != null && prev.getTransaction() != null &&
-                prev.isTransactionCompleting() == false) {
+        }
+        if ( prev != null
+                && prev.getTransaction() != null
+                && !prev.isTransactionCompleting()) {
             // do not worry about re-enlisting previous invocation resources
             // if transaction is being completed
             enlistComponentResources(prev);
@@ -666,10 +726,12 @@ public class JavaEETransactionManagerSimplified
 
     }
 
+    @Override
     public void componentDestroyed(Object instance) {
         componentDestroyed(instance, null);
     }
 
+    @Override
     public void componentDestroyed(Object instance, ComponentInvocation inv) {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "TM: componentDestroyed" + instance);
@@ -680,25 +742,26 @@ public class JavaEETransactionManagerSimplified
         List l = (List)resourceTable.remove(getResourceTableKey(instance, inv));
         processResourceList(l);
 
-        if (_logger.isLoggable(Level.FINE))
+        if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "TM: resourceTable after: " + resourceTable.getEntryCount());
+        }
     }
 
+    @Override
     public void componentDestroyed(ResourceHandler rh) {
-        if (_logger.isLoggable(Level.FINE))
+        if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, " componentDestroyed: " + rh);
+        }
 
         if (rh != null) {
             processResourceList(rh.getResourceList());
         }
     }
 
+    @Override
     public boolean isTimedOut() {
         JavaEETransaction tx = transactions.get();
-        if ( tx != null)
-            return tx.isTimedOut();
-        else
-            return false;
+        return tx == null ? false : tx.isTimedOut();
     }
 
     /**
@@ -706,14 +769,13 @@ public class JavaEETransactionManagerSimplified
      * the server is replying to the client (local + remote client).
      * Check if there is an active transaction and remove it from TLS.
      */
+    @Override
     public void checkTransactionImport() {
         // First check if this is a local call
-        int[] count = (int[])localCallCounter.get();
+        int[] count = localCallCounter.get();
         if ( count != null && count[0] > 0 ) {
             count[0]--;
-            return;
-        }
-        else {
+        } else {
             // A remote call, clear TLS so that if this thread is reused
             // later, the current tx doesnt hang around.
             clearThreadTx();
@@ -726,12 +788,13 @@ public class JavaEETransactionManagerSimplified
      * Check if there is an active, exportable transaction.
      * @exception RuntimeException if the transaction is not exportable
      */
+    @Override
     public void checkTransactionExport(boolean isLocal) {
 
-        if ( isLocal ) {
+        if (isLocal) {
             // Put a counter in TLS indicating this is a local call.
             // Use int[1] as a mutable java.lang.Integer!
-            int[] count = (int[])localCallCounter.get();
+            int[] count = localCallCounter.get();
             if ( count == null ) {
                 count = new int[1];
                 localCallCounter.set(count);
@@ -741,29 +804,22 @@ public class JavaEETransactionManagerSimplified
         }
 
         JavaEETransaction tx = transactions.get();
-        if ( tx == null )
+        if (tx == null || !tx.isLocalTx()) {
             return;
-
-        if ( !tx.isLocalTx() ) // a JTS tx, can be exported
-            return;
+        }
 
         // Check if a local tx with non-XA resource is being exported.
         // XXX what if this is a call on a non-transactional remote object ?
-        if ( tx.getNonXAResource() != null )
+        if (tx.getNonXAResource() != null) {
             throw new RuntimeException(sm.getString("enterprise_distributedtx.cannot_export_transaction_having_nonxa"));
+        }
 
         // If we came here, it means we have a local tx with no registered
         // resources, so start a JTS tx which can be exported.
         try {
             startJTSTx(tx);
-        } catch ( RollbackException rlex ) {
-            throw new RuntimeException(sm.getString("enterprise_distributedtx.unable_tostart_JTSTransaction"),rlex);
-        } catch ( IllegalStateException isex ) {
-            throw new RuntimeException(sm.getString("enterprise_distributedtx.unable_tostart_JTSTransaction"),isex);
-        } catch ( SystemException ex ) {
-            throw new RuntimeException(sm.getString("enterprise_distributedtx.unable_tostart_JTSTransaction"),ex);
-        } catch ( Exception excep ) {
-            throw new RuntimeException(sm.getString("enterprise_distributedtx.unable_tostart_JTSTransaction"),excep);
+        } catch ( Exception exception ) {
+            throw new RuntimeException(sm.getString("enterprise_distributedtx.unable_tostart_JTSTransaction"), exception);
         }
     }
 
@@ -774,6 +830,7 @@ public class JavaEETransactionManagerSimplified
      * @return a <code>XATerminator</code> instance.
      * @throws UnsupportedOperationException
      */
+    @Override
     public XATerminator getXATerminator() {
         return getDelegate().getXATerminator();
     }
@@ -785,6 +842,7 @@ public class JavaEETransactionManagerSimplified
      *
      * @param xid the Xid object representing a transaction.
      */
+    @Override
     public void release(Xid xid) throws WorkException {
         getDelegate().release(xid);
     }
@@ -796,6 +854,7 @@ public class JavaEETransactionManagerSimplified
      *
      * @param xid the Xid object representing a transaction.
      */
+    @Override
     public void recreate(Xid xid, long timeout) throws WorkException {
         getDelegate().recreate(xid, timeout);
     }
@@ -804,10 +863,12 @@ public class JavaEETransactionManagerSimplified
 /** Implementations of JTA TransactionManager APIs **************************/
 /****************************************************************************/
 
+    @Override
     public void registerSynchronization(Synchronization sync)
             throws IllegalStateException, SystemException {
-        if (_logger.isLoggable(Level.FINE))
+        if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "TM: registerSynchronization");
+        }
 
         try {
             Transaction tran = getTransaction();
@@ -820,28 +881,32 @@ public class JavaEETransactionManagerSimplified
         }
     }
 
-   // Implementation of begin() is moved to begin(int timeout) 
-   public void begin() throws NotSupportedException, SystemException {
-       begin(getEffectiveTimeout());
-   }
+    // Implementation of begin() is moved to begin(int timeout)
+    @Override
+    public void begin() throws NotSupportedException, SystemException {
+        begin(getEffectiveTimeout());
+    }
 
-   /**
-    * This method is introduced as part of implementing the local transaction timeout 
-    * capability. Implementation of begin() moved here. Previpusly there is no timeout
-    * infrastructure for local txns, so when ever a timeout required for local txn, it
-    * uses the globaltxn timeout infrastructure by doing an XA simulation.   
-    **/
-   public void begin(int timeout) throws NotSupportedException, SystemException {
-       // Check if tx already exists
-       if ( transactions.get() != null )
-           throw new NotSupportedException(sm.getString("enterprise_distributedtx.notsupported_nested_transaction"));
+    /**
+     * This method is introduced as part of implementing the local transaction timeout
+     * capability. Implementation of begin() moved here. Previpusly there is no timeout
+     * infrastructure for local txns, so when ever a timeout required for local txn, it
+     * uses the globaltxn timeout infrastructure by doing an XA simulation.
+     **/
+    @Override
+    public void begin(int timeout) throws NotSupportedException, SystemException {
+        // Check if tx already exists
+        if (transactions.get() != null) {
+            throw new NotSupportedException(sm.getString("enterprise_distributedtx.notsupported_nested_transaction"));
+        }
 
        setDelegate();
 
        // Check if JTS tx exists, without starting JTS tx.
        // This is needed in case the JTS tx was imported from a client.
-       if ( getStatus() != Status.STATUS_NO_TRANSACTION )
-           throw new NotSupportedException(sm.getString("enterprise_distributedtx.notsupported_nested_transaction"));
+        if (getStatus() != Status.STATUS_NO_TRANSACTION) {
+            throw new NotSupportedException(sm.getString("enterprise_distributedtx.notsupported_nested_transaction"));
+        }
 
         // START IASRI 4662745
         if(monitoringEnabled){
@@ -863,10 +928,11 @@ public class JavaEETransactionManagerSimplified
         // START IASRI 4662745
     }
 
+    @Override
     public void commit() throws RollbackException,
             HeuristicMixedException, HeuristicRollbackException, SecurityException,
             IllegalStateException, SystemException {
-        
+
         boolean acquiredlock=false;
         try {
             JavaEETransaction tx = transactions.get();
@@ -880,7 +946,7 @@ public class JavaEETransactionManagerSimplified
             else  {
                 try{
                     // an XA transaction
-                    getDelegate().commitDistributedTransaction(); 
+                    getDelegate().commitDistributedTransaction();
                 }finally{
                     if ( tx != null ) {
                         ((JavaEETransactionImpl)tx).onTxCompletion(true);
@@ -888,7 +954,7 @@ public class JavaEETransactionManagerSimplified
                 }
             }
 
-            if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
+            if (requestTracing != null && tx != null && getRequestTracing().isRequestTracingEnabled()) {
                 RequestTraceSpanLog spanLog = constructJTAEndSpanLog(tx);
                 getRequestTracing().addSpanLog(spanLog);
             }
@@ -902,6 +968,7 @@ public class JavaEETransactionManagerSimplified
         // END IASRI 4662745
     }
 
+    @Override
     public void rollback() throws IllegalStateException, SecurityException,
                 SystemException {
         boolean acquiredlock=false;
@@ -917,7 +984,7 @@ public class JavaEETransactionManagerSimplified
             else  {
                 try {
                     // an XA transaction
-                    getDelegate().rollbackDistributedTransaction(); 
+                    getDelegate().rollbackDistributedTransaction();
                 }finally{
                     if ( tx != null ) {
                         ((JavaEETransactionImpl)tx).onTxCompletion(false);
@@ -925,7 +992,7 @@ public class JavaEETransactionManagerSimplified
                 }
             }
 
-            if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
+            if (requestTracing != null && tx != null && getRequestTracing().isRequestTracingEnabled()) {
                 RequestTraceSpanLog spanLog = constructJTAEndSpanLog(tx);
                 getRequestTracing().addSpanLog(spanLog);
             }
@@ -939,10 +1006,12 @@ public class JavaEETransactionManagerSimplified
     }
 
 
+    @Override
     public int getStatus() throws SystemException {
         return getDelegate().getStatus();
     }
 
+    @Override
     public Transaction getTransaction() throws SystemException {
         return getDelegate().getTransaction();
 
@@ -965,7 +1034,7 @@ public class JavaEETransactionManagerSimplified
                         throw new SystemException(isex.toString());
                     } catch ( Exception ex ) {
                         throw new SystemException(ex.toString());
-                    } 
+                    }
 
                     globalTransactions.put(jtsTx, tx);
                 }
@@ -975,6 +1044,7 @@ public class JavaEETransactionManagerSimplified
 ** XXX CHECK WHAT'S NEEDED FOR XA DELEGATE XXX **/
     }
 
+    @Override
     public void setRollbackOnly()
         throws IllegalStateException, SystemException {
 
@@ -992,10 +1062,12 @@ public class JavaEETransactionManagerSimplified
                 tx.setRollbackOnly();
             }
         }
-        else
+        else {
             getDelegate().setRollbackOnlyDistributedTransaction(); // probably a JTS imported tx
+        }
     }
 
+    @Override
     public Transaction suspend() throws SystemException {
         return getDelegate().suspend(transactions.get());
 
@@ -1013,14 +1085,16 @@ public class JavaEETransactionManagerSimplified
 ** XXX TO BE MOVED TO DELEGATES XXX **/
     }
 
+    @Override
     public void resume(Transaction tobj)
             throws InvalidTransactionException, IllegalStateException,
             SystemException {
 
         JavaEETransaction tx = transactions.get();
-        if ( tx != null )
+        if ( tx != null ) {
             throw new IllegalStateException(
                     sm.getString("enterprise_distributedtx.transaction_exist_on_currentThread"));
+        }
 
         if ( tobj != null ) {
             int status = tobj.getStatus();
@@ -1038,8 +1112,9 @@ public class JavaEETransactionManagerSimplified
 
         if ( tobj instanceof JavaEETransactionImpl ) {
             JavaEETransactionImpl javaEETx = (JavaEETransactionImpl)tobj;
-            if ( !javaEETx.isLocalTx() )
+            if ( !javaEETx.isLocalTx() ) {
                 getDelegate().resume(javaEETx.getJTSTx());
+            }
 
             setCurrentTransaction(javaEETx);
         }
@@ -1059,6 +1134,7 @@ public class JavaEETransactionManagerSimplified
      *    encounters an unexpected error condition
      *
      */
+    @Override
     public void setTransactionTimeout(int seconds) throws SystemException {
         if (seconds < 0) {
             throw new SystemException(sm.getString("enterprise_distributedtx.invalid_timeout"));
@@ -1069,39 +1145,46 @@ public class JavaEETransactionManagerSimplified
     }
 
     /**
-     * Modify the value to be used to purge transaction tasks after the 
+     * Modify the value to be used to purge transaction tasks after the
      * specified number of cancelled tasks.
      */
+    @Override
     public void setPurgeCancelledTtransactionsAfter(int num) {
         purgeCancelledTtransactions = num;
     }
 
     /**
-     * Returns the value to be used to purge transaction tasks after the 
+     * Returns the value to be used to purge transaction tasks after the
      * specified number of cancelled tasks.
      */
+    @Override
     public int getPurgeCancelledTtransactionsAfter() {
         return purgeCancelledTtransactions;
     }
 
-    public JavaEETransaction getCurrentTransaction() { 
+    @Override
+    public JavaEETransaction getCurrentTransaction() {
         return transactions.get();
     }
 
-    public void setCurrentTransaction(JavaEETransaction t) { 
+    @Override
+    public void setCurrentTransaction(JavaEETransaction t) {
         transactions.set(t);
     }
 
+    @Override
     public XAResourceWrapper getXAResourceWrapper(String clName) {
         return getDelegate().getXAResourceWrapper(clName);
     }
 
+    @Override
     public void handlePropertyUpdate(String name, Object value) {
         delegate.handlePropertyUpdate(name, value);
         // XXX Check if the current delegate needs to be called as well.
     }
 
-    public boolean recoverIncompleteTx(boolean delegated, String logPath, 
+    @Override
+    public boolean recoverIncompleteTx(boolean delegated, String logPath,
             XAResource[] xaresArray) throws Exception {
         return delegate.recoverIncompleteTx(delegated, logPath, xaresArray);
     }
@@ -1112,14 +1195,16 @@ public class JavaEETransactionManagerSimplified
    /*
     * Called by Admin Framework to freeze the transactions.
     */
+    @Override
     public synchronized void freeze(){
         getDelegate().acquireWriteLock();
         monitor.freezeEvent(true);
     }
     /*
-     * Called by Admin Framework to freeze the transactions. 
+     * Called by Admin Framework to freeze the transactions.
      * These undoes the work done by the freeze.
      */
+    @Override
     public synchronized void unfreeze(){
         getDelegate().releaseWriteLock();
         monitor.freezeEvent(false);
@@ -1127,10 +1212,12 @@ public class JavaEETransactionManagerSimplified
 
     /** XXX ???
      */
+    @Override
     public boolean isFrozen() {
         return getDelegate().isWriteLocked();
     }
 
+    @Override
     public void cleanTxnTimeout() {
         txnTmout.set(null);
     }
@@ -1145,9 +1232,9 @@ public class JavaEETransactionManagerSimplified
         }
     }
 
+    @Override
     public void setDefaultTransactionTimeout(int seconds) {
-        if (seconds < 0) seconds = 0;
-        transactionTimeout = seconds;
+        transactionTimeout = seconds < 0 ? 0 : seconds;
     }
 
    /*
@@ -1156,27 +1243,28 @@ public class JavaEETransactionManagerSimplified
     *  @return ArrayList of TransactionAdminBean
     *  @see TransactionAdminBean
     */
+    @Override
     public ArrayList getActiveTransactions() {
-        ArrayList tranBeans = new ArrayList();
-        txnTable = new Hashtable();
-        Object[] activeCopy = activeTransactions.toArray(); // get the clone of the active transactions
-        for(int i=0;i<activeCopy.length;i++){
-            try{
-                Transaction tran = (Transaction)activeCopy[i];
+        ArrayList<TransactionAdminBean> tranBeans = new ArrayList<>();
+        txnTable = new ConcurrentHashMap<>();
+        Transaction[] activeCopy = activeTransactions.toArray(new Transaction[0]); // get the clone of the active transactions
+        for (Transaction tran : activeCopy) {
+            try {
                 TransactionAdminBean tBean = getDelegate().getTransactionAdminBean(tran);
                 if (tBean == null) {
                     // Shouldn't happen
                     _logger.warning("enterprise_distributedtx.txbean_null" + tran);
                 } else {
-                    if (_logger.isLoggable(Level.FINE))
+                    if (_logger.isLoggable(Level.FINE)) {
                         _logger.log(Level.FINE, "TM: Adding txnId " + tBean.getId() + " to txnTable");
+                    }
 
                     txnTable.put(tBean.getId(), tran);
                     tranBeans.add(tBean);
                 }
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 _logger.log(Level.SEVERE,
-                    "transaction.monitor.error_while_getting_monitor_attr", ex);
+                        "transaction.monitor.error_while_getting_monitor_attr", ex);
             }
         }
         return tranBeans;
@@ -1191,7 +1279,7 @@ public class JavaEETransactionManagerSimplified
             String id = tran1.getTransactionId();
             long startTime = tran1.getStartTime();
             String componentName = tran1.getComponentName();
-            ArrayList<String> resourceNames = tran1.getResourceNames();
+            List<String> resourceNames = tran1.getResourceNames();
             long elapsedTime = System.currentTimeMillis()-startTime;
             String status = getStatusAsString(tran.getStatus());
 
@@ -1205,24 +1293,29 @@ public class JavaEETransactionManagerSimplified
     /*
      *  Called by Admin Framework when transaction monitoring is enabled
      */
+    @Override
     public void forceRollback(String txnId) throws IllegalStateException, SystemException{
          // XXX - WORK AROUND MONITORING BUG
          if (txnTable == null || txnTable.size() == 0)
-             getActiveTransactions();
+         {
+            getActiveTransactions();
          // XXX - WORK AROUND MONITORING BUG
+        }
 
          if (txnTable == null || txnTable.get(txnId) == null) {
             String result = sm.getString("transaction.monitor.rollback_invalid_id");
             throw new  IllegalStateException(result);
         } else {
-            if (_logger.isLoggable(Level.FINE))
+            if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "TM: Marking txnId " + txnId + " for rollback");
+            }
 
-             ((Transaction) txnTable.get(txnId)).setRollbackOnly();
+             txnTable.get(txnId).setRollbackOnly();
          }
 
     }
 
+    @Override
     public void setMonitoringEnabled(boolean enabled){
         monitoringEnabled = enabled;
         //reset the variables
@@ -1243,15 +1336,13 @@ public class JavaEETransactionManagerSimplified
                 }else{
                     monitor.transactionRolledbackEvent();
                 }
-            } else {
-                // WARN ???
-            } 
+            }
         }
     }
 
     // Mods: Adding method for statistic dumps using TimerTask
     private void registerStatisticMonitorTask() {
-        TimerTask task = new StatisticMonitorTask();
+        Runnable task = new StatisticMonitorTask();
         // for now, get monitoring interval from system prop
         int statInterval = 2 * 60 * 1000;
         try {
@@ -1265,20 +1356,21 @@ public class JavaEETransactionManagerSimplified
             // ignore
         }
 
-        _timer.scheduleAtFixedRate(task, 0, statInterval);
+        statisticsMonitoringFuture = scheduledTransactionManagerExecutor.scheduleAtFixedRate(task, 0, statInterval, TimeUnit.MILLISECONDS);
     }
 
     // Mods: Adding TimerTask class for statistic dumps
-    class StatisticMonitorTask extends TimerTask {
+    class StatisticMonitorTask implements Runnable {
+        @Override
         public void run() {
             if (resourceTable != null) {
                 Map stats = resourceTable.getStats();
                 Iterator it = stats.entrySet().iterator();
-                _logger.log(Level.INFO, 
+                _logger.log(Level.INFO,
                         "********** JavaEETransactionManager resourceTable stats *****");
                 while (it.hasNext()) {
                     Map.Entry entry = (Map.Entry)it.next();
-                    _logger.log(Level.INFO, (String)entry.getKey() + ": " + entry.getValue());
+                    _logger.log(Level.INFO, entry.getKey() + ": " + entry.getValue());
                 }
             }
         }
@@ -1288,7 +1380,7 @@ public class JavaEETransactionManagerSimplified
 /************************* Helper Methods ***********************************/
 /****************************************************************************/
     public static String getStatusAsString(int status) {
-        return (String)statusMap.get(status);
+        return statusMap.get(status);
     }
 
     private void delistComponentResources(ComponentInvocation inv,
@@ -1299,8 +1391,9 @@ public class JavaEETransactionManagerSimplified
             Transaction tran = (Transaction) inv.getTransaction();
             if (isTransactionActive(tran)) {
                 List l = getExistingResourceList(inv.getInstance(), inv);
-                if (l == null || l.size() == 0)
+                if (l == null || l.isEmpty()) {
                     return;
+                }
 
                 int flag = (suspend)? XAResource.TMSUSPEND : XAResource.TMSUCCESS;
                 Iterator it = l.iterator();
@@ -1312,11 +1405,14 @@ public class JavaEETransactionManagerSimplified
                         }
                     } catch (IllegalStateException ex) {
                         if (_logger.isLoggable(Level.FINE))
+                         {
                             _logger.log(Level.FINE, "TM: Exception in delistResource", ex);
                         // ignore error due to tx time out
+                        }
                     }catch(Exception ex){
-                        if (_logger.isLoggable(Level.FINE))
+                        if (_logger.isLoggable(Level.FINE)) {
                             _logger.log(Level.FINE, "TM: Exception in delistResource", ex);
+                        }
                         it.remove();
                         handleResourceError(h, ex, tran);
                     }
@@ -1332,7 +1428,7 @@ public class JavaEETransactionManagerSimplified
             throws RollbackException, IllegalStateException, SystemException {
 
         if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistXAResource, h=" 
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistXAResource, h="
                    + h + " h.xares=" + h.getXAResource() + " tran=" + tran);
         }
 
@@ -1343,10 +1439,11 @@ public class JavaEETransactionManagerSimplified
 
             XAResource res = h.getXAResource();
             boolean result = tran.enlistResource(res);
-            if (!h.isEnlisted())
+            if (!h.isEnlisted()) {
                 if(_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistXAResource - enlist");
                 }
+            }
 
                 h.enlistedInTransaction(tran);
             return result;
@@ -1362,7 +1459,9 @@ public class JavaEETransactionManagerSimplified
             Transaction tran = (Transaction) inv.getTransaction();
             if (isTransactionActive(tran)) {
                 List l = getExistingResourceList(inv.getInstance(), inv);
-                if (l == null || l.size() == 0) return;
+                if (l == null || l.size() == 0) {
+                    return;
+                }
                 Iterator it = l.iterator();
                 // END IASRI 4705808 TTT002
                 while(it.hasNext()) {
@@ -1370,8 +1469,9 @@ public class JavaEETransactionManagerSimplified
                     try{
                         enlistResource(tran,h);
                     }catch(Exception ex){
-                        if (_logger.isLoggable(Level.FINE))
+                        if (_logger.isLoggable(Level.FINE)) {
                             _logger.log(Level.WARNING, "enterprise_distributedtx.pooling_excep", ex);
+                        }
 
                         it.remove();
                         handleResourceError(h,ex,tran);
@@ -1395,8 +1495,9 @@ public class JavaEETransactionManagerSimplified
                 try {
                     h.closeUserConnection();
                 } catch (Exception ex) {
-                    if (_logger.isLoggable(Level.FINE))
+                    if (_logger.isLoggable(Level.FINE)) {
                         _logger.log(Level.WARNING, "enterprise_distributedtx.pooling_excep", ex);
+                    }
                 }
             }
             l.clear();
@@ -1419,7 +1520,7 @@ public class JavaEETransactionManagerSimplified
             }
         } catch (Exception ex2) {
             // ignore
-        } 
+        }
 
 
         if (ex instanceof RollbackException) {
@@ -1449,7 +1550,7 @@ public class JavaEETransactionManagerSimplified
             key = inv.getResourceTableKey();
         }
 
-        // If ComponentInvocation is null or doesn't hold the key, 
+        // If ComponentInvocation is null or doesn't hold the key,
         // use instance as the key.
         if (key == null) {
             key = instance;
@@ -1463,8 +1564,6 @@ public class JavaEETransactionManagerSimplified
 
     /**
      * JTS version of the #delistResource
-     * @param suspend true if the transaction association should
-     * be suspended rather than ended.
      */
     private boolean delistJTSResource(Transaction tran, TransactionalResource h,
                                   int flag)
@@ -1472,7 +1571,7 @@ public class JavaEETransactionManagerSimplified
 
 // ** XXX Throw an exception instead ??? XXX **
         if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.delistJTSResource, h=" 
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.delistJTSResource, h="
                    + h + " h.xares=" + h.getXAResource() + " tran=" + tran + " flag=" + flag);
         }
 
@@ -1522,26 +1621,31 @@ public class JavaEETransactionManagerSimplified
     }
 
     public boolean isDelegate(JavaEETransactionManagerDelegate d) {
-        if (delegate == null)
+        if (delegate == null) {
             return false;
+        }
 
         return (d.getClass().getName().equals(delegate.getClass().getName()));
     }
 
     private void initDelegates() {
         if (habitat == null)
+         {
             return; // the delegate will be set explicitly
+        }
 
         for (JavaEETransactionManagerDelegate d :
                 habitat.<JavaEETransactionManagerDelegate>getAllServices(JavaEETransactionManagerDelegate.class)) {
             setDelegate(d);
         }
 
-        if (delegate != null && _logger.isLoggable(Level.FINE))
-        	_logger.log(Level.INFO, "enterprise_used_delegate_name", delegate.getClass().getName());
-                
+        if (delegate != null && _logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.INFO, "enterprise_used_delegate_name", delegate.getClass().getName());
+        }
+
     }
 
+    @Override
     public synchronized void setDelegate(JavaEETransactionManagerDelegate d) {
         // XXX Check if it's valid to set or if we need to remember all that asked.
 
@@ -1555,9 +1659,10 @@ public class JavaEETransactionManagerSimplified
             // XXX Hk2 work around XXX
             delegate.setTransactionManager(this);
 
-            if (_logger.isLoggable(Level.FINE))
-                    _logger.log(Level.FINE, "Replaced delegate with " 
-                            + d.getClass().getName());
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "Replaced delegate with "
+                        + d.getClass().getName());
+            }
         }
     }
 
@@ -1589,12 +1694,13 @@ public class JavaEETransactionManagerSimplified
 
     public void setTransactionCompeting(boolean b) {
         ComponentInvocation curr = invMgr.getCurrentInvocation();
-        if (curr != null)
+        if (curr != null) {
             curr.setTransactionCompeting(b);
+        }
     }
-    
-    public JavaEETransaction createImportedTransaction(TransactionInternal jtsTx) 
-            throws SystemException { 
+
+    public JavaEETransaction createImportedTransaction(TransactionInternal jtsTx)
+            throws SystemException {
         JavaEETransactionImpl tx = new JavaEETransactionImpl(jtsTx, this);
         try {
             jtsTx.registerSynchronization(
@@ -1609,16 +1715,16 @@ public class JavaEETransactionManagerSimplified
 
         return tx;
     }
-    
+
     private RequestTraceSpanLog constructJTABeginSpanLog(JavaEETransactionImpl transaction) {
         RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jtaContextBeginEvent");
-        
-        spanLog.addLogEntry("Transaction ID", transaction.getTransactionId());   
-        spanLog.addLogEntry("Remaining Timeout", Integer.toString(transaction.getRemainingTimeout()));    
-        
+
+        spanLog.addLogEntry("Transaction ID", transaction.getTransactionId());
+        spanLog.addLogEntry("Remaining Timeout", Integer.toString(transaction.getRemainingTimeout()));
+
         return spanLog;
     }
-    
+
     private RequestTraceSpanLog constructJTAEndSpanLog(JavaEETransaction transaction) throws SystemException {
         RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jtaContextEndEvent");
 
@@ -1626,7 +1732,7 @@ public class JavaEETransactionManagerSimplified
             JavaEETransactionImpl tx = (JavaEETransactionImpl) transaction;
             spanLog.addLogEntry("Transaction ID", (tx.getTransactionId()));
         }
-        
+
         // Check if transaction was rolled back or committed
         int status = transaction.getStatus();
         switch (status) {
@@ -1640,7 +1746,7 @@ public class JavaEETransactionManagerSimplified
                 spanLog.addLogEntry("Status", Integer.toString(status));
                 break;
         }
-        
+
         return spanLog;
     }
 
@@ -1648,17 +1754,19 @@ public class JavaEETransactionManagerSimplified
 /** Implementation of javax.transaction.Synchronization *********************/
 /****************************************************************************/
     private static class JTSSynchronization implements Synchronization {
-        private TransactionInternal jtsTx;
-        private JavaEETransactionManagerSimplified javaEETM;
-    
-        JTSSynchronization(TransactionInternal jtsTx, 
+        private final TransactionInternal jtsTx;
+        private final JavaEETransactionManagerSimplified javaEETM;
+
+        JTSSynchronization(TransactionInternal jtsTx,
                 JavaEETransactionManagerSimplified javaEETM){
             this.jtsTx = jtsTx;
             this.javaEETM = javaEETM;
         }
 
+        @Override
         public void beforeCompletion() {}
 
+        @Override
         public void afterCompletion(int status) {
             javaEETM.remove(jtsTx);
         }

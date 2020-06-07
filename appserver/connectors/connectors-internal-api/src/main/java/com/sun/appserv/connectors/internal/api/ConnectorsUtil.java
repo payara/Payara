@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.appserv.connectors.internal.api;
 
@@ -85,7 +86,7 @@ public class ConnectorsUtil {
 
     private static Collection<String> validSystemRARs = new HashSet<String>();
     private static Collection<String> validNonJdbcSystemRARs = new HashSet<String>();
-
+    
     static{
         initializeSystemRars();
         initializeNonJdbcSystemRars();
@@ -110,7 +111,7 @@ public class ConnectorsUtil {
 
     public static boolean getPingDuringPoolCreation(PoolInfo poolInfo, Resources allResources) {
         ResourcePool pool = getConnectionPoolConfig(poolInfo, allResources);
-        return Boolean.parseBoolean(pool.getPing());
+        return pool != null && Boolean.parseBoolean(pool.getPing());
     }
 
     /**
@@ -443,7 +444,7 @@ public class ConnectorsUtil {
             while (iter.hasNext()) {
                 EnvironmentProperty entry = (EnvironmentProperty) iter.next();
                 mergedProps.add(entry);
-                String propName = (String) entry.getName();
+                String propName = entry.getName();
                 runtimePropNames.add(propName);
             }
         }
@@ -453,7 +454,7 @@ public class ConnectorsUtil {
             Iterator iter = standardProps.iterator();
             while (iter.hasNext()) {
                 EnvironmentProperty entry = (EnvironmentProperty) iter.next();
-                String propName = (String) entry.getName();
+                String propName = entry.getName();
                 if (runtimePropNames.contains(propName))
                     continue;
                 mergedProps.add(entry);
@@ -536,18 +537,21 @@ public class ConnectorsUtil {
 
     public static String getTransactionIsolationInt(int tranIsolation) {
 
-        if(tranIsolation == Connection.TRANSACTION_READ_UNCOMMITTED){
-            return "read-uncommited";
-        } else if(tranIsolation == Connection.TRANSACTION_READ_COMMITTED){
-            return "read-committed";
-        } else if(tranIsolation == Connection.TRANSACTION_REPEATABLE_READ){
-            return "repeatable-read";
-        } else if(tranIsolation == Connection.TRANSACTION_SERIALIZABLE){
-            return "serializable";
-        } else {
-            throw new RuntimeException("Invalid transaction isolation; the transaction "
-                    + "isolation level can be empty or any of the following: "
-                    + "read-uncommitted, read-committed, repeatable-read, serializable");
+        switch (tranIsolation) {
+            case Connection.TRANSACTION_READ_UNCOMMITTED:
+                return "read-uncommited";
+            case Connection.TRANSACTION_READ_COMMITTED:
+                return "read-committed";
+            case Connection.TRANSACTION_REPEATABLE_READ:
+                return "repeatable-read";
+            case Connection.TRANSACTION_SERIALIZABLE:
+                return "serializable";
+            case fish.payara.sql.Connection.TRANSACTION_SNAPSHOT:
+                return "snapshot";
+            default:
+                throw new RuntimeException("Invalid transaction isolation; the transaction "
+                        + "isolation level can be empty or any of the following: "
+                        + "read-uncommitted, read-committed, repeatable-read, serializable");
         }
     }
 

@@ -21,6 +21,11 @@ import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.appserver.micro.services.PayaraInstanceImpl;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,7 +87,7 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
         
             // Create the table headers
             String[] headers = {"Instance Name", "Instance Group", "Instance Type", "Host Name", "HTTP Ports", 
-                "HTTPS Ports", "Admin Port", "Hazelcast Port", "Lite Member", "Deployed Applications"};
+                "HTTPS Ports", "Admin Port", "Hazelcast Port", "Lite Member", "Deployed Applications","Last Heartbeat"};
             ColumnFormatter columnFormatter = new ColumnFormatter(headers);
 
             List members = new ArrayList();
@@ -119,7 +124,7 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
     }  
     
     private void populateMembers(List members, InstanceDescriptor instance, ColumnFormatter columnFormatter) {
-        Object values[] = new Object[10];
+        Object values[] = new Object[11];
         values[0] = instance.getInstanceName();
         values[1] = instance.getInstanceGroup();
         values[2] = instance.getInstanceType();
@@ -157,6 +162,9 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
             // Just return nothing if no applications found
             values[9] = "";
         }
+        
+        LocalDateTime heartBeat = LocalDateTime.ofInstant(Instant.ofEpochMilli(instance.getLastHearbeat()),ZoneId.systemDefault());
+        values[10] = heartBeat.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         // Add the information to the console output table
         columnFormatter.addRow(values);
@@ -173,6 +181,7 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
         map.put("hazelcastPort", values[7]);
         map.put("liteMember", values[8]);
         map.put("applications", values[9]);
+        map.put("heartbeat",values[10]);
 
         members.add(map);
     }

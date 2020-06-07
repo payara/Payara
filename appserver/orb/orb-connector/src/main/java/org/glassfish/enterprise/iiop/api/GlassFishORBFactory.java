@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.enterprise.iiop.api;
 
 import org.jvnet.hk2.annotations.Contract;
@@ -76,4 +76,6 @@ public interface GlassFishORBFactory {
     public boolean isEjbCall (ServerRequestInfo sri);
 
     public String getIIOPEndpoints() ;
+    
+    boolean isClusterActive();
 }

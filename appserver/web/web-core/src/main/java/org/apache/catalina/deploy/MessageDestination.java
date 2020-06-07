@@ -55,9 +55,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.deploy;
-
 
 /**
  * <p>Representation of a message destination for a web application, as
@@ -151,6 +151,7 @@ public class MessageDestination {
     /**
      * Return a String representation of this object.
      */
+    @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder("MessageDestination[");

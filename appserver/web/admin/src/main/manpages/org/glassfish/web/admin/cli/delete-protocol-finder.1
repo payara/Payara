@@ -1,0 +1,58 @@
+delete-protocol-finder(1)  asadmin Utility Subcommands  delete-protocol-finder(1)
+
+NAME
+       delete-protocol-finder - removes a protocol finder
+
+SYNOPSIS
+           delete-protocol-finder [--help]
+           --protocol protocol-name
+           [--target server]
+           protocol-finder-name
+
+DESCRIPTION
+       The delete-protocol-finder subcommand removes the specified protocol
+       finder. This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --protocol-name
+           The name of the associated protocol.
+
+       --target
+           Deletes the protocol finder only from the specified target. Valid
+           values are as follows:
+
+           server
+               Deletes the protocol finder from the default server instance.
+               This is the default value.
+
+           configuration-name
+               Deletes the protocol finder from the specified configuration.
+
+           cluster-name
+               Deletes the protocol finder from all server instances in the
+               specified cluster.
+
+           standalone-instance-name
+               Deletes the protocol finder from the specified standalone
+               server instance.
+
+OPERANDS
+       protocol-finder-name
+           The name of the protocol finder to be deleted.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-protocol-finder(1), list-protocol-finders(1)
+
+       asadmin(1M)
+
+Java EE 8                 09 Aug 2017            delete-protocol-finder(1)

@@ -1,0 +1,72 @@
+update-file-user(1)       asadmin Utility Subcommands      update-file-user(1)
+
+NAME
+       update-file-user - updates a current file user as specified
+
+SYNOPSIS
+           update-file-user [--help] [--groups user_groups[:user_groups]*]
+           [--target target
+           [--authrealmname authrealm_name]
+           username
+
+DESCRIPTION
+       Th update-file-user subcommand updates an existing entry in the keyfile
+       using the specified user name, password and groups. Multiple groups can
+       be entered by separating them, with a colon (:).
+
+       If a new password is not provided, this subcommand fails if secure
+       administration is enabled and the user being updated is an
+       administrative user.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --groups
+           This is the name of the group to which the file user belongs.
+
+       --authrealmname
+           Name of the authentication realm where the user to be updated can
+           be found.
+
+       --target
+           This option helps specify the target on which you are updating a
+           file user. Valid values are:
+
+           server
+               Updates the file user in the default server instance. This is
+               the default value.
+
+           cluster_name
+               Updates the file user on every server instance in the cluster.
+
+           instance_name
+               Updates the file user on a specified sever instance.
+
+OPERANDS
+       username
+           This is the name of the file user to be updated.
+
+EXAMPLES
+       Example 1, Updating a User's Information in a File Realm
+           The following example updates information for a file realm user
+           named sample_user.
+
+               asadmin> update-file-user
+               --groups staff:manager:engineer sample_user
+               Command update-file-user executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-file-user(1), list-file-users(1), create-file-user(1),
+       list-file-groups(1)
+
+       asadmin(1M)
+
+Java EE 8                      01 December 2010            update-file-user(1)

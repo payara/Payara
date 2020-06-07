@@ -37,39 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.runtime.common.wls;
-
-import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
+
 /**
- * This is the in memory representation of the security-role-mapping
- * information.  Note that we are keeping just the literal Strings
- * in this object.  The implementation of Principal is not instantiated
- * here.  This is because 1) the dol should avoid loading any classes
- * as the classloaders used for deployment and runtime can be different.
- * 2) verifier uses this information and it has not access to the
- * role-mapper on the server.
+ * This is the in memory representation of the security-role-mapping information. 
+ * 
+ * <p>
+ * Note that we are keeping just the literal Strings in this object. The implementation of Principal is 
+ * not instantiated here. 
+ * 
+ * <p>
+ * This is because 
+ * 
+ * 1) the dol should avoid loading any classes as the classloaders used for deployment and runtime can be different. 
+ * 2) verifier uses this information and it has not access to the role-mapper on the server.
  *
  * @author Sudarsan Sridhar
  */
 public class SecurityRoleAssignment extends RuntimeDescriptor {
 
-    private String roleName = null; //mandatory element
+    private static final long serialVersionUID = -8950600974064582673L;
+    
+    private String roleName; // mandatory element
     private List<String> principals = new ArrayList<String>();
-    private boolean externallyDefined = false;
-
-    public boolean isExternallyDefined() {
-        return externallyDefined;
-    }
-
-    public void setExternallyDefined() {
-        externallyDefined = true;
-    }
-
+    private boolean externallyDefined;
 
     public String getRoleName() {
         return roleName;
@@ -83,7 +80,15 @@ public class SecurityRoleAssignment extends RuntimeDescriptor {
         return principals;
     }
 
-    public void addPrincipalName(String p) {
-        principals.add(p);
+    public void addPrincipalName(String principalName) {
+        principals.add(principalName);
+    }
+
+    public boolean isExternallyDefined() {
+        return externallyDefined;
+    }
+
+    public void setExternallyDefined() {
+        externallyDefined = true;
     }
 }

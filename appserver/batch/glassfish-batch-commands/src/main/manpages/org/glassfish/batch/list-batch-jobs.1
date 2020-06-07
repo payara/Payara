@@ -1,0 +1,111 @@
+list-batch-jobs(1)        asadmin Utility Subcommands       list-batch-jobs(1)
+
+NAME
+       list-batch-jobs - lists batch jobs
+
+SYNOPSIS
+           list-batch-jobs [--help]
+           [--target target]
+           [--long={false|true}]
+           [--output output]
+           [--header={false|true}]
+           [job_name]
+
+DESCRIPTION
+       The list-batch-jobs subcommand lists batch jobs and job details.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which to list batch jobs and job details.
+           Valid values are as follows:
+
+           server
+               Lists batch jobs for the default server instance server and is
+               the default value.
+
+           cluster-name
+               Lists batch jobs for every server instance in the cluster.
+
+           instance-name
+               Lists batch jobs for a particular server instance.
+
+       --long, -l
+           Displays detailed information about batch jobs. The default value
+           is false.
+
+       --output, -o
+           Displays specific details about batch jobs. Use a comma-separated
+           list to specify the details to display and their order. The values
+           are case-insensitive. The jobname and instancecount column headings
+           are displayed by default.
+
+           Possible values are as follows:
+
+           jobname
+               Displays the name of the job.
+
+           appname
+               Displays the name of the application.
+
+           instancecount
+               Displays the number of job instances.
+
+           instanceid
+               Displays the ID assigned to the job instance.
+
+           executionid
+               Displays the ID assigned to the execution of the batch job. A
+               new execution is created the first time a job is started and
+               every time the existing execution is restarted.
+
+           batchstatus
+               Displays the status of the job as set by the batch runtime.
+
+           starttime
+               Displays the start time of the job.
+
+           endtime
+               Displays the finish time of the job.
+
+           exitstatus
+               Displays the status of the job as set by the Job XML for the
+               job or by the batch application. By default, the exit status
+               and the batch status are the same unless the exit status is
+               explicitly overridden.
+
+       --header, -h
+           Specifies whether column headings are displayed when the --long
+           option is used. The default value is true. To suppress the
+           headings, set the --header option to false.
+
+OPERANDS
+       job_name
+           The name of the job for which to list details.
+
+EXAMPLES
+       Example 1, Listing Batch Jobs
+           This example lists batch jobs for the default server instance.
+
+               asadmin> list-batch-jobs
+               JOBNAME  INSTANCECOUNT
+               payroll  9
+               bonus    6
+               Command list-batch-jobs executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-batch-job-executions(1), list-batch-job-steps(1),
+       set-batch-runtime-configuration(1), list-batch-runtime-configuration(1)
+
+       asadmin(1M)
+
+Java EE 8                         13 Feb 2013               list-batch-jobs(1)

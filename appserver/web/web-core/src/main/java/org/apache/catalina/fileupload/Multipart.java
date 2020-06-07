@@ -37,12 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/**
- * This class is the base for implementing servlet 3.0 file upload
- *
- * @author Kin-man Chung
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.fileupload;
 
@@ -51,6 +46,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +55,11 @@ import java.util.Locale;
 
 import org.apache.catalina.connector.Request;
 
+/**
+ * This class is the base for implementing servlet 3.0 file upload
+ *
+ * @author Kin-man Chung
+ */
 public class Multipart {
 
     private final String location;
@@ -95,7 +96,7 @@ public class Multipart {
     public void init() {
         try {
             initParts();
-        } catch (Exception ex) {
+        } catch (IOException | ServletException ex) {
             throw new RuntimeException("Error in multipart initialization", ex);
         }
     }
@@ -129,17 +130,14 @@ public class Multipart {
         if (contentType == null) {
             return false;
         }
-        if (contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/form-data")) {
-            return true;
-        }
-        return false;
+        return contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/form-data");
     }
 
     private void initParts() throws IOException, ServletException {
         if (parts != null) {
             return;
         }
-        parts = new ArrayList<Part>();
+        parts = new ArrayList<>();
         try {
             RequestItemIterator iter = new RequestItemIterator(this, request);
             while (iter.hasNext()) {
@@ -151,15 +149,16 @@ public class Multipart {
                                          requestItem.isFormField(),
                                          requestItem.getSubmittedFileName(),
                                          request.getCharacterEncoding());
-                Streams.copy(requestItem.openStream(),
-                             partItem.getOutputStream(), true);
-                String fileName = partItem.getSubmittedFileName();
-                if (fileName == null || fileName.length() == 0) {
-                    // Add part name and value as a parameter
-                    request.addParameter(partItem.getName(),
-                                         new String[] {partItem.getString()});
+                try (InputStream itemInputStream = requestItem.openStream()) {
+                    Streams.copy(itemInputStream, partItem.getOutputStream(), true);
+                    String fileName = partItem.getSubmittedFileName();
+                    if (fileName == null || fileName.length() == 0) {
+                        // Add part name and value as a parameter
+                        request.addParameter(partItem.getName(),
+                                             new String[] {partItem.getString()});
+                    }
+                    parts.add(partItem);
                 }
-                parts.add((Part)partItem);
             }
         } catch (SizeException ex) {
             throw new IllegalStateException(ex);
@@ -193,7 +192,7 @@ public class Multipart {
             if (name.equals(fieldName)) {
                 return part;
             }
-        } 
+        }
         return null;
     }
 

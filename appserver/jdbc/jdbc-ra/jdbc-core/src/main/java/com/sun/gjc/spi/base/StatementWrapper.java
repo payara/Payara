@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.base;
 
@@ -65,7 +66,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
     protected Statement jdbcStatement = null;
     protected StatementLeakDetector leakDetector = null;
     private boolean markedForReclaim = false;
-    protected final static Logger _logger;
+    protected static final Logger _logger;
     protected MethodExecutor executor = null;
     private boolean closeOnCompletion = false;
     protected AtomicInteger resultSetCount = new AtomicInteger();
@@ -114,6 +115,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs or the given
      *                               SQL statement produces a <code>ResultSet</code> object
      */
+    @Override
     public int executeUpdate(final String sql) throws SQLException {
         return jdbcStatement.executeUpdate(sql);
     }
@@ -125,10 +127,10 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * It is generally good practice to release resources as soon as
      * you are finished with them to avoid tying up database
      * resources.
-     * <p/>
+     * <p>
      * Calling the method <code>close</code> on a <code>Statement</code>
      * object that is already closed has no effect.
-     * <p/>
+     * </p>
      * <B>Note:</B> A <code>Statement</code> object is automatically closed
      * when it is garbage collected. When a <code>Statement</code> object is
      * closed, its current <code>ResultSet</code> object, if one exists, is
@@ -136,6 +138,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void close() throws SQLException {
         //Stop leak tracing
         if(leakDetector != null) {
@@ -159,6 +162,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setMaxFieldSize
      */
+    @Override
     public int getMaxFieldSize() throws SQLException {
         return jdbcStatement.getMaxFieldSize();
     }
@@ -178,6 +182,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *                               or the condition max >= 0 is not satisfied
      * @see #getMaxFieldSize
      */
+    @Override
     public void setMaxFieldSize(int max) throws SQLException {
         jdbcStatement.setMaxFieldSize(max);
     }
@@ -194,6 +199,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setMaxRows
      */
+    @Override
     public int getMaxRows() throws SQLException {
         return jdbcStatement.getMaxRows();
     }
@@ -209,6 +215,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *                               or the condition max >= 0 is not satisfied
      * @see #getMaxRows
      */
+    @Override
     public void setMaxRows(int max) throws SQLException {
         jdbcStatement.setMaxRows(max);
     }
@@ -217,7 +224,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * Sets escape processing on or off.
      * If escape scanning is on (the default), the driver will do
      * escape substitution before sending the SQL statement to the database.
-     * <p/>
+     * <p>
      * Note: Since prepared statements have usually been parsed prior
      * to making this call, disabling escape processing for
      * <code>PreparedStatements</code> objects will have no effect.
@@ -226,6 +233,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *               <code>false</code> to disable it
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setEscapeProcessing(boolean enable) throws SQLException {
         jdbcStatement.setEscapeProcessing(enable);
     }
@@ -240,6 +248,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs
      * @see #setQueryTimeout
      */
+    @Override
     public int getQueryTimeout() throws SQLException {
         return jdbcStatement.getQueryTimeout();
     }
@@ -255,6 +264,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *                               or the condition seconds >= 0 is not satisfied
      * @see #getQueryTimeout
      */
+    @Override
     public void setQueryTimeout(int seconds) throws SQLException {
         jdbcStatement.setQueryTimeout(seconds);
     }
@@ -267,6 +277,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void cancel() throws SQLException {
         jdbcStatement.cancel();
     }
@@ -275,12 +286,12 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * Retrieves the first warning reported by calls on this <code>Statement</code> object.
      * Subsequent <code>Statement</code> object warnings will be chained to this
      * <code>SQLWarning</code> object.
-     * <p/>
+     * <p>
      * <p>The warning chain is automatically cleared each time
      * a statement is (re)executed. This method may not be called on a closed
      * <code>Statement</code> object; doing so will cause an <code>SQLException</code>
      * to be thrown.
-     * <p/>
+     * </p>
      * <P><B>Note:</B> If you are processing a <code>ResultSet</code> object, any
      * warnings associated with reads on that <code>ResultSet</code> object
      * will be chained on it rather than on the <code>Statement</code>
@@ -291,6 +302,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs or this
      *                               method is called on a closed statement
      */
+    @Override
     public SQLWarning getWarnings() throws SQLException {
         return jdbcStatement.getWarnings();
     }
@@ -304,6 +316,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void clearWarnings() throws SQLException {
         jdbcStatement.clearWarnings();
     }
@@ -319,9 +332,9 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * level to support updates, the cursor's <code>SELECT</code> statement
      * should have the form <code>SELECT FOR UPDATE</code>.  If
      * <code>FOR UPDATE</code> is not present, positioned updates may fail.
-     * <p/>
-     * <P><B>Note:</B> By definition, the execution of positioned updates and
-     * deletes must be done by a different <code>Statement</code> object than
+     * <p>
+     * </p><b>Note:</n> By definition, the execution of positioned updates and
+     * deletes must be done by a different {@link Statement} object than
      * the one that generated the <code>ResultSet</code> object being used for
      * positioning. Also, cursor names must be unique within a connection.
      *
@@ -329,6 +342,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *             a connection
      * @throws java.sql.SQLException if a database access error occurs
      */
+    @Override
     public void setCursorName(String name) throws SQLException {
         jdbcStatement.setCursorName(name);
     }
@@ -340,13 +354,13 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * this unless you are (1) executing a stored procedure that you know may
      * return multiple results or (2) you are dynamically executing an
      * unknown SQL string.
-     * <p/>
+     * <p>
      * The <code>execute</code> method executes an SQL statement and indicates the
      * form of the first result.  You must then use the methods
      * <code>getResultSet</code> or <code>getUpdateCount</code>
      * to retrieve the result, and <code>getMoreResults</code> to
      * move to any subsequent result(s).
-     *
+     * </p>
      * @param sql any SQL statement
      * @return <code>true</code> if the first result is a <code>ResultSet</code>
      *         object; <code>false</code> if it is an update count or there are
@@ -356,6 +370,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #getUpdateCount
      * @see #getMoreResults
      */
+    @Override
     public boolean execute(final String sql) throws SQLException {
         return jdbcStatement.execute(sql);
     }
@@ -371,6 +386,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs
      * @see #execute
      */
+    @Override
     public int getUpdateCount() throws SQLException {
         return jdbcStatement.getUpdateCount();
     }
@@ -380,8 +396,8 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * <code>true</code> if it is a <code>ResultSet</code> object, and
      * implicitly closes any current <code>ResultSet</code>
      * object(s) obtained with the method <code>getResultSet</code>.
-     * <p/>
-     * <P>There are no more results when the following is true:
+     * <p>
+     * </p>There are no more results when the following is true:
      * <PRE>
      * // stmt is a Statement object
      * ((stmt.getMoreResults() == false) && (stmt.getUpdateCount() == -1))
@@ -393,6 +409,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs
      * @see #execute
      */
+    @Override
     public boolean getMoreResults() throws SQLException {
         return jdbcStatement.getMoreResults();
     }
@@ -402,7 +419,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * rows will be processed in <code>ResultSet</code>
      * objects created using this <code>Statement</code> object.  The
      * default value is <code>ResultSet.FETCH_FORWARD</code>.
-     * <p/>
+     * <p>
      * Note that this method sets the default fetch direction for
      * result sets generated by this <code>Statement</code> object.
      * Each result set has its own methods for getting and setting
@@ -416,6 +433,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #getFetchDirection
      * @since 1.2
      */
+    @Override
     public void setFetchDirection(int direction) throws SQLException {
         jdbcStatement.setFetchDirection(direction);
     }
@@ -434,6 +452,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #setFetchDirection
      * @since 1.2
      */
+    @Override
     public int getFetchDirection() throws SQLException {
         return jdbcStatement.getFetchDirection();
     }
@@ -452,6 +471,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #getFetchSize
      * @since 1.2
      */
+    @Override
     public void setFetchSize(int rows) throws SQLException {
         jdbcStatement.setFetchSize(rows);
     }
@@ -470,6 +490,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #setFetchSize
      * @since 1.2
      */
+    @Override
     public int getFetchSize() throws SQLException {
         return jdbcStatement.getFetchSize();
     }
@@ -483,6 +504,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public int getResultSetConcurrency() throws SQLException {
         return jdbcStatement.getResultSetConcurrency();
     }
@@ -497,6 +519,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public int getResultSetType() throws SQLException {
         return jdbcStatement.getResultSetType();
     }
@@ -505,9 +528,9 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * Adds the given SQL command to the current list of commmands for this
      * <code>Statement</code> object. The commands in this list can be
      * executed as a batch by calling the method <code>executeBatch</code>.
-     * <p/>
+     * <p>
      * <B>NOTE:</B>  This method is optional.
-     *
+     * </p>
      * @param sql typically this is a static SQL <code>INSERT</code> or
      *            <code>UPDATE</code> statement
      * @throws java.sql.SQLException if a database access error occurs, or the
@@ -515,6 +538,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #executeBatch
      * @since 1.2
      */
+    @Override
     public void addBatch(String sql) throws SQLException {
         jdbcStatement.addBatch(sql);
     }
@@ -522,14 +546,15 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
     /**
      * Empties this <code>Statement</code> object's current list of
      * SQL commands.
-     * <p/>
+     * <p>
      * <B>NOTE:</B>  This method is optional.
-     *
+     * </p>
      * @throws java.sql.SQLException if a database access error occurs or the
      *                               driver does not support batch updates
      * @see #addBatch
      * @since 1.2
      */
+    @Override
     public void clearBatch() throws SQLException {
         jdbcStatement.clearBatch();
     }
@@ -550,7 +575,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * <LI>A value of <code>SUCCESS_NO_INFO</code> -- indicates that the command was
      * processed successfully but that the number of rows affected is
      * unknown
-     * <p/>
+     * <p>
      * If one of the commands in a batch update fails to execute properly,
      * this method throws a <code>BatchUpdateException</code>, and a JDBC
      * driver may or may not continue to process the remaining commands in
@@ -561,18 +586,18 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * <code>BatchUpdateException.getUpdateCounts</code>
      * will contain as many elements as there are commands in the batch, and
      * at least one of the elements will be the following:
-     * <p/>
+     * </p>
      * <LI>A value of <code>EXECUTE_FAILED</code> -- indicates that the command failed
      * to execute successfully and occurs only if a driver continues to
      * process commands after a command fails
      * </OL>
-     * <p/>
+     * <p>
      * A driver is not required to implement this method.
      * The possible implementations and return values have been modified in
      * the Java 2 SDK, Standard Edition, version 1.3 to
      * accommodate the option of continuing to proccess commands in a batch
      * update after a <code>BatchUpdateException</code> obejct has been thrown.
-     *
+     * </p>
      * @return an array of update counts containing one element for each
      *         command in the batch.  The elements of the array are ordered according
      *         to the order in which commands were added to the batch.
@@ -582,6 +607,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *                               database fails to execute properly or attempts to return a result set.
      * @since 1.3
      */
+    @Override
     public int[] executeBatch() throws SQLException {
         return jdbcStatement.executeBatch();
     }
@@ -594,6 +620,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.2
      */
+    @Override
     public Connection getConnection() throws SQLException {
         return connection;
     }
@@ -613,8 +640,8 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * any current <code>ResultSet</code> object(s) according  to the instructions
      * specified by the given flag, and returns
      * <code>true</code> if the next result is a <code>ResultSet</code> object.
-     * <p/>
-     * <P>There are no more results when the following is true:
+     * <p>
+     * </p>There are no more results when the following is true:
      * <PRE>
      * // stmt is a Statement object
      * ((stmt.getMoreResults() == false) && (stmt.getUpdateCount() == -1))
@@ -638,6 +665,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #execute
      * @since 1.4
      */
+    @Override
     public boolean getMoreResults(int current) throws SQLException {
         return jdbcStatement.getMoreResults(current);
     }
@@ -664,6 +692,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *                               the given constant is not one of those allowed
      * @since 1.4
      */
+    @Override
     public int executeUpdate(final String sql, int autoGeneratedKeys) throws SQLException {
         return jdbcStatement.executeUpdate(sql, autoGeneratedKeys);
     }
@@ -688,6 +717,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *                               whose elements are valid column indexes
      * @since 1.4
      */
+    @Override
     public int executeUpdate(final String sql, int columnIndexes[]) throws SQLException {
         return jdbcStatement.executeUpdate(sql, columnIndexes);
     }
@@ -711,6 +741,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      *                               whose elements are valid column names
      * @since 1.4
      */
+    @Override
     public int executeUpdate(final String sql, String columnNames[]) throws SQLException {
         return jdbcStatement.executeUpdate(sql, columnNames);
     }
@@ -721,13 +752,13 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * auto-generated keys should be made available
      * for retrieval.  The driver will ignore this signal if the SQL statement
      * is not an <code>INSERT</code> statement.
-     * <p/>
+     * <p>
      * In some (uncommon) situations, a single SQL statement may return
      * multiple result sets and/or update counts.  Normally you can ignore
      * this unless you are (1) executing a stored procedure that you know may
      * return multiple results or (2) you are dynamically executing an
      * unknown SQL string.
-     * <p/>
+     * </p>
      * The <code>execute</code> method executes an SQL statement and indicates the
      * form of the first result.  You must then use the methods
      * <code>getResultSet</code> or <code>getUpdateCount</code>
@@ -753,6 +784,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #getGeneratedKeys
      * @since 1.4
      */
+    @Override
     public boolean execute(final String sql, int autoGeneratedKeys) throws SQLException {
         return jdbcStatement.execute(sql, autoGeneratedKeys);
     }
@@ -765,13 +797,13 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * target table that contain the auto-generated keys that should be made
      * available. The driver will ignore the array if the given SQL statement
      * is not an <code>INSERT</code> statement.
-     * <p/>
+     * <p>
      * Under some (uncommon) situations, a single SQL statement may return
      * multiple result sets and/or update counts.  Normally you can ignore
      * this unless you are (1) executing a stored procedure that you know may
      * return multiple results or (2) you are dynamically executing an
      * unknown SQL string.
-     * <p/>
+     * </p>
      * The <code>execute</code> method executes an SQL statement and indicates the
      * form of the first result.  You must then use the methods
      * <code>getResultSet</code> or <code>getUpdateCount</code>
@@ -793,6 +825,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #getMoreResults
      * @since 1.4
      */
+    @Override
     public boolean execute(final String sql, int columnIndexes[]) throws SQLException {
         return jdbcStatement.execute(sql, columnIndexes);
     }
@@ -805,13 +838,13 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * target table that contain the auto-generated keys that should be made
      * available. The driver will ignore the array if the given SQL statement
      * is not an <code>INSERT</code> statement.
-     * <p/>
+     * <p>
      * In some (uncommon) situations, a single SQL statement may return
      * multiple result sets and/or update counts.  Normally you can ignore
      * this unless you are (1) executing a stored procedure that you know may
      * return multiple results or (2) you are dynamically executing an
      * unknown SQL string.
-     * <p/>
+     * </p>
      * The <code>execute</code> method executes an SQL statement and indicates the
      * form of the first result.  You must then use the methods
      * <code>getResultSet</code> or <code>getUpdateCount</code>
@@ -834,6 +867,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @see #getGeneratedKeys
      * @since 1.4
      */
+    @Override
     public boolean execute(final String sql, String columnNames[]) throws SQLException {
         return jdbcStatement.execute(sql, columnNames);
     }
@@ -847,10 +881,12 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
      * @throws java.sql.SQLException if a database access error occurs
      * @since 1.4
      */
+    @Override
     public int getResultSetHoldability() throws SQLException {
         return jdbcStatement.getResultSetHoldability();
     }
 
+    @Override
     public void reclaimStatement() throws SQLException {
         markForReclaim(true);
         close();
@@ -864,6 +900,7 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
         return markedForReclaim;
     }
 
+    @Override
     public void closeOnCompletion() throws SQLException {
         if (leakDetector != null) {
             _logger.log(Level.INFO, "jdbc.invalid_operation.close_on_completion");
@@ -883,9 +920,9 @@ public abstract class StatementWrapper implements Statement, StatementLeakListen
             _logger.log(Level.SEVERE, "jdbc.ex_stmt_wrapper", ex);
             throw new SQLException(ex);
         }
-        return;
     }
 
+    @Override
     public boolean isCloseOnCompletion() throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             try {

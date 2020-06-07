@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.server.logging;
 
 
@@ -45,8 +47,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
 
 /**
@@ -103,23 +103,16 @@ public class Syslog {
      */
     public void log(int facility, int level, String msg) {
       int fl=facility | level;
-
       String what="<" + fl + ">" + msg;
-      // System.out.println("Writing to syslog:" + what);
-
-      try {
+      try (DatagramSocket datagramSocket = new DatagramSocket()) {
         byte[] buf = what.getBytes();
         int len = buf.length;
         DatagramPacket dp = new DatagramPacket(buf,len,addr,SYSLOG_PORT);
-        DatagramSocket s = new DatagramSocket();
-        s.send(dp);
-        if(!s.isClosed()) {
-            s.close();
-        }
+        datagramSocket.send(dp);
       } catch(IOException e) {
         LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_SENDING_SYSLOG_MSG, e);
       }
     }
 
-    
+
 }

@@ -1,0 +1,94 @@
+create-threadpool(1)      asadmin Utility Subcommands     create-threadpool(1)
+
+NAME
+       create-threadpool - adds a thread pool
+
+SYNOPSIS
+           create-threadpool [--help] [--target target]
+           [--maxthreadpoolsize maxthreadpoolsize]
+           [--minthreadpoolsize minthreadpoolsize]
+           [--idletimeout idletimeout] [--maxqueuesize maxqueuesize]
+           [--workqueues workqueues] threadpool-id
+
+DESCRIPTION
+       The create-threadpool subcommand creates a thread pool with the
+       specified name. You can specify maximum and minimum number of threads
+       in the pool, the quantity of messages, and the idle timeout of a
+       thread. The created thread pool can be used for servicing IIOP requests
+       and for resource adapters to service work management requests. A thread
+       pool can be used in multiple resource adapters.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target on which you are creating the
+           thread pool.
+
+           Valid values are as follows:
+
+           server
+               Creates the thread pool for the default GlassFish Server
+               instance server and is the default value
+
+           configuration-name
+               Creates the thread pool for the named configuration.
+
+           cluster-name
+               Creates the thread pool for every instance in the cluster.
+
+           instance-name
+               Creates the thread pool for a particular instance.
+
+       --maxthreadpoolsize
+           Specifies the maximum number of threads the pool can contain.
+           Default is 5.
+
+       --minthreadpoolsize
+           Specifies the minimum number of threads in the pool. These are
+           created when the thread pool is instantiated. Default is 2.
+
+       --idletimeout
+           Specifies the amount of time in seconds after which idle threads
+           are removed from the pool. Default is 900.
+
+       --maxqueuesize
+           Specifies the maximum number of messages that can be queued until
+           threads are available to process them for a network listener or
+           IIOP listener. A value of -1 specifies no limit. Default is 4096.
+
+       --workqueues
+           Do not specify this option. This option is retained for
+           compatibility with earlier releases. If you specify this option, a
+           syntax error does not occur. Instead, the subcommand runs
+           successfully and displays a warning message that the option is
+           ignored.
+
+OPERANDS
+       threadpool-id
+           An ID for the work queue, for example, threadpool-1.
+
+EXAMPLES
+       Example 1, Creating a Thread Pool
+           This command creates a new thread pool called threadpool-l.
+
+               asadmin> create-threadpool --maxthreadpoolsize 100
+               --minthreadpoolsize 20 --idletimeout 2 threadpool-1
+               Command create-threadpool executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-threadpool(1), list-threadpools(1)
+
+       asadmin(1M)
+
+Java EE 8                         29 Nov 2010             create-threadpool(1)

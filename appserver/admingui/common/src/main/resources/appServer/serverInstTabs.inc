@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!-- appServer/serverInstTabs.jsf -->
@@ -71,6 +73,12 @@
 	    <!command
                 setSessionAttribute(key="serverInsTabs" value="instanceProps");
                 gf.redirect(page="#{request.contextPath}/common/appServer/instanceProperties.jsf?instanceName=server");
+	    />
+	</sun:tab>
+        <sun:tab id="microProfileProps" immediate="$boolean{true}" text="$resource{i18nc.instanceProperties.MicroProfilePropertiesTitle}" >
+	    <!command
+                setSessionAttribute(key="serverInsTabs" value="microProfileProps");
+                gf.redirect(page="#{request.contextPath}/common/appServer/instanceMicroProfileProperties.jsf?instanceName=server");
 	    />
 	</sun:tab>
     </sun:tab>

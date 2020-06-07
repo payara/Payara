@@ -37,14 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
-import com.google.common.base.Strings;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.util.StringUtils;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -62,11 +63,11 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
-import java.lang.String;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.deployment.common.DeploymentProperties;
 
 /**
  * Web module deployer.
@@ -90,6 +91,9 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
     @Inject
     RequestDispatcher dispatcher;
 
+    @Inject
+    private HotDeployService hotDeployService;
+
     /**
      * Constructor
      */
@@ -97,7 +101,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
     }
 
     /**
-     * Returns the meta data assocated with this Deployer
+     * Returns the meta data associated with this Deployer
      *
      * @return the meta data for this Deployer
      */
@@ -107,6 +111,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                 new Class[] {WebBundleDescriptorImpl.class}, new Class[] {Application.class});
     }
 
+    @Override
     public <V> V loadMetaData(Class<V> type, DeploymentContext dc) {
 
         WebBundleDescriptorImpl wbd = dc.getModuleMetaData(WebBundleDescriptorImpl.class);
@@ -130,7 +135,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                 contextRoot = params.previousContextRoot;
             }
             // default should be application name, if available
-            if (contextRoot == null && !Strings.isNullOrEmpty(params.name())) {
+            if (contextRoot == null && StringUtils.ok(params.name())) {
                 contextRoot = params.name();
             }
             if (contextRoot == null)
@@ -150,24 +155,19 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
         return null;
     }
 
-    private WebModuleConfig loadWebModuleConfig(DeploymentContext dc) {
-        
-        WebModuleConfig wmInfo = new WebModuleConfig();
-        
+    private void loadWebModuleConfig(WebModuleConfig wmInfo, DeploymentContext dc) {
         try {
             DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
             wmInfo.setDescriptor(dc.getModuleMetaData(WebBundleDescriptorImpl.class));
             wmInfo.setVirtualServers(params.virtualservers);
             wmInfo.setLocation(dc.getSourceDir());
             wmInfo.setObjectType(dc.getAppProps().getProperty(ServerTags.OBJECT_TYPE));
+            wmInfo.setDeploymentContext(dc);
         } catch (Exception ex) {
             String msg = rb.getString(LogFacade.UNABLE_TO_LOAD_CONFIG);
             msg = MessageFormat.format(msg, wmInfo.getName());
             logger.log(Level.WARNING, msg, ex);
         }
-        
-        return wmInfo;
-        
     }
     
     @Override
@@ -185,18 +185,29 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
     public WebApplication load(WebContainer container, DeploymentContext dc) {
         super.load(container, dc);
         WebBundleDescriptorImpl wbd = dc.getModuleMetaData(
-            WebBundleDescriptorImpl.class);
+                WebBundleDescriptorImpl.class);
         if (wbd != null) {
             wbd.setClassLoader(dc.getClassLoader());
         }
 
-        WebModuleConfig wmInfo = loadWebModuleConfig(dc);
-        WebApplication webApp = new WebApplication(container, wmInfo,
-                new ApplicationConfigInfo(dc.getAppProps()));
+        Boolean hotDeploy = dc.getCommandParameters(DeployCommandParameters.class).hotDeploy;
+        WebModuleConfig wmInfo = dc.getModuleMetaData(WebModuleConfig.class);
+        if (Boolean.FALSE.equals(hotDeploy) || wmInfo == null) {
+            wmInfo = new WebModuleConfig();
+            dc.addModuleMetaData(wmInfo);
+        }
+
+        loadWebModuleConfig(wmInfo, dc);
+        WebApplication webApp = new WebApplication(
+                container,
+                wmInfo,
+                new ApplicationConfigInfo(dc.getAppProps())
+        );
         return webApp;
     }
 
     
+    @Override
     public void unload(WebApplication webApplication, DeploymentContext dc) {
 
     }

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.wadl;
 
 import java.io.ByteArrayOutputStream;
@@ -124,7 +126,6 @@ public class RestModelSchemaResource extends LegacyCompositeResource {
     public String getSchemaManually() {
         StringBuilder sb = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
                 + "<xs:schema version=\"1.0\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n");
-//                + "\t<xs:element type=\"xs:object\" name=\"object\"/>\n");
         StringBuilder complexTypes = new StringBuilder();
         addElement(sb, "object");
         processClass(complexTypes, Object.class, "object");

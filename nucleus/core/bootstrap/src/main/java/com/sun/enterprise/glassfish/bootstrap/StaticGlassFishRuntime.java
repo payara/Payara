@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 package com.sun.enterprise.glassfish.bootstrap;
 
 import java.io.File;
@@ -45,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,13 +55,8 @@ import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
-import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PopulatorPostProcessor;
-import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
-import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
-import org.glassfish.hk2.utilities.Binder;
-import org.glassfish.hk2.utilities.BuilderHelper;
 
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.Main;
@@ -106,7 +102,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
             setEnv(gfProps);
 
             final StartupContext startupContext = new StartupContext(gfProps.getProperties());
-            
+
             ModulesRegistry modulesRegistry = SingleHK2Factory.getInstance().createModulesRegistry();
 
             ServiceLocator serviceLocator = main.createServiceLocator(modulesRegistry, startupContext, Arrays.asList((PopulatorPostProcessor)new EmbeddedInhabitantsParser(), new ContextDuplicatePostProcessor()), null);
@@ -244,16 +240,16 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
                 URL url = cl.getResource(configFile);
                 if (url != null) {
                     copy(url, new File(instanceConfigDir,
-                            configFile.substring(configFile.lastIndexOf('/') + 1)), false);                    
+                            configFile.substring(configFile.lastIndexOf('/') + 1)), false);
                 }
             }
-            
+
             // copy branding file if available
             URL brandingUrl = cl.getResource("config/branding/glassfish-version.properties");
             if (brandingUrl != null) {
                 copy(brandingUrl, new File(instanceConfigDir,"branding" + File.separator + "glassfish-version.properties"),false);
             }
-                    
+
             /**
              * If the user has specified a custom domain.xml then copy it.
              */
@@ -275,15 +271,18 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
         try {
             if (!destFile.exists() || overwrite) {
                 if (!destFile.toURI().equals(u.toURI())) {
-                    InputStream stream = u.openStream();
                     destFile.getParentFile().mkdirs();
-                    Util.copy(stream, new FileOutputStream(destFile), stream.available());
+                    try (InputStream inputStream = u.openStream();
+                         FileOutputStream outputStream = new FileOutputStream(destFile)) {
+                        Util.copy(inputStream, outputStream, inputStream.available());
+                    }
                     if (logger.isLoggable(Level.FINER)) {
                         logger.finer("Copied " + u.toURI() + " to " + destFile.toURI());
                     }
                 }
             }
         } catch (Exception ex) {
+            logger.warning(() -> MessageFormat.format("Copy of URL {0} to destination file {1} with overwrite {2} failed.", u, destFile, overwrite));
         }
     }
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -87,9 +88,8 @@ public class ManagedFile {
     final ManagedFile.RefCounterLock wl = new ManagedFile.RefCounterLock(rwl.writeLock(), false);
     final Queue<Thread> waiters = new ConcurrentLinkedQueue<Thread>();
 
-    final static Logger logger = CULoggerInfo.getLogger();
-    final static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(ParamTokenizer.class);
+    static final Logger logger = CULoggerInfo.getLogger();
+    static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ParamTokenizer.class);
 
     public interface ManagedLock extends java.util.concurrent.locks.Lock {
         public RandomAccessFile getLockedFile();    
@@ -152,6 +152,7 @@ public class ManagedFile {
         FileChannel fc;
         Timer timer;
 
+        @Override
         public synchronized RandomAccessFile getLockedFile() {
             return raf;
         }
@@ -177,7 +178,7 @@ public class ManagedFile {
                 // to wait...
 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("Waiting..." + individualWaitTime);
+                    logger.log(Level.FINE, "Waiting...{0}", individualWaitTime);
                 }
                 if (System.currentTimeMillis() > endTime) {
                     throw new TimeoutException(localStrings.getLocalString("FileLockTimeOut",

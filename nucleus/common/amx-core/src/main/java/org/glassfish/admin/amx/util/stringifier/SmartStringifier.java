@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.util.stringifier;
 
 import java.util.Collection;
@@ -77,7 +79,7 @@ public final class SmartStringifier implements Stringifier {
     public void setRegistry(StringifierRegistry registry) {
         mRegistry = registry;
     }
-    private final static Class[] STRINGIFIER_REGISTRY_LOOKUPS = {
+    private static final Class[] STRINGIFIER_REGISTRY_LOOKUPS = {
         Iterator.class,
         Collection.class,
         HashMap.class
@@ -110,7 +112,7 @@ public final class SmartStringifier implements Stringifier {
         }
 
         if (stringifier == null) {
-            // see if there is a Stringifier for any superclass;
+            // see if there is a Stringifier for any superclass
             Class tempClass = targetClass;
             while (tempClass != Object.class) {
                 stringifier = mRegistry.lookup(tempClass);

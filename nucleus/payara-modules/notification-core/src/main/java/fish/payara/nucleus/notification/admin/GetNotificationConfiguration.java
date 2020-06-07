@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,11 @@
  */
 package fish.payara.nucleus.notification.admin;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
@@ -69,6 +68,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Admin command to list Notification Configuration
@@ -118,12 +118,9 @@ public class GetNotificationConfiguration implements AdminCommand {
             mainActionReport.setMessage("No notifier defined");
         }
         else {
-            List<Class<NotifierConfiguration>> notifierConfigurationClassList = Lists.transform(configuration.getNotifierConfigurationList(), new Function<NotifierConfiguration, Class<NotifierConfiguration>>() {
-                @Override
-                public Class<NotifierConfiguration> apply(NotifierConfiguration input) {
-                    return resolveNotifierConfigurationClass(input);
-                }
-            });
+            List<Class<NotifierConfiguration>> notifierConfigurationClassList = configuration.getNotifierConfigurationList().stream().map((input) -> {
+                return resolveNotifierConfigurationClass(input);
+            }).collect(Collectors.toList());
 
             Properties extraProps = new Properties();
             for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {

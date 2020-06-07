@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portion Copyright [2018] Payara Foundation and/or affiliates
+// Portion Copyright [2018-2019] Payara Foundation and/or affiliates
 
 /*
  * IOJavaClassWriter.java
@@ -47,22 +47,25 @@
 
 package com.sun.jdo.spi.persistence.utility.generator.io;
 
-import java.util.*;
-import java.lang.reflect.Modifier;
-
-import org.glassfish.common.util.StringHelper;
 import com.sun.jdo.spi.persistence.utility.generator.JavaClassWriter;
+import org.glassfish.common.util.StringHelper;
+
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * This implementation of the {@link JavaClassWriter} interface is based on 
- * simple {@link java.lang.StringBuffer} "println" type statements.
+ * This implementation of the {@link JavaClassWriter} interface is based on
+ * simple {@link java.lang.StringBuilder} "println" type statements.
  * <p>
- * The order of the generated code in this implementation depends on the 
+ * The order of the generated code in this implementation depends on the
  * initialization.  The default order is to accept fields and methods in any
- * order and generate all fields together and all methods together (by member 
- * category).  Specifying the ordered parameter in the constructor will lead 
- * to a slightly different order: generation of fields and methods 
- * interspersed among each other in exactly the order they were added (no 
+ * order and generate all fields together and all methods together (by member
+ * category).  Specifying the ordered parameter in the constructor will lead
+ * to a slightly different order: generation of fields and methods
+ * interspersed among each other in exactly the order they were added (no
  * member categories).
  *
  * @author raccah
@@ -83,22 +86,22 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	private List _interfaces = new ArrayList();
 	private Map _members = new HashMap();
 
-	/** Creates a new instance of IOJavaClassWriter which maintains the 
+	/** Creates a new instance of IOJavaClassWriter which maintains the
 	 * order of member input but groups them by category.
 	 * @see #IOJavaClassWriter(boolean)
-	 */	
+	 */
 	public IOJavaClassWriter ()
 	{
 		this(true);
 	}
 
-	/** Creates a new instance of IOJavaClassWriter in which the order of the 
+	/** Creates a new instance of IOJavaClassWriter in which the order of the
 	 * generated code depends on the specified flag.
-	 * @param maintainCategories If <code>true</code>, the order of members is 
-	 * preserved within category groups.  If <code>false</code>, the 
-	 * generation of fields and methods will be interspersed among each other 
+	 * @param maintainCategories If <code>true</code>, the order of members is
+	 * preserved within category groups.  If <code>false</code>, the
+	 * generation of fields and methods will be interspersed among each other
 	 * in exactly the order they were added with no member categories.
-	 */	
+	 */
 	public IOJavaClassWriter (boolean maintainCategories)
 	{
 		_maintainCategories = maintainCategories;
@@ -113,8 +116,8 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * by the implementation.  Note that not all implementations will choose
 	 * to make use of this comment.
 	 * @see java.lang.reflect.Modifier
-	 */	
-	public void setClassDeclaration (final int modifiers, 
+	 */
+	public void setClassDeclaration (final int modifiers,
 		final String className, final String[] comments)
 	{
 		final FormattedWriter writerHelper =  new FormattedWriter();
@@ -128,10 +131,10 @@ public final class IOJavaClassWriter implements JavaClassWriter
 		_classDeclarationBlock = writerHelper.toString();
 	}
 
-	/** Sets the superclass of this class.  Note that the name format must 
+	/** Sets the superclass of this class.  Note that the name format must
 	 * be package style (that is - it can contain . but not / or $).
 	 * @param name The name of the superclass.
-	 */	
+	 */
 	public void setSuperclass (final String name)
 	{
 		_superclass = name;
@@ -139,14 +142,14 @@ public final class IOJavaClassWriter implements JavaClassWriter
 
 	/** Adds an interface to the list of those implemented by this class.
 	 * @param name The name of the interface.
-	 */	
+	 */
 	public void addInterface (final String name)
 	{
 		if (!StringHelper.isEmpty(name))
 			_interfaces.add(name);
 	}
 
-	/** Adds a field to the list of those declared by this class.  Note 
+	/** Adds a field to the list of those declared by this class.  Note
 	 * that the type format must be package style (that is - it can contain
 	 * . but not / or $).
 	 * @param name The name of the field.
@@ -159,12 +162,12 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * separators can be added by the implementation.  Note that not all
 	 * implementations will choose to make use of this comment.
 	 * @see java.lang.reflect.Modifier
-	 */ 
+	 */
 	public void addField (final String name, final int modifiers, String type,
 		final String initialValue, final String[] comments)
 	{
 		final FormattedWriter writerHelper = new FormattedWriter();
-		final String fieldString = 
+		final String fieldString =
 			Modifier.toString(modifiers) + ' ' + type + ' ' + name;
 
 		writerHelper.writeComments(comments);
@@ -183,7 +186,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * The comments are passed as an array so the line separators can be added
 	 * by the implementation.  Note that not all implementations will choose
 	 * to make use of this comment.
-	 */	
+	 */
 	public void addInitializer (boolean isStatic, String[] body,
 		String[] comments)
 	{
@@ -206,7 +209,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 		getMemberList(INITIALIZER).add(writerHelper.toString());
 	}
 
-	/** Adds a constructor to this class.  Note that the type format in the 
+	/** Adds a constructor to this class.  Note that the type format in the
 	 * parameter type strings must be package style (that is - it can contain
 	 * . but not / or $).
 	 * @param name The name of the constructor - should be the same as the
@@ -223,17 +226,17 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * by the implementation.  Note that not all implementations will choose
 	 * to make use of this comment.
 	 * @see java.lang.reflect.Modifier
-	 */	
+	 */
 	public void addConstructor (final String name, final int modifiers,
 		final String[] parameterNames, final String[] parameterTypes,
 		final String[] exceptions, final String[] body, final String[] comments)
 	{
-		addMethod(name, modifiers, null, parameterNames, parameterTypes, 
+		addMethod(name, modifiers, null, parameterNames, parameterTypes,
 			exceptions, body, comments, getMemberList(CONSTRUCTOR));
 	}
 
-	/** Adds a method to this class.  Note that the type format in the 
-	 * return type and parameter type strings must be package style 
+	/** Adds a method to this class.  Note that the type format in the
+	 * return type and parameter type strings must be package style
 	 * (that is - it can contain . but not / or $).
 	 * @param name The name of the method.
 	 * @param modifiers The modifier flags for this method.
@@ -249,19 +252,19 @@ public final class IOJavaClassWriter implements JavaClassWriter
 	 * by the implementation.  Note that not all implementations will choose
 	 * to make use of this comment.
 	 * @see java.lang.reflect.Modifier
-	 */	
+	 */
 	public void addMethod (final String name, final int modifiers,
 		final String returnType, final String[] parameterNames,
 		final String[] parameterTypes, final String[] exceptions,
 		final String[] body, final String[] comments)
 	{
-		addMethod(name, modifiers, returnType, parameterNames, parameterTypes, 
+		addMethod(name, modifiers, returnType, parameterNames, parameterTypes,
 			exceptions, body, comments, getMemberList(METHOD));
 	}
 
 	/** Adds an inner class to this class.
 	 * @param classWriter The definition of the inner class.
-	 */	
+	 */
 	public void addClass (final JavaClassWriter classWriter)
 	{
 		if (classWriter != null)
@@ -270,7 +273,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 
 	/** Returns a string representation of this object.
 	 * @return The string representation of the generated class.
-	 */	
+	 */
 	public String toString ()
 	{
 		final FormattedWriter writerHelper =  new FormattedWriter();
@@ -288,7 +291,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 		final String[] parameterTypes, final String[] exceptions,
 		final String[] body, final String[] comments, List methodList)
 	{
-		final String signature = createMethodSignature(name, modifiers, 
+		final String signature = createMethodSignature(name, modifiers,
 			returnType, parameterNames, parameterTypes, exceptions);
 		final FormattedWriter writerHelper =  new FormattedWriter();
 		final int n = (body != null ? body.length : 0);
@@ -321,7 +324,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 		if (modifiers != 0)
 			writerHelper.write(Modifier.toString(modifiers) + ' ');
 
-		writerHelper.write(((returnType != null) ? 
+		writerHelper.write(((returnType != null) ?
 			returnType + " " : "") + name);			// NOI18N
 
 		// parameters
@@ -329,7 +332,7 @@ public final class IOJavaClassWriter implements JavaClassWriter
 
 		for (i = 0; i < count; i++)
 		{
-			writeListElement(i, count, parameterTypes[i] + ' ' + 
+			writeListElement(i, count, parameterTypes[i] + ' ' +
 				parameterNames[i], writerHelper);
 		}
 		writerHelper.write(")");						// NOI18N
@@ -348,13 +351,13 @@ public final class IOJavaClassWriter implements JavaClassWriter
 		return writerHelper.toString();
 	}
 
-	static private void writeListElement (int i, int count, String string, 
+	static private void writeListElement (int i, int count, String string,
 		FormattedWriter writerHelper)
 	{
 		int indent = ((i == 0) ? 0 : 1);
 
 		if (i == (count - 1))
-			writerHelper.write(indent, string);	
+			writerHelper.write(indent, string);
 		else
 			writerHelper.writeln(indent, string + COMMA_SEPARATOR);
 	}

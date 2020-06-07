@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.servermgmt.logging;
 
@@ -139,6 +139,7 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
             logLevels.put("payara-notification-log-rotation-timelimit-in-minutes", logService.getPayaraNotificationLogRotationTimelimitInMinutes());
             logLevels.put("alarms", logService.getAlarms());
             logLevels.put("retain-error-statistics-for-hours", logService.getRetainErrorStatisticsForHours());
+            logLevels.put("log-standard-streams", logService.getLogStandardStreams());
             final Map<String, String> m = new HashMap<String, String>(logLevels);
 
             ConfigSupport.apply(new SingleConfigCode<Config>() {
@@ -147,10 +148,8 @@ public class UpgradeLogging implements ConfigurationUpgrade, PostConstruct {
 
                     try {
                         //update logging.properties
-                        logConfig.updateLoggingProperties(m);
-
+                        logConfig.setLoggingProperties(m);
                         c.setLogService(null);
-
                     }
                     catch (IOException e) {
                         getLogger().log(Level.SEVERE, FAIL_UPDATE_LOG_PROPS, e);

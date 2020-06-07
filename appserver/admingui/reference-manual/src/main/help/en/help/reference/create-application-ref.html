@@ -1,0 +1,284 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-application-ref</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-application-ref</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-admin-object.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-audit-module.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-application-ref-1"></a><a id="GSRFM00013"></a><a id="create-application-ref"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_application_ref">create-application-ref</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>creates a reference to an application</p>
+</div>
+<div id="sthref123" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-application-ref [--help]
+[--target target]
+[--virtualservers virtual_servers] [--enabled=true]
+[--lbenabled=true] reference_name</code></pre>
+</div>
+</div>
+<div id="sthref124" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-application-ref</code> subcommand creates a reference from a
+cluster or an unclustered server instance to a previously deployed
+application element (for example, a Java EE application, a Web module,
+or an enterprise bean module). This effectively results in the
+application element being deployed and made available on the targeted
+instance or cluster.</p>
+</div>
+<div class="paragraph">
+<p>The target instance or instances making up the cluster need not be
+running or available for this subcommand to succeed. If one or more
+instances are not available, they will receive the new application
+element the next time they start.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref125" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target for which you are creating the application
+reference. Valid values are<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>server</code>- Specifies the default server instance as the target for
+creating the application reference. <code>server</code> is the name of the
+default server instance and is the default value for this option.</p>
+</li>
+<li>
+<p>cluster_name- Specifies a particular cluster as the target for
+creating the application reference.</p>
+</li>
+<li>
+<p>instance_name- Specifies a particular stand-alone server instance as
+the target for creating the application reference.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--virtualservers</code></dt>
+<dd>
+<p>Specifies a comma-separated list of virtual server IDs on which to
+deploy. This option applies only to Web modules (either standalone or
+in a Java EE application). If this option is not specified, the
+application is deployed to all virtual servers except the
+administrative server, <code>__asadmin</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--enabled</code></dt>
+<dd>
+<p>Indicates whether the application should be enabled (that is, loaded).
+This value will take effect only if the application is enabled at the
+global level. The default is <code>true</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--lbenabled</code></dt>
+<dd>
+<p>Controls whether the deployed application is available for load
+balancing. The default is true.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref126" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">reference_name</dt>
+<dd>
+<p>The name of the application or module, which can be a Java EE
+application, Web module, EJB module, connector module, application
+client module, or lifecycle module.<br>
+The name can include an optional version identifier, which follows the
+name and is separated from the name by a colon (<code>:</code>). The version
+identifier must begin with a letter or number. It can contain
+alphanumeric characters plus underscore (<code>_</code>), dash (<code>-</code>), and period
+(<code>.</code>) characters. If the <code>--enabled</code> option is set to false, you can
+create references to multiple disabled versions by using an asterisk
+(<code>*</code>) as a wildcard character. For more information about module and
+application versions, see "<a href="../application-deployment-guide/overview.html#GSDPG00324">Module and Application
+Versions</a>" in GlassFish Server Open Source Edition Application
+Deployment Guide.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref127" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM458"></a><a id="sthref128"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating an Application Reference</p>
+</div>
+<div class="paragraph">
+<p>The following example creates a reference to the Web module <code>MyWebApp</code>
+on the unclustered server instance <code>NewServer</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-application-ref --target NewServer MyWebApp
+Command create-application-ref executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref129" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref130" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="delete-application-ref.html#delete-application-ref-1"><code>delete-application-ref</code>(1)</a>,
+<a href="list-application-refs.html#list-application-refs-1"><code>list-application-refs</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="../application-deployment-guide/toc.html#GSDPG">GlassFish Server Open Source Edition Application Deployment
+Guide</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-admin-object.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-audit-module.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

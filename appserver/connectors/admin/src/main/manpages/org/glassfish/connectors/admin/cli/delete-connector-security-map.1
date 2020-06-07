@@ -1,0 +1,61 @@
+delete-connector-security-map(1)  asadmin Utility Subcommands  delete-connector-security-map(1)
+
+NAME
+       delete-connector-security-map - deletes a security map for the
+       specified connector connection pool
+
+SYNOPSIS
+           delete-connector-security-map [--help]
+           --poolname connector_connection_pool_name [--target target] mapname
+
+DESCRIPTION
+       The delete-connector-security-map subcommand deletes a security map for
+       the specified connector connection pool.
+
+       For this subcommand to succeed, you must have first created a connector
+       connection pool using the create-connector-connection-pool subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --poolname
+           Specifies the name of the connector connection pool to which the
+           security map that is to be deleted belongs.
+
+       --target
+           Do not specify this option. This option is retained for
+           compatibility with earlier releases. If you specify this option, a
+           syntax error does not occur. Instead, the subcommand runs
+           successfully and displays a warning message that the option is
+           ignored.
+
+OPERANDS
+       mapname
+           Name of the security map to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a Connector Security Map
+           This example deletes securityMap1 for the existing connection pool
+           named connector-pool1.
+
+               asadmin> delete-connector-security-map
+               --poolname connector-pool1 securityMap1
+               Command delete-connector-security-map executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-security-map(1), list-connector-security-maps(1),
+       update-connector-security-map(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        delete-connector-security-map(1)

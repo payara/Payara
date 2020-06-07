@@ -1,0 +1,79 @@
+set-batch-runtime-configuration(1)  asadmin Utility Subcommands  set-batch-runtime-configuration(1)
+
+NAME
+       set-batch-runtime-configuration - configures the batch runtime
+
+SYNOPSIS
+           set-batch-runtime-configuration [--help]
+           [--target target]
+           [--datasourcelookupname datasource-lookup-name]
+           [--executorservicelookupname executor-service-lookup-name]
+
+DESCRIPTION
+       The set-batch-runtime-configuration subcommand configures the batch
+       runtime. The runtime uses a data source and a managed executor service
+       to execute batch jobs. Batch runtime configuration data is stored in
+       the config element in domain.xml.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which to configure the batch runtime.
+           Valid values are as follows:
+
+           server
+               Configures the batch runtime for the default server instance
+               server and is the default value.
+
+           cluster-name
+               Configures the batch runtime for every server instance in the
+               cluster.
+
+           instance-name
+               Configures the batch runtime for a particular server instance.
+
+       --datasourcelookupname, -d
+           The JNDI lookup name of the data source to be used to store job
+           information. The default data source is jdbc/__TimerPool.
+
+           Do not change the data source after the first batch job has been
+           submitted to the batch runtime for execution. If the data source
+           must be changed, stop and restart the domain and then make the
+           change before any jobs are started or restarted. However, once the
+           data source has been changed, information stored in the previous
+           data source becomes inaccessible.
+
+       --executorservicelookupname , -x
+           The JNDI lookup name of the managed executor service to be used to
+           provide threads to jobs. The default managed executor service is
+           concurrent/__defaultManagedExecutorService.
+
+           The managed executor service can be changed after a batch job has
+           been submitted to the batch runtime without impacting execution of
+           the job.
+
+EXAMPLES
+       Example 1, Configuring the Batch Runtime
+           The following example configures the batch runtime for the default
+           server instance to use an existing managed executor service named
+           concurrent/myExecutor.
+
+               asadmin> set-batch-runtime-configuration --executorservicelookupname concurrent/myExecutor
+               Command set-batch-runtime-configuration executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-batch-runtime-configuration(1), list-batch-jobs(1),
+       list-batch-job-executions(1), list-batch-job-steps(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        set-batch-runtime-configuration(1)

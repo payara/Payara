@@ -1,0 +1,103 @@
+create-custom-resource(1)  asadmin Utility Subcommands  create-custom-resource(1)
+
+NAME
+       create-custom-resource - creates a custom resource
+
+SYNOPSIS
+           create-custom-resource [--help] --restype type --factoryclass classname
+           [--enabled={true|false}] [--description text]
+           [--property (name=value)[:name=value]*] jndi-name
+           [--target target]
+
+DESCRIPTION
+       The create-custom-resource subcommand creates a custom resource. A
+       custom resource specifies a custom server-wide resource object factory
+       that implements the javax.naming.spi.ObjectFactory interface.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           The target on which the custom resource you are creating will be
+           available. Valid values are:
+
+           server
+               The resource will be available on the default server instance
+               and all domains hosted on the instance. This is the default
+               value.
+
+           domain
+               The resource will be available on the specified domain only.
+
+           cluster_name
+               The resource will be available on every server instance in the
+               cluster.
+
+           instance_name
+               The resource will be available on the specified server instance
+               only.
+
+               Note
+               +----------------------------------------+
+               |The resource is always created for the  |
+               |domain as a whole, but the resource-ref |
+               |for the resource is only created for    |
+               |the specified --target. This means that |
+               |although the resource is defined at the |
+               |domain level, it is only available at   |
+               |the specified target level. Use the     |
+               |create-resource-ref subcommand to refer |
+               |to the resource in multiple targets if  |
+               |needed.                                 |
+               +----------------------------------------+
+
+       --restype
+           The type of custom resource to be created. Specify a fully
+           qualified type definition, for example
+           javax.naming.spi.ObjectFactory. The resource type definition
+           follows the format, xxx.xxx.
+
+       --factoryclass
+           Factory class name for the custom resource. This class implements
+           the javax.naming.spi.ObjectFactory interface.
+
+       --enabled
+           Determines whether the custom resource is enable at runtime.
+           Default is true.
+
+       --description
+           Text providing details about the custom resource. This description
+           is a string value and can include a maximum of 250 characters.
+
+       --property
+           Optional attribute name/value pairs for configuring the resource.
+
+OPERANDS
+       jndi-name
+           The JNDI name of this resource.
+
+EXAMPLES
+       Example 1, Creating a Custom Resource
+           This example creates a custom resource.
+
+               asadmin> create-custom-resource --restype topic
+               --factoryclass com.imq.topic mycustomresource
+               Command create-custom-resource executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-custom-resource(1), list-custom-resources(1),
+       create-resource-ref(1)
+
+       asadmin(1M)
+
+Java EE 8                         09 Aug 2017        create-custom-resource(1)

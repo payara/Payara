@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -41,9 +41,12 @@
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import fish.payara.microprofile.metrics.MetricsService;
-import fish.payara.microprofile.metrics.cdi.MetricsResolver;
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
+
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
+import java.util.function.BiFunction;
+
 import javax.enterprise.inject.Intercepted;
 import javax.enterprise.inject.spi.Bean;
 import javax.inject.Inject;
@@ -51,22 +54,34 @@ import javax.interceptor.AroundConstruct;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
 import javax.interceptor.InvocationContext;
-import org.eclipse.microprofile.metrics.MetricRegistry;
+
+import org.eclipse.microprofile.metrics.Metric;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.glassfish.internal.api.Globals;
 
 /* package-private */ abstract class AbstractInterceptor {
 
     @Inject
-    protected MetricRegistry registry;
-
-    @Inject
-    protected MetricsResolver resolver;
-
-    @Inject
     @Intercepted
     protected Bean<?> bean;
-    
+
     private MetricsService metricsService;
+
+    protected static <E extends Member & AnnotatedElement, M extends Metric> M apply(E element,
+            Class<?> bean, AnnotationReader<?> reader, Class<M> metricType, BiFunction<MetricID, Class<M>, M> loader) {
+        MetricID metricID = reader.metricID(bean, element);
+        M metric = loader.apply(metricID, metricType);
+        if (metric == null) {
+            throw new IllegalStateException(
+                    "No " + metricType.getSimpleName() + " with ID [" + metricID + "] found in application registry");
+        }
+        return metric;
+    }
+
+    public <T extends Metric> T getMetric(MetricID metricID, Class<T> metricType) {
+        initService();
+        return metricsService.getApplicationMetric(metricID, metricType);
+    }
 
     @AroundConstruct
     private Object constructorInvocation(InvocationContext context) throws Exception {
@@ -84,13 +99,20 @@ import org.glassfish.internal.api.Globals;
     }
 
     private <E extends Member & AnnotatedElement> Object preInterceptor(InvocationContext context, E element) throws Exception {
-        if(metricsService == null){
-            metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        }
-        if (metricsService.isMetricsEnabled()) {
+        initService();
+        if (metricsService.isEnabled()) {
+            //FIXME there is an issue here: the element does not correctly reflect the updated annotations
+            // to be fully correct this would need to be wrapped and based on
+            // Set<Annotation> bindings = (Set<Annotation>) invocationContext.getContextData().get("org.jboss.weld.interceptor.bindings");
+            // to provide AnnotatedElement implementation
             return applyInterceptor(context, element);
-        } else {
-            return context.proceed();
+        }
+        return context.proceed();
+    }
+
+    private void initService() {
+        if (metricsService == null) {
+            metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
         }
     }
 

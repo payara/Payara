@@ -1,0 +1,154 @@
+create-http-listener(1)   asadmin Utility Subcommands  create-http-listener(1)
+
+NAME
+       create-http-listener - adds a new HTTP network listener socket
+
+SYNOPSIS
+           create-http-listener [--help] --listeneraddress address
+           --listenerport listener-port
+           {--default-virtual-server | --defaultvs} virtual-server
+           [--servername server-name]
+           [--acceptorthreads acceptor-threads]
+           [--xpowered={true|false}]
+           [--redirectport redirect-port]
+           [--securityenabled={false|true}]
+           [--enabled={true|false}]
+           [--target target]
+           listener-id
+
+DESCRIPTION
+       The create-http-listener subcommand creates an HTTP network listener.
+       This subcommand is supported in remote mode only.
+
+           Note
+           +----------------------------------------+
+           |           If you edit the special HTTP |
+           |           network listener named       |
+           |           admin-listener, you must     |
+           |           restart the server for the   |
+           |           changes to take effect. The  |
+           |           Administration Console does  |
+           |           not tell you that a restart  |
+           |           is required in this case.    |
+           +----------------------------------------+
+
+           Note
+           +----------------------------------------+
+           |           This subcommand is provided  |
+           |           for backward compatibility   |
+           |           and as a shortcut for        |
+           |           creating network listeners   |
+           |           that use the HTTP protocol.  |
+           |           Behind the scenes, this      |
+           |           subcommand creates a network |
+           |           listener and its associated  |
+           |           protocol, transport, and     |
+           |           HTTP configuration.          |
+           +----------------------------------------+
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --listeneraddress
+           The IP address or the hostname (resolvable by DNS).
+
+       --listenerport
+           The port number to create the listen socket on. Legal values are
+           1-65535. On UNIX, creating sockets that listen on ports 1-1024
+           requires superuser privileges. Configuring an SSL listen socket to
+           listen on port 443 is recommended.
+
+       --default-virtual-server, --defaultvs
+           The ID attribute of the default virtual server for this listener.
+           The --defaultvs option is deprecated.
+
+       --servername
+           Tells the server what to put in the host name section of any URLs
+           it sends to the client. This affects URLs the server automatically
+           generates; it doesn't affect the URLs for directories and files
+           stored in the server. This name should be the alias name if your
+           server uses an alias. If a colon and port number are appended, that
+           port will be used in URLs that the server sends to the client.
+
+       --acceptorthreads
+           The number of acceptor threads for the listener socket. The
+           recommended value is the number of processors in the machine. The
+           default value is 1.
+
+       --xpowered
+           If set to true, adds the X-Powered-By: Servlet/3.0 and
+           X-Powered-By: JSP/2.0 headers to the appropriate responses. The
+           Servlet 3.0 specification defines the X-Powered-By: Servlet/3.0
+           header, which containers may add to servlet-generated responses.
+           Similarly, the JSP 2.0 specification defines the X-Powered-By:
+           JSP/2.0 header, which containers may add to responses that use JSP
+           technology. The goal of these headers is to aid in gathering
+           statistical data about the use of Servlet and JSP technology. The
+           default value is true.
+
+       --redirectport
+           Do not specify this option. This option is retained for
+           compatibility with earlier releases. If you specify this option, a
+           syntax error does not occur. Instead, the subcommand runs
+           successfully and displays a warning message that the option is
+           ignored.
+
+       --securityenabled
+           If set to true, the HTTP listener runs SSL. You can turn SSL2 or
+           SSL3 ON or OFF and set ciphers using an SSL element. The security
+           setting globally enables or disables SSL by making certificates
+           available to the server instance. The default value is false.
+
+       --enabled
+           If set to true, the listener is enabled at runtime. The default
+           value is true.
+
+       --target
+           Creates the HTTP listener only on the specified target. Valid
+           values are as follows:
+
+           server
+               Creates the HTTP listener on the default server instance. This
+               is the default value.
+
+           configuration-name
+               Creates the HTTP listener in the specified configuration.
+
+           cluster-name
+               Creates the HTTP listener on all server instances in the
+               specified cluster.
+
+           standalone-instance-name
+               Creates the HTTP listener on the specified standalone server
+               instance.
+
+OPERANDS
+       listener-id
+           The listener ID of the HTTP network listener.
+
+EXAMPLES
+       Example 1, Creating an HTTP Network Listener
+           The following command creates an HTTP network listener named
+           sampleListener that uses a nondefault number of acceptor threads
+           and is not enabled at runtime:
+
+               asadmin> create-http-listener --listeneraddress 0.0.0.0 --listenerport 7272
+               --defaultvs server --servername host1.sun.com --acceptorthreads 100
+               --securityenabled=false --enabled=false sampleListener
+               Command create-http-listener executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       delete-http-listener(1), list-http-listeners(1),
+       create-virtual-server(1), create-ssl(1), create-network-listener(1)
+
+       asadmin(1M)
+
+Java EE 8                         08 Oct 2010          create-http-listener(1)

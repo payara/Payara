@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -54,22 +55,14 @@ public final class CompareUtil
     {
         boolean equal = o1 == o2;
 
-        if (!equal)
-        {
-            if (o1 == null)
-            {
+        if (!equal) {
+            if (o1 == null) {
                 // o1 is null, but o2 is not
                 equal = false;
-            }
-            else
-            {
+            } else {
                 equal = o1.equals(o2);
-                if (!equal)
-                {
-                    if (ClassUtil.objectIsArray(o1))
-                    {
-                        equal = ArrayUtil.arraysEqual(o1, o2);
-                    }
+                if (!equal && ClassUtil.objectIsArray(o1)) {
+                    equal = ArrayUtil.arraysEqual(o1, o2);
                 }
             }
         }
@@ -78,4 +71,3 @@ public final class CompareUtil
     }
 
 }
-

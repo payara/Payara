@@ -1,0 +1,65 @@
+delete-managed-thread-factory(1)   asadmin Utility Subcommands   delete-managed-thread-factory(1)
+
+NAME
+       delete-managed-thread-factory - removes a managed thread factory
+       resource with the specified JNDI name
+
+SYNOPSIS
+           delete-managed-thread-factory [--help]
+           [--target target]
+           managed_thread_factory_name
+
+DESCRIPTION
+       The delete-managed-thread-factory subcommand removes a managed thread
+       factory resource with the specified JNDI name.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target from which you are deleting the resource.
+           Valid targets are:
+
+           server
+               Deletes the resource from the default server instance. This is
+               the default value.
+
+           domain
+               Deletes the resource from the domain.
+
+           cluster_name
+               Deletes the resource from every server instance in the
+               specified cluster.
+
+           instance_name
+               Deletes the resource from the specified server instance.
+
+OPERANDS
+       managed_thread_factory_name
+           The JNDI name of the resource to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a Managed Thread Factory Resource
+           This example deletes the managed thread factory resource named
+           concurrent/myThreadFactory.
+
+               asadmin> delete-managed-thread-factory concurrent/myThreadFactory
+               Managed thread factory concurrent/myThreadFactory deleted successfully.
+               Command delete-managed-thread-factory executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-managed-thread-factory(1), list-managed-thread-factories(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        delete-managed-thread-factory(1)

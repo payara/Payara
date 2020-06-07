@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.registry;
 
-import org.glassfish.j2ee.statistics.*;
+import javax.management.j2ee.statistics.*;
 import com.sun.enterprise.admin.monitor.stats.*;
 
 /**
@@ -70,7 +71,7 @@ public interface MonitoringRegistry {
    
     /**
      * Registers the Stats implementation for EntityBeanStats
-     * @param entityBeanStats implementation of org.glassfish.j2ee.statistics.EntityBeanStats
+     * @param entityBeanStats implementation of javax.management.j2ee.statistics.EntityBeanStats
      * @param entityBeanName
      * @param moduleName
      * @param applicationName passing a null here would 
@@ -101,7 +102,7 @@ public interface MonitoringRegistry {
     /**
      * Registers the Stats implementation for StatelessSessionBeanStats
      * @param statelessSessionBeanStats implementation of 
-     * org.glassfish.j2ee.statistics.StatelessSessionBeanStats
+     * javax.management.j2ee.statistics.StatelessSessionBeanStats
      * @param statelessSessionBeanName
      * @param moduleName
      * @param applicationName  passing a null here would 
@@ -134,7 +135,7 @@ public interface MonitoringRegistry {
     /**
      * Registers the Stats implementation for StatefulSessionBeanStats
      * @param statefulSessionBeanStats  implementation of from 
-     * org.glassfish.j2ee.statistics.StatefulSessionBeanStats
+     * javax.management.j2ee.statistics.StatefulSessionBeanStats
      * @param statefulSessionBeanName
      * @param moduleName
      * @param applicationName  passing a null here would 
@@ -166,7 +167,7 @@ public interface MonitoringRegistry {
     /**
      * Registers the Stats implementation for MessageDrivenBeanStats
      * @param messageDrivenBeanStats  implementation of 
-     * org.glassfish.j2ee.statistics.MessageDrivenBeanStats
+     * javax.management.j2ee.statistics.MessageDrivenBeanStats
      * @param messageDrivenBeanName
      * @param moduleName
      * @param applicationName  passing a null here would 

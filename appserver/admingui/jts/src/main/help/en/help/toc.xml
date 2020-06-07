@@ -1,0 +1,37 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<toc version="2.0">
+  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+    <tocitem target="task-group-transactions" text="Configuring the Transaction Service" expand="false">
+      <tocitem target="task-configtransservice" text="To Configure the Transaction Service" expand="false"></tocitem>
+      <tocitem target="task-configtransrecovery" text="To Configure How the GlassFish Server Recovers Transactions" expand="false"></tocitem>
+      <tocitem target="task-settranstimeout" text="To Set a Transaction Timeout Value" expand="false"></tocitem>
+      <tocitem target="task-settranslog" text="To Set the Location of the Transaction Logs" expand="false"></tocitem>
+      <tocitem target="task-setkeyptinterval" text="To Set the Keypoint Interval" expand="false"></tocitem>
+    </tocitem>
+  </tocitem>
+  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+    <tocitem target="ref-group-configuration" text="Configurations" expand="false">
+      <tocitem target="ref-group-transactions" text="Transaction Service" expand="false">
+        <tocitem target="ref-transactionservice" text="Transaction Service" expand="false"></tocitem>
+        <tocitem target="ref-transactionsvcproperties" text="Properties Specific to the Transaction Service" expand="false"></tocitem>
+      </tocitem>
+    </tocitem>
+  </tocitem>
+</toc>

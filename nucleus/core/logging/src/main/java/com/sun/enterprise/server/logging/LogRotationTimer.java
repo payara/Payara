@@ -37,17 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
 import java.util.Timer;
+import java.util.concurrent.ScheduledFuture;
 
 public class LogRotationTimer {
-    private Timer rotationTimer;
 
     private LogRotationTimerTask rotationTimerTask;
+    private ScheduledFuture<?> logRotationFuture;
 
     private static LogRotationTimer instance = new LogRotationTimer();
+    private Timer rotationTimer;
 
     private LogRotationTimer() {
         rotationTimer = new Timer("log-rotation-timer");
@@ -59,12 +62,11 @@ public class LogRotationTimer {
 
     public void startTimer(LogRotationTimerTask timerTask) {
         rotationTimerTask = timerTask;
-        rotationTimer.schedule(rotationTimerTask,
-                timerTask.getRotationTimerValue());
+        rotationTimer.schedule(rotationTimerTask, timerTask.getRotationTimerValue());
     }
 
     public void stopTimer() {
-        rotationTimer.cancel();
+         rotationTimer.cancel();
     }
 
     public void restartTimer() {
@@ -73,12 +75,11 @@ public class LogRotationTimer {
         if (rotationTimerTask != null) {
             rotationTimerTask.cancel();
             rotationTimerTask = new LogRotationTimerTask(
-                    // This is wierd, We need to have a fresh TimerTask object
-                    // to reschedule the work.
-                    rotationTimerTask.task,
-                    rotationTimerTask.getRotationTimerValueInMinutes());
-            rotationTimer.schedule(rotationTimerTask,
-                    rotationTimerTask.getRotationTimerValue());
+                // This is wierd, We need to have a fresh TimerTask object
+                // to reschedule the work.
+                rotationTimerTask.task,
+                rotationTimerTask.getRotationTimerValueInMinutes());
+            rotationTimer.schedule(rotationTimerTask, rotationTimerTask.getRotationTimerValue());
         }
     }
 
@@ -88,12 +89,12 @@ public class LogRotationTimer {
         if (rotationTimerTask != null) {
             rotationTimerTask.cancel();
             rotationTimerTask = new LogRotationTimerTask(
-                    // This is wierd, We need to have a fresh TimerTask object
-                    // to reschedule the work.
-                    rotationTimerTask.task,
-                    60 * 24);
-            rotationTimer.schedule(rotationTimerTask,
-                    1000 * 60 * 60 * 24);
+                // This is wierd, We need to have a fresh TimerTask object
+                // to reschedule the work.
+                rotationTimerTask.task,
+                60 * 24
+            );
+            rotationTimer.schedule(rotationTimerTask, 1000 * 60 * 60 * 24);
         }
     }
 

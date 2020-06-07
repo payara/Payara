@@ -50,13 +50,13 @@ import org.eclipse.microprofile.openapi.models.examples.Example;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class ExampleImpl extends ExtensibleImpl implements Example {
+public class ExampleImpl extends ExtensibleImpl<Example> implements Example {
 
-    protected String summary;
-    protected String description;
-    protected Object value;
-    protected String externalValue;
-    protected String ref;
+    private String summary;
+    private String description;
+    private Object value;
+    private String externalValue;
+    private String ref;
 
     @Override
     public String getSummary() {
@@ -66,12 +66,6 @@ public class ExampleImpl extends ExtensibleImpl implements Example {
     @Override
     public void setSummary(String summary) {
         this.summary = summary;
-    }
-
-    @Override
-    public Example summary(String summary) {
-        setSummary(summary);
-        return this;
     }
 
     @Override
@@ -85,12 +79,6 @@ public class ExampleImpl extends ExtensibleImpl implements Example {
     }
 
     @Override
-    public Example description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public Object getValue() {
         return value;
     }
@@ -98,12 +86,6 @@ public class ExampleImpl extends ExtensibleImpl implements Example {
     @Override
     public void setValue(Object value) {
         this.value = value;
-    }
-
-    @Override
-    public Example value(Object value) {
-        setValue(value);
-        return this;
     }
 
     @Override
@@ -117,12 +99,6 @@ public class ExampleImpl extends ExtensibleImpl implements Example {
     }
 
     @Override
-    public Example externalValue(String externalValue) {
-        setExternalValue(externalValue);
-        return this;
-    }
-
-    @Override
     public String getRef() {
         return ref;
     }
@@ -133,12 +109,6 @@ public class ExampleImpl extends ExtensibleImpl implements Example {
             ref = "#/components/examples/" + ref;
         }
         this.ref = ref;
-    }
-
-    @Override
-    public Example ref(String ref) {
-        setRef(ref);
-        return this;
     }
 
     public static void merge(ExampleObject from, Example to, boolean override) {

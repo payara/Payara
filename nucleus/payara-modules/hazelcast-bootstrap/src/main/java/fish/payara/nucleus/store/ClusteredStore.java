@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,22 +38,31 @@
  */
 package fish.payara.nucleus.store;
 
+import com.hazelcast.config.MapConfig;
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.MultiMap;
+import com.hazelcast.map.impl.MapService;
+import com.hazelcast.monitor.LocalMapStats;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import fish.payara.nucleus.hazelcast.encryption.PayaraHazelcastEncryptedValueHolder;
+import fish.payara.nucleus.hazelcast.encryption.HazelcastSymmetricEncryptor;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Very Simple Store interface to Hazelcast
@@ -61,7 +70,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-cluster-store")
 @RunLevel(StartupRunLevel.VAL)
-public class ClusteredStore implements EventListener {
+public class ClusteredStore implements EventListener, MonitoringDataSource {
     private static final Logger logger = Logger.getLogger(ClusteredStore.class.getCanonicalName());
     
     @Inject
@@ -74,7 +83,29 @@ public class ClusteredStore implements EventListener {
     public void postConstruct() {
         events.register(this);
     }
-    
+
+    @Override
+    public void collect(MonitoringDataCollector collector) {
+        if (hzCore.isEnabled()) {
+            HazelcastInstance hz = hzCore.getInstance();
+            for (DistributedObject obj : hz.getDistributedObjects()) {
+                if (MapService.SERVICE_NAME.equals(obj.getServiceName())) {
+                    MapConfig config = hz.getConfig().getMapConfig(obj.getName());
+                    if (config.isStatisticsEnabled()) {
+                        IMap<Object, Object> map = hz.getMap(obj.getName());
+                        if (map != null) {
+                            LocalMapStats stats = map.getLocalMapStats();
+                            collector.in("map").group(map.getName())
+                                .collect("GetCount", stats.getGetOperationCount())
+                                .collect("PutCount", stats.getPutOperationCount())
+                                .collect("EntryCount", stats.getOwnedEntryCount());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public String getInstanceId() {
         return hzCore.getUUID();
     }
@@ -98,6 +129,10 @@ public class ClusteredStore implements EventListener {
     public boolean set(String storeName, Serializable key, Serializable value) {
         boolean result = false;
         if (isEnabled()) {
+            if (value != null && hzCore.isDatagridEncryptionEnabled()) {
+                value = new PayaraHazelcastEncryptedValueHolder(HazelcastSymmetricEncryptor.encode(
+                        HazelcastSymmetricEncryptor.objectToByteArray(value)));
+            }
             hzCore.getInstance().getMap(storeName).set(key, value);
             result = true;
         }
@@ -154,6 +189,12 @@ public class ClusteredStore implements EventListener {
             IMap map = hzCore.getInstance().getMap(storeName);
             if (map != null) {
                 result = (Serializable) map.get(key);
+
+                if (result instanceof PayaraHazelcastEncryptedValueHolder && hzCore.isDatagridEncryptionEnabled()) {
+                    result = (Serializable) HazelcastSymmetricEncryptor.byteArrayToObject(
+                            HazelcastSymmetricEncryptor.decode(
+                                    ((PayaraHazelcastEncryptedValueHolder) result).getEncryptedObjectBytes()));
+                }
             }
         }
         return result;
@@ -182,26 +223,18 @@ public class ClusteredStore implements EventListener {
             if (map != null) {
                 Set<Serializable> keys = map.keySet();
                 for (Serializable key : keys) {
-                    result.put(key, (Serializable) map.get(key));
+                    Serializable value = (Serializable) map.get(key);
+
+                    if (value instanceof PayaraHazelcastEncryptedValueHolder && hzCore.isDatagridEncryptionEnabled()) {
+                        value = (Serializable) HazelcastSymmetricEncryptor.byteArrayToObject(
+                                HazelcastSymmetricEncryptor.decode(
+                                        ((PayaraHazelcastEncryptedValueHolder) value).getEncryptedObjectBytes()));
+                    }
+
+                    result.put(key, value);
                 }
             }
         }
         return result;
-    }
-    
-    /**
-     * Gets the requested MultiMap from Hazelcast. Use this if you want to store a collection in Hazelcast.
-     * @param storeName The MultiMap to get
-     * @return The MultiMap matching the storeName parameter, or null if the MultiMap does not exist
-     */
-    public MultiMap<Serializable, Serializable> getMultiMap(String storeName) {
-        MultiMap<Serializable, Serializable> multiMap = null;
-        if (hzCore.isEnabled()) {
-            multiMap = hzCore.getInstance().getMultiMap(storeName);
-        } 
-        
-        
-        
-        return multiMap;
     }
 }

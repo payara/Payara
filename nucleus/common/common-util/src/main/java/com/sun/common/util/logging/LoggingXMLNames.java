@@ -38,12 +38,11 @@
  * holder.
  */
 
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
 import com.sun.logging.LogDomains;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,6 +78,8 @@ public class LoggingXMLNames {
     public static final String logToConsole = "log-to-console";
 
     public static final String alarms = "alarms";
+    
+    public static final String logStandardStreams = "log-standard-streams";
 
     public static final String retainErrorStatisticsForHours = "retain-error-statistics-for-hours";
     // logger names from DTD
@@ -114,11 +115,12 @@ public class LoggingXMLNames {
     public static final String groupmanagementservice = "group-management-service";
     public static final String managementevent = "management-event";
 
+    private static final String LEVEL = ".level";
 
 //mapping of the names used in domain.xml to the names used in logging.properties
 
     public static final Map<String, String> xmltoPropsMap =
-            new HashMap<String, String>() {{
+            new HashMap<String, String>() {{            
                 put(logRotationLimitInBytes, LoggingPropertyNames.logRotationLimitInBytes);
                 put(payaraNotificationLogRotationLimitInBytes, LoggingPropertyNames.payaraNotificationLogRotationLimitInBytes);
                 put(logRotationTimelimitInMinutes, LoggingPropertyNames.logRotationTimelimitInMinutes);
@@ -127,6 +129,7 @@ public class LoggingXMLNames {
                 put(payaraNotificationFile, LoggingPropertyNames.payaraNotificationFile);
                 put(logFormatter, LoggingPropertyNames.logFormatter);
                 put(payaraNotificationLogFormatter, LoggingPropertyNames.payaraNotificationLogFormatter);
+                put(logStandardStreams, LoggingPropertyNames.logStandardStreams);
                 put(logHandler, LoggingPropertyNames.logHandler);
                 put(useSystemLogging, LoggingPropertyNames.useSystemLogging);
                 put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);
@@ -135,35 +138,35 @@ public class LoggingXMLNames {
                 put(payaraNotificationLogToFile, LoggingPropertyNames.payaraNotificationLogToFile);
                 put(logToConsole, LoggingPropertyNames.logToConsole);
                 put(alarms, LoggingPropertyNames.alarms);
-                put(root, LogDomains.DOMAIN_ROOT + "level");
-                put(server, LogDomains.SERVER_LOGGER + ".level");
-                put(ejbcontainer, LogDomains.EJB_LOGGER + ".level");
-                put(cmpcontainer, LogDomains.CMP_LOGGER + ".level");
-                put(mdbcontainer, LogDomains.MDB_LOGGER + ".level");
-                put(webcontainer, LogDomains.WEB_LOGGER + ".level");
-                put(classloader, LogDomains.LOADER_LOGGER + ".level");
-                put(configuration, LogDomains.CONFIG_LOGGER + ".level");
-                put(naming, LogDomains.NAMING_LOGGER + ".level");
-                put(security, LogDomains.SECURITY_LOGGER + ".level");
-                put(jts, LogDomains.TRANSACTION_LOGGER + ".level");
-                put(jta, LogDomains.JTA_LOGGER + ".level");
-                put(admin, LogDomains.ADMIN_LOGGER + ".level");
-                put(deployment, LogDomains.DPL_LOGGER + ".level");
+                put(root, LogDomains.DOMAIN_ROOT + LEVEL);
+                put(server, LogDomains.SERVER_LOGGER + LEVEL);
+                put(ejbcontainer, LogDomains.EJB_LOGGER + LEVEL);
+                put(cmpcontainer, LogDomains.CMP_LOGGER + LEVEL);
+                put(mdbcontainer, LogDomains.MDB_LOGGER + LEVEL);
+                put(webcontainer, LogDomains.WEB_LOGGER + LEVEL);
+                put(classloader, LogDomains.LOADER_LOGGER + LEVEL);
+                put(configuration, LogDomains.CONFIG_LOGGER + LEVEL);
+                put(naming, LogDomains.NAMING_LOGGER + LEVEL);
+                put(security, LogDomains.SECURITY_LOGGER + LEVEL);
+                put(jts, LogDomains.TRANSACTION_LOGGER + LEVEL);
+                put(jta, LogDomains.JTA_LOGGER + LEVEL);
+                put(admin, LogDomains.ADMIN_LOGGER + LEVEL);
+                put(deployment, LogDomains.DPL_LOGGER + LEVEL);
                 //  put(verifier, LogDomains.
-                put(jaxr, LogDomains.JAXR_LOGGER + ".level");
-                put(jaxrpc, LogDomains.JAXRPC_LOGGER + ".level");
-                put(saaj, LogDomains.SAAJ_LOGGER + ".level");
-                put(corba, LogDomains.CORBA_LOGGER + ".level");
-                put(javamail, LogDomains.JAVAMAIL_LOGGER + ".level");
-                put(jms, LogDomains.JMS_LOGGER + ".level");
+                put(jaxr, LogDomains.JAXR_LOGGER + LEVEL);
+                put(jaxrpc, LogDomains.JAXRPC_LOGGER + LEVEL);
+                put(saaj, LogDomains.SAAJ_LOGGER + LEVEL);
+                put(corba, LogDomains.CORBA_LOGGER + LEVEL);
+                put(javamail, LogDomains.JAVAMAIL_LOGGER + LEVEL);
+                put(jms, LogDomains.JMS_LOGGER + LEVEL);
                 //  put(connector, LogDomains.
-                put(jdo, LogDomains.JDO_LOGGER + ".level");
-                put(cmp, LogDomains.CMP_LOGGER + ".level");
-                put(util, LogDomains.UTIL_LOGGER + ".level");
-                put(resourceadapter, LogDomains.RSR_LOGGER + ".level");
+                put(jdo, LogDomains.JDO_LOGGER + LEVEL);
+                put(cmp, LogDomains.CMP_LOGGER + LEVEL);
+                put(util, LogDomains.UTIL_LOGGER + LEVEL);
+                put(resourceadapter, LogDomains.RSR_LOGGER + LEVEL);
                 //  put(synchronization, LogDomains.
                 //  put(nodeAgent, LogDomains.
-                put(selfmanagement, LogDomains.SELF_MANAGEMENT_LOGGER + ".level");
+                put(selfmanagement, LogDomains.SELF_MANAGEMENT_LOGGER + LEVEL);
                 //  put(groupManagementService, LogDomains.
                 //  put(managementEvent, LogDomains.
             }};

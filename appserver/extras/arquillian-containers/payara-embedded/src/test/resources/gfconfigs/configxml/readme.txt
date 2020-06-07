@@ -1,1 +1,0 @@
-This directory should contain a blank XML file named test-domain.xml (to represent a Payara domain configuration file) for the purpose of verifying the configurationXml property in arquillian.xml.

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -58,9 +59,9 @@ import org.apache.catalina.Context;
  */
 public class WebConnectionImpl implements WebConnection {
 
-    private ServletInputStream inputStream;
+    private final ServletInputStream inputStream;
 
-    private ServletOutputStream outputStream;
+    private final ServletOutputStream outputStream;
 
     private Request request;
 

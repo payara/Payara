@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,17 +39,17 @@
  */
 package fish.payara.microprofile.openapi.impl.admin;
 
+import static fish.payara.microprofile.Constants.DEFAULT_GROUP_NAME;
 import java.beans.PropertyVetoException;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
  * Configuration for the OpenAPI Service.
  */
 @Configured(name = "microprofile-openapi-configuration")
-public interface OpenApiServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
+public interface OpenApiServiceConfiguration extends ConfigExtension {
 
     /**
      * @return whether the service is enabled or not.
@@ -60,13 +60,37 @@ public interface OpenApiServiceConfiguration extends ConfigBeanProxy, ConfigExte
     void setEnabled(String value) throws PropertyVetoException;
 
     /**
-     * String value defines the attached virtual servers.
+     * Defines if CORS headers are set on the OpenApi response.
      *
-     * @return
+     * @return whether to set CORS headers or not
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getCorsHeaders();
+
+    void setCorsHeaders(String value) throws PropertyVetoException;
+
+    /**
+     * @return a String value defines the attached virtual servers.
      */
     @Attribute(dataType = String.class)
     String getVirtualServers();
 
     void setVirtualServers(String value) throws PropertyVetoException;
+
+    /**
+     * @return a Boolean value determining if the security is enabled or not.
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getSecurityEnabled();
+
+    void setSecurityEnabled(String value) throws PropertyVetoException;
+
+    /**
+     * @return a String value defines the roles.
+     */
+    @Attribute(defaultValue = DEFAULT_GROUP_NAME, dataType = String.class)
+    String getRoles();
+
+    void setRoles(String value) throws PropertyVetoException;
 
 }

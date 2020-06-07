@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.util;
 
@@ -112,8 +113,7 @@ public final class ExtensionValidator {
 
     /**
      *  This static initializer loads the container level extensions that are
-     *  available to all web applications. This method scans all extension 
-     *  directories available via the "java.ext.dirs" System property. 
+     *  available to all web applications. This method scans all extensions
      *
      *  The System Class-Path is also scanned for jar files that may contain 
      *  available extensions.
@@ -147,20 +147,19 @@ public final class ExtensionValidator {
         String extensionsDir = System.getProperty("java.ext.dirs");
         if (extensionsDir != null) {
             StringTokenizer extensionsTok
-                = new StringTokenizer(extensionsDir, File.pathSeparator);
+                    = new StringTokenizer(extensionsDir, File.pathSeparator);
             while (extensionsTok.hasMoreTokens()) {
                 File targetDir = new File(extensionsTok.nextToken());
                 if (!targetDir.exists() || !targetDir.isDirectory()) {
                     continue;
                 }
                 File[] files = targetDir.listFiles();
-                for (int i = 0; i < files.length; i++) {
-                    if (files[i].getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
+                for (File file : files) {
+                    if (file.getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                         try {
-                            addSystemResource(files[i]);
+                            addSystemResource(file);
                         } catch (IOException e) {
-                            String msg = MessageFormat.format(rb.getString(LogFacade.FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION),
-                                                              files[i]);
+                            String msg = MessageFormat.format(rb.getString(LogFacade.FAILED_LOAD_MANIFEST_RESOURCES_EXCEPTION), file);
                             log.log(Level.SEVERE, msg, e);
                         }
                     }
@@ -223,11 +222,10 @@ public final class ExtensionValidator {
                     manifest, ManifestResource.WAR);
                 appManifestResources.add(mre);
             } 
-        } catch (NamingException nex) {
+        } catch (NamingException | NoSuchElementException nex) {
             // Application does not contain a MANIFEST.MF file
-        } catch (NoSuchElementException nse) {
-            // Application does not contain a MANIFEST.MF file
-        } finally {
+        }
+         finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();

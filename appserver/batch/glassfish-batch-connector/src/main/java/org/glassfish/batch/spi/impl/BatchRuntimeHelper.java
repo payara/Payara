@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation] 
+// Portions Copyright [2016-2019] [Payara Foundation] 
 package org.glassfish.batch.spi.impl;
 
 import com.ibm.jbatch.container.servicesmanager.ServiceTypes;
@@ -211,19 +211,15 @@ public class BatchRuntimeHelper
                         try {
                             // set TCCL to ensure loading of the Joboperator
                             Thread.currentThread().setContextClassLoader(BatchSPIManager.class.getClassLoader());
-                            
+
                             BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
-                            if (batchSPIManager != null && batchSPIManager.getBatchJobUtil() != null) {
+                            if (batchSPIManager.getBatchJobUtil() == null && tagNamesRequiringCleanup.contains(tagName)) {
+                                //Force initialization of BatchRuntime
+                                BatchRuntime.getJobOperator();
+                            }
+                            if (batchSPIManager.getBatchJobUtil() != null) {
                                 batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
                                 tagNamesRequiringCleanup.remove(tagName);
-                            } else if (tagNamesRequiringCleanup.contains(tagName)) {
-                                //Force initialization of BatchRuntime
-                                JobOperator jobOperator = BatchRuntime.getJobOperator();
-
-                                if (batchSPIManager.getBatchJobUtil() != null) {
-                                    batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
-                                    tagNamesRequiringCleanup.remove(tagName);
-                                }
                             }
                         } catch (Exception ex) {
                             logger.log(Level.FINE, "Error while purging jobs", ex);

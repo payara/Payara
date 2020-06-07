@@ -64,5 +64,3 @@ public interface DebugOut extends DebugSink
     public void debugMethod(final String methodName, final String msg, final Object... args);
 
 }
-
-

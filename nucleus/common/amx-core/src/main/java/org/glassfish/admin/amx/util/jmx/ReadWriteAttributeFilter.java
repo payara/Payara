@@ -37,83 +37,67 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
 import javax.management.MBeanAttributeInfo;
 
 /**
-	This class contains various filters based on read/write status of
-	an Attribute.
+ * This class contains various filters based on read/write status of an Attribute.
  */
-public class ReadWriteAttributeFilter implements AttributeFilter
-{
-	protected		ReadWriteAttributeFilter( )	{}
-	
-	/**
-	 */
-		public boolean
-	filterAttribute( final MBeanAttributeInfo info )
-	{
-		throw new RuntimeException( "Can't get here" );
-	}
-	
-	public static final ReadWriteAttributeFilter	READ_ONLY_FILTER = new ReadWriteAttributeFilter( )
-	{
-		public boolean	filterAttribute( final MBeanAttributeInfo info )
-		{
-			return( info.isReadable() && ! info.isWritable() );
-		}
-	};
-		
-	public static final ReadWriteAttributeFilter	READABLE_FILTER =
-		new ReadWriteAttributeFilter( )
-	{
-		public boolean	filterAttribute( final MBeanAttributeInfo info )
-		{
-			return( info.isReadable() );
-		}
-	};
-		
-	public static final ReadWriteAttributeFilter	WRITE_ONLY_FILTER =
-		new ReadWriteAttributeFilter()
-	{
-		public boolean	filterAttribute( final MBeanAttributeInfo info )
-		{
-			return( info.isWritable() && ! info.isReadable() );
-		}
-	};
-		
-	public static final ReadWriteAttributeFilter	WRITEABLE_FILTER =
-		new ReadWriteAttributeFilter()
-	{
-		public boolean	filterAttribute( final MBeanAttributeInfo info )
-		{
-			return( info.isWritable() );
-		}
-	};
-		
-	public static final ReadWriteAttributeFilter	READ_WRITE_FILTER =
-		new ReadWriteAttributeFilter()
-	{
-		public boolean	filterAttribute( final MBeanAttributeInfo info )
-		{
-			return( info.isWritable() && info.isReadable() );
-		}
-	};
-		
-	public static final ReadWriteAttributeFilter	ALL_FILTER =
-		new ReadWriteAttributeFilter()
-	{
-		public boolean	filterAttribute( final MBeanAttributeInfo info )
-		{
-			return( true );
-		}
-	};
+public class ReadWriteAttributeFilter implements AttributeFilter {
+
+    protected ReadWriteAttributeFilter() {
+    }
+
+    /**
+     */
+    @Override
+    public boolean filterAttribute(final MBeanAttributeInfo info) {
+        throw new RuntimeException("Can't get here");
+    }
+
+    public static final ReadWriteAttributeFilter READ_ONLY_FILTER = new ReadWriteAttributeFilter() {
+        @Override
+        public boolean filterAttribute(final MBeanAttributeInfo info) {
+            return (info.isReadable() && !info.isWritable());
+        }
+    };
+
+    public static final ReadWriteAttributeFilter READABLE_FILTER = new ReadWriteAttributeFilter() {
+        @Override
+        public boolean filterAttribute(final MBeanAttributeInfo info) {
+            return (info.isReadable());
+        }
+    };
+
+    public static final ReadWriteAttributeFilter WRITE_ONLY_FILTER = new ReadWriteAttributeFilter() {
+        @Override
+        public boolean filterAttribute(final MBeanAttributeInfo info) {
+            return (info.isWritable() && !info.isReadable());
+        }
+    };
+
+    public static final ReadWriteAttributeFilter WRITEABLE_FILTER = new ReadWriteAttributeFilter() {
+        @Override
+        public boolean filterAttribute(final MBeanAttributeInfo info) {
+            return (info.isWritable());
+        }
+    };
+
+    public static final ReadWriteAttributeFilter READ_WRITE_FILTER = new ReadWriteAttributeFilter() {
+        @Override
+        public boolean filterAttribute(final MBeanAttributeInfo info) {
+            return (info.isWritable() && info.isReadable());
+        }
+    };
+
+    public static final ReadWriteAttributeFilter ALL_FILTER = new ReadWriteAttributeFilter() {
+        
+        @Override
+        public boolean filterAttribute(final MBeanAttributeInfo info) {
+            return (true);
+        }
+    };
 }
-
-
-
-
-
-

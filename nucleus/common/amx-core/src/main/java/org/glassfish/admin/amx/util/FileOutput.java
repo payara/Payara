@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 
 /**
@@ -78,11 +80,8 @@ public final class FileOutput implements Output
                 {
                     try
                     {
-                        if ((!mAppend) && mFile.exists())
-                        {
-                            if (!mFile.delete()) {
-                                throw new Exception("cannot delete file: " + mFile);
-                            }
+                        if ((!mAppend) && mFile.exists() && !mFile.delete()) {
+                                throw new IOException("cannot delete file: " + mFile);
                         }
 
                         mOut = new PrintStream(new FileOutputStream(mFile, mAppend));
@@ -98,18 +97,21 @@ public final class FileOutput implements Output
         }
     }
 
+    @Override
     public void print(final Object o)
     {
         lazyInit();
         mOut.print(o.toString());
     }
 
+    @Override
     public void println(Object o)
     {
         lazyInit();
         mOut.println(o.toString());
     }
 
+    @Override
     public void printError(final Object o)
     {
         lazyInit();
@@ -122,12 +124,14 @@ public final class FileOutput implements Output
         return (false);
     }
 
+    @Override
     public void printDebug(final Object o)
     {
         lazyInit();
         println("DEBUG: " + o);
     }
 
+    @Override
     public void close()
     {
         if (mOut != null)
@@ -143,6 +147,4 @@ public final class FileOutput implements Output
         }
     }
 
-};
-
-
+}

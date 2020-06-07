@@ -45,9 +45,9 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.extras</groupId>
@@ -78,7 +78,7 @@
             </modules>
         </profile>
         
-        <!-- Profile to build Embedded and Micro distributions, and the Arquillian Containers -->
+        <!-- Profile to build Embedded distributions-->
         <profile>
             <id>BuildExtras</id>
             <activation>
@@ -87,8 +87,20 @@
                 </property>
             </activation>
             <modules>
-                <module>arquillian-containers</module>
                 <module>embedded</module>
+                <module>certificate-management</module>
+            </modules>
+        </profile>
+        <!-- Profile to build Docker Images-->
+        <profile>
+            <id>BuildDockerImages</id>
+            <activation>
+                <property>
+                    <name>BuildDockerImages</name>
+                </property>
+            </activation>
+            <modules>
+                <module>docker-images</module>
             </modules>
         </profile>
     </profiles>

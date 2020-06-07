@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * PersistenceManagerimpl.java
@@ -275,7 +276,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
     /**
      * Lock used for implementing read-write barrier.
      */
-    private Object _readWriteLock = new Object();
+    private final Object _readWriteLock = new Object();
 
     /**
      * The count for the current reader (> 0) or writer (< 0)
@@ -2460,7 +2461,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
                 // notifying it.
                 //
                 if (_readWriteCount == 0 && _waiterCount > 0) {
-                    _readWriteLock.notify();
+                    _readWriteLock.notifyAll();
                 }
                 throw ex;
            }
@@ -2515,11 +2516,11 @@ public class PersistenceManagerImpl implements PersistenceManager {
                 // notifying it.
                 //
                 if ((_waiterCount > 0) && (_readWriteCount == 0)) {
-                    _readWriteLock.notify();
+                    _readWriteLock.notifyAll();
                 }
 
                 if (debug) {
-                    Object[] items = new Object[] {Thread.currentThread(),new Long(_readWriteCount)};
+                    Object[] items = new Object[] {Thread.currentThread(), _readWriteCount};
                     logger.finest("sqlstore.persistencemgr.releasesharedlock",items); // NOI18N
                 }
             }
@@ -2587,7 +2588,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
                     // we need to notify a thread waiting to acquire a lock.
                     //
                     if (_readWriteCount == 0 && _waiterCount > 0) {
-                        _readWriteLock.notify();
+                        _readWriteLock.notifyAll();
                     }
                     throw ex;
                }
@@ -2596,7 +2597,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
                 _exclusiveLockHolder = currentThread;
 
                 if (debug) {
-                    Object[] items = new Object[] {currentThread,new Long(_readWriteCount)};
+                    Object[] items = new Object[] {currentThread, _readWriteCount};
                     logger.fine("sqlstore.persistencemgr.acquireexclusivelock.count",items); // NOI18N
                 }
 
@@ -2637,7 +2638,7 @@ public class PersistenceManagerImpl implements PersistenceManager {
                 //
                 if (_readWriteCount == 0) {
                     if (_waiterCount > 0) {
-                        _readWriteLock.notify();
+                        _readWriteLock.notifyAll();
                     }
 
                     _exclusiveLockHolder = null;

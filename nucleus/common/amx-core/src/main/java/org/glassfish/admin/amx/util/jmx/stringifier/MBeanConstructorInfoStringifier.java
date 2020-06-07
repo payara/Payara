@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -44,10 +45,12 @@ import org.glassfish.admin.amx.util.stringifier.Stringifier;
 
 import javax.management.MBeanConstructorInfo;
 
-public class MBeanConstructorInfoStringifier extends MBeanFeatureInfoStringifier implements Stringifier
-{
-    public static final MBeanConstructorInfoStringifier DEFAULT =
-            new MBeanConstructorInfoStringifier();
+/**
+ * Creates a String representation of an {@link MBeanConstructorInfo}
+ * @see Object#toString() 
+ */
+public class MBeanConstructorInfoStringifier extends MBeanFeatureInfoStringifier implements Stringifier {
+    public static final MBeanConstructorInfoStringifier DEFAULT = new MBeanConstructorInfoStringifier();
 
     public MBeanConstructorInfoStringifier()
     {
@@ -59,12 +62,13 @@ public class MBeanConstructorInfoStringifier extends MBeanFeatureInfoStringifier
         super(options);
     }
 
+    @Override
     public String stringify(Object o)
     {
         final MBeanConstructorInfo constructor = (MBeanConstructorInfo) o;
 
         final String name = constructor.getName();
-        final int lastDot = name.lastIndexOf(".");
+        final int lastDot = name.lastIndexOf('.');
         final String abbreviatedName = name.substring(lastDot + 1, name.length());
 
         final String params = "(" +

@@ -55,46 +55,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
 
+import org.apache.catalina.*;
+import org.glassfish.grizzly.http.util.DataChunk;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.security.Principal;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import javax.servlet.AsyncContext;
-import javax.servlet.AsyncListener;
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterChain;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
-import javax.servlet.http.HttpUpgradeHandler;
-
-import org.apache.catalina.Connector;
-import org.apache.catalina.Context;
-import org.apache.catalina.Host;
-import org.apache.catalina.HttpRequest;
-import org.apache.catalina.Response;
-import org.apache.catalina.Session;
-import org.apache.catalina.Wrapper;
-import org.glassfish.grizzly.http.util.DataChunk;
+import java.util.*;
 
 /**
  * Dummy request object, used for request dispatcher mapping, as well as
@@ -103,7 +80,6 @@ import org.glassfish.grizzly.http.util.DataChunk;
  * @author Remy Maucherat
  * @version $Revision: 1.5.6.2 $ $Date: 2008/04/17 18:37:07 $
  */
-
 public class DummyRequest implements HttpRequest, HttpServletRequest {
 
     protected String queryString;
@@ -125,19 +101,23 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     private String method;
     // END PWC 4707989
 
-    private static Enumeration<String> dummyEnum = new Enumeration<String>(){
+    private static final Enumeration<String> dummyEnum = new Enumeration<String>(){
+        @Override
         public boolean hasMoreElements(){
             return false;
         }
+        @Override
         public String nextElement(){
             return null;
         }
     };
 
+    @Override
     public String getContextPath() {
         return null;
     }
 
+    @Override
     public ServletRequest getRequest() {
         return this;
     }
@@ -146,59 +126,73 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
         return getRequest();
     }
 
+    @Override
     public String getDecodedRequestURI() {
         return null;
     }
 
+    @Override
     public FilterChain getFilterChain() {
         return filterChain;
     }
 
+    @Override
     public void setFilterChain(FilterChain filterChain) {
         this.filterChain = filterChain;
     }
 
+    @Override
     public String getQueryString() {
         return queryString;
     }
 
+    @Override
     public void setQueryString(String query) {
         queryString = query;
     }
 
+    @Override
     public String getPathInfo() {
         return pathInfo;
     }
 
+    @Override
     public void setPathInfo(String path) {
         pathInfo = path;
     }
 
+    @Override
     public DataChunk getRequestPathMB() {
         return null;
     }
 
+    @Override
     public String getServletPath() {
         return servletPath;
     }
 
+    @Override
     public void setServletPath(String path) {
         servletPath = path;
     }
 
+    @Override
     public Wrapper getWrapper() {
         return wrapper;
     }
 
+    @Override
     public void setWrapper(Wrapper wrapper) {
         this.wrapper = wrapper;
     }
 
     // START PWC 4707989
+    @Override
     public void setMethod(String method) {
         this.method = method;
     }
 
+    @Override
     public String getMethod() {
         return method;
     }
@@ -310,7 +304,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     public void setRequestedSessionCookiePath(String cookiePath) {}
     public boolean isUserInRole(String role) { return false; }
     public Principal getUserPrincipal() { return null; }
-    public String getLocalAddr() { return null; }    
+    public String getLocalAddr() { return null; }
     public String getLocalName() { return null; }
     public int getLocalPort() { return -1; }
     public int getRemotePort() { return -1; }
@@ -343,7 +337,9 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     /**
      * Set whether or not access to resources under WEB-INF or META-INF
      * needs to be checked.
+     * @param check whether access needs to be checked
      */
+    @Override
     public void setCheckRestrictedResources(boolean check) {
         checkRestrictedResources = check;
     }
@@ -352,6 +348,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
      * Return whether or not access to resources under WEB-INF or META-INF
      * needs to be checked.
      */
+    @Override
     public boolean getCheckRestrictedResources() {
         return checkRestrictedResources;
     }
@@ -359,22 +356,25 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
 
     // START SJSAS 6346226
     /**
-     * Gets the jroute id of this request, which may have been 
+     * Gets the jroute id of this request, which may have been
      * sent as a separate <code>JROUTE</code> cookie or appended to the
      * session identifier encoded in the URI (if cookies have been disabled).
-     * 
+     *
      * @return The jroute id of this request, or null if this request does not
      * carry any jroute id
      */
+    @Override
     public String getJrouteId() {
         return null;
     }
     // END SJSAS 6346226
-    
+
     /**
      * This object does not implement a session ID generator. Provide
      * a dummy implementation so that the default one will be used.
+     * @return {@code null}
      */
+    @Override
     public String generateSessionId() {
         return null;
     }
@@ -386,14 +386,17 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
      * @return the servlet context to which this servlet request was last
      * dispatched
      */
+    @Override
     public ServletContext getServletContext() {
         return null;
     }
 
+    @Override
     public Session lockSession() {
         return null;
     }
 
+    @Override
     public void unlockSession() {}
 
 }

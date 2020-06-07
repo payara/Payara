@@ -1,0 +1,67 @@
+create-protocol-finder(1)  asadmin Utility Subcommands  create-protocol-finder(1)
+
+NAME
+       create-protocol-finder - adds a new protocol finder
+
+SYNOPSIS
+           create-protocol-finder [--help]
+           --protocol protocol-name
+           --targetprotocol target-protocol-name
+           --classname class-name
+           [--target server]
+           protocol-finder-name
+
+DESCRIPTION
+       The create-protocol-finder subcommand creates a protocol finder for a
+       protocol. This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --protocol
+           The name of the associated protocol.
+
+       --targetprotocol
+           The name of the target protocol.
+
+       --classname
+           The fully qualified name of the Java class that implements the
+           protocol finder.
+
+       --target
+           Creates the protocol finder only on the specified target. Valid
+           values are as follows:
+
+           server
+               Creates the protocol finder on the default server instance.
+               This is the default value.
+
+           configuration-name
+               Creates the protocol finder in the specified configuration.
+
+           cluster-name
+               Creates the protocol finder on all server instances in the
+               specified cluster.
+
+           standalone-instance-name
+               Creates the protocol finder on the specified standalone server
+               instance.
+
+OPERANDS
+       protocol-finder-name
+           The name of the protocol finder.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       delete-protocol-finder(1), list-protocol-finders(1)
+
+       asadmin(1M)
+
+Java EE 8                   09 Aug 2017            create-protocol-finder(1)

@@ -37,41 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.deployment;
 
-import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
-import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
-import com.sun.enterprise.security.perms.PermsArchiveDelegate;
-import com.sun.enterprise.loader.ASURLClassLoader;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ArchiveDetector;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.ejb.deployment.archive.EjbJarDetector;
-import org.glassfish.ejb.LogFacade;
-import org.glassfish.loader.util.ASClassLoaderUtil;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.jvnet.hk2.annotations.Service;
+import static java.security.AccessController.doPrivileged;
+import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.glassfish.deployment.common.DeploymentProperties.COMPATIBILITY;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static javax.xml.stream.XMLStreamConstants.*;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.ejb.LogFacade;
+import org.glassfish.ejb.deployment.archive.EjbJarDetector;
+import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.deployment.io.DescriptorConstants;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.loader.ASURLClassLoader;
+import com.sun.enterprise.security.permissionsxml.CommponentType;
+import com.sun.enterprise.security.permissionsxml.SetPermissionsAction;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
  * @author sanjeeb.sahoo@oracle.com
@@ -81,9 +88,10 @@ public class EjbJarHandler extends AbstractArchiveHandler {
 
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EjbJarHandler.class);
 
-    private static final Logger _logger  = LogFacade.getLogger();
+    private static final Logger _logger = LogFacade.getLogger();
 
-    @Inject @Named(EjbJarDetector.ARCHIVE_TYPE)
+    @Inject
+    @Named(EjbJarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;
 
     @Override
@@ -98,16 +106,13 @@ public class EjbJarHandler extends AbstractArchiveHandler {
 
     @Override
     public String getVersionIdentifier(ReadableArchive archive) {
-        String versionIdentifier = null;
         try {
-            GFEjbJarXMLParser gfXMLParser = new GFEjbJarXMLParser(archive);
-            versionIdentifier = gfXMLParser.extractVersionIdentifierValue(archive);
-        } catch (XMLStreamException e) {
-            _logger.log(Level.SEVERE, e.getMessage());
-        } catch (IOException e) {
-            _logger.log(Level.SEVERE, e.getMessage());
+            return new GFEjbJarXMLParser(archive).extractVersionIdentifierValue(archive);
+        } catch (XMLStreamException | IOException e) {
+            _logger.severe(e.getMessage());
         }
-        return versionIdentifier;
+
+        return null;
     }
 
     public ClassLoader getClassLoader(final ClassLoader parent, DeploymentContext context) {
@@ -119,39 +124,31 @@ public class EjbJarHandler extends AbstractArchiveHandler {
         });
 
         try {
-            String compatProp = context.getAppProps().getProperty(
-                    DeploymentProperties.COMPATIBILITY);
-            // if user does not specify the compatibility property
+            String compatProp = context.getAppProps().getProperty(COMPATIBILITY);
+
+            // If user does not specify the compatibility property
             // let's see if it's defined in glassfish-ejb-jar.xml
             if (compatProp == null) {
-                GFEjbJarXMLParser gfEjbJarXMLParser =
-                        new GFEjbJarXMLParser(context.getSource());
-                compatProp = gfEjbJarXMLParser.getCompatibilityValue();
+                compatProp = new GFEjbJarXMLParser(context.getSource()).getCompatibilityValue();
                 if (compatProp != null) {
-                    context.getAppProps().put(
-                            DeploymentProperties.COMPATIBILITY, compatProp);
+                    context.getAppProps().put(COMPATIBILITY, compatProp);
                 }
             }
 
-            // if user does not specify the compatibility property
+            // If user does not specify the compatibility property
             // let's see if it's defined in sun-ejb-jar.xml
             if (compatProp == null) {
-                SunEjbJarXMLParser sunEjbJarXMLParser =
-                        new SunEjbJarXMLParser(context.getSourceDir());
-                compatProp = sunEjbJarXMLParser.getCompatibilityValue();
+                compatProp = new SunEjbJarXMLParser(context.getSourceDir()).getCompatibilityValue();
                 if (compatProp != null) {
-                    context.getAppProps().put(
-                            DeploymentProperties.COMPATIBILITY, compatProp);
+                    context.getAppProps().put(DeploymentProperties.COMPATIBILITY, compatProp);
                 }
             }
 
-            // if the compatibility property is set to "v2", we should add
+            // If the compatibility property is set to "v2", we should add
             // all the jars under the ejb module root to maintain backward
             // compatibility of v2 jar visibility
             if (compatProp != null && compatProp.equals("v2")) {
-                List<URL> moduleRootLibraries =
-                        ASClassLoaderUtil.getURLsAsList(null,
-                                new File[]{context.getSourceDir()}, true);
+                List<URL> moduleRootLibraries = ASClassLoaderUtil.getURLsAsList(null, new File[] { context.getSourceDir() }, true);
                 for (URL url : moduleRootLibraries) {
                     cloader.addURL(url);
                 }
@@ -159,39 +156,35 @@ public class EjbJarHandler extends AbstractArchiveHandler {
 
             cloader.addURL(context.getSource().getURI().toURL());
             cloader.addURL(context.getScratchDir("ejb").toURI().toURL());
-            // add libraries referenced from manifest
+            
+            // Add libraries referenced from manifest
             for (URL url : getManifestLibraries(context)) {
                 cloader.addURL(url);
             }
 
             try {
-                final DeploymentContext dc = context;
-                final ClassLoader cl = cloader;
-                
-                AccessController.doPrivileged(
-                        new PermsArchiveDelegate.SetPermissionsAction(
-                                SMGlobalPolicyUtil.CommponentType.ejb, dc, cl));
+                doPrivileged(new SetPermissionsAction(CommponentType.ejb, context, cloader));
             } catch (PrivilegedActionException e) {
                 throw new SecurityException(e.getException());
             }
 
-            
         } catch (Exception e) {
-            _logger.log(Level.SEVERE, e.getMessage());
+            _logger.severe(e.getMessage());
             throw new RuntimeException(e);
         }
+
         return cloader;
     }
 
     private static class GFEjbJarXMLParser {
-        private XMLStreamReader parser = null;
-        private String compatValue = null;
+        private XMLStreamReader parser;
+        private String compatValue;
 
         GFEjbJarXMLParser(ReadableArchive archive) throws XMLStreamException, FileNotFoundException, IOException {
             InputStream input = null;
-            File runtimeAltDDFile = archive.getArchiveMetaData(
-                DeploymentProperties.RUNTIME_ALT_DD, File.class);
-            if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.GF_PREFIX) != -1 && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+            File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
+            if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.GF_PREFIX) != -1 && runtimeAltDDFile.exists()
+                    && runtimeAltDDFile.isFile()) {
                 DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
                 input = new FileInputStream(runtimeAltDDFile);
             } else {
@@ -202,12 +195,10 @@ public class EjbJarHandler extends AbstractArchiveHandler {
                 try {
                     read(input);
                 } catch (Throwable t) {
-                    String msg = localStrings.getLocalString("ejb.deployment.exception_parsing_glassfishejbjarxml", 
-                            "Error in parsing glassfish-ejb-jar.xml for archive [{0}]: {1}", 
-                            archive.getURI(), t.getMessage());
+                    String msg = localStrings.getLocalString("ejb.deployment.exception_parsing_glassfishejbjarxml",
+                            "Error in parsing glassfish-ejb-jar.xml for archive [{0}]: {1}", archive.getURI(), t.getMessage());
                     throw new RuntimeException(msg);
-                }
-                finally {
+                } finally {
                     if (parser != null) {
                         try {
                             parser.close();
@@ -225,15 +216,14 @@ public class EjbJarHandler extends AbstractArchiveHandler {
         }
 
         protected String extractVersionIdentifierValue(ReadableArchive archive) throws XMLStreamException, IOException {
-
             InputStream input = null;
             String versionIdentifierValue = null;
             String rootElement = null;
 
             try {
-                File runtimeAltDDFile = archive.getArchiveMetaData(
-                    DeploymentProperties.RUNTIME_ALT_DD, File.class);
-                if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.GF_PREFIX) != -1 && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
+                File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
+                if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.GF_PREFIX) != -1 && runtimeAltDDFile.exists()
+                        && runtimeAltDDFile.isFile()) {
                     DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
                     input = new FileInputStream(runtimeAltDDFile);
                 } else {
@@ -243,7 +233,7 @@ public class EjbJarHandler extends AbstractArchiveHandler {
                 rootElement = "glassfish-ejb-jar";
                 if (input != null) {
 
-                    // parse elements only from glassfish-ejb
+                    // Parse elements only from glassfish-ejb
                     parser = getXMLInputFactory().createXMLStreamReader(input);
 
                     int event = 0;
@@ -291,7 +281,7 @@ public class EjbJarHandler extends AbstractArchiveHandler {
 
                 if (event == START_ELEMENT) {
                     String name = parser.getLocalName();
-                    if (DeploymentProperties.COMPATIBILITY.equals(name)) {
+                    if (COMPATIBILITY.equals(name)) {
                         compatValue = parser.getElementText();
                         done = true;
                     } else {
@@ -341,7 +331,8 @@ public class EjbJarHandler extends AbstractArchiveHandler {
                 try {
                     read(input);
                 } catch (Throwable t) {
-                    String msg = localStrings.getLocalString("ejb.deployment.exception_parsing_sunejbjarxml", "Error in parsing sun-ejb-jar.xml for archive [{0}]: {1}", baseDir, t.getMessage());
+                    String msg = localStrings.getLocalString("ejb.deployment.exception_parsing_sunejbjarxml",
+                            "Error in parsing sun-ejb-jar.xml for archive [{0}]: {1}", baseDir, t.getMessage());
                     throw new RuntimeException(msg);
                 } finally {
                     if (parser != null) {

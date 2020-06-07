@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth;
 
-import com.sun.enterprise.security.jmac.config.ConfigParser;
-import com.sun.enterprise.security.jmac.config.GFServerConfigProvider;
 import java.io.*;
 import java.util.*;
 
@@ -55,6 +53,8 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.AppConfigurationEntry;
 
+import com.sun.enterprise.security.jaspic.config.ConfigParser;
+import com.sun.enterprise.security.jaspic.config.GFServerConfigProvider;
 import com.sun.logging.LogDomains;
 
 /**
@@ -78,9 +78,9 @@ class ConfigFile extends AuthConfig {
     static final String CLIENT = "client";
     static final String SERVER = "server";
 
-    private static final String DEFAULT_HANDLER_CLASS = "com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler";
+    private static final String DEFAULT_HANDLER_CLASS = "com.sun.enterprise.security.jaspic.callback.ContainerCallbackHandler";
 
-    private static final String DEFAULT_PARSER_CLASS = "com.sun.enterprise.security.jmac.config.ConfigDomainParser";
+    private static final String DEFAULT_PARSER_CLASS = "com.sun.enterprise.security.jaspic.config.ConfigDomainParser";
 
     private static final Logger logger = LogDomains.getLogger(ConfigFile.class, LogDomains.SECURITY_LOGGER);
 

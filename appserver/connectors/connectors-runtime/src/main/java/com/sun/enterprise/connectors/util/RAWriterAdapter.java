@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
@@ -62,7 +63,7 @@ public class RAWriterAdapter extends Writer {
 
     private void initializeAutoFlush() {
         String autoFlushValue = System.getProperty("com.sun.enterprise.connectors.LogWriterAutoFlush", "true");
-        autoFlush = Boolean.valueOf(autoFlushValue);
+        autoFlush = Boolean.parseBoolean(autoFlushValue);
     }
 
     public void write(char cbuf[], int off, int len) {

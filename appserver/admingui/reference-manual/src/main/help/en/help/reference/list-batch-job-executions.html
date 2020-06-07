@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>list-batch-job-executions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>list-batch-job-executions</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="list-backups.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-batch-jobs.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="list-batch-job-executions-1"></a><a id="GSRFM884"></a><a id="list-batch-job-executions"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_list_batch_job_executions">list-batch-job-executions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>lists batch job executions and execution details</p>
+</div>
+<div id="sthref1340" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] list-batch-job-executions [--help]
+[--target target]
+[--executionid execution-id]
+[--long={false|true}]
+[--output output]
+[--header={false|true}]
+[instance_ID]</code></pre>
+</div>
+</div>
+<div id="sthref1341" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>list-batch-job-executions</code> subcommand lists batch job executions
+and execution details.</p>
+</div>
+<div id="sthref1342" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target for which to list batch job executions and
+execution details. Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Lists executions for the default server instance <code>server</code> and is the
+default value.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Lists executions for every server instance in the cluster.</p>
+</dd>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>Lists executions for a particular server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--executionid</code></dt>
+<dt class="hdlist1"><code>-x</code></dt>
+<dd>
+<p>Specifies the execution ID of a specific batch job execution.</p>
+</dd>
+<dt class="hdlist1"><code>--long</code></dt>
+<dt class="hdlist1"><code>-l</code></dt>
+<dd>
+<p>Displays detailed information about batch job executions. The default
+value is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--output</code></dt>
+<dt class="hdlist1"><code>-o</code></dt>
+<dd>
+<p>Displays specific details about batch job executions. Use a
+comma-separated list to specify the details to display and their
+order. The values are case-insensitive. A subset of all possible
+headings is displayed by default.<br>
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>jobname</code></dt>
+<dd>
+<p>Displays the name of the job.</p>
+</dd>
+<dt class="hdlist1"><code>executionid</code></dt>
+<dd>
+<p>Displays the ID assigned to the execution of the batch job. A new
+execution is created the first time a job is started and every time
+the existing execution is restarted.</p>
+</dd>
+<dt class="hdlist1"><code>starttime</code></dt>
+<dd>
+<p>Displays the start time of the execution.</p>
+</dd>
+<dt class="hdlist1"><code>endtime</code></dt>
+<dd>
+<p>Displays the finish time of the execution.</p>
+</dd>
+<dt class="hdlist1"><code>batchstatus</code></dt>
+<dd>
+<p>Displays the status of the execution as set by the batch runtime.</p>
+</dd>
+<dt class="hdlist1"><code>exitstatus</code></dt>
+<dd>
+<p>Displays the status of the execution as set by the Job XML for the
+job or by the batch application. By default, the exit status and the
+batch status are the same unless the exit status is explicitly
+overridden.</p>
+</dd>
+<dt class="hdlist1"><code>jobparameters</code></dt>
+<dd>
+<p>Displays the properties passed to the batch runtime for the batch
+job execution, listed as name/value pairs.</p>
+</dd>
+<dt class="hdlist1"><code>stepcount</code></dt>
+<dd>
+<p>Displays the number of steps in the batch job execution.</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--header</code></dt>
+<dt class="hdlist1"><code>-h</code></dt>
+<dd>
+<p>Specifies whether column headings are displayed when the <code>--long</code>
+option is used. The default value is <code>true</code>. To suppress the headings,
+set the <code>--header</code> option to <code>false</code>.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1343" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">instance_id</dt>
+<dd>
+<p>The ID of the job instance for which to list execution details.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1344" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM885"></a><a id="sthref1345"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Listing Batch Job Executions</p>
+</div>
+<div class="paragraph">
+<p>This example lists batch job executions for the default server instance
+and displays specific details.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-batch-job-executions -o=jobname,executionid,batchstatus,exitstatus
+JOBNAME  EXECUTIONID  BATCHSTATUS  EXITSTATUS
+payroll  9            COMPLETED    COMPLETED
+bonus    6            FAILED       FAILED
+Command list-batch-job-executions executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref1346" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1347" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="list-batch-jobs.html#list-batch-jobs-1"><code>list-batch-jobs</code>(1)</a>,
+<a href="list-batch-job-steps.html#list-batch-job-steps-1"><code>list-batch-job-steps</code>(1)</a>,
+<a href="list-batch-runtime-configuration.html#list-batch-runtime-configuration-1"><code>list-batch-runtime-configuration</code>(1)</a>,
+<a href="set-batch-runtime-configuration.html#set-batch-runtime-configuration-1"><code>set-batch-runtime-configuration</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="list-backups.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="list-batch-jobs.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

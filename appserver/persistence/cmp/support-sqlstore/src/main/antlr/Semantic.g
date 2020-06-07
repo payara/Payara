@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * Semantic.g
@@ -47,11 +48,11 @@
 header
 {
     package com.sun.jdo.spi.persistence.support.sqlstore.query.jqlc;
-    
+
     import java.util.Locale;
     import java.util.ResourceBundle;
     import java.util.Collection;
-    
+
     import org.glassfish.persistence.common.I18NHelper;
 
     import com.sun.jdo.spi.persistence.support.sqlstore.query.util.type.TypeTable;
@@ -60,7 +61,7 @@ header
     import com.sun.jdo.spi.persistence.support.sqlstore.query.util.type.FieldInfo;
     import com.sun.jdo.spi.persistence.support.sqlstore.query.util.type.NumericType;
     import com.sun.jdo.spi.persistence.support.sqlstore.query.util.type.NumericWrapperClassType;
-    
+
     import com.sun.jdo.spi.persistence.support.sqlstore.query.util.scope.SymbolTable;
     import com.sun.jdo.spi.persistence.support.sqlstore.query.util.scope.Definition;
     import com.sun.jdo.spi.persistence.support.sqlstore.query.util.scope.TypeName;
@@ -93,44 +94,44 @@ options
     /**
      * I18N support
      */
-    protected final static ResourceBundle messages = 
+    protected final static ResourceBundle messages =
         I18NHelper.loadBundle(Semantic.class);
-    
+
     /**
      * symbol table handling names of fields, variables and parameters
      */
     protected SymbolTable symtab;
-    
+
     /**
      * symbol table handling type names (candidate class and imported names)
      */
     protected SymbolTable typeNames;
 
     /**
-     * type table 
+     * type table
      */
     protected TypeTable typetab;
-    
+
     /**
      * query parameter table
      */
     protected ParameterTable paramtab;
-    
+
     /**
      * variable table
      */
     protected VariableTable vartab;
-    
+
     /**
      *
      */
     protected ErrorMsg errorMsg;
-    
+
     /**
      * Result class for this query. This class is set by setClass.
      */
-    protected ClassType candidateClass; 
-    
+    protected ClassType candidateClass;
+
     /**
      *
      */
@@ -157,14 +158,14 @@ options
     public void reportError(String s) {
         errorMsg.fatal("Error: " + s); //NOI18N
     }
-    
+
     /**
      * Combines partial ASTs into one query AST.
      */
-    public JQLAST createQueryAST(JQLAST candidateClass, 
-                                 JQLAST importsAST, 
-                                 JQLAST paramsAST, 
-                                 JQLAST varsAST, 
+    public JQLAST createQueryAST(JQLAST candidateClass,
+                                 JQLAST importsAST,
+                                 JQLAST paramsAST,
+                                 JQLAST varsAST,
                                  JQLAST orderingAST,
                                  JQLAST resultAST,
                                  JQLAST filterAST)
@@ -186,7 +187,7 @@ options
             query.addChild(filterAST);
         return query;
     }
-    
+
     /**
      * Creates the CLASS_DEF AST that represents the setClass value.
      */
@@ -216,7 +217,7 @@ options
         if (!exprType.isOrderable())
         {
             errorMsg.error(expr.getLine(), expr.getColumn(),
-                I18NHelper.getMessage(messages, "jqlc.semantic.analyseorderingexpression.notorderable", //NOI18N 
+                I18NHelper.getMessage(messages, "jqlc.semantic.analyseorderingexpression.notorderable", //NOI18N
                     exprType.getName()));
             expr.setJQLType(typetab.errorType);
         }
@@ -247,7 +248,7 @@ options
             }
             break;
         default:
-            errorMsg.error(expr.getLine(), expr.getColumn(), 
+            errorMsg.error(expr.getLine(), expr.getColumn(),
                 I18NHelper.getMessage(messages, "jqlc.semantic.checkvalidorderingexpr.invalidordering", //NOI18N
                     expr.getText()));
         }
@@ -289,7 +290,7 @@ options
         case SUM:
             if (!typetab.isNumberType(expr.getJQLType()) ||
                     typetab.isCharType(expr.getJQLType())) {
-                errorMsg.error(expr.getLine(), expr.getColumn(), 
+                errorMsg.error(expr.getLine(), expr.getColumn(),
                     I18NHelper.getMessage(messages,
                     "jqlc.semantic.checkvalidresultexpr.invalidavgsumexpr", //NOI18N
                     expr.getJQLType().getName(), expr.getText()));
@@ -299,7 +300,7 @@ options
         case MAX:
         case MIN:
             if (!expr.getJQLType().isOrderable()) {
-                errorMsg.error(expr.getLine(), expr.getColumn(), 
+                errorMsg.error(expr.getLine(), expr.getColumn(),
                     I18NHelper.getMessage(messages,
                     "jqlc.semantic.checkvalidresultexpr.invalidminmaxexpr", //NOI18N
                     expr.getJQLType().getName(), expr.getText()));
@@ -308,9 +309,9 @@ options
             break;
         case COUNT:
             checkValidResultExpr((JQLAST)expr.getFirstChild());
-            break;            
+            break;
         default:
-            errorMsg.error(expr.getLine(), expr.getColumn(), 
+            errorMsg.error(expr.getLine(), expr.getColumn(),
                 I18NHelper.getMessage(messages, "jqlc.semantic.checkvalidresultexpr.invalidresult", //NOI18N
                     expr.getText()));
         }
@@ -349,35 +350,35 @@ options
         }
 
         if (resultReturnAST.getType() == FIELD_ACCESS) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             genPathExpression(resultReturnAST, buf);
             String resultReturnPathExpr = buf.toString();
-            
+
             for (AST sibling = ordering;
                     sibling != null && sibling.getType() == ORDERING_DEF;
                     sibling = sibling.getNextSibling()) {
-    
+
                 // share buf
                 buf.setLength(0);
                 genPathExpression(sibling.getFirstChild().getNextSibling(), buf);
                 String orderingItemExpr = buf.toString();
                 if (!orderingItemExpr.equals(resultReturnPathExpr)) {
-                    errorMsg.error(ordering.getLine(), ordering.getColumn(), 
-                        I18NHelper.getMessage(messages, 
+                    errorMsg.error(ordering.getLine(), ordering.getColumn(),
+                        I18NHelper.getMessage(messages,
                             "jqlc.semantic.checkresultordering.invalidorderingfordistinctresultfield", //NOI18N
-                            resultReturnPathExpr, orderingItemExpr)); 
+                            resultReturnPathExpr, orderingItemExpr));
                 }
             }
         } else if (resultReturnAST.getType() == NAVIGATION ||
                 resultReturnAST.getType() ==  THIS ) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             genPathExpression(resultReturnAST, buf);
             String resultReturnPathExpr = buf.toString();
-            
+
             for (AST sibling = ordering;
                     sibling != null && sibling.getType() == ORDERING_DEF;
                     sibling = sibling.getNextSibling()) {
-    
+
                 // share buf
                 buf.setLength(0);
                 genPathExpression(sibling.getFirstChild().getNextSibling().getFirstChild(), buf);
@@ -385,10 +386,10 @@ options
                 if (!orderingRootExpr.equals(resultReturnPathExpr)) {
                     buf.setLength(0);
                     genPathExpression(sibling.getFirstChild().getNextSibling(), buf);
-                    errorMsg.error(ordering.getLine(), ordering.getColumn(), 
-                        I18NHelper.getMessage(messages, 
+                    errorMsg.error(ordering.getLine(), ordering.getColumn(),
+                        I18NHelper.getMessage(messages,
                             "jqlc.semantic.checkresultordering.invalidorderingfordistinctresult", //NOI18N
-                            resultReturnPathExpr, buf.toString())); 
+                            resultReturnPathExpr, buf.toString()));
                 }
             }
         }
@@ -396,12 +397,12 @@ options
 
     /**
      * Form a string representation of a dot expression and append to given
-     * StringBuffer.
+     * StringBuilder.
      * @param ast the AST node representing the root the of the expression
-     * @param buf the StringBuffer that will have result of path expression
+     * @param buf the StringBuilder that will have result of path expression
      * append
      */
-    private void genPathExpression(AST ast, StringBuffer buf) {
+    private void genPathExpression(AST ast, StringBuilder buf) {
         if (ast == null) {
             return;
         }
@@ -421,11 +422,11 @@ options
         }
     }
 
-    
+
     /**
      * This method analyses a dot expression of the form expr.ident or
      * expr.ident(params) where expr itself can again be a dot expression.
-     * It checks whether the dot expression is 
+     * It checks whether the dot expression is
      * - part of a qualified class name specification
      * - field access,
      * - a method call
@@ -485,7 +486,7 @@ options
                 {
                     return analyseMathCall(dot, expr, ident, args);
                 }
-                errorMsg.error(dot.getLine(), dot.getColumn(),  
+                errorMsg.error(dot.getLine(), dot.getColumn(),
                                I18NHelper.getMessage(messages, "jqlc.semantic.generic.invalidmethodcall")); //NOI18N
                 dot.setJQLType(typetab.errorType);
                 return dot;
@@ -502,9 +503,9 @@ options
     }
 
     /**
-     * 
+     *
      */
-    protected JQLAST analyseFieldAccess(JQLAST access, JQLAST objectExpr, JQLAST ident, 
+    protected JQLAST analyseFieldAccess(JQLAST access, JQLAST objectExpr, JQLAST ident,
                                         ClassType classType, FieldInfo fieldInfo)
     {
         String name = ident.getText();
@@ -513,8 +514,8 @@ options
         {
             if (!fieldInfo.isPersistent())
             {
-                errorMsg.error(ident.getLine(), ident.getColumn(),  
-                    I18NHelper.getMessage(messages, 
+                errorMsg.error(ident.getLine(), ident.getColumn(),
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.analysefieldaccess.nonperistentfield", name, classType.getName())); //NOI18N
             }
             if (typetab.isPersistenceCapableType(fieldType))
@@ -530,8 +531,8 @@ options
         {
             if (!fieldInfo.isPublic())
             {
-                errorMsg.error(ident.getLine(), ident.getColumn(),  
-                    I18NHelper.getMessage(messages, 
+                errorMsg.error(ident.getLine(), ident.getColumn(),
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.analysefieldaccess.nonpublicfield", name, classType.getName())); //NOI18N
             }
             access.setType(FIELD_ACCESS);
@@ -545,23 +546,23 @@ options
     }
 
     /**
-     * 
+     *
      */
-    protected JQLAST analyseStaticFieldAccess(JQLAST access, JQLAST typename, JQLAST ident, 
+    protected JQLAST analyseStaticFieldAccess(JQLAST access, JQLAST typename, JQLAST ident,
                                               ClassType classType, FieldInfo fieldInfo)
     {
         String name = ident.getText();
         Type fieldType = fieldInfo.getType();
         if (!fieldInfo.isStatic())
         {
-            errorMsg.error(ident.getLine(), ident.getColumn(),  
-                I18NHelper.getMessage(messages, "jqlc.semantic.analysestaticfieldaccess.staticreference", //NOI18N 
+            errorMsg.error(ident.getLine(), ident.getColumn(),
+                I18NHelper.getMessage(messages, "jqlc.semantic.analysestaticfieldaccess.staticreference", //NOI18N
                     ident.getText(), classType.getName()));
         }
         if (!fieldInfo.isPublic())
         {
-            errorMsg.error(ident.getLine(), ident.getColumn(),  
-                I18NHelper.getMessage(messages, 
+            errorMsg.error(ident.getLine(), ident.getColumn(),
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.analysestaticfieldaccess.nonpublicfield", name, classType.getName())); //NOI18N
         }
         access.setType(STATIC_FIELD_ACCESS);
@@ -574,12 +575,12 @@ options
     }
 
     /**
-     * This method analyses and identifier defined in the current scope: 
+     * This method analyses and identifier defined in the current scope:
      * - a field, variable or parameter defined in the symbol table
      * - a type define in a separate symbol table for type names
      * @param ident the identifier AST
      * @param def the entry in the symbol table of the type names tables
-     * @return AST node representing a defined identifier 
+     * @return AST node representing a defined identifier
      */
     protected JQLAST analyseDefinedIdentifier(JQLAST ident, Definition def)
     {
@@ -589,8 +590,8 @@ options
             ident.setType(VARIABLE);
         }
         else if (def instanceof Parameter)
-        {   
-            ident.setType(PARAMETER); 
+        {
+            ident.setType(PARAMETER);
         }
         else if (def instanceof Field)
         {
@@ -600,13 +601,13 @@ options
             if (fieldInfo.isStatic())
             {
                 JQLAST typeNameAST = new JQLAST(TYPENAME, candidateClass.getName(), candidateClass);
-                ident = analyseStaticFieldAccess(fieldAccessAST, typeNameAST, 
+                ident = analyseStaticFieldAccess(fieldAccessAST, typeNameAST,
                                                  identAST, candidateClass, fieldInfo);
             }
             else
             {
                 JQLAST thisAST = new JQLAST(THIS, "this", candidateClass); //NOI18N
-                ident = analyseFieldAccess(fieldAccessAST, thisAST, 
+                ident = analyseFieldAccess(fieldAccessAST, thisAST,
                                            identAST, candidateClass, fieldInfo);
             }
         }
@@ -625,9 +626,9 @@ options
         ident.setJQLType(type);
         return ident;
     }
-    
+
     /**
-     * Analyses a call for an object that implements Collection. 
+     * Analyses a call for an object that implements Collection.
      * Currently, contains is the only valid Collection method in a query filter.
      */
     protected JQLAST analyseCollectionCall(JQLAST dot, JQLAST collection, JQLAST method, JQLAST args)
@@ -653,8 +654,8 @@ options
             collection.setNextSibling(null);
             return dot;
         }
-        
-        errorMsg.error(dot.getLine(), dot.getColumn(),  
+
+        errorMsg.error(dot.getLine(), dot.getColumn(),
             I18NHelper.getMessage(messages, "jqlc.semantic.generic.invalidmethodcall"));  //NOI18N
         dot.setJQLType(typetab.errorType);
         return dot;
@@ -719,7 +720,7 @@ options
         }
         else
         {
-            errorMsg.error(dot.getLine(), dot.getColumn(),  
+            errorMsg.error(dot.getLine(), dot.getColumn(),
                 I18NHelper.getMessage(messages, "jqlc.semantic.generic.invalidmethodcall"));  //NOI18N
             dot.setJQLType(typetab.errorType);
         }
@@ -749,7 +750,7 @@ options
         }
         else
         {
-            errorMsg.error(dot.getLine(), dot.getColumn(),  
+            errorMsg.error(dot.getLine(), dot.getColumn(),
                 I18NHelper.getMessage(messages, "jqlc.semantic.generic.invalidmethodcall"));  //NOI18N
             dot.setJQLType(typetab.errorType);
         }
@@ -757,36 +758,36 @@ options
     }
 
     /**
-     * This method checks the specified node (args) representing an empty 
+     * This method checks the specified node (args) representing an empty
      * argument list.
      */
     protected void checkNoArgs(JQLAST method, JQLAST firstArg)
     {
-        if (firstArg != null) 
+        if (firstArg != null)
         {
             errorMsg.error(firstArg.getLine(), firstArg.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
     }
 
     /**
-     * This method checks the specified node (args) representing an argument 
-     * list which consists of a single argument of type String. 
+     * This method checks the specified node (args) representing an argument
+     * list which consists of a single argument of type String.
      */
     protected void checkOneStringArg(JQLAST method, JQLAST firstArg)
     {
         if (firstArg == null)
         {
             errorMsg.error(method.getLine(), method.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else if (firstArg.getNextSibling() != null)
         {
             JQLAST nextArg = (JQLAST)firstArg.getNextSibling();
             errorMsg.error(nextArg.getLine(), nextArg.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else
@@ -795,7 +796,7 @@ options
             if (!argType.equals(typetab.stringType))
             {
                 errorMsg.error(firstArg.getLine(), firstArg.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.generic.arguments.typemismatch", //NOI18N
                         argType.getName(), typetab.stringType.getName()));
             }
@@ -803,7 +804,7 @@ options
     }
 
     /**
-     * This method checks the specified node (args) representing a valid contains 
+     * This method checks the specified node (args) representing a valid contains
      * argument list: one argument denoting a variable.
      */
     protected void checkContainsArgs(JQLAST collection, JQLAST method, JQLAST firstArg)
@@ -811,20 +812,20 @@ options
         if (firstArg == null)
         {
             errorMsg.error(method.getLine(), method.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else if (firstArg.getNextSibling() != null)
         {
             JQLAST nextArg = (JQLAST)firstArg.getNextSibling();
             errorMsg.error(nextArg.getLine(), nextArg.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else if (firstArg.getType() != VARIABLE)
         {
             errorMsg.unsupported(firstArg.getLine(), firstArg.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.analysecollectioncall.nonvariable")); //NOI18N
         }
         else
@@ -832,8 +833,8 @@ options
             FieldInfo collectionFieldInfo = getCollectionField(collection);
             if (collectionFieldInfo == null)
             {
-                errorMsg.unsupported(collection.getLine(), collection.getColumn(),  
-                    I18NHelper.getMessage(messages, 
+                errorMsg.unsupported(collection.getLine(), collection.getColumn(),
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.analysecollectioncall.unsupportedcollectionexpr", //NOI18N
                     collection.getText()));
             }
@@ -841,7 +842,7 @@ options
             {
                 // check compatibilty of collection element type and type of variable
                 errorMsg.error(collection.getLine(), collection.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.analysecollectioncall.relationshipexpected", //NOI18N
                         collectionFieldInfo.getName()));
             }
@@ -850,7 +851,7 @@ options
             if (!elementType.isCompatibleWith(variableType))
             {
                 errorMsg.error(collection.getLine(), collection.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.analysecollectioncall.typemismatch", //NOI18N
                         elementType.getName(), variableType.getName()));
             }
@@ -858,7 +859,7 @@ options
     }
 
     /**
-     * This method checks the specified node (args) representing a valid like 
+     * This method checks the specified node (args) representing a valid like
      * argument list: a string argument plus an optional char argument.
      */
     protected void checkLikeArgs(JQLAST method, JQLAST firstArg)
@@ -866,15 +867,15 @@ options
         if (firstArg == null)
         {
             errorMsg.error(method.getLine(), method.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
-        else if ((firstArg.getNextSibling() != null) && 
+        else if ((firstArg.getNextSibling() != null) &&
             (firstArg.getNextSibling().getNextSibling() != null))
         {
             JQLAST nextArg = (JQLAST)firstArg.getNextSibling().getNextSibling();
             errorMsg.error(nextArg.getLine(), nextArg.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else
@@ -884,7 +885,7 @@ options
             if (!firstArgType.equals(typetab.stringType))
             {
                 errorMsg.error(firstArg.getLine(), firstArg.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.generic.arguments.typemismatch", //NOI18N
                         firstArgType.getName(), typetab.stringType.getName()));
             }
@@ -896,7 +897,7 @@ options
                 if (!typetab.isCharType(secondArgType))
                 {
                     errorMsg.error(secondArg.getLine(), secondArg.getColumn(),
-                        I18NHelper.getMessage(messages, 
+                        I18NHelper.getMessage(messages,
                             "jqlc.semantic.generic.arguments.typemismatch", //NOI18N
                         secondArgType.getName(), typetab.charType.getName()));
                 }
@@ -905,7 +906,7 @@ options
     }
 
     /**
-     * This method checks the specified node (args) representing an argument 
+     * This method checks the specified node (args) representing an argument
      * list which consists of two integer arguments.
      */
     protected void checkTwoIntArgs(JQLAST method, JQLAST firstArg)
@@ -914,14 +915,14 @@ options
         {
             // no args specified
             errorMsg.error(method.getLine(), method.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else if (firstArg.getNextSibling() == null)
         {
             // one arg specified
             errorMsg.error(method.getLine(), method.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else if (firstArg.getNextSibling().getNextSibling() != null)
@@ -929,7 +930,7 @@ options
             // more than two args specified
             JQLAST nextArg = (JQLAST)firstArg.getNextSibling().getNextSibling();
             errorMsg.error(nextArg.getLine(), nextArg.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else
@@ -940,7 +941,7 @@ options
             if (!typetab.isIntType(firstArgType))
             {
                 errorMsg.error(firstArg.getLine(), firstArg.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.generic.arguments.typemismatch", //NOI18N
                         firstArgType.getName(), typetab.intType.getName()));
             }
@@ -950,7 +951,7 @@ options
             if (!typetab.isIntType(secondArgType))
             {
                 errorMsg.error(secondArg.getLine(), secondArg.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.generic.arguments.typemismatch", //NOI18N
                         secondArgType.getName(), typetab.intType.getName()));
             }
@@ -958,7 +959,7 @@ options
     }
 
     /**
-     * This method checks the specified node (args) representing a valid indexOf 
+     * This method checks the specified node (args) representing a valid indexOf
      * argument list: a string argument plus an optional char argument.
      */
     protected void checkIndexOfArgs(JQLAST method, JQLAST firstArg)
@@ -966,15 +967,15 @@ options
         if (firstArg == null)
         {
             errorMsg.error(method.getLine(), method.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
-        else if ((firstArg.getNextSibling() != null) && 
+        else if ((firstArg.getNextSibling() != null) &&
             (firstArg.getNextSibling().getNextSibling() != null))
         {
             JQLAST nextArg = (JQLAST)firstArg.getNextSibling().getNextSibling();
             errorMsg.error(nextArg.getLine(), nextArg.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else
@@ -984,7 +985,7 @@ options
             if (!firstArgType.equals(typetab.stringType))
             {
                 errorMsg.error(firstArg.getLine(), firstArg.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.generic.arguments.typemismatch", //NOI18N
                         firstArgType.getName(), typetab.stringType.getName()));
             }
@@ -996,7 +997,7 @@ options
                 if (!typetab.isIntType(secondArgType))
                 {
                     errorMsg.error(secondArg.getLine(), secondArg.getColumn(),
-                        I18NHelper.getMessage(messages, 
+                        I18NHelper.getMessage(messages,
                             "jqlc.semantic.generic.arguments.typemismatch", //NOI18N
                             secondArgType.getName(), typetab.intType.getName()));
                 }
@@ -1013,14 +1014,14 @@ options
         if (firstArg == null)
         {
             errorMsg.error(method.getLine(), method.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else if (firstArg.getNextSibling() != null)
         {
             JQLAST nextArg = (JQLAST)firstArg.getNextSibling();
                 errorMsg.error(nextArg.getLine(), nextArg.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else
@@ -1029,7 +1030,7 @@ options
             if (!typetab.isNumberType(argType))
             {
                 errorMsg.error(firstArg.getLine(), firstArg.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.generic.arguments.typemismatch", //NOI18N
                         argType.getName(), "number type"));
             }
@@ -1045,14 +1046,14 @@ options
         if (firstArg == null)
         {
             errorMsg.error(method.getLine(), method.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else if (firstArg.getNextSibling() != null)
         {
             JQLAST nextArg = (JQLAST)firstArg.getNextSibling();
                 errorMsg.error(nextArg.getLine(), nextArg.getColumn(),
-                I18NHelper.getMessage(messages, 
+                I18NHelper.getMessage(messages,
                     "jqlc.semantic.generic.arguments.numbermismatch")); //NOI18N
         }
         else
@@ -1061,7 +1062,7 @@ options
             if (!typetab.isDoubleType(argType))
             {
                 errorMsg.error(firstArg.getLine(), firstArg.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.generic.arguments.typemismatch", //NOI18N
                         argType.getName(), "double or Double"));
             }
@@ -1100,7 +1101,7 @@ options
     /**
      * Analyses a bitwise/logical operation (&, |, ^)
      * @param op the bitwise/logical operator
-     * @param leftAST left operand 
+     * @param leftAST left operand
      * @param rightAST right operand
      * @return Type
      */
@@ -1108,11 +1109,11 @@ options
     {
         Type left = leftAST.getJQLType();
         Type right = rightAST.getJQLType();
-        
+
         // handle error type
         if (left.equals(typetab.errorType) || right.equals(typetab.errorType))
             return typetab.errorType;
-        
+
         switch(op.getType())
         {
         case BAND:
@@ -1121,7 +1122,7 @@ options
                 return typetab.booleanType;
             else if (typetab.isIntegralType(left) || typetab.isIntegralType(right))
             {
-                errorMsg.unsupported(op.getLine(), op.getColumn(), 
+                errorMsg.unsupported(op.getLine(), op.getColumn(),
                     I18NHelper.getMessage(messages, "jqlc.semantic.analysebitwiseexpr.integerbitwiseop", //NOI18N
                         op.getText()));
                 return typetab.errorType;
@@ -1130,14 +1131,14 @@ options
         case BXOR:
             if (typetab.isBooleanType(left) && typetab.isBooleanType(right))
             {
-                errorMsg.unsupported(op.getLine(), op.getColumn(), 
-                    I18NHelper.getMessage(messages, 
+                errorMsg.unsupported(op.getLine(), op.getColumn(),
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.analysebitwiseexpr.exclusiveorop")); //NOI18N
                 return typetab.errorType;
             }
             else if (typetab.isIntegralType(left) || typetab.isIntegralType(right))
             {
-                errorMsg.unsupported(op.getLine(), op.getColumn(), 
+                errorMsg.unsupported(op.getLine(), op.getColumn(),
                     I18NHelper.getMessage(messages, "jqlc.semantic.analysebitwiseexpr.integerbitwiseop",  //NOI18N
                         op.getText()));
                 return typetab.errorType;
@@ -1146,16 +1147,16 @@ options
         }
 
         // if this code is reached a bitwise operator was used with invalid arguments
-        errorMsg.error(op.getLine(), op.getColumn(), 
+        errorMsg.error(op.getLine(), op.getColumn(),
             I18NHelper.getMessage(messages, "jqlc.semantic.generic.arguments.invalid", //NOI18N
                 op.getText()));
         return typetab.errorType;
     }
-    
+
     /**
      * Analyses a boolean conditional operation (&&, ||)
      * @param op the conditional operator
-     * @param leftAST left operand 
+     * @param leftAST left operand
      * @param rightAST right operand
      * @return Type
      */
@@ -1176,9 +1177,9 @@ options
                 return typetab.booleanType;
             break;
         }
-        
+
         // if this code is reached a conditional operator was used with invalid arguments
-        errorMsg.error(op.getLine(), op.getColumn(), 
+        errorMsg.error(op.getLine(), op.getColumn(),
             I18NHelper.getMessage(messages, "jqlc.semantic.generic.arguments.invalid", //NOI18N
                 op.getText()));
         return typetab.errorType;
@@ -1187,9 +1188,9 @@ options
     /**
      * Analyses a relational operation (<, <=, >, >=, ==, !=)
      * @param op the relational operator
-     * @param leftAST left operand 
+     * @param leftAST left operand
      * @param rightAST right operand
-     * @return Type 
+     * @return Type
      */
     protected Type analyseRelationalExpr(JQLAST op, JQLAST leftAST, JQLAST rightAST)
     {
@@ -1218,7 +1219,7 @@ options
             if (!right.isOrderable())
             {
                 errorMsg.error(op.getLine(), op.getColumn(),
-                    I18NHelper.getMessage(messages, "jqlc.semantic.analyserelationalexpr.notorderable", //NOI18N 
+                    I18NHelper.getMessage(messages, "jqlc.semantic.analyserelationalexpr.notorderable", //NOI18N
                         right.getName(), op.getText()));
                 return typetab.errorType;
             }
@@ -1228,13 +1229,13 @@ options
             if ((leftAST.getType() == CONTAINS) || (rightAST.getType() == CONTAINS))
             {
                 errorMsg.unsupported(op.getLine(), op.getColumn(),
-                    I18NHelper.getMessage(messages, 
+                    I18NHelper.getMessage(messages,
                         "jqlc.semantic.generic.unsupportedconstraintop", op.getText())); //NOI18N
                 return typetab.errorType;
             }
             break;
         }
-        
+
         // check for numeric types, numeric wrapper class types and math class types
         if (typetab.isNumberType(left) && typetab.isNumberType(right))
             return typetab.booleanType;
@@ -1245,18 +1246,18 @@ options
 
         if (left.isCompatibleWith(right) || right.isCompatibleWith(left))
             return typetab.booleanType;
-        
+
         // if this code is reached a conditional operator was used with invalid arguments
-        errorMsg.error(op.getLine(), op.getColumn(), 
-            I18NHelper.getMessage(messages, "jqlc.semantic.generic.arguments.invalid", //NOI18N 
+        errorMsg.error(op.getLine(), op.getColumn(),
+            I18NHelper.getMessage(messages, "jqlc.semantic.generic.arguments.invalid", //NOI18N
                 op.getText()));
         return typetab.errorType;
     }
-    
+
     /**
-     * Analyses a 
+     * Analyses a
      * @param op the  operator
-     * @param leftAST left operand 
+     * @param leftAST left operand
      * @param rightAST right operand
      * @return Type
      */
@@ -1276,22 +1277,22 @@ options
                 return left;
             if (right.isCompatibleWith(typetab.bigDecimalType))
                 return right;
-            
+
             // handle java.math.BigInteger
             if (left.isCompatibleWith(typetab.bigIntegerType))
             {
-                // if right is floating point return BigDecimal, 
+                // if right is floating point return BigDecimal,
                 // otherwise return BigInteger
-                return typetab.isFloatingPointType(right) ? 
+                return typetab.isFloatingPointType(right) ?
                        typetab.bigDecimalType : left;
             }
             if (right.isCompatibleWith(typetab.bigIntegerType))
             {
-                // if left is floating point return BigDecimal, 
+                // if left is floating point return BigDecimal,
                 // otherwise return BigInteger
-                return typetab.isFloatingPointType(left) ? 
+                return typetab.isFloatingPointType(left) ?
                        typetab.bigDecimalType : right;
-            }       
+            }
 
             boolean wrapper = false;
             if (left instanceof NumericWrapperClassType)
@@ -1304,13 +1305,13 @@ options
                 right = ((NumericWrapperClassType)right).getPrimitiveType();
                 wrapper = true;
             }
-            
+
             // handle numeric types with arbitrary arithmetic operator
             if ((left instanceof NumericType) && (right instanceof NumericType))
             {
                 Type promotedType = typetab.binaryNumericPromotion(left, right);
                 if (wrapper && (promotedType instanceof NumericType))
-                {   
+                {
                     promotedType =  ((NumericType)promotedType).getWrapper();
                 }
                 return promotedType;
@@ -1320,8 +1321,8 @@ options
         {
             // handle + for strings
             // MBO: note, this if matches char + char (which it should'nt),
-            // but this case is already handled above 
-            if ((left.equals(typetab.stringType) || left.equals(typetab.charType)) && 
+            // but this case is already handled above
+            if ((left.equals(typetab.stringType) || left.equals(typetab.charType)) &&
                 (right.equals(typetab.stringType) || right.equals(typetab.charType)))
             {
                 return typetab.stringType;
@@ -1329,17 +1330,17 @@ options
         }
 
         // if this code is reached a conditional operator was used with invalid arguments
-        errorMsg.error(op.getLine(), op.getColumn(), 
+        errorMsg.error(op.getLine(), op.getColumn(),
             I18NHelper.getMessage(messages, "jqlc.semantic.generic.arguments.invalid", //NOI18N
                 op.getText()));
         return typetab.errorType;
     }
 
     /**
-     * Analyses a 
+     * Analyses a
      * @param op the operator
      * @param argAST right operand
-     * @return Type 
+     * @return Type
      */
     protected Type analyseUnaryArithmeticExpr(JQLAST op, JQLAST argAST)
     {
@@ -1348,7 +1349,7 @@ options
         // handle error type
         if (arg.equals(typetab.errorType))
             return typetab.errorType;
-        
+
         // handle java.math.BigDecimal and java.math.BigInteger
         if (arg.isCompatibleWith(typetab.bigDecimalType))
             return arg;
@@ -1373,18 +1374,18 @@ options
             }
             return promotedType;
         }
-        
+
         // if this code is reached a conditional operator was used with invalid arguments
-        errorMsg.error(op.getLine(), op.getColumn(), 
+        errorMsg.error(op.getLine(), op.getColumn(),
             I18NHelper.getMessage(messages, "jqlc.semantic.generic.arguments.invalid", //NOI18N
                 op.getText()));
         return typetab.errorType;
     }
     /**
-     * Analyses a 
+     * Analyses a
      * @param op the operator
      * @param argAST right operand
-     * @return Type 
+     * @return Type
      */
     protected Type analyseComplementExpr(JQLAST op, JQLAST argAST)
     {
@@ -1408,7 +1409,7 @@ options
                 if (argAST.getType() == CONTAINS)
                 {
                     errorMsg.unsupported(op.getLine(), op.getColumn(),
-                        I18NHelper.getMessage(messages, 
+                        I18NHelper.getMessage(messages,
                             "jqlc.semantic.generic.unsupportedconstraintop", op.getText())); //NOI18N
                     return typetab.errorType;
                 }
@@ -1416,14 +1417,14 @@ options
             }
             break;
         }
-        
+
         // if this code is reached a conditional operator was used with invalid arguments
-        errorMsg.error(op.getLine(), op.getColumn(), 
-            I18NHelper.getMessage(messages, "jqlc.semantic.generic.arguments.invalid", //NOI18N 
+        errorMsg.error(op.getLine(), op.getColumn(),
+            I18NHelper.getMessage(messages, "jqlc.semantic.generic.arguments.invalid", //NOI18N
                 op.getText()));
         return typetab.errorType;
     }
-    
+
     /**
      *
      */
@@ -1440,7 +1441,7 @@ options
         if (ast == null) return;
         switch (ast.getType())
         {
-        case VARIABLE:  
+        case VARIABLE:
             tab.markUsed(ast, dependentVariable);
             break;
         case CONTAINS:
@@ -1475,8 +1476,8 @@ options
 
 query
     :   #(  QUERY
-            {   
-                symtab.enterScope(); 
+            {
+                symtab.enterScope();
                 typeNames.enterScope();
             }
             candidateClass
@@ -1490,12 +1491,12 @@ query
             o:ordering
             r:result
             filter
-            {   
+            {
                 typeNames.leaveScope();
                 // leaves variable and parameter name scope
                 symtab.leaveScope();
                 // leaves global scope
-                symtab.leaveScope(); 
+                symtab.leaveScope();
             }
         )
         {
@@ -1508,7 +1509,7 @@ query
 // ----------------------------------
 
 candidateClass
-{   
+{
     errorMsg.setContext("setClass"); //NOI18N
 }
     :   c:CLASS_DEF
@@ -1519,7 +1520,7 @@ candidateClass
             if (!candidateClass.isPersistenceCapable())
             {
                 errorMsg.unsupported(#c.getLine(), #c.getColumn(),
-                    I18NHelper.getMessage(messages, "jqlc.semantic.candidateclass.nonpc", //NOI18N 
+                    I18NHelper.getMessage(messages, "jqlc.semantic.candidateclass.nonpc", //NOI18N
                         className));
             }
 
@@ -1543,7 +1544,7 @@ candidateClass
 // ----------------------------------
 
 imports!
-{   
+{
     errorMsg.setContext("declareImports"); //NOI18N
 }
     :   ( declareImport )*
@@ -1579,7 +1580,7 @@ declareImport
 // ----------------------------------
 
 parameters
-{   
+{
     errorMsg.setContext("declareParameters"); //NOI18N
 }
     :   ( declareParameter )*
@@ -1598,7 +1599,7 @@ declareParameter
                         name, old.getName()));
             }
             #i.setJQLType(type);
-            paramtab.add(name, type); 
+            paramtab.add(name, type);
         }
     ;
 
@@ -1606,8 +1607,8 @@ declareParameter
 // rules: variable declaration
 // ----------------------------------
 
-variables 
-{ 
+variables
+{
     errorMsg.setContext("declareVariables"); //NOI18N
 }
     :   ( declareVariable )*
@@ -1634,8 +1635,8 @@ declareVariable
 // rules: ordering specification
 // ----------------------------------
 
-ordering 
-{   
+ordering
+{
     errorMsg.setContext("setOrdering"); //NOI18N
 }
     :   ( orderSpec )*
@@ -1654,7 +1655,7 @@ orderSpec
 // ----------------------------------
 
 result
-{   
+{
     errorMsg.setContext("setResult"); //NOI18N
 }
     :   #( r:RESULT_DEF e:resultExpr )
@@ -1699,12 +1700,12 @@ resultExpr
 // ----------------------------------
 
 filter
-{   
+{
     errorMsg.setContext("setFilter"); //NOI18N
 }
         // There is always a filter defined and it is the last node of the query tree.
         // Otherwise all the remaining subtrees after the CLASS_DEF subtree are empty
-        // which results in a ClassCastException antlr.ASTNullType when analysis 
+        // which results in a ClassCastException antlr.ASTNullType when analysis
         // the (non existsent) subtrees
     :   #( FILTER_DEF e:expression )
         {
@@ -1873,7 +1874,7 @@ complementExpr
     ;
 
 primary [boolean insideDotExpr] returns [String repr]
-{   repr = null; } 
+{   repr = null; }
     :   #( c:TYPECAST t:type e:expression )
         {
             Type type = #t.getJQLType();
@@ -1893,13 +1894,13 @@ primary [boolean insideDotExpr] returns [String repr]
     |   repr = dotExpr
     |   repr = identifier [insideDotExpr]
     ;
- 
+
 dotExpr returns [String repr]
     {
         repr = null;
     }
-    :   #( dot:DOT 
-           repr = expr:exprNoCheck[true] ident:IDENT ( args:argList )? 
+    :   #( dot:DOT
+           repr = expr:exprNoCheck[true] ident:IDENT ( args:argList )?
          )
         {
             Type type = null;
@@ -1926,7 +1927,7 @@ dotExpr returns [String repr]
                     // found valid class name and arguments specified =>
                     // looks like constructor call
                     repr = null;
-                    errorMsg.error(dot.getLine(), dot.getColumn(),  
+                    errorMsg.error(dot.getLine(), dot.getColumn(),
                         I18NHelper.getMessage(messages, "jqlc.semantic.generic.invalidmethodcall")); //NOI18N
                }
                 #dot.setJQLType(type);
@@ -1956,7 +1957,7 @@ identifier [boolean insideDotExpr] returns [String repr]
             if (#args != null)
             {
                 #ident.setJQLType(typetab.errorType);
-                errorMsg.error(#ident.getLine(), #ident.getColumn(),  
+                errorMsg.error(#ident.getLine(), #ident.getColumn(),
                     I18NHelper.getMessage(messages, "jqlc.semantic.generic.invalidmethodcall")); //NOI18N
             }
             else if (def != null)
@@ -1970,7 +1971,7 @@ identifier [boolean insideDotExpr] returns [String repr]
                 {
                     #ident = analyseDefinedIdentifier(#ident, typedef);
                 }
-                else 
+                else
                 {
                     repr = #ident.getText();
                 }
@@ -2028,7 +2029,7 @@ type
                 {
                     errorMsg.error(#qn.getLine(), #qn.getColumn(),
                         I18NHelper.getMessage(messages, "jqlc.semantic.type.notype", //NOI18N
-                            name, def.getName())); 
+                            name, def.getName()));
                 }
             }
             else
@@ -2036,7 +2037,7 @@ type
                 type = typetab.checkType(name);
                 if ((type == null) && (name.indexOf('.') == -1))
                 {
-                    // ckeck java.lang class without package name 
+                    // ckeck java.lang class without package name
                     type = typetab.checkType("java.lang." + name); //NOI18N
                 }
                 if (type == null)

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.noRealmsError;
@@ -68,24 +68,20 @@ public class RealmConfig {
     }
 
     public static void createRealms(String defaultRealm, List<AuthRealm> realms, String configName) {
-        assert (realms != null);
-
         String goodRealm = null; // need at least one good realm
 
-        for (AuthRealm aRealm : realms) {
-            String realmName = aRealm.getName();
-            String realmClass = aRealm.getClassname();
-            assert (realmName != null);
-            assert (realmClass != null);
+        for (AuthRealm realm : realms) {
+            String realmName = realm.getName();
+            String realmClass = realm.getClassname();
 
             try {
-                List<Property> realmProps = aRealm.getProperty();
-                Properties props = new Properties();
-                for (Property realmProp : realmProps) {
-                    props.setProperty(realmProp.getName(), realmProp.getValue());
+                List<Property> realmProperties = realm.getProperty();
+                Properties properties = new Properties();
+                for (Property realmProperty : realmProperties) {
+                    properties.setProperty(realmProperty.getName(), realmProperty.getValue());
                 }
                 
-                Realm.instantiate(realmName, realmClass, props, configName);
+                Realm.instantiate(realmName, realmClass, properties, configName);
                 if (logger.isLoggable(FINE)) {
                     logger.fine("Configured realm: " + realmName);
                 }
@@ -105,13 +101,13 @@ public class RealmConfig {
 
         if (goodRealm == null) {
             logger.severe(noRealmsError);
-
         } else {
             try {
                 Realm.getInstance(defaultRealm);
             } catch (Exception e) {
                 defaultRealm = goodRealm;
             }
+            
             Realm.setDefaultRealm(defaultRealm);
             if (logger.isLoggable(FINE)) {
                 logger.fine("Default realm is set to: " + defaultRealm);

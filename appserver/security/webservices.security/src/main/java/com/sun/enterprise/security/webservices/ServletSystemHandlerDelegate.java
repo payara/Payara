@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import java.security.PrivilegedActionException;
@@ -53,7 +53,7 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.jauth.AuthException;
 import com.sun.enterprise.security.jauth.ServerAuthContext;
-import com.sun.enterprise.security.jmac.provider.ServerAuthConfig;
+import com.sun.enterprise.security.jauth.jaspic.provider.ServerAuthConfig;
 import com.sun.xml.rpc.spi.runtime.Implementor;
 import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
 import com.sun.xml.rpc.spi.runtime.StreamingHandler;

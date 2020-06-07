@@ -37,17 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonValue;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.glassfish.admin.rest.testing.Common.*;
 
@@ -58,7 +58,7 @@ public class ArrayValue extends Value {
 
     ArrayValue() {
     }
-    
+
     public boolean isIgnoreExtra() {
         return this.ignoreExtra;
     }

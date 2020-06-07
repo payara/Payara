@@ -38,11 +38,13 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.resources.javamail.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;

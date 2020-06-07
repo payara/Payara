@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -114,6 +115,7 @@ final class WebModuleListener
      * Process the START event for an associated WebModule
      * @param event The lifecycle event that has occurred
      */
+    @Override
     public void lifecycleEvent(LifecycleEvent event) {
 
         // Identify the context we are associated with
@@ -259,14 +261,14 @@ final class WebModuleListener
             (ServiceLocator) defaultServices,
             webModule.getID(), null
         );
-        // If the configuration flag usMyFaces is set, remove javax.faces.jar
+        // If the configuration flag usMyFaces is set, remove jakarta.faces.jar
         // from the system class path
         Boolean useMyFaces = (Boolean)
             servletContext.getAttribute("com.sun.faces.useMyFaces");
         if (useMyFaces != null && useMyFaces) {
             sysClassPath =
-                sysClassPath.replace("javax.faces.jar", "$disabled$.raj");
-            // jsf-connector.jar manifest has a Class-Path to javax.faces.jar
+                sysClassPath.replace("jakarta.faces.jar", "$disabled$.raj");
+            // jsf-connector.jar manifest has a Class-Path to jakarta.faces.jar
             sysClassPath =
                 sysClassPath.replace("jsf-connector.jar", "$disabled$.raj");
         }

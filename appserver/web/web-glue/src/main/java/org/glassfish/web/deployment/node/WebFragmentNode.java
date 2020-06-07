@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.deployment.node;
 
 import com.sun.enterprise.deployment.node.*;
@@ -46,33 +46,39 @@ import org.glassfish.web.deployment.xml.WebTagNames;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.unmodifiableList;
+import static org.glassfish.web.deployment.xml.WebTagNames.ORDERING;
+import static org.glassfish.web.deployment.xml.WebTagNames.WEB_FRAGMENT;
+
 import java.util.*;
 
 /**
  * This node is responsible for handling the web-fragment xml tree
  *
- * @author  Shing Wai Chan
- * @version 
+ * @author Shing Wai Chan
+ * @version
  */
 @Service
 public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
 
-   public final static XMLElement tag = new XMLElement(WebTagNames.WEB_FRAGMENT);
+    public final static XMLElement tag = new XMLElement(WebTagNames.WEB_FRAGMENT);
 
-    /** 
-     * The system ID of my documents. 
+    /**
+     * The system ID of my documents.
      */
     public final static String SCHEMA_ID = "web-fragment_3_0.xsd";
     private final static List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
-        List<String> systemIDs = new ArrayList<String>();
+        List<String> systemIDs = new ArrayList<>();
         systemIDs.add(SCHEMA_ID);
-        return Collections.unmodifiableList(systemIDs);
+        
+        return unmodifiableList(systemIDs);
     }
-    
+
     /**
-     * register this node as a root node capable of loading entire DD files
+     * Register this node as a root node capable of loading entire DD files
      *
      * @param publicIDToDTD is a mapping between xml Public-ID to DTD
      * @return the doctype tag name
@@ -82,24 +88,22 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
         return tag.getQName();
     }
 
-
     @Override
-    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD, Map<String, List<Class>> versionUpgrades) {
-        return Collections.emptyMap();
+    public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
+        return emptyMap();
     }
-    
+
     /** Creates new WebBundleNode */
-    public WebFragmentNode()  {
+    public WebFragmentNode() {
         super();
-        registerElementHandler(new XMLElement(WebTagNames.ORDERING),
-                OrderingNode.class, "setOrderingDescriptor");
-        SaxParserHandler.registerBundleNode(this, WebTagNames.WEB_FRAGMENT);
+        registerElementHandler(new XMLElement(ORDERING), OrderingNode.class, "setOrderingDescriptor");
+        SaxParserHandler.registerBundleNode(this, WEB_FRAGMENT);
     }
 
     /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
+     * All sub-implementation of this class can use a dispatch table to map xml element to method name on the descriptor
+     * class for setting the element value.
+     * 
      * @return the map with the element name as a key, the setter method as a value
      */
     @Override
@@ -115,7 +119,7 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
     @Override
     protected XMLElement getXMLRootTag() {
         return tag;
-    }       
+    }
 
     /**
      * @return the DOCTYPE of the XML file
@@ -123,7 +127,7 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
     public String getDocType() {
         return null;
     }
-    
+
     /**
      * @return the SystemID of the XML file
      */
@@ -144,30 +148,28 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
     @Override
     public WebFragmentDescriptor getDescriptor() {
         // no default bundle for web-fragment
-        if (descriptor==null) {
+        if (descriptor == null) {
             descriptor = new WebFragmentDescriptor();
         }
         return descriptor;
     }
 
     /**
-     * write the descriptor class to a DOM tree and return it
+     * Write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
      * @param webFragmentDesc the descriptor to write
      * @return the DOM tree top node
      */
     @Override
-    public Node writeDescriptor(Node parent,
-        WebFragmentDescriptor webFragmentDesc) {
+    public Node writeDescriptor(Node parent, WebFragmentDescriptor webFragmentDesc) {
         Node jarNode = super.writeDescriptor(parent, webFragmentDesc);
         if (webFragmentDesc.getOrderingDescriptor() != null) {
             OrderingNode orderingNode = new OrderingNode();
-            orderingNode.writeDescriptor(jarNode, WebTagNames.ORDERING,
-                    webFragmentDesc.getOrderingDescriptor());
+            orderingNode.writeDescriptor(jarNode, ORDERING, webFragmentDesc.getOrderingDescriptor());
         }
+        
         return jarNode;
     }
-
 
 }

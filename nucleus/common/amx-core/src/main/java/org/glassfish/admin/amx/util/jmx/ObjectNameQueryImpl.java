@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -49,11 +50,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class ObjectNameQueryImpl implements ObjectNameQuery
-{
-    public ObjectNameQueryImpl()
-    {
-    }
+public class ObjectNameQueryImpl implements ObjectNameQuery {
 
     /**
     Return true if one (or more) of the properties match the regular expressions
@@ -149,14 +146,11 @@ public class ObjectNameQueryImpl implements ObjectNameQuery
         return (matches);
     }
 
-    Pattern[] createPatterns(final String[] patternStrings, int numItems)
-    {
+    Pattern[] createPatterns(final String[] patternStrings, int numItems) {
         final Pattern[] patterns = new Pattern[numItems];
 
-        if (patternStrings == null)
-        {
-            for (int i = 0; i < numItems; ++i)
-            {
+        if (patternStrings == null) {
+            for (int i = 0; i < numItems; ++i) {
                 patterns[i] = null;
             }
 
@@ -164,16 +158,12 @@ public class ObjectNameQueryImpl implements ObjectNameQuery
         }
 
 
-        for (int i = 0; i < numItems; ++i)
-        {
+        for (int i = 0; i < numItems; ++i) {
             // consider null to match anything
 
-            if (patternStrings[i] == null)
-            {
+            if (patternStrings[i] == null) {
                 patterns[i] = null;
-            }
-            else
-            {
+            } else {
                 patterns[i] = Pattern.compile(patternStrings[i]);
             }
         }
@@ -181,18 +171,13 @@ public class ObjectNameQueryImpl implements ObjectNameQuery
         return (patterns);
     }
 
-    private interface Matcher
-    {
+    private interface Matcher {
         boolean match(ObjectName name, Pattern[] names, Pattern[] values);
-
     }
 
-    private class MatchAnyMatcher implements Matcher
-    {
-        public MatchAnyMatcher()
-        {
-        }
+    private class MatchAnyMatcher implements Matcher {
 
+        @Override
         public boolean match(ObjectName name, Pattern[] names, Pattern[] values)
         {
             return (matchAny(name, names, values));
@@ -200,27 +185,17 @@ public class ObjectNameQueryImpl implements ObjectNameQuery
 
     }
 
-    private class MatchAllMatcher implements Matcher
-    {
-        public MatchAllMatcher()
-        {
-        }
+    private class MatchAllMatcher implements Matcher {
 
-        public boolean match(ObjectName name, Pattern[] names, Pattern[] values)
-        {
+        @Override
+        public boolean match(ObjectName name, Pattern[] names, Pattern[] values) {
             return (matchAll(name, names, values));
         }
 
     }
 
-    Set<ObjectName> matchEither(
-            Matcher matcher,
-            Set<ObjectName> startingSet,
-            String[] regexNames,
-            String[] regexValues)
-    {
-        if (regexNames == null && regexValues == null)
-        {
+    Set<ObjectName> matchEither(Matcher matcher, Set<ObjectName> startingSet, String[] regexNames, String[] regexValues) {
+        if (regexNames == null && regexValues == null) {
             // both null => matches entire original set
             return (startingSet);
         }
@@ -228,22 +203,17 @@ public class ObjectNameQueryImpl implements ObjectNameQuery
         final Set<ObjectName> results = new HashSet<ObjectName>();
 
         int numMatches = 0;
-        if (regexNames != null)
-        {
+        if (regexNames != null) {
             numMatches = regexNames.length;
-        }
-        else
-        {
+        } else {
             numMatches = regexValues.length;
         }
 
         final Pattern[] namePatterns = createPatterns(regexNames, numMatches);
         final Pattern[] valuePatterns = createPatterns(regexValues, numMatches);
 
-        for (final ObjectName name : startingSet)
-        {
-            if (matcher.match(name, namePatterns, valuePatterns))
-            {
+        for (final ObjectName name : startingSet) {
+            if (matcher.match(name, namePatterns, valuePatterns)) {
                 results.add(name);
             }
         }
@@ -251,20 +221,16 @@ public class ObjectNameQueryImpl implements ObjectNameQuery
         return (results);
     }
 
+    @Override
     public Set<ObjectName> matchAll(Set<ObjectName> startingSet, String[] regexNames, String[] regexValues)
     {
         return (matchEither(new MatchAllMatcher(), startingSet, regexNames, regexValues));
     }
 
+    @Override
     public Set<ObjectName> matchAny(Set<ObjectName> startingSet, String[] regexNames, String[] regexValues)
     {
         return (matchEither(new MatchAnyMatcher(), startingSet, regexNames, regexValues));
     }
 
 }
-
-
-
-
-
-

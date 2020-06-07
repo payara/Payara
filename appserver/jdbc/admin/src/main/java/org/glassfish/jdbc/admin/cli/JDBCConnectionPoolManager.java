@@ -281,7 +281,12 @@ public class JDBCConnectionPoolManager implements ResourceManager {
 
     public void setAttributes(HashMap attrList) {
         datasourceclassname = (String) attrList.get(DATASOURCE_CLASS);
+        // empty string is converted to null
         restype = (String) attrList.get(RES_TYPE);
+        if (restype != null && "".equals(restype.trim())) {
+            restype = null;
+        }
+
         steadypoolsize = (String) attrList.get(STEADY_POOL_SIZE);
         maxpoolsize = (String) attrList.get(MAX_POOL_SIZE);
         maxwait = (String) attrList.get(MAX_WAIT_TIME_IN_MILLIS);

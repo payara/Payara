@@ -66,7 +66,9 @@ public final class OpenIdUtil {
         if (configResult.isPresent()) {
             return configResult.get();
         }
-        result = (T) TranslatedConfigView.getTranslatedValue(result);
+        if (type == String.class) {
+            result = (T) TranslatedConfigView.expandValue((String) result);
+        }
         if (type == String.class && isELExpression((String) value)) {
             ELProcessor elProcessor = new ELProcessor();
             BeanManager beanManager = CDI.current().getBeanManager();

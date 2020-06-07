@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>ping-connection-pool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>ping-connection-pool</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="osgi-shell.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="ping-node-dcom.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="ping-connection-pool-1"></a><a id="GSRFM00214"></a><a id="ping-connection-pool"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ping_connection_pool">ping-connection-pool</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>tests if a connection pool is usable</p>
+</div>
+<div id="sthref1926" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] ping-connection-pool [--help]
+pool_name
+[--appname application [--modulename module]</code></pre>
+</div>
+</div>
+<div id="sthref1927" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>ping-connection-pool</code> subcommand tests if an existing JDBC or
+connector connection pool is usable . For example, if you create a new
+JDBC connection pool for an application that is expected to be deployed
+later, the JDBC pool is tested with this subcommand before deploying the
+application.</p>
+</div>
+<div class="paragraph">
+<p>Before testing availability of a connection pool, you must create the
+connection pool with authentication and ensure that the server or
+database is started.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div class="paragraph">
+<p>Application Scoped Resources</p>
+</div>
+<div class="paragraph">
+<p>The <code>ping-connection-pool</code> subcommand can target resources that are
+scoped to a specific application or module, as defined in the
+<code>glassfish-resources.xml</code> for the GlassFish domain.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>To reference the <code>jndi-name</code> for an application scoped resource,
+perform the lookup using the <code>java:app</code> prefix.</p>
+</li>
+<li>
+<p>To reference the <code>jndi-name</code> for a module scoped resource, perform the
+lookup using the <code>java:module</code> prefix.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The <code>jndi-name</code> for application-scoped-resources or
+module-scoped-resources are specified using the format
+<code>java:app/`jdbc/myDataSource or
+`java:module/`jdbc/myModuleLevelDataSource. This naming scope is defined
+in the Java EE 6 Specification.</p>
+</div>
+<div id="sthref1928" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--appname</code></dt>
+<dd>
+<p>Name of the application in which the application scoped resource is
+defined.</p>
+</dd>
+<dt class="hdlist1"><code>--modulename</code></dt>
+<dd>
+<p>Name of the module in which the module scoped resource is defined.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1929" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">pool_name</dt>
+<dd>
+<p>Name of the connection pool to be reinitialized.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1930" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM727"></a><a id="sthref1931"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Contacting a Connection Pool</p>
+</div>
+<div class="paragraph">
+<p>This example tests to see if the connection pool named <code>DerbyPool</code> is
+usable.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; ping-connection-pool DerbyPool
+Command ping-connection-pool executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref1932" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1933" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-connector-connection-pool.html#create-connector-connection-pool-1"><code>create-connector-connection-pool</code>(1)</a>,
+<a href="create-jdbc-connection-pool.html#create-jdbc-connection-pool-1"><code>create-jdbc-connection-pool</code>(1)</a>,
+<a href="delete-connector-connection-pool.html#delete-connector-connection-pool-1"><code>delete-connector-connection-pool</code>(1)</a>,
+<a href="delete-jdbc-connection-pool.html#delete-jdbc-connection-pool-1"><code>delete-jdbc-connection-pool</code>(1)</a>,
+<a href="list-connector-connection-pools.html#list-connector-connection-pools-1"><code>list-connector-connection-pools</code>(1)</a>,
+<a href="list-jdbc-connection-pools.html#list-jdbc-connection-pools-1"><code>list-jdbc-connection-pools</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="osgi-shell.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="ping-node-dcom.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

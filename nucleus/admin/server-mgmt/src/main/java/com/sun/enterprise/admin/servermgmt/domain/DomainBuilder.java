@@ -41,24 +41,6 @@
 
 package com.sun.enterprise.admin.servermgmt.domain;
 
-import static com.sun.enterprise.admin.servermgmt.SLogger.UNHANDLED_EXCEPTION;
-import static com.sun.enterprise.admin.servermgmt.SLogger.getLogger;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainException;
@@ -76,7 +58,24 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.enterprise.admin.servermgmt.SLogger.UNHANDLED_EXCEPTION;
+import static com.sun.enterprise.admin.servermgmt.SLogger.getLogger;
 
 /**
  * Domain builder class.
@@ -96,7 +95,7 @@ public class DomainBuilder {
     private final DomainConfig domainConfig;
     private JarFile templateJar;
     private DomainTemplate domainTemplate;
-    private final Properties defaultPortValues = new Properties();
+    private final Properties defaultPropertiesValue = new Properties();
     private byte[]  keystoreBytes = null;
     private final Set<String> _extractedEntries = new HashSet<String>();
 
@@ -151,9 +150,13 @@ public class DomainBuilder {
             StringSubstitutor stringSubstitutor = null;
             if (je != null) {
                 stringSubstitutor = StringSubstitutionFactory.createStringSubstitutor(templateJar.getInputStream(je));
-                List<Property> defaultStringSubsProps = stringSubstitutor.getDefaultProperties(PropertyType.PORT);
-                for (Property prop : defaultStringSubsProps) {
-                    defaultPortValues.setProperty(prop.getKey(), prop.getValue());
+                List<Property> defaultPortSubstituteProperties = stringSubstitutor.getDefaultProperties(PropertyType.PORT);
+                for (Property property : defaultPortSubstituteProperties) {
+                    defaultPropertiesValue.setProperty(property.getKey(), property.getValue());
+                }
+                List<Property> defaultStringSubstituteProperties = stringSubstitutor.getDefaultProperties(PropertyType.STRING);
+                for (Property property : defaultStringSubstituteProperties) {
+                    defaultPropertiesValue.setProperty(property.getKey(), property.getValue());
                 }
                 _extractedEntries.add(je.getName());
             } else {
@@ -199,15 +202,42 @@ public class DomainBuilder {
             repoManager.checkRepository(domainConfig, false);
 
             // Validate the port values.
-            DomainPortValidator portValidator = new DomainPortValidator(domainConfig, defaultPortValues);
+            DomainPortValidator portValidator = new DomainPortValidator(domainConfig, defaultPropertiesValue);
             portValidator.validateAndSetPorts();
-
+            setProperties();
+            
             // Validate other domain config parameters.
             new PEDomainConfigValidator().validate(domainConfig);
 
         } catch (Exception ex) {
             throw new DomainException(ex);
         }
+    }
+     
+    public void setProperties() {
+        Properties domainProperties = domainConfig.getDomainProperties();
+        String hazelcastAutoIncrement = getProperty(domainProperties, DomainConfig.K_HAZELCAST_AUTO_INCREMENT,  
+                (String) domainConfig.get(DomainConfig.K_HAZELCAST_AUTO_INCREMENT),
+                defaultPropertiesValue.getProperty(SubstitutableTokens.HAZELCAST_AUTO_INCREMENT_TOKEN_NAME));
+        domainConfig.add(DomainConfig.K_HAZELCAST_AUTO_INCREMENT, Boolean.valueOf(hazelcastAutoIncrement));
+
+    }
+
+    public String getProperty(Properties properties, String key, String currentValue, String defaultPorperty) {
+
+        if (currentValue != null && !currentValue.equals("")) {
+            return currentValue;
+
+        }
+
+        if (properties != null) {
+            String property = properties.getProperty(key);
+            if ((property != null) && !property.equals("")) {
+                return property;
+            }
+        }
+
+        return defaultPorperty;
     }
 
     /**

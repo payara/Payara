@@ -1,0 +1,96 @@
+recover-transactions(1)   asadmin Utility Subcommands  recover-transactions(1)
+
+NAME
+       recover-transactions - manually recovers pending transactions
+
+SYNOPSIS
+           recover-transactions [--help] [--transactionlogdir transaction_log_dir]
+           [--target target_server_name] server_name
+
+DESCRIPTION
+       The recover-transactions subcommand manually recovers pending
+       transactions.
+
+       For an installation of multiple server instances, you can run the
+       recover-transactions subcommand from a surviving server instance to
+       recover transactions after a server failure. To use this subcommand in
+       this way, the following conditions must be met:
+
+       *   Delegated transaction recovery is disabled.
+
+       *   Transaction logs are stored on a shared file system or in a
+           database that is accessible to all server instances.
+
+       For a stand-alone server, do not use this subcommand to recover
+       transactions after a server failure. For a stand-alone server, the
+       recover-transactions subcommand can recover transactions only when a
+       resource fails, but the server is still running. If a stand-alone
+       server fails, only the full startup recovery process can recover
+       transactions that were pending when the server failed.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --transactionlogdir
+           The location of the transaction logs for a server for which
+           transaction recovery is requested. This option applies only if
+           transaction logs are stored on a shared file system.
+
+       --target
+           The target server that performs the recovery for the server that is
+           specified by the server_name operand. The target server should be
+           running.
+
+       --destination
+           This option is deprecated. It works exactly as the --target option
+           does.
+
+OPERANDS
+       server_name
+           For a stand-alone server, the value of this operand is typically
+           server. Transactions are recovered only if a resource fails, but
+           the server is still running.
+
+           For an installation of multiple server instances, the value of this
+           operand is the name of the server for which the recovery is
+           required. The in-flight transactions on this server will be
+           recovered. If this server is running, recovery is performed by the
+           same server. In this situation, the --transactionlogdir and
+           --target options should be omitted. If the server is not running,
+           the --target option is required, and the --transactionlogdir option
+           is also required if transaction logs are stored on a shared file
+           system.
+
+EXAMPLES
+       Example 1, Recovering transactions on a running server
+
+               % asadmin recover-transactions server1
+               Transaction recovered.
+
+       Example 2, Recovering transactions for a server that is not running
+
+               % asadmin recover-transactions --transactionlogdir /logs/tx --target server1 server2
+               Transaction recovered.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       freeze-transaction-service(1), unfreeze-transaction-service(1),
+       rollback-transaction(1)
+
+       asadmin(1M)
+
+       "Administering Transactions" in Oracle GlassFish Server Administration
+       Guide
+
+       "Transactions" in The Java EE 6 Tutorial
+
+Java EE 8                         17 Nov 2010          recover-transactions(1)

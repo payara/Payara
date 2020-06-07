@@ -1,0 +1,1 @@
+create-file-user --groups invoker --passwordfile ${project.build.directory}/test-classes/password.txt myuser

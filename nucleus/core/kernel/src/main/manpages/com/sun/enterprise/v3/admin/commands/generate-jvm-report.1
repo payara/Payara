@@ -1,0 +1,143 @@
+generate-jvm-report(1)    asadmin Utility Subcommands   generate-jvm-report(1)
+
+NAME
+       generate-jvm-report - shows the JVM machine statistics for a given
+       target instance
+
+SYNOPSIS
+           generate-jvm-report [--help] [--type=jvm-statistic-type] [--target target]
+
+DESCRIPTION
+       The generate-jvm-report subcommand creates a report that shows the
+       threads (dump of stack trace), classes, memory, or loggers for a given
+       target instance, including the domain administration server (DAS). If a
+       type is not specified, a summary report is generated. This subcommand
+       only provides statistics for the GlassFish Server instance processes.
+       This subcommand provides an alternative to sending Ctrl+Break or kill
+       -3 signals to GlassFish Server processes to obtain a stack trace for
+       processes that are hanging.
+
+       The information in the report is obtained from managed beans (MBeans)
+       and MXBeans that are provided in the Java Platform, Standard Edition
+       (Java SE ) or JDK software with which GlassFish Server is being used.
+
+       If GlassFish Server is running in the Java Runtime Environment (JRE)
+       software from JDK release 6 or Java SE 6, additional information is
+       provided. For example:
+
+       *   System load on the available processors
+
+       *   Object monitors that are currently held or requested by a thread
+
+       *   Lock objects that a thread is holding, for example, ReentrantLock
+           objects and ReentrantReadWriteLock objects
+
+       If the JRE software cannot provide this information, the report
+       contains the text NOT_AVAILABLE.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which you are showing JVM machine
+           statistics.
+
+           Valid values are as follows:
+
+           server
+               Specifies the DAS (default).
+
+           instance-name
+               Specifies a GlassFish Server instance.
+
+           cluster-name
+               Specifies a cluster.
+
+           configuration-name
+               Specifies a named configuration.
+
+       --type
+           The type of report that is to be generated. Default is summary.
+
+           summary
+               Displays summary information about the threads, classes, and
+               memory (default).
+
+           memory
+               Provides information about heap and non-heap memory
+               consumption, memory pools, and garbage collection statistics
+               for a given target instance.
+
+           class
+               Provides information about the class loader for a given target
+               instance.
+
+           thread
+               Provides information about threads running and the thread dump
+               (stack trace) for a given target instance.
+
+           log
+               Provides information about the loggers that are registered in
+               the Virtual Machine for the Java platform (Java Virtual Machine
+               or JVM machine).The terms "Java Virtual Machine" and "JVM" mean
+               a Virtual Machine for the Java platform.
+
+EXAMPLES
+       Example 1, Obtaining Summary Information for the JVM Machine
+           This example shows a partial listing of a report that is generated
+           if no type is specified. This same report is generated if the
+           summary type is specified.
+
+               asadmin> generate-jvm-report
+               Operating System Information:
+               Name of the Operating System: SunOS
+               Binary Architecture name of the Operating System: sparc, Version: 5.10
+               Number of processors available on the Operating System: 32
+               System load on the available processors for the last minute: 7.921875.
+               (Sum of running and queued runnable entities per minute)
+               General Java Runtime Environment Information for the VM: 64097@sr1-usca-22
+               ...
+               sun.desktop = gnome
+               sun.io.unicode.encoding = UnicodeBig
+               sun.java.launcher = SUN_STANDARD
+               sun.jnu.encoding = ISO646-US
+               sun.management.compiler = HotSpot Client Compiler
+               sun.os.patch.level = unknown
+               user.dir = /home/thisuser/GlassFish/glassfishv3/glassfish/domains/mydomain4/config
+               user.home = /home/thisuser
+               user.language = en
+               user.name = thisuser
+               user.timezone = US/Pacific
+               Command generate-jvm-report executed successfully
+
+       Example 2, Obtaining Information for a Particular JVM Machine Type
+           This example generates a report that shows information on the class
+           loader.
+
+               asadmin> generate-jvm-report --type=class
+               Class loading and unloading in the Java Virtual Machine:
+               Number of classes currently loaded in the Java Virtual Machine: 3,781
+               Number of classes loaded in the Java Virtual Machine since the startup: 3,868
+               Number of classes unloaded from the Java Virtual Machine: 87
+               Just-in-time (JIT) compilation information in the Java Virtual Machine:
+               Java Virtual Machine compilation monitoring allowed: true
+               Name of the Just-in-time (JIT) compiler: HotSpot Client Compiler
+               Total time spent in compilation: 0 Hours 0 Minutes 4 Seconds
+               Command generate-jvm-report executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jvm-options(1), delete-jvm-options(1), list-jvm-options(1)
+
+       asadmin(1M)
+
+Java EE 8                         29 Nov 2010           generate-jvm-report(1)

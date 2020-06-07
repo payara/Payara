@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,7 +72,7 @@ public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource
 
     @Override
     public Map<String, String> getProperties() {
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
     }
 
     @Override
@@ -86,9 +86,7 @@ public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource
         try {
             InitialContext ctx = new InitialContext();
             Object jndiObj = ctx.lookup(propertyName);
-            if (jndiObj.getClass().isAssignableFrom(String.class)) {
-                result = String.class.cast(jndiObj);
-            }
+            result = jndiObj.toString();
         } catch (NamingException ex) {
             // ignore who cares we don;t have the property but another source may
         }

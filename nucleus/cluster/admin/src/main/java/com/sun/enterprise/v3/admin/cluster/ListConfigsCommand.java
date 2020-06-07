@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin.cluster;
 
 
@@ -60,8 +62,11 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Properties;
+
 import org.glassfish.api.admin.*;
 
 /**
@@ -115,12 +120,19 @@ public final class ListConfigsCommand implements AdminCommand {
         }
 
         StringBuilder sb = new StringBuilder();
+        List<String> configNames = new ArrayList<>();
         for (Config config : configList) {
             sb.append(config.getName()).append('\n');
+            configNames.add(config.getName());
         }
         String output = sb.toString();
         //Fix for isue 12885
         report.addSubActionsReport().setMessage(output.substring(0,output.length()-1 ));
+
+        Properties extraProperties = new Properties();
+        extraProperties.put("configNames", configNames);
+        report.setExtraProperties(extraProperties);
+
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 

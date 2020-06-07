@@ -1,0 +1,47 @@
+configuration(5ASC)        GlassFish Server Concepts       configuration(5ASC)
+
+NAME
+       configuration - the data set that determines how GlassFish Server
+       operates
+
+DESCRIPTION
+       The configuration of GlassFish Server is the data set that determines
+       how it operates. Parts of this configuration determine the operation of
+       specific parts of GlassFish Server, such as the following:
+
+       *   Services, such as the transaction service
+
+       *   Resources, such as databases
+
+       *   Deployed applications or modules, such as web applications
+
+       *   Clusters and server instances
+
+       The term configuration is also used to describe a part of the overall
+       configuration, such as the transaction service configuration or the
+       configuration of a database. In clustered environments, clusters or
+       server instances can share configurations.
+
+       Examples of configuration data are port numbers, flags that enable or
+       disable processes, application names, and so on. Most of these data
+       points are name/value pairs, either hard-coded attributes or more
+       flexibly defined properties.
+
+       The hierarchical structure of the configuration is explained in the
+       dotted names page. You can view and change most of the GlassFish Server
+       configuration using either the Administration Console or the asadmin
+       utility and its subcommands. To list the structure of all or part of
+       the configuration, use the list subcommand. To view the value of one or
+       more attributes or properties, use the get subcommand. To change the
+       value of an attribute or property, use the set subcommand.
+
+SEE ALSO
+       get(1), list(1), set(1)
+
+       asadmin(1M)
+
+       dotted-names(5ASC)
+
+       "Configuration Tasks" in Oracle GlassFish Server Administration Guide
+
+Java EE 8                         17 Nov 2010              configuration(5ASC)

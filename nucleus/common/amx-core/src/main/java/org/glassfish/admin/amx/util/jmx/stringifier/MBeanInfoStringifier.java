@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -49,6 +50,10 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 
+/**
+ * Creates a String representation of an {@link MBeanInfo}
+ * @see Object#toString() 
+ */
 public class MBeanInfoStringifier extends MBeanFeatureInfoStringifier implements Stringifier
 {
     public static final MBeanInfoStringifier DEFAULT = new MBeanInfoStringifier();
@@ -98,9 +103,9 @@ public class MBeanInfoStringifier extends MBeanFeatureInfoStringifier implements
         return (new MBeanNotificationInfoStringifier(options));
     }
 
+    @Override
     public String stringify(Object o)
     {
-        String result = "";
         final MBeanInfo info = (MBeanInfo) o;
 
         final MBeanOperationInfo[] operations = info.getOperations();
@@ -109,7 +114,7 @@ public class MBeanInfoStringifier extends MBeanFeatureInfoStringifier implements
         final MBeanNotificationInfo[] notifications = info.getNotifications();
         final String description = info.getDescription();
 
-        result = "Summary: " +
+        String result = "Summary: " +
                  operations.length + " operations, " +
                  attributes.length + " attributes, " +
                  constructors.length + " constructors, " +
@@ -138,8 +143,3 @@ public class MBeanInfoStringifier extends MBeanFeatureInfoStringifier implements
     }
 
 }
-
-
-
-
-

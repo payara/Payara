@@ -37,20 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.security.store.AsadminTruststore;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import java.io.Console;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
-import javax.net.ssl.X509TrustManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An implementation of {@link X509TrustManager} that provides basic support
@@ -69,6 +74,7 @@ public class AsadminTrustManager implements X509TrustManager {
     private RuntimeException lastRuntimeException;
     
     private static final LocalStringsImpl STRING_MANAGER = new LocalStringsImpl(AsadminTrustManager.class);
+    private static final Logger logger = Logger.getLogger(AsadminTrustManager.class.getName());
 
     /**
      * Creates an instance of the AsadminTrustManager
@@ -162,14 +168,31 @@ public class AsadminTrustManager implements X509TrustManager {
      * @throws IOException
      * @return true if the user trusts the certificate
      */    
-    private boolean isItOKToAddCertToTrustStore(X509Certificate c) {                     
-        Console cons = System.console();
-        if (!interactive || cons == null) {
+    private boolean isItOKToAddCertToTrustStore(X509Certificate c) {
+        if (!interactive) {
             return true;
         }
-        
-        cons.printf("%s%n", c.toString());
-        String result = cons.readLine("%s", STRING_MANAGER.get("certificateTrustPrompt"));
+
+        String result = null;
+        LineReader lineReader = null;
+        try {
+            lineReader = LineReaderBuilder.builder()
+                    .terminal(new DumbTerminal(System.in, System.out))
+                    .build();
+
+            result = lineReader.readLine(STRING_MANAGER.get("certificateTrustPrompt"));
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, "Error instantiating console", ioe);
+        }
+        finally {
+            if (lineReader != null && lineReader.getTerminal() != null) {
+                try {
+                    lineReader.getTerminal().close();
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error closing terminal", ioe);
+                }
+            }
+        }
         return result != null && result.equalsIgnoreCase("y");
     }
  

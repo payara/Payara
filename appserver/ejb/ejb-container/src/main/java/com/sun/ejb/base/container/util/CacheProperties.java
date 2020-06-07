@@ -37,15 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.ejb.base.container.util;
 
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainer;
@@ -54,8 +50,12 @@ import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 import org.glassfish.hk2.api.PostConstruct;
-import com.sun.enterprise.config.serverbeans.Config;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * A util class to read the bean cache related entries from
@@ -127,7 +127,7 @@ public class CacheProperties implements PostConstruct {
     }
 
     public String toString() {
-        StringBuffer sbuf = new StringBuffer();
+        StringBuilder sbuf = new StringBuilder();
         sbuf.append("maxSize: ").append(maxCacheSize)
                 .append("; victims: ").append(numberOfVictimsToSelect)
                 .append("; idleTimeout: ").append(cacheIdleTimeoutInSeconds)
@@ -156,7 +156,7 @@ public class CacheProperties implements PostConstruct {
 
         // If portable @StatefulTimeout is specified, it takes precedence over
         // any default value in domain.xml.  However, if a removal timeout is
-        // specified in sun-ejb-jar.xml, that has highest precedence. 
+        // specified in sun-ejb-jar.xml, that has highest precedence.
         if( ejbDesc instanceof EjbSessionDescriptor ) {
 
             EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbDesc;
@@ -183,12 +183,12 @@ public class CacheProperties implements PostConstruct {
                for the 1st interval and removalTimeoutInSeconds for the 2nd. So if you add them, the sfsb will stay
                in the cache to the max possible interval, and because it'll be never written to disk,
                there will be nothing to remove from there.
-               
+
                set cacheIdleTimeoutInSeconds and maxCacheSize will cause cache never overflow, and sfsb just be
                removed from cache when cacheIdleTimeoutInSeconds arrives */
             if (sessionDesc.isStateful() && !sessionDesc.isPassivationCapable()) {
                 cacheIdleTimeoutInSeconds = cacheIdleTimeoutInSeconds + removalTimeoutInSeconds;
-                maxCacheSize = -1;                
+                maxCacheSize = -1;
             }
         }
 
@@ -215,4 +215,4 @@ public class CacheProperties implements PostConstruct {
     }
 
 }
-   
+

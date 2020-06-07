@@ -113,13 +113,3 @@ public interface Sample extends AMXProxy
     @ManagedAttribute
     public Object[] getAllSortsOfStuff();
 }
-
-
-
-
-
-
-
-
-
-

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors;
 
@@ -177,7 +178,7 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
     /**
      * called by connector runtime to start the resource-adapter java bean
      * @param bootstrapContext BootstrapContext
-     * @throws ResourceAdapterInternalException 
+     * @throws ResourceAdapterInternalException
      */
     protected void startResourceAdapter(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
         resourceadapter_.start(bootstrapContext);
@@ -356,7 +357,7 @@ public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("Passing in the following properties " +
                     "before calling RA.start of " + this.moduleName_);
-            StringBuffer b = new StringBuffer();
+            StringBuilder b = new StringBuilder();
 
             for (Iterator iter = mergedProps.iterator(); iter.hasNext();) {
                 ConnectorConfigProperty element = (ConnectorConfigProperty ) iter.next();

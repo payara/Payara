@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,7 +96,7 @@ public class SetMonitoringLevel implements AdminCommand {
     private String moduleNames;
 
     @Param(name = "level", optional = false)
-    private String moduleMonitoringLevel;
+    private String moduleMonitoringLevels;
 
     @Inject
     private Target targetUtil;
@@ -118,9 +118,11 @@ public class SetMonitoringLevel implements AdminCommand {
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
 
-        if (moduleNames != null && moduleMonitoringLevel != null) {
-            List<String> moduleNameList = Arrays.asList(moduleNames.split(","));
-            List<String> moduleLevelList = Arrays.asList(moduleMonitoringLevel.split(","));
+        if (moduleNames != null && moduleMonitoringLevels != null) {
+            String modifiedModuleNames = moduleNames.replace(":", ",");
+            String modifiedModuleMonitoringLevels = moduleMonitoringLevels.replace(":", ",");
+            List<String> moduleNameList = Arrays.asList(modifiedModuleNames.split(","));
+            List<String> moduleLevelList = Arrays.asList(modifiedModuleMonitoringLevels.split(","));
 
             if (moduleNameList.size() == moduleLevelList.size()) {
                 for (int i = 0; i < moduleLevelList.size(); i++) {
@@ -128,7 +130,7 @@ public class SetMonitoringLevel implements AdminCommand {
                     List<String> validModuleList = new ArrayList<>(Arrays.asList(Constants.validModuleNames));
                     String moduleName = moduleNameList.get(i).trim().toLowerCase();
                     for (String module : validModuleList) {
-                        if (module.trim().equals(moduleName)) {
+                        if (module.trim().equalsIgnoreCase(moduleName)) {
                             String moduleLevel = moduleLevelList.get(i).trim().toUpperCase();
                             try {
                                 ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {

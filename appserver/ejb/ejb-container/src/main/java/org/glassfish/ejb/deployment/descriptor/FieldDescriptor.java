@@ -37,14 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
- package org.glassfish.ejb.deployment.descriptor;
-
-import java.lang.reflect.Field;
+package org.glassfish.ejb.deployment.descriptor;
 
 import org.glassfish.deployment.common.Descriptor;
 
-/** 
+import java.lang.reflect.Field;
+
+/**
  * I represent a field on an ejb.
  * Either an actual field (e.g. for EJB1.1 CMP)
  * or a virtual field (e.g. for EJb2.0 CMP)
@@ -55,36 +56,36 @@ import org.glassfish.deployment.common.Descriptor;
 public class FieldDescriptor extends Descriptor {
 
     /**
-    * Constructrs an empty field descriptor 
+    * Constructrs an empty field descriptor
     */
     public FieldDescriptor() {
-    }    
-    
+    }
+
     /**
     * Constructrs a field descriptor with the given name.
     */
     public FieldDescriptor(String name) {
 	super(name, "no description");
     }
-    
+
     /**
     * Constructrs a field descriptor with the given name and description.
     */
     public FieldDescriptor(String name, String description) {
 	super(name, description);
     }
-    
+
     /**
     * Constructs a field descriptor from the supplied java.lang.reflect.Field object.
     */
-    
+
     public FieldDescriptor(Field field) {
 	this(field.getName(), "no description");
     }
-    
+
     /** Equality iff the other objects is a field descriptor with the same name.
     */
-    
+
     public boolean equals(Object object) {
 	if (object instanceof FieldDescriptor) {
 	    FieldDescriptor otherFieldDescriptor = (FieldDescriptor) object;
@@ -92,20 +93,20 @@ public class FieldDescriptor extends Descriptor {
 	}
 	return false;
     }
-    
+
     /** My hashcode.
     */
-    
+
     public int hashCode() {
 	return this.getName().hashCode();
     }
-    
+
     /**
     * Returns a formatted version of me as a String.
     */
-    
-    public void print(StringBuffer toStringBuffer) {
-	toStringBuffer.append("Field: ").append(super.getName()).append("@").append(super.getDescription());
+
+    public void print(StringBuilder toStringBuilder) {
+	toStringBuilder.append("Field: ").append(super.getName()).append("@").append(super.getDescription());
     }
 
     /**
@@ -117,7 +118,7 @@ public class FieldDescriptor extends Descriptor {
      * @throw IllegalArgumentException if the name is unacceptable
      */
     public static void checkFieldName(String fieldName) throws IllegalArgumentException {
-        
+
         if (fieldName == null || fieldName.length()==0) {
             throw new IllegalArgumentException("cmp-field or cmr-field name cannot be empty strings");
         }
@@ -127,6 +128,6 @@ public class FieldDescriptor extends Descriptor {
         }
         if (!Character.isLowerCase(firstChar)) {
             throw new IllegalArgumentException("cmp-field or cmr-field name " + fieldName + " must begin with a lowercase letter");
-        }        
-    }    
+        }
+    }
 }

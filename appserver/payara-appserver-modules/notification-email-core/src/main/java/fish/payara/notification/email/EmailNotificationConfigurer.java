@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,11 +38,9 @@
  */
 package fish.payara.notification.email;
 
-import com.google.common.base.Strings;
-import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
@@ -76,6 +74,7 @@ public class EmailNotificationConfigurer extends BaseNotificationConfigurer<Emai
     @Pattern(regexp = "\\S+@\\S+")
     private String to;
 
+    @Override
     protected void applyValues(EmailNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
@@ -83,10 +82,10 @@ public class EmailNotificationConfigurer extends BaseNotificationConfigurer<Emai
         if(this.noisy != null) {
             configuration.noisy(this.noisy);
         }
-        if(!Strings.isNullOrEmpty(jndiName)) {
+        if(StringUtils.ok(jndiName)) {
             configuration.setJndiName(jndiName);
         }
-        if(!Strings.isNullOrEmpty(to)) {
+        if(StringUtils.ok(to)) {
             configuration.setTo(to);
         }
     }

@@ -37,31 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.annotation.context.RarBundleContext;
-import com.sun.enterprise.deployment.annotation.handlers.*;
+import com.sun.enterprise.deployment.AuthMechanism;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.LicenseDescriptor;
-import com.sun.enterprise.deployment.AuthMechanism;
 import com.sun.enterprise.deployment.OutboundResourceAdapter;
+import com.sun.enterprise.deployment.annotation.context.RarBundleContext;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-
-import javax.resource.spi.Connector;
-import javax.resource.spi.SecurityPermission;
-import javax.resource.spi.AuthenticationMechanism;
-import javax.resource.spi.TransactionSupport;
-import javax.resource.spi.work.WorkContext;
-import java.lang.annotation.Annotation;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Level;
-
 import org.glassfish.apf.*;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.resource.spi.AuthenticationMechanism;
+import javax.resource.spi.Connector;
+import javax.resource.spi.SecurityPermission;
+import javax.resource.spi.TransactionSupport;
+import javax.resource.spi.work.WorkContext;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * @author Jagadish Ramu
@@ -116,21 +116,21 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
 
 
         if (desc.getDescription().equals("") && connector.description().length > 0) {
-            desc.setDescription(convertStringArrayToStringBuffer(connector.description()));
+            desc.setDescription(convertStringArrayToStringBuilder(connector.description()));
         }
 
         if (desc.getDisplayName().equals("") && connector.displayName().length > 0) {
-            desc.setDisplayName(convertStringArrayToStringBuffer(connector.displayName()));
+            desc.setDisplayName(convertStringArrayToStringBuilder(connector.displayName()));
         }
 
         if ((desc.getSmallIconUri() == null || desc.getSmallIconUri().equals(""))
                 && connector.smallIcon().length > 0) {
-            desc.setSmallIconUri(convertStringArrayToStringBuffer(connector.smallIcon()));
+            desc.setSmallIconUri(convertStringArrayToStringBuilder(connector.smallIcon()));
         }
 
         if ((desc.getLargeIconUri() == null || desc.getLargeIconUri().equals(""))
                 && connector.largeIcon().length > 0) {
-            desc.setLargeIconUri(convertStringArrayToStringBuffer(connector.largeIcon()));
+            desc.setLargeIconUri(convertStringArrayToStringBuilder(connector.largeIcon()));
         }
 
         if (desc.getVendorName().equals("") && !connector.vendorName().equals("")) {
@@ -158,7 +158,7 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
             String[] licenseDescriptor = connector.licenseDescription();
             boolean licenseRequired = connector.licenseRequired();
             LicenseDescriptor ld = new LicenseDescriptor();
-            ld.setDescription(convertStringArrayToStringBuffer(licenseDescriptor));
+            ld.setDescription(convertStringArrayToStringBuilder(licenseDescriptor));
             ld.setLicenseRequired(licenseRequired);
             desc.setLicenseDescriptor(ld);
         }
@@ -274,8 +274,8 @@ public class ConnectorAnnotationHandler extends AbstractHandler {
         return javax.resource.spi.ResourceAdapter.class.isAssignableFrom(claz);
     }
 
-    public static String convertStringArrayToStringBuffer(String[] stringArray) {
-        StringBuffer result = new StringBuffer();
+    public static String convertStringArrayToStringBuilder(String[] stringArray) {
+        StringBuilder result = new StringBuilder();
         if (stringArray != null) {
             for (String string : stringArray) {
                 result.append(string);

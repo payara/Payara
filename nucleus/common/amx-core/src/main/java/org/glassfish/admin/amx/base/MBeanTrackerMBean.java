@@ -74,14 +74,3 @@ public interface MBeanTrackerMBean
     @ManagedAttribute
     public void setEmitMBeanStatus(boolean emit);
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,72 @@
+flush-jmsdest(1)          asadmin Utility Subcommands         flush-jmsdest(1)
+
+NAME
+       flush-jmsdest - purges messages in a JMS destination.
+
+SYNOPSIS
+           flush-jmsdest [--help]
+           --desttype {topic|queue}
+           [--target target]
+           destname
+
+DESCRIPTION
+       The flush-jmsdest subcommand purges the messages from a physical
+       destination in the server's Java Message Service (JMS) configuration.
+
+       This subcommand is supported in remote mode only. Remote asadmin
+       subcommands require a running domain administration server (DAS).
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --desttype
+           This option indicates the type of physical destination from which
+           you want to purge messages. The supported destination types are
+           topic and queue.
+
+       --target
+           Purges messages from the physical destination only for the
+           specified target. Valid values are as follows:
+
+           server
+               Purges messages from the physical destination for the default
+               server instance. This is the default value.
+
+           configuration-name
+               Purges messages from the physical destination in the specified
+               configuration.
+
+           cluster-name
+               Purges messages from the physical destination for every server
+               instance in the specified cluster.
+
+           instance-name
+               Purges messages from the physical destination for the specified
+               server instance.
+
+OPERANDS
+       dest_name
+           The unique identifier of the JMS destination to be purged.
+
+EXAMPLES
+       Example 1, Purging messages from a physical destination
+           The following subcommand purges messages from the queue named
+           PhysicalQueue.
+
+               asadmin> flush-jmsdest --desttype queue PhysicalQueue
+               Command flush-jmsdest executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jmsdest(1), list-jmsdest(1), create-jmsdest(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Feb 2011                 flush-jmsdest(1)

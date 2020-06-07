@@ -77,8 +77,7 @@ public class MarshallingUtils {
             properties = new ArrayList<Map<String, String>>();
             properties.add(Util.processJsonMap(json));
         } else if (json.startsWith("[")) {
-            try {
-                JsonParser parser = Json.createParser(new StringReader(json));
+            try (JsonParser parser = Json.createParser(new StringReader(json))) {
                 parser.next();
                 properties = Util.processJsonArray(parser.getArray());
             } catch (JsonException e) {

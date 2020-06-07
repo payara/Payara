@@ -84,10 +84,3 @@ public @interface ChildGetter {
     /** child type, derived automatically by default for the normal naming pattern */
     String type() default "";
 }
-
-
-
-
-
-
-

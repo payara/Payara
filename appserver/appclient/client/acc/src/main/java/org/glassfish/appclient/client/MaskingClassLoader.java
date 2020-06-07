@@ -137,7 +137,7 @@ public class MaskingClassLoader extends ClassLoader {
         if (!(name.startsWith("javax.") || name.startsWith("org."))) {
             return true;
         }
-        final String packageName = name.substring(0, name.lastIndexOf("."));
+        final String packageName = name.substring(0, name.lastIndexOf('.'));
         if (punchins.contains(packageName)) {
             return true;
         }

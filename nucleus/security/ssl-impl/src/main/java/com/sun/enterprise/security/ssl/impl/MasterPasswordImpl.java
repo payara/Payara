@@ -37,40 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ssl.impl;
 
-import com.sun.enterprise.security.store.IdentityManagement;
-import com.sun.enterprise.security.store.PasswordAdapter;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import org.glassfish.security.common.MasterPassword;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.security.store.IdentityManagement;
+import com.sun.enterprise.security.store.PasswordAdapter;
+
 /**
- * A contract to pass the Glassfish master password between the admin module and
- * the security module.
+ * A contract to pass the Payara master password between the admin module and the security module.
  *
  * @author Sudarsan Sridhar
  */
-@Service(name="Security SSL Password Provider Service")
+@Service(name = "Security SSL Password Provider Service")
 @Singleton
 public class MasterPasswordImpl implements MasterPassword {
 
-    @Inject @Optional IdentityManagement idm;
+    @Inject
+    @Optional
+    IdentityManagement identityManagement;
 
     @Override
     public PasswordAdapter getMasterPasswordAdapter() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-        char pw[] = idm == null ? null : idm.getMasterPassword();
-        return new PasswordAdapter(pw);
+        return new PasswordAdapter(identityManagement == null ? null : identityManagement.getMasterPassword());
     }
-    
+
     public char[] getMasterPassword() {
-        return idm == null ? null : idm.getMasterPassword();
+        return identityManagement == null ? null : identityManagement.getMasterPassword();
     }
 }

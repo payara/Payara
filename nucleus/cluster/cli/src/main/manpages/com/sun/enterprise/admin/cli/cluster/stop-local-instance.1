@@ -1,0 +1,100 @@
+stop-local-instance(1)    asadmin Utility Subcommands   stop-local-instance(1)
+
+NAME
+       stop-local-instance - stops a GlassFish Server instance on the machine
+       where the subcommand is run
+
+SYNOPSIS
+           stop-local-instance [--help]
+           [--nodedir node-dir] [--node node]
+           [--force={true|false}] [--kill={false|true}]
+           [instance-name]
+
+DESCRIPTION
+       The stop-local-instance subcommand stops a GlassFish Server instance on
+       the machine where the subcommand is run. This subcommand does not
+       require secure shell (SSH) to be configured. You must run this command
+       from the machine where the instance resides.
+
+       The subcommand can stop any GlassFish Server instance, regardless of
+       how the instance was created. For example, this subcommand can stop an
+       instance that was created by using the create-instance(1) subcommand.
+
+       The stop-local-instance subcommand does not contact the DAS to
+       determine the node on which the instance resides. To determine the node
+       on which the instance resides, the subcommand searches the directory
+       that contains the node directories. If multiple node directories exist,
+       the node must be specified as an option of the subcommand.
+
+       This subcommand is supported in local mode.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --nodedir
+           Specifies the directory that contains the instance's node
+           directory. The instance's files are stored in the instance's node
+           directory. The default is as-install/nodes.
+
+       --node
+           Specifies the node on which the instance resides. This option may
+           be omitted only if the directory that the --nodedir option
+           specifies contains only one node directory. Otherwise, this option
+           is required.
+
+       --force
+           Specifies whether the instance is forcibly stopped immediately.
+
+           Possible values are as follows:
+
+           true
+               The instance is forcibly stopped immediately (default).
+
+           false
+               The subcommand waits until all threads that are associated with
+               the instance are exited before stopping the instance.
+
+       --kill
+           Specifies whether the instance is killed by using functionality of
+           the operating system to terminate the instance process.
+
+           Possible values are as follows:
+
+           false
+               The instance is not killed. The subcommand uses functionality
+               of the Java platform to terminate the instance process
+               (default).
+
+           true
+               The instance is killed. The subcommand uses functionality of
+               the operating system to terminate the instance process.
+
+OPERANDS
+       instance-name
+           The name of the instance to stop.
+
+EXAMPLES
+       Example 1, Stopping an Instance Locally
+           This example stops the instance yml-i-sj01 on the machine where the
+           subcommand is run.
+
+               asadmin> stop-local-instance --node sj01 yml-i-sj01
+               Waiting for the instance to stop ...
+               Command stop-local-instance executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-instance(1), create-local-instance(1), delete-instance(1),
+       delete-local-instance(1), start-instance(1), start-local-instance(1),
+       stop-instance(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Feb 2011           stop-local-instance(1)

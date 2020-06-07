@@ -1,0 +1,63 @@
+unfreeze-transaction-service(1)  asadmin Utility Subcommands  unfreeze-transaction-service(1)
+
+NAME
+       unfreeze-transaction-service - resumes all suspended transactions
+
+SYNOPSIS
+           unfreeze-transaction-service [--help] [--target target]
+
+DESCRIPTION
+       The unfreeze-transaction-service subcommand restarts the transaction
+       subsystem and resumes all in-flight transactions. Invoke this
+       subcommand on an already frozen transaction subsystem. This subcommand
+       is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target on which you are unfreezing the
+           transaction service. Valid values are:
+
+           server
+               Unfreezes the transaction service for the default server
+               instance server and is the default value.
+
+           configuration_name
+               Unfreezes the transaction service for all server instances that
+               use the named configuration.
+
+           cluster_name
+               Unfreezes the transaction service for every server instance in
+               the cluster.
+
+           instance_name
+               Unfreezes the transaction service for a particular server
+               instance.
+
+EXAMPLES
+       Example 1, Using unfreeze-transaction-service
+
+               % asadmin unfreeze-transaction-service
+               Command unfreeze-transaction-service executed successfully
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       freeze-transaction-service(1), rollback-transaction(1),
+       recover-transactions(1)
+
+       asadmin(1M)
+
+       "Administering Transactions" in Oracle GlassFish Server Administration
+       Guide
+
+       "Transactions" in The Java EE 8 Tutorial
+
+Java EE 8                 31 Aug 2017          unfreeze-transaction-service(1)

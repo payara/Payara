@@ -1,0 +1,88 @@
+stop-domain(1)            asadmin Utility Subcommands           stop-domain(1)
+
+NAME
+       stop-domain - stops the Domain Administration Server of the specified
+       domain
+
+SYNOPSIS
+           stop-domain [--help] [--domaindir domaindir]
+           [--force={true|false}] [--kill={false|true}]
+           [domain-name]
+
+DESCRIPTION
+       The stop-domain subcommand stops the Domain Administration Server (DAS)
+       of the specified domain. If the domain directory is not specified, the
+       domain in the default domains directory is stopped. If there are two or
+       more domains in the domains directory, the domain-name operand must be
+       specified.
+
+       This subcommand is supported in local or remote mode. If you specify a
+       host name, the subcommand assumes you are operating in remote mode,
+       which means you must correctly authenticate to the remote server. In
+       local mode, you normally do not need to authenticate to the server as
+       long as you are running the subcommand as the same user who started the
+       server.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --domaindir
+           Specifies the directory of the domain that is to be stopped. If
+           specified, the path must be accessible in the file system. If not
+           specified, the domain in the default as-install/domains directory
+           is stopped.
+
+       --force
+           Specifies whether the domain is forcibly stopped immediately.
+
+           Possible values are as follows:
+
+           true
+               The domain is forcibly stopped immediately (default).
+
+           false
+               The subcommand waits until all threads that are associated with
+               the domain are exited before stopping the domain.
+
+       --kill
+           Specifies whether the domain is killed by using functionality of
+           the operating system to terminate the domain process.
+
+           Possible values are as follows:
+
+           false
+               The domain is not killed. The subcommand uses functionality of
+               the Java platform to terminate the domain process (default).
+
+           true
+               The domain is killed. The subcommand uses functionality of the
+               operating system to terminate the domain process.
+
+OPERANDS
+       domain-name
+           The name of the domain you want to stop. Default is the name
+           specified during installation, usually domain1.
+
+EXAMPLES
+       Example 1, Stopping a Domain
+           This example stops the domain named sampleDomain in the default
+           domains directory.
+
+               asadmin> stop-domain sampleDomain
+               Waiting for the domain to stop .................
+               Command stop-domain executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-domain(1), list-domains(1), restart-domain(1), start-domain(1)
+
+       asadmin(1M)
+
+Java EE 8                         20 Dec 2010                   stop-domain(1)

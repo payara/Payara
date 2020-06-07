@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.ejb.deployment.descriptor;
 
 import org.glassfish.deployment.common.Descriptor;
 
 
-/** 
+/**
  * This class contains information about relationships between
  * EJB2.0 CMP EntityBeans.
  * It represents information in the <ejb-relation> XML element.
@@ -59,19 +60,19 @@ public final class RelationshipDescriptor extends Descriptor {
     private boolean isBidirectional = true;
 
     public boolean isOneOne() {
-	return (!source.getIsMany() && !sink.getIsMany()); 
+	return (!source.getIsMany() && !sink.getIsMany());
     }
-    
+
     public boolean isOneMany() {
-	return (!source.getIsMany() && sink.getIsMany()); 
+	return (!source.getIsMany() && sink.getIsMany());
     }
-    
+
     public boolean isManyOne() {
-	return (source.getIsMany() && !sink.getIsMany()); 
+	return (source.getIsMany() && !sink.getIsMany());
     }
-    
+
     public boolean isManyMany() {
-	return (source.getIsMany() && sink.getIsMany()); 
+	return (source.getIsMany() && sink.getIsMany());
     }
 
     /**
@@ -83,12 +84,12 @@ public final class RelationshipDescriptor extends Descriptor {
     }
 
     public RelationRoleDescriptor getSource()
-    {  
-	return source;  
+    {
+	return source;
     }
     public void setSource(RelationRoleDescriptor source)
-    {  
-	this.source = source;  
+    {
+	this.source = source;
     }
 
     public void setSink(RelationRoleDescriptor sink)
@@ -110,8 +111,8 @@ public final class RelationshipDescriptor extends Descriptor {
     }
 
     @Override
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("From EJB ").append(getSource().getName()
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("From EJB ").append(getSource().getName()
            ).append(" cmr field : ").append(getSource().getCMRField()
            ).append("(").append(getSource().getCMRFieldType()).append(")  to EJB ").append(getSink().getName()
            ).append(" isMany ").append(getSource().getIsMany()

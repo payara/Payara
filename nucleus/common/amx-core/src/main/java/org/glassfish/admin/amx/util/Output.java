@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -50,6 +51,7 @@ public interface Output extends DebugSink
 
     @param o	the Object to output
      */
+    @Override
     public void print(Object o);
 
     /**
@@ -57,6 +59,7 @@ public interface Output extends DebugSink
 
     @param o	the Object to output
      */
+    @Override
     public void println(Object o);
 
     /**
@@ -78,6 +81,4 @@ public interface Output extends DebugSink
      */
     public void close();
 
-};
-
-
+}

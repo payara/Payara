@@ -37,74 +37,71 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.runtime.web;
 
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
 import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 
-// BEGIN_NOI18N
-
 public interface SunWebApp {
 
-    static public final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
-    static public final String SECURITY_ROLE_ASSIGNMENT = "SecurityRoleAssignment";	// NOI18N
-    static public final String SERVLET = "Servlet";	// NOI18N
-    static public final String SESSION_CONFIG = "SessionConfig";	// NOI18N
-    static public final String CACHE = "Cache";	// NOI18N
-    static public final String CLASS_LOADER = "ClassLoader";	// NOI18N
-    static public final String JSP_CONFIG = "JspConfig";	// NOI18N
-    static public final String LOCALE_CHARSET_INFO = "LocaleCharsetInfo";	// NOI18N
-    static public final String PARAMETER_ENCODING = "ParameterEncoding";
-    static public final String FORM_HINT_FIELD = "FormHintField";
-    static public final String DEFAULT_CHARSET = "DefaultCharset";
-    public static final String IDEMPOTENT_URL_PATTERN = "IdempotentUrlPattern";
-    public static final String ERROR_URL = "ErrorUrl";
-    public static final String HTTPSERVLET_SECURITY_PROVIDER = "HttpServletSecurityProvider";
-    public static final String VALVE = "Valve";
+    String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";
+    String SECURITY_ROLE_ASSIGNMENT = "SecurityRoleAssignment";
+    String SERVLET = "Servlet";
+    String SESSION_CONFIG = "SessionConfig";
+    String CACHE = "Cache";
+    String CLASS_LOADER = "ClassLoader";
+    String JSP_CONFIG = "JspConfig";
+    String LOCALE_CHARSET_INFO = "LocaleCharsetInfo";
+    String PARAMETER_ENCODING = "ParameterEncoding";
+    String FORM_HINT_FIELD = "FormHintField";
+    String DEFAULT_CHARSET = "DefaultCharset";
+    String IDEMPOTENT_URL_PATTERN = "IdempotentUrlPattern";
+    String ERROR_URL = "ErrorUrl";
+    String HTTPSERVLET_SECURITY_PROVIDER = "HttpServletSecurityProvider";
+    String VALVE = "Valve";
 
-    public void setSecurityRoleMapping(int index, SecurityRoleMapping value);
+    void setSecurityRoleMapping(int index, SecurityRoleMapping value);
 
-    public SecurityRoleMapping getSecurityRoleMapping(int index);
+    SecurityRoleMapping getSecurityRoleMapping(int index);
 
-    public void setSecurityRoleMapping(SecurityRoleMapping[] value);
+    void setSecurityRoleMapping(SecurityRoleMapping[] value);
 
-    public SecurityRoleMapping[] getSecurityRoleMapping();
+    SecurityRoleMapping[] getSecurityRoleMapping();
 
-    public int sizeSecurityRoleMapping();
+    int sizeSecurityRoleMapping();
 
-    public int addSecurityRoleMapping(SecurityRoleMapping value);
+    int addSecurityRoleMapping(SecurityRoleMapping value);
 
-    public int removeSecurityRoleMapping(SecurityRoleMapping value);
+    int removeSecurityRoleMapping(SecurityRoleMapping value);
 
-    public void setSecurityRoleAssignment(int index, SecurityRoleAssignment value);
+    void setSecurityRoleAssignment(int index, SecurityRoleAssignment value);
 
-    public SecurityRoleAssignment getSecurityRoleAssignment(int index);
+    SecurityRoleAssignment getSecurityRoleAssignment(int index);
 
-    public void setSecurityRoleAssignments(SecurityRoleAssignment[] value);
+    void setSecurityRoleAssignments(SecurityRoleAssignment[] value);
 
-    public SecurityRoleAssignment[] getSecurityRoleAssignments();
+    SecurityRoleAssignment[] getSecurityRoleAssignments();
 
-    public int sizeSecurityRoleAssignment();
+    int sizeSecurityRoleAssignment();
 
-    public int addSecurityRoleAssignment(SecurityRoleAssignment value);
+    int addSecurityRoleAssignment(SecurityRoleAssignment value);
 
-    public int removeSecurityRoleAssignment(SecurityRoleAssignment value);
+    int removeSecurityRoleAssignment(SecurityRoleAssignment value);
 
-    public void setIdempotentUrlPattern(int index, IdempotentUrlPattern value);
+    void setIdempotentUrlPattern(int index, IdempotentUrlPattern value);
 
-    public  IdempotentUrlPattern getIdempotentUrlPattern(int index);
+    IdempotentUrlPattern getIdempotentUrlPattern(int index);
 
-    public void setIdempotentUrlPatterns(IdempotentUrlPattern[] value);
+    void setIdempotentUrlPatterns(IdempotentUrlPattern[] value);
 
-    public IdempotentUrlPattern[] getIdempotentUrlPatterns();
+    IdempotentUrlPattern[] getIdempotentUrlPatterns();
 
-    public int sizeIdempotentUrlPattern();
+    int sizeIdempotentUrlPattern();
 
-    public int addIdempotentUrlPattern(IdempotentUrlPattern value);
+    int addIdempotentUrlPattern(IdempotentUrlPattern value);
 
-    public int removeIdempotentUrlPattern(IdempotentUrlPattern value);
+    int removeIdempotentUrlPattern(IdempotentUrlPattern value);
 
-    public String getAttributeValue(String attributeName);
-
+    String getAttributeValue(String attributeName);
 }

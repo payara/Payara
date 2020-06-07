@@ -37,20 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 import java.util.logging.Logger;
 
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
@@ -64,12 +63,13 @@ public abstract class PingNodeRemoteCommand implements AdminCommand {
     ServiceLocator habitat;
     @Inject
     private Nodes nodes;
+    
     @Param(name = "name", primary = true)
     protected String name;
     @Param(optional = true, name = "validate", shortName = "v", alias = "full", defaultValue = "false")
     private boolean validate;
-    private static final String NL = System.getProperty("line.separator");
-    private Logger logger = null;
+    
+    private static final String NL = System.lineSeparator();
     protected abstract String validateSubType(Node node);
 
     protected final void executeInternal(AdminCommandContext context) {
@@ -77,7 +77,7 @@ public abstract class PingNodeRemoteCommand implements AdminCommand {
         StringBuilder msg = new StringBuilder();
         Node theNode = null;
 
-        logger = context.getLogger();
+        Logger logger = context.getLogger();
         NodeUtils nodeUtils = new NodeUtils(habitat, logger);
 
         // Make sure Node is valid

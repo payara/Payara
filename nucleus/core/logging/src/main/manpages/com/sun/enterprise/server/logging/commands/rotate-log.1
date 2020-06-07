@@ -1,0 +1,69 @@
+rotate-log(1)             asadmin Utility Subcommands            rotate-log(1)
+
+NAME
+       rotate-log - rotates the log file
+
+SYNOPSIS
+           rotate-log [--help]
+
+DESCRIPTION
+       The rotate-log subcommand rotates the server log by renaming the file
+       with a timestamp name in the format server.log_date-and-time, and
+       creating a new log file. Changes take effect dynamically, that is,
+       server restart is not required.
+
+       The size of the log queue is configurable through the
+       logging.properties file. Log rotation is based on file size or elapsed
+       time since the last log rotation. In some circumstances, the queue
+       might fill up, especially if the log level is set to FINEST and there
+       is heavy activity on the server. In this case, the rotate-log
+       subcommand can be used to rotate the server log immediately. This
+       subcommand is also useful in creating scripts for rotating the log at
+       convenient times.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           The server, cluster, or server instance for which logs will be
+           rotated. If this option is omitted, logs are rotated for the
+           default server.
+
+OPERANDS
+       target
+           Valid values are:
+
+           *   server_name - Default target is server. If no target is
+               specified then logs are rotated for the server.
+
+           *   cluster_name - The name of a target cluster.
+
+           *   instance_name - The name of a target server instance.
+
+EXAMPLES
+       Example 1, Rotating the Server Log
+           This example rotates the server log.
+
+               asadmin> rotate-log
+               Command rotate-log executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       collect-log-files(1), list-log-attributes(1), list-log-levels(1),
+       set-log-attributes(1), set-log-levels(1)
+
+       asadmin(1M)
+
+       "Administering the Logging Service" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         12 Feb 2011                    rotate-log(1)

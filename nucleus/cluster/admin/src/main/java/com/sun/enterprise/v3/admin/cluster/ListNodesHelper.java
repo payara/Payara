@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -45,6 +46,8 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.cluster.NodeInfo;
+
+import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.LinkedList;
@@ -78,29 +81,31 @@ public class ListNodesHelper {
         boolean firstNode = true;
 
         for (Node n : nodeList) {
+            String nodeType = n.getType();
+            if ((!listType.equals(nodeType) && !listType.equals("ALL")) || nodeType.equals("TEMP")) {
+                continue;
+            }
 
             String name = n.getName();
-            String nodeType = n.getType();
             String host = n.getNodeHost();
             String installDir = n.getInstallDir();
 
-            if (!listType.equals(nodeType) && !listType.equals("ALL"))
-                continue;
-
-            if (firstNode)
+            if (firstNode) {
                 firstNode = false;
-            else
+            } else {
                 sb.append(EOL);
+            }
 
-            if (terse)
+            if (terse) {
                 sb.append(name);
-            else if (!long_opt)
+            } else if (!long_opt) {
                 sb.append(name).append("  ").append(nodeType).append("  ").append(host);
+            }
 
             if (long_opt){
                 List<Server> serversOnNode = servers.getServersOnNode(n);
                 StringBuilder instanceList = new StringBuilder();
-                if (serversOnNode.size() > 0) {
+                if (!serversOnNode.isEmpty()) {
                     int i = 0;
                     for (Server server: serversOnNode){
                         if (i > 0)
@@ -109,15 +114,33 @@ public class ListNodesHelper {
                         i++;
                     }
                 }
-                NodeInfo ni = new NodeInfo( name,  host,  installDir,
-                        nodeType,  instanceList.toString());
+                NodeInfo ni = new NodeInfo(name, host, installDir, nodeType, instanceList.toString());
                 infos.add(ni);
             }
         }
-        if (long_opt)
+        if (long_opt) {
             return  NodeInfo.format(infos);
-        else
+        } else {
             return sb.toString();
+        }
 
+    }
+
+    public List<String> getNodeNamesList() {
+        List<String> nodeNamesList = new ArrayList<>();
+
+        for (Node n : nodeList) {
+
+            String name = n.getName();
+            String nodeType = n.getType();
+
+            if (!listType.equals(nodeType) && !listType.equals("ALL")) {
+                continue;
+            }
+
+            nodeNamesList.add(name);
+        }
+
+        return nodeNamesList;
     }
 }

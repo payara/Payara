@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.util;
 
 import java.util.ArrayList;
@@ -44,12 +46,10 @@ import java.util.Collections;
 import java.util.List;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
-import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
 
 import static org.glassfish.external.amx.AMX.*;
 
@@ -78,15 +78,9 @@ public final class ObjectNameBuilder {
         mJMXDomain = parent.getDomain();
     }
 
-    private static void debug(final Object o) {
-        System.out.println("" + o);
-        //AMXDebug.getInstance().getOutput( "org.glassfish.admin.amx.support.ObjectNameBuilder" ).println( o );
-    }
-
     public String getJMXDomain() {
         return (mJMXDomain);
     }
-    private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     public static String makeWild(String props) {
         return (Util.concatenateProps(props, JMXUtil.WILD_PROP));
@@ -98,7 +92,6 @@ public final class ObjectNameBuilder {
     public static List<ObjectName> getAncestors(
             final MBeanServer server,
             final ObjectName start) {
-        //debug( "ObjectNameBuilder.getAncestors(): type = " + start );
         AMXProxy amx = ProxyFactory.getInstance(server).getProxy(start, AMXProxy.class);
         final List<ObjectName> ancestors = new ArrayList<ObjectName>();
 
@@ -151,15 +144,8 @@ public final class ObjectNameBuilder {
             final ObjectName parent,
             final String type,
             final String childName) {
-        //debug( "ObjectNameBuilder.buildChildObjectName(): type = " + type + ", name = " + childName + ", parent = " + parent );
         String props = Util.makeRequiredProps(type, childName);
 
-        /*
-        final String parentPath = PathnameParser.path( parent);
-        final String path = PathnameParser.path(parentPath, type, childName);
-        final String pathProp = Util.makeProp(PATH_KEY,path);
-        props = Util.concatenateProps(pathProp, props);
-         */
         final AMXProxy parentProxy = ProxyFactory.getInstance(server).getProxy(parent, AMXProxy.class);
         final String parentPath = parentProxy.path();
         final String parentPathProp = Util.makeProp(PARENT_PATH_KEY, Util.quoteIfNeeded(parentPath));
@@ -174,7 +160,6 @@ public final class ObjectNameBuilder {
             final Class<?> intf,
             final String name) {
         final String type = Util.deduceType(intf);
-        //final String pathType = Util.getPathType(intf);
 
         return buildChildObjectName(server, parent, type, name);
     }
@@ -186,12 +171,3 @@ public final class ObjectNameBuilder {
         return buildChildObjectName(server, parent, intf, null);
     }
 }
-
-
-
-
-
-
-
-
-

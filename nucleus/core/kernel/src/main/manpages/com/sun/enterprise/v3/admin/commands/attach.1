@@ -1,0 +1,55 @@
+attach(1)                 asadmin Utility Subcommands                attach(1)
+
+NAME
+       attach - attaches to subcommands that were started using asadmin
+       --detach or that contain progress information
+
+SYNOPSIS
+           attach  [--help]
+           job_id
+
+DESCRIPTION
+       The attach subcommand attaches to subcommands that were started using
+       the asadmin utility option --detach or that contain progress
+       information. The --detach option detaches long-running subcommands and
+       executes them in the background in detach mode.
+
+       Job IDs are assigned to the subcommands (jobs), and can be used to view
+       the status of a job and its output. Use the list-jobs(1) subcommand to
+       view the jobs and their job IDs, and the configure-managed-jobs(1)
+       subcommand to configure how long information about the jobs is kept.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       job_id
+           The ID of the job for which you want to view status and output.
+
+EXAMPLES
+       Example 1, Attaching to a Subcommand and Checking Its Status
+           This example attaches to the deploy subcommand with a job ID of 20
+           and shows that the job is finished. If a subcommand is still in
+           progress, the output displays the current status, for example, 64%:
+           Uploading bits.
+
+               asadmin> attach 20
+               Finished execution of deploy
+               Command attach executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-jobs(1), configure-managed-jobs(1)
+
+       asadmin(1M)
+
+Java EE 8                         12 Jan 2013                        attach(1)

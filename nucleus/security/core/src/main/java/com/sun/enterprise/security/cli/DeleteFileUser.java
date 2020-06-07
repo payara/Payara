@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.cli;
 
 import java.beans.PropertyVetoException;
@@ -90,8 +90,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @Service(name = "delete-file-user")
 @PerLookup
 @I18n("delete.file.user")
-@ExecuteOn({ RuntimeType.ALL })
-@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG })
+@ExecuteOn({ RuntimeType.DAS, RuntimeType.INSTANCE })
+@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = RestEndpoint.OpType.DELETE, path = "delete-user", description = "Delete", params = {
                 @RestParam(name = "authrealmname", value = "$parent") }) })
@@ -126,6 +126,8 @@ public class DeleteFileUser implements /* UndoableCommand */ AdminCommand, Admin
     public boolean preAuthorization(AdminCommandContext context) {
         config = CLIUtil.chooseConfig(domain, target, context.getActionReport());
         if (config == null) {
+            // config can be null as this command executes on all instances
+            context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
             return false;
         }
         securityService = config.getSecurityService();

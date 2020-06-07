@@ -52,12 +52,12 @@ import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 
-public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
+public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements RequestBody {
 
-    protected String description;
-    protected Content content = new ContentImpl();
-    protected Boolean required;
-    protected String ref;
+    private String description;
+    private Content content = new ContentImpl();
+    private Boolean required;
+    private String ref;
 
     @Override
     public String getDescription() {
@@ -67,12 +67,6 @@ public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
     @Override
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public RequestBody description(String description) {
-        setDescription(description);
-        return this;
     }
 
     @Override
@@ -86,12 +80,6 @@ public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
     }
 
     @Override
-    public RequestBody content(Content content) {
-        setContent(content);
-        return this;
-    }
-
-    @Override
     public Boolean getRequired() {
         return required;
     }
@@ -99,12 +87,6 @@ public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
     @Override
     public void setRequired(Boolean required) {
         this.required = required;
-    }
-
-    @Override
-    public RequestBody required(Boolean required) {
-        setRequired(required);
-        return this;
     }
 
     @Override
@@ -118,12 +100,6 @@ public class RequestBodyImpl extends ExtensibleImpl implements RequestBody {
             ref = "#/components/requestBodies/" + ref;
         }
         this.ref = ref;
-    }
-
-    @Override
-    public RequestBody ref(String ref) {
-        setRef(ref);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.parameters.RequestBody from, RequestBody to,

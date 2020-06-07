@@ -37,38 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.autodeploy;
 
 import com.sun.enterprise.config.serverbeans.DasConfig;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.PostStartupRunLevel;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import javax.inject.Inject;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.PostStartupRunLevel;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import org.jvnet.hk2.config.ConfigListener;
-import org.jvnet.hk2.config.UnprocessedChangeEvent;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
-
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * A service wrapper around the autodeployer.
@@ -80,7 +79,7 @@ import org.glassfish.logging.annotation.LogMessageInfo;
  * started.  Others can be configured dynamically.  The first type are initialized
  * during postConstruct.  The others will trigger the delivery of config change
  * events to which we respond and, as needed, stop or reschedule the timer task.
- * 
+ *
  * @author tjquinn
  */
 @Service
@@ -92,26 +91,27 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
 
     @Inject
     ServiceLocator habitat;
-    
+
     @Inject
     ServerEnvironment env;
 
+    @Inject
+    private PayaraExecutorService executor;
+
     private AutoDeployer autoDeployer = null;
-    
-    private Timer autoDeployerTimer;
-    
-    private TimerTask autoDeployerTimerTask;
-    
+
+    private ScheduledFuture<?> autoDeployerTimerTask;
+
     private String target;
-    
+
     private static final String DAS_TARGET = "server";
 
     private static final List<String> configPropertyNames = Arrays.asList(
-            "autodeploy-enabled", "autodeploy-polling-interval-in-seconds", 
+            "autodeploy-enabled", "autodeploy-polling-interval-in-seconds",
             "autodeploy-verifier-enabled", "autodeploy-jsp-precompilation-enabled"
             );
-        
- 
+
+
     public static Logger deplLogger;
 
     @LogMessageInfo(message = "Error parsing configured polling-interval-in-seconds {0} as an integer; {1} {2}", level="WARNING")
@@ -135,7 +135,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
         if ( ! env.isDas()) {
             return;
         }
-        
+
         /*
          * Always create the autoDeployer, even if autodeployment is not enabled.
          * Just don't start it if it's not enabled.
@@ -189,7 +189,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
         return (value == null || value.equals("")) ? defaultValue : value;
     }
 
-    private void logConfig(String title, 
+    private void logConfig(String title,
             boolean isEnabled,
             int pollingIntervalInSeconds,
             String directory) {
@@ -198,35 +198,33 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
                     new Object[]{title, isEnabled, pollingIntervalInSeconds, directory});
         }
     }
-    
+
     private String getTarget() {
         // XXX should this also be configurable ?
-        return DAS_TARGET;
+        return null; // Not used before, so make it null now
     }
-    
+
     private String getDefaultVirtualServer() {
         // XXX write this? Or should DeployCommand take care of it on behalf of all code that uses DeployCommand?
         return null;
     }
-    
+
     private boolean isAutoDeployEnabled() {
         return Boolean.parseBoolean(
                 getValue(activeDasConfig.getAutodeployEnabled(),
                 DEFAULT_AUTO_DEPLOY_ENABLED));
     }
-    
+
     private int getPollingIntervalInSeconds() throws NumberFormatException {
         return Integer.parseInt(
-                getValue(activeDasConfig.getAutodeployPollingIntervalInSeconds(), 
+                getValue(activeDasConfig.getAutodeployPollingIntervalInSeconds(),
                 DEFAULT_POLLING_INTERVAL_IN_SECONDS));
     }
-    
+
     private void startAutoDeployer(int pollingIntervalInSeconds) {
-        long pollingInterval = pollingIntervalInSeconds * 1000L;
         autoDeployer.init();
-        autoDeployerTimer = new Timer("AutoDeployer", true);
-        autoDeployerTimer.schedule(
-                autoDeployerTimerTask = new TimerTask() {
+        autoDeployerTimerTask = executor.scheduleAtFixedRate(
+                new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -236,31 +234,31 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
                             AutoDeployer.deplLogger.log(Level.FINE, ex.getMessage(), ex);
                         }
                     }
-                }, 
-                pollingInterval, 
-                pollingInterval);
+                },
+                0L,
+                pollingIntervalInSeconds,
+                TimeUnit.SECONDS);
         logConfig(
-                "Started", 
-                isAutoDeployEnabled(), 
-                pollingIntervalInSeconds, 
+                "Started",
+                isAutoDeployEnabled(),
+                pollingIntervalInSeconds,
                 activeDasConfig.getAutodeployDir());
     }
 
     private void stopAutoDeployer() {
         /*
-         * Tell the running autodeployer to stop, then cancel the timer task 
+         * Tell the running autodeployer to stop, then cancel the timer task
          * and the timer.
          */
         deplLogger.fine("[AutoDeploy] Stopping");
-        if (autoDeployer!=null)
+        if (autoDeployer!=null) {
             autoDeployer.cancel(true);
-        if (autoDeployerTimerTask!=null)
-            autoDeployerTimerTask.cancel();
-        if (autoDeployerTimer != null) {
-            autoDeployerTimer.cancel();
+        }
+        if (autoDeployerTimerTask!=null) {
+            autoDeployerTimerTask.cancel(false);
         }
     }
-    
+
     /**
      * Reschedules the autodeployer because a configuration change has altered
      * the frequency.
@@ -288,18 +286,18 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
         if (autoDeployer == null) {
             return null;
         }
-        
+
        /* Record any events we tried to process but could not. */
         List<UnprocessedChangeEvent> unprocessedEvents = new ArrayList<UnprocessedChangeEvent>();
-        
+
         Boolean newEnabled = null;
         Integer newPollingIntervalInSeconds = null;
-        
+
         for (PropertyChangeEvent event : events) {
             if (event.getSource() instanceof DasConfig) {
                 String propName = event.getPropertyName();
                 if (configPropertyNames.contains(propName) && event.getOldValue().equals(event.getNewValue())) {
-                    deplLogger.fine("[AutoDeploy] Ignoring reconfig of " + propName + 
+                    deplLogger.fine("[AutoDeploy] Ignoring reconfig of " + propName +
                             " from " + event.getOldValue() + " to " + event.getNewValue());
                     continue;
                 }
@@ -318,46 +316,46 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
                 } else if (propName.equals("autodeploy-polling-interval-in-seconds")) {
                     try {
                         newPollingIntervalInSeconds = new Integer(newValue);
-                        deplLogger.fine("[AutoDeploy] Reconfig - polling interval (seconds) changed from " 
+                        deplLogger.fine("[AutoDeploy] Reconfig - polling interval (seconds) changed from "
                                 + oldValue + " to " +
                                 newPollingIntervalInSeconds);
                     } catch (NumberFormatException ex) {
                         deplLogger.log(Level.WARNING,
                                        CONFIGURATION_CHANGE_ERROR,
                                        new Object[] {
-                                         propName, 
+                                         propName,
                                          oldValue,
                                          newValue,
-                                         ex.getClass().getName(), 
+                                         ex.getClass().getName(),
                                          ex.getLocalizedMessage()} );
                     }
                 } else if (propName.equals("autodeploy-dir")) {
                     String newDir = newValue;
                     try {
                         autoDeployer.setDirectory(newDir);
-                        deplLogger.fine("[AutoDeploy] Reconfig - directory changed from " + 
+                        deplLogger.fine("[AutoDeploy] Reconfig - directory changed from " +
                                 oldValue + " to " +
                                 newDir);
                     } catch (AutoDeploymentException ex) {
                         deplLogger.log(Level.WARNING,
                                        CONFIGURATION_CHANGE_ERROR,
                                        new Object[] {
-                                         propName, 
+                                         propName,
                                          oldValue,
                                          newValue,
-                                         ex.getClass().getName(), 
+                                         ex.getClass().getName(),
                                          ex.getLocalizedMessage()} );
                     }
                 } else if (propName.equals("autodeploy-verifier-enabled")) {
                     boolean newVerifierEnabled = Boolean.parseBoolean(newValue);
                     autoDeployer.setVerifierEnabled(newVerifierEnabled);
-                    deplLogger.fine("[AutoDeploy] Reconfig - verifierEnabled changed from " + 
+                    deplLogger.fine("[AutoDeploy] Reconfig - verifierEnabled changed from " +
                             Boolean.parseBoolean(oldValue) +
                             " to " + newVerifierEnabled);
                 } else if (propName.equals("autodeploy-jsp-precompilation-enabled")) {
                     boolean newJspPrecompiled = Boolean.parseBoolean(newValue);
                     autoDeployer.setJspPrecompilationEnabled(newJspPrecompiled);
-                    deplLogger.fine("[AutoDeploy] Reconfig - jspPrecompilationEnabled changed from " + 
+                    deplLogger.fine("[AutoDeploy] Reconfig - jspPrecompilationEnabled changed from " +
                             Boolean.parseBoolean(oldValue) +
                             " to " + newJspPrecompiled);
                 }
@@ -365,7 +363,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
         }
         if (newEnabled != null) {
             if (newEnabled) {
-                startAutoDeployer(newPollingIntervalInSeconds == null ? 
+                startAutoDeployer(newPollingIntervalInSeconds == null ?
                     getPollingIntervalInSeconds() : newPollingIntervalInSeconds);
             } else {
                 stopAutoDeployer();

@@ -1,0 +1,151 @@
+start-instance(1)         asadmin Utility Subcommands        start-instance(1)
+
+NAME
+       start-instance - starts a GlassFish Server instance
+
+SYNOPSIS
+           start-instance [--help]
+           [--debug={false|true}] [--sync={normal|full|none}]
+           instance-name
+
+DESCRIPTION
+       The start-instance subcommand starts a GlassFish Server instance. This
+       subcommand requires the secure shell (SSH) to be configured on the machine
+       where the domain administration server (DAS) is running and on the
+       machine where the instance resides.
+
+           Note
+           +----------------------------------------+
+           |           SSH is not required          |
+           |           if the instance resides on a |
+           |           node of type CONFIG that     |
+           |           represents the local host. A |
+           |           node of type CONFIG is not   |
+           |           enabled for remote           |
+           |           communication over SSH.      |
+           +----------------------------------------+
+
+       You may run this subcommand from any machine that can contact the DAS.
+
+       The subcommand can start any GlassFish Server instance, regardless of
+       how the instance was created. For example, this subcommand can start an
+       instance that was created by using the create-local-instance(1)
+       subcommand.
+
+       This command is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --debug
+           Specifies whether the instance is started with Java Platform
+           Debugger Architecture (JPDA)
+
+           (http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html)
+
+           debugging enabled.
+
+           Possible values are as follows:
+
+           true
+               The instance is started with JPDA debugging enabled and the
+               port number for JPDA debugging is displayed.
+
+           false
+               The instance is started with JPDA debugging disabled (default).
+
+       --sync
+           The type of synchronization between the DAS and the instance's
+           files when the instance is started.
+
+           Possible values are as follows:
+
+           none
+               The DAS does not synchronize the instance's files with any
+               changes. This type of synchronization minimizes the time that
+               is required to start the instance.
+
+           normal
+               The DAS synchronizes the instance with changes since the last
+               synchronization as follows:
+
+               *   For the config directory, the DAS synchronizes the instance
+                   with all changes.
+
+               *   For the applications directory and docroot directory, only
+                   a change to a top-level subdirectory causes the DAS to
+                   synchronize all files under that subdirectory.
+
+                   If a file below a top level subdirectory is changed without
+                   a change to a file in the top level subdirectory, full
+                   synchronization is required. In normal operation, files
+                   below the top level subdirectories of these directories are
+                   not changed. If an application is deployed and undeployed,
+                   full synchronization is not necessary to update the
+                   instance with the change.
+
+               This value is the default.
+
+           full
+               The DAS synchronizes the instance with all of the instance's
+               files, regardless of whether the files have changed since the
+               last synchronization. This type of synchronization might delay
+               the startup of the instance while the DAS updates all files in
+               the instance's directories.
+
+OPERANDS
+       instance-name
+           The name of the GlassFish Server instance to start.
+
+EXAMPLES
+       Example 1, Starting a GlassFish Server Instance
+           This example starts the GlassFish Server instance pmdsa1.
+
+               asadmin> start-instance pmdsa1
+               Waiting for the server to start ..............................
+               Successfully started the instance: pmdsa1
+               instance Location: /export/glassfish3/glassfish/nodes/localhost/pmdsa1
+               Log File: /export/glassfish3/glassfish/nodes/localhost/pmdsa1/logs/server.log
+               Admin Port: 24848
+               Command start-local-instance executed successfully.
+               The instance, pmdsa1, was started on host localhost
+
+               Command start-instance executed successfully.
+
+       Example 2, Starting a GlassFish Server Instance With JPDA Debugging
+       Enabled
+           This example starts the GlassFish Server instance ymlsa1 with JPDA
+           debugging enabled.
+
+               asadmin> start-instance --debug=true ymlsa1
+               Waiting for the server to start ...............................
+               Successfully started the instance: ymlsa1
+               instance Location: /export/glassfish3/glassfish/nodes/localhost/ymlsa1
+               Log File: /export/glassfish3/glassfish/nodes/localhost/ymlsa1/logs/server.log
+               Admin Port: 24849
+               Debugging is enabled. The debugging port is: 29010
+               Command start-local-instance executed successfully.
+               The instance, ymlsa1, was started on host localhost
+
+               Command start-instance executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-instance(1), create-local-instance(1), delete-instance(1),
+       delete-local-instance(1), setup-ssh(1), start-domain(1),
+       start-local-instance(1), stop-domain(1), stop-instance(1),
+       stop-local-instance(1)
+
+       asadmin(1M)
+
+       Java Platform Debugger Architecture (JPDA)
+       (http://www.oracle.com/technetwork/java/javase/tech/jpda-141715.html)
+
+Java EE 8                         21 Aug 2017                 start-instance(1)

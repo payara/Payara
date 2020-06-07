@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -124,13 +125,15 @@ public class ManPageFinder {
             final String[] locales = getLocaleLocations(locale);
             private int i = 0;
             private int j = 0;
-            private String helpdir = getHelpDir(cmdClass);
-            private String commandName = cmdName;
+            private final String helpdir = getHelpDir(cmdClass);
+            private final String commandName = cmdName;
 
+            @Override
             public boolean hasNext() {
                 return i < locales.length && j < sections.length;
             }
 
+            @Override
             public Object next() throws NoSuchElementException{
                 if (!hasNext()) {
                     throw new NoSuchElementException();
@@ -147,6 +150,7 @@ public class ManPageFinder {
                 return result;
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }

@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util.i18n;
 
 import com.sun.enterprise.util.CULoggerInfo;
 import java.text.MessageFormat;
-import java.util.Hashtable;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,8 +51,8 @@ import java.util.logging.Logger;
  * Implementation of a local string manager. Provides access to i18n messages
  * for classes that need them.
  *
- * <p> One StringManagerBase per resource bundle name can be created and accessed by the 
- * getManager method call. 
+ * <p> One StringManagerBase per resource bundle name can be created and accessed by the
+ * getManager method call.
  *
  * <xmp>
  * Example:
@@ -69,8 +68,8 @@ import java.util.logging.Logger;
  *  try {
  *      ....
  *  } catch (Exception e) {
- *      String localizedMsg = sm.getString("test", 
- *          new Integer(7), new java.util.Date(System.currentTimeMillis()), 
+ *      String localizedMsg = sm.getString("test",
+ *          new Integer(7), new java.util.Date(System.currentTimeMillis()),
  *          "a disturbance in the Force");
  *
  *      throw new MyException(localizedMsg, e);
@@ -88,28 +87,28 @@ import java.util.logging.Logger;
 public class StringManagerBase {
 
     /** logger used for this class */
-    private static final Logger _logger = CULoggerInfo.getLogger();
+    private static final Logger LOGGER = CULoggerInfo.getLogger();
 
     /** resource bundle to be used by this manager */
-    private volatile ResourceBundle _resourceBundle;
+    private volatile ResourceBundle resourceBundle;
 
-    private final String _resourceBundleName;
-    private final ClassLoader _classLoader;
-    
+    private final String resourceBundleName;
+    private final ClassLoader classLoader;
+
     /** default value used for undefined local string */
     private static final String NO_DEFAULT = "No local string defined";
 
     /** cache for all the local string managers (per pkg) */
-    private static Hashtable managers = new Hashtable();
+    private static Map<String, StringManagerBase> managers = new HashMap<>();
 
     /**
      * Initializes the resource bundle.
      *
      * @param    resourceBundleName    name of the resource bundle
-     */    
+     */
     protected StringManagerBase(String resourceBundleName, ClassLoader classLoader) {
-        this._resourceBundleName = resourceBundleName;
-        this._classLoader = classLoader;
+        this.resourceBundleName = resourceBundleName;
+        this.classLoader = classLoader;
     }
 
     /**
@@ -120,15 +119,15 @@ public class StringManagerBase {
      * in start-up, doing this lazily improves overall performance.
      */
     private ResourceBundle getResourceBundle() {
-        if(_resourceBundle==null) {
+        if(resourceBundle==null) {
             // worst case we just end up loading this twice. No big deal.
             try {
-                _resourceBundle = ResourceBundle.getBundle(_resourceBundleName, Locale.getDefault(), _classLoader);
+                resourceBundle = ResourceBundle.getBundle(resourceBundleName, Locale.getDefault(), classLoader);
             } catch (Exception e) {
-                _logger.log(Level.SEVERE, CULoggerInfo.exceptionResourceBundle, e);
+                LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionResourceBundle, e);
             }
         }
-        return _resourceBundle;
+        return resourceBundle;
     }
 
     /**
@@ -138,14 +137,14 @@ public class StringManagerBase {
      *
      * @return   a local string manager for the given package name
      */
-    public synchronized static StringManagerBase getStringManager(String resourceBundleName, ClassLoader classLoader) {
-        StringManagerBase mgr = (StringManagerBase) managers.get(resourceBundleName);
+    public static synchronized StringManagerBase getStringManager(String resourceBundleName, ClassLoader classLoader) {
+        StringManagerBase mgr = managers.get(resourceBundleName);
         if (mgr == null) {
             mgr = new StringManagerBase(resourceBundleName, classLoader);
             try {
                 managers.put(resourceBundleName, mgr);
             } catch (Exception e) {
-                _logger.log(Level.SEVERE, CULoggerInfo.exceptionCachingStringManager, e);
+                LOGGER.log(Level.SEVERE, CULoggerInfo.exceptionCachingStringManager, e);
             }
         }
         return mgr;
@@ -178,7 +177,7 @@ public class StringManagerBase {
         try {
             value = getResourceBundle().getString(key);
         } catch (Exception e) {
-            _logger.log(Level.FINE, "No local string for: " + key, e);
+            LOGGER.log(Level.FINE, "No local string for: " + key, e);
         }
 
         if (value != null) {
@@ -189,8 +188,8 @@ public class StringManagerBase {
     }
 
     /**
-     * Returns a local string for the caller and format the arguments 
-     * accordingly. If the key is not found, it will use the given 
+     * Returns a local string for the caller and format the arguments
+     * accordingly. If the key is not found, it will use the given
      * default format.
      *
      * @param   key            the key to the local format string
@@ -199,8 +198,8 @@ public class StringManagerBase {
      *
      * @return  a formatted localized string
      */
-    public String getStringWithDefault(String key, String defaultFormat, 
-            Object arguments[]) {
+    public String getStringWithDefault(String key, String defaultFormat,
+            Object[] arguments) {
 
         MessageFormat f =
             new MessageFormat( getStringWithDefault(key, defaultFormat) );
@@ -219,11 +218,11 @@ public class StringManagerBase {
             }
         }
 
-        String fmtStr; 
+        String fmtStr;
         try {
             fmtStr =  f.format(arguments);
         } catch (Exception e) {
-            _logger.log(Level.WARNING, CULoggerInfo.exceptionWhileFormating, e);
+            LOGGER.log(Level.WARNING, CULoggerInfo.exceptionWhileFormating, e);
 
             // returns default format
             fmtStr = defaultFormat;
@@ -290,10 +289,10 @@ public class StringManagerBase {
      *
      * @return  a formatted localized string
      */
-    public String getString(String key, Object arg1, Object arg2, 
+    public String getString(String key, Object arg1, Object arg2,
             Object arg3, Object arg4) {
 
-        return getStringWithDefault(key, NO_DEFAULT, 
+        return getStringWithDefault(key, NO_DEFAULT,
                                     new Object[] {arg1, arg2, arg3, arg4});
     }
 

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
@@ -88,6 +90,7 @@ public class DeleteLocalInstanceCommand extends LocalInstanceCommand {
     /**
      * We most definitely do not want to create directories for nodes here!!
      * @param f the directory to create
+     * @return false
      */
     @Override
     protected boolean mkdirs(File f) {
@@ -95,13 +98,13 @@ public class DeleteLocalInstanceCommand extends LocalInstanceCommand {
     }
 
     @Override
-    protected void validate()
-            throws CommandException, CommandValidationException {
+    protected void validate() throws CommandException, CommandValidationException {
         instanceName = instanceName0;
         super.validate();
-        if (!StringUtils.ok(getServerDirs().getServerName()))
+        if (!StringUtils.ok(getServerDirs().getServerName())) {
             throw new CommandException(Strings.get("DeleteInstance.noInstanceName"));
-
+        }
+        
         File dasProperties = getServerDirs().getDasPropertiesFile();
 
         if (dasProperties.isFile()) {
@@ -109,15 +112,11 @@ public class DeleteLocalInstanceCommand extends LocalInstanceCommand {
         }
 
         if (!getServerDirs().getServerDir().isDirectory())
-            throw new CommandException(Strings.get("DeleteInstance.noWhack",
-                    getServerDirs().getServerDir()));
+            throw new CommandException(Strings.get("DeleteInstance.noWhack", getServerDirs().getServerDir()));
     }
-
-    /**
-     */
+    
     @Override
-    protected int executeCommand()
-            throws CommandException, CommandValidationException {
+    protected int executeCommand() throws CommandException, CommandValidationException {
         if (isRunning()) {
             throw new CommandException(Strings.get("DeleteInstance.running"));
         }
@@ -137,8 +136,7 @@ public class DeleteLocalInstanceCommand extends LocalInstanceCommand {
      */
     private void doRemote() throws CommandException {
         if (!isDASRunning()) {
-            String newString = Strings.get("DeleteInstance.remoteError",
-                    programOpts.getHost(), "" + programOpts.getPort());
+            String newString = Strings.get("DeleteInstance.remoteError", programOpts.getHost(), "" + programOpts.getPort());
             throw new CommandException(newString);
         }
 
@@ -164,10 +162,10 @@ public class DeleteLocalInstanceCommand extends LocalInstanceCommand {
     private boolean isRegisteredToDas() {
         boolean isRegistered;
         RemoteCLICommand rc;
-        String INSTANCE_DOTTED_NAME = "servers.server." + instanceName;
+        String instanceDottedName = "servers.server." + instanceName;
         try {
             rc = new RemoteCLICommand("get", this.programOpts, this.env);
-            rc.executeAndReturnOutput("get", INSTANCE_DOTTED_NAME);
+            rc.executeAndReturnOutput("get", instanceDottedName);
             isRegistered = true;
         } catch (CommandException ce) {
             isRegistered = false;

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -56,7 +57,6 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -69,10 +69,12 @@ import org.glassfish.hk2.api.PreDestroy;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
@@ -120,7 +122,12 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     private String originalAppName = null;
     private File tenantDir = null;
 
-    /** Creates a new instance of DeploymentContext */
+    /**
+     * Creates a new instance of DeploymentContext
+     *
+     * @param builder
+     * @param env
+     */
     public DeploymentContextImpl(Deployment.DeploymentContextBuilder builder, ServerEnvironment env) {
         this(builder.report(),  builder.sourceAsArchive(), builder.params(), env);
     }
@@ -166,16 +173,20 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         return deplLogger;
     }
 
+    @Override
     public synchronized void preDestroy() {
-        try {
-            PreDestroy.class.cast(sharableTemp).preDestroy();
-        } catch (Exception e) {
-          // ignore, the classloader does not need to be destroyed
-        }
-        try {
-            PreDestroy.class.cast(cloader).preDestroy();
-        } catch (Exception e) {
-          // ignore, the classloader does not need to be destroyed
+        boolean hotDeploy = getCommandParameters(DeployCommandParameters.class).hotDeploy;
+        if (!hotDeploy) {
+            try {
+                PreDestroy.class.cast(sharableTemp).preDestroy();
+            } catch (Exception e) {
+                // ignore, the classloader does not need to be destroyed
+            }
+            try {
+                PreDestroy.class.cast(cloader).preDestroy();
+            } catch (Exception e) {
+                // ignore, the classloader does not need to be destroyed
+            }
         }
     }
 
@@ -191,6 +202,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *         source
      * @link {org.jvnet.glassfish.apu.deployment.archive.ArchiveHandler.getClassLoader()}
      */
+    @Override
     public ClassLoader getFinalClassLoader() {
         return cloader;
     }
@@ -207,6 +219,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *         source
      * @link {org.jvnet.glassfish.apu.deployment.archive.ArchiveHandler.getClassLoader()}
      */
+    @Override
     public ClassLoader getClassLoader() { 
       /* TODO -- Replace this method with another that does not imply it is
        * an accessor and conveys that the result may change depending on the
@@ -216,6 +229,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
       return getClassLoader(true);
     }
 
+    @Override
     public synchronized void setClassLoader(ClassLoader cloader) {
         this.cloader = cloader;
     }
@@ -223,13 +237,20 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
 
     // this classloader will be used for sniffer retrieval, metadata parsing 
     // and the prepare
+    @Override
     public synchronized void createDeploymentClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
             throws URISyntaxException, MalformedURLException {
         this.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.TRUE);
-        this.sharableTemp = createClassLoader(clh, handler, null); 
+        boolean hotDeploy = getCommandParameters(DeployCommandParameters.class).hotDeploy;
+        if (hotDeploy && this.cloader != null) {
+            this.sharableTemp = this.cloader;
+        } else {
+            this.sharableTemp = createClassLoader(clh, handler, null);
+        }
     }
 
     // this classloader will used to load and start the application
+    @Override
     public void createApplicationClassLoader(ClassLoaderHierarchy clh, ArchiveHandler handler)
             throws URISyntaxException, MalformedURLException {
         this.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.FALSE);
@@ -251,7 +272,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     public synchronized ClassLoader getClassLoader(boolean sharable) {
         // if we are in prepare phase, we need to return our sharable temporary class loader
         // otherwise, we return the final one.
-        if (phase==Phase.PREPARE) {
+        if (phase == Phase.PREPARE) {
             if (sharable) {
                 return sharableTemp;
             } else {
@@ -261,13 +282,13 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         } else {
             // we are out of the prepare phase, destroy the shareableTemp and 
             // return the final classloader
-            if (sharableTemp!=null) { 
+            if (sharableTemp != null && sharableTemp != cloader) {
                 try {
                     PreDestroy.class.cast(sharableTemp).preDestroy();
                 } catch (Exception e) {
                     // ignore, the classloader does not need to be destroyed
                 }
-                sharableTemp=null;
+                sharableTemp = null;
             }
             return cloader;
         }
@@ -275,8 +296,8 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
 
     /**
      * Returns a scratch directory that can be used to store things in.
-     * The scratch directory will be persisted accross server restart but
-     * not accross redeployment of the same application
+     * The scratch directory will be persisted across server restart but
+     * not across redeployment of the same application
      *
      * @param subDirName the sub directory name of the scratch dir
      * @return the scratch directory for this application based on
@@ -363,7 +384,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      * key value pair at then end of deployment. That allows individual
      * Deployers implementation to store some information at the
      * application level that should be available upon server restart.
-     * Application level propertries are shared by all the modules.
+     * Application level properties are shared by all the modules.
      *
      * @return the application's properties.
      */
@@ -400,7 +421,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      * class loader
      * @throws UnsupportedOperationException if the class loader we use does not support the
      * registration of a ClassFileTransformer. In such case, the deployer should either fail
-     * deployment or revert to a mode without the byteocode enhancement feature.
+     * deployment or revert to a mode without the bytecode enhancement feature.
      */
     public void addTransformer(ClassFileTransformer transformer) {
 
@@ -451,7 +472,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
                     parameters.libraries(), env);
             for (URL url : urls) {
                 File file = new File(url.getFile());
-                deplLogger.log(Level.FINE, "Specified library jar: "+file.getAbsolutePath());
+                deplLogger.log(FINE, "Specified library jar: {0}", file.getAbsolutePath());
                 if (file.exists()){
                     libURIs.add(url.toURI());
                 } else {
@@ -469,15 +490,15 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         URL[] extensionListLibraries = ASClassLoaderUtil.getLibrariesAsURLs(extensionList, env);
         for (URL url : extensionListLibraries) {
             libURIs.add(url.toURI());
-            if (deplLogger.isLoggable(Level.FINEST)) {
-                deplLogger.log(Level.FINEST, "Detected [EXTENSION_LIST]" +
-                               " installed-library [ " + url + " ] for archive [ "+source.getName()+ "]");
+            if (deplLogger.isLoggable(FINEST)) {
+                deplLogger.log(FINEST, "Detected [EXTENSION_LIST] installed-library [ {0} ] for archive [ {1}]", new Object[]{url, source.getName()});
             }
         }
 
         return libURIs;
     }
 
+    @Override
     public void clean() {
         if (parameters.origin == OpsParams.Origin.undeploy ||
             parameters.origin == OpsParams.Origin.deploy ) {
@@ -588,7 +609,6 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         this.moduleUri = moduleUri;
     }
 
-
     /**
      * Gets the archive handlers for modules
      *
@@ -612,6 +632,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      *
      * @return an action report
      */
+    @Override
     public ActionReport getActionReport() {
         return actionReport;
     }
@@ -639,8 +660,8 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         File f = getRootTenantDirForApp(originalAppName);
         f = new File(f, tenant);
         if (!f.exists() && !f.mkdirs()) {
-          if (deplLogger.isLoggable(Level.FINEST)) {
-              deplLogger.log(Level.FINEST, "Unable to create directory " + f.getAbsolutePath());
+          if (deplLogger.isLoggable(FINEST)) {
+              deplLogger.log(FINEST, "Unable to create directory {0}", f.getAbsolutePath());
           }
           
         }
@@ -678,14 +699,17 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
                 for (String className : classNamesToClean) {
                     transientAppMetaData.remove(className);
                 }
+                com.sun.enterprise.deploy.shared.FileArchive.clearCache();
             }
         }
         actionReport = null;
     }
 
     /**
-     * Prepare the scratch directories, creating the directories
-     * if they do not exist
+     * Prepare the scratch directories, creating the directories if they do not
+     * exist
+     *
+     * @throws java.io.IOException
      */
     public void prepareScratchDirs() throws IOException {
         prepareScratchDir(getScratchDir("ejb"));

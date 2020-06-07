@@ -1,0 +1,159 @@
+get(1)                    asadmin Utility Subcommands                   get(1)
+
+NAME
+       get - gets the values of configurable or monitorable attributes
+
+SYNOPSIS
+           get [--help]
+           [--monitor={true|false}]
+           [--aggregatedataonly={true|false}]
+           (dotted-attribute--name)+
+
+DESCRIPTION
+       The get subcommand uses dotted names to get the names and values of
+       configurable or monitorable attributes for GlassFish Server elements.
+
+       You can use the list(1) subcommand to display the dotted names that
+       represent individual server components and subsystems. For example, a
+       dotted name might be server.applications.web-module. Attributes from
+       the monitoring hierarchy are read-only, but configuration attributes
+       can be modified using the set(1) subcommand. For more detailed
+       information on dotted names, see the dotted-names(5ASC) help page.
+
+           Note
+           +----------------------------------------+
+           |           Characters that have special |
+           |           meaning to the shell or      |
+           |           command interpreter, such as |
+           |           * (asterisk), should be      |
+           |           quoted or escaped as         |
+           |           appropriate to the shell,    |
+           |           for example, by enclosing    |
+           |           the argument in quotes. In   |
+           |           multimode, quotes are needed |
+           |           only for arguments that      |
+           |           include spaces, quotes, or   |
+           |           backslash.                   |
+           +----------------------------------------+
+
+       The following list shows common usage of the get subcommand with the *
+       (asterisk):
+
+       get * or get *.*
+           Gets all values on all dotted name prefixes.
+
+       get domain* or get domain*.*
+           Gets all values on the dotted names that begin with domain.
+
+       get *config*.*.*
+           Gets all values on the dotted names that match *config*.*.
+
+       get domain.j2ee-applications.*.ejb-module.*.*
+           Gets all values on all EJB modules of all applications.
+
+       get *web-modules.*.*
+           Gets all values on all web modules whether in an application or
+           standalone.
+
+       get *.*.*.*
+           Gets all values on all dotted names that have four parts.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --monitor, -m
+           Defaults to false. If set to false, the configurable attribute
+           values are returned. If set to true, the monitorable attribute
+           values are returned.
+
+       --aggregatedataonly, -c
+           Aggregates monitoring data for all GlassFish Server instances in a
+           cluster. The default value is false.
+
+OPERANDS
+       dotted-attribute-name
+           Identifies the attribute name in the dotted notation. At least one
+           dotted name attribute is required. The dotted notation is the
+           syntax used to access attributes of configurable entities.
+
+EXAMPLES
+       Example 1, Getting the Attributes of a Configurable Element
+           This example gets the attributes of listener.http-listener-1.
+
+               asadmin> get server.http-service.http-listener.http-listener-1.*
+               server.http-service.http-listener.http-listener-1.acceptor-threads = 1
+               server.http-service.http-listener.http-listener-1.address = 0.0.0.0
+               server.http-service.http-listener.http-listener-1.blocking-enabled = false
+               server.http-service.http-listener.http-listener-1.default-virtual-server = server
+               server.http-service.http-listener.http-listener-1.enabled = true
+               server.http-service.http-listener.http-listener-1.external-port =
+               server.http-service.http-listener.http-listener-1.family = inet
+               server.http-service.http-listener.http-listener-1.id = http-listener-1
+               server.http-service.http-listener.http-listener-1.port = 8080
+               server.http-service.http-listener.http-listener-1.redirect-port =
+               server.http-service.http-listener.http-listener-1.security-enabled = false
+               server.http-service.http-listener.http-listener-1.server-name =
+               server.http-service.http-listener.http-listener-1.xpowered-by = true
+               Command get executed successfully.
+
+       Example 2, Getting Monitorable Objects
+           This example gets the configuration attributes for setting the
+           monitoring level and shows whether they are enabled (LOW or HIGH)
+           or disabled (OFF). The jvm component is enabled for monitoring.
+
+               asadmin> get server.monitoring-service.module-monitoring-levels.*
+               server.monitoring-service.module-monitoring-levels.connector-connection-pool=OFF
+               server.monitoring-service.module-monitoring-levels.connector-service=OFF
+               server.monitoring-service.module-monitoring-levels.d-trace=OFF
+               server.monitoring-service.module-monitoring-levels.ejb-container=OFF
+               server.monitoring-service.module-monitoring-levels.http-service=OFF
+               server.monitoring-service.module-monitoring-levels.jdbc-connection-pool=OFF
+               server.monitoring-service.module-monitoring-levels.jms-service=OFF
+               server.monitoring-service.module-monitoring-levels.jvm=HIGH
+               server.monitoring-service.module-monitoring-levels.orb=OFF
+               server.monitoring-service.module-monitoring-levels.thread-pool=OFF
+               server.monitoring-service.module-monitoring-levels.transaction-service=OFF
+               server.monitoring-service.module-monitoring-levels.web-container=OFF
+               Command get executed successfully.
+
+       Example 3, Getting Attributes and Values for a Monitorable Object
+           This example gets all attributes and values of the jvm monitorable
+           object.
+
+               asadmin> get --monitor server.jvm.*
+               server.jvm.HeapSize_Current = 45490176
+               server.jvm.HeapSize_Description = Describes JvmHeapSize
+               server.jvm.HeapSize_HighWaterMark = 45490176
+               server.jvm.HeapSize_LastSampleTime = 1063217002433
+               server.jvm.HeapSize_LowWaterMark = 0
+               server.jvm.HeapSize_LowerBound = 0
+               server.jvm.HeapSize_Name = JvmHeapSize
+               server.jvm.HeapSize_StartTime = 1063238840055
+               server.jvm.HeapSize_Unit = bytes
+               server.jvm.HeapSize_UpperBound = 531628032
+               server.jvm.UpTime_Count = 1063238840100
+               server.jvm.UpTime_Description = Describes JvmUpTime
+               server.jvm.UpTime_LastSampleTime = 1-63238840070
+               server.jvm.UpTime_Name = JvmUpTime
+               server.jvm.UpTime_StartTime = 1063217002430
+               server.jvm.UpTime_Unit = milliseconds
+               Command get executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list(1), set(1)
+
+       dotted-names(5ASC)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Administration Guide
+
+Java EE 8                         12 Feb 2013                           get(1)

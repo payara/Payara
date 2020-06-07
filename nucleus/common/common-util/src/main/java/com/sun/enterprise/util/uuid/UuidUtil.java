@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * UuidUtil.java
@@ -47,9 +48,7 @@
 package com.sun.enterprise.util.uuid;
 
 import java.net.InetAddress;
-
 import java.rmi.server.UID;
-
 import java.security.SecureRandom;
 
 /**
@@ -64,7 +63,7 @@ public class UuidUtil
 
     //first method (from MarketMaker Guid)
     public static String generateUuidMM() {
-        return new StringBuffer(new UID().toString()).reverse().append(':').append(_inetAddr).toString();
+        return new StringBuilder(new UID().toString()).reverse().append(':').append(_inetAddr).toString();
     }
 
     //second method

@@ -143,7 +143,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	public void setUpdateAction (int action) throws ModelException
 	{
 		Integer old = new Integer(getUpdateAction());
-		Integer newAction = new Integer(action);
+		Integer newAction = Integer.valueOf(action);
 
 		try
 		{
@@ -180,7 +180,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	public void setDeleteAction (int action) throws ModelException
 	{
 		Integer old = new Integer(getDeleteAction());
-		Integer newAction = new Integer(action);
+		Integer newAction = Integer.valueOf(action);
 
 		try
 		{
@@ -235,7 +235,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	public void setLowerBound (int lowerBound) throws ModelException
 	{
 		Integer old = new Integer(getLowerBound());
-		Integer newBound = new Integer(lowerBound);
+		Integer newBound = Integer.valueOf(lowerBound);
 
 		try
 		{
@@ -264,7 +264,7 @@ public class RelationshipElementImpl extends PersistenceFieldElementImpl
 	public void setUpperBound (int upperBound) throws ModelException
 	{
 		Integer old = new Integer(getUpperBound());
-		Integer newBound = new Integer(upperBound);
+		Integer newBound = Integer.valueOf(upperBound);
 
 		try
 		{

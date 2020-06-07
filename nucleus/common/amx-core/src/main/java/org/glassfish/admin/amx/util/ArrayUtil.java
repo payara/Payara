@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -86,12 +87,8 @@ public final class ArrayUtil
                     {
                         equal = false;
                     }
-                    else if (ClassUtil.objectIsArray(a1))
-                    {
-                        if (!arraysEqual(a1, a2))
-                        {
-                            equal = false;
-                        }
+                    else if (ClassUtil.objectIsArray(a1) && !arraysEqual(a1, a2)) {
+                        equal = false;
                     }
                 }
 
@@ -196,28 +193,3 @@ public final class ArrayUtil
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

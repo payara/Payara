@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 /*
  * WebServiceSecurity.java
@@ -69,7 +69,7 @@ import com.sun.enterprise.security.jauth.ClientAuthContext;
 import com.sun.enterprise.security.jauth.FailureException;
 import com.sun.enterprise.security.jauth.PendingException;
 import com.sun.enterprise.security.jauth.ServerAuthContext;
-import com.sun.enterprise.security.jmac.provider.SOAPAuthParam;
+import com.sun.enterprise.security.jauth.jaspic.provider.SOAPAuthParam;
 
 /**
  *

@@ -37,22 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+
+package com.sun.enterprise.universal.process;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /*
  * ProcessManager.java
  * Use this class for painless process spawning.
  * This class was specifically written to be compatable with 1.4
- * @since JDK 1.4
+ * 
  * @author bnevins
  * Created on October 28, 2005, 10:08 PM
- */
-package com.sun.enterprise.universal.process;
-
-import java.io.*;
-import java.util.*;
-
-/**
- *
  */
 public class ProcessManager {
     public ProcessManager(String... cmds) {
@@ -64,7 +64,7 @@ public class ProcessManager {
     ////////////////////////////////////////////////////////////////////////////
     public ProcessManager(List<String> Cmdline) {
         cmdline = new String[Cmdline.size()];
-        cmdline = (String[]) Cmdline.toArray(cmdline);
+        cmdline = Cmdline.toArray(cmdline);
         sb_out = new StringBuffer();
         sb_err = new StringBuffer();
     }
@@ -75,16 +75,15 @@ public class ProcessManager {
             timeout = num;
         }
     }
-    
+
     public final void setEnvironment(String[] env) {
         this.env = env;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     public final void setStdinLines(List<String> list) {
-        if (list != null && list.size() > 0) {
-            stdinLines = new String[list.size()];
-            stdinLines = (String[]) list.toArray(stdinLines);
+        if (list != null && !list.isEmpty()) {
+            stdinLines = list.toArray(new String[0]);
         }
     }
 
@@ -167,30 +166,20 @@ public class ProcessManager {
             return;
         }
 
-        PrintWriter pipe = null;
 
         if(process == null) {
             throw new ProcessManagerException(Strings.get("null.process"));
         }
 
-        try {
-            pipe = new PrintWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream())));
-
-            for (int i = 0; i < stdinLines.length; i++) {
-                debug("InputLine ->" + stdinLines[i] + "<-");
-                pipe.println(stdinLines[i]);
+        try (PrintWriter pipe = new PrintWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream())))) {
+            for (String stdinLine : stdinLines) {
+                debug("InputLine ->" + stdinLine + "<-");
+                pipe.println(stdinLine);
             }
             pipe.flush();
         }
         catch (Exception e) {
             throw new ProcessManagerException(e);
-        }
-        finally {
-            try {
-                pipe.close();
-            }
-            catch (Throwable t) {
-            }
         }
     }
 
@@ -260,8 +249,7 @@ public class ProcessManager {
                 System.exit(1);
             }
 
-            List<String> cmds = new ArrayList<String>();
-            cmds.addAll(Arrays.asList(args));
+            List<String> cmds = new ArrayList<>(Arrays.asList(args));
 
             ProcessManager pm = new ProcessManager(cmds);
             pm.execute();
@@ -277,15 +265,15 @@ public class ProcessManager {
     ////////////////////////////////////////////////////////////////////////////
     private String[] cmdline;
     private String[] env = null;
-    private StringBuffer sb_out;
-    private StringBuffer sb_err;
+    private final StringBuffer sb_out;
+    private final StringBuffer sb_err;
     private int exit = -1;
     private int timeout;
     private Process process;
     private boolean echo = true;
     private static final boolean debugOn = false;
     private String[] stdinLines;
-    private List<Thread> threads = new ArrayList<Thread>(2);
+    private List<Thread> threads = new ArrayList<>(2);
     private boolean waitForReaderThreads = true;
     ////////////////////////////////////////////////////////////////////////////
 
@@ -297,8 +285,7 @@ public class ProcessManager {
         }
 
         @Override
-        public void run
-                () {
+        public void run() {
             try {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     sb.append(line).append('\n');
@@ -312,9 +299,9 @@ public class ProcessManager {
             }
             ProcessManager.debug("ReaderThread exiting...");
         }
-        private BufferedReader reader;
-        private StringBuffer sb;
-        private boolean echo;
+        private final BufferedReader reader;
+        private final StringBuffer sb;
+        private final boolean echo;
     }
 
     static class TimeoutThread implements Runnable {

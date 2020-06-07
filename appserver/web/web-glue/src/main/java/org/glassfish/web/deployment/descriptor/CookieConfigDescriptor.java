@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
@@ -105,21 +106,21 @@ public class CookieConfigDescriptor extends Descriptor implements CookieConfig {
         this.maxAge = maxAge;
     }
 
-    public void print(StringBuffer toStringBuffer) {
+    public void print(StringBuilder toStringBuilder) {
         if (getName() != null) {
-            toStringBuffer.append("\n cookie name ").append(getName());
+            toStringBuilder.append("\n cookie name ").append(getName());
         }
         if (domain != null) {
-            toStringBuffer.append("\n cookie domain ").append(domain);
+            toStringBuilder.append("\n cookie domain ").append(domain);
         }
         if (path != null) {
-            toStringBuffer.append("\n cookie path ").append(path);
+            toStringBuilder.append("\n cookie path ").append(path);
         }
         if (comment != null) {
-            toStringBuffer.append("\n cookie comment ").append(comment);
+            toStringBuilder.append("\n cookie comment ").append(comment);
         }
-        toStringBuffer.append("\n cookie httpOnly ").append(httpOnly);
-        toStringBuffer.append("\n cookie secure ").append(secure);
-        toStringBuffer.append("\n cookie maxAge ").append(maxAge);
+        toStringBuilder.append("\n cookie httpOnly ").append(httpOnly);
+        toStringBuilder.append("\n cookie secure ").append(secure);
+        toStringBuilder.append("\n cookie maxAge ").append(maxAge);
     }
 }

@@ -126,11 +126,3 @@ public final class AMXConfigConstants
     public static final String AMX_CONFIG_READY_FEATURE   = "AMXConfigReady";
 
 }
-
-
-
-
-
-
-
-

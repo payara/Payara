@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!-- standalone/standaloneInstanceProperties.jsf -->
@@ -68,13 +70,16 @@
 
             gf.restRequest(endpoint="#{pageSession.selfUrl}/property", method="GET", result="#{requestScope.propTable}");
             gf.isInstanceName(instanceName="#{pageSession.instanceName}");
-            setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
+            setPageSessionAttribute(key="properties", value="#{requestScope.propTable.data.extraProperties.properties}");
+            py.onlyGetConfigurationProps(props="#{pageSession.properties}" modifiedProps="#{pageSession.modifiedProps}");
+            setPageSessionAttribute(key="tableList", value="#{pageSession.modifiedProps}");
+            setPageSessionAttribute(key="isMicroProfileProps", value="#{false}");
         />
     </event>
     <sun:form id="propertyForm">
 #include "/cluster/standalone/standaloneInstanceTabs.inc"
-        <sun:title id="propertyContentPage" title="$resource{i18ncs.PropertiesTitle}" helpText="$resource{i18nc.microprofile.properties.description}">
-#include "/cluster/shared/instancePropertiesButtons.jsf"
+        <sun:title id="propertyContentPage" title="$resource{i18ncs.PropertiesTitle}">
+#include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
 #include "/common/shared/alertMsg_1.inc"
 #include "/common/shared/nameSection.inc"
@@ -82,7 +87,7 @@
 #include "/common/shared/propertyDescTable.inc"
 
         <sun:title id="bottomTitle">
-#include "/cluster/shared/instancePropertiesButtons.jsf"
+#include "/common/appServer/propertiesButtons.jsf"
         </sun:title>
 
         <sun:hidden id="helpKey" value="$resource{help_cluster.standaloneInstanceProperties}" />

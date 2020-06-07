@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions copyright 2018 Payara Foundation and/or its affiliates
 
 package fish.payara.micro.boot.loader.jar;
 
@@ -157,7 +158,9 @@ public class JarFile extends java.util.jar.JarFile {
 		Manifest manifest = (this.manifest == null ? null : this.manifest.get());
 		if (manifest == null) {
 			if (this.type == JarFileType.NESTED_DIRECTORY) {
-				manifest = new JarFile(this.getRootJarFile()).getManifest();
+				try (JarFile jarFile = new JarFile(this.getRootJarFile())) {
+					manifest = jarFile.getManifest();
+				}
 			}
 			else {
 				InputStream inputStream = getInputStream(MANIFEST_NAME,
@@ -172,7 +175,7 @@ public class JarFile extends java.util.jar.JarFile {
 					inputStream.close();
 				}
 			}
-			this.manifest = new SoftReference<Manifest>(manifest);
+			this.manifest = new SoftReference<>(manifest);
 		}
 		return manifest;
 	}

@@ -37,83 +37,71 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * foo.java
- *
- * Created on November 11, 2001, 12:09 AM
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util.io;
+
 import java.io.*;
 import java.util.*;
 
 /**
  *
- * @author  bnevins
- * @version 
+ * @author bnevins
+ * @version
  */
-public abstract class FileLister
-{
-	FileLister(File root)
-	{
-		mainRoot = root;
-		fileList = new ArrayList<File>();
-	}
-    public void keepEmptyDirectories()
-    {
+public abstract class FileLister {
+
+    FileLister(File root) {
+        mainRoot = root;
+        fileList = new ArrayList<File>();
+    }
+
+    public void keepEmptyDirectories() {
         keepEmpty = true;
     }
 
-	abstract protected boolean relativePath();
-	
-	public String[] getFiles()
-	{
-		getFilesInternal(mainRoot);
-		String[] files = new String[fileList.size()];
-		
-		if(files.length <= 0)
-			return files;
+    protected abstract boolean relativePath();
 
-		int len = 0;
-		
-		if(relativePath())
-			len = mainRoot.getPath().length() + 1;
-		
-		for(int i = 0; i < files.length; i++)
-		{
-			files[i] = (fileList.get(i)).getPath().substring(len).replace('\\', '/');
-		}
-		
-		Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
-		return files;
-	}
-	
-	
-	public void getFilesInternal(File root)
-	{
-		File[] files = root.listFiles();
-		
-		for(int i = 0; i < files.length; i++)
-		{
-			if(files[i].isDirectory())
-			{
-				getFilesInternal(files[i]);
-			}
-			else
-				fileList.add(files[i]);	// actual file
-		}
+    public String[] getFiles() {
+        getFilesInternal(mainRoot);
+        String[] files = new String[fileList.size()];
+
+        if (files.length <= 0) {
+            return files;
+        }
+
+        int len = 0;
+
+        if (relativePath()) {
+            len = mainRoot.getPath().length() + 1;
+        }
+
+        for (int i = 0; i < files.length; i++) {
+            files[i] = (fileList.get(i)).getPath().substring(len).replace('\\', '/');
+        }
+
+        Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
+        return files;
+    }
+
+    public void getFilesInternal(File root) {
+        File[] files = root.listFiles();
+
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory()) {
+                getFilesInternal(files[i]);
+            } else {
+                fileList.add(files[i]);	// actual file
+            }
+        }
         // add empty directory, if the option is turned on
-        if(files.length <= 0 && keepEmpty)
+        if (files.length <= 0 && keepEmpty) {
             fileList.add(root);
+        }
 
-	}
-		
-		
-    private	ArrayList<File>	fileList = null;
-    private File		mainRoot	 = null;
-    private boolean		keepEmpty	 = false;
+    }
+
+    private ArrayList<File> fileList = null;
+    private File mainRoot = null;
+    private boolean keepEmpty = false;
 }
-
-
-

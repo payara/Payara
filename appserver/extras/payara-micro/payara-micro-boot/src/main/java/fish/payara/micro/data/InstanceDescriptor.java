@@ -145,5 +145,9 @@ public interface InstanceDescriptor extends Serializable {
      * @return a JSON formatted string representing the instance.
      */
     String toJsonString(boolean verbose);
-
+    
+    /**
+     * @return the timestamp of the last heartbeat this instance updated
+     */
+    long getLastHearbeat();
 }

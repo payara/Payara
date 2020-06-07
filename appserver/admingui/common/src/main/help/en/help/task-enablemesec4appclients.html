@@ -1,0 +1,88 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-enablemesec4appclients" name="task-enablemesec4appclients"></a><a id="GHCOM00210" name="GHCOM00210"></a></p>
+
+<h4><a id="sthref108" name="sthref108"></a>To Enable Message Security for Application Clients</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Client providers must have the same message protection policies as the server-side providers with which they interact. This is already the case for the providers configured (but not enabled) when GlassFish Server is installed.</p>
+<p>To enable message security for application clients, modify the GlassFish Server specific configuration for the application client container.</p>
+<ol>
+<li>
+<p>Stop any client applications that depend on the client container descriptor.</p>
+</li>
+<li>
+<p>In a text editor, open the Sun application client container descriptor, located in <i>domain-dir</i><code>/config/sun-acc.xml.</code></p>
+</li>
+<li>
+<p>To enable the default client provider in the application client, add the <code>default-client-provider</code> attribute to the element to the <code>message-security-config</code> element.</p>
+<p>The surrounding code is shown for context and may differ slightly in your installation. Do not change it.</p>
+<pre>
+&lt;client-container&gt;
+  &lt;target-server name="<i>your-host</i>" address="<i>your-host</i>"
+      port="<i>your-port</i>"/&gt;
+  &lt;log-service file="" level="WARNING"/&gt;
+  &lt;message-security-config auth-layer="SOAP"
+      <b>default-client-provider="ClientProvider"</b>&gt;
+    &lt;provider-config
+        class-name="com.sun.enterprise.security.jauth.ClientAuthModule"
+        provider-id="clientprovider" provider-type="client"&gt;
+      &lt;request-policy auth-source="sender"/&gt;
+      &lt;response-policy/&gt;
+        &lt;property name="security.config"
+          value="C:/Sun/AppServer/lib/appclient/wss-client-config.xml"/&gt;
+    &lt;/provider-config&gt;
+  &lt;/message-security-config&gt;
+&lt;/client-container&gt;
+</pre>
+<p>The message security provider configured in the client container must have access to private keys and trusted certificates. To provide it access, set the values for the following system properties in the application client startup script:</p>
+<pre>
+-Djavax.net.ssl.keyStore
+
+-Djavax.net.ssl.trustStore
+</pre></li>
+</ol>
+<a id="GHCOM318" name="GHCOM318"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-configmsgsecproviders.html">To Configure GlassFish Server Facilities for Use by Message Security Providers</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfignew.html">To Create a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigedit.html">To Edit a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigdelete.html">To Delete a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfignew.html">To Create a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfigedit.html">To Edit a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfigdelete.html">To Delete a Message Security Provider Configuration</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

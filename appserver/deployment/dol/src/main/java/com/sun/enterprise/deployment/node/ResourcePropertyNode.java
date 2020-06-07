@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.node;
 
@@ -84,15 +85,14 @@ public class ResourcePropertyNode extends DeploymentDescriptorNode<ResourcePrope
             properties = ((JMSDestinationDefinitionDescriptor) desc).getProperties();
         }
 
-
-        Set keys = properties.keySet();
-
-        for (Object key : keys) {
-            String name = (String) key;
-            String value = (String) properties.get(name);
-            Node propertyNode = appendChild(node, TagNames.RESOURCE_PROPERTY);
-            appendTextChild(propertyNode, TagNames.RESOURCE_PROPERTY_NAME, name);
-            appendTextChild(propertyNode, TagNames.RESOURCE_PROPERTY_VALUE, value);
+        if (properties != null) {
+            for (Object key : properties.keySet()) {
+                String name = (String) key;
+                String value = (String) properties.get(name);
+                Node propertyNode = appendChild(node, TagNames.RESOURCE_PROPERTY);
+                appendTextChild(propertyNode, TagNames.RESOURCE_PROPERTY_NAME, name);
+                appendTextChild(propertyNode, TagNames.RESOURCE_PROPERTY_VALUE, value);
+            }
         }
         return node;
     }

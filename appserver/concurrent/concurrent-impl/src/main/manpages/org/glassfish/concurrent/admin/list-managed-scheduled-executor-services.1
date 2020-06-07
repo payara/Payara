@@ -1,0 +1,64 @@
+list-managed-scheduled-executor-services(1)  asadmin Utility Subcommands  list-managed-scheduled-executor-services(1)
+
+NAME
+       list-managed-scheduled-executor-services - lists managed scheduled
+       executor service resources
+
+SYNOPSIS
+           list-managed-scheduled-executor-services [--help]
+           [target]
+
+DESCRIPTION
+       The list-managed-scheduled-executor-services subcommand lists managed
+       scheduled executor service resources.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           Specifies the target for which managed scheduled executor service
+           resources are to be listed. Valid targets are:
+
+           server
+               Lists the resources on the default server instance. This is the
+               default value.
+
+           domain
+               Lists the resources for the domain.
+
+           cluster-name
+               Lists the resources on all server instances in the specified
+               cluster.
+
+           instance-name
+               Lists the resources on a specified server instance.
+
+EXAMPLES
+       Example 1, Listing Managed Scheduled Executor Service Resources
+           This example lists managed scheduled executor service resources on
+           the default server instance.
+
+               asadmin> list-managed-scheduled-executor-services
+               concurrent/__defaultManagedScheduledExecutorService
+               concurrent/myScheduledExecutor1
+               concurrent/myScheduledExecutor2
+               Command list-managed-scheduled-executor-services executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-managed-scheduled-executor-service(1),
+       delete-managed-scheduled-executor-service(1)
+
+       asadmin(1M)
+
+Java EE 8          09 Aug 2017   list-managed-scheduled-executor-services(1)

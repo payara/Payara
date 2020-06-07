@@ -1,0 +1,57 @@
+monitoring(5ASC)           GlassFish Server Concepts          monitoring(5ASC)
+
+NAME
+       monitoring - reviewing the runtime state of components and services
+       deployed in GlassFish Server
+
+DESCRIPTION
+       Monitoring is the process of reviewing the statistics of a system to
+       improve performance or solve problems. By monitoring the state of
+       various components and services deployed in GlassFish Server,
+       performance bottlenecks can be identified, failures can be anticipated,
+       and runtime standards can be established and observed. Data gathered by
+       monitoring can also be useful in performance tuning and capacity
+       planning.
+
+       The GlassFish Server monitoring service is enabled by default, that is,
+       the monitoring-enabled attribute of the monitoring-service element is
+       set to true. Once the monitoring service is enabled, a deployed module
+       can then be enabled for monitoring by setting its monitoring level to
+       HIGH or LOW (default is OFF). Monitoring can be configured dynamically
+       by using the Administration Console or the enable-monitoring and the
+       disable-monitoring subcommands. The set subcommand can also be used
+       with dotted names to enable or disable monitoring. However, a server
+       restart is required for changes made by using the set subcommand to
+       take affect.
+
+       Monitoring data can be viewed by using the Administration Console or by
+       using the subcommands of the asadmin utility.
+
+       *   The monitor subcommand displays monitoring data for a given type,
+           similar to the UNIX top command. The data is presented at given
+           intervals.
+
+       *   The list and get subcommands display comprehensive data. Both use
+           dotted names to specify monitorable objects.
+
+       Alternate tools for monitoring GlassFish Server components and services
+       include JConsole and the REST interface.
+
+       The Monitoring Scripting Client or DTrace Monitoring can be used to
+       start the available monitoring probes. Using these tools is helpful in
+       identifying performance issues during runtime. Monitoring Scripting
+       Client or DTrace Monitoring are only usable if their modules are
+       present.
+
+SEE ALSO
+       monitor(1), enable-monitoring(1), disable-monitoring(1), list(1),
+       get(1), set(1)
+
+       dotted-names(5ASC)
+
+       asadmin(1M)
+
+       "Administering the Monitoring Service" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         21 Oct 2009                 monitoring(5ASC)

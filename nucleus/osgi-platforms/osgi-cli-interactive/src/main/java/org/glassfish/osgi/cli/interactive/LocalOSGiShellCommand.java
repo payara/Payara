@@ -37,45 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.osgi.cli.interactive;
 
-import com.sun.enterprise.admin.cli.ArgumentTokenizer;
-import com.sun.enterprise.admin.cli.CLICommand;
-import com.sun.enterprise.admin.cli.CLIUtil;
-import com.sun.enterprise.admin.cli.Environment;
-import com.sun.enterprise.admin.cli.MultimodeCommand;
-import com.sun.enterprise.admin.cli.ProgramOptions;
+import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.logging.Level;
 import javax.inject.Inject;
-import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.completer.NullCompleter;
-import jline.console.completer.StringsCompleter;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.api.admin.InvalidCommandException;
-import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.*;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jline.reader.Completer;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.completer.NullCompleter;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.terminal.impl.ExternalTerminal;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -92,6 +84,27 @@ import org.jvnet.hk2.annotations.Service;
 @I18n("osgi-shell")
 @PerLookup
 public class LocalOSGiShellCommand extends CLICommand {
+
+    private final static class NullOutputStream extends OutputStream {
+        NullOutputStream() {
+            // make visible
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            return;
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            return;
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            return;
+        }
+    }
 
     protected static final String REMOTE_COMMAND = "osgi";
     protected static final String SESSIONID_OPTION = "--session-id";
@@ -227,12 +240,13 @@ public class LocalOSGiShellCommand extends CLICommand {
     @Override
     protected int executeCommand()
             throws CommandException, CommandValidationException {
-        ConsoleReader reader = null;
 
-        if(cmd == null) {
+        LineReader reader = null;
+        
+        if (cmd == null) {
             throw new CommandException("Remote command 'osgi' is not available.");
         }
-        
+
         programOpts.setEcho(echo);       // restore echo flag, saved in validate
         try {
             if (encoding != null) {
@@ -240,52 +254,60 @@ public class LocalOSGiShellCommand extends CLICommand {
                 System.setProperty("input.encoding", encoding);
             }
 
-            String[] args = new String[] {REMOTE_COMMAND,
+            String[] args = new String[]{REMOTE_COMMAND,
                 "asadmin-osgi-shell"};
             args = enhanceForTarget(args);
             shellType = cmd.executeAndReturnOutput(args).trim();
 
             if (file == null) {
-                System.out.println(strings.get("multimodeIntro"));
-                reader = new ConsoleReader(REMOTE_COMMAND,
-                        new FileInputStream(FileDescriptor.in), System.out,
-                        null);
-            } else {
-                printPrompt = false;
-                if (!file.canRead()) {
-                    throw new CommandException("File: " + file
-                            + " can not be read");
+                if (terminal != null) {
+                    //Pause the asadmin terminal
+                    terminal.pause();
                 }
+                System.out.println(strings.get("multimodeIntro"));
+                Terminal osgiShellTerminal = TerminalBuilder.builder()
+                        .name(REMOTE_COMMAND)
+                        .system(true)
+                        .streams(new FileInputStream(FileDescriptor.in), System.out)
+                        .build();
 
-                OutputStream out = new OutputStream() {
+                 reader = LineReaderBuilder.builder()
+                        .appName(REMOTE_COMMAND)
+                        .terminal(osgiShellTerminal)
+                        .completer(getCommandCompleter())
+                        .build();
 
-                    @Override
-                    public void write(int b) throws IOException {
-                        return;
-                    }
-
-                    @Override
-                    public void write(byte[] b) throws IOException {
-                        return;
-                    }
-
-                    @Override
-                    public void write(byte[] b, int off, int len) throws IOException {
-                        return;
-                    }
-                };
-
-                reader = new ConsoleReader(REMOTE_COMMAND,
-                        new FileInputStream(file), out,
-                        null);
+                reader.unsetOpt(LineReader.Option.INSERT_TAB);
+                return executeCommands(reader);
             }
 
-            reader.setBellEnabled(false);
-            reader.addCompleter(getCommandCompleter());
+            printPrompt = false;
+            if (!file.canRead()) {
+                throw new CommandException("File: " + file
+                        + " can not be read");
+            }
 
-            return executeCommands(reader);
+            try (Terminal osgiShellTerminal = new ExternalTerminal(REMOTE_COMMAND, "",
+                    new FileInputStream(file), new NullOutputStream(), encoding != null ? Charset.forName(encoding) : Charset.defaultCharset())) {
+
+                 reader = LineReaderBuilder.builder()
+                        .terminal(osgiShellTerminal)
+                        .appName(REMOTE_COMMAND)
+                        .build();
+
+                return executeCommands(reader); // NB: wrapper on general in/out stream does not need closing by try-with-resource
+            }
+
         } catch (IOException e) {
             throw new CommandException(e);
+        } finally {
+            if (reader != null && reader.getTerminal() != null) {
+                try {
+                    reader.getTerminal().close();
+                } catch (IOException ioe) {
+                    logger.log(Level.WARNING, "Error closing OSFI Shell terminal", ioe);
+                }
+            }
         }
     }
 
@@ -376,7 +398,7 @@ public class LocalOSGiShellCommand extends CLICommand {
      *
      * @return the exit code of the last command executed
      */
-    private int executeCommands(ConsoleReader reader)
+    private int executeCommands(LineReader reader)
             throws CommandException, CommandValidationException, IOException {
         String line = null;
         int rc = 0;
@@ -392,19 +414,24 @@ public class LocalOSGiShellCommand extends CLICommand {
 
         try {
             for (;;) {
-                if (printPrompt) {
-                    line = reader.readLine(shellType + "$ ");
-                } else {
-                    line = reader.readLine();
-                }
-
-                if (line == null) {
+                try {
                     if (printPrompt) {
-                        System.out.println();
+                        line = reader.readLine(shellType + "$ ");
+                    } else {
+                        line = reader.readLine();
                     }
+
+                    if (line == null) {
+                        if (printPrompt) {
+                            System.out.println();
+                        }
+                        break;
+                    }
+                } catch (UserInterruptException | EndOfFileException e) {
+                    // Ignore
                     break;
                 }
-
+                
                 if (line.trim().startsWith("#")) // ignore comment lines
                 {
                     continue;
@@ -430,6 +457,9 @@ public class LocalOSGiShellCommand extends CLICommand {
                 // handle built-in exit and quit commands
                 // XXX - care about their arguments?
                 if (command.equals("exit") || command.equals("quit")) {
+                    if (terminal != null && terminal.paused()) {
+                        terminal.resume();
+                    }
                     break;
                 }
 

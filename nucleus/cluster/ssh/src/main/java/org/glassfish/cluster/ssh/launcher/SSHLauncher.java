@@ -37,43 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.cluster.ssh.launcher;
 
-import com.trilead.ssh2.ChannelCondition;
-import com.trilead.ssh2.Session;
-import java.io.*;
-
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.OS;
-import com.sun.enterprise.util.io.FileUtils;
-
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.SshAuth;
+import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 import com.sun.enterprise.universal.process.ProcessUtils;
-
-import com.trilead.ssh2.Connection;
-import com.trilead.ssh2.KnownHosts;
-import com.trilead.ssh2.SCPClient;
-import org.glassfish.internal.api.RelativePathResolver;
+import com.sun.enterprise.util.ExceptionUtil;
+import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.io.FileUtils;
+import com.trilead.ssh2.*;
+import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.cluster.ssh.util.HostVerifier;
 import org.glassfish.cluster.ssh.util.SSHUtil;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.annotations.Service;
 
-import org.glassfish.hk2.api.PerLookup;
-import com.sun.enterprise.config.serverbeans.SshConnector;
-import com.sun.enterprise.config.serverbeans.SshAuth;
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.util.ExceptionUtil;
-import org.glassfish.cluster.ssh.sftp.SFTPClient;
-
-import java.io.OutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,7 +80,7 @@ public class SSHLauncher {
     private static final int DEFAULT_TIMEOUT_MSEC = 120000; // 2 minutes
     private static final String SSH_KEYGEN = "ssh-keygen";
     private static final char LINE_SEP = System.getProperty("line.separator").charAt(0);
-    
+
   /**
      * Database of known hosts.
      */
@@ -150,7 +139,7 @@ public class SSHLauncher {
     /**
      * Initialize the SSHLauncher use a Node config object
      * @param node
-     * @param logger 
+     * @param logger
      */
     public void init(Node node, Logger logger) {
         this.logger = logger;
@@ -166,14 +155,14 @@ public class SSHLauncher {
             this.host = node.getNodeHost();
         }
         if (logger.isLoggable(Level.FINE)) {
-	    logger.fine("Connecting to host " + host); 
+	    logger.fine("Connecting to host " + host);
         }
 
         //XXX Why do we need this again?  This is already done above and set to host
         String sshHost = connector.getSshHost();
         if (sshHost != null)
             this.host = sshHost;
-        
+
         SshAuth sshAuth = connector.getSshAuth();
         String userName = null;
         if (sshAuth != null) {
@@ -195,13 +184,13 @@ public class SSHLauncher {
 
     /**
      * Initialize the SSHLauncher using a private key
-     * 
+     *
      * @param userName
      * @param host
      * @param port
      * @param password
      * @param privateKey
-     * @param logger 
+     * @param logger
      */
     public void init(String userName, String host, int port, String password, char[] privateKey, Logger logger) {
         init(userName, host, port, password, null, null, privateKey, logger);
@@ -209,14 +198,14 @@ public class SSHLauncher {
 
     /**
      * Initialize the SSHLauncher using a private key file
-     * 
+     *
      * @param userName
      * @param host
      * @param port
      * @param password
      * @param keyFile
      * @param keyPassPhrase
-     * @param logger 
+     * @param logger
      */
     public void init(String userName, String host, int port, String password, String keyFile, String keyPassPhrase, Logger logger) {
         init(userName, host, port, password, keyFile, keyPassPhrase, null, logger);
@@ -236,7 +225,7 @@ public class SSHLauncher {
         this.userName = SSHUtil.checkString(userName) == null ?
                     System.getProperty("user.name") : userName;
 
-        
+
         this.rawPassword = password;
         this.password = expandPasswordAlias(password);
         this.rawKeyPassPhrase = keyPassPhrase;
@@ -262,7 +251,7 @@ public class SSHLauncher {
   /**
      * Opens the connection to the host and authenticates with public
      * key.
-     * 
+     *
      */
     private void openConnection() throws IOException {
 
@@ -329,7 +318,7 @@ public class SSHLauncher {
                 logger.log(Level.WARNING,message,iex);
             }
         }
-      
+
         if (!isAuthenticated && SSHUtil.checkString(keyFile) != null) {
             if (logger.isLoggable(Level.FINER)) {
                 logger.finer("Specified key file is " + keyFile);
@@ -427,14 +416,14 @@ public class SSHLauncher {
         command = SFTPClient.normalizePath(command);
         return runCommandAsIs(command, os, stdinLines);
     }
-    
+
     /**
-     * Executes a command on the remote system via ssh without normalizing 
+     * Executes a command on the remote system via ssh without normalizing
      * the command line
-     * 
+     *
      * @param command the command to execute
      * @param os stream to receive the output from the command
-     * @param stdinLines optional data to be sent to the process's System.in 
+     * @param stdinLines optional data to be sent to the process's System.in
      *        stream; null if no input should be sent
      * @return
      * @throws IOException
@@ -446,7 +435,7 @@ public class SSHLauncher {
     {
         return runCommandAsIs(commandListToQuotedString(command), os, stdinLines);
     }
-    
+
     private int runCommandAsIs(String command, OutputStream os,
             List<String> stdinLines) throws IOException,
                                             InterruptedException
@@ -494,7 +483,7 @@ public class SSHLauncher {
         }
 
         openConnection();
-        StringBuffer buff = new StringBuffer();
+        StringBuilder buff = new StringBuilder();
         if (env != null) {
             Session tempSession = connection.openSession();
             OutputStream ous = new ByteArrayOutputStream();
@@ -627,7 +616,7 @@ public class SSHLauncher {
             SFTPClient sftpClient = new SFTPClient(connection);
             if (sftpClient.exists(testPath)) {
                 // installDir exists. Now check for landmark if provided
-                if (StringUtils.ok(landmarkPath)) {                    
+                if (StringUtils.ok(landmarkPath)) {
                     testPath = installDir + "/" + landmarkPath;
                 }
                 validInstallDir = sftpClient.exists(testPath);
@@ -737,13 +726,13 @@ public class SSHLauncher {
         if (key.exists()) {
             if (checkConnection()) {
                 throw new IOException("SSH public key authentication is already configured for " + userName + "@" + node);
-            }            
+            }
         } else {
             if (generateKey) {
                 if(!generateKeyPair()) {
                     throw new IOException("SSH key pair generation failed. Please generate key manually.");
                 }
-            } else {                
+            } else {
                 throw new IOException("SSH key pair not present. Please generate a key pair manually or specify an existing one and re-run the command.");
             }
         }
@@ -759,13 +748,13 @@ public class SSHLauncher {
         if(!connected) {
             throw new IOException("SSH password authentication failed for user " + userName + " on host " + node);
         }
-        
+
         //We open up a second connection for scp and exec. For some reason, a hang
         //is seen in MKS if we try to do everything using the same connection.
         Connection conn = new Connection(node, port);
         conn.connect();
         boolean ret = conn.authenticateWithPassword(userName, passwd);
-        
+
         if (!ret) {
             throw new IOException("SSH password authentication failed for user " + userName + " on host " + node);
         }
@@ -802,7 +791,7 @@ public class SSHLauncher {
             }
 
             //copy over the public key to remote host
-            scp.put(pubKey.getAbsolutePath(), "key.tmp", ".ssh", "0600");            
+            scp.put(pubKey.getAbsolutePath(), "key.tmp", ".ssh", "0600");
 
             //append the public key file contents to authorized_keys file on remote host
             String mergeCommand = "cd .ssh; cat key.tmp >> " + AUTH_KEY_FILE;
@@ -821,7 +810,7 @@ public class SSHLauncher {
             if(logger.isLoggable(Level.FINER)) {
                 logger.finer("Removed the temporary key file on remote host");
             }
-            
+
             //Lets fix all the permissions
             //On MKS, chmod doesn't work as expected. StrictMode needs to be disabled
             //for connection to go through
@@ -927,7 +916,7 @@ public class SSHLauncher {
             throw new IOException("Failed to set proper permissions on .ssh directory");
         }
 
-        StringBuffer k = new StringBuffer();
+        StringBuilder k = new StringBuilder();
         List<String> cmdLine = new ArrayList<String>();
         cmdLine.add(keygenCmd);
         k.append(keygenCmd);
@@ -971,7 +960,7 @@ public class SSHLauncher {
         int exit;
 
         try {
-            exit = pm.execute();            
+            exit = pm.execute();
         }
         catch (ProcessManagerException ex) {
             if (logger.isLoggable(Level.FINE)) {
@@ -1013,7 +1002,7 @@ public class SSHLauncher {
         if (logger.isLoggable(Level.FINER)) {
             logger.finer("Paths = " + paths);
         }
-        
+
         File exe = ProcessUtils.getExe(SSH_KEYGEN);
         if( exe != null){
             return exe.getPath();
@@ -1042,11 +1031,11 @@ public class SSHLauncher {
             }
             logger.info("Created directory " + f.toString());
         }
-        
+
         if (!f.setReadable(false, false) || !f.setReadable(true)) {
             ret = false;
         }
-        
+
         if (!f.setWritable(false,false) || !f.setWritable(true)) {
             ret = false;
         }
@@ -1060,7 +1049,7 @@ public class SSHLauncher {
         }
         return ret;
     }
-    
+
     @Override
     public String toString() {
 

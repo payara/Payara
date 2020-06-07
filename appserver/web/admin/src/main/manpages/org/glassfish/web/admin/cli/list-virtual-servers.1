@@ -1,0 +1,59 @@
+list-virtual-servers(1)   asadmin Utility Subcommands  list-virtual-servers(1)
+
+NAME
+       list-virtual-servers - lists the existing virtual servers
+
+SYNOPSIS
+           list-virtual-servers [--help]
+           [target]
+
+DESCRIPTION
+       The list-virtual-servers subcommand lists the existing virtual servers.
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           Restricts the listing to virtual servers for a specified target.
+           Valid values are as follows:
+
+           server
+               Lists the virtual servers for the default server instance. This
+               is the default value.
+
+           configuration-name
+               Lists the virtual servers for the specified configuration.
+
+           cluster-name
+               Lists the virtual servers for all server instances in the
+               specified cluster.
+
+           instance-name
+               Lists the virtual servers for the specified server instance.
+
+EXAMPLES
+       Example 1, Listing Virtual Servers
+           The following command lists all the virtual servers for the server
+           instance:
+
+               asadmin> list-virtual-servers
+               server
+               __asadmin
+               Command list-virtual-servers executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-virtual-server(1), delete-virtual-server(1)
+
+       asadmin(1M)
+
+Java EE 8                         08 Oct 2010          list-virtual-servers(1)

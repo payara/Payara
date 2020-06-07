@@ -62,7 +62,7 @@
     </sun:button>
 
     <sun:button id="newButton" rendered="#{!edit}" text="$resource{i18n.button.OK}"  
-        onClick="if (checkClassname()) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+        onClick="if (checkForm()) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
         <!command
             getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
             getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});

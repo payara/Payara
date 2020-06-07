@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator;
 
 import org.glassfish.hk2.api.ServiceLocator;
@@ -46,8 +48,8 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public class ASMResourcesGenerator extends ResourcesGeneratorBase {
 
-    protected final static String GENERATED_PATH = "org/glassfish/admin/rest/resources/generatedASM/";
-    protected final static String GENERATED_PACKAGE = GENERATED_PATH.replace("/", ".");
+    protected static final String GENERATED_PATH = "org/glassfish/admin/rest/resources/generatedASM/";
+    protected static final String GENERATED_PACKAGE = GENERATED_PATH.replace("/", ".");
 
     public ASMResourcesGenerator(ServiceLocator habitat) {
         super(habitat);
@@ -59,8 +61,7 @@ public class ASMResourcesGenerator extends ResourcesGeneratorBase {
             Class.forName(GENERATED_PACKAGE + "." + className);
             return null;
         } catch (ClassNotFoundException ex) {
-            ClassWriter writer = new ASMClassWriter(habitat, GENERATED_PATH, className, baseClassName, resourcePath);
-            return writer;
+            return new ASMClassWriter(habitat, GENERATED_PATH, className, baseClassName, resourcePath);
         }
     }
 

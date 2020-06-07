@@ -37,23 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.appserv.management.client.prefs;
 
 import java.util.Arrays;
-import com.sun.appserv.management.client.prefs.LoginInfo;
-import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
 
 /** A factory class to create instances of LoginInfoStore.
  * @since Appserver 9.0
  */
 public class LoginInfoStoreFactory {
-    
+
     /** Private constructor.
      */
     private LoginInfoStoreFactory() {
     }
-    
+
     /** Returns the store that is represented by given class name. The parameter must
      * implement the {@link LoginInfoStore} interface. If a null is passed, an instance of the default
      * store {@link MemoryHashLoginInfoStore} is returned.
@@ -63,33 +61,27 @@ public class LoginInfoStoreFactory {
      * @throws StoreException if the construction of default store results in problems
      * @throws ClassNotFoundException if the given class could not be loaded
      */
-    public static LoginInfoStore getStore(final String storeImplClassName) 
+    public static LoginInfoStore getStore(final String storeImplClassName)
         throws StoreException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        LoginInfoStore store = null;
-        if (storeImplClassName == null)
-            store = getDefaultStore();
-        else 
-            store = getCustomStore(storeImplClassName);
-        return ( store );
+        return storeImplClassName == null
+            ? getDefaultStore()
+            : getCustomStore(storeImplClassName);
     }
-    
+
     public static LoginInfoStore getDefaultStore() throws StoreException {
-        return ( new MemoryHashLoginInfoStore() );
+        return new MemoryHashLoginInfoStore();
     }
-    
-    private static LoginInfoStore getCustomStore(final String icn) 
+
+    private static LoginInfoStore getCustomStore(final String icn)
         throws ClassNotFoundException, IllegalAccessException, InstantiationException{
         final Class ic  = Class.forName(icn);
         final String in = LoginInfoStore.class.getName();
         if (ic == null || !isStore(ic))
-            throw new IllegalArgumentException("Class: " + ic.getName() + " does not implement: " + in);
-        final LoginInfoStore store = (LoginInfoStore) ic.newInstance();
-        return ( store );
+            throw new IllegalArgumentException("Class: " + ( ic != null ? ic.getName() : "<null>" ) + " does not implement: " + in);
+        return (LoginInfoStore) ic.newInstance();
     }
-    
+
     private static boolean isStore(final Class c) {
-        final Class[] ifs = c.getInterfaces();
-        final Class sc    = LoginInfoStore.class;
-        return ( Arrays.asList(ifs).contains(sc) );
+        return Arrays.asList(c.getInterfaces()).contains(LoginInfoStore.class);
     }
 }

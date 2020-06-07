@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -45,18 +46,18 @@ import org.glassfish.deployment.common.Descriptor;
 /**
  */
 public class LocaleEncodingMappingDescriptor extends Descriptor {
-    
+
     private String locale = "en";
     private String encoding = "UTF-8";
-     
+
     /*
-     * standard constructor 
+     * standard constructor
      */
     public LocaleEncodingMappingDescriptor() {
     }
 
     /*
-     * copy constructor 
+     * copy constructor
      */
     public LocaleEncodingMappingDescriptor(LocaleEncodingMappingDescriptor other) {
 	super(other);
@@ -70,7 +71,7 @@ public class LocaleEncodingMappingDescriptor extends Descriptor {
     public void setLocale(String value) {
         locale = value;
     }
-    
+
     /**
      * set the encoding
      */
@@ -82,20 +83,20 @@ public class LocaleEncodingMappingDescriptor extends Descriptor {
      * @return the locale
      */
     public String getLocale() {
-        return locale;        
+        return locale;
     }
-    
+
     /**
      * @return the encoding
      */
     public String getEncoding() {
-        return encoding;        
+        return encoding;
     }
-    
+
     /**
      * @return a string describing the values I hold
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\nProp : ").append(getLocale()).append("->").append(getEncoding());
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\nProp : ").append(getLocale()).append("->").append(getEncoding());
     }
 }

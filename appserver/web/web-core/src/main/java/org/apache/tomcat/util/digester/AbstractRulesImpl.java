@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -91,6 +92,7 @@ abstract public class AbstractRulesImpl implements Rules {
      * Return the Digester instance with which this Rules instance is
      * associated.
      */
+    @Override
     public Digester getDigester() {
         return digester;
     }
@@ -100,6 +102,7 @@ abstract public class AbstractRulesImpl implements Rules {
      *
      * @param digester The newly associated Digester instance
      */
+    @Override
     public void setDigester(Digester digester) {
         this.digester = digester;
     }
@@ -108,6 +111,7 @@ abstract public class AbstractRulesImpl implements Rules {
      * Return the namespace URI that will be applied to all subsequently
      * added <code>Rule</code> objects.
      */
+    @Override
     public String getNamespaceURI() {
         return namespaceURI;
     }
@@ -120,6 +124,7 @@ abstract public class AbstractRulesImpl implements Rules {
      *  subsequently added rules, or <code>null</code> for matching
      *  regardless of the current namespace URI
      */
+    @Override
     public void setNamespaceURI(String namespaceURI) {
         this.namespaceURI = namespaceURI;
     }
@@ -134,6 +139,7 @@ abstract public class AbstractRulesImpl implements Rules {
      * @param pattern Nesting pattern to be matched for this Rule
      * @param rule Rule instance to be registered
      */
+    @Override
     public void add(String pattern, Rule rule) {
         // set up rule
         if (this.digester != null) {
@@ -161,6 +167,7 @@ abstract public class AbstractRulesImpl implements Rules {
     /**
      * Clear all existing Rule instance registrations.
      */
+    @Override
     abstract public void clear();
 
 
@@ -175,6 +182,7 @@ abstract public class AbstractRulesImpl implements Rules {
      *  or <code>null</code> to match regardless of namespace URI
      * @param pattern Nesting pattern to be matched
      */
+    @Override
     abstract public List<Rule> match(String namespaceURI, String pattern);
 
 
@@ -185,6 +193,7 @@ abstract public class AbstractRulesImpl implements Rules {
      * in the order originally registered through the <code>add()</code>
      * method.
      */
+    @Override
     abstract public List<Rule> rules();
 
 }

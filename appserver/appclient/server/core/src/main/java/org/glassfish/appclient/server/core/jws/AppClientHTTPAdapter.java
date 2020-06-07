@@ -530,7 +530,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
 
         public boolean processParameter(String param) {
             boolean result = false;
-            final int equalsSign = param.indexOf("=");
+            final int equalsSign = param.indexOf('=');
             String value = "";
             String paramPrefix;
             if (equalsSign != -1) {

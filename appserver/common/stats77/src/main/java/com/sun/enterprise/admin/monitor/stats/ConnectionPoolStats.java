@@ -37,18 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-import org.glassfish.j2ee.statistics.Stats;
-import org.glassfish.j2ee.statistics.RangeStatistic;
-import org.glassfish.j2ee.statistics.CountStatistic;
+
+import javax.management.j2ee.statistics.Stats;
+import javax.management.j2ee.statistics.RangeStatistic;
+import javax.management.j2ee.statistics.CountStatistic;
 
 /** 
  * A Stats interface to represent the statistical data exposed by a Connection 
  * Pool. All the Connection Pool implementations should expose statistical data 
  * by implementing this interface.
  */
-
 public interface ConnectionPoolStats extends Stats {
     
     /**

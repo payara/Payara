@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * Variable.java
@@ -67,7 +68,7 @@ public class Variable
     {
         super(type);
     }
-	
+
     /**
      *
      */
@@ -81,7 +82,7 @@ public class Variable
      */
     public String toString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("Variable("); //NOI18N
         buf.append(scope);
         buf.append(", "); //NOI18N

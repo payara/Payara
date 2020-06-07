@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.integration;
 
 /**
- *
  * Constants used by SecurityModule and also Constants Exported by Security Module for Other Modules
  */
 public interface SecurityConstants {
-    //TODO: Not a very good idea, revisit.
-    public static final String WEB_PRINCIPAL_CLASS="com.sun.enterprise.security.web.integration.WebPrincipal";
-    //TODO V3: Temporary till we have AppContainer integration design sorted out
-    public static final int APPCONTAINER_CERTIFICATE = 2;
+    // TODO: Not a very good idea, revisit.
+    String WEB_PRINCIPAL_CLASS = "com.sun.enterprise.security.web.integration.WebPrincipal";
+    
+    // TODO V3: Temporary till we have AppContainer integration design sorted out
+    int APPCONTAINER_CERTIFICATE = 2;
 }

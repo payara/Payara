@@ -37,27 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.jvnet.hk2.config;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import org.jvnet.hk2.config.ConfigModel.Property;
+
+import javax.validation.*;
+import javax.validation.metadata.ConstraintDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.lang.annotation.ElementType;
+import java.lang.reflect.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-
-import javax.validation.*;
-import javax.validation.metadata.ConstraintDescriptor;
-
-import org.jvnet.hk2.config.ConfigModel.Property;
+import java.util.function.Predicate;
 
 /**
  * A WriteableView is a view of a ConfigBean object that allow access to the
@@ -67,22 +63,24 @@ import org.jvnet.hk2.config.ConfigModel.Property;
  */
 public class WriteableView implements InvocationHandler, Transactor, ConfigView {
     private static final TraversableResolver TRAVERSABLE_RESOLVER = new TraversableResolver() {
+        @Override
         public boolean isReachable(Object traversableObject,
                 Path.Node traversableProperty, Class<?> rootBeanType,
                 Path pathToTraversableObject, ElementType elementType) {
                     return true;
         }
 
+        @Override
         public boolean isCascadable(Object traversableObject,
                 Path.Node traversableProperty, Class<?> rootBeanType,
                 Path pathToTraversableObject, ElementType elementType) {
                     return true;
         }
-        
+
     };
-    
+
     private final static Validator beanValidator;
-    
+
     static {
         ClassLoader cl = System.getSecurityManager()==null?Thread.currentThread().getContextClassLoader():
             AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
@@ -91,52 +89,53 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
                    return Thread.currentThread().getContextClassLoader();
                }
             });
-   
-       try {      
+
+       try {
            Thread.currentThread().setContextClassLoader(org.hibernate.validator.HibernateValidator.class.getClassLoader());
-       
+
            ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
            ValidatorContext validatorContext = validatorFactory.usingContext();
-           validatorContext.messageInterpolator(new MessageInterpolatorImpl());                
+           validatorContext.messageInterpolator(new MessageInterpolatorImpl());
            beanValidator = validatorContext.traversableResolver(
                        TRAVERSABLE_RESOLVER).getValidator();
        } finally {
            Thread.currentThread().setContextClassLoader(cl);
        }
     }
-    
+
     // private final Validator beanValidator;
     private final ConfigBean bean;
     private final ConfigBeanProxy defaultView;
     private final Map<String, PropertyChangeEvent> changedAttributes;
-    private final Map<String, ProtectedList> changedCollections;
+    private final Map<String, ProtectedList<?>> changedCollections;
     Transaction currentTx;
     private boolean isDeleted;
-    
+
 
     private final static ResourceBundle i18n = ResourceBundle.getBundle("org.jvnet.hk2.config.LocalStrings");
-    
+
     public Transaction getTransaction() { return currentTx; }
-    
+
     public WriteableView(ConfigBeanProxy readView) {
         this.bean = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(readView)).getMasterView();
         this.defaultView = bean.createProxy();
-        changedAttributes = new HashMap<String, PropertyChangeEvent>();
-        changedCollections = new HashMap<String, ProtectedList>();
+        changedAttributes = new HashMap<>();
+        changedCollections = new HashMap<>();
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
         if (method.getName().equals("hashCode"))
             return super.hashCode();
-        
+
         if (method.getName().equals("equals"))
             return super.equals(args[0]);
 
         if(method.getAnnotation(DuckTyped.class)!=null) {
             return bean.invokeDuckMethod(method,proxy,args);
         }
-        
+
         ConfigModel.Property property = bean.model.toProperty(method);
 
         if(property==null)
@@ -150,29 +149,24 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
                 Object changedValue = changedAttributes.get(property.xmlName()).getNewValue();
                 if (changedValue instanceof Dom) {
                     return ((Dom) changedValue).createProxy();
-                } else {
-                    return changedValue;
                 }
-            } else {
-                // pass through.
-                return getter(property, method.getGenericReturnType());
+                return changedValue;
             }
-        } else {
-            setter(property, args[0], method.getGenericParameterTypes()[0]);
-            return null;
+            // pass through.
+            return getter(property, method.getGenericReturnType());
         }
+        setter(property, args[0], method.getGenericParameterTypes()[0]);
+        return null;
     }
 
     public String getPropertyValue(String propertyName) {
-
         ConfigModel.Property prop = this.getProperty(propertyName);
         if (prop!=null) {
             if (changedAttributes.containsKey(prop.xmlName())) {
                 // serve masked changes.
                 return (String) changedAttributes.get(prop.xmlName()).getNewValue();
-            } else {
-                return (String) getter(prop, String.class);
             }
+            return (String) getter(prop, String.class);
         }
         return null;
     }
@@ -183,7 +177,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
             if (!changedCollections.containsKey(property.xmlName())) {
                 // wrap collections so we can record events on that collection mutation.
                 changedCollections.put(property.xmlName(),
-                        new ProtectedList(List.class.cast(value), defaultView, property.xmlName()));
+                        new ProtectedList<>(List.class.cast(value), defaultView, property.xmlName()));
             }
             return changedCollections.get(property.xmlName());
         }
@@ -192,7 +186,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
 
     public synchronized void setter(ConfigModel.Property property,
         Object newValue, java.lang.reflect.Type t)  {
-        
+
         // are we still in a transaction
         if (currentTx==null) {
             throw new IllegalStateException("Not part of a transaction");
@@ -235,7 +229,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
                 // Resources
                 List<Dom> siblings = parent != null
                         ? parent.domNodeByTypeElements(thisview.getProxyType())
-                        : new ArrayList<Dom>();
+                        : new ArrayList<>();
 
                 // Iterate through each sibling element and see if anyone has
                 // same key. If true throw an exception after unlocking this
@@ -256,13 +250,13 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         Object oldValue = bean.getter(property, t);
         if (newValue instanceof ConfigBeanProxy) {
             ConfigView bean = (ConfigView)
-                Proxy.getInvocationHandler((ConfigBeanProxy) newValue);
+                Proxy.getInvocationHandler(newValue);
             newValue = bean.getMasterView();
         }
         PropertyChangeEvent evt = new PropertyChangeEvent(
             defaultView,property.xmlName(), oldValue, newValue);
         try {
-            for (ConfigBeanInterceptor interceptor : bean.getOptionalFeatures()) {
+            for (ConfigBeanInterceptor<?> interceptor : bean.getOptionalFeatures()) {
                 interceptor.beforeChange(evt);
             }
         } catch(PropertyVetoException e) {
@@ -270,7 +264,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         }
 
         changedAttributes.put(property.xmlName(), evt);
-        for (ConfigBeanInterceptor interceptor : bean.getOptionalFeatures()) {
+        for (ConfigBeanInterceptor<?> interceptor : bean.getOptionalFeatures()) {
             interceptor.afterChange(evt, System.currentTimeMillis());
         }
     }
@@ -290,6 +284,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      * @return true if the enlisting with the passed transaction was accepted,
      *         false otherwise
      */
+    @Override
     public synchronized boolean join(Transaction t) {
         if (currentTx==null) {
             currentTx = t;
@@ -306,12 +301,13 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      *          one passed during the join(Transaction t) call.
      * @return true if the trsaction commiting would be successful
      */
+    @Override
     public synchronized boolean canCommit(Transaction t) throws TransactionFailure {
         if (!isDeleted) { // HK2-127: validate only if not marked for deletion
 
-            Set constraintViolations =
+            Set<? extends ConstraintViolation<?>> constraintViolations =
                 beanValidator.validate(this.getProxy(this.getProxyType()));
-    
+
             try {
                 handleValidationException(constraintViolations);
             } catch (ConstraintViolationException constraintViolationException) {
@@ -322,16 +318,16 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         return currentTx==t;
     }
 
-    private void handleValidationException(Set constraintViolations) throws ConstraintViolationException {
+    private void handleValidationException(Set<? extends ConstraintViolation<?>> constraintViolations) throws ConstraintViolationException {
 
         if (constraintViolations != null && !constraintViolations.isEmpty()) {
-            Iterator<ConstraintViolation<ConfigBeanProxy>> it = constraintViolations.iterator();
+            Iterator<? extends ConstraintViolation<?>> it = constraintViolations.iterator();
 
             StringBuilder sb = new StringBuilder();
             sb.append(MessageFormat.format(i18n.getString("bean.validation.failure"), this.<ConfigBeanProxy>getProxyType().getSimpleName()));
             String violationMsg = i18n.getString("bean.validation.constraintViolation");
             while (it.hasNext()) {
-                ConstraintViolation cv = it.next();
+                ConstraintViolation<?> cv = it.next();
                 sb.append(" ");
                 sb.append(MessageFormat.format(violationMsg, cv.getMessage(), cv.getPropertyPath()));
                 if (it.hasNext()) {
@@ -342,7 +338,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
             throw new ConstraintViolationException(sb.toString(), constraintViolations);
         }
     }
-     
+
     /** remove @ or <> eg "@foo" => "foo" or "<foo>" => "foo" */
     public static String stripMarkers(final String s ) {
         if ( s.startsWith("@") ) {
@@ -353,7 +349,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         }
         return s;
     }
-    
+
     /**
      * Commit this Transaction.
      *
@@ -361,11 +357,12 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      * @throws TransactionFailure
      *          if the transaction commit failed
      */
+    @Override
     public synchronized List<PropertyChangeEvent> commit(Transaction t) throws TransactionFailure {
         if (currentTx==t) {
             currentTx=null;
         }
-        
+
         // a key attribute must be non-null and have length >= 1
         final ConfigBean master = getMasterView();
         final String keyStr = master.model.key;
@@ -382,10 +379,10 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
 
 
         try {
-            List<PropertyChangeEvent> appliedChanges = new ArrayList<PropertyChangeEvent>();
+            List<PropertyChangeEvent> appliedChanges = new ArrayList<>();
             for (PropertyChangeEvent event : changedAttributes.values()) {
                 ConfigModel.Property property = bean.model.findIgnoreCase(event.getPropertyName());
-                ConfigBeanInterceptor interceptor  = bean.getOptionalFeature(ConfigBeanInterceptor.class);
+                ConfigBeanInterceptor<?> interceptor  = bean.getOptionalFeature(ConfigBeanInterceptor.class);
                 try {
                     if (interceptor!=null) {
                         interceptor.beforeChange(event);
@@ -399,43 +396,8 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
                 }
                 appliedChanges.add(event);
             }
-            for (ProtectedList entry :  changedCollections.values())  {
-                List<Object> originalList = entry.readOnly;
-                for (PropertyChangeEvent event : entry.changeEvents) {
-                    if (event.getOldValue()==null) {
-                        originalList.add(event.getNewValue());
-                    } else {
-                        final Object toBeRemovedObj = event.getOldValue();
-                        if ( toBeRemovedObj instanceof ConfigBeanProxy ) {
-                            final Dom toBeRemoved = Dom.unwrap((ConfigBeanProxy)toBeRemovedObj);
-                            for (int index=0;index<originalList.size();index++) {
-                                Object element = originalList.get(index);
-                                Dom dom = Dom.unwrap((ConfigBeanProxy) element);
-                                if (dom==toBeRemoved) {
-                                    Object newValue = event.getNewValue();
-                                    if (newValue == null) {
-                                        originalList.remove(index);
-                                    } else {
-                                        originalList.set(index, newValue);
-                                    }
-                                }
-                            }
-                        }
-                        else if ( toBeRemovedObj instanceof String ) {
-                            final String toBeRemoved = (String)toBeRemovedObj;
-                            for (int index=0;index<originalList.size();index++) {
-                                final String item = (String)originalList.get(index);
-                                if (item.equals(toBeRemoved)) {
-                                    originalList.remove(index);
-                                }
-                            }
-                        }
-                        else {
-                              throw new IllegalArgumentException();
-                        }
-                    }
-                    appliedChanges.add(event);
-                }
+            for (ProtectedList<?> entry :  changedCollections.values())  {
+                commitListChanges(entry, appliedChanges);
             }
             changedAttributes.clear();
             changedCollections.clear();
@@ -447,7 +409,46 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
         } finally {
             bean.getLock().unlock();
         }
+    }
 
+    @SuppressWarnings("unchecked")
+    private static <E> void commitListChanges(ProtectedList<E> entry, List<PropertyChangeEvent> appliedChanges) {
+        List<E> originalList = entry.readOnly;
+        for (PropertyChangeEvent event : entry.changeEvents) {
+            if (event.getOldValue()==null) {
+                originalList.add((E) event.getNewValue());
+            } else {
+                final Object toBeRemovedObj = event.getOldValue();
+                if ( toBeRemovedObj instanceof ConfigBeanProxy ) {
+                    final Dom toBeRemoved = Dom.unwrap((ConfigBeanProxy)toBeRemovedObj);
+                    for (int index=0;index<originalList.size();index++) {
+                        Object element = originalList.get(index);
+                        Dom dom = Dom.unwrap((ConfigBeanProxy) element);
+                        if (dom==toBeRemoved) {
+                            Object newValue = event.getNewValue();
+                            if (newValue == null) {
+                                originalList.remove(index);
+                            } else {
+                                originalList.set(index, (E) newValue);
+                            }
+                        }
+                    }
+                }
+                else if ( toBeRemovedObj instanceof String ) {
+                    final String toBeRemoved = (String)toBeRemovedObj;
+                    for (int index=0;index<originalList.size();index++) {
+                        final String item = (String)originalList.get(index);
+                        if (item.equals(toBeRemoved)) {
+                            originalList.remove(index);
+                        }
+                    }
+                }
+                else {
+                    throw new IllegalArgumentException();
+                }
+            }
+            appliedChanges.add(event);
+        }
     }
 
     /**
@@ -455,6 +456,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      *
      * @param t the aborting transaction
      */
+    @Override
     public synchronized void abort(Transaction t) {
         currentTx=null;
         bean.getLock().unlock();
@@ -469,7 +471,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
      *
      * @param type the request configuration object type
      * @return the propertly constructed configuration object
-     * @throws TransactionFailure if the allocation failed 
+     * @throws TransactionFailure if the allocation failed
      */
 
     public <T extends ConfigBeanProxy> T allocateProxy(Class<T> type) throws TransactionFailure {
@@ -477,32 +479,37 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
             throw new TransactionFailure("Not part of a transaction", null);
         }
         ConfigBean newBean = bean.allocate(type);
-        WriteableView writeableView = bean.getHabitat().<ConfigSupport>getService(ConfigSupport.class).getWriteableView(newBean.getProxy(type), newBean);
+        bean.getHabitat().<ConfigSupport>getService(ConfigSupport.class);
+        WriteableView writeableView = ConfigSupport.getWriteableView(newBean.getProxy(type), newBean);
         writeableView.join(currentTx);
 
         return writeableView.getProxy(type);
    }
 
+    @Override
     public ConfigBean getMasterView() {
         return bean;
     }
 
+    @Override
     public void setMasterView(ConfigView view) {
 
     }
 
+    @Override
     public <T extends ConfigBeanProxy> Class<T> getProxyType() {
         return bean.getProxyType();
     }
 
-    @SuppressWarnings("unchecked")    
+    @Override
+    @SuppressWarnings("unchecked")
     public <T extends ConfigBeanProxy> T getProxy(final Class<T> type) {
         final ConfigBean sourceBean = getMasterView();
         if (!(type.getName().equals(sourceBean.model.targetTypeName))) {
             throw new IllegalArgumentException("This config bean interface is " + sourceBean.model.targetTypeName
                     + " not "  + type.getName());
         }
-        Class[] interfacesClasses = { type };
+        Class<?>[] interfacesClasses = { type };
         ClassLoader cl;
         if (System.getSecurityManager()!=null) {
             cl = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
@@ -545,7 +552,7 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
             if (property.isCollection()) {
                 Object nested = writableView.getter(property,
                         parameterizedType);
-                ProtectedList list = (ProtectedList) nested;
+                ProtectedList<?> list = (ProtectedList<?>) nested;
                 if (list.size() > 0) {
                     list.clear();
                     removed = true;
@@ -568,16 +575,16 @@ public class WriteableView implements InvocationHandler, Transactor, ConfigView 
  *
  * @author Jerome Dochez
  */
-private class ProtectedList extends AbstractList {
+private class ProtectedList<E> extends AbstractList<E> {
 
     final ConfigBeanProxy readView;
-    final List<Object> readOnly;
+    final List<E> readOnly;
     final String id;
-    final List<PropertyChangeEvent> changeEvents = new ArrayList<PropertyChangeEvent>();
-    final List proxied;
+    final List<PropertyChangeEvent> changeEvents = new ArrayList<>();
+    final List<E> proxied;
 
-    ProtectedList(List<Object> readOnly, ConfigBeanProxy parent, String id) {
-        proxied = Collections.synchronizedList(new ArrayList<Object>(readOnly));
+    ProtectedList(List<E> readOnly, ConfigBeanProxy parent, String id) {
+        proxied = Collections.synchronizedList(new ArrayList<>(readOnly));
         this.readView = parent;
         this.readOnly = readOnly;
         this.id = id;
@@ -590,6 +597,7 @@ private class ProtectedList extends AbstractList {
      *
      * @return the number of elements in this collection.
      */
+    @Override
     public int size() {
         return proxied.size();
     }
@@ -602,12 +610,28 @@ private class ProtectedList extends AbstractList {
      * @throws IndexOutOfBoundsException if the given index is out of range
      *                                   (<tt>index &lt; 0 || index &gt;= size()</tt>).
      */
-    public Object get(int index) {
+    @Override
+    public E get(int index) {
         return proxied.get(index);
     }
 
     @Override
-    public synchronized boolean add(Object object) {
+    public int indexOf(Object object) {
+        return proxied.indexOf(object);
+    }
+
+    @Override
+    public int lastIndexOf(Object object) {
+        return proxied.lastIndexOf(object);
+    }
+
+    @Override
+    public String toString() {
+        return proxied.toString();
+    }
+
+    @Override
+    public synchronized boolean add(E object) {
         Object param = object;
         Object handler = null;
         try {
@@ -660,7 +684,7 @@ private class ProtectedList extends AbstractList {
         boolean added =  proxied.add(object);
 
         try {
-            for (ConfigBeanInterceptor interceptor : bean.getOptionalFeatures()) {
+            for (ConfigBeanInterceptor<?> interceptor : bean.getOptionalFeatures()) {
                 interceptor.beforeChange(evt);
             }
         } catch(PropertyVetoException e) {
@@ -673,34 +697,31 @@ private class ProtectedList extends AbstractList {
     @Override
     public synchronized void clear() {
         // make a temporary list, iterating while removing doesn't work
-        final List allItems = new ArrayList( proxied );
+        final List<E> allItems = new ArrayList<>( proxied );
         for( final Object item : allItems ) {
             remove( item );
         }
     }
-    
+
     @Override
-    public synchronized boolean retainAll( final Collection keepers ) {
-        final List toRemoveList = new ArrayList();
-        for( final Object iffy : proxied ) {
+    public synchronized boolean retainAll( final Collection<?> keepers ) {
+        final List<E> toRemoveList = new ArrayList<>();
+        for( final E iffy : proxied ) {
             if ( ! keepers.contains(iffy) ) {
                 toRemoveList.add(iffy);
             }
         }
-        final boolean changed = removeAll(toRemoveList);
-        
-        return changed;
+        return removeAll(toRemoveList);
     }
-    
+
     @Override
-    public synchronized boolean removeAll( final Collection goners ) {
+    public synchronized boolean removeAll( final Collection<?> goners ) {
         boolean listChanged = false;
         for( final Object goner : goners ) {
             if ( remove(goner) ) {
                 listChanged = true;
             }
         }
-
         return listChanged;
     }
 
@@ -729,7 +750,7 @@ private class ProtectedList extends AbstractList {
         }
 
         try {
-            for (ConfigBeanInterceptor interceptor : bean.getOptionalFeatures()) {
+            for (ConfigBeanInterceptor<?> interceptor : bean.getOptionalFeatures()) {
                 interceptor.beforeChange(evt);
             }
         } catch(PropertyVetoException e) {
@@ -741,11 +762,31 @@ private class ProtectedList extends AbstractList {
         return removed;
     }
 
-    public Object set(int index, Object object) {
-        Object replaced = proxied.set(index, object);
+    @Override
+    public E remove(int index) {
+        if (index >= size())
+                throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size());
+        E removed = proxied.get(index);
+        return remove(removed) ? removed : null;
+    }
+
+    @Override
+    public boolean removeIf(Predicate<? super E> filter) {
+        boolean removedAny = false;
+        for (E e : proxied) {
+            if (filter.test(e) && remove(e)) {
+                removedAny = true;
+            }
+        }
+        return removedAny;
+    }
+
+    @Override
+    public E set(int index, E object) {
+        E replaced = proxied.set(index, object);
         PropertyChangeEvent evt = new PropertyChangeEvent(defaultView, id, replaced, object);
         try {
-            for (ConfigBeanInterceptor interceptor : bean.getOptionalFeatures()) {
+            for (ConfigBeanInterceptor<?> interceptor : bean.getOptionalFeatures()) {
                 interceptor.beforeChange(evt);
             }
         } catch(PropertyVetoException e) {
@@ -755,22 +796,22 @@ private class ProtectedList extends AbstractList {
         return replaced;
     }}
 
-    private String toCamelCase(String xmlName) {
+    private static String toCamelCase(String xmlName) {
         StringTokenizer st =  new StringTokenizer(xmlName, "-");
-        StringBuffer camelCaseName = null;
+        StringBuilder camelCaseName = null;
         if (st.hasMoreTokens()) {
-            camelCaseName = new StringBuffer(st.nextToken());
+            camelCaseName = new StringBuilder(st.nextToken());
         }
-        StringBuffer sb = null;
+        StringBuilder sb = null;
         while (st.hasMoreTokens()) {
-            sb = new StringBuffer(st.nextToken());
+            sb = new StringBuilder(st.nextToken());
             char startChar = sb.charAt(0);
             sb.setCharAt(0,Character.toUpperCase(startChar));
             camelCaseName.append(sb);
         }
         return (camelCaseName == null) ? null : camelCaseName.toString();
     }
-    
+
     private void handleValidation(ConfigModel.Property property, Object value)
     throws ConstraintViolationException {
 
@@ -779,11 +820,11 @@ private class ProtectedList extends AbstractList {
         // such as AssertBoolean, AssertInteger etc. But since GUI and other
         // config clients such as AMX need dataType key in @Attribute it's been
         // decided to validate using existing annotation information
-        Set<ConstraintViolation<?>> constraintViolations = new HashSet<ConstraintViolation<?>>();
+        Set<ConstraintViolation<?>> constraintViolations = new HashSet<>();
         if (property instanceof ConfigModel.AttributeLeaf) {
             ConfigModel.AttributeLeaf al = (ConfigModel.AttributeLeaf)property;
             if (!al.isReference()) {
-                ConstraintViolation cv = validateDataType(al, value.toString());
+                ConstraintViolation<?> cv = validateDataType(al, value.toString());
                 if (cv!=null) {
                     constraintViolations.add(cv);
                 }
@@ -797,7 +838,7 @@ private class ProtectedList extends AbstractList {
         handleValidationException(constraintViolations);
     }
 
-    private ConstraintViolation validateDataType(final ConfigModel.AttributeLeaf al, final String value)
+    private ConstraintViolation<?> validateDataType(final ConfigModel.AttributeLeaf al, final String value)
     {
         if (value.startsWith("${") && value.endsWith("}"))
           return null;
@@ -815,7 +856,7 @@ private class ProtectedList extends AbstractList {
         else if ("char".equals(al.dataType) ||
                  "java.lang.Character".equals(al.dataType))
             isValid = representsChar(value);
-        if (!isValid) {            
+        if (!isValid) {
             return new ConstraintViolation() {
                 @Override
                 public String getMessage() {
@@ -824,7 +865,7 @@ private class ProtectedList extends AbstractList {
 
                 @Override
                 public String getMessageTemplate() {
-                    return null; 
+                    return null;
                 }
 
                 @Override
@@ -854,7 +895,7 @@ private class ProtectedList extends AbstractList {
 
                 @Override
                 public Path getPropertyPath() {
-                    final Set<Path.Node> nodes = new HashSet<Path.Node>();
+                    final Set<Path.Node> nodes = new HashSet<>();
                     nodes.add(new Path.Node() {
                         @Override
                         public String getName() {
@@ -878,12 +919,12 @@ private class ProtectedList extends AbstractList {
 
                         @Override
                         public ElementKind getKind() {
-                            return null;  
+                            return null;
                         }
 
                         @Override
                         public <T extends Path.Node> T as(Class<T> tClass) {
-                            return null;  
+                            return null;
                         }
                     });
                     return new javax.validation.Path() {
@@ -891,7 +932,7 @@ private class ProtectedList extends AbstractList {
                         public Iterator<Node> iterator() {
                             return nodes.iterator();
                         }
-                        
+
                         @Override
                         public String toString() {
                            return nodes.iterator().next().getName();
@@ -911,7 +952,7 @@ private class ProtectedList extends AbstractList {
 
                 @Override
                 public Object unwrap(Class type) {
-                    return null;  
+                    return null;
                 }
 
 
@@ -919,20 +960,20 @@ private class ProtectedList extends AbstractList {
         };
         return null;
     }
-    
-    private boolean representsBoolean(String value) {
-        boolean isBoolean = 
+
+    private static boolean representsBoolean(String value) {
+        boolean isBoolean =
            "true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value);
         return (isBoolean);
     }
 
-    private boolean representsChar(String value) {
+    private static boolean representsChar(String value) {
             if (value.length() == 1)
                 return true;
             return false;
     }
 
-    private boolean representsInteger(String value) {
+    private static boolean representsInteger(String value) {
         try {
             Integer.parseInt(value);
             return true;
@@ -942,7 +983,7 @@ private class ProtectedList extends AbstractList {
     }
 
 
-    private boolean representsLong(String value) {
+    private static boolean representsLong(String value) {
         try {
             Long.parseLong(value);
             return true;
@@ -967,7 +1008,7 @@ private class ProtectedList extends AbstractList {
         public Type getOwnerType() {
             return null;
         }
-        
+
     };
 
 }

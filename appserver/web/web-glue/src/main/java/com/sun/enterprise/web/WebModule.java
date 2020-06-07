@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -75,6 +75,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -149,6 +150,7 @@ import org.glassfish.web.deployment.runtime.SessionManager;
 import org.glassfish.web.deployment.runtime.SessionProperties;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.runtime.WebProperty;
+import org.glassfish.web.deployment.runtime.WebPropertyContainer;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
 import org.glassfish.web.valve.GlassFishValve;
 import org.jvnet.hk2.config.types.Property;
@@ -168,7 +170,6 @@ import com.sun.enterprise.deployment.web.SecurityConstraint;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
-import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.web.deploy.LoginConfigDecorator;
@@ -221,7 +222,7 @@ public class WebModule extends PwcWebModule implements Context {
     private final Map<String,AdHocServletInfo> adHocSubtrees;
     private boolean hasAdHocSubtrees;
 
-    private StandardPipeline adHocPipeline;
+    private final StandardPipeline adHocPipeline;
 
     // File encoding of static resources
     private String fileEncoding;
@@ -256,7 +257,7 @@ public class WebModule extends PwcWebModule implements Context {
     // true if standalone WAR, false if embedded in EAR file
     private boolean isStandalone = true;
 
-    private ServiceLocator services;
+    private final ServiceLocator services;
 
     /**
      * Constructor.
@@ -268,8 +269,8 @@ public class WebModule extends PwcWebModule implements Context {
     public WebModule(ServiceLocator services) {
         super();
         this.services = services;
-        this.adHocPaths = new HashMap<String,AdHocServletInfo>();
-        this.adHocSubtrees = new HashMap<String,AdHocServletInfo>();
+        this.adHocPaths = new HashMap<>();
+        this.adHocSubtrees = new HashMap<>();
 
         this.adHocPipeline = new StandardPipeline(this);
         this.adHocPipeline.setBasic(new AdHocContextValve(this));
@@ -335,7 +336,7 @@ public class WebModule extends PwcWebModule implements Context {
      * Sets the parameter encoding (i18n) info from web.xml, sun-web.xml, glassfish-web.xml and payara-web.xml.
      */
     public void setI18nInfo() {
-    	
+
 		if (webBundleDescriptor != null) {
 			String reqEncoding = webBundleDescriptor.getRequestCharacterEncoding();
 			if (reqEncoding != null) {
@@ -381,7 +382,7 @@ public class WebModule extends PwcWebModule implements Context {
             }
             _lcMap = lcinfo.getLocaleCharsetMap();
         }
-        
+
 		if (defaultCharset != null) {
 			setRequestCharacterEncoding(defaultCharset);
 			setResponseCharacterEncoding(defaultCharset);
@@ -598,7 +599,7 @@ public class WebModule extends PwcWebModule implements Context {
 
         DeploymentContext dc = getWebModuleConfig().getDeploymentContext();
         if (dc != null) {
-            directoryDeployed = 
+            directoryDeployed =
                     Boolean.valueOf(dc.getAppProps().getProperty(ServerTags.DIRECTORY_DEPLOYED));
         }
         if (webBundleDescriptor != null) {
@@ -649,32 +650,30 @@ public class WebModule extends PwcWebModule implements Context {
 
     @Override
     protected void contextListenerStart() {
+        logger.finest("contextListenerStart()");
         ServletContext servletContext = getServletContext();
-        WebBundleDescriptor webBundleDescriptor = getWebBundleDescriptor();
+        WebBundleDescriptor bundleDescriptor = getWebBundleDescriptor();
         JaccConfigurationFactory jaccConfigurationFactory = getJaccConfigurationFactory();
-        
+
         try {
             // For JSF injection
             servletContext.setAttribute(
                     DEPLOYMENT_CONTEXT_ATTRIBUTE,
                     getWebModuleConfig().getDeploymentContext());
-            
+
             // Null check for OSGi/HTTP
-            if (webBundleDescriptor != null) {
-                servletContext.setAttribute(IS_DISTRIBUTABLE_ATTRIBUTE, webBundleDescriptor.isDistributable());
-                
-                webBundleDescriptor.setAppContextId(getAppContextId(servletContext));
-                
+            if (bundleDescriptor != null) {
+                servletContext.setAttribute(IS_DISTRIBUTABLE_ATTRIBUTE, bundleDescriptor.isDistributable());
+                bundleDescriptor.setAppContextId(getAppContextId(servletContext));
                 if (jaccConfigurationFactory != null) {
                     // Add a mapping from the JACC context Id, which is not available to the application yet at this point
                     // to the Servlet based application Id, which the application uses
                     jaccConfigurationFactory.addContextIdMapping(
-                            webBundleDescriptor.getAppContextId(), // Servlet application context Id
-                            getContextID(webBundleDescriptor));    // JACC context Id
-                            
+                            bundleDescriptor.getAppContextId(), // Servlet application context Id
+                            getContextID(bundleDescriptor));    // JACC context Id
                 }
             }
-            
+
             servletContext.setAttribute(
                     ENABLE_HA_ATTRIBUTE,
                     webContainer.getServerConfigLookup().calculateWebAvailabilityEnabledFromConfig(this));
@@ -685,22 +684,22 @@ public class WebModule extends PwcWebModule implements Context {
             servletContext.removeAttribute(IS_DISTRIBUTABLE_ATTRIBUTE);
             servletContext.removeAttribute(ENABLE_HA_ATTRIBUTE);
         }
-        
+
         servletRegisMap.values()
                        .stream()
                        .filter(DynamicWebServletRegistrationImpl.class::isInstance)
                        .map(DynamicWebServletRegistrationImpl.class::cast)
                        .forEach(DynamicWebServletRegistrationImpl::postProcessAnnotations);
-        
-        if (jaccConfigurationFactory != null && webBundleDescriptor != null) {
-            if (jaccConfigurationFactory.getContextProviderByPolicyContextId(getContextID(webBundleDescriptor)) != null) {
-                webBundleDescriptor.setPolicyModified(true);
+
+        if (jaccConfigurationFactory != null && bundleDescriptor != null) {
+            if (jaccConfigurationFactory.getContextProviderByPolicyContextId(getContextID(bundleDescriptor)) != null) {
+                bundleDescriptor.setPolicyModified(true);
             }
         }
 
-        webContainer.afterServletContextInitializedEvent(webBundleDescriptor);
+        webContainer.afterServletContextInitializedEvent(bundleDescriptor);
     }
-    
+
     private String getAppContextId(ServletContext servletContext) {
         return servletContext.getVirtualServerName() + " " + servletContext.getContextPath();
     }
@@ -711,14 +710,14 @@ public class WebModule extends PwcWebModule implements Context {
             if (policyConfigurationFactory instanceof JaccConfigurationFactory) {
                 return (JaccConfigurationFactory) policyConfigurationFactory;
             }
-            
+
         } catch (ClassNotFoundException | PolicyContextException e) {
             // Ignore
         }
-        
+
         return null;
     }
-    
+
     @Override
     protected Types getTypes() {
         if (wmInfo.getDeploymentContext()!=null) {
@@ -740,7 +739,7 @@ public class WebModule extends PwcWebModule implements Context {
             webContainer.getInvocationManager().postInvoke(inv);
         }
         if (!isJsfApplication() && !contextListeners.isEmpty()) {
-            /* 
+            /*
              * Remove any JSF related ServletContextListeners from
              * non-JSF apps.
              * This can be done reliably only after all
@@ -753,7 +752,7 @@ public class WebModule extends PwcWebModule implements Context {
              * by JSF's FacesInitializer. See also IT 10223
              */
             ArrayList<ServletContextListener> listeners =
-                new ArrayList<ServletContextListener>(contextListeners);
+                new ArrayList<>(contextListeners);
             String listenerClassName = null;
             for (ServletContextListener listener : listeners) {
                 if (listener instanceof
@@ -962,9 +961,10 @@ public class WebModule extends PwcWebModule implements Context {
 
         // Check if given path starts with any of the ad-hoc subtree paths
         if (servletInfo == null && path != null && hasAdHocSubtrees()) {
-            for(String adHocSubtree : adHocSubtrees.keySet()) {
+            for (Entry<String,AdHocServletInfo> entry : adHocSubtrees.entrySet()) {
+                String adHocSubtree = entry.getKey();
                 if(path.startsWith(adHocSubtree)) {
-                    servletInfo = adHocSubtrees.get(adHocSubtree);
+                    servletInfo = entry.getValue();
                     break;
                 }
             }
@@ -1194,7 +1194,7 @@ public class WebModule extends PwcWebModule implements Context {
      */
     protected void addValve(org.glassfish.web.deployment.runtime.Valve valveDescriptor) {
         String valveName = valveDescriptor.getAttributeValue(
-                org.glassfish.web.deployment.runtime.Valve.NAME);
+                WebPropertyContainer.NAME);
         String className = valveDescriptor.getAttributeValue(
                 org.glassfish.web.deployment.runtime.Valve.CLASS_NAME);
         if (valveName == null) {
@@ -1262,9 +1262,10 @@ public class WebModule extends PwcWebModule implements Context {
      * @param listenerName The fully qualified class name of the listener
      */
     protected void addCatalinaListener(String listenerName) {
-        Object listener = loadInstance(listenerName);
-
-        if ( listener == null ) return;
+        final Object listener = loadInstance(listenerName);
+        if (listener == null) {
+            return;
+        }
 
         if (listener instanceof ContainerListener) {
             addContainerListener((ContainerListener)listener);
@@ -1578,8 +1579,8 @@ public class WebModule extends PwcWebModule implements Context {
         altDDName = altDDName.trim();
         if (altDDName.startsWith("/")) {
             altDDName = altDDName.substring(1);
-        } 
-      
+        }
+
         String appLoc = dc.getSource().getParentArchive().getURI().getPath();
         altDDName = appLoc + altDDName;
 
@@ -1604,7 +1605,7 @@ public class WebModule extends PwcWebModule implements Context {
             // creates the list of endpoint addresses
             String[] endpointAddresses;
             WebServicesDescriptor webService = wbd.getWebServices();
-            Vector<String> endpointList = new Vector<String>();
+            Vector<String> endpointList = new Vector<>();
             for(WebServiceEndpoint wse : webService.getEndpoints()) {
                 if(wbd.getContextRoot() != null) {
                     endpointList.add(wbd.getContextRoot() + "/" +
@@ -2230,16 +2231,16 @@ public class WebModule extends PwcWebModule implements Context {
         sessionProbeProvider.sessionPassivatedEndEvent(session.getId(),
             monitoringNodeName, vsId);
     }
-    
+
     @Override
     public void declareRoles(String... roleNames) {
         super.declareRoles(roleNames);
         WebBundleDescriptor bundleDescriptor = getWebBundleDescriptor();
-        
+
         for (String roleName : roleNames) {
             bundleDescriptor.addRole(new Role(roleName));
         }
-        
+
         bundleDescriptor.setPolicyModified(true);
     }
 
@@ -2292,10 +2293,12 @@ public class WebModule extends PwcWebModule implements Context {
 
     private SecurityConfig config = null;
 
+    @Override
     public SecurityConfig getSecurityConfig() {
         return config;
     }
 
+    @Override
     public void setSecurityConfig(SecurityConfig config) {
 
         if (config == null) {
@@ -2380,9 +2383,9 @@ public class WebModule extends PwcWebModule implements Context {
                 removeValve(basic);
             }
             GlassFishValve valves[] = pipeline.getValves();
-            for (int i = 0; i < valves.length; i++) {
-                if (valves[i] instanceof java.net.Authenticator) {
-                    removeValve(valves[i]);
+            for (GlassFishValve valve : valves) {
+                if (valve instanceof java.net.Authenticator) {
+                    removeValve(valve);
                 }
             }
         }
@@ -2397,7 +2400,7 @@ public class WebModule extends PwcWebModule implements Context {
             setRealm(realm);
         }
     }
-    
+
     @Override
     public long getUniqueId() {
         com.sun.enterprise.deployment.Application app = wmInfo.getDescriptor().getApplication();
@@ -2445,7 +2448,7 @@ class WebServletRegistrationImpl extends ServletRegistrationImpl {
         if (conflicts.isEmpty() && urlPatterns != null &&
                 urlPatterns.length > 0) {
             /*
-             * Propagate the new mappings to the underlying 
+             * Propagate the new mappings to the underlying
              * WebBundleDescriptor provided by the deployment backend,
              * so that corresponding security constraints may be calculated
              * by the security subsystem, which uses the
@@ -2477,14 +2480,14 @@ class WebServletRegistrationImpl extends ServletRegistrationImpl {
 class DynamicWebServletRegistrationImpl
         extends DynamicServletRegistrationImpl {
 
-    private WebBundleDescriptor wbd;
+    private final WebBundleDescriptor wbd;
     private WebComponentDescriptor wcd;
-    private WebModule webModule;
+    private final WebModule webModule;
 
     private String runAsRoleName = null;
     private ServletSecurityElement servletSecurityElement = null;
 
-    public DynamicWebServletRegistrationImpl(StandardWrapper wrapper, 
+    public DynamicWebServletRegistrationImpl(StandardWrapper wrapper,
                                              WebModule webModule) {
         super(wrapper, webModule);
         this.webModule = webModule;
@@ -2519,7 +2522,7 @@ class DynamicWebServletRegistrationImpl
                 if (clazz == null) {
                     if (wrapper.getServlet() != null) {
                         clazz = wrapper.getServlet().getClass();
-                    } else {                  
+                    } else {
                         try {
                             clazz = loadServletClass(servletClassName);
                         } catch(Exception ex) {
@@ -2544,7 +2547,7 @@ class DynamicWebServletRegistrationImpl
         if (conflicts.isEmpty() && urlPatterns != null &&
                 urlPatterns.length > 0) {
             /*
-             * Propagate the new mappings to the underlying 
+             * Propagate the new mappings to the underlying
              * WebBundleDescriptor provided by the deployment backend,
              * so that corresponding security constraints may be calculated
              * by the security subsystem, which uses the
@@ -2568,7 +2571,7 @@ class DynamicWebServletRegistrationImpl
     public Set<String> setServletSecurity(ServletSecurityElement constraint) {
         this.servletSecurityElement = constraint;
 
-        Set<String> conflictUrls = new HashSet<String>(wcd.getUrlPatternsSet());
+        Set<String> conflictUrls = new HashSet<>(wcd.getUrlPatternsSet());
         conflictUrls.removeAll(ServletSecurityHandler.getUrlPatternsWithoutSecurityConstraint(wcd));
         conflictUrls.addAll(super.setServletSecurity(constraint));
         return conflictUrls;
@@ -2607,8 +2610,7 @@ class DynamicWebServletRegistrationImpl
 
         // Process DeclareRoles annotation
         if (clazz.isAnnotationPresent(DeclareRoles.class)) {
-            DeclareRoles declareRoles = (DeclareRoles)
-                clazz.getAnnotation(DeclareRoles.class);
+            DeclareRoles declareRoles = clazz.getAnnotation(DeclareRoles.class);
             for (String roleName : declareRoles.value()) {
                 webBundleDescriptor.addRole(new Role(roleName));
                 webModule.declareRoles(roleName);
@@ -2616,8 +2618,7 @@ class DynamicWebServletRegistrationImpl
         }
         // Process MultipartConfig annotation
         if (clazz.isAnnotationPresent(MultipartConfig.class)) {
-            MultipartConfig mpConfig = (MultipartConfig)
-                clazz.getAnnotation(MultipartConfig.class);
+            MultipartConfig mpConfig = clazz.getAnnotation(MultipartConfig.class);
             wrapper.setMultipartLocation(mpConfig.location());
             wrapper.setMultipartMaxFileSize(mpConfig.maxFileSize());
             wrapper.setMultipartMaxRequestSize(mpConfig.maxRequestSize());
@@ -2636,7 +2637,7 @@ class DynamicWebServletRegistrationImpl
         if (wcd.getRunAsIdentity() == null) {
             String roleName = runAsRoleName;
             if (roleName == null && clazz.isAnnotationPresent(RunAs.class)) {
-                RunAs runAs = (RunAs)clazz.getAnnotation(RunAs.class);
+                RunAs runAs = clazz.getAnnotation(RunAs.class);
                 roleName = runAs.value();
             }
             if (roleName != null) {
@@ -2654,8 +2655,7 @@ class DynamicWebServletRegistrationImpl
         ServletSecurityElement ssElement = servletSecurityElement;
         if (servletSecurityElement == null &&
                 clazz.isAnnotationPresent(ServletSecurity.class)) {
-            ServletSecurity servletSecurity = (ServletSecurity)
-                clazz.getAnnotation(ServletSecurity.class);
+            ServletSecurity servletSecurity = clazz.getAnnotation(ServletSecurity.class);
             ssElement = new ServletSecurityElement(servletSecurity);
         }
         if (ssElement != null) {

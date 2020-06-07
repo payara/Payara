@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
@@ -251,7 +252,7 @@ public class ConnectorClassLoader extends ASURLClassLoader
      */
 
     public String getClasspath() {
-        StringBuffer strBuf = new StringBuffer();
+        StringBuilder strBuf = new StringBuilder();
         for (int i = 0; i < classLoaderChain.size(); i++) {
             ASURLClassLoader ecl = (ASURLClassLoader) classLoaderChain.get(i);
             String eclClasspath = ecl.getClasspath();

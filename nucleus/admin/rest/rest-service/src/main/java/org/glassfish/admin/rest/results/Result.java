@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.rest.results;
 
 /**
@@ -48,16 +50,25 @@ package org.glassfish.admin.rest.results;
  */
 public class Result {
 
+    private final String name;
+    private boolean isError;
+    private String errorMessage;
+
     public Result() {
-        __isError = false;
-        __errorMessage = null;
+        isError = false;
+        errorMessage = null;
+        name = null;
+    }
+
+    public Result(final String name) {
+        this.name = name;
     }
 
     /**
      * Returns name of the resource, this result object is for.
      */
     public String getName() {
-        return __name;
+        return name;
     }
 
     /**
@@ -65,31 +76,34 @@ public class Result {
      * error message or otherwise.
      */
     public boolean isError() {
-        return __isError;
+        return isError;
     }
 
     /**
      * Returns error message in case of an error.
      */
     public String getErrorMessage() {
-        return __errorMessage;
+        return errorMessage;
     }
 
     /**
      * Sets status (error or success) of the response
      */
     public void setIsError(boolean isError) {
-        __isError = isError;
+        this.isError = isError;
     }
 
     /**
      * Sets error message of the response
      */
     public void setErrorMessage(String errorMessage) {
-        __errorMessage =  errorMessage;
+        this.errorMessage =  errorMessage;
     }
 
-    boolean __isError;
-    String __errorMessage;
-    String __name;
+
+    @Override
+    public String toString() {
+        return super.toString() //
+            + "[name: " + getName() + ", error: " + isError() + ", message: " + getErrorMessage() + "]";
+    }
 }

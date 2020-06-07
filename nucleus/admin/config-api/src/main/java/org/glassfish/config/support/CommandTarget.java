@@ -41,8 +41,6 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.*;
-
-
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
@@ -140,7 +138,7 @@ public enum CommandTarget implements TargetValidator {
         }
     },
     /**
-     * a cluster configuration change
+     * a Deployment Group configuration change
      */
     DEPLOYMENT_GROUP {
         @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
-import com.google.common.collect.Iterables;
 import com.hazelcast.core.IAtomicLong;
 import fish.payara.cluster.Clustered;
 import fish.payara.cluster.DistributedLockType;
@@ -50,6 +49,7 @@ import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercep
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Priority;
@@ -60,7 +60,6 @@ import javax.enterprise.inject.spi.CDI;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import lombok.extern.java.Log;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 
@@ -69,7 +68,7 @@ import org.glassfish.internal.api.Globals;
  *
  * @author lprimak
  */
-@Interceptor @ClusterScopedIntercepted @Log @Priority(Interceptor.Priority.PLATFORM_AFTER)
+@Interceptor @ClusterScopedIntercepted @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class ClusterScopedInterceptor implements Serializable {
     private final BeanManager beanManager = CDI.current().getBeanManager();
     private transient ClusteredSingletonLookupImpl clusteredLookup;
@@ -133,7 +132,11 @@ public class ClusterScopedInterceptor implements Serializable {
     }
 
     private void refresh(Class<?> beanClass) {
-        Bean<?> bean = Iterables.getOnlyElement(beanManager.getBeans(beanClass));
+        Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
+        if (managedBeans.size() > 1) {
+            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
+        }
+        Bean<?> bean = managedBeans.iterator().next();
         String beanName = getBeanName(bean, getAnnotation(beanManager, bean));
         Context ctx = beanManager.getContext(ClusterScoped.class);
         clusteredLookup.getClusteredSingletonMap().put(beanName, ctx.get(bean));

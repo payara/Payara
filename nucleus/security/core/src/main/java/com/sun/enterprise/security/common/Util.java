@@ -48,7 +48,6 @@ import java.util.List;
 import javax.security.auth.callback.CallbackHandler;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.embedded.Server;
 import javax.inject.Inject;
@@ -64,7 +63,6 @@ import javax.inject.Singleton;
 @Service
 @Singleton
 public class Util {
-    private static ServiceLocator serviceLocator = Globals.getDefaultHabitat();
 
     @Inject
     private ProcessEnvironment penv;
@@ -73,15 +71,8 @@ public class Util {
     private CallbackHandler callbackHandler;
     private Object appClientMsgSecConfigs;
 
-    // Note: Will return Non-Null only after Util has been
-    // Injected in some Service.
-    public static ServiceLocator getDefaultHabitat() {
-        return serviceLocator;
-    }
-
     public static Util getInstance() {
-        // return my singleton service
-        return serviceLocator.getService(Util.class);
+        return Globals.getStaticHabitat().getService(Util.class);
     }
 
     public boolean isACC() {

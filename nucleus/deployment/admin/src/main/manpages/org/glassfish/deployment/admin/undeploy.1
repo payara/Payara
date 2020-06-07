@@ -1,0 +1,109 @@
+undeploy(1)               asadmin Utility Subcommands              undeploy(1)
+
+NAME
+       undeploy - removes a deployed component
+
+SYNOPSIS
+           undeploy [--help] [--target target] [--droptables={true|false}]
+           [--cascade={false|true}] name
+
+DESCRIPTION
+       The undeploy subcommand uninstalls a deployed application or module and
+       removes it from the repository.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --cascade
+           If set to true, deletes all the connection pools and connector
+           resources associated with the resource adapter being undeployed. If
+           set to false, the undeploy fails if any pools and resources are
+           still associated with the resource adapter. Then, either those
+           pools and resources must be deleted explicitly, or the option must
+           be set to true. If the option is set to false, and if there are no
+           pools and resources still associated with the resource adapter, the
+           resource adapter is undeployed. This option is applicable to
+           connectors (resource adapters) and applications. Default value is
+           false.
+
+       --droptables
+           If set to true, drops the tables that the application created by
+           using CMP beans during deployment. If set to false, tables are not
+           dropped. If not specified, the value of the drop-tables-at-deploy
+           entry in the cmp-resource element of the glassfish-ejb-jar.xml file
+           determines whether or not tables are dropped. Default value is
+           true.
+
+       --target
+           Specifies the target from which you are undeploying. Valid values
+           are:
+
+           server
+               Undeploys the component from the default server instance server
+               and is the default value.
+
+           domain
+               Undeploys the component from the domain.
+
+           cluster_name
+               Undeploys the component from every server instance in the
+               cluster.
+
+           instance_name
+               Undeploys the component from a particular stand-alone server
+               instance.
+
+OPERANDS
+       name
+           Name of the deployed component.
+
+           The name can include an optional version identifier, which follows
+           the name and is separated from the name by a colon (:). The version
+           identifier must begin with a letter or number. It can contain
+           alphanumeric characters plus underscore (_), dash (-), and period
+           (.) characters. To delete multiple versions, you can use an
+           asterisk (*) as a wildcard character. For more information about
+           module and application versions, see "Module and Application
+           Versions" in Oracle GlassFish Server Application Deployment Guide.
+
+EXAMPLES
+       Example 1, Undeploying an Enterprise Application
+           This example undeploys an enterprise application named Cart.ear.
+
+               asadmin> undeploy Cart
+               Command undeploy executed successfully.
+
+       Example 2, Undeploying an Enterprise Bean With Container-Managed
+       Persistence (CMP)
+           This example undeploys a CMP bean named myejb and drops the
+           corresponding database tables.
+
+               asadmin> undeploy --droptables=true myejb
+               Command undeploy executed successfully.
+
+       Example 3, Undeploying a Connector (Resource Adapter)
+           This example undeploys the connector module named jdbcra and
+           performs a cascading delete to remove the associated resources and
+           connection pools.
+
+               asadmin> undeploy --cascade=true jdbcra
+               Command undeploy executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       deploy(1), redeploy(1), list-components(1)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Application Deployment Guide
+
+Java EE 8                         17 Nov 2010                      undeploy(1)

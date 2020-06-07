@@ -1,0 +1,1225 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>asadmin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>asadmin</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="appclient.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="capture-schema.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The script content on this page is for navigation purposes only and does
+not alter the content in any way.</p>
+</div>
+<div class="paragraph">
+<p><a id="asadmin-1m"></a><a id="GSRFM00263"></a><a id="asadmin"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_asadmin">asadmin</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>utility for performing administrative tasks for Oracle \{product---name}</p>
+</div>
+<div id="sthref2364" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [--host host]
+[--port port]
+[--user admin-user]
+[--passwordfile filename]
+[--terse={true|false}]
+[--secure={false|true}]
+[--echo={true|false}]
+[--interactive={true|false}]
+[--detach={true|false}]
+[--help]
+[subcommand [options] [operands]]</code></pre>
+</div>
+</div>
+<div id="sthref2365" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>Use the <code>asadmin</code> utility to perform administrative tasks for Oracle
+GlassFish Server. You can use this utility instead of the Administration
+Console interface.</p>
+</div>
+<div class="paragraph">
+<p>Subcommands of the asadmin Utility</p>
+</div>
+<div class="paragraph">
+<p>The subcommand identifies the operation or task that you are performing.
+Subcommands are case-sensitive. Each subcommand is either a local
+subcommand or a remote subcommand.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A local subcommand can be run without a running domain administration
+server (DAS). However, to run the subcommand and have access to the
+installation directory and the domain directory, the user must be logged
+in to the machine that hosts the domain.</p>
+</li>
+<li>
+<p>A remote subcommand is always run by connecting to a DAS and running
+the subcommand there. A running DAS is required.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>asadmin Utility Options and Subcommand Options</p>
+</div>
+<div class="paragraph">
+<p>Options control the behavior of the <code>asadmin</code> utility and its
+subcommands. Options are also case-sensitive.</p>
+</div>
+<div class="paragraph">
+<p>The <code>asadmin</code> utility has the following types of options:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>asadmin</code> utility options. These options control the behavior of the
+<code>asadmin</code> utility, not the subcommand. The <code>asadmin</code> utility options may
+precede or follow the subcommand, but <code>asadmin</code> utility options after
+the subcommand are deprecated. All <code>asadmin</code> utility options must either
+precede or follow the subcommand. If <code>asadmin</code> utility options are
+specified both before and after the subcommand, an error occurs. For a
+description of the <code>asadmin</code> utility options, see the "Options" section
+of this help information.</p>
+</li>
+<li>
+<p>Subcommand options. These options control the behavior of the
+subcommand, not the <code>asadmin</code> utility. Subcommand options must follow
+the subcommand. For a description of a subcommand&#8217;s options, see the
+help information for the subcommand.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A subcommand option may have the same name as an <code>asadmin</code> utility
+option, but the effects of the two options are different.</p>
+</div>
+<div class="paragraph">
+<p>The <code>asadmin</code> utility options and some subcommand options have a long
+form and a short form.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The long form of an option has two dashes (<code>--</code>) followed by an option
+word.</p>
+</li>
+<li>
+<p>The short form of an option has a single dash (<code>-</code>) followed by a
+single character.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For example, the long form and the short form of the option for
+specifying terse output are as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Long form: <code>--terse</code></p>
+</li>
+<li>
+<p>Short form: <code>-t</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Most options require argument values, except Boolean options, which
+toggle to enable or disable a feature.</p>
+</div>
+<div class="paragraph">
+<p>Operands of asadmin Subcommands</p>
+</div>
+<div class="paragraph">
+<p>Operands specify the items on which the subcommand is to act. Operands
+must follow the argument values of subcommand options, and are set off
+by a space, a tab, or double dashes (<code>--</code>). The <code>asadmin</code> utility treats
+anything that follows the subcommand options and their values as an
+operand.</p>
+</div>
+<div class="paragraph">
+<p>Escape Characters in Options for the asadmin Utility</p>
+</div>
+<div class="paragraph">
+<p>Escape characters are required in options of the <code>asadmin</code> utility for
+the following types of characters:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Meta characters in the UNIX operating system. These characters have
+special meaning in a shell. Meta characters in the UNIX operating system
+include: <code>\/,.!$%^&amp;*|{}[]"'\</code>~;<code>. +
+To disable these characters, use the backslash (</code>\<code>) escape character or
+enclose the entire command-line argument in single quote (</code>'<code>)
+characters. +
+The following examples illustrate the effect of escape characters on the
+`*</code> character. In these examples, the current working directory is the
+domains directory.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The following command, without the escape character, echoes all files
+in the current directory:<br></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>prompt% echo *
+domain1 domain2</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The following command, in which the backslash (<code>\</code>) escape character
+precedes the <code>*</code> character, echoes the <code>*</code> character:<br></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>prompt% echo \*
+*</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The following command, in which the <code>*</code> character is enclosed in
+single quote (<code>'</code>) characters, echoes the <code>*</code> character:<br></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>prompt% echo '*'
+*</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The escape character is also a special character in the UNIX operating
+system and in the Java language. Therefore, in the UNIX operating system
+and in multimode, you must apply an additional escape character to every
+escape character in the command line. This requirement does not apply to
+the Windows operating system.<br>
+For example, the backslash (<code>\</code>) UNIX operating system meta character in
+the option argument <code>Test\Escape\Character</code> is specified on UNIX and
+Windows systems as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>On UNIX systems, each backslash must be escaped with a second
+backslash:<br></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Test\\Escape\\Character</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>On Windows systems, no escape character is required:<br></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Test\Escape\Character</pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+</dl>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>In contexts where meta characters in the UNIX operating system are
+unambiguous, these characters do not require escape characters. For
+example, in the <a href="set.html#set-1"><code>set</code>(1)</a> subcommand, the value that
+is to be set is specified as name`=<code>value. Because name can never
+include an equals sign, no escape character is required to disable the
+equals sign. Therefore, everything after the equals sign is an
+uninterpreted string that the `set</code> subcommand uses unchanged.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Spaces. The space is the separator in the command-line interface. To
+distinguish a space in a command-line argument from the separator in the
+command-line interface, the space must be escaped as follows:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>For the UNIX operating system in single mode and multimode, and for
+all operating systems in multimode, use the backslash (<code>\</code>) escape
+character or enclose the entire command-line argument in single quote
+(<code>'</code>) characters or double quote (") characters.</p>
+</li>
+<li>
+<p>For the Windows operating system in single mode, enclose the entire
+command-line argument in double quote (") characters.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Option delimiters. The <code>asadmin</code> utility uses the colon character
+(<code>:</code>) as a delimiter for some options. The backslash (<code>\</code>) escape
+character is required if the colon is part of any of the following
+items:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>A property</p>
+</li>
+<li>
+<p>An option of the Virtual Machine for the Java platform (Java Virtual
+Machine or JVM machine)<a href="#sthref2366"><sup>Foot 1 </sup></a><br>
+For example, the operand of the subcommand
+<a href="create-jvm-options.html#create-jvm-options-1"><code>create-jvm-options</code>(1)</a>
+specifies JVM machine options in the following format:<br></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>(jvm-option-name[=jvm-option-value])
+[:jvm-option-name[=jvm-option-value]]*</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Multiple JVM machine options in the operand of the <code>create-jvm-options</code>
+subcommand are separated by the colon (<code>:</code>) delimiter. If
+jvm-option-name or jvm-option-value contains a colon, the backslash
+(<code>\</code>) escape character is required before the colon.<br>
+The backslash (<code>\</code>) escape character is also required before a single
+quote (<code>'</code>) character or a double quote (") character in an option that
+uses the colon as a delimiter.<br>
+When used without single quote (') characters, the escape character
+disables the option delimiter in the command-line interface.<br>
+For the UNIX operating system in single mode and multimode, and for all
+operating systems in multimode, the colon character and the backslash
+character in an option that uses the colon as a delimiter must be
+specified as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>To pass a literal backslash to a subcommand, two backslashes are
+required. Therefore, the colon (<code>:</code>) must be escaped by two backslashes
+(<code>\\</code>).</p>
+</li>
+<li>
+<p>To prevent a subcommand from treating the backslash as a special
+character, the backslash must be escaped. As a result, two literal
+backslashes (<code>\\</code>) must be passed to the subcommand. To prevent the
+shell from interpreting these backslashes as special characters, each
+backslash must be escaped. Therefore, the backslash must be specified by
+a total of four backslashes (<code>\\\\</code>).<br>
+For the Windows operating system in single mode, a backslash (<code>\</code>) is
+required to escape the colon (<code>:</code>) and the backslash (<code>\</code>) in an option
+that uses the colon as a delimiter.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Instead of using the backslash (<code>\</code>) escape character, you can use the
+double quote (") character or single quote (') character. The effects of
+the different types of quote characters on the backslash (<code>\</code>) character
+are as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Between double quote (") characters, the backslash (<code>\</code>) character is
+a special character.</p>
+</li>
+<li>
+<p>Between single quote (') characters, the backslash (<code>\</code>) character is
+not a special character.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Requirements for Using the --secure Option</p>
+</div>
+<div class="paragraph">
+<p>The requirements for using the <code>--secure</code> option are as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The domain that you are administering must be configured for security.</p>
+</li>
+<li>
+<p>The <code>security-enabled</code> attribute of the <code>http-listener</code> element in the
+DAS configuration must be set to <code>true</code>.<br>
+To set this attribute, use the <code>set</code> subcommand.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Server Restart After Creation or Deletion</p>
+</div>
+<div class="paragraph">
+<p>When you use the <code>asadmin</code> subcommands to create or delete a
+configuration item, you must restart the DAS for the change to take
+effect. To restart the DAS, use the
+<a href="restart-domain.html#restart-domain-1"><code>restart-domain</code>(1)</a>
+subcommand.</p>
+</div>
+<div class="paragraph">
+<p>Help Information for Subcommands and the asadmin Utility</p>
+</div>
+<div class="paragraph">
+<p>To obtain help information for an <code>asadmin</code> utility subcommand, specify
+the subcommand of interest as the operand of the <code>help</code> subcommand. For
+example, to obtain help information for the
+<a href="start-domain.html#start-domain-1"><code>start-domain</code>(1)</a> subcommand,
+type:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin help start-domain</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you run the <code>help</code> subcommand without an operand, this help
+information for the <code>asadmin</code> utility is displayed.</p>
+</div>
+<div class="paragraph">
+<p>To obtain a listing of available <code>asadmin</code> subcommands, use the
+<a href="list-commands.html#list-commands-1"><code>list-commands</code>(1)</a> subcommand.</p>
+</div>
+<div id="sthref2367" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>--host</code></dt>
+<dt class="hdlist1"><code>-H</code></dt>
+<dd>
+<p>The machine name where the DAS is running. The default value is
+<code>localhost</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--port</code></dt>
+<dt class="hdlist1"><code>-p</code></dt>
+<dd>
+<p>The HTTP port or HTTPS port for administration. This port is the port
+in the URL that you specify in your web browser to manage the domain.
+For example, in the URL <code>http://localhost:4949</code>, the port is 4949.<br>
+The default port number for administration is 4848.</p>
+</dd>
+<dt class="hdlist1"><code>--user</code></dt>
+<dt class="hdlist1"><code>-u</code></dt>
+<dd>
+<p>The user name of the authorized administrative user of the DAS.<br>
+If you have authenticated to a domain by using the <code>asadmin login</code>
+command, you need not specify the <code>--user</code> option for subsequent
+operations on the domain.</p>
+</dd>
+<dt class="hdlist1"><code>--passwordfile</code></dt>
+<dt class="hdlist1"><code>-W</code></dt>
+<dd>
+<p>Specifies the name, including the full path, of a file that contains
+password entries in a specific format.<br>
+Note that any password file created to pass as an argument by using
+the <code>--passwordfile</code> option should be protected with file system
+permissions. Additionally, any password file being used for a
+transient purpose, such as setting up SSH among nodes, should be
+deleted after it has served its purpose.<br>
+The entry for a password must have the <code>AS_ADMIN_</code> prefix followed by
+the password name in uppercase letters, an equals sign, and the
+password.<br>
+The entries in the file that are read by the <code>asadmin</code> utility are as
+follows:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>`AS_ADMIN_PASSWORD=`administration-password</p>
+</li>
+<li>
+<p>`AS_ADMIN_MASTERPASSWORD=`master-password<br>
+The entries in this file that are read by subcommands are as follows:<br></p>
+</li>
+<li>
+<p><code>AS_ADMIN_NEWPASSWORD=`new-administration-password (read by the
+link:start-domain.html#start-domain-1[`start-domain</code>(1)] subcommand)</p>
+</li>
+<li>
+<p><code>AS_ADMIN_USERPASSWORD=`user-password (read by the
+link:create-file-user.html#create-file-user-1[`create-file-user</code>(1)]
+subcommand)</p>
+</li>
+<li>
+<p><code>AS_ADMIN_ALIASPASSWORD=`alias-password (read by the
+link:create-password-alias.html#create-password-alias-1[`create-password-alias</code>(1)]
+subcommand)</p>
+</li>
+<li>
+<p><code>AS_ADMIN_MAPPEDPASSWORD=`mapped-password (read by the
+link:create-connector-security-map.html#create-connector-security-map-1[`create-connector-security-map</code>(1)]
+subcommand)</p>
+</li>
+<li>
+<p><code>AS_ADMIN_WINDOWSPASSWORD=`windows-password (read by the
+link:create-node-dcom.html#create-node-dcom-1[`create-node-dcom</code>(1)],
+<a href="install-node-dcom.html#install-node-dcom-1"><code>install-node-dcom</code>(1)</a>,
+and <a href="update-node-ssh.html#update-node-dcom-1"><code>update-node-dcom</code>(1)</a>
+subcommands)</p>
+</li>
+<li>
+<p><code>AS_ADMIN_SSHPASSWORD=`sshd-password (read by the
+link:create-node-ssh.html#create-node-ssh-1[`create-node-ssh</code>(1)],
+<a href="install-node.html#install-node-1"><code>install-node</code>(1)</a>,
+<a href="install-node-ssh.html#install-node-ssh-1"><code>install-node-ssh</code>(1)</a>,
+and
+<a href="update-node-ssh001.html#update-node-ssh-1"><code>update-node-ssh</code>(1)</a>
+subcommands)</p>
+</li>
+<li>
+<p><code>AS_ADMIN_SSHKEYPASSPHRASE=`sshd-passphrase (read by the
+link:create-node-ssh.html#create-node-ssh-1[`create-node-ssh</code>(1)],
+<a href="install-node.html#install-node-1"><code>install-node</code>(1)</a>,
+<a href="install-node-ssh.html#install-node-ssh-1"><code>install-node-ssh</code>(1)</a>,
+and
+<a href="update-node-ssh001.html#update-node-ssh-1"><code>update-node-ssh</code>(1)</a>
+subcommands)</p>
+</li>
+<li>
+<p><code>AS_ADMIN_JMSDBPASSWORD=</code> jdbc-user-password (read by the
+<a href="configure-jms-cluster.html#configure-jms-cluster-1"><code>configure-jms-cluster</code>(1)</a>
+subcommand)<br>
+These password entries are stored in clear text in the password file.
+To provide additional security, the <code>create-password-alias</code> subcommand
+can be used to create aliases for passwords that are used by remote
+subcommands. The password for which the alias is created is stored in
+an encrypted form. If an alias exists for a password, the alias is
+specified in the entry for the password as follows:<br></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">AS_ADMIN_password-name=${ALIAS=password-alias-name}</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>For example:<br></p>
+</dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">AS_ADMIN_SSHPASSWORD=${ALIAS=ssh-password-alias}
+AS_ADMIN_SSHKEYPASSPHRASE=${ALIAS=ssh-key-passphrase-alias}</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"></dt>
+<dd>
+<p>In domains that do not allow unauthenticated login, all remote
+subcommands must specify the administration password to authenticate
+to the DAS. The password can be specified by one of the following
+means:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Through the <code>--passwordfile</code> option</p>
+</li>
+<li>
+<p>Through the <a href="login.html#login-1"><code>login</code>(1)</a> subcommand</p>
+</li>
+<li>
+<p>Interactively at the command prompt<br>
+The <code>login</code> subcommand can be used to specify only the administration
+password. For other passwords that remote subcommands require, use the
+<code>--passwordfile</code> option or specify them at the command prompt.<br>
+After authenticating to a domain by using the <code>asadmin login</code> command,
+you need not specify the administration password through the
+<code>--passwordfile</code> option for subsequent operations on the domain.
+However, only the <code>AS_ADMIN_PASSWORD</code> option is not required. You
+still must provide the other passwords, for example,
+<code>AS_ADMIN_USERPASSWORD</code>, when required by individual subcommands, such
+as
+<a href="update-file-user.html#update-file-user-1"><code>update-file-user</code>(1)</a>.<br>
+For security reasons, a password that is specified as an environment
+variable is not read by the <code>asadmin</code> utility.<br>
+The master password is not propagated on the command line or an
+environment variable, but can be specified in the file that the
+<code>--passwordfile</code> option specifies.<br>
+The default value for <code>AS_ADMIN_MASTERPASSWORD</code> is <code>changeit</code>.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--terse</code></dt>
+<dt class="hdlist1"><code>-t</code></dt>
+<dd>
+<p>If true, output data is very concise and in a format that is optimized
+for use in scripts instead of for reading by humans. Typically,
+descriptive text and detailed status messages are also omitted from
+the output data. Default is false.</p>
+</dd>
+<dt class="hdlist1"><code>--secure</code></dt>
+<dt class="hdlist1"><code>-s</code></dt>
+<dd>
+<p>If set to true, uses SSL/TLS to communicate with the DAS.<br>
+The default is false.</p>
+</dd>
+<dt class="hdlist1"><code>--echo</code></dt>
+<dt class="hdlist1"><code>-e</code></dt>
+<dd>
+<p>If set to true, the command-line statement is echoed on the standard
+output. Default is false.</p>
+</dd>
+<dt class="hdlist1"><code>--interactive</code></dt>
+<dt class="hdlist1"><code>-I</code></dt>
+<dd>
+<p>If set to true, only the required options are prompted.<br>
+The default depends on how the <code>asadmin</code> utility is run:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>If the <code>asadmin</code> utility is run from a console window, the default
+is <code>true</code>.</p>
+</li>
+<li>
+<p>If the <code>asadmin</code> utility is run without a console window, for
+example, from within a script, the default is <code>false</code>.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>--detach</code></dt>
+<dd>
+<p>If set to <code>true</code>, the specified <code>asadmin</code> subcommand is detached and
+executed in the background in detach mode. The default value is
+<code>false</code>.<br>
+The <code>--detach</code> option is useful for long-running subcommands and
+enables you to execute several independent subcommands from one
+console or script.<br>
+The <code>--detach</code> option is specified before the subcommand. For example,
+in single mode, <code>asadmin --detach</code> subcommand.<br>
+Job IDs are assigned to subcommands that are started using
+<code>asadmin --detach</code>. You can use the
+<a href="list-jobs.html#list-jobs-1"><code>list-jobs</code>(1)</a> subcommand to view the
+jobs and their job IDs, the <a href="attach.html#attach-1"><code>attach</code>(1)</a>
+subcommand to reattach to the job and view its status and output, and
+the
+<a href="configure-managed-jobs.html#configure-managed-jobs-1"><code>configure-managed-jobs</code>(1)</a>
+subcommand to configure how long information about the jobs is kept.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the <code>asadmin</code> utility.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2368" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM805"></a><a id="sthref2369"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Running an <code>asadmin</code> Utility Subcommand in Single Mode</p>
+</div>
+<div class="paragraph">
+<p>This example runs the
+<a href="list-applications.html#list-applications-1"><code>list-applications</code>(1)</a>
+subcommand in single mode. In this example, the default values for all
+options are used.</p>
+</div>
+<div class="paragraph">
+<p>The example shows that the application <code>hello</code> is deployed on the local
+host.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin list-applications
+hello &lt;web&gt;
+
+Command list-applications executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM806"></a><a id="sthref2370"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Specifying an <code>asadmin</code> Utility Option With a Subcommand</p>
+</div>
+<div class="paragraph">
+<p>This example specifies the <code>--host</code> <code>asadmin</code> utility option with the
+<code>list-applications</code> subcommand in single mode. In this example, the DAS
+is running on the host <code>srvr1.example.com</code>.</p>
+</div>
+<div class="paragraph">
+<p>The example shows that the applications <code>basic-ezcomp</code>, <code>scrumtoys</code>,
+<code>ejb31-war</code>, and <code>automatic-timer-ejb</code> are deployed on the host
+<code>srvr1.example.com</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --host srvr1.example.com list-applications
+basic-ezcomp &lt;web&gt;
+scrumtoys &lt;web&gt;
+ejb31-war &lt;ejb, web&gt;
+automatic-timer-ejb &lt;ejb&gt;
+
+Command list-applications executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM807"></a><a id="sthref2371"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 3   Specifying an <code>asadmin</code> Utility Option and a Subcommand
+Option</p>
+</div>
+<div class="paragraph">
+<p>This example specifies the <code>--host</code> <code>asadmin</code> utility option and the
+<code>--type</code> subcommand option with the <code>list-applications</code> subcommand in
+single mode. In this example, the DAS is running on the host
+<code>srvr1.example.com</code> and applications of type <code>web</code> are to be listed.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --host srvr1.example.com list-applications --type web
+basic-ezcomp &lt;web&gt;
+scrumtoys &lt;web&gt;
+ejb31-war &lt;ejb, web&gt;
+
+Command list-applications executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM808"></a><a id="sthref2372"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 4   Escaping a Command-Line Argument With Single Quote
+Characters</p>
+</div>
+<div class="paragraph">
+<p>The commands in this example specify the backslash (<code>\</code>) UNIX operating
+system meta character and the colon (:) option delimiter in the property
+value <code>c:\extras\pmdapp</code>.</p>
+</div>
+<div class="paragraph">
+<p>For the UNIX operating system in single mode and multimode, and for all
+operating systems in multimode, the backslash (<code>\</code>) is required to
+escape the backslash (<code>\</code>) meta character and the colon (:) option
+delimiter:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin deploy --property extras.home='c\:\\extras\\pmdapp' pmdapp.war
+Application deployed with name pmdapp.
+Command deploy executed successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the Windows operating system in single mode, the single quote (<code>'</code>)
+characters eliminate the need for other escape characters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin deploy --property extras.home='c:\extras\pmdapp' pmdapp.war
+Application deployed with name pmdapp.
+Command deploy executed successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM809"></a><a id="sthref2373"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 5   Specifying a UNIX Operating System Meta Character in an
+Option</p>
+</div>
+<div class="paragraph">
+<p>The commands in this example specify the backslash (<code>\</code>) UNIX operating
+system meta character in the option argument <code>Test\Escape\Character</code>.</p>
+</div>
+<div class="paragraph">
+<p>For the UNIX operating system in single mode and multimode, and for all
+operating systems in multimode, the backslash (<code>\</code>) is required to
+escape the backslash (<code>\</code>) meta character:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --user admin --passwordfile gfpass create-jdbc-connection-pool
+--datasourceclassname sampleClassName
+--description Test\\Escape\\Character
+sampleJDBCConnectionPool</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the Windows operating system in single mode, no escape character is
+required:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --user admin --passwordfile gfpass create-jdbc-connection-pool
+--datasourceclassname sampleClassName
+--description Test\Escape\Character
+sampleJDBCConnectionPool</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM835"></a><a id="sthref2374"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 6   Specifying a Command-Line Argument That Contains a Space</p>
+</div>
+<div class="paragraph">
+<p>The commands in this example specify spaces in the operand
+<code>C:\Documents and Settings\gfuser\apps\hello.war</code>.</p>
+</div>
+<div class="paragraph">
+<p>For all operating systems in single mode or multimode, the entire
+operand can be enclosed in double quote (<code>"</code>) characters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin deploy "C:\Documents and Settings\gfuser\apps\hello.war"
+Application deployed with name hello.
+Command deploy executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the UNIX operating system in single mode and multimode, and for all
+operating systems in multimode, the entire command-line argument can be
+enclosed in single quote (<code>'</code>) characters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; deploy 'C:\Documents and Settings\gfuser\apps\hello.war'
+Application deployed with name hello.
+Command deploy executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, for the UNIX operating system in single mode and
+multimode, and for all operating systems in multimode, the backslash
+(<code>\</code>) escape character can be used before each space in the operand. In
+this situation, the backslash (<code>\</code>) escape character is required before
+each backslash in the operand:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; deploy C:\\Documents\ and\ Settings\\gfuser\\apps\\hello.war
+Application deployed with name hello.
+Command deploy executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM810"></a><a id="sthref2375"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 7   Specifying a Meta Character and an Option Delimiter
+Character in a Property</p>
+</div>
+<div class="paragraph">
+<p>The commands in this example specify the backslash (<code>\</code>) UNIX operating
+system meta character and the colon (:) option delimiter character in
+the <code>--property</code> option of the
+<a href="create-jdbc-connection-pool.html#create-jdbc-connection-pool-1"><code>create-jdbc-connection-pool</code>(1)</a>
+subcommand.</p>
+</div>
+<div class="paragraph">
+<p>The name and value pairs for the <code>--property</code> option are as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">user=dbuser
+passwordfile=dbpasswordfile
+DatabaseName=jdbc:derby
+server=http://localhost:9092</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the UNIX operating system in single mode and multimode, and for all
+operating systems in multimode, a backslash (<code>\</code>) is required to escape
+the colon (<code>:</code>) and the backslash (<code>\</code>):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --user admin --passwordfile gfpass create-jdbc-connection-pool
+--datasourceclassname com.derby.jdbc.jdbcDataSource
+--property user=dbuser:passwordfile=dbpasswordfile:
+DatabaseName=jdbc\\:derby:server=http\\://localhost\\:9092 javadb-pool</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, the entire argument to the <code>--property</code> option can be
+enclosed in single quote (') characters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --user admin --passwordfile gfpass create-jdbc-connection-pool
+--datasourceclassname com.derby.jdbc.jdbcDataSource
+--property 'user=dbuser:passwordfile=dbpasswordfile:
+DatabaseName="jdbc:derby":server="http://localhost:9092"' javadb-pool</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the Windows operating system in single mode, a backslash (<code>\</code>) is
+required to escape only the colon (<code>:</code>), but not the backslash (<code>\</code>):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --user admin --passwordfile gfpass create-jdbc-connection-pool
+--datasourceclassname com.derby.jdbc.jdbcDataSource
+--property user-dbuser:passwordfile-dbpasswordfile:
+DatabaseName=jdbc\:derby:server=http\://localhost\:9092 javadb-pool</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For all operating systems, the need to escape the colon (<code>:</code>) in a value
+can be avoided by enclosing the value in double quote characters or
+single quote characters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin --user admin --passwordfile gfpass create-jdbc-connection-pool
+--datasourceclassname com.derby.jdbc.jdbcDataSource
+--property user=dbuser:passwordfile=dbpasswordfile:
+DatabaseName=\"jdbc:derby\":server=\"http://localhost:9092\" javadb-pool</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM811"></a><a id="sthref2376"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 8   Specifying an Option Delimiter and an Escape Character in a
+JVM Machine Option</p>
+</div>
+<div class="paragraph">
+<p>The commands in this example specify the following characters in the
+<code>-Dlocation=c:\sun\appserver</code> JVM machine option:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The colon (<code>:</code>) option delimiter</p>
+</li>
+<li>
+<p>The backslash (<code>\</code>) escape character</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For the UNIX operating system in single mode and multimode, and for all
+operating systems in multimode, these characters must be specified as
+follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>To pass a literal backslash to a subcommand, two backslashes are
+required. Therefore, the colon (<code>:</code>) must be escaped by two backslashes
+(<code>\\</code>).</p>
+</li>
+<li>
+<p>To prevent the subcommand from treating the backslash as a special
+character, the backslash must be escaped. As a result, two literal
+backslashes (<code>\\</code>) must be passed to the subcommand. To prevent the
+shell from interpreting these backslashes as special characters, each
+backslash must be escaped. Therefore, the backslash must be specified by
+a total of four backslashes (<code>\\\\</code>).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The resulting command is as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin create-jvm-options --target test-server
+-e -Dlocation=c\\:\\\\sun\\\\appserver</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the Windows operating system in single mode, a backslash (<code>\</code>) is
+required to escape the colon (<code>:</code>) and the backslash (<code>\</code>):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin create-jvm-options --target test-server
+-e -Dlocation=c\:\\sun\\appserver</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM812"></a><a id="sthref2377"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 9   Specifying an Option That Contains an Escape Character</p>
+</div>
+<div class="paragraph">
+<p>The commands in this example specify the backslash (<code>\</code>) character and
+the double quote (<code>"</code>) characters in the <code>"Hello\App"\authentication</code>
+option argument.</p>
+</div>
+<div class="paragraph">
+<p>For the UNIX operating system in single mode and multimode, and for all
+operating systems in multimode, a backslash (<code>\</code>) is required to escape
+the double quote character (<code>"</code>) and the backslash (<code>\</code>):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin set-web-env-entry --name="Hello User" --type=java.lang.String
+--value=techscribe --description=\"Hello\\App\"\\authentication hello</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the Windows operating system in single mode, a backslash (<code>\</code>) is
+required to escape only the double quote (<code>"</code>), but not the backslash
+(<code>\</code>):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin set-web-env-entry --name="Hello User" --type=java.lang.String
+--value=techscribe --description=\"Hello\App\"\authentication hello</code></pre>
+</div>
+</div>
+<div id="sthref2378" class="paragraph">
+<p>Environment Variables</p>
+</div>
+<div class="paragraph">
+<p>Environment variables modify the default values of <code>asadmin</code> utility
+options as shown in the following table.</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 44%;">
+<col style="width: 56%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Environment Variable</th>
+<th class="tableblock halign-left valign-top"><code>asadmin</code> Utility Option</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AS_ADMIN_TERSE</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--terse</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AS_ADMIN_ECHO</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--echo</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AS_ADMIN_INTERACTIVE</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--interactive</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AS_ADMIN_HOST</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--host</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AS_ADMIN_PORT</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--port</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AS_ADMIN_SECURE</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--secure</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AS_ADMIN_USER</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--user</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AS_ADMIN_PASSWORDFILE</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--passwordfile</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>AS_ADMIN_HELP</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--help</code></p></td>
+</tr>
+</tbody>
+</table>
+<div id="sthref2380" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="attach.html#attach-1"><code>attach</code>(1)</a>,
+<a href="configure-jms-cluster.html#configure-jms-cluster-1"><code>configure-jms-cluster</code>(1)</a>,
+<a href="configure-managed-jobs.html#configure-managed-jobs-1"><code>configure-managed-jobs</code>(1)</a>,
+<a href="create-connector-security-map.html#create-connector-security-map-1"><code>create-connector-security-map</code>(1)</a>,
+<a href="create-file-user.html#create-file-user-1"><code>create-file-user</code>(1)</a>,
+<a href="create-jdbc-connection-pool.html#create-jdbc-connection-pool-1"><code>create-jdbc-connection-pool</code>(1)</a>,
+<a href="create-jvm-options.html#create-jvm-options-1"><code>create-jvm-options</code>(1)</a>,
+<a href="create-node-dcom.html#create-node-dcom-1"><code>create-node-dcom</code>(1)</a>,
+<a href="create-node-ssh.html#create-node-ssh-1"><code>create-node-ssh</code>(1)</a>,
+<a href="create-password-alias.html#create-password-alias-1"><code>create-password-alias</code>(1)</a>,
+<a href="deploy.html#deploy-1"><code>deploy</code>(1)</a>,
+<a href="install-node.html#install-node-1"><code>install-node</code>(1)</a>,
+<a href="install-node-dcom.html#install-node-dcom-1"><code>install-node-dcom</code>(1)</a>,
+<a href="install-node-ssh.html#install-node-ssh-1"><code>install-node-ssh</code>(1)</a>,
+<a href="list-applications.html#list-applications-1"><code>list-applications</code>(1)</a>,
+<a href="list-commands.html#list-commands-1"><code>list-commands</code>(1)</a>,
+<a href="list-jobs.html#list-jobs-1"><code>list-jobs</code>(1)</a>,
+<a href="login.html#login-1"><code>login</code>(1)</a>,
+<a href="restart-domain.html#restart-domain-1"><code>restart-domain</code>(1)</a>,
+<a href="set.html#set-1"><code>set</code>(1)</a>,
+<a href="set-web-env-entry.html#set-web-env-entry-1"><code>set-web-env-entry</code>(1)</a>,
+<a href="start-domain.html#start-domain-1"><code>start-domain</code>(1)</a>,
+<a href="update-file-user.html#update-file-user-1"><code>update-file-user</code>(1)</a>,
+<a href="update-node-ssh.html#update-node-dcom-1"><code>update-node-dcom</code>(1)</a>,
+<a href="update-node-ssh001.html#update-node-ssh-1"><code>update-node-ssh</code>(1)</a></p>
+</div>
+<hr>
+<div class="paragraph">
+<p>Footnote Legend</p>
+</div>
+<div class="paragraph">
+<p>Footnote 1: The terms "Java Virtual Machine" and "JVM" mean a Virtual
+Machine for the Java platform.<br></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="appclient.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="capture-schema.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

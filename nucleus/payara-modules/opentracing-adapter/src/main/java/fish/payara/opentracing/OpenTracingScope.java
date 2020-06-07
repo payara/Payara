@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,10 +42,11 @@
  */
 package fish.payara.opentracing;
 
-import io.opentracing.Span;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import io.opentracing.Span;
 
 /**
  * Implementation of Scope from OpenTracing.
@@ -56,11 +57,7 @@ import java.util.Map;
 public class OpenTracingScope implements io.opentracing.Scope {
 
     private Span currentSpan;
-    private Map<Span, Boolean> allSpans;
-    
-    public OpenTracingScope (){
-        allSpans = new LinkedHashMap<>();
-    }
+    private Map<Span, Boolean> allSpans = new LinkedHashMap<>();
     
     @Override
     public void close() {
@@ -73,6 +70,8 @@ public class OpenTracingScope implements io.opentracing.Scope {
             // Prevent scope holding on a reference to old spans
             keys.remove();
         }
+        
+        currentSpan = null;
     }
 
     @Override
@@ -88,6 +87,9 @@ public class OpenTracingScope implements io.opentracing.Scope {
     
     void removeSpan(Span span){
         allSpans.remove(span);
+        if (span == currentSpan) {
+            currentSpan = null;
+        }
     }
     
 }

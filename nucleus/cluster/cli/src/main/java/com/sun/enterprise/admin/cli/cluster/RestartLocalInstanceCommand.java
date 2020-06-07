@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -92,8 +92,7 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
         if (sync.equals("none")) {
             logger.info(Strings.get("Instance.nosync"));
         } else if (!synchronizeInstance()) {
-            File domainXml
-                    = new File(new File(instanceDir, "config"), "domain.xml");
+            File domainXml = new File(new File(instanceDir, "config"), "domain.xml");
             if (!domainXml.exists()) {
                 logger.info(Strings.get("Instance.nodomainxml"));
                 return ERROR;
@@ -104,7 +103,7 @@ public class RestartLocalInstanceCommand extends SynchronizeInstanceCommand {
         programOpts.setHostAndPort(addr);
 
         if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "Stopping server at {0}", addr.toString());
+            logger.log(Level.FINER, "Stopping server at {0}", addr);
         }
 
         logger.finer("It's the correct Instance");

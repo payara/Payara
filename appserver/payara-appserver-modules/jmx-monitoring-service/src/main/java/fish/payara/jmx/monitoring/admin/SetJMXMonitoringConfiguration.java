@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.jmx.monitoring.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 import fish.payara.admin.amx.config.AMXConfiguration;
 import fish.payara.jmx.monitoring.JMXMonitoringService;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
@@ -99,7 +100,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
     protected Target targetUtil;
 
     @Inject
-    JMXMonitoringService monitoringService;
+    JMXMonitoringService jmxMonitoringService;
 
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
@@ -133,21 +134,26 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
     @Inject
     protected Logger logger;
 
-    private MonitoringServiceConfiguration monitoringConfig;
+    private MonitoringServiceConfiguration jmxMonitoringConfig;
 
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
         Config config = targetUtil.getConfig(target);
+    
+        if (config == null) {
+            actionReport.setMessage("Cound not find target: " + target);
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        }
 
-        final JMXMonitoringService service = serviceLocator.getService(JMXMonitoringService.class);
-        if (service == null) {
+        final JMXMonitoringService jmxMonitoringService = serviceLocator.getService(JMXMonitoringService.class);
+        if (jmxMonitoringService == null) {
             actionReport.appendMessage("Could not find a monitoring service.");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
-        monitoringConfig = config.getExtensionByType(MonitoringServiceConfiguration.class);
+        jmxMonitoringConfig = config.getExtensionByType(MonitoringServiceConfiguration.class);
         try {
             ConfigSupport.apply(new SingleConfigCode<MonitoringServiceConfiguration>() {
                 @Override
@@ -156,11 +162,23 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
                     updateAttributes(monitoringConfigProxy, actionReport);
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return monitoringConfigProxy;
-                }
-            }, monitoringConfig);
+                }              
+            }, jmxMonitoringConfig);
 
             if (dynamic) {
                 enableOnTarget(actionReport, context, enabled);
+            }
+            
+            //If the JMX Monitoring is enabled, enable Mbeans too as without it you have nothing to monitor
+            if (enabled != null && enabled) {
+                MonitoringService monitoringService = config.getMonitoringService();
+                ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
+                    @Override
+                    public Object run(final MonitoringService monitoringServiceProxy) throws PropertyVetoException, TransactionFailure {
+                        monitoringServiceProxy.setMbeanEnabled((String.valueOf(enabled)));
+                        return monitoringServiceProxy;
+                    }
+                }, monitoringService);
             }
 
         } catch (TransactionFailure ex) {
@@ -195,7 +213,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
             monitoringConfig.setAmx(null);
         }
         if (null != logfrequency) {
-            monitoringConfig.setLogFrequency(String.valueOf(logfrequency));
+            monitoringConfig.setLogFrequency(logfrequency);
         }
         if (null != logfrequencyunit) {
             monitoringConfig.setLogFrequencyUnit(logfrequencyunit);
@@ -221,7 +239,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
 
         // Build the parameters
         ParameterMap params = new ParameterMap();
-        enabled = Boolean.valueOf(monitoringConfig.getEnabled());
+        enabled = Boolean.valueOf(jmxMonitoringConfig.getEnabled());
         params.add("enabled", enabled.toString());
         params.add("target", target);
         invocation.parameters(params);
@@ -251,7 +269,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
                 for (MonitoredAttribute attribute : attributes) {
                     if (attribute.equals(monitoredAttribute)) {
                         attributes.remove(attribute);
-                        report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                        report.appendMessage(jmxMonitoringService.getLocalStringManager().getLocalString(
                                 "jmxmonitoring.configure.attribute.remove",
                                 "Attribute 'objectName={0} attributeName={1}' successfully deleted.",
                                 monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
@@ -260,7 +278,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
                     }
                 }
                 if (!removed) {
-                    report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                    report.appendMessage(jmxMonitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attribute.remove.error",
                             "Attribute 'objectName={0} attributeName={1}' doesn't exist, so was ignored.",
                             monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
@@ -275,7 +293,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
                 for (MonitoredAttribute attribute : attributes) {
                     if (attribute.equals(monitoredAttribute)) {
                         attributeExists = true;
-                        report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                        report.appendMessage(jmxMonitoringService.getLocalStringManager().getLocalString(
                                 "jmxmonitoring.configure.attribute.add.error",
                                 "Attribute 'objectName={0} attributeName={1}' already exists, so was ignored.",
                                 monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
@@ -284,7 +302,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
                 }
                 if (!attributeExists) {
                     attributes.add(monitoredAttribute);
-                    report.appendMessage(monitoringService.getLocalStringManager().getLocalString(
+                    report.appendMessage(jmxMonitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attribute.add",
                             "Attribute 'objectName={0} attributeName={1}' successfully added.",
                             monitoredAttribute.getObjectName(), monitoredAttribute.getAttributeName()) + "\n");
@@ -312,7 +330,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
         String description = null;
 
         if (attributeTokens.length < 2) {
-            throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+            throw new IllegalArgumentException(jmxMonitoringService.getLocalStringManager().getLocalString(
                     "jmxmonitoring.configure.attributes.too.few",
                     "Too few properties. Required properties are 'objectName' and 'attributeName'."));
         }
@@ -321,7 +339,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
             token = token.replaceAll("\\\\", "");
             String[] param = token.split("=", 2);
             if (param.length != 2) {
-                throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+                throw new IllegalArgumentException(jmxMonitoringService.getLocalStringManager().getLocalString(
                         "jmxmonitoring.configure.attributes.too.few",
                         "Too few properties. Required properties are 'objectName' and 'attributeName'."));
             }
@@ -338,20 +356,20 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
                     description = param[1].trim();
                     break;
                 default:
-                    throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+                    throw new IllegalArgumentException(jmxMonitoringService.getLocalStringManager().getLocalString(
                             "jmxmonitoring.configure.attributes.unknown",
                             "Unknown property: {0}. Valid properties are: 'objectName', 'attributeName' and 'description'.",
                             param[0]));
             }
         }
         if (attributeName == null || attributeName.isEmpty()) {
-            throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+            throw new IllegalArgumentException(jmxMonitoringService.getLocalStringManager().getLocalString(
                     "jmxmonitoring.configure.attributes.invalid",
                     "Invalid property: {0}.",
                     "attributeName"));
         }
         if (objectName == null || objectName.isEmpty()) {
-            throw new IllegalArgumentException(monitoringService.getLocalStringManager().getLocalString(
+            throw new IllegalArgumentException(jmxMonitoringService.getLocalStringManager().getLocalString(
                     "jmxmonitoring.configure.attributes.invalid",
                     "Invalid property: {0}.",
                     "objectName"));

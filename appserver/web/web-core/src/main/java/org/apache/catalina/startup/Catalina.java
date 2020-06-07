@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
@@ -73,7 +74,6 @@ import java.io.*;
 import java.net.Socket;
 import java.text.MessageFormat;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Startup/Shutdown shell program for Catalina.  The following command line
@@ -85,7 +85,7 @@ import java.util.logging.Logger;
  *     "catalina.base" system property.   [conf/server.xml]
  * <li><b>-help</b> - Display usage information.
  * <li><b>-stop</b> - Stop the currently running instance of Catalina.
- * </u>
+ * </ul>
  *
  * Should do the same thing as Embedded, but using a server.xml file.
  *
@@ -96,7 +96,7 @@ import java.util.logging.Logger;
 
 public class Catalina extends Embedded {
 
-    private static final ClassLoader standardServerClassLoader =
+    private static final ClassLoader STANDARD_SERVER_CLASS_LOADER =
         StandardServer.class.getClassLoader();
 
 
@@ -172,6 +172,7 @@ public class Catalina extends Embedded {
      *
      * @param server The new server
      */
+    @Override
     public void setServer(Server server) {
         this.server = server;
     }
@@ -231,23 +232,23 @@ public class Catalina extends Embedded {
             return (false);
         }
 
-        for (int i = 0; i < args.length; i++) {
+        for (String arg : args) {
             if (isConfig) {
-                configFile = args[i];
+                configFile = arg;
                 isConfig = false;
-            } else if (args[i].equals("-config")) {
+            } else if (arg.equals("-config")) {
                 isConfig = true;
-            } else if (args[i].equals("-debug")) {
+            } else if (arg.equals("-debug")) {
                 debug = 1;
-            } else if (args[i].equals("-nonaming")) {
+            } else if (arg.equals("-nonaming")) {
                 setUseNaming( false );
-            } else if (args[i].equals("-help")) {
+            } else if (arg.equals("-help")) {
                 usage();
                 return (false);
-            } else if (args[i].equals("start")) {
+            } else if (arg.equals("start")) {
                 starting = true;
                 stopping = false;
-            } else if (args[i].equals("stop")) {
+            } else if (arg.equals("stop")) {
                 starting = false;
                 stopping = true;
             } else {
@@ -284,7 +285,7 @@ public class Catalina extends Embedded {
         if (debug>0)
             digester.setDebug(debug);
         digester.setValidating(false);
-        digester.setClassLoader(standardServerClassLoader);
+        digester.setClassLoader(STANDARD_SERVER_CLASS_LOADER);
 
         // Configure the actions we will be using
         digester.addObjectCreate("Server",
@@ -329,7 +330,7 @@ public class Catalina extends Embedded {
         digester.addObjectCreate("Server/Service/Connector",
                                  "org.apache.catalina.connector.CoyoteConnector",
                                  "className");
-        digester.addRule("Server/Service/Connector", 
+        digester.addRule("Server/Service/Connector",
                          new SetAllPropertiesRule());
         digester.addSetNext("Server/Service/Connector",
                             "addConnector",
@@ -368,8 +369,9 @@ public class Catalina extends Embedded {
                                                       parentClassLoader));
 
         long t2=System.currentTimeMillis();
-        if (log.isLoggable(Level.FINE))
-            log.log(Level.FINE, "Digester for server.xml created " + ( t2-t1 ));
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "Digester for server.xml created {0}", t2-t1);
+        }
         return (digester);
 
     }
@@ -498,9 +500,8 @@ public class Catalina extends Embedded {
         Exception ex = null;
         InputSource inputSource = null;
         InputStream inputStream = null;
-        File file = null;
+        File file = configFile();
         try {
-            file = configFile();
             inputStream = new FileInputStream(file);
             inputSource = new InputSource("file://" + file.getAbsolutePath());
         } catch (Exception e) {
@@ -572,7 +573,7 @@ public class Catalina extends Embedded {
     }
 
 
-    /* 
+    /*
      * Load using arguments
      */
     public void load(String args[]) {
@@ -590,6 +591,7 @@ public class Catalina extends Embedded {
 
     }
 
+    @Override
     public void destroy() {
 
     }
@@ -597,6 +599,7 @@ public class Catalina extends Embedded {
     /**
      * Start a new server instance.
      */
+    @Override
     public void start() {
 
         if (server == null) {
@@ -640,10 +643,11 @@ public class Catalina extends Embedded {
     /**
      * Stop an existing server instance.
      */
+    @Override
     public void stop() {
 
         try {
-            // Remove the ShutdownHook first so that server.stop() 
+            // Remove the ShutdownHook first so that server.stop()
             // doesn't get invoked twice
             Runtime.getRuntime().removeShutdownHook(shutdownHook);
         } catch (Throwable t) {
@@ -694,12 +698,13 @@ public class Catalina extends Embedded {
      */
     protected class CatalinaShutdownHook extends Thread {
 
+        @Override
         public void run() {
 
             if (server != null) {
                 Catalina.this.stop();
             }
-            
+
         }
 
     }
@@ -726,6 +731,7 @@ final class SetParentClassLoaderRule extends Rule {
 
     ClassLoader parentClassLoader = null;
 
+    @Override
     public void begin(Attributes attributes) throws Exception {
 
         if (digester.getDebug() >= 1)

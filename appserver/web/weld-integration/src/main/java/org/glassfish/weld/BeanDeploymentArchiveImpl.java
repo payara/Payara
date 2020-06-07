@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -61,14 +61,12 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.InjectionTarget;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,7 +82,7 @@ import static org.glassfish.weld.connector.WeldUtils.*;
  */
 public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
-    private Logger logger = Logger.getLogger(BeanDeploymentArchiveImpl.class.getName());
+    private static final Logger logger = Logger.getLogger(BeanDeploymentArchiveImpl.class.getName());
 
     private ReadableArchive archive;
     private String id;
@@ -319,6 +317,18 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return this.friendlyId;
     }
 
+    @Override
+    public Collection<String> getKnownClasses() {
+        return moduleClassNames;
+    }
+
+    @Override
+    public Collection<Class<?>> getLoadedBeanClasses() {
+        return beanClasses;
+    }
+
+
+
     //A graphical representation of the BDA hierarchy to aid in debugging
     //and to provide a better representation of how Weld treats the deployed
     //archive.
@@ -330,7 +340,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                 + ", " + formatAccessibleBDAs(this)
                 + ", Bean Classes #: " + getBeanClasses().size() + ","
                 + beanClassesString + ", ejbs=" + getEjbs() + "\n";
-        StringBuffer valBuff = new StringBuffer(initVal);
+        StringBuilder valBuff = new StringBuilder(initVal);
 
         Collection<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         Iterator<BeanDeploymentArchive> iter = bdas.iterator();
@@ -352,7 +362,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
     private String formatAccessibleBDAs(BeanDeploymentArchive bda) {
-        StringBuffer sb = new StringBuffer("[");
+        StringBuilder sb = new StringBuilder("[");
         for (BeanDeploymentArchive accessibleBDA : bda.getBeanDeploymentArchives()) {
             if (accessibleBDA instanceof BeanDeploymentArchiveImpl) {
                 sb.append(((BeanDeploymentArchiveImpl) accessibleBDA).getFriendlyId()).append(",");
@@ -473,7 +483,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                             entry.indexOf(SEPARATOR_CHAR, WEB_INF_LIB.length() + 1) == -1 &&
                             (app == null || DOLUtils.isScanningAllowed(app, entry))) {
                         ReadableArchive weblibJarArchive = archive.getSubArchive(entry);
-                        if (weblibJarArchive.exists(META_INF_BEANS_XML)) {
+                        if (weblibJarArchive != null && weblibJarArchive.exists(META_INF_BEANS_XML)) {
                             // Parse the descriptor to determine if CDI is disabled
                             BeansXml beansXML = parseBeansXML(weblibJarArchive, META_INF_BEANS_XML);
                             BeanDiscoveryMode bdMode = beansXML.getBeanDiscoveryMode();
@@ -624,13 +634,15 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private void collectJarInfo(ReadableArchive archive, boolean isBeanArchive, boolean hasBeansXml)
             throws IOException, ClassNotFoundException {
-        if (logger.isLoggable(FINE)) {
-            logger.log(FINE, CDILoggerInfo.COLLECTING_JAR_INFO, new Object[]{archive.getURI()});
-        }
-        Enumeration<String> entries = archive.entries();
-        while (entries.hasMoreElements()) {
-            String entry = entries.nextElement();
-            handleEntry(archive, entry, isBeanArchive, hasBeansXml);
+        if (archive != null) {
+            if (logger.isLoggable(FINE)) {
+                logger.log(FINE, CDILoggerInfo.COLLECTING_JAR_INFO, new Object[]{archive.getURI()});
+            }
+            Enumeration<String> entries = archive.entries();
+            while (entries.hasMoreElements()) {
+                String entry = entries.nextElement();
+                handleEntry(archive, entry, isBeanArchive, hasBeansXml);
+            }
         }
     }
 
@@ -799,7 +811,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     private static String makeBdaId(String friendlyId, BDAType bdaType, String jarArchiveName) {
         // Use war-name.war/WEB-INF/lib/jarName as BDA Id
         StringBuilder sb = new StringBuilder();
-        int delimiterIndex = friendlyId.lastIndexOf(":");
+        int delimiterIndex = friendlyId.lastIndexOf(':');
         if(delimiterIndex == -1) {
             sb.append(friendlyId);
         }

@@ -112,7 +112,7 @@ public class ListCommandsCommand implements AdminCommand {
                 
                 // limit list to commands for current scope
             if (name != null) {
-                int ci = name.indexOf("/");
+                int ci = name.indexOf('/');
                 if (ci != -1) {
                     String cmdScope = name.substring(0, ci + 1);
                     if (scope == null || !cmdScope.equals(scope)) continue;

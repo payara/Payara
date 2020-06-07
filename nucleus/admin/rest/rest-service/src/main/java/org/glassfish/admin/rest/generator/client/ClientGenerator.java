@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator.client;
 
 import com.sun.appserv.server.util.Version;
@@ -65,6 +67,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.admin.rest.RestLogging;
 
 /**
@@ -81,6 +85,7 @@ public abstract class ClientGenerator {
     protected List<String> messages = new ArrayList<String>();
     protected String versionString;
     protected static final String ARTIFACT_NAME = "rest-client-wrapper";
+    protected static final Logger LOGGER = Logger.getLogger(ClientGenerator.class.getPackage().toString());
 
     private DomDocument document;
 
@@ -152,7 +157,7 @@ public abstract class ClientGenerator {
     //    private void generateCommandMethods(String parentBeanName, ClassWriter parentWriter) {
     protected void generateCommandMethods(ClientClassWriter writer, String className) {
         List<CommandResourceMetaData> commandMetaData = CommandResourceMetaData.getMetaData(className);
-        if (commandMetaData.size() > 0) {
+        if (!commandMetaData.isEmpty()) {
             for (CommandResourceMetaData metaData : commandMetaData) {
                 CommandModel cm = getCommandModel(metaData.command);
                 if (cm != null) {
@@ -193,9 +198,7 @@ public abstract class ClientGenerator {
 
     protected String generateParameterName(ParamModel model) {
         Param param = model.getParam();
-        final String paramName = (!param.alias().isEmpty()) ? param.alias() : model.getName();
-
-        return  paramName;
+        return (!param.alias().isEmpty()) ? param.alias() : model.getName();
     }
 
     protected CommandModel getCommandModel(String commandName) {
@@ -234,10 +237,10 @@ public abstract class ClientGenerator {
 
                 if (childElement.isCollection()) {
                     //generateCollectionLeafResource
-                    System.out.println("generateCollectionLeafResource for " + elementName + " off of " + model.getTagName());
+                    LOGGER.log(Level.INFO, "generateCollectionLeafResource for {0} off of {1}", new Object[]{elementName, model.getTagName()});
                     generateCollectionLeafResource(writer, childElement.xmlName);
                 } else {
-                    System.out.println("generateLeafResource for " + elementName + " off of " + model.getTagName());
+                    LOGGER.log(Level.INFO, "generateLeafResource for {0} off of {1}", new Object[]{elementName, model.getTagName()});
 //                    generateSingle(document.getModelByElementName(elementName));
                     generateLeafResource(writer, childElement.xmlName);
                 }

@@ -222,7 +222,7 @@ public class AdministeredObjectDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getValue() {
-            return (String) TranslatedConfigView.getTranslatedValue(value);
+            return TranslatedConfigView.expandValue(value);
         }
 
         public void setValue(String value) throws PropertyVetoException {

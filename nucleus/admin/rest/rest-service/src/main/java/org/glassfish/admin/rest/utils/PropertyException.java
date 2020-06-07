@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.utils;
 
 /**
@@ -44,7 +46,7 @@ package org.glassfish.admin.rest.utils;
  */
 public class PropertyException extends Exception {
 
-    private String field = null;
+    private final String field;
 
     public PropertyException(String field, Throwable cause) {
         super(cause);

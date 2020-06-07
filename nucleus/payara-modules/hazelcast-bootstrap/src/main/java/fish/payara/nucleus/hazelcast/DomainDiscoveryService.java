@@ -205,7 +205,7 @@ public class DomainDiscoveryService implements DiscoveryService {
 
     @Override
     public Map<String, Object> discoverLocalMetadata() {
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
     }
     
 }

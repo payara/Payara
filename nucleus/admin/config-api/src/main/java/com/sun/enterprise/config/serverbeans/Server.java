@@ -215,6 +215,10 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
      */
     void setLbWeight(String value) throws PropertyVetoException;
 
+    @Attribute
+    String getDockerContainerId();
+    void setDockerContainerId(String dockerContainerId) throws PropertyVetoException;
+
     /**
      * Gets the value of the systemProperty property.
      * <p/>

@@ -38,15 +38,13 @@
  * holder.
  */
 
-package org.glassfish.deployapi;
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
-//import com.sun.enterprise.util.i18n.StringManager;
+package org.glassfish.deployapi;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.Vector;
 
 import javax.enterprise.deploy.shared.CommandType;
@@ -63,39 +61,35 @@ import org.glassfish.deployment.client.DFDeploymentStatus;
 import org.glassfish.deployment.client.DFProgressObject;
 
 /**
- * Implementation of the Progress Object 
+ * Implementation of the Progress Object
+ *
  * @author  dochez
  * @author  tjquinn
+ * @author David Matejcek
  */
 public class ProgressObjectImpl extends DFProgressObject {
 
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ProgressObjectImpl.class);
-    
-    protected CommandType commandType;
-    protected Object[] args;
-    private Vector listeners = new Vector(); // <-- needs to be synchronized
-    protected TargetImpl target;
-    protected TargetImpl[] targetsList;
-    protected String moduleID;
-    protected ModuleType moduleType;
-    protected DeploymentStatusImpl deploymentStatus =null;
-    protected TargetModuleID[] targetModuleIDs = null;
-    protected Vector deliveredEvents = new Vector();
-    protected DFDeploymentStatus finalDeploymentStatus = null;
-    protected boolean deployActionCompleted;
-    protected String warningMessages;
-    
-    private final static String MODULE_ID = 
-        DFDeploymentStatus.MODULE_ID;
-    private final static String MODULE_TYPE = 
-        DFDeploymentStatus.MODULE_TYPE;
-    private final static String KEY_SEPARATOR = 
-        DFDeploymentStatus.KEY_SEPARATOR;
-    private final static String SUBMODULE_COUNT = 
-        DFDeploymentStatus.SUBMODULE_COUNT;
-    private final static String CONTEXT_ROOT = 
-        DFDeploymentStatus.CONTEXT_ROOT;
+
+    private final static String MODULE_ID = DFDeploymentStatus.MODULE_ID;
+    private final static String MODULE_TYPE = DFDeploymentStatus.MODULE_TYPE;
+    private final static String KEY_SEPARATOR = DFDeploymentStatus.KEY_SEPARATOR;
+    private final static String SUBMODULE_COUNT = DFDeploymentStatus.SUBMODULE_COUNT;
+    private final static String CONTEXT_ROOT = DFDeploymentStatus.CONTEXT_ROOT;
     private final static String WARNING_PREFIX = "WARNING: ";
+
+    private final TargetImpl target;
+    private final Vector<ProgressListener> listeners = new Vector<>();
+    private final Vector<ProgressEvent> deliveredEvents = new Vector<>();
+    private CommandType commandType;
+    private String moduleID;
+    private ModuleType moduleType;
+    private TargetModuleID[] targetModuleIDs;
+    private final DeploymentStatusImpl deploymentStatus;
+    private final DFDeploymentStatus finalDeploymentStatus;
+    private boolean deployActionCompleted;
+    private String warningMessages;
+
 
     /** Creates a new instance of ProgressObjectImpl */
     public ProgressObjectImpl(TargetImpl target) {
@@ -107,37 +101,33 @@ public class ProgressObjectImpl extends DFProgressObject {
     }
 
     public ProgressObjectImpl(TargetImpl[] targets) {
-        this.targetsList = targets;
         this.target = targets[0];
         deploymentStatus = new DeploymentStatusImpl(this);
         deploymentStatus.setState(StateType.RELEASED);
         finalDeploymentStatus = new DFDeploymentStatus();
         deployActionCompleted = false;
     }
-    
+
     public ProgressObjectImpl(Target[] targets) {
         this(toTargetImpl(targets));
     }
-    
+
     public ProgressObjectImpl(Target target) {
         this(toTargetImpl(target));
     }
-    
-    // XXX should be stricter than public
+
     public static TargetImpl toTargetImpl(Target target) {
         if (target instanceof TargetImpl) {
             return (TargetImpl) target;
-        } else {
-                throw new IllegalArgumentException(localStrings.getLocalString(
-                        "enterprise.deployapi.spi.wrongImpl",
-                        "Expected Target implementation class of {0} but found instance of {1} instead",
-                        TargetImpl.class.getName(),
-                        target.getClass().getName()));
-            }
+        }
+        throw new IllegalArgumentException(localStrings.getLocalString(
+                "enterprise.deployapi.spi.wrongImpl",
+                "Expected Target implementation class of {0} but found instance of {1} instead",
+                TargetImpl.class.getName(),
+                target.getClass().getName()));
     }
-    
-    // XXX should be stricter than public
-    public static TargetImpl[] toTargetImpl(Target[] targets) {
+
+    private static TargetImpl[] toTargetImpl(Target[] targets) {
         TargetImpl[] result = new TargetImpl[targets.length];
         int i = 0;
         for (Target t : targets) {
@@ -145,359 +135,229 @@ public class ProgressObjectImpl extends DFProgressObject {
         }
         return result;
     }
-    
-    /** Add a listener to receive Progress events on deployment
-     * actions.
-     *
-     * @param The listener to receive events
-     * @see ProgressEvent
-     */
-    public void addProgressListener(ProgressListener pol) {
-	synchronized (listeners) {
-            listeners.add(pol);
-	    if (deliveredEvents.size() > 0) {
-	        for (Iterator i = deliveredEvents.iterator(); i.hasNext();) {
-		        pol.handleProgressEvent((ProgressEvent)i.next());
-	        }
-	    }
-	}
-    }
-    
-    /** (optional)
-     * A cancel request on an in-process operation
-     * stops all further processing of the operation and returns
-     * the environment to it original state before the operation
-     * was executed.  An operation that has run to completion
-     * cannot be cancelled.
-     *
-     * @throws OperationUnsupportedException this optional command
-     *         is not supported by this implementation.
-     */
-    public void cancel() throws OperationUnsupportedException {
-        throw new OperationUnsupportedException("cancel not supported");
-    }
-    
-    /** Return the ClientConfiguration object associated with the
-     * TargetModuleID.
-     *
-     * @return ClientConfiguration for a given TargetModuleID or
-     *         null if none exists.
-     */
-    public ClientConfiguration getClientConfiguration(TargetModuleID id) {
-        return null;
-    }
-    
-    /** Retrieve the status of this activity.
-     *
-     * @return An object containing the status
-     *          information.
-     */
-    public DeploymentStatus getDeploymentStatus() {
-        DeploymentStatusImpl result = new DeploymentStatusImpl(this);
-        result.setState(deploymentStatus.getState());
-        result.setMessage(deploymentStatus.getMessage());
-        
-        return result;
-    }
 
-    /**
-     * Retrieve the final deployment status which has complete details for each stage
-     */
-    public DFDeploymentStatus getCompletedStatus() {
-        if(deployActionCompleted) {
-            return finalDeploymentStatus;
-        }
-        return null;
-    }
-    
-    /** Retrieve the list of TargetModuleIDs successfully
-     * processed or created by the associated DeploymentManager
-     * operation.
-     *
-     * @return a list of TargetModuleIDs.
-     */
-    public TargetModuleID[] getResultTargetModuleIDs() {
 
-        /**
-         * this should go once CTS has fixed their bugs...
-         */
-        if (targetModuleIDs==null) {
-            if(target != null) {
-                initializeTargetModuleIDs(moduleID);
-//            } else if(targetsList != null) {
-//                initializeTargetModuleIDForAllServers(null, null);
+    @Override
+    public void addProgressListener(ProgressListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+            if (!deliveredEvents.isEmpty()) {
+                for (ProgressEvent progressEvent : deliveredEvents) {
+                    listener.handleProgressEvent(progressEvent);
+                }
             }
         }
-        // will return null until the operation is completed
-        return targetModuleIDs;
-    }
-    
-    public void setModuleID(String id) {
-        moduleID = id;
     }
 
     /**
-     * initialize the target module IDs with the passed application moduleID
-     * and the descriptors
+     * @return {@link CommandType}, may be null.
      */
-    protected void initializeTargetModuleIDs(String moduleID) {
-        TargetModuleIDImpl parentTargetModuleID = new TargetModuleIDImpl(target, moduleID);        
-        
-        targetModuleIDs = new TargetModuleIDImpl[1];        
-        targetModuleIDs[0] = parentTargetModuleID;
-    }
-
-//    /**
-//     * Initialize the target module IDs with the application information stored
-//     * in the DeploymentStatus for all the server in the target list.
-//     */
-//    protected void initializeTargetModuleIDForAllServers(
-//        DFDeploymentStatus status) {
-//
-//        if(targetsList == null) {
-//            return;
-//        }
-//
-//        targetModuleIDs = new TargetModuleIDImpl[targetsList.length];
-//        String tmpModuleID = status == null 
-//                        ? this.moduleID : status.getProperty(MODULE_ID);
-//        String key = tmpModuleID + KEY_SEPARATOR + MODULE_TYPE;
-//        ModuleType type = status == null
-//                        ? getModuleType()
-//                        : ModuleType.getModuleType((new Integer(status.getProperty(key))).intValue());
-//
-//        for(int i=0; i<targetsList.length; i++) {
-//            TargetModuleIDImpl parentTargetModuleID = new TargetModuleIDImpl(tmpModuleID, targetsList[i]);
-//            targetModuleIDs[i] = parentTargetModuleID;
-//
-//            if (status != null) {
-//                // let's get the host name and port where the application was deployed 
-//                HostAndPort webHost=null;
-//                try {
-//                    Object[] params = new Object[]{ tmpModuleID, Boolean.FALSE };
-//                    String[] signature = new String[]{ "java.lang.String", "boolean"};
-//                    ObjectName applicationsMBean = new ObjectName(APPS_CONFIGMBEAN_OBJNAME);                
-//                    webHost = (HostAndPort) mbsc.invoke(applicationsMBean, "getHostAndPort", params, signature);                        
-//                } catch(Exception e) {
-//                    Logger.getAnonymousLogger().log(Level.WARNING, e.getLocalizedMessage(), e);
-//                }
-//
-//                key = tmpModuleID + KEY_SEPARATOR + SUBMODULE_COUNT;
-//                if (status.getProperty(key) == null) { //standalone module
-//                    if (ModuleType.WAR.equals(type)) {
-//                        key = tmpModuleID + KEY_SEPARATOR + CONTEXT_ROOT;
-//                        String contextRoot = status.getProperty(key);
-//                        initTargetModuleIDWebURL(parentTargetModuleID, webHost, contextRoot);
-//                     }
-//                } else {
-//                    int counter = (Integer.valueOf(status.getProperty(key))).intValue();
-//                    // now for each sub module            
-//                    for (int j = 0; j < counter; j++) {
-//                        //subModuleID
-//                        key = tmpModuleID + KEY_SEPARATOR + MODULE_ID + KEY_SEPARATOR + String.valueOf(j);
-//                        String subModuleID = status.getProperty(key);
-//                        TargetModuleIDImpl subModule = new TargetModuleIDImpl(subModuleID, targetsList[i]);
-//
-//                        //subModuleType 
-//                        key = subModuleID + KEY_SEPARATOR + MODULE_TYPE;
-//                        type = ModuleType.getModuleType((new Integer(status.getProperty(key))).intValue());
-//                        subModule.setModuleType(type);
-//                        if (ModuleType.WAR.equals(type) && webHost!=null) {
-//                            key = subModuleID + KEY_SEPARATOR + CONTEXT_ROOT;
-//                            String contextRoot = status.getProperty(key);
-//                            initTargetModuleIDWebURL(subModule, webHost, contextRoot);
-//                        }
-//                        parentTargetModuleID.addChildTargetModuleID(subModule);
-//                    }
-//                } 
-//            }
-//        }
-//    }
-
-//    /**
-//     * private method to initialize the web url for the associated deployed web
-//     * module
-//     */
-//    private void initTargetModuleIDWebURL(
-//        TargetModuleIDImpl tm, HostAndPort webHost, String contextRoot) {
-//        
-//        if (webHost==null)
-//            return;
-//        
-//        try {
-//            // Patchup code for fixing netbeans issue 6221411; Need to find a 
-//            // good solution for this and WSDL publishing
-//            String host;
-//            SunDeploymentManager sdm = new SunDeploymentManager(tm.getConnectionInfo());
-//            if(sdm.isPE()) {
-//                host = tm.getConnectionInfo().getHostName();
-//            } else {
-//                host = webHost.getHost();
-//            }
-//            
-//            URL webURL = new URL("http", host, webHost.getPort(), contextRoot);
-//            tm.setWebURL(webURL.toExternalForm());
-//        } catch(Exception e) {
-//            Logger.getAnonymousLogger().log(Level.WARNING, e.getLocalizedMessage(), e);
-//        }
-//    }
-//    
-    /** Tests whether the vendor supports a cancel
-     * opertation for deployment activities.
-     *
-     * @return <code>true</code> if canceling an
-     *         activity is supported by this platform.
-     */
-    public boolean isCancelSupported() {
-        return false;
-    }
-    
-    /** Tests whether the vendor supports a stop
-     * opertation for deployment activities.
-     *
-     * @return <code>true</code> if canceling an
-     *         activity is supported by this platform.
-     */
-    public boolean isStopSupported() {
-        return false;
-    }
-    
-    /** Remove a ProgressObject listener.
-     *
-     * @param The listener being removed
-     * @see ProgressEvent
-     */
-    public void removeProgressListener(ProgressListener pol) {
-	synchronized (listeners) {
-            listeners.remove(pol);
-	}
-    }
-    
-    /** (optional)
-     * A stop request on an in-process operation allows the
-     * operation on the current TargetModuleID to run to completion but
-     * does not process any of the remaining unprocessed TargetModuleID
-     * objects.  The processed TargetModuleIDs must be returned by the
-     * method getResultTargetModuleIDs.
-     *
-     * @throws OperationUnsupportedException this optional command
-     *         is not supported by this implementation.
-     */
-    public void stop() throws OperationUnsupportedException {
-        throw new OperationUnsupportedException("stop not supported");
-    }
-
-    
-    public void setCommand(CommandType commandType, Object[] args) {
-        this.commandType = commandType;
-        this.args = args;
-    }
-    
-    /**
-     * Notifies all listeners that have registered interest for ProgressEvent notification. 
-     */
-    protected void fireProgressEvent(ProgressEvent progressEvent) {
-        /*
-         *Bug 4977764
-         *Iteration failed due to concurrent modification of the vector.  Even though the add, remove, and fire 
-         *methods synchronize on the listeners vector, a listener could conceivably invoke add or remove 
-         *recursively, thereby triggering the concurrent modification exception.
-         *
-         *Fix: clone the listeners vector and iterate through the clone.  
-         */
-	Vector currentListeners = null;
-        synchronized (listeners) {
-            currentListeners = (Vector) listeners.clone();
-            /*
-             *The following add must remain inside the synchronized block.  Otherwise, there will be a small window
-             *in which a new listener's registration could interleave with fireProgressEvent, registering itself 
-             *after the listeners vector had been cloned (thus excluding the new listener from the iteration a
-             *few lines below) but before the list of previously-delivered events had been updated.  
-             *This would cause the new listener to miss the event that was firing.  
-             *Keeping the following add inside the synchronized block ensures that updates to the listeners 
-             *vector by addProgressListener and to deliveredEvents by fireProgressEvent do not interleave and therefore
-             *all listeners will receive all events.
-             */
-            
-            deliveredEvents.add(progressEvent);
-        }
-
-        for (Iterator listenersItr = currentListeners.iterator(); listenersItr.hasNext();) {
-            ((ProgressListener)listenersItr.next()).handleProgressEvent(progressEvent);
-        }
-    }
-
-
-    /**
-     * Notifies all listeners that have registered interest for ProgressEvent notification. 
-     */
-    protected void fireProgressEvent(StateType state, String message) {
-        fireProgressEvent(state, message, target);
-    }
-
-    /**
-     * Notifies all listeners that have registered interest for ProgressEvent notification. 
-     */
-    protected void fireProgressEvent(StateType state, String message, TargetImpl aTarget) {
-        
-        StateType stateToBroadcast = (state != null) ? state : deploymentStatus.getState();
-
-        /* new copy of DeploymentStatus */
-	DeploymentStatusImpl depStatus = new DeploymentStatusImpl(this);
-	depStatus.setState(stateToBroadcast);
-        depStatus.setMessage(message);
-
-        /*
-         *Update this progress object's status before notifying listeners.
-         */
-        if (state != null) {
-            deploymentStatus.setMessage(message);
-            deploymentStatus.setState(state); // retain current state
-	}
-        
-        /* send notification */
-	TargetModuleIDImpl tmi = new TargetModuleIDImpl(aTarget, moduleID);
-	fireProgressEvent(new ProgressEvent(this, tmi, depStatus));
-    }
-
-    CommandType getCommandType() {
+    public CommandType getCommandType() {
         return commandType;
     }
-    
+
+    /**
+     * Sets the command type.
+     *
+     * @param commandType
+     * @see CommandType
+     */
+    public void setCommand(CommandType commandType) {
+        this.commandType = commandType;
+    }
+
+    /**
+     * Sets the ID of the module.
+     *
+     * @param moduleId
+     */
+    public void setModuleID(String moduleId) {
+        this.moduleID = moduleId;
+    }
+
     /**
      * Sets the module type for this deployed module
-     * @param the module type
+     * @param moduleType the module type
      */
     public void setModuleType(ModuleType moduleType) {
         this.moduleType = moduleType;
     }
-    
-    /**
-     * @return the module type of this deployed module
-     */ 
-    public ModuleType getModuleType() {
-        return moduleType;
-    }    
 
     /**
-     * Since DeploymentStatus only provides the ability to pass a String to the
-     * ProgressListener, the following is a convenience method for allowing the
-     * stack-trace from a Throwable to be converted to a String to send to the
-     * ProgressListeners.
+     * @return the module type of this deployed module
      */
-    protected String getThrowableString(Throwable t) {
-	ByteArrayOutputStream bos = new ByteArrayOutputStream();
-	PrintStream ps = new PrintStream(bos);
-	t.printStackTrace(ps);
-	ps.close(); // may not be necessary
-	return bos.toString();
+    public ModuleType getModuleType() {
+        return moduleType;
     }
-    
+
+    /**
+     * Always throws {@link OperationUnsupportedException}
+     */
+    @Override
+    public void cancel() throws OperationUnsupportedException {
+        throw new OperationUnsupportedException("cancel not supported");
+    }
+
+
+    /**
+     * @return always null.
+     */
+    @Override
+    public ClientConfiguration getClientConfiguration(TargetModuleID id) {
+        return null;
+    }
+
+    @Override
+    public DeploymentStatus getDeploymentStatus() {
+        DeploymentStatusImpl result = new DeploymentStatusImpl(this);
+        result.setState(deploymentStatus.getState());
+        result.setMessage(deploymentStatus.getMessage());
+
+        return result;
+    }
+
+    /**
+     * Returns null until final deployment status available.
+     */
+    @Override
+    public DFDeploymentStatus getCompletedStatus() {
+        if (deployActionCompleted) {
+            return finalDeploymentStatus;
+        }
+        return null;
+    }
+
+    @Override
+    public TargetModuleID[] getResultTargetModuleIDs() {
+        if (targetModuleIDs == null && target != null) {
+            initializeTargetModuleIDs(moduleID);
+        }
+        return targetModuleIDs;
+    }
+
+    /**
+     * Initializes the target module IDs with the passed application moduleID
+     *
+     * @param moduleID
+     */
+    private void initializeTargetModuleIDs(String moduleID) {
+        TargetModuleIDImpl parentTargetModuleID = new TargetModuleIDImpl(target, moduleID);
+        targetModuleIDs = new TargetModuleIDImpl[1];
+        targetModuleIDs[0] = parentTargetModuleID;
+    }
+
+    /**
+     * Always returns false
+     *
+     * @return <code>false</code>
+     */
+    @Override
+    public boolean isCancelSupported() {
+        return false;
+    }
+
+    /**
+     * Always returns true
+     *
+     * @return <code>true</code>
+     */
+    @Override
+    public boolean isStopSupported() {
+        return false;
+    }
+
+    /**
+     * Remove a ProgressObject listener.
+     *
+     * @param listener the listener being removed
+     * @see ProgressEvent
+     */
+    @Override
+    public void removeProgressListener(ProgressListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
+    /**
+     * Always throws OperationUnsupportedException
+     *
+     * @throws OperationUnsupportedException this optional command
+     *         is not supported by this implementation.
+     */
+    @Override
+    public void stop() throws OperationUnsupportedException {
+        throw new OperationUnsupportedException("stop not supported");
+    }
+
+    /**
+     * Notifies all listeners that have registered interest for ProgressEvent notification.
+     *
+     * @param progressEvent {@link ProgressEvent}
+     */
+    protected void fireProgressEvent(ProgressEvent progressEvent) {
+        // Bug 4977764
+        // Iteration failed due to concurrent modification of the vector. Even though the add,
+        // remove, and fire methods synchronize on the listeners vector, a listener could
+        // conceivably invoke add or remove recursively, thereby triggering the concurrent
+        // modification exception.
+        // Fix: clone the listeners vector and iterate through the clone.
+        //
+        final Vector<ProgressListener> currentListeners;
+        synchronized (listeners) {
+            currentListeners = (Vector<ProgressListener>) listeners.clone();
+            // The following add must remain inside the synchronized block. Otherwise, there will be
+            // a small window in which a new listener's registration could interleave with
+            // fireProgressEvent, registering itself after the listeners vector had been cloned
+            // (thus excluding the new listener from the iteration a few lines below) but before
+            // the list of previously-delivered events had been updated.
+            // This would cause the new listener to miss the event that was firing.
+            // Keeping the following add inside the synchronized block ensures that updates to
+            // the listeners vector by addProgressListener and to deliveredEvents
+            // by fireProgressEvent do not interleave and therefore all listeners will receive all
+            // events.
+            deliveredEvents.add(progressEvent);
+        }
+
+        for (ProgressListener element : currentListeners) {
+            element.handleProgressEvent(progressEvent);
+        }
+    }
+
+    /**
+     * Notifies all listeners that have registered interest for ProgressEvent notification.
+     *
+     * @param state
+     * @param message
+     * @param aTarget
+     */
+    private void fireProgressEvent(StateType state, String message, TargetImpl aTarget) {
+
+        StateType stateToBroadcast = state == null ? deploymentStatus.getState() : state;
+
+        /* new copy of DeploymentStatus */
+        DeploymentStatusImpl depStatus = new DeploymentStatusImpl(this);
+        depStatus.setState(stateToBroadcast);
+        depStatus.setMessage(message);
+
+        /*
+         * Update this progress object's status before notifying listeners.
+         */
+        if (state != null) {
+            deploymentStatus.setMessage(message);
+            deploymentStatus.setState(state); // retain current state
+        }
+
+        /* send notification */
+        TargetModuleIDImpl tmi = new TargetModuleIDImpl(aTarget, moduleID);
+        fireProgressEvent(new ProgressEvent(this, tmi, depStatus));
+    }
+
     /**
      * Parse the DeploymentStatus to get the status message within
      */
     private String getDeploymentStatusMessage(DFDeploymentStatus status) {
-        if(status == null) {
+        if (status == null) {
             return null;
         }
         // if stage status is success, return as it is
@@ -510,8 +370,8 @@ public class ProgressObjectImpl extends DFProgressObject {
         byte[] statusBytes = bos.toByteArray();
         String statusString = new String(statusBytes);
         // if stage status is WARNING, collect the warning messages
-        if(status.getStatus() == DFDeploymentStatus.Status.WARNING) {
-            if(warningMessages==null) {
+        if (status.getStatus() == DFDeploymentStatus.Status.WARNING) {
+            if (warningMessages == null) {
                 warningMessages = WARNING_PREFIX + statusString;
             } else {
                 warningMessages += statusString;
@@ -522,13 +382,18 @@ public class ProgressObjectImpl extends DFProgressObject {
         return statusString;
     }
 
-    public void setupForNormalExit(
-            String message, 
-            TargetImpl aTarget, 
-            TargetModuleIDImpl[] tmids) {
+
+    /**
+     * Notifies listeners about an action success (even with warning).
+     *
+     * @param message
+     * @param aTarget
+     * @param tmids
+     */
+    public void setupForNormalExit(String message, TargetImpl aTarget, TargetModuleIDImpl[] tmids) {
         String i18nmsg;
         // If we ever got some warning during any of the stages, the the final status is warning; else status=success
-        if(warningMessages == null) {
+        if (warningMessages == null) {
             i18nmsg = localStrings.getLocalString(
                     "enterprise.deployment.client.action_completed",
                     "{0} completed successfully",
@@ -536,48 +401,61 @@ public class ProgressObjectImpl extends DFProgressObject {
             finalDeploymentStatus.setStageStatus(DFDeploymentStatus.Status.SUCCESS);
         } else {
             i18nmsg = localStrings.getLocalString(
-                    "enterprise.deployment.client.action_completed_with_warning", 
+                    "enterprise.deployment.client.action_completed_with_warning",
                     "Action completed with warning message: {0}",
                     warningMessages);
-            finalDeploymentStatus.setStageStatus(DFDeploymentStatus.Status.WARNING);            
+            finalDeploymentStatus.setStageStatus(DFDeploymentStatus.Status.WARNING);
         }
         finalDeploymentStatus.setStageStatusMessage(i18nmsg);
         deployActionCompleted = true;
         targetModuleIDs = tmids;
         fireProgressEvent(StateType.COMPLETED, i18nmsg, aTarget);
         for (TargetModuleIDImpl tmid : tmids) {
-            // initialize moduleID so the event can be populated with 
+            // initialize moduleID so the event can be populated with
             // the proper moduleID.
             moduleID = tmid.getModuleID();
             fireProgressEvent(StateType.COMPLETED, message, tmid.getTargetImpl());
         }
-        return;
     }
-    
+
+    /**
+     * Notifies listeners about the action failure.
+     *
+     * @param errorMsg
+     * @param aTarget
+     */
     public void setupForAbnormalExit(String errorMsg, TargetImpl aTarget) {
         String i18nmsg = localStrings.getLocalString(
-                "enterprise.deployment.client.action_failed", 
+                "enterprise.deployment.client.action_failed",
                 "Action failed {0}",
                  errorMsg);
         finalDeploymentStatus.setStageStatus(DFDeploymentStatus.Status.FAILURE);
         finalDeploymentStatus.setStageStatusMessage(i18nmsg);
-        
+
         deployActionCompleted = true;
         fireProgressEvent(StateType.FAILED, i18nmsg, aTarget);
         return;
     }
 
     /**
-     * Given a Deployment status, this checks if the status is success
+     * Given a Deployment status, this checks if the status is success.
+     * If not, calls {@link #setupForAbnormalExit(String, TargetImpl)}
+     *
+     * @param aTarget
+     * @param action
+     * @param currentStatus
+     * @return true if the currentStatus is success
      */
     public boolean checkStatusAndAddStage(TargetImpl aTarget, String action, DFDeploymentStatus currentStatus) {
         String statusMsg = getDeploymentStatusMessage(currentStatus);
         finalDeploymentStatus.addSubStage(currentStatus);
-        if(statusMsg == null) {
-            fireProgressEvent(StateType.RUNNING, localStrings.getLocalString("enterprise.deployment.client.action_completed", "Action {0} completed", action), aTarget);
+        if (statusMsg == null) {
+            fireProgressEvent(StateType.RUNNING, localStrings.getLocalString(
+                "enterprise.deployment.client.action_completed", "Action {0} completed", action), aTarget);
             return true;
         }
-        setupForAbnormalExit(localStrings.getLocalString("enterprise.deployment.client.action_failed_with_message", "Action {0} failed - {1}", action, statusMsg),  aTarget);
+        setupForAbnormalExit(localStrings.getLocalString("enterprise.deployment.client.action_failed_with_message",
+            "Action {0} failed - {1}", action, statusMsg), aTarget);
         return false;
     }
 }

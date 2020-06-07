@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.readers;
 
@@ -74,7 +75,7 @@ public class XmlInputReader extends InputReader {
     public String nextCDATA() throws InputException {
         char         c;
         int          i;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (;;) {
             c = next();
             if (c == 0) {
@@ -102,7 +103,7 @@ public class XmlInputReader extends InputReader {
      */
     public Object nextContent() throws InputException {
         char         c;
-        StringBuffer sb;
+        StringBuilder sb;
         do {
             c = next();
         } while (Character.isWhitespace(c));
@@ -112,7 +113,7 @@ public class XmlInputReader extends InputReader {
         if (c == '<') {
             return XmlInputObject.LT;
         }
-        sb = new StringBuffer();
+        sb = new StringBuilder();
         for (;;) {
             if (c == '<' || c == 0) {
                 back();
@@ -136,7 +137,7 @@ public class XmlInputReader extends InputReader {
      * @throws InputException If missing ';' in XML entity.
      */
     public Object nextEntity(char a) throws InputException {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (;;) {
             char c = next();
             if (Character.isLetterOrDigit(c) || c == '#') {
@@ -230,7 +231,7 @@ public class XmlInputReader extends InputReader {
     public Object nextToken() throws InputException {
         char c;
         char q;
-        StringBuffer sb;
+        StringBuilder sb;
         do {
             c = next();
         } while (Character.isWhitespace(c));
@@ -253,7 +254,7 @@ public class XmlInputReader extends InputReader {
         case '"':
         case '\'':
             q = c;
-            sb = new StringBuffer();
+            sb = new StringBuilder();
             for (;;) {
                 c = next();
                 if (c == 0) {
@@ -270,7 +271,7 @@ public class XmlInputReader extends InputReader {
             }
         default:
             // Name
-            sb = new StringBuffer();
+            sb = new StringBuilder();
             for (;;) {
                 sb.append(c);
                 c = next();
@@ -297,8 +298,8 @@ public class XmlInputReader extends InputReader {
             }
         }
     }
-    
-    
+
+
     /**
      * Skip characters until past the requested string.
      * If it is not found, we are left at the end of the source with a result of false.
@@ -313,12 +314,12 @@ public class XmlInputReader extends InputReader {
     	int offset = 0;
     	int n = to.length();
         char[] circle = new char[n];
-        
+
         /*
          * First fill the circle buffer with as many characters as are in the
          * to string. If we reach an early end, bail.
          */
-        
+
     	for (i = 0; i < n; i += 1) {
     		c = next();
     		if (c == 0) {
@@ -333,7 +334,7 @@ public class XmlInputReader extends InputReader {
     		j = offset;
     		b = true;
     		/*
-    		 * Compare the circle buffer with the to string. 
+    		 * Compare the circle buffer with the to string.
     		 */
     		for (i = 0; i < n; i += 1) {
     			if (circle[j] != to.charAt(i)) {
@@ -359,7 +360,7 @@ public class XmlInputReader extends InputReader {
     			return false;
     		}
     		/*
-    		 * Shove the character in the circle buffer and advance the 
+    		 * Shove the character in the circle buffer and advance the
     		 * circle offset. The offset is mod n.
     		 */
     		circle[offset] = c;

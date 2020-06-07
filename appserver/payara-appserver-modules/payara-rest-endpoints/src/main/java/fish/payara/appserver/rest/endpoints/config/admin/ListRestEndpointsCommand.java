@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -208,9 +209,10 @@ public class ListRestEndpointsCommand implements AdminCommand {
 
         // loop through jersey components
         boolean hasEndpoints = false;
-        for (ServletContainer jerseyApplication : jerseyApplicationMap.keySet()) {
+        for (Entry<ServletContainer, String> entry : jerseyApplicationMap.entrySet()) {
+            ServletContainer jerseyApplication = entry.getKey();
             String appRoot = jerseyApplication.getServletContext().getContextPath();
-            String jerseyAppRoot = jerseyApplicationMap.get(jerseyApplication);
+            String jerseyAppRoot = entry.getValue();
 
             List<Class<?>> containedClasses = getClasses(jerseyApplication);
 

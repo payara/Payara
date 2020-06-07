@@ -106,10 +106,10 @@ public class ApplicationClassLoader extends ClassLoader {
         InputStream stream = getClass().getClassLoader().getResourceAsStream(name);
         int size = stream.available();
         byte buff[] = new byte[size];
-        DataInputStream in = new DataInputStream(stream);
-        // Reading the binary data
-        in.readFully(buff);
-        in.close();
+        try (DataInputStream in = new DataInputStream(stream)) {
+            // Reading the binary data
+            in.readFully(buff);
+        }
         return buff;
     }
 

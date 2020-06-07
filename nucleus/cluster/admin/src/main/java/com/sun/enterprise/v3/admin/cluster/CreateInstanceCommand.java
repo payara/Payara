@@ -37,37 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.ExceptionUtil;
-import java.io.IOException;
-import org.glassfish.api.ActionReport;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.InstanceDirs;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.glassfish.hk2.api.IterableProvider;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.ServerContext;
-
-import org.jvnet.hk2.annotations.Service;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.annotations.Service;
+
+import static com.sun.enterprise.util.SystemPropertyConstants.AGENT_ROOT_PROPERTY;
+import static java.util.logging.Level.SEVERE;
+import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
+import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
+import static org.glassfish.api.ActionReport.ExitCode.WARNING;
+import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
 /**
  * Remote AdminCommand to create an instance.  This command is run only on DAS.
@@ -80,57 +95,81 @@ import javax.inject.Inject;
 @Service(name = "create-instance")
 @I18n("create.instance")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
+        opType=POST, 
         path="create-instance", 
         description="Create Instance")
 })
 public class CreateInstanceCommand implements AdminCommand {
-    private static final String NL = System.getProperty("line.separator");
-    @Inject
-    private CommandRunner cr;
-    @Inject
-    ServiceLocator habitat;
-    @Inject
-    IterableProvider<Node> nodeList;
-    @Inject
-    private Nodes nodes;
-    @Inject
-    private Servers servers;
-    @Inject
-    private ServerEnvironment env;
-    @Inject
-    private ServerContext serverContext;
+    private static final String NEWLINE = System.lineSeparator();
+    
     @Param(name = "node", alias = "nodeagent")
     String node;
+    
     @Param(name = "config", optional = true)
     @I18n("generic.config")
     String configRef;
+    
     @Param(name = "cluster", optional = true)
     String clusterName;
+    
     @Param(name = "deploymentgroup", optional = true)
     String deploymentGroup;
+    
     @Param(name = "lbenabled", optional = true)
     private Boolean lbEnabled;
+    
     @Param(name = "checkports", optional = true, defaultValue = "true")
     private boolean checkPorts;
+    
     @Param(optional = true, defaultValue = "false")
     private boolean terse;
+    
     @Param(name = "portbase", optional = true)
     private String portBase;
+    
     @Param(name = "systemproperties", optional = true, separator = ':')
     private String systemProperties;
+
+    @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
+    private boolean autoName;
+
+    @Param(name = "extraterse", optional = true, shortName = "T", defaultValue = "false")
+    private boolean extraTerse;
+
     @Param(name = "instance_name", primary = true)
     private String instance;
-    private Logger logger = null; // set in execute and all references occur after that assignment
+    
+    @Param(name = "dataGridStartPort", optional = true, alias = "datagridstartport")
+    private String dataGridStartPort;
+    
+    @Inject
+    private CommandRunner commandRunner;
+    
+    @Inject
+    private ServiceLocator serviceLocator;
+    
+    @Inject
+    private Nodes nodes;
+    
+    @Inject
+    private Servers servers;
+    
+    @Inject
+    private ServerEnvironment env;
+    
+    @Inject
+    private Target targetUtil;
+    
+    private Logger logger; // set in execute and all references occur after that assignment
     private AdminCommandContext ctx;
-    private Node theNode = null;
-    private String nodeHost = null;
-    private String nodeDir = null;
-    private String installDir = null;
-    private String registerInstanceMessage = null;
+    private Node theNode;
+    private String nodeHost;
+    private String nodeDir;
+    private String installDir;
+    private String registerInstanceMessage;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -141,7 +180,7 @@ public class CreateInstanceCommand implements AdminCommand {
         if (!env.isDas()) {
             String msg = Strings.get("notAllowed");
             logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
             return;
         }
@@ -151,7 +190,7 @@ public class CreateInstanceCommand implements AdminCommand {
         if (theNode == null) {
             String msg = Strings.get("noSuchNode", node);
             logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
             return;
         }
@@ -159,7 +198,7 @@ public class CreateInstanceCommand implements AdminCommand {
         if (lbEnabled != null && clusterName == null) {
             String msg = Strings.get("lbenabledNotForStandaloneInstance");
             logger.warning(msg);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
             return;
         }
@@ -168,56 +207,57 @@ public class CreateInstanceCommand implements AdminCommand {
         nodeDir = theNode.getNodeDirAbsolute();
         installDir = theNode.getInstallDir();
 
-        if (theNode.isLocal()){
-            validateInstanceDirUnique(report, context);
-            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
-                    && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
-                // If we couldn't update domain.xml then stop!
-                return;
+        if (autoName) {
+            instance = PayaraServerNameGenerator.validateInstanceNameUnique(instance, context);
+        } else {
+            if (theNode.isLocal()) {
+                validateInstanceDirUnique(report, context);
+                if (report.getActionExitCode() != SUCCESS && report.getActionExitCode() != WARNING) {
+                    // If we couldn't update domain.xml then stop!
+                    return;
+                }
             }
         }
-        
+
         // First, update domain.xml by calling _register-instance
-        CommandInvocation ci = cr.getCommandInvocation("_register-instance", report, context.getSubject());
-        ParameterMap map = new ParameterMap();
-        map.add("node", node);
-        map.add("config", configRef);
-        map.add("cluster", clusterName);
-        map.add("deploymentgroup", deploymentGroup);
+        CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_register-instance", report, context.getSubject());
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("node", node);
+        commandParameters.add("config", configRef);
+        commandParameters.add("cluster", clusterName);
+        commandParameters.add("deploymentgroup", deploymentGroup);
         if (lbEnabled != null) {
-            map.add("lbenabled", lbEnabled.toString());
+            commandParameters.add("lbenabled", lbEnabled.toString());
         }
         if (!checkPorts) {
-            map.add("checkports", "false");
+            commandParameters.add("checkports", "false");
         }
         if (StringUtils.ok(portBase)) {
-            map.add("portbase", portBase);
+            commandParameters.add("portbase", portBase);
         }
-        map.add("systemproperties", systemProperties);
-        map.add("DEFAULT", instance);
-        ci.parameters(map);
-        ci.execute();
+        commandParameters.add("systemproperties", systemProperties);
+        commandParameters.add("DEFAULT", instance);
+        commandInvocation.parameters(commandParameters);
+        
+        commandInvocation.execute();
 
-
-        if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
-                && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
+        if (report.getActionExitCode() != SUCCESS && report.getActionExitCode() != WARNING) {
             // If we couldn't update domain.xml then stop!
             return;
         }
 
         registerInstanceMessage = report.getMessage();
 
-        // if nodehost is localhost and installdir is null and config node, update config node
+        // If nodehost is localhost and installdir is null and config node, update config node
         // so installdir is product root. see register-instance above
-        if (theNode.isLocal() && installDir == null) {
-            ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
-            map = new ParameterMap();
-            map.add("installdir", "${com.sun.aas.productRoot}");
-            map.add("type", "CONFIG");
-            map.add("DEFAULT", theNode.getName());
-            ci.parameters(map);
-            ci.execute();
-
+        if (theNode.isLocal() && installDir == null && theNode.getType().equals("CONFIG")) {
+            commandInvocation = commandRunner.getCommandInvocation("_update-node", report, context.getSubject());
+            commandParameters = new ParameterMap();
+            commandParameters.add("installdir", "${com.sun.aas.productRoot}");
+            commandParameters.add("type", "CONFIG");
+            commandParameters.add("DEFAULT", theNode.getName());
+            commandInvocation.parameters(commandParameters);
+            commandInvocation.execute();
 
             if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
                     && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
@@ -226,79 +266,97 @@ public class CreateInstanceCommand implements AdminCommand {
             }
         }
 
-        if (!validateDasOptions(context)) {
-            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+        if (!validateDasOptions()) {
+            report.setActionExitCode(WARNING);
             return;
         }
 
-        // Then go create the instance filesystem on the node
-        createInstanceFilesystem(context);
+        if (theNode.getType().equals("DOCKER")) {
+            report.appendMessage(
+                    "\n\nSuccessfully registered instance with DAS, now attempting to create Docker container...");
+            createDockerContainer();
+        } else {
+            // Then go create the instance filesystem on the node
+            createInstanceFilesystem();
+        }
+
+        if (extraTerse) {
+            report.setMessage(instance);
+        }
+
+        if (StringUtils.ok(dataGridStartPort)) {
+            commandInvocation = commandRunner.getCommandInvocation("set-hazelcast-configuration", report, context.getSubject());
+            commandParameters = new ParameterMap();
+            commandParameters.add("configSpecificDataGridStartPort", dataGridStartPort);
+            commandParameters.add("target", targetUtil.getConfig(instance).getName());
+            commandInvocation.parameters(commandParameters);
+            commandInvocation.execute();
+
+            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
+                    && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
+                // If we couldn't update domain.xml then stop!
+                return;
+            }
+
+        }
     }
 
     private void validateInstanceDirUnique(ActionReport report, AdminCommandContext context) {
-        CommandInvocation listInstances = cr.getCommandInvocation("list-instances", report, context.getSubject());
-        ParameterMap map = new ParameterMap();
-        map.add("whichTarget", theNode.getName());
-        listInstances.parameters(map);
-        listInstances.execute();
-        Properties pro = listInstances.report().getExtraProperties();
-        if (pro != null){
-            List<HashMap> instanceList = (List<HashMap>) pro.get("instanceList");
-            if (instanceList == null)
+        CommandInvocation listInstancesCommand = commandRunner.getCommandInvocation("list-instances", report, context.getSubject());
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("whichTarget", theNode.getName());
+        listInstancesCommand.parameters(commandParameters);
+        listInstancesCommand.execute();
+        
+        Properties extraProperties = listInstancesCommand.report().getExtraProperties();
+        if (extraProperties != null) {
+            List<Map<String, String>> instanceList = (List<Map<String, String>>) extraProperties.get("instanceList");
+            if (instanceList == null) {
                 return;
-            for (HashMap instanceMap : instanceList) {
-                final File nodeDirFile = (nodeDir != null
-                        ? new File(nodeDir)
-                        : defaultLocalNodeDirFile());
+            }
+            
+            for (Map<String, String> instanceMap : instanceList) {
+                File nodeDirFile = nodeDir != null ? new File(nodeDir) : defaultLocalNodeDirFile();
                 File instanceDir = new File(new File(nodeDirFile.toString(), theNode.getName()), instance);
-                String instanceName = (String)instanceMap.get("name");
+                String instanceName = instanceMap.get("name");
                 File instanceListDir = new File(new File(nodeDirFile.toString(), theNode.getName()), instance);
+                
                 if (instance.equalsIgnoreCase(instanceName) && instanceDir.equals(instanceListDir)) {
                     String msg = Strings.get("Instance.duplicateInstanceDir", instance, instanceName);
                     logger.warning(msg);
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setActionExitCode(FAILURE);
                     report.setMessage(msg);
+                    
                     return;
                 }
             }
         }
     }
-    
+
     /**
-     * Returns the directory for the selected instance that is on the local
-     * system.
-     * @param instanceName name of the instance
+     * Returns the directory for the selected instance that is on the local system.
+     *
      * @return File for the local file system location of the instance directory
      * @throws IOException
      */
     private File getLocalInstanceDir() throws IOException {
         /*
-         * Pass the node directory parent and the node directory name explicitly
-         * or else InstanceDirs will not work as we want if there are multiple
-         * nodes registered on this node.
+         * Pass the node directory parent and the node directory name explicitly or else InstanceDirs will not work as we want
+         * if there are multiple nodes registered on this node.
          *
-         * If the configuration recorded an explicit directory for the node,
-         * then use it.  Otherwise, use the default node directory of
-         * ${installDir}/glassfish/nodes/${nodeName}.
+         * If the configuration recorded an explicit directory for the node, then use it. Otherwise, use the default node
+         * directory of ${installDir}/glassfish/nodes/${nodeName}.
          */
-        final File nodeDirFile = (nodeDir != null
-                ? new File(nodeDir)
-                : defaultLocalNodeDirFile());
-        InstanceDirs instanceDirs = new InstanceDirs(nodeDirFile.toString(), theNode.getName(), instance);
-        return instanceDirs.getInstanceDir();
+        File nodeDirFile = nodeDir != null ? new File(nodeDir) : defaultLocalNodeDirFile();
+        
+        return new InstanceDirs(nodeDirFile.toString(), theNode.getName(), instance).getInstanceDir();
     }
 
     private File defaultLocalNodeDirFile() {
-        final Map<String,String> systemProps = 
-            Collections.unmodifiableMap(new ASenvPropertyReader().getProps());
         /*
-         * The default "nodes" directory we want to use 
-         * has been set in asenv.conf named as 
-         * AS_DEF_NODES_PATH
+         * The default "nodes" directory we want to use has been set in asenv.conf named as AS_DEF_NODES_PATH
          */
-        String nodeDirDefault = systemProps.get(
-                SystemPropertyConstants.AGENT_ROOT_PROPERTY);
-        return new File(nodeDirDefault);
+        return new File(new ASenvPropertyReader().getProps().get(AGENT_ROOT_PROPERTY));
 
     }
 
@@ -308,100 +366,83 @@ public class CreateInstanceCommand implements AdminCommand {
 
     /**
      *
-     * Delivers bootstrap files for secure admin locally, because the instance
-     * is on the same system as the DAS (and therefore on the same system where
-     * this command is running).
+     * Delivers bootstrap files for secure admin locally, because the instance is on the same system as the DAS (and
+     * therefore on the same system where this command is running).
      *
      * @return 0 if successful, 1 otherwise
      */
     private int bootstrapSecureAdminLocally() {
-        final ActionReport report = ctx.getActionReport();
+        ActionReport report = ctx.getActionReport();
 
         try {
-            final SecureAdminBootstrapHelper bootHelper =
-                    SecureAdminBootstrapHelper.getLocalHelper(
-                    env.getInstanceRoot(),
-                    getLocalInstanceDir());
+            SecureAdminBootstrapHelper bootHelper = SecureAdminBootstrapHelper.getLocalHelper(env.getInstanceRoot(), getLocalInstanceDir());
             bootHelper.bootstrapInstance();
             bootHelper.close();
+            
             return 0;
-        }
-        catch (IOException ex) {
-            return reportFailure(ex, report);
-        }
-        catch (SecureAdminBootstrapHelper.BootstrapException ex) {
+        } catch (IOException | SecureAdminBootstrapHelper.BootstrapException ex) {
             return reportFailure(ex, report);
         }
     }
-    
+
     private int reportFailure(final Exception ex, final ActionReport report) {
         String msg = Strings.get("create.instance.local.boot.failed", instance, node, nodeHost);
-        logger.log(Level.SEVERE, msg, ex);
-        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        logger.log(SEVERE, msg, ex);
+        report.setActionExitCode(FAILURE);
         report.setMessage(msg);
+        
         return 1;
     }
 
     /**
-     * Delivers bootstrap files for secure admin remotely, because the instance
-     * is NOT on the same system as the DAS.
+     * Delivers bootstrap files for secure admin remotely, because the instance is NOT on the same system as the DAS.
      *
      * @return 0 if successful; 1 otherwise
      */
     private int bootstrapSecureAdminRemotely() {
         ActionReport report = ctx.getActionReport();
+        
         // nodedir is the root of where all the node dirs will be created.
         // add the name of the node as that is where the instance files should be created
         String thisNodeDir = null;
-        if (nodeDir != null)
+        if (nodeDir != null) {
             thisNodeDir = nodeDir + "/" + node;
+        }
+        
         try {
-            final SecureAdminBootstrapHelper bootHelper =
-                    SecureAdminBootstrapHelper.getRemoteHelper(
-                    habitat,
-                    getDomainInstanceDir(),
-                    thisNodeDir,
-                    instance,
+            SecureAdminBootstrapHelper bootHelper = SecureAdminBootstrapHelper.getRemoteHelper(serviceLocator, getDomainInstanceDir(), thisNodeDir, instance,
                     theNode, logger);
             bootHelper.bootstrapInstance();
             bootHelper.close();
+            
             return 0;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             String exmsg = ex.getMessage();
             if (exmsg == null) {
                 // The root cause message is better than no message at all
                 exmsg = ExceptionUtil.getRootCause(ex).toString();
             }
-            String msg = Strings.get(
-                    "create.instance.remote.boot.failed",
-                    instance,
-
-
+            String msg = Strings.get("create.instance.remote.boot.failed", instance,
 
                     // DCOMFIX
-                    (ex instanceof SecureAdminBootstrapHelper.BootstrapException
-                    ? ((SecureAdminBootstrapHelper.BootstrapException) ex).sshSettings() : null),
+                    (ex instanceof SecureAdminBootstrapHelper.BootstrapException ? ((SecureAdminBootstrapHelper.BootstrapException) ex).sshSettings() : null),
                     exmsg,
 
-
-
-
                     nodeHost);
-            logger.log(Level.SEVERE, msg, ex);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            logger.log(SEVERE, msg, ex);
+            report.setActionExitCode(FAILURE);
             report.setMessage(msg);
+            
             return 1;
         }
     }
 
-    private void createInstanceFilesystem(AdminCommandContext context) {
+    private void createInstanceFilesystem() {
         ActionReport report = ctx.getActionReport();
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        report.setActionExitCode(SUCCESS);
 
-        NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-        Server dasServer =
-                servers.getServer(SystemPropertyConstants.DAS_SERVER_NAME);
+        NodeUtils nodeUtils = new NodeUtils(serviceLocator, logger);
+        Server dasServer = servers.getServer(SystemPropertyConstants.DAS_SERVER_NAME);
         String dasHost = dasServer.getAdminHost();
         String dasPort = Integer.toString(dasServer.getAdminPort());
 
@@ -431,71 +472,84 @@ public class CreateInstanceCommand implements AdminCommand {
 
         humanCommand = makeCommandHuman(command);
         if (userManagedNodeType()) {
-            String msg = Strings.get("create.instance.config",
-                    instance, humanCommand);
-            msg = StringUtils.cat(NL, registerInstanceMessage, msg);
-            report.setMessage(msg);
+            report.setMessage(
+                StringUtils.cat(NEWLINE, registerInstanceMessage, Strings.get("create.instance.config", instance, humanCommand)));
+            
             return;
         }
 
         // First error message displayed if we fail
-        String firstErrorMessage = Strings.get("create.instance.filesystem.failed",
-                instance, node, nodeHost);
-
         StringBuilder output = new StringBuilder();
 
         // Run the command on the node and handle errors.
-        nodeUtils.runAdminCommandOnNode(theNode, command, ctx, firstErrorMessage,
-                humanCommand, output);
+        nodeUtils.runAdminCommandOnNode(
+            theNode, command, ctx, Strings.get("create.instance.filesystem.failed", instance, node, nodeHost), humanCommand, output);
 
-        if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
-            // something went wrong with the nonlocal command don't continue but set status to warning
+        if (report.getActionExitCode() != SUCCESS) {
+            // Something went wrong with the nonlocal command don't continue but set status to warning
             // because config was updated correctly or we would not be here.
-            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            report.setActionExitCode(WARNING);
+            
             return;
         }
 
         // If it was successful say so and display the command output
-        String msg = Strings.get("create.instance.success",
-                instance, nodeHost);
+        String msg = Strings.get("create.instance.success", instance, nodeHost);
         if (!terse) {
-            msg = StringUtils.cat(NL,
-                    output.toString().trim(), registerInstanceMessage, msg);
+            msg = StringUtils.cat(NEWLINE, output.toString().trim(), registerInstanceMessage, msg);
         }
         report.setMessage(msg);
 
         // Bootstrap secure admin files
         if (theNode.isLocal()) {
             bootstrapSecureAdminLocally();
-        }
-        else {
+        } else {
             bootstrapSecureAdminRemotely();
         }
-        if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
+        
+        if (report.getActionExitCode() != SUCCESS) {
 
             // something went wrong with the nonlocal command don't continue but set status to warning
             // because config was updated correctly or we would not be here.
-            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            report.setActionExitCode(WARNING);
+        }
+    }
+
+    private void createDockerContainer() {
+        ActionReport actionReport = ctx.getActionReport();
+        ActionReport subActionReport = actionReport.addSubActionsReport();
+
+        ParameterMap parameterMap = new ParameterMap();
+
+        parameterMap.add("node", theNode.getName());
+        parameterMap.add("DEFAULT", instance);
+
+        commandRunner.getCommandInvocation("_create-docker-container", subActionReport, ctx.getSubject())
+                .parameters(parameterMap)
+                .execute();
+
+        if (subActionReport.getActionExitCode() != SUCCESS) {
+            // Something went wrong with one of the sub-commands, so let's make sure this top level command fails as well
+            actionReport.setActionExitCode(FAILURE);
         }
     }
 
     /**
-     * This ensures we don't step on another domain's node files on a remote
-     * instance. See bug GLASSFISH-14985.
+     * This ensures we don't step on another domain's node files on a remote instance. See bug GLASSFISH-14985.
      */
-    private boolean validateDasOptions(AdminCommandContext context) {
+    private boolean validateDasOptions() {
         boolean isDasOptionsValid = true;
+        
         if (theNode.isLocal() || (!theNode.isLocal() && theNode.getType().equals("SSH"))) {
             ActionReport report = ctx.getActionReport();
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            report.setActionExitCode(SUCCESS);
 
-            NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-            Server dasServer =
-                    servers.getServer(SystemPropertyConstants.DAS_SERVER_NAME);
+            NodeUtils nodeUtils = new NodeUtils(serviceLocator, logger);
+            Server dasServer = servers.getServer(SystemPropertyConstants.DAS_SERVER_NAME);
             String dasHost = dasServer.getAdminHost();
             String dasPort = Integer.toString(dasServer.getAdminPort());
 
-            ArrayList<String> command = new ArrayList<String>();
+            ArrayList<String> command = new ArrayList<>();
 
             if (!theNode.isLocal()) {
                 // Only specify the DAS host if the node is remote. See issue 13993
@@ -510,7 +564,7 @@ public class CreateInstanceCommand implements AdminCommand {
 
             if (nodeDir != null) {
                 command.add("--nodedir");
-                command.add(nodeDir); //XXX escape spaces?
+                command.add(nodeDir); // XXX escape spaces?
             }
 
             command.add("--node");
@@ -521,47 +575,50 @@ public class CreateInstanceCommand implements AdminCommand {
             // Run the command on the node
             nodeUtils.runAdminCommandOnNode(theNode, command, ctx, "", null, null);
 
-            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            if (report.getActionExitCode() != SUCCESS) {
+                report.setActionExitCode(FAILURE);
                 isDasOptionsValid = false;
             }
         }
+        
         return isDasOptionsValid;
     }
 
-    private String makeCommandHuman(List<String> command) {
+    private String makeCommandHuman(List<String> commands) {
         StringBuilder fullCommand = new StringBuilder();
 
         fullCommand.append("lib");
         fullCommand.append(System.getProperty("file.separator"));
         fullCommand.append("nadmin ");
 
-        for (String s : command) {
-            if (s.equals("_create-instance-filesystem")) {
+        for (String command : commands) {
+            if (command.equals("_create-instance-filesystem")) {
                 // We tell the user to run create-local-instance, not the
                 // hidden command
                 fullCommand.append(" ");
                 fullCommand.append("create-local-instance");
-            }
-            else {
+            } else {
                 fullCommand.append(" ");
-                fullCommand.append(s);
+                fullCommand.append(command);
             }
         }
 
         return fullCommand.toString();
     }
 
-    // verbose but very readable...
+    // Verbose but very readable...
     private boolean userManagedNodeType() {
-        if(theNode.isLocal())
+        if (theNode.isLocal()) {
             return false;
+        }
 
-        if(theNode.getType().equals("SSH"))
+        if (theNode.getType().equals("SSH")) {
             return false;
+        }
 
-        if(theNode.getType().equals("DCOM"))
+        if (theNode.getType().equals("DCOM")) {
             return false;
+        }
 
         return true;
     }

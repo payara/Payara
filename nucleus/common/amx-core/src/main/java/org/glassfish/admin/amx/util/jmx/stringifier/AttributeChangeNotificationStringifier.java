@@ -37,62 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
 import javax.management.AttributeChangeNotification;
 import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
 
-public class AttributeChangeNotificationStringifier
-        extends NotificationStringifier 
-{
-    public static final AttributeChangeNotificationStringifier DEFAULT =
-            new AttributeChangeNotificationStringifier();
+/**
+ * Creates a String representation of an {@link AttributeChangeNotification}
+ * @see Object#toString() 
+ */
+public class AttributeChangeNotificationStringifier extends NotificationStringifier {
+    
+    public static final AttributeChangeNotificationStringifier DEFAULT = new AttributeChangeNotificationStringifier();
 
-    public AttributeChangeNotificationStringifier()
-    {
+    public AttributeChangeNotificationStringifier() {
         super();
     }
 
-    public AttributeChangeNotificationStringifier(Options options)
-    {
+    public AttributeChangeNotificationStringifier(Options options) {
         super(options);
     }
 
-    public String stringify(Object o)
-    {
+    @Override
+    public String stringify(Object o) {
         final AttributeChangeNotification notif = (AttributeChangeNotification) o;
 
-        final StringBuffer b = super._stringify(notif);
+        final StringBuilder b = super._stringify(notif);
         append(b, "");
 
         final String attrName = notif.getAttributeName();
         final String oldValue = SmartStringifier.toString(notif.getOldValue());
         final String newValue = SmartStringifier.toString(notif.getNewValue());
 
-        final String msg = attrName + ": " + oldValue + " => " + newValue;
-        b.append(msg);
+        b.append(attrName).append(": ").append(oldValue).append(" => ").append(newValue);
 
         return (b.toString());
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

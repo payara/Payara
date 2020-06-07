@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -57,7 +57,6 @@ package fish.payara.microprofile.metrics.impl;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAdder;
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.Meter;
 
@@ -65,18 +64,20 @@ import org.eclipse.microprofile.metrics.Meter;
  * A meter metric which measures mean throughput and one-, five-, and
  * fifteen-minute exponentially-weighted moving average throughputs.
  *
- * @see EWMA
+ * @see ExponentiallyWeightedMovingAverage
  */
 @Vetoed
 public class MeterImpl implements Meter {
 
+    private static final double NANOS_IN_A_SEC = TimeUnit.SECONDS.toNanos(1);
+
     private static final long TICK_INTERVAL = TimeUnit.SECONDS.toNanos(5);
 
-    private final EWMA m1Rate = EWMA.oneMinuteEWMA();
-    private final EWMA m5Rate = EWMA.fiveMinuteEWMA();
-    private final EWMA m15Rate = EWMA.fifteenMinuteEWMA();
+    private final ExponentiallyWeightedMovingAverage m1Rate = ExponentiallyWeightedMovingAverage.oneMinuteEWMA();
+    private final ExponentiallyWeightedMovingAverage m5Rate = ExponentiallyWeightedMovingAverage.fiveMinuteEWMA();
+    private final ExponentiallyWeightedMovingAverage m15Rate = ExponentiallyWeightedMovingAverage.fifteenMinuteEWMA();
 
-    private final LongAdder count = new LongAdder();
+    private final AtomicLong count = new AtomicLong();
     private final long startTime;
     private final AtomicLong lastTick;
     private final Clock clock;
@@ -115,7 +116,7 @@ public class MeterImpl implements Meter {
     @Override
     public void mark(long n) {
         tickIfNecessary();
-        count.add(n);
+        count.addAndGet(n);
         m1Rate.update(n);
         m5Rate.update(n);
         m15Rate.update(n);
@@ -140,7 +141,7 @@ public class MeterImpl implements Meter {
 
     @Override
     public long getCount() {
-        return count.sum();
+        return count.get();
     }
 
     @Override
@@ -159,10 +160,10 @@ public class MeterImpl implements Meter {
     public double getMeanRate() {
         if (getCount() == 0) {
             return 0.0;
-        } else {
-            final double elapsed = clock.getTick() - startTime;
-            return getCount() / elapsed * TimeUnit.SECONDS.toNanos(1);
         }
+        long nanosPast = clock.getTick() - startTime;
+        double secondsPast = nanosPast / NANOS_IN_A_SEC;
+        return getCount() / secondsPast;
     }
 
     @Override

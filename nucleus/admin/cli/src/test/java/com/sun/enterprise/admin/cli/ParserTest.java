@@ -44,6 +44,9 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import java.util.Set;
+import org.glassfish.api.admin.CommandValidationException;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
 
 /**
  * A Junit4 test to test out the parser with various command lines. It works with examination of FirstPassResult
@@ -54,7 +57,26 @@ import java.util.Set;
 public class ParserTest {
 
     @Test
-    public void dummy() { }
+    public void parseCommand() throws CommandValidationException {
+
+        String[] args = new String[]{
+            "create-custom-resource", "--restype", "java.lang.String",
+            "--enabled=true", "--name", "'custom-res'",
+            "--description", "\"results in error\"",
+            "--property", "value=\"${ENV=ini_ws_uri}\"",
+            "vfp/vfp-menu/ini.ws.uri"
+        };
+
+        Parser parse = new Parser(args, 0, null, true);
+
+        assertThat(parse.getOperands().size(), is(2));
+        assertThat(parse.getOptions().size(), is(5));
+
+        assertEquals(parse.getOperands().get(0), "create-custom-resource");
+        assertEquals(parse.getOptions().getOne("description"), "results in error");
+        assertEquals(parse.getOptions().getOne("name"), "custom-res");
+    }
+
     /*
      * Commented out until I get a chance to convert this to new classes.
     @Test(expected = ParserException.class)

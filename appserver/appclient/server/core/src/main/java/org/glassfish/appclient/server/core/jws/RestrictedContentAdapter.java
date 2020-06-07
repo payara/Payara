@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.appclient.server.core.jws;
 
 import java.io.File;
@@ -379,9 +381,6 @@ public class RestrictedContentAdapter extends HttpHandler {
     }
 
     protected String dumpContent() {
-        if (content == null) {
-            return "  Static content: not initialized";
-        }
         if (content.isEmpty()) {
             return "  Static content: empty" + LINE_SEP;
         }

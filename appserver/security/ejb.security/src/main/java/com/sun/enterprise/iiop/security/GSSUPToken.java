@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 /**
@@ -49,22 +49,21 @@ package com.sun.enterprise.iiop.security;
 import com.sun.corba.ee.org.omg.CSIIOP.CompoundSecMech;
 import com.sun.corba.ee.org.omg.GSSUP.InitialContextToken;
 import com.sun.corba.ee.org.omg.GSSUP.InitialContextTokenHelper;
-import java.io.IOException;
-import org.omg.CORBA.*;
-import org.omg.IOP.*;
-
-import java.util.*;
-
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
-
 import com.sun.enterprise.util.Utility;
-import java.util.logging.*;
-import com.sun.logging.*;
+import com.sun.logging.LogDomains;
+import org.omg.CORBA.Any;
+import org.omg.CORBA.ORB;
+import org.omg.IOP.Codec;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
 
 /**
  * GSSUPToken Represents the on the wire username/password credential on the client side and the
  * server side.
- * 
+ *
  * @author Sekhar Vajjhala
  * @author Harpreet Singh
  */
@@ -98,7 +97,7 @@ public class GSSUPToken {
 
     /**
      * Constructs mechanism token from a password credential, called from the client side interceptors
-     * 
+     *
      * @param orb the ORB
      * @param codec the codec for translation
      * @param pwdcred the Password credential, populated with username/password and the realm name
@@ -111,7 +110,7 @@ public class GSSUPToken {
 
     /**
      * Creates a GSSUPToken instance on the server side
-     * 
+     *
      * @param orb the orb
      * @param codec the codec
      * @param authok the authtoken received on the wire.
@@ -160,7 +159,7 @@ public class GSSUPToken {
             String realm = pwdcred.getRealm();
             // concatenation of name+realm
             if (realm != null) {
-                // cannot use StringBuffer, as StringBuffer eats away a \
+                // cannot use StringBuilder, as StringBuilder eats away a \
                 _name_ = _name_ + DELIMITER + realm;
             }
             name_utf8 = _name_.getBytes("UTF8");
@@ -344,7 +343,7 @@ public class GSSUPToken {
 
     /**
      * Returns the GSSToken for the GSSUPToken name that conforms to the GSSUP Mechanism id
-     * 
+     *
      * @return byte[] the byte array representation of the GSSToken
      */
     byte[] getGSSToken() throws IOException {

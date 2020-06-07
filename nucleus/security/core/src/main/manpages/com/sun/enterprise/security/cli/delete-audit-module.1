@@ -1,0 +1,59 @@
+delete-audit-module(1)    asadmin Utility Subcommands   delete-audit-module(1)
+
+NAME
+       delete-audit-module - removes the named audit-module
+
+SYNOPSIS
+           delete-audit-module [--help]
+           [--target target]
+           audit_module_name
+
+DESCRIPTION
+       This subcommand removes the named audit module. This subcommand is
+       supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target on which you are deleting the audit module.
+           Valid values are as follows:
+
+           server
+               Deletes the audit module for the default server instance server
+               and is the default value.
+
+           configuration_name
+               Deletes the audit module for the named configuration.
+
+           cluster_name
+               Deletes the audit module for every server instance in the
+               cluster.
+
+           instance_name
+               Deletes the audit module for a particular server instance.
+
+OPERANDS
+       audit_module_name
+           The name of the audit module to be deleted.
+
+EXAMPLES
+       Example 1, Deleting an audit module
+
+               asadmin> delete-audit-module sampleAuditModule
+               Command delete-audit-module executed successfully
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-audit-module(1), list-audit-modules(1)
+
+       asadmin(1M)
+
+Java EE 8                         22 Dec 2010           delete-audit-module(1)

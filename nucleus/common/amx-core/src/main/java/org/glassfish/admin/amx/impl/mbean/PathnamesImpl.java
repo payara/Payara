@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import java.util.ArrayList;
@@ -56,7 +58,6 @@ import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.core.PathnameParser;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.core.proxy.AMXProxyHandler;
-import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.util.AMXLoggerInfo;
 import org.glassfish.admin.amx.util.CollectionUtil;
 import org.glassfish.admin.amx.util.ExceptionUtil;
@@ -93,14 +94,10 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
 
         final String parentPath = parser.parentPath();
 
-        //cdebug( "resolvePath: " + parser.toString() + ", parentPath = " + parentPath );
-
         // fixed query based on the path, which will find all MBeans with that parent path
         final String props = Util.makeProp(PARENT_PATH_KEY, Util.quoteIfNeeded(parentPath));
         final ObjectName pattern = JMXUtil.newObjectNamePattern(getObjectName().getDomain(), props);
         final Set<ObjectName> s = getMBeanServer().queryNames(pattern, null);
-
-        //cdebug( "resolvePath: " + path + " = query for parent path: " + pattern + " yields children: " + s.size() );
 
         ObjectName objectName = null;
         final String type = parser.type();
@@ -110,8 +107,6 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
             if (type.equals(Util.getTypeProp(child))) {
                 final String nameProp = Util.getNameProp(child);
 
-                //cdebug( "type match for " + path + ", objectName = " + child);
-
                 if (nameProp == null) {
                     if (name == null) {
                         // no name, we matched on type alone
@@ -119,7 +114,6 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
                         break;
                     }
                     // badly formed: a name is specified, but none is present for this type
-                    //cdebug( "A name is specified in path, but the type has none: path = " + path + ", objectName = " + child);
                     continue;
                 }
 
@@ -142,9 +136,8 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
                     objectName = child;
                     break;
                 }
-            } else {
-                //cdebug( "No match on type: " + type + " != " + Util.getTypeProp(child) );
             }
+
         }
 
         // limit the memory use; non-existent paths could otherwise build up
@@ -154,7 +147,6 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
         }
 
         if (objectName != null) {
-            //cdebug( "Matched " + path + " to " + objectName);
             mPathnameCache.put(path, objectName);
         }
 
@@ -223,7 +215,7 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
         } catch (final Exception e) {
             if (!isInstanceNotFound(e)) {
                 AMXLoggerInfo.getLogger().log(Level.WARNING,
-                        AMXLoggerInfo.cantGetChildren, 
+                        AMXLoggerInfo.cantGetChildren,
                         new Object[] {top.objectName(), ExceptionUtil.getRootCause(e).getLocalizedMessage()});
                 // just return, nothing we can do.  Typically it could be InstanceNotFoundException
             }
@@ -303,12 +295,12 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
         }
 
         final AMXProxy topProxy = getProxyFactory().getProxy(top, AMXProxy.class);
-        final List<AMXProxy> list = new ArrayList<AMXProxy>();
+        final List<AMXProxy> list = new ArrayList<>();
         list.add(topProxy);
         listChildren(topProxy, list, true);
 
         final String NL = "\n";
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         for (final AMXProxy amx : list) {
             final String p = amx.path();
             buf.append(p);
@@ -319,7 +311,7 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
                 buf.append("\t");
                 buf.append(e.getKey());
                 buf.append(" = ");
-                buf.append("").append(SmartStringifier.toString(e.getValue()));
+                buf.append(SmartStringifier.toString(e.getValue()));
                 buf.append(NL);
             }
             buf.append(NL);
@@ -327,20 +319,3 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
         return buf.toString();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>uninstall-node-ssh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>uninstall-node-ssh</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="uninstall-node-dcom.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="unset.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="uninstall-node-ssh-1"></a><a id="GSRFM778"></a><a id="uninstall-node-ssh"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_uninstall_node_ssh">uninstall-node-ssh</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>uninstalls \{product---name} software from specified SSH-enabled hosts</p>
+</div>
+<div id="sthref2224" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] uninstall-node-ssh [--help]
+[--installdir as-install-parent]
+[--sshport ssh-port] [--sshuser ssh-user]
+[--sshkeyfile ssh-keyfile]
+[--force={false|true}]
+host-list</code></pre>
+</div>
+</div>
+<div id="sthref2225" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>uninstall-node-ssh</code> subcommand uninstalls \{product---name}
+software from the hosts that are specified as the operand of the
+subcommand. This subcommand requires secure shell (SSH) to be configured
+on the host where the subcommand is run and on each host where the
+\{product---name} software is being uninstalled.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This subcommand is equivalent to the
+<a href="uninstall-node.html#uninstall-node-1"><code>uninstall-node</code>(1)</a>
+subcommand. To uninstall \{product---name} software from hosts that use
+the Distributed Component Object Model (DCOM) remote protocol, use the
+<a href="uninstall-node-dcom.html#uninstall-node-dcom-1"><code>uninstall-node-dcom</code>(1)</a>
+subcommand.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>By default, if any node except the predefined node <code>localhost-`domain
+resides on any host from which \{product---name} software is being
+uninstalled, the subcommand fails. To uninstall the \{product---name}
+software from a host on which user-defined nodes reside, set the
+`--force</code> option to <code>true</code>. If the <code>--force</code> option is <code>true</code>, the
+subcommand removes the entire content of the parent of the base
+installation directory.</p>
+</div>
+<div class="paragraph">
+<p>If a file under the parent of the base installation directory is open,
+the subcommand fails.</p>
+</div>
+<div class="paragraph">
+<p>If multiple hosts are specified, the configuration of the following
+items must be the same on all hosts:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Parent of the base installation directory for the \{product---name}
+software</p>
+</li>
+<li>
+<p>SSH port</p>
+</li>
+<li>
+<p>SSH user</p>
+</li>
+<li>
+<p>SSH key file</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The subcommand does not modify the configuration of the domain
+administration server (DAS).</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode only.</p>
+</div>
+<div id="sthref2226" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--installdir</code></dt>
+<dd>
+<p>The absolute path to the parent of the base installation directory
+where the \{product---name} software is installed on each host, for
+example, <code>/export/glassfish3/</code>.<br>
+The user that is running this subcommand must have write access to the
+specified directory. Otherwise, an error occurs.<br>
+The specified directory must contain the installation of the
+\{product---name} software on the host. Otherwise, an error occurs.<br>
+The default is the parent of the base installation directory of the
+\{product---name} software on the host where this subcommand is run.</p>
+</dd>
+<dt class="hdlist1"><code>--sshport</code></dt>
+<dd>
+<p>The port to use for SSH connections to the host where the
+\{product---name} software is to be uninstalled. The default is 22.</p>
+</dd>
+<dt class="hdlist1"><code>--sshuser</code></dt>
+<dd>
+<p>The user on the host where the \{product---name} software is to be
+uninstalled that is to run the process for connecting through SSH to
+the host. The default is the user that is running this subcommand. To
+ensure that the DAS can read this user&#8217;s SSH private key file, specify
+the user that is running the DAS process.</p>
+</dd>
+<dt class="hdlist1"><code>--sshkeyfile</code></dt>
+<dd>
+<p>The absolute path to the SSH private key file for user that the
+<code>--sshuser</code> option specifies. This file is used for authentication to
+the <code>sshd</code> daemon on the host.<br>
+The user that is running this subcommand must be able to reach the
+path to the key file and read the key file.<br>
+The default is a key file in the user&#8217;s <code>.ssh</code> directory. If multiple
+key files are found, the subcommand uses the following order of
+preference:<br></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>id_rsa</code></p>
+</li>
+<li>
+<p><code>id_dsa</code></p>
+</li>
+<li>
+<p><code>identity</code></p>
+</li>
+</ol>
+</div>
+</dd>
+<dt class="hdlist1"><code>--force</code></dt>
+<dd>
+<p>Specifies whether the subcommand uninstalls the \{product---name}
+software from a host even if a user-defined node resides on the host.
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>If a user-defined node resides on a host, the software is not
+uninstalled and the subcommand fails (default).<br>
+If the <code>--force</code> option is <code>false</code>, the subcommand removes only the
+\{product---name} software files. Other content if the parent of the
+base installation directory, such as configuration files, are not
+removed.</p>
+</dd>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>The subcommand uninstalls the \{product---name} software from the
+host even if a user-defined node resides on the host.<br>
+If the <code>--force</code> option is <code>true</code>, the subcommand removes the entire
+content of the parent of the base installation directory.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref2227" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">host-list</dt>
+<dd>
+<p>A space-separated list of the names of the hosts from which the
+\{product---name} software is to be uninstalled.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2228" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM779"></a><a id="sthref2229"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Uninstalling \{product---name} Software From the Default
+Location</p>
+</div>
+<div class="paragraph">
+<p>This example uninstalls \{product---name} software on the hosts
+<code>sj03.example.com</code> and <code>sj04.example.com</code> from the default location.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; uninstall-node-ssh sj03 sj04
+Successfully connected to gfuser@sj03.example.com using keyfile /home/gfuser
+/.ssh/id_rsa
+Successfully connected to gfuser@sj04.example.com using keyfile /home/gfuser
+/.ssh/id_rsa
+Command uninstall-node-ssh executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM780"></a><a id="sthref2230"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 2   Forcibly Uninstalling \{product---name} Software</p>
+</div>
+<div class="paragraph">
+<p>This example uninstalls \{product---name} software on the host
+<code>sj02.example.com</code>.</p>
+</div>
+<div class="paragraph">
+<p>The software is uninstalled even if a user-defined node resides on the
+host. The entire content of the <code>/export/glassfish3</code> directory is
+removed.</p>
+</div>
+<div class="paragraph">
+<p>Some lines of output are omitted from this example for readability.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; uninstall-node-ssh --force --installdir /export/glassfish3 sj02.example.com
+Successfully connected to gfuser@sj02.example.com using keyfile /home/gfuser
+/.ssh/id_rsa
+Force removing file /export/glassfish3/mq/lib/help/en/add_overrides.htm
+Force removing file /export/glassfish3/mq/lib/help/en/add_connfact.htm
+...
+Force removing directory /export/glassfish3/glassfish/lib/appclient
+Force removing directory /export/glassfish3/glassfish/lib
+Force removing directory /export/glassfish3/glassfish
+Command uninstall-node-ssh executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2231" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2232" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="install-node.html#install-node-1"><code>install-node</code>(1)</a>,
+<a href="install-node-ssh.html#install-node-ssh-1"><code>install-node-ssh</code>(1)</a>,
+<a href="uninstall-node.html#uninstall-node-1"><code>uninstall-node</code>(1)</a>,
+<a href="uninstall-node-dcom.html#uninstall-node-dcom-1"><code>uninstall-node-dcom</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="uninstall-node-dcom.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="unset.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

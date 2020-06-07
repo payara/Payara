@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -67,9 +68,7 @@ Caller should call {@link #cleanup} when done, because
 a listener is maintained on the MBeanServer delegate.
 
  */
-public abstract class NotificationListenerBase
-        implements NotificationListener
-{
+public abstract class NotificationListenerBase implements NotificationListener {
     private final MBeanServerConnection mConn;
 
     /** actual MBean ObjectNames, not patterns */
@@ -89,12 +88,7 @@ public abstract class NotificationListenerBase
     <p><b>Instantiating code must call setupListening() in order to initiate
     listening</b>
      */
-    protected NotificationListenerBase(
-            final String name,
-            final MBeanServerConnection conn,
-            final ObjectName pattern)
-            throws IOException
-    {
+    protected NotificationListenerBase(final String name, final MBeanServerConnection conn, final ObjectName pattern) throws IOException {
         this(name, conn, pattern, null);
     }
 
@@ -128,12 +122,6 @@ public abstract class NotificationListenerBase
             throw new IllegalArgumentException();
         }
     }
-
-    /**
-    Subclass should implement this routine.
-     */
-    @Override
-    public abstract void handleNotification(final Notification notif, final Object handback);
 
     protected synchronized void listenToMBean(final ObjectName objectName)
             throws InstanceNotFoundException, IOException
@@ -211,11 +199,7 @@ public abstract class NotificationListenerBase
     tracks coming and going of MBeans being listened to which
     match our patterns.
      */
-    private final class RegistrationListener implements NotificationListener
-    {
-        public RegistrationListener()
-        {
-        }
+    private final class RegistrationListener implements NotificationListener {
 
         @Override
         public void handleNotification(
@@ -344,9 +328,3 @@ public abstract class NotificationListenerBase
     }
 
 }
-
-
-
-
-
-

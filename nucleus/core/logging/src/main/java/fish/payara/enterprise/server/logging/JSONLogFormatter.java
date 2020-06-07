@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
@@ -49,10 +50,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -84,7 +82,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
     private final ServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
 
-    private HashMap loggerResourceBundleTable;
+    private Map<String, ResourceBundle> loggerResourceBundleTable;
     private LogManager logManager;
 
     private final Date date = new Date();
@@ -94,18 +92,18 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private static boolean RECORD_NUMBER_IN_KEY_VALUE = false;
 
     private FormatterDelegate _delegate = null;
-    
+
     // Static Initialiser Block
     static {
         String logSource = System.getProperty(
                 "com.sun.aas.logging.keyvalue.logsource");
-        if ((logSource != null) 
+        if ((logSource != null)
             && (logSource.equals("true"))) {
             LOG_SOURCE_IN_KEY_VALUE = true;
         }
 
         String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
-        if ((recordCount != null) 
+        if ((recordCount != null)
                 && (recordCount.equals("true"))) {
             RECORD_NUMBER_IN_KEY_VALUE = true;
         }
@@ -134,14 +132,15 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     private String TIME_MILLIS_KEY = "TimeMillis";
     private String MESSAGE_ID_KEY = "MessageID";
     private String LOG_MESSAGE_KEY = "LogMessage";
+    private String THROWABLE_KEY = "Throwable";
 
-    private static final String RFC3339_DATE_FORMAT = 
+    private static final String RFC3339_DATE_FORMAT =
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-    
+
     private final ExcludeFieldsSupport excludeFieldsSupport = new ExcludeFieldsSupport();
     private LogEventBroadcaster logEventBroadcasterDelegate;
     private String productId = "";
-    
+
     /**
      * For backwards compatibility with log format for pre-182
      * @deprecated
@@ -151,11 +150,11 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
     public JSONLogFormatter() {
         super();
-        loggerResourceBundleTable = new HashMap();
+        loggerResourceBundleTable = new HashMap<>();
         logManager = LogManager.getLogManager();
-        
+
         String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
-        if ((underscorePrefix)!= null && Boolean.valueOf(underscorePrefix)) {
+        if (Boolean.parseBoolean(underscorePrefix)) {
             TIMESTAMP_KEY = "_" + TIMESTAMP_KEY;
             LOG_LEVEL_KEY = "_" + LOG_LEVEL_KEY;
             PRODUCT_ID_KEY = "_" + PRODUCT_ID_KEY;
@@ -171,6 +170,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             TIME_MILLIS_KEY = "_" + TIME_MILLIS_KEY;
             MESSAGE_ID_KEY = "_" + MESSAGE_ID_KEY;
             LOG_MESSAGE_KEY = "_" + LOG_MESSAGE_KEY;
+            THROWABLE_KEY = "_" + THROWABLE_KEY;
         }
     }
 
@@ -194,11 +194,11 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     }
 
     /**
-     * Payara can override this to specify product version. 
+     * Payara can override this to specify product version.
      * @return The string value of the product id.
      */
     protected String getProductId() {
-        if (habitat != null) {    
+        if (habitat != null) {
             VersionInfo version = habitat.getService(VersionInfo.class);
             if (productId.isEmpty() && version != null) {
                 StringBuilder builder = new StringBuilder();
@@ -213,27 +213,27 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
         }
         return productId;
     }
- 
+
     /**
      * @param record The record to format.
      * @return The JSON formatted record.
      */
     private String jsonLogFormat(LogRecord record) {
         try {
-            LogEventImpl logEvent = new LogEventImpl(); 
+            LogEventImpl logEvent = new LogEventImpl();
             JsonObjectBuilder eventObject = Json.createObjectBuilder();
-            
+
             /*
              * Create the timestamp field and append to object.
              */
             SimpleDateFormat dateFormatter;
-            
+
             if (null != getRecordDateFormat()) {
                 dateFormatter = new SimpleDateFormat(getRecordDateFormat());
             } else {
                 dateFormatter = new SimpleDateFormat(RFC3339_DATE_FORMAT);
             }
-            
+
             date.setTime(record.getMillis());
             String timestampValue = dateFormatter.format(date);
             logEvent.setTimestamp(timestampValue);
@@ -244,9 +244,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
              */
             Level eventLevel = record.getLevel();
             logEvent.setLevel(eventLevel.getName());
-            StringBuilder levelBuilder = new StringBuilder();
-            levelBuilder.append(eventLevel.getLocalizedName());
-            eventObject.add(LOG_LEVEL_KEY, levelBuilder.toString());
+            eventObject.add(LOG_LEVEL_KEY, eventLevel.getLocalizedName());
 
             /*
              * Get the product id and append to object.
@@ -257,17 +255,15 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
             /*
              * Get the logger name and append to object.
-             */ 
+             */
             String loggerName = record.getLoggerName();
-            
+
             if (null == loggerName) {
                 loggerName = "";
             }
 
-            logEvent.setLogger(loggerName);            
-            StringBuilder loggerBuilder = new StringBuilder();
-            loggerBuilder.append(loggerName);           
-            eventObject.add(LOGGER_NAME_KEY, loggerBuilder.toString());
+            logEvent.setLogger(loggerName);
+            eventObject.add(LOGGER_NAME_KEY, loggerName);
 
             /*
              * Get thread information and append to object if not excluded.
@@ -278,7 +274,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 int threadId = record.getThreadID();
                 logEvent.setThreadId(threadId);
                 eventObject.add(THREAD_ID_KEY, String.valueOf(threadId));
-                
+
                 // Thread Name
                 String threadName;
 
@@ -305,7 +301,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
             /*
              * Get ec id and append if not excluded and exists with value.
-             */ 
+             */
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
                     .SupplementalAttribute.ECID)) {
                 String ecid = logEvent.getECId();
@@ -319,13 +315,13 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
              */
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
                     .SupplementalAttribute.TIME_MILLIS)) {
-                Long timestamp = record.getMillis();
+                long timestamp = record.getMillis();
                 logEvent.setTimeMillis(timestamp);
                 eventObject.add(TIME_MILLIS_KEY, String.valueOf(timestamp));
             }
 
             /*
-             * Include the integer value for log level 
+             * Include the integer value for log level
              */
             Level level = record.getLevel();
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport
@@ -336,7 +332,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             }
 
             /*
-             * Stick the message id on the entry 
+             * Stick the message id on the entry
              */
             String messageId = getMessageId(record);
             if (messageId != null && !messageId.isEmpty()) {
@@ -346,8 +342,8 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
             /*
              * Include ClassName and MethodName for FINER and FINEST log levels.
-             */ 
-            if (LOG_SOURCE_IN_KEY_VALUE || 
+             */
+            if (LOG_SOURCE_IN_KEY_VALUE ||
                     level.intValue() <= Level.FINE.intValue()) {
                 String sourceClassName = record.getSourceClassName();
 
@@ -386,19 +382,21 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             if (null == logMessage || logMessage.trim().equals("")) {
                 Throwable throwable = record.getThrown();
                 if (null != throwable) {
-                    try (StringWriter stringWriter = new StringWriter(); 
+                    try (StringWriter stringWriter = new StringWriter();
                          PrintWriter printWriter = new PrintWriter(stringWriter)) {
                         JsonObjectBuilder traceObject = Json.createObjectBuilder();
                         throwable.printStackTrace(printWriter);
+                        if (throwable.getMessage() != null) {
+                            traceObject.add(EXCEPTION_KEY, throwable.getMessage());
+                        }
                         logMessage = stringWriter.toString();
-                        traceObject.add(EXCEPTION_KEY, throwable.getMessage());
                         traceObject.add(STACK_TRACE_KEY, logMessage);
                         logEvent.setMessage(logMessage);
-                        eventObject.add(LOG_MESSAGE_KEY, traceObject.build());
+                        eventObject.add(THROWABLE_KEY, traceObject.build());
                     }
-                } 
+                }
             } else {
-                if (logMessage.contains("{0") && logMessage.contains("}") 
+                if (logMessage.contains("{0") && logMessage.contains("}")
                         && null != record.getParameters()) {
                     logMessage = MessageFormat
                             .format(logMessage, record.getParameters());
@@ -410,18 +408,18 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                                 .getString(logMessage),
                                 record.getParameters());
                         } catch (MissingResourceException ex) {
-                            // Leave logMessage as it is because it already has 
+                            // Leave logMessage as it is because it already has
                             // an exception message
                         }
                     }
                 }
-                
+
                 StringBuilder logMessageBuilder = new StringBuilder();
                 logMessageBuilder.append(logMessage);
 
                 Throwable throwable = getThrowable(record);
                 if (null != throwable) {
-                    try (StringWriter stringWriter = new StringWriter(); 
+                    try (StringWriter stringWriter = new StringWriter();
                          PrintWriter printWriter = new PrintWriter(stringWriter)) {
                         JsonObjectBuilder traceObject =Json.createObjectBuilder();
                         throwable.printStackTrace(printWriter);
@@ -429,7 +427,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                         traceObject.add(EXCEPTION_KEY, logMessageBuilder.toString());
                         traceObject.add(STACK_TRACE_KEY, logMessage);
                         logEvent.setMessage(logMessage);
-                        eventObject.add(LOG_MESSAGE_KEY, traceObject.build());
+                        eventObject.add(THROWABLE_KEY, traceObject.build());
                     }
                 } else {
                     logMessage = logMessageBuilder.toString();
@@ -438,7 +436,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 }
             }
 
-            informLogEventListeners(logEvent); 
+            informLogEventListeners(logEvent);
             return eventObject.build().toString() + LINE_SEPARATOR;
 
         } catch (Exception ex) {
@@ -451,7 +449,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
     /**
      * @param record
-     * @return 
+     * @return
      */
     static String getMessageId(LogRecord record) {
         String message = record.getMessage();
@@ -468,7 +466,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
 
     /**
      * @param record
-     * @return 
+     * @return
      */
     static Throwable getThrowable(LogRecord record) {
         return record.getThrown();
@@ -483,13 +481,12 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             return null;
         }
 
-        ResourceBundle bundle = (ResourceBundle) 
-                loggerResourceBundleTable.get(loggerName);
+        ResourceBundle bundle = loggerResourceBundleTable.get(loggerName);
 
-        /* 
+        /*
          *  logManager.getLogger should not be relied upon.
          *  To deal with this check if bundle is null and logger is not.
-         *  Put a new logger and bundle in the resource bundle table if so. 
+         *  Put a new logger and bundle in the resource bundle table if so.
          */
         Logger logger = logManager.getLogger(loggerName);
         if (null == bundle && null != logger) {
@@ -527,7 +524,7 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
     public void setLogEventBroadcaster(LogEventBroadcaster logEventBroadcaster) {
         this.logEventBroadcasterDelegate = logEventBroadcaster;
     }
-    
+
     /**
      * @param logEvent LogEvent to inform the listeners of.
      */

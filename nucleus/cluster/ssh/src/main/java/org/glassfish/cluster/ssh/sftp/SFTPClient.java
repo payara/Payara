@@ -106,7 +106,7 @@ public class SFTPClient extends SFTPv3Client {
         if (atts!=null && atts.isDirectory())
             return;
 
-        int idx = path.lastIndexOf("/");
+        int idx = path.lastIndexOf('/');
         if (idx>0)
             mkdirs(path.substring(0,idx), posixPermission);
 

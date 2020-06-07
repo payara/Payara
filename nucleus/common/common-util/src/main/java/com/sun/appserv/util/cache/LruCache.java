@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 /**
  * LRUCache
@@ -123,6 +123,7 @@ public class LruCache extends BaseCache {
      * subclasses may override to provide their own CacheItem extensions
      * e.g. one that permits persistence.
      */
+    @Override
     protected CacheItem createItem(int hashCode, Object key,
                                         Object value, int size) {
         return new LruCacheItem(hashCode, key, value, size);
@@ -174,6 +175,7 @@ public class LruCache extends BaseCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected CacheItem itemAdded(CacheItem item) {
         boolean updateThreshold = false;
         CacheItem overflow = null;
@@ -220,6 +222,7 @@ public class LruCache extends BaseCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemAccessed(CacheItem item) {
 	if(head == null)
 	    return;
@@ -264,6 +267,7 @@ public class LruCache extends BaseCache {
      * @param oldSize size of the previous value that was refreshed
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemRefreshed(CacheItem item, int oldSize) {
         itemAccessed(item);
     }
@@ -274,6 +278,7 @@ public class LruCache extends BaseCache {
      *
      * Cache bucket is already synchronized by the caller
      */
+    @Override
     protected void itemRemoved(CacheItem item) {
         if(! (item instanceof LruCacheItem))
             return;
@@ -313,6 +318,7 @@ public class LruCache extends BaseCache {
      * NOTE: this algorithm assumes that all the entries in the cache have
      * identical timeout (otherwise traversing from tail won't be right).
      */
+    @Override
     public void trimExpiredEntries(int maxCount) {
 
         int count = 0;
@@ -366,24 +372,24 @@ public class LruCache extends BaseCache {
      * @return an Object corresponding to the stat
      * See also: Constant.java for the key
      */
+    @Override
     public Object getStatByName(String key) {
         Object stat = super.getStatByName(key);
 
         if (stat == null && key != null) {
             if (key.equals(Constants.STAT_LRUCACHE_LIST_LENGTH))
-                stat = Integer.valueOf(listSize);
+                stat = listSize;
             else if (key.equals(Constants.STAT_LRUCACHE_TRIM_COUNT))
-                stat = Integer.valueOf(trimCount);
+                stat = trimCount;
         }
         return stat;
     }
 
+    @Override
     public Map getStats() {
         Map stats = super.getStats();
-        stats.put(Constants.STAT_LRUCACHE_LIST_LENGTH,
-                  Integer.valueOf(listSize));
-        stats.put(Constants.STAT_LRUCACHE_TRIM_COUNT,
-                  Integer.valueOf(trimCount));
+        stats.put(Constants.STAT_LRUCACHE_LIST_LENGTH, listSize);
+        stats.put(Constants.STAT_LRUCACHE_TRIM_COUNT, trimCount);
 
         return stats;
     }

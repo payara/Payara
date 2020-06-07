@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.runtime.common;
 
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
 public class ProtectionDescriptor extends RuntimeDescriptor {
+    private static final long serialVersionUID = 3047966592909208848L;
+    
     public static final String AUTH_SOURCE = "AuthSource";
     public static final String AUTH_RECIPIENT = "AuthRecipient";
-
-    public ProtectionDescriptor() {}
 }

@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.main.registration.registration-impl; bundle-version=${project.osgi.version}
+Fragment-Host: fish.payara.server.internal.registration.registration-impl; bundle-version=${project.osgi.version}

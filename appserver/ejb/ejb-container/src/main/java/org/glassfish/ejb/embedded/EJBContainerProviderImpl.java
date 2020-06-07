@@ -37,39 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.ejb.embedded;
 
-import java.io.*;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import java.util.jar.Attributes;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.module.bootstrap.Which;
+import com.sun.enterprise.security.EmbeddedSecurity;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
+import org.glassfish.api.container.Sniffer;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.deployment.common.GenericAnnotationDetector;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
+import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFishProperties;
+import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.ejb.EJBException;
 import javax.ejb.embeddable.EJBContainer;
 import javax.ejb.spi.EJBContainerProvider;
-
-import org.glassfish.api.container.Sniffer;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-
-import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.embeddable.*;
-
-import org.glassfish.deployment.common.GenericAnnotationDetector;
-import org.glassfish.deployment.common.DeploymentUtils;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.security.EmbeddedSecurity;
-
-import com.sun.enterprise.module.bootstrap.Which;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * GlassFish implementation of the EJBContainerProvider.
@@ -94,15 +96,15 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
     private static final String WEAVING = "org.glassfish.persistence.embedded.weaving.enabled";
 
     private static final Attributes.Name ATTRIBUTE_NAME_SKIP = new Attributes.Name("Bundle-SymbolicName");
-    private static final String[] KNOWN_PACKAGES = 
+    private static final String[] KNOWN_PACKAGES =
             {"org.glassfish.", "com.sun.enterprise.", "org.eclipse.", "org.jboss.weld."};
     private static final String[] ATTRIBUTE_VALUES_OK = {"sample", "test"};
 
 
     // Use Bundle from another package
-    private static final Logger _logger = 
+    private static final Logger _logger =
             LogDomains.getLogger(EJBContainerProviderImpl.class, LogDomains.EJB_LOGGER);
-    private static final StringManager localStrings = 
+    private static final StringManager localStrings =
             StringManager.getManager(EJBContainerProviderImpl.class);
 
     private static final Object lock = new Object();
@@ -115,7 +117,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
     public EJBContainerProviderImpl() {}
 
     public EJBContainer createEJBContainer(Map<?, ?> properties) throws EJBException {
-        if (properties == null || properties.get(EJBContainer.PROVIDER) == null || 
+        if (properties == null || properties.get(EJBContainer.PROVIDER) == null ||
                 properties.get(EJBContainer.PROVIDER).equals(GF_PROVIDER_NAME)) {
 
             if (container != null && container.isOpen()) {
@@ -180,7 +182,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                 GlassFishProperties glassFishProperties = new GlassFishProperties(newProps);
                 if (Boolean.getBoolean(KEEP_TEMPORARY_FILES)) {
                     glassFishProperties.setProperty("org.glassfish.embeddable.autoDelete", "false"); // set autodelete to false.
-                    glassFishProperties.setConfigFileReadOnly(false); // make sure the domain.xml is written back. 
+                    glassFishProperties.setConfigFileReadOnly(false); // make sure the domain.xml is written back.
                 }
 
                 if (l.installed_root != null && l.instance_root != null) {
@@ -270,8 +272,8 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                 for (File f : arr) {
                     addModule(l, modules, moduleNames, f);
                 }
-            } 
-        } 
+            }
+        }
 
         if (modules.isEmpty()) {
             // No file is specified - load from the classpath
@@ -285,7 +287,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
             }
 
             if (!moduleNames.isEmpty()) {
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 for (Map.Entry<String, Boolean> entry : moduleNames.entrySet()) {
                     if (!entry.getValue()) {
                         sb.append(entry.getKey()).append(", ");
@@ -307,7 +309,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
      * Returns null if it's an EJB module which name is not present in the list of requested
      * module names.
      */
-    private DeploymentElement getRequestedEJBModuleOrLibrary(File file, Map<String, Boolean> moduleNames) 
+    private DeploymentElement getRequestedEJBModuleOrLibrary(File file, Map<String, Boolean> moduleNames)
             throws Exception {
         DeploymentElement result = null;
         String fileName = file.getName();
@@ -339,7 +341,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.fine("... is EJB module: " + isEJBModule);
                 if (isEJBModule) {
-                    _logger.fine("... is Requested EJB module [" + moduleName + "]: " 
+                    _logger.fine("... is Requested EJB module [" + moduleName + "]: "
                             + (moduleNames.isEmpty() || moduleNames.containsKey(moduleName)));
                 }
             }
@@ -354,9 +356,9 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
 
             return result;
         } finally {
-            if (archive != null) 
+            if (archive != null)
                 archive.close();
-            if (is != null) 
+            if (is != null)
                 is.close();
         }
     }
@@ -377,16 +379,16 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
             boolean skip_module_with_main_class) {
         try {
             if (f.exists() && !skipJar(f, l, skip_module_with_main_class)) {
-                
+
                 DeploymentElement de = getRequestedEJBModuleOrLibrary(f, moduleNames);
                 if (de != null) {
                     if (_logger.isLoggable(Level.FINE)) {
-                        _logger.fine("... Added " + ((de.isEJBModule())? "EJB Module" : "library") + 
+                        _logger.fine("... Added " + ((de.isEJBModule())? "EJB Module" : "library") +
                                 " .... " + de.getElement().getName());
                     }
                     modules.add(de);
                 }
-            } 
+            }
         } catch (Exception ioe) {
             _logger.log(Level.FINE, "ejb.embedded.io_exception", ioe);
             // skip it
@@ -430,7 +432,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
         }
 
         // Skip jars in the install modules directory
-        if (l.modules_dir != null && 
+        if (l.modules_dir != null &&
                 l.modules_dir.equals(file.getAbsoluteFile().getParentFile().getAbsolutePath())) {
             _logger.info("... skipping module: " + file.getName());
             return true;
@@ -502,7 +504,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
             java.util.jar.Attributes attributes = m.getMainAttributes();
             String value = attributes.getValue(Attributes.Name.MAIN_CLASS);
             return (value != null && value.length() > 0);
-        } 
+        }
 
         return false;
     }
@@ -529,7 +531,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
         }
 
         if (installed_root_location == null) {
-            // Try to calculate installation location relative to 
+            // Try to calculate installation location relative to
             // the jar that contains this class
             try {
                 installed_root_location = Which.jarFile(getClass()).
@@ -548,8 +550,8 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
             if (installed_root != null) {
                 if (instance_root_location == null) {
                     // Calculate location for the domain relative to GF install
-                    instance_root_location = installed_root_location 
-                            + File.separatorChar + "domains" 
+                    instance_root_location = installed_root_location
+                            + File.separatorChar + "domains"
                             + File.separatorChar + "domain1";
                 }
 
@@ -562,7 +564,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
         if (instance_root != null && domain_file_location == null) {
             // Calculate location for the domain.xml relative to GF instance
             domain_file_location = instance_root_location
-                    + File.separatorChar + "config" 
+                    + File.separatorChar + "config"
                     + File.separatorChar + "domain.xml";
         }
 

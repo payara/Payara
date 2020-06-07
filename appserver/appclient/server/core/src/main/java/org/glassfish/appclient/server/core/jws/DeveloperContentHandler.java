@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.server.core.jws;
 
@@ -187,10 +188,8 @@ public class DeveloperContentHandler {
         return result;
     }
 
-    private synchronized Document developerDOMFromContent(final String devContent) throws SAXException, IOException {
-        final InputSource is = new InputSource(new StringReader(devContent));
-        Document result = db.parse(is);
-        return result;
+    private synchronized static Document developerDOMFromContent(final String devContent) throws SAXException, IOException {
+        return db.parse(new InputSource(new StringReader(devContent)));
     }
 
     private String toXML(final Document dom)
@@ -297,8 +296,7 @@ public class DeveloperContentHandler {
 
     private static DocumentBuilder documentBuilder() {
         try {
-            final DocumentBuilder b = dbf.newDocumentBuilder();
-            return b;
+            return dbf.newDocumentBuilder();
         } catch (ParserConfigurationException ex) {
             throw new RuntimeException(ex);
         }

@@ -38,24 +38,23 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
+import com.sun.enterprise.admin.servermgmt.RepositoryConfig;
+import com.sun.enterprise.admin.servermgmt.RepositoryException;
+import com.sun.enterprise.security.store.PasswordAdapter;
+import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.enterprise.util.io.FileUtils;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
-import java.io.File;
-
-import com.sun.enterprise.util.OS;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.util.i18n.StringManager;
-
-import com.sun.enterprise.admin.servermgmt.RepositoryException;
-import com.sun.enterprise.admin.servermgmt.RepositoryConfig;
-import com.sun.enterprise.util.SystemPropertyConstants;
-
-import com.sun.enterprise.security.store.PasswordAdapter;
 import java.util.Map;
+
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
 public class PEFileLayout
 {
@@ -764,7 +763,6 @@ public class PEFileLayout
         return new File(getConfigRoot(), TRUSTSTORE);
     }
 
-    public static final String MASTERPASSWORD_FILE = "master-password";
     public File getMasterPasswordFile()
     {
         return new File(getConfigRoot(), MASTERPASSWORD_FILE);
@@ -795,15 +793,15 @@ public class PEFileLayout
     public File getTimerDbn() {
 	return new File(getTimerDatabaseDir(), TIMERDB_DBN);
     }
-    public static final String DERBY_SQL_FILE = "ejbtimer_derby.sql";
+    public static final String H2_SQL_FILE = "ejbtimer_h2.sql";
     public static final String EJB_TIMER_TABLE_NAME = "EJB__TIMER__TBL"; //comes from sql file
-    public File getDerbyEjbTimerSqlFile() {
-	return new File(getInstallDatabasesDir(), DERBY_SQL_FILE);
+    public File getH2EjbTimerSqlFile() {
+	return new File(getInstallDatabasesDir(), H2_SQL_FILE);
     }
-    public static final String DERBY_DATABASE_DIRECTORY = "ejbtimer";
-    public File getDerbyEjbTimerDatabaseDirectory() {
-        return new File(getTimerDatabaseDir(), DERBY_DATABASE_DIRECTORY);
-        //this directory must not exist before creating the derby database
+    public static final String H2_DATABASE_DIRECTORY = "ejbtimer";
+    public File getH2EjbTimerDatabaseDirectory() {
+        return new File(getTimerDatabaseDir(), H2_DATABASE_DIRECTORY);
+        //this directory must not exist before creating the H2 database
     }
 
     protected static boolean isWindows()

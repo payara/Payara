@@ -43,6 +43,7 @@ import fish.payara.nucleus.store.ClusteredStore;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
 
@@ -63,8 +64,8 @@ public class ClusterConfigSource extends PayaraConfigSource implements ConfigSou
     public Map<String, String> getProperties() {
         Map<Serializable, Serializable> map = clusterStore.getMap(CLUSTERED_CONFIG_STORE);
         HashMap<String, String> result = new HashMap<>();
-        for (Serializable key : map.keySet()) {
-            result.put((String) key, (String) map.get(key));
+        for (Entry<Serializable, Serializable> entry : map.entrySet()) {
+            result.put((String) entry.getKey(), (String) entry.getValue());
         }
         return result;
     }

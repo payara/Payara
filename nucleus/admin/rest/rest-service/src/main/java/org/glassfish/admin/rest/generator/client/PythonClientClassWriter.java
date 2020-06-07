@@ -37,8 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator.client;
 
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
@@ -49,19 +52,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  *
  * @author jdlee
  */
 class PythonClientClassWriter implements ClientClassWriter {
-    private String className;
+    private final String className;
     private StringBuilder source;
-    private File packageDir;
-    private static String TMPL_CTOR = "from restclientbase import *\n\nclass CLASS(RestClientBase):\n"+
+    private final File packageDir;
+    private static final String TMPL_CTOR = "from restclientbase import *\n\nclass CLASS(RestClientBase):\n"+
             "    def __init__(self, connection, parent, name = None):\n" +
             "        self.name = name\n" +
             "        RestClientBase.__init__(self, connection, parent, name)\n" +
@@ -69,16 +70,16 @@ class PythonClientClassWriter implements ClientClassWriter {
             "        self.connection = connection\n\n" +
             "    def getRestUrl(self):\n" +
             "        return self.getParent().getRestUrl() + self.getSegment() + (('/' + self.name) if self.name else '')\n";
-    private String TMPL_GET_SEGMENT = "    def getSegment(self):\n" + 
+    private static final String TMPL_GET_SEGMENT = "    def getSegment(self):\n" +
             "        return '/SEGMENT'\n";
-    private static String TMPL_COMMAND_METHOD = "\n    def COMMAND(self PARAMS, optional={}):\n" + 
+    private static final String TMPL_COMMAND_METHOD = "\n    def COMMAND(self PARAMS, optional={}):\n" +
             "MERGE" +
             "        return self.execute('/PATH', 'METHOD', optional, MULTIPART)\n";
-    private static String TMPL_GETTER_AND_SETTER = "\n    def getMETHOD(self):\n" + 
+    private static final String TMPL_GETTER_AND_SETTER = "\n    def getMETHOD(self):\n" +
             "        return self.getValue('FIELD')\n\n" +
-            "    def setMETHOD(self, value):\n" + 
+            "    def setMETHOD(self, value):\n" +
             "        self.setValue('FIELD', value)\n";
-    private static String TMPL_GET_CHILD_RESOURCE = "\n    def getELEMENT(self, name):\n" +
+    private static final String TMPL_GET_CHILD_RESOURCE = "\n    def getELEMENT(self, name):\n" +
             "        from IMPORT import CHILD\n" +
             "        child = CHILD(self.connection, self, name)\n" +
             "        return child if (child.status == 200) else None\n";
@@ -88,7 +89,7 @@ class PythonClientClassWriter implements ClientClassWriter {
         this.className = className;
 
         packageDir = baseDirectory;
-        packageDir.deleteOnExit();
+        FileUtils.deleteOnExit(packageDir);
         boolean success = packageDir.exists() || packageDir.mkdirs();
         if (!success) {
             throw new RuntimeException("Unable to create output directory"); // i18n
@@ -119,7 +120,7 @@ class PythonClientClassWriter implements ClientClassWriter {
                     continue;
                 }
                 String key = (!param.alias().isEmpty()) ? param.alias() : model.getName();
-                String paramName = Util.eleminateHypen(model.getName()); 
+                String paramName = Util.eleminateHypen(model.getName());
                 merge.append("        optional['")
                         .append(key)
                         .append("'] = _")
@@ -127,7 +128,7 @@ class PythonClientClassWriter implements ClientClassWriter {
                         .append("\n");
             }
         }
-        
+
         source.append(TMPL_COMMAND_METHOD.replace("COMMAND", methodName)
                 .replace("PARAMS", parameters)
                 .replace("MERGE", merge.toString())
@@ -180,7 +181,7 @@ class PythonClientClassWriter implements ClientClassWriter {
                 if (!classFile.createNewFile()) {
                     throw new RuntimeException("Unable to create new file"); //i18n
                 }
-                classFile.deleteOnExit();
+                FileUtils.deleteOnExit(classFile);
                 writer = new BufferedWriter(new FileWriter(classFile));
                 writer.append(source.toString());
             } catch (IOException ioe) {

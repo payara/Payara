@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 /**
  *	This generated bean class ResourceAdapter matches the DTD element resource-adapter
@@ -58,67 +59,18 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
  */
 public class ResourceAdapter extends RuntimeDescriptor
 {
-    static public final String DESCRIPTION = "Description";	// NOI18N
-    static public final String PROPERTY = "PropertyElement";	// NOI18N
+    public static final String DESCRIPTION = "Description";	// NOI18N
+    public static final String PROPERTY = "PropertyElement";	// NOI18N
     
-    static public final String JNDI_NAME = "JndiName";
-    static public final String MAX_POOL_SIZE = "MaxPoolSize";
-    static public final String STEADY_POOL_SIZE = "SteadyPoolSize";
-    static public final String MAX_WAIT_TIME_IN_MILLIS = "MaxWaitTimeInMillis";
-    static public final String IDLE_TIMEOUT_IN_SECONDS = "IdleTimeoutInSeconds";
-    
-    // This attribute is an array, possibly empty
-    public void setPropertyElement(int index, NameValuePairDescriptor value)
-    {
-	this.setValue(PROPERTY, index, value);
-    }
+    public static final String JNDI_NAME = "JndiName";
+    public static final String MAX_POOL_SIZE = "MaxPoolSize";
+    public static final String STEADY_POOL_SIZE = "SteadyPoolSize";
+    public static final String MAX_WAIT_TIME_IN_MILLIS = "MaxWaitTimeInMillis";
+    public static final String IDLE_TIMEOUT_IN_SECONDS = "IdleTimeoutInSeconds";
     
     //
-    public boolean isPropertyElement(int index)
-    {
-	NameValuePairDescriptor ret = (NameValuePairDescriptor)this.getValue(PROPERTY, index);
-	return ret != null;
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setPropertyElement(NameValuePairDescriptor[] values)
-    {
-	this.setValues(PROPERTY, values);
-    }
-    
-    //
-    public NameValuePairDescriptor[] getPropertyElement()
-    {
-	return (NameValuePairDescriptor[])this.getValues(PROPERTY);
-    }
-    
-    // Return the number of properties
-    public int sizePropertyElement()
-    {
-	return this.size(PROPERTY);
-    }
-    
-    // Add a new element returning its index in the list
-    public int addPropertyElement(NameValuePairDescriptor value)
-    {
-	return this.addValue(PROPERTY, value);
-    }
-    
-    //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removePropertyElement(NameValuePairDescriptor value)
-    {
-	return this.removeValue(PROPERTY, value);
-    }
-    
-    //
-    // Remove an element using its index
-    //
-    public void removePropertyElement(int index)
-    {
-	this.removeValue(PROPERTY, index);
+    public NameValuePairDescriptor[] getPropertyElement() {
+	    return (NameValuePairDescriptor[])this.getValues(PROPERTY);
     }
     
     // This method verifies that the mandatory properties are set

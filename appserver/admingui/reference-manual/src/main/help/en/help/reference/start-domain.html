@@ -1,0 +1,390 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>start-domain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>start-domain</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="start-database.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="start-instance.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="start-domain-1"></a><a id="GSRFM00235"></a><a id="start-domain"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_start_domain">start-domain</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>starts the DAS of the specified domain</p>
+</div>
+<div id="sthref2125" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] start-domain [--help]
+[--debug={true|false}] [--domaindir domain-dir]
+[--dry-run={true|false}] [--upgrade={true|false}]
+[--verbose={true|false}] [--watchdog={true|false}]
+[domain-name]</code></pre>
+</div>
+</div>
+<div id="sthref2126" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>start-domain</code> subcommand starts the domain administration server
+(DAS) of the specified domain. If a domain is not specified, the default
+domain is assumed. If the domains directory contains two or more
+domains, the domain-name operand must be specified.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>On the Windows platform, processes can bind to the same port. To avoid
+this problem, do not start multiple domains with the same port number at
+the same time.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in local mode only.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>In Oracle GlassFish Server, the <code>start-domain</code> subcommand prompts for a
+new admin user password if no password has been set for the admin user.
+Additionally, the admin user password must not be blank if secure
+administration is enabled; otherwise, the <code>start-domain</code> subcommand
+fails.</p>
+</div>
+<div class="paragraph">
+<p>To provide the new admin user password, you can use the <code>--passwordfile</code>
+utility option of the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> command
+after adding the entry <code>AS_ADMIN_NEWPASSWORD</code> to the password file.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="sthref2127" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--debug</code></dt>
+<dt class="hdlist1"><code>-d</code></dt>
+<dd>
+<p>Specifies whether the domain is started with
+Java Platform Debugger Architecture (JPDA)
+debugging enabled.<br>
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>The instance is started with JPDA debugging enabled and the port
+number for JPDA debugging is displayed.</p>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>The instance is started with JPDA debugging disabled (default).</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--dry-run</code></dt>
+<dt class="hdlist1"><code>-n</code></dt>
+<dd>
+<p>Suppresses actual starting of the domain. Instead, <code>start-domain</code>
+displays the full java command that would be used to start the domain,
+including all options. Reviewing this command can be useful to confirm
+JVM options and when troubleshooting startup issues.<br>
+The default value is <code>false</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--domaindir</code></dt>
+<dd>
+<p>The domain root directory, which contains the directory of the domain
+that is to be restarted. If specified, the path must be accessible in
+the file system. The default location of the domain root directory is
+as-install`/domains`.</p>
+</dd>
+<dt class="hdlist1"><code>--upgrade</code></dt>
+<dd>
+<p>Specifies whether the configuration of the domain administration
+server (DAS) is upgraded to the current release. Normally, if the
+subcommand detects that the configuration is from an older release of
+\{product---name}, the configuration is upgraded automatically before
+being started. You should not need to use this option explicitly.<br>
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>When the domain is started, the configuration is modified to be
+compatible with this release of \{product---name}, and the
+\{product---name} process stops.</p>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>The configuration of the DAS is not updated (default).</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--verbose</code></dt>
+<dt class="hdlist1"><code>-v</code></dt>
+<dd>
+<p>Specifies whether detailed information about the domain is displayed
+in the console window where the subcommand is run.<br>
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>Detailed startup messages and log messages about the domain are
+displayed in the console window where the subcommand is run. If the
+domain is later restarted by running the
+<a href="restart-domain.html#restart-domain-1"><code>restart-domain</code>(1)</a>
+subcommand from a different console window, messages continue to be
+displayed in the original console window.<br>
+You can kill the \{product---name} process by typing <code>CTRL-C</code> in the
+console window.<br>
+You can kill the \{product---name} process and obtain a thread dump
+for the server by typing one of the following key combinations in
+the console window:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>CTRL-\</code> on UNIX systems</p>
+</li>
+<li>
+<p><code>CTRL-Break</code> on Windows systems</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>Detailed information is not displayed (default).</p>
+</dd>
+</dl>
+</div>
+</dd>
+<dt class="hdlist1"><code>--watchdog</code></dt>
+<dt class="hdlist1"><code>-w</code></dt>
+<dd>
+<p>Specifies whether limited information about the domain is displayed in
+the console window where the subcommand is run. The <code>--watchdog</code>
+option is similar to <code>--verbose</code> but does not display the detailed
+startup messages and log messages. This option is useful when running
+the <code>asadmin</code> utility in the background or with no attached console.<br>
+Possible values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>true</code></dt>
+<dd>
+<p>Limited information is displayed in the console window.</p>
+</dd>
+<dt class="hdlist1"><code>false</code></dt>
+<dd>
+<p>Limited information is not displayed in the console window
+(default).</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref2128" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">domain-name</dt>
+<dd>
+<p>The unique name of the domain you want to start.<br>
+This operand is optional if only one domain exists in the
+\{product---name} installation.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2129" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM760"></a><a id="sthref2130"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Starting a Domain</p>
+</div>
+<div class="paragraph">
+<p>This example starts <code>mydomain4</code> in the default domains directory.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; start-domain mydomain4
+Waiting for DAS to start. ...........
+Started domain: mydomain4
+Domain location: /myhome/glassfishv3/glassfish/domains/mydomain4
+Log file: /myhome/glassfishv3/glassfish/domains/mydomain4/logs/server.log
+Admin port for the domain: 4848
+Command start-domain executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref2131" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref2132" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-domain.html#create-domain-1"><code>create-domain</code>(1)</a>,
+<a href="delete-domain.html#delete-domain-1"><code>delete-domain</code>(1)</a>,
+<a href="list-domains.html#list-domains-1"><code>list-domains</code>(1)</a>,
+<a href="restart-domain.html#restart-domain-1"><code>restart-domain</code>(1)</a>,
+<a href="stop-domain.html#stop-domain-1"><code>stop-domain</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="start-database.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="start-instance.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

@@ -37,8 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator.client;
 
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigModel;
@@ -62,9 +65,8 @@ import java.util.zip.ZipOutputStream;
 import org.glassfish.admin.rest.RestLogging;
 
 public class PythonClientGenerator extends ClientGenerator {
-    private File baseDirectory;
-    private static String MSG_INSTALL =
-            "To install the egg into your Python environment:  sudo easy_install " + ARTIFACT_NAME + "-VERSION-egg.zip";
+    private final File baseDirectory;
+    private static final String MSG_INSTALL = "To install the egg into your Python environment:  sudo easy_install " + ARTIFACT_NAME + "-VERSION-egg.zip";
 
     public PythonClientGenerator(ServiceLocator habitat) {
         super(habitat);
@@ -86,9 +88,9 @@ public class PythonClientGenerator extends ClientGenerator {
             if (!zipFile.createNewFile()) {
                 throw new RuntimeException("Unable to create new file"); //i18n
             }
-            zipFile.deleteOnExit();
+            FileUtils.deleteOnExit(zipFile);
             zip = new ZipOutputStream(new FileOutputStream(zipFile));
-            
+
             add(ZIP_GF_PACKAGE_DIR, "__init__.py", new ByteArrayInputStream("".getBytes()), zip);
             //add(ZIP_BASE_DIR, "PKG-INFO", new ByteArrayInputStream(getFileContents("PKG-INFO").getBytes()), zip);
             add(ZIP_BASE_DIR, "setup.py", new ByteArrayInputStream(getFileContents("setup.py").getBytes()), zip);
@@ -100,7 +102,7 @@ public class PythonClientGenerator extends ClientGenerator {
             for (File file : baseDirectory.listFiles()) {
                 add(ZIP_REST_PACKAGE_DIR, file, zip);
             }
-        
+
             artifacts.put(zipFile.getName(), zipFile.toURI());
             Util.deleteDirectory(baseDirectory);
         } catch (Exception ex) {
@@ -114,7 +116,7 @@ public class PythonClientGenerator extends ClientGenerator {
                 }
             }
         }
-        
+
         return artifacts;
     }
 
@@ -128,11 +130,11 @@ public class PythonClientGenerator extends ClientGenerator {
 
         return contents.replace("VERSION", Version.getVersionNumber());
     }
-    
+
     private void addFileFromClasspath(String targetDir, String fileName, ZipOutputStream zip) throws IOException {
         add(targetDir, fileName, getClass().getClassLoader().getResourceAsStream("/client/python/" + fileName), zip);
     }
-    
+
     private void add(String dirInZip, String nameInZip, InputStream source, ZipOutputStream target) throws IOException {
         try {
             String sourcePath = dirInZip + "/" + nameInZip;

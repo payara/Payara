@@ -1,0 +1,124 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-upgrade-components" name="task-upgrade-components"></a><a id="GHCLU00044" name="GHCLU00044"></a></p>
+
+<h4><a id="sthref62" name="sthref62"></a><a id="sthref63" name="sthref63"></a><a id="sthref64" name="sthref64"></a><a id="sthref65" name="sthref65"></a>To Upgrade Components Without Loss of Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>In a clustered environment, a rolling upgrade redeploys an application with a minimal loss of service and sessions. A session is any artifact, that can be replicated, for example:</p>
+<ul>
+<li>
+<p><code>HttpSession</code></p>
+</li>
+<li>
+<p><code>SingleSignOn</code></p>
+</li>
+<li>
+<p><code>ServletTimer</code></p>
+</li>
+<li>
+<p><code>DialogFragment</code></p>
+</li>
+<li>
+<p>Stateful session bean</p>
+</li>
+</ul>
+<p>You can use the load balancer and multiple clusters to upgrade components in GlassFish Server without any loss of service. A component can be, for example, a JVM machine, the GlassFish Server software, or a web application.</p>
+<p>A rolling upgrade can take place under light to moderate loads. The procedure requires about 10-15 minutes for each GlassFish Server instance.</p>
+<p>Applications must be compatible across the upgrade. They must work correctly during the transition when some instances are running the old version and other instances are running the new version. The old version and the new version must have the same shape of serializable classes that form object graphs that are stored in sessions (for example, nontransient instance variables). If the shape of these classes must change, the application developer must ensure that correct serialization behavior occurs. If the application is not compatible across the upgrade, the cluster must be stopped for a full redeployment.</p>
+<p>This approach is not possible if the application upgrade involves a change to the application database schema.</p>
+
+<hr>
+<p><b>Caution:</b></p>
+<p>To prevent the risk of version mismatch when a session fails over, upgrade all instances in a cluster at the same time. Otherwise a session might fail over to an instance where different versions of components are running.</p>
+
+<hr>
+
+<p>Perform this task on each cluster separately. A cluster acts as a safe boundary for session failover for instances in the cluster. Sessions in one cluster can never fail over to sessions in another cluster. Therefore, the risk of version mismatch is avoided.</p>
+<ol>
+<li>
+<p>Stop the cluster.</p>
+<p>See <a href="task-stop-cluster.html">To Stop a Cluster</a>.</p>
+</li>
+<li>
+<p>Upgrade the component in that cluster.</p>
+</li>
+<li>
+<p>Start the cluster.</p>
+<p>See <a href="task-start-cluster.html">To Start a Cluster</a>.</p>
+</li>
+</ol>
+<a id="sthref66" name="sthref66"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-create-cluster.html">To Create a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-delete-cluster.html">To Delete a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-availabilityservice.html">To Configure Availability Settings for a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-start-cluster.html">To Start a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-stop-cluster.html">To Stop a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-modify-cluster-config.html">To Modify the Configuration of a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-app-deploy.html">To Deploy an Application to a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-app-list.html">To List Applications That Are Deployed to a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-app-undeploy.html">To Undeploy Applications From a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-app-remove.html">To Remove Applications From a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-app-edit.html">To Edit an Application That Is Deployed to a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-app-enable-disable.html">To Enable or Disable an Application That Is Deployed to a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-app-lb-enable-disable.html">To Enable or Disable Load Balancing for an Application That Is Deployed to a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-resource-create.html">To Create a Resource for a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-resource-display.html">To List Resources for a Cluster</a></p>
+</li>
+<li>
+<p><a href="task-cluster-resource-enable-disable.html">To Enable or Disable a Resource Globally</a></p>
+</li>
+<li>
+<p><a href="task-cluster-resource-edit.html">To Edit a Resource for a Cluster</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

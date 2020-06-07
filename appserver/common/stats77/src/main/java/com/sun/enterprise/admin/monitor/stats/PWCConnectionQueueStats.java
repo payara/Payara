@@ -37,20 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
 
-/**
- *
- * @author  nsegura
- */
-import com.sun.enterprise.admin.monitor.stats.StringStatistic;
-import org.glassfish.j2ee.statistics.CountStatistic;
-import org.glassfish.j2ee.statistics.Stats;
+import javax.management.j2ee.statistics.CountStatistic;
+import javax.management.j2ee.statistics.Stats;
 
 /** 
  * ConnectionQueue information shows the number of sessions in the queue
  * and the average delay before the connection is accepted
+ * @author  nsegura
  */
 public interface PWCConnectionQueueStats extends Stats {
 

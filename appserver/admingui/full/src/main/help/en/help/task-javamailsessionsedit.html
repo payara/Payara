@@ -1,0 +1,116 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-javamailsessionsedit" name="task-javamailsessionsedit"></a><a id="GHJML00012" name="GHJML00012"></a></p>
+
+<h4><a id="sthref5" name="sthref5"></a>To Edit a JavaMail Session</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Resources node.</p>
+</li>
+<li>
+<p>Under the Resources node, select JavaMail Sessions.</p>
+<p>The JavaMail Sessions page opens.</p>
+</li>
+<li>
+<p>On the JavaMail Sessions page, click the name of the session that you are editing.</p>
+<p>The Edit JavaMail Session page opens.</p>
+</li>
+<li>
+<p>In the Mail Host field, specify the host name of the default mail server.</p>
+<p>The connect methods of the Store and Transport objects use this value if a protocol-specific host property is not supplied. The name must be resolvable to an actual host name.</p>
+</li>
+<li>
+<p>In the Default User field, type another user name to provide when connecting to a mail server.</p>
+<p>The connect methods of the Store and Transport objects use this value if a protocol-specific username property is not supplied. The user name must contain only alphanumeric, underscore, dash, or dot characters.</p>
+</li>
+<li>
+<p>In the Default Sender Address field, type the e-mail address of the default user.</p>
+<p>The format is <i>username</i><code>@</code><i>host</i>.<i>domain</i>.</p>
+</li>
+<li>
+<p>In the Deployment Order field, type a number to specify the deployment order of the JavaMail session resource.</p>
+<p>Resources with a lower number are loaded first at server startup. The default value is 100.</p>
+</li>
+<li>
+<p>In the Description field, change the description for the mail session.</p>
+</li>
+<li>
+<p>Select the Status Enabled checkbox to enable the mail session.</p>
+<p>The default value is Enabled.</p>
+</li>
+<li>
+<p>In the Store Protocol field, define the Store object communication method to be used.</p>
+<p>By default, the Store Protocol is <code>imap</code>.</p>
+</li>
+<li>
+<p>In the Store Protocol Class field, specify the Store communication method class that implements the desired Store protocol.</p>
+<p>By default, the Store Protocol Class is <code>com.sun.mail.imap.IMAPStore</code>.</p>
+</li>
+<li>
+<p>In the Transport Protocol field, specify the transport communication method.</p>
+<p>By default, the Transport Protocol is <code>smtp</code>.</p>
+</li>
+<li>
+<p>In the Transport Protocol Class field, specify the communication method for the Transport class.</p>
+<p>By default, the Transport Protocol Class is <code>com.sun.mail.smtp.SMTPTransport</code>.</p>
+</li>
+<li>
+<p>Select the Debug checkbox to enable extra debugging output, including a protocol trace, for this mail session.</p>
+<p>If the JavaMail log level is set to <code>FINE</code> or finer, the debugging output is generated and is included in the system log file. See <a href="../../../common/en/help/task-eelogginglevels.html">To Configure Log Levels</a> for information about setting the log level.</p>
+</li>
+<li>
+<p>In the Additional Properties table, specify additional properties required by applications, such as a protocol-specific host or username property.</p>
+<p>For a list of the available properties, see JavaMail API documentation (<code><a href="http://java.sun.com/products/javamail/javadocs/index.html">http://java.sun.com/products/javamail/javadocs/index.html</a></code>). Additional properties must begin with <code>mail-</code> and must use hyphens, not periods, as separators. For example, <code>mail-debug</code> is correct, but <code>mail.debug</code> is not. The GlassFish Server back end converts the hyphens into the periods expected by the JavaMail API.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+</ol>
+<a id="GHJML104" name="GHJML104"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-javamailsessioncreate.html">To Create a JavaMail Session</a></p>
+</li>
+<li>
+<p><a href="task-javamailsessionsdelete.html">To Delete a JavaMail Session</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

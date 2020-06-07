@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -81,6 +82,7 @@ public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction
      *                                   the autocommit mode of the physical
      *                                   connection
      */
+    @Override
     public void begin() throws ResourceException {
         //GJCINT
         mc.transactionStarted();
@@ -101,6 +103,7 @@ public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction
      *                                   the autocommit mode of the physical
      *                                   connection or committing the transaction
      */
+    @Override
     public void commit() throws ResourceException {
         try {
             mc.getActualConnection().commit();
@@ -123,6 +126,7 @@ public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction
      *                                   the autocommit mode of the physical
      *                                   connection or rolling back the transaction
      */
+    @Override
     public void rollback() throws ResourceException {
         try {
             mc.getActualConnection().rollback();

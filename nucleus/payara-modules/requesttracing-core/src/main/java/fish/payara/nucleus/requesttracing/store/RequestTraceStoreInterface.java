@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.nucleus.requesttracing.store;
 
 import fish.payara.notification.requesttracing.RequestTrace;
 import java.util.Collection;
+import java.util.function.IntSupplier;
 
 /**
  * An interface for a store of
@@ -80,21 +81,22 @@ public interface RequestTraceStoreInterface {
     Collection<RequestTrace> getTraces(int limit);
 
     /**
-     * Sets the maximum size of the store. Any traces added after this size will
-     * cause another to be removed. The trace removed depends on the store
+     * Sets the supplier for the maximum size of the store.
+     * 
+     * Any traces added after this size will cause another to be removed. The trace removed depends on the store
      * implementation.
      *
-     * @param size the maximum size of the store.
+     * @param size A supplier for the maximum size of the store.
      */
-    void setSize(int size);
+    void setSize(IntSupplier size);
 
     /**
-     * Gets the size of the store.
+     * Gets the current size of the store.
      *
      * @return the size of the store.
      */
     int getStoreSize();
-    
+
     /**
      *  Removes all of the traces from the store. 
      *  The store will be empty after this method is called. 
@@ -102,5 +104,11 @@ public interface RequestTraceStoreInterface {
      * @return The traces that were stored
      */
     Collection<RequestTrace> emptyStore();
-    
+
+    /**
+     * @return true in case of a clustered store, false in case of a local store.
+     */
+    default boolean isShared() {
+       return false;
+    }
 }

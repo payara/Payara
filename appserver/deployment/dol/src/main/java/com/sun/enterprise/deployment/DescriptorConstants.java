@@ -50,31 +50,36 @@ public interface DescriptorConstants {
 
     /**
      * Bean Pool - maximum size, a pool of slsb can grow to.
-     */ 
+     */
+    String MAX_POOL_SIZE = "MaxPoolSize";
     int MAX_POOL_SIZE_DEFAULT = -1;
     
     /**
      * Bean Pool - maximum time a caller will have to wait when pool 
      * has reached maximum configured size and an instance is not 
      * available to process the incoming request.
-     */ 
+     */
+    String MAX_WAIT_TIME = "MaxWaitTimeInMillis";
     int MAX_WAIT_TIME_DEFAULT = -1;
     
     /**
      * Bean Pool - size of slsb pool grows in increments specified by 
      * resize-quantity, within the configured upper limit max-pool-size. 
      */
+    String POOL_RESIZE_QTY = "PoolResizeQuantity";
     int POOL_RESIZE_QTY_DEFAULT = -1;
     
     /**
      * Bean Pool - minimum number of slsb instances maintained in a pool.
-     */ 
+     */
+    String STEADY_POOL_SIZE = "SteadyPoolSize";
     int STEADY_POOL_SIZE_DEFAULT = -1;   
     
     /**
      * Bean Pool - idle bean instance in a pool becomes a candidate for 
      * passivation (sfsb/eb) or deletion (slsb), when this timeout expires.
-     */ 
+     */
+    String POOL_IDLE_TIMEOUT = "PoolIdleTimeoutInSeconds";
     int POOL_IDLE_TIMEOUT_DEFAULT = -1;
     
     /**

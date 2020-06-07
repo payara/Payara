@@ -41,7 +41,6 @@ package com.sun.enterprise.universal.xml;
 
 import com.sun.enterprise.universal.collections.CollectionUtils;
 import java.util.*;
-//import static com.sun.enterprise.util.StringUtils.ok;
 
 /**
  * Normally I'd have named this class "Cluster" but we don't want it to clash

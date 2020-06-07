@@ -1,0 +1,113 @@
+unset-web-context-param(1)  asadmin Utility Subcommands  unset-web-context-param(1)
+
+NAME
+       unset-web-context-param - unsets a servlet context-initialization
+       parameter of a deployed web application or module
+
+SYNOPSIS
+           unset-web-context-param [--help]
+           --name=context-param-name application-name[/module]
+
+DESCRIPTION
+       The unset-web-context-param subcommand unsets a servlet
+       context-initialization parameter of one of the following items:
+
+       *   A deployed web application
+
+       *   A web module in a deployed Java Platform, Enterprise Edition (Java
+           EE) application
+
+       When a parameter is unset, its value reverts to the value, if any, that
+       is set in the application's deployment descriptor.
+
+       The application must already be deployed. Otherwise, an error occurs.
+
+       The parameter must have previously been set by using the
+       set-web-context-param subcommand. Otherwise, an error occurs.
+
+           Note
+           +----------------------------------------+
+           |           Do not use the               |
+           |           unset-web-context-param      |
+           |           subcommand to change the     |
+           |           value of a servlet           |
+           |           context-initialization       |
+           |           parameter that is set in an  |
+           |           application's deployment     |
+           |           descriptor. Instead, use the |
+           |           set-web-context-param(1)     |
+           |           subcommand for this purpose. |
+           +----------------------------------------+
+
+       This subcommand enables you to change the configuration of a deployed
+       application without the need to modify the application's deployment
+       descriptors and repackage and redeploy the application.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --name
+           The name of the servlet context-initialization parameter that is to
+           be unset. This parameter must have previously been set by using the
+           set-web-context-param subcommand. Otherwise, an error occurs.
+
+OPERANDS
+       application-name
+           The name of the application. This name can be obtained from the
+           Administration Console or by using the list-applications(1)
+           subcommand.
+
+           The application must already be deployed. Otherwise, an error
+           occurs.
+
+       module
+           The relative path to the module within the application's enterprise
+           archive (EAR) file. The path to the module is specified in the
+           module element of the application's application.xml file.
+
+           module is required only if the servlet context-initialization
+           parameter applies to a web module of a Java EE application. If
+           specified, module must follow application-name, separated by a
+           slash (/).
+
+           For example, the application.xml file for the myApp application
+           might specify the following web module:
+
+               <module>
+                   <web>
+                       <web-uri>myWebModule.war</web-uri>
+                   </web>
+               </module>
+           The module would be specified as the operand of this command as
+           myApp/myWebModule.war.
+
+EXAMPLES
+       Example 1, Unsetting a Servlet Context-Initialization Parameter for a
+       Web Application
+           This example unsets the servlet context-initialization parameter
+           javax.faces.STATE_SAVING_METHOD of the web application
+           basic-ezcomp. The parameter reverts to the value, if any, that is
+           defined in the application's deployment descriptor.
+
+               asadmin> unset-web-context-param
+               --name=javax.faces.STATE_SAVING_METHOD basic-ezcomp
+
+               Command unset-web-context-param executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       list-applications(1), list-web-context-param(1),
+       set-web-context-param(1)
+
+       asadmin(1M)
+
+Java EE 8                 09 Aug 2017          unset-web-context-param(1)

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 //----------------------------------------------------------------------------
 //
@@ -62,13 +63,12 @@
 
 package com.sun.jts.jtsxa;
 
-import org.omg.CosTransactions.*;
-import javax.transaction.xa.Xid;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import com.sun.logging.LogDomains;
-import com.sun.jts.utils.LogFormatter;
+import org.omg.CosTransactions.otid_t;
+
+import javax.transaction.xa.Xid;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The XID class provides an implementation of the X/Open
@@ -294,12 +294,12 @@ public class XID implements Xid {
      * @return the string representation of this XID
      */
     public String toString() {
-        /* toString() method is slightly expensive and this needs to be done because 
-	 * some of the drivers XAResource methods have the "trace("some thing " + xid)" 
+        /* toString() method is slightly expensive and this needs to be done because
+	 * some of the drivers XAResource methods have the "trace("some thing " + xid)"
          * kind of code which is executing this method resulting in performance degradation.
          */
         if (_logger.isLoggable(Level.FINE)) {
-            StringBuffer      d;             // Data String, in Hexidecimal
+            StringBuilder      d;             // Data String, in Hexidecimal
             String            s;             // Resultant String
 
             int               i;
@@ -307,7 +307,7 @@ public class XID implements Xid {
             int               L;
 
             L= gtrid_length + bqual_length;
-            d= new StringBuffer(L + L);
+            d= new StringBuilder(L + L);
 
             // Convert data string to hex
             for (i = 0; i < L; i++) {

@@ -37,41 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.stringifier;
 
 import java.security.Provider;
 
 /**
-	Stringifies a java.security.Provider.
+ * Stringifies a java.security.Provider.
  */
- 
-public final class ProviderStringifier implements Stringifier
-{
-	public final static ProviderStringifier	DEFAULT	= new ProviderStringifier();
-	
-		public
-	ProviderStringifier()
-	{
-	}
-	
-	
-		public String
-	stringify( Object object )
-	{
-		final Provider	provider	= (Provider)object;
-		
-		final StringBuffer	buf	= new StringBuffer();
+public final class ProviderStringifier implements Stringifier {
 
-		buf.append( provider.getInfo() );
-		
-		java.util.Iterator	iter	= provider.entrySet().iterator();
-		while ( iter.hasNext() )
-		{
-			buf.append( iter.next().toString() + "\n" );
-		}
+    public static final ProviderStringifier DEFAULT = new ProviderStringifier();
 
-		return( buf.toString() );
-	}
+    @Override
+    public String stringify(Object object) {
+        final Provider provider = (Provider) object;
+
+        final StringBuilder buf = new StringBuilder();
+
+        buf.append(provider.getInfo());
+
+        for (Object o : provider.entrySet()) {
+            buf.append(o.toString()).append("\n");
+        }
+
+        return (buf.toString());
+    }
 }
-

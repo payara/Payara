@@ -37,23 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.descriptor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.web.*;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
@@ -66,52 +61,7 @@ import org.glassfish.web.deployment.util.WebBundleTracerVisitor;
 import org.glassfish.web.deployment.util.WebBundleValidator;
 import org.glassfish.web.deployment.util.WebBundleVisitor;
 
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbReferenceDescriptor;
-import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
-import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.InjectionCapable;
-import com.sun.enterprise.deployment.InjectionInfo;
-import com.sun.enterprise.deployment.InjectionTarget;
-import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import com.sun.enterprise.deployment.LocaleEncodingMappingDescriptor;
-import com.sun.enterprise.deployment.LocaleEncodingMappingListDescriptor;
-import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
-import com.sun.enterprise.deployment.MetadataSource;
-import com.sun.enterprise.deployment.NamedReferencePair;
-import com.sun.enterprise.deployment.OrderedSet;
-import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
-import com.sun.enterprise.deployment.ResourceDescriptor;
-import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.enterprise.deployment.SecurityRoleDescriptor;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.WebService;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.deployment.WebServicesDescriptor;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.util.ComponentPostVisitor;
-import com.sun.enterprise.deployment.util.ComponentVisitor;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.web.AppListenerDescriptor;
-import com.sun.enterprise.deployment.web.ContextParameter;
-import com.sun.enterprise.deployment.web.EnvironmentEntry;
-import com.sun.enterprise.deployment.web.LoginConfiguration;
-import com.sun.enterprise.deployment.web.MimeMapping;
-import com.sun.enterprise.deployment.web.ResourceReference;
-import com.sun.enterprise.deployment.web.SecurityConstraint;
-import com.sun.enterprise.deployment.web.SecurityRole;
-import com.sun.enterprise.deployment.web.SecurityRoleReference;
-import com.sun.enterprise.deployment.web.ServletFilter;
-import com.sun.enterprise.deployment.web.ServletFilterMapping;
-import com.sun.enterprise.deployment.web.SessionConfig;
-import com.sun.enterprise.deployment.web.WebResourceCollection;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.*;
 
  /**
  *
@@ -2429,66 +2379,66 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      * Return a formatted version as a String.
      */
     @Override
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\nWeb Bundle descriptor");
-        toStringBuffer.append("\n");
-        printCommon(toStringBuffer);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\nWeb Bundle descriptor");
+        toStringBuilder.append("\n");
+        printCommon(toStringBuilder);
         if (sunWebApp != null) {
-            toStringBuffer.append("\n ========== Runtime Descriptors =========");
-            toStringBuffer.append("\n").append(sunWebApp.toString());
+            toStringBuilder.append("\n ========== Runtime Descriptors =========");
+            toStringBuilder.append("\n").append(sunWebApp.toString());
         }
     }
 
     /**
      *
-     * @param toStringBuffer
+     * @param toStringBuilder
      */
     @Override
-    public void printCommon(StringBuffer toStringBuffer) {
-        super.print(toStringBuffer);
-        toStringBuffer.append("\n context root ").append(getContextRoot());
+    public void printCommon(StringBuilder toStringBuilder) {
+        super.print(toStringBuilder);
+        toStringBuilder.append("\n context root ").append(getContextRoot());
         if (sessionConfig != null) {
-            toStringBuffer.append(sessionConfig);
+            toStringBuilder.append(sessionConfig);
         }
         String wname = getName();
         if (wname != null && wname.length() > 0) {
-            toStringBuffer.append("\n name ").append(wname);
+            toStringBuilder.append("\n name ").append(wname);
         }
-        toStringBuffer.append("\n mimeMappings ").append(mimeMappings);
-        toStringBuffer.append("\n welcomeFiles ").append(welcomeFiles);
-        toStringBuffer.append("\n errorPageDescriptors ").append(errorPageDescriptors);
-        toStringBuffer.append("\n appListenerDescriptors ").append(appListenerDescriptors);
-        toStringBuffer.append("\n contextParameters ").append(contextParameters);
-        toStringBuffer.append("\n ejbReferences ");
+        toStringBuilder.append("\n mimeMappings ").append(mimeMappings);
+        toStringBuilder.append("\n welcomeFiles ").append(welcomeFiles);
+        toStringBuilder.append("\n errorPageDescriptors ").append(errorPageDescriptors);
+        toStringBuilder.append("\n appListenerDescriptors ").append(appListenerDescriptors);
+        toStringBuilder.append("\n contextParameters ").append(contextParameters);
+        toStringBuilder.append("\n ejbReferences ");
         if (ejbReferences != null)
-            printDescriptorSet(ejbReferences, toStringBuffer);
-        toStringBuffer.append("\n resourceEnvRefReferences ");
+            printDescriptorSet(ejbReferences, toStringBuilder);
+        toStringBuilder.append("\n resourceEnvRefReferences ");
         if (resourceEnvRefReferences != null)
-            printDescriptorSet(resourceEnvRefReferences, toStringBuffer);
-        toStringBuffer.append("\n messageDestReferences ");
+            printDescriptorSet(resourceEnvRefReferences, toStringBuilder);
+        toStringBuilder.append("\n messageDestReferences ");
         if (messageDestReferences != null)
-            printDescriptorSet(messageDestReferences, toStringBuffer);
-        toStringBuffer.append("\n resourceReferences ");
+            printDescriptorSet(messageDestReferences, toStringBuilder);
+        toStringBuilder.append("\n resourceReferences ");
         if (resourceReferences != null)
-            printDescriptorSet(resourceReferences, toStringBuffer);
-        toStringBuffer.append("\n serviceReferences ");
+            printDescriptorSet(resourceReferences, toStringBuilder);
+        toStringBuilder.append("\n serviceReferences ");
         if (serviceReferences != null)
-            printDescriptorSet(serviceReferences, toStringBuffer);
-        toStringBuffer.append("\n distributable ").append(distributable);
-        toStringBuffer.append("\n denyUncoveredHttpMethods ").append(denyUncoveredHttpMethods);
-        toStringBuffer.append("\n securityRoles ").append(securityRoles);
-        toStringBuffer.append("\n securityConstraints ").append(securityConstraints);
-        toStringBuffer.append("\n contextRoot ").append(contextRoot);
-        toStringBuffer.append("\n loginConfiguration ").append(this.loginConfiguration);
-        toStringBuffer.append("\n webComponentDescriptors ");
+            printDescriptorSet(serviceReferences, toStringBuilder);
+        toStringBuilder.append("\n distributable ").append(distributable);
+        toStringBuilder.append("\n denyUncoveredHttpMethods ").append(denyUncoveredHttpMethods);
+        toStringBuilder.append("\n securityRoles ").append(securityRoles);
+        toStringBuilder.append("\n securityConstraints ").append(securityConstraints);
+        toStringBuilder.append("\n contextRoot ").append(contextRoot);
+        toStringBuilder.append("\n loginConfiguration ").append(this.loginConfiguration);
+        toStringBuilder.append("\n webComponentDescriptors ");
         if (webComponentDescriptors != null)
-            printDescriptorSet(webComponentDescriptors, toStringBuffer);
-        toStringBuffer.append("\n environmentEntries ");
+            printDescriptorSet(webComponentDescriptors, toStringBuilder);
+        toStringBuilder.append("\n environmentEntries ");
         if (environmentEntries != null)
-            printDescriptorSet(environmentEntries, toStringBuffer);
+            printDescriptorSet(environmentEntries, toStringBuilder);
     }
 
-    private void printDescriptorSet(Set descSet, StringBuffer sbuf) {
+    private void printDescriptorSet(Set descSet, StringBuilder sbuf) {
         if (descSet == null)
             return;
         for (Iterator itr = descSet.iterator(); itr.hasNext();) {
@@ -2609,11 +2559,11 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public void setJaxrsRolesAllowedEnabled(boolean jaxrsRolesAllowedEnabled) {
         this.jaxrsRolesAllowedEnabled = jaxrsRolesAllowedEnabled;
     }
-    
+
     public String getAppContextId() {
         return appContextId;
     }
-    
+
     public void setAppContextId(String appContextId) {
         this.appContextId = appContextId;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,6 @@
 
 package fish.payara.nucleus.requesttracing.admin;
 
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
@@ -70,6 +67,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Admin command to list Request Tracing Configuration
@@ -136,7 +134,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
             // Print trace store details
             writeVariableToActionReport(mainActionReport, "Reservoir Sampling Enabled?", configuration.getReservoirSamplingEnabled());
             writeVariableToActionReport(mainActionReport, "Trace Store Size", configuration.getTraceStoreSize());
-            if (!Strings.isNullOrEmpty(configuration.getTraceStoreTimeout())) {
+            if (StringUtils.ok(configuration.getTraceStoreTimeout())) {
                 writeVariableToActionReport(mainActionReport, "Trace Store Timeout (secs)", configuration.getTraceStoreTimeout());
             }
 
@@ -144,7 +142,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
             writeVariableToActionReport(mainActionReport, "Historic Trace Store Enabled?", configuration.getHistoricTraceStoreEnabled());
             if (Boolean.parseBoolean(configuration.getHistoricTraceStoreEnabled())) {
                 writeVariableToActionReport(mainActionReport, "Historic Trace Store Size", configuration.getHistoricTraceStoreSize());
-                if (!Strings.isNullOrEmpty(configuration.getHistoricTraceStoreTimeout())) {
+                if (StringUtils.ok(configuration.getHistoricTraceStoreTimeout())) {
                     writeVariableToActionReport(mainActionReport, "Historic Trace Store Timeout (secs)", configuration.getHistoricTraceStoreTimeout());
                 }
             }
@@ -188,12 +186,9 @@ public class GetRequestTracingConfiguration implements AdminCommand {
             String headers[] = {"Notifier Name", "Notifier Enabled"};
             ColumnFormatter columnFormatter = new ColumnFormatter(headers);
             
-            List<Class<Notifier>> notifierClassList = Lists.transform(configuration.getNotifierList(), new Function<Notifier, Class<Notifier>>() {
-                @Override
-                public Class<Notifier> apply(Notifier input) {
-                    return resolveNotifierClass(input);
-                }
-            });
+            List<Class<Notifier>> notifierClassList = configuration.getNotifierList().stream().map((input) -> {
+                return resolveNotifierClass(input);
+            }).collect(Collectors.toList());
 
             Properties notifierExtraProps = new Properties();
             for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {

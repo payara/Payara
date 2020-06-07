@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.config.util;
 
 import java.util.*;
@@ -62,6 +64,8 @@ public final class PortConstants {
     public static final int DEFAULT_JMX_PORT = 8686;
     public static final int DEFAULT_OSGI_SHELL_TELNET_PORT = 6666;
     public static final int DEFAULT_JAVA_DEBUGGER_PORT = 9009;
+    public static final int DEFAULT_HAZELCAST_DAS_PORT = 4900;
+    public static final int DEFAULT_HAZELCAST_START_PORT = 5900;
 
     public static final int PORTBASE_ADMINPORT_SUFFIX = 48;
     public static final int PORTBASE_HTTPSSL_SUFFIX = 81;
@@ -73,6 +77,8 @@ public final class PortConstants {
     public static final int PORTBASE_JMX_SUFFIX = 86;
     public static final int PORTBASE_OSGI_SUFFIX = 66;
     public static final int PORTBASE_DEBUG_SUFFIX = 9;
+    public static final int PORTBASE_HAZELCAST_DAS_PORT_SUFFIX = 49;
+    public static final int PORTBASE_HAZELCAST_START_PORT_SUFFIX = 59;
     
     // these are the ports that we support handling conflicts for...
     public static final String ADMIN = "ASADMIN_LISTENER_PORT";

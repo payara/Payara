@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,8 +38,7 @@
  */
 package fish.payara.notification.snmp;
 
-import com.google.common.base.Strings;
-import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.Param;
@@ -82,6 +81,7 @@ public class SnmpNotificationConfigurer extends BaseNotificationConfigurer<SnmpN
     @Param(name = "port", defaultValue = "162", optional = true)
     private Integer port;
 
+    @Override
     protected void applyValues(SnmpNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
@@ -89,16 +89,16 @@ public class SnmpNotificationConfigurer extends BaseNotificationConfigurer<SnmpN
         if(this.noisy != null) {
             configuration.noisy(this.noisy);
         }
-        if(!Strings.isNullOrEmpty(community)) {
+        if(StringUtils.ok(community)) {
             configuration.setCommunity(community);
         }
-        if(!Strings.isNullOrEmpty(oid)) {
+        if(StringUtils.ok(oid)) {
             configuration.setOid(oid);
         }
-        if(!Strings.isNullOrEmpty(version)) {
+        if(StringUtils.ok(version)) {
             configuration.setVersion(version);
         }
-        if(!Strings.isNullOrEmpty(hostName)) {
+        if(StringUtils.ok(hostName)) {
             configuration.setHost(hostName);
         }
         if(port != null) {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.pluggable;
 
@@ -81,17 +82,6 @@ public interface WebContainerFeatureFactory {
      * @return The default datestamp pattern to be applied to access log files
      */
     public String getDefaultAccessLogDateStampPattern();
-
-    /**
-     * Returns true if the first access log file and all subsequently rotated
-     * ones are supposed to be date-stamped, and false if datestamp is to be
-     * added only starting with the first rotation.
-     *
-     * @return true if first access log file and all subsequently rotated
-     * ones are supposed to be date-stamped, and false if datestamp is to be
-     * added only starting with the first rotation. 
-     */
-    public boolean getAddDateStampToFirstAccessLogFile();
 
     /**
      * Gets the default rotation interval in minutes.

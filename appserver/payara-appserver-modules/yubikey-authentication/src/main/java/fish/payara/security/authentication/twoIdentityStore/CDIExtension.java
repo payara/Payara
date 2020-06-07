@@ -43,7 +43,6 @@ import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
 import fish.payara.security.identitystores.YubikeyIdentityStore;
 import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
-import fish.payara.security.identitystores.YubicoAPIImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,8 +83,6 @@ public class CDIExtension implements Extension {
                 MODULE_PREFIX + TwoIdentityStoreAuthenticationMechanism.class.getName());
         beforeBean.addAnnotatedType(beanManager.createAnnotatedType(TwoIdentityStoreAuthenticationMechanismState.class),
                 MODULE_PREFIX + TwoIdentityStoreAuthenticationMechanismState.class.getName());
-        beforeBean.addAnnotatedType(beanManager.createAnnotatedType(YubicoAPIImpl.class), 
-                MODULE_PREFIX + YubicoAPIImpl.class.getName());
         beforeBean.addAnnotatedType(beanManager.createAnnotatedType(YubikeyIdentityStore.class), 
                 MODULE_PREFIX + YubikeyIdentityStore.class.getName());
         

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -94,7 +95,7 @@ public final class ApplicationContextFacade
     /**
      * Cache Class object used for reflection.
      */
-    private static HashMap<String, Class<?>[]> classCache = new HashMap<String, Class<?>[]>();
+    private static final HashMap<String, Class<?>[]> classCache = new HashMap<String, Class<?>[]>();
     
     static {
         Class<?>[] clazz = new Class[]{String.class};
@@ -135,7 +136,7 @@ public final class ApplicationContextFacade
     /**
      * Cache method object.
      */
-    private HashMap<String, Method> objectCache;
+    private final HashMap<String, Method> objectCache;
     
     
     // ----------------------------------------------------------- Constructors
@@ -449,8 +450,7 @@ public final class ApplicationContextFacade
     @SuppressWarnings("unchecked") // doPrivileged() returns the correct type
     public boolean setInitParameter(String name, String value) {
         if (SecurityUtil.isPackageProtectionEnabled()) {
-            return ((Boolean) doPrivileged(
-                "setInitParameter", new Object[]{name, value})).booleanValue();
+            return ((Boolean) doPrivileged("setInitParameter", new Object[]{name, value}));
         } else {
             return context.setInitParameter(name, value);
         }
@@ -1065,6 +1065,7 @@ public final class ApplicationContextFacade
                                      
         if (Globals.IS_SECURITY_ENABLED){
            return AccessController.doPrivileged(new PrivilegedExceptionAction<Object>(){
+                @Override
                 public Object run() throws IllegalAccessException, InvocationTargetException{
                     return method.invoke(context,  params);
                 }

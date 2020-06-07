@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package test.com.sun.jaspic.config;
 
 import java.util.concurrent.TimeUnit;
@@ -85,7 +85,6 @@ public class FactoryTest {
     /** switch definition of default test factory to test native factory
      * will also need to configure proper dependencies
      */
-    // private static final String DEFAULT_TEST_FACTORY_CLASS_NAME = "com.sun.enterprise.security.jmac.config.SaveAuthConfigFactory";
     private static final String DEFAULT_TEST_FACTORY_CLASS_NAME = AuthConfigFileFactory.class.getName();
     private static String testFactoryClassName = DEFAULT_TEST_FACTORY_CLASS_NAME;
     public static final String DEFAULT_FACTORY_SECURITY_PROPERTY =

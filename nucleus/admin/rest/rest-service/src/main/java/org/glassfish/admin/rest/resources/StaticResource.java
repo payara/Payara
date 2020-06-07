@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.resources;
 
 import java.io.InputStream;
@@ -54,8 +56,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 @Path("/static/")
 public class StaticResource {
 
-    private final String PATH_INSIDE_JAR = "org/glassfish/admin/rest/static/";
-    private final String mimes[] = {
+    private static final String PATH_INSIDE_JAR = "org/glassfish/admin/rest/static/";
+    private static final String[] mimes = {
         ".bmp", "image/bmp",
         ".bz", "application/x-bzip",
         ".bz2", "application/x-bzip2",

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static java.util.logging.Level.FINE;
@@ -105,7 +105,7 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
         this.callbackHandler = callbackHandler;
         
         if (_logger.isLoggable(FINE)) {
-            _logger.log(FINE, "Login module initialized: {0}", this.getClass().toString());
+            _logger.log(FINE, "Login module initialized: {0}", getClass());
         }
     }
 
@@ -142,14 +142,14 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
         return true;
     }
 
-    final public boolean abort() throws LoginException {
+    public final boolean abort() throws LoginException {
         _logger.fine("JAAS authentication aborted.");
 
         if (!success) {
             return false;
         }
         
-        if (success && !commitsuccess) {
+        if (!commitsuccess) {
             // login succeeded but overall authentication failed
             success = false;
             for (int i = 0; i < groups.length; i++) {
@@ -164,18 +164,17 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
             }
             x500Principal = null;
         } else {
-            // overall authentication succeeded and commit succeeded,
+            // Overall authentication succeeded and commit succeeded,
             // but someone else's commit failed
             logout();
         }
         
         return true;
-
     }
 
-    final public boolean logout() throws LoginException {
+    public final boolean logout() throws LoginException {
         if (_logger.isLoggable(FINE)) {
-            _logger.log(FINE, "JAAS logout for: {0}", subject.toString());
+            _logger.log(FINE, "JAAS logout for: {0}", subject);
         }
 
         subject.getPrincipals().clear();
@@ -202,21 +201,27 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
 
     private void extractCredentials() throws LoginException {
         // Certificates are available as a List object in the Public Credentials.
-        Set<List> creds = subject.getPublicCredentials(List.class);
-        Iterator<List> itr = creds.iterator();
+        
+        @SuppressWarnings("rawtypes")
+        Set creds = subject.getPublicCredentials(List.class);
+        
+        @SuppressWarnings("unchecked")
+        Set<List<X509Certificate>> credentials = (Set<List<X509Certificate>>) creds;
+        
+        Iterator<List<X509Certificate>> itr = credentials.iterator();
         if (!itr.hasNext()) {
             success = false;
             throw new LoginException("No Certificate Credential found.");
         }
         
-        List certCred = itr.next();
+        List<X509Certificate> certCred = itr.next();
         if (certCred == null || certCred.isEmpty()) {
             success = false;
             throw new LoginException("No Certificate(s) found.");
         }
         
         try {
-            certs = (X509Certificate[]) certCred.toArray(new X509Certificate[certCred.size()]);
+            certs = certCred.toArray(new X509Certificate[certCred.size()]);
         } catch (Exception ex) {
             throw (LoginException) new LoginException("No Certificate(s) found.").initCause(ex);
         }

@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.server.core.jws;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -70,7 +70,6 @@ import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.appclient.server.core.AppClientDeployer;
 import org.glassfish.appclient.server.core.AppClientServerApplication;
-import org.glassfish.appclient.server.core.jws.ExtensionFileManager.Extension;
 import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
 import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
@@ -170,8 +169,8 @@ public class JWSAdapterManager implements PostConstruct {
         iiopService = config.getExtensionByType(IiopService.class);
         umbrellaRoot = new File(installRootURI).getParentFile();
         umbrellaRootURI = umbrellaRoot.toURI();
-        systemLevelSignedJARsRoot = new File(serverEnv.getDomainRoot(), JWS_SIGNED_SYSTEM_JARS_ROOT);
-        domainLevelSignedJARsRoot = new File(serverEnv.getDomainRoot(), JWS_SIGNED_DOMAIN_JARS_ROOT);
+        systemLevelSignedJARsRoot = new File(serverEnv.getInstanceRoot(), JWS_SIGNED_SYSTEM_JARS_ROOT);
+        domainLevelSignedJARsRoot = new File(serverEnv.getInstanceRoot(), JWS_SIGNED_DOMAIN_JARS_ROOT);
     }
 
     public static String signingAlias(final DeploymentContext dc) {
@@ -188,7 +187,10 @@ public class JWSAdapterManager implements PostConstruct {
      * @param content
      */
     void addStaticSystemContent(final String lookupURI, StaticContent newContent) throws IOException {
-        systemAdapter().addContentIfAbsent(lookupURI, newContent);
+        AppClientHTTPAdapter adapter = systemAdapter();
+        if (adapter != null) {
+            adapter.addContentIfAbsent(lookupURI, newContent);
+        }
     }
 
     private static String chooseAlias(final DeploymentContext dc) {
@@ -208,7 +210,7 @@ public class JWSAdapterManager implements PostConstruct {
             AppClientHTTPAdapter sysAdapter = new AppClientHTTPAdapter(
                     NamingConventions.JWSAPPCLIENT_SYSTEM_PREFIX,
                     new Properties(),
-                    serverEnv.getDomainRoot(), 
+                    serverEnv.getInstanceRoot(),
                     new File(installRootURI),
                     iiopService,
                     orbFactory);
@@ -231,9 +233,12 @@ public class JWSAdapterManager implements PostConstruct {
 
     void addContentIfAbsent(final Map<String,StaticContent> staticContent,
             final Map<String,DynamicContent> dynamicContent) throws IOException {
-        systemAdapter().addContentIfAbsent(staticContent, dynamicContent);
+        AppClientHTTPAdapter adapter = systemAdapter();
+        if (adapter != null) {
+            adapter.addContentIfAbsent(staticContent, dynamicContent);
+        }
     }
-    
+
     /**
      * Records the need for signed copies of the GlassFish system JARs for the
      * specified signing alias.
@@ -281,21 +286,6 @@ public class JWSAdapterManager implements PostConstruct {
             }
         }
 
-        /*
-         * Add the endorsed JARs to the system content.
-         */
-        final File endorsedDir = new File(modulesDir(), "endorsed");
-        for (File endorsedJar : endorsedDir.listFiles(new FileFilter(){
-
-                    @Override
-                    public boolean accept(File pathname) {
-                        return (pathname.isFile() && pathname.getName().endsWith(".jar"));
-                    }
-            })) {
-            result.put(systemPath(endorsedJar.toURI()),
-                    systemJarSignedContent(endorsedJar, signingAlias));
-            systemJARRelativeURIs.add(relativeSystemPath(endorsedJar.toURI()));
-        }
         return result;
     }
 
@@ -319,11 +309,11 @@ public class JWSAdapterManager implements PostConstruct {
         return new File(new File(installRootURI), "lib");
     }
 
-    static String publicExtensionHref(final Extension ext) {
+    static String publicExtensionHref(final ExtensionFileManager.Extension ext) {
         return NamingConventions.JWSAPPCLIENT_SYSTEM_PREFIX + "/" + publicExtensionLookupURIText(ext);
     }
 
-    static String publicExtensionLookupURIText(final Extension ext) {
+    static String publicExtensionLookupURIText(final ExtensionFileManager.Extension ext) {
         return NamingConventions.JWSAPPCLIENT_EXT_INTRODUCER + "/" +
                 ext.getExtDirectoryNumber() + "/" +
                 ext.getFile().getName();
@@ -454,7 +444,7 @@ public class JWSAdapterManager implements PostConstruct {
         final AppClientHTTPAdapter adapter = new AppClientHTTPAdapter(
                 contextRoot, staticContent,
                 dynamicContent, tokens,
-                serverEnv.getDomainRoot(), 
+                serverEnv.getInstanceRoot(),
                 new File(installRootURI),
                 iiopService,
                 orbFactory);

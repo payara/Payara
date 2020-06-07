@@ -1,0 +1,101 @@
+create-managed-thread-factory(1)  asadmin Utility Subcommands  create-managed-thread-factory(1)
+
+NAME
+       create-managed-thread-factory - creates a managed thread factory
+       resource
+
+SYNOPSIS
+           create-managed-thread-factory [--help]
+           [--enabled={false|true}]
+           [--contextinfoenabled={false|true}]
+           [--contextinfo={Classloader|JNDI|Security|WorkArea}]
+           [--threadpriority threadpriority]
+           [--description description]
+           [--property property]
+           [--target target]
+           jndi_name
+
+DESCRIPTION
+       The create-managed-thread-factory subcommand creates a managed thread
+       factory resource.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --enabled
+           Determines whether the managed thread factory is enabled at
+           runtime. The default value is true.
+
+       --contextinfoenabled
+           Determines whether container contexts are propagated to threads. If
+           set to true, the contexts specified in the --contextinfo option are
+           propagated. If set to false, no contexts are propagated and the
+           --contextinfo option is ignored. The default value is true.
+
+       --contextinfo
+           Specifies individual container contexts to propagate to threads.
+           Valid values are Classloader, JNDI, Security, and WorkArea. Values
+           are specified in a comma-separated list and are case-insensitive.
+           All contexts are propagated by default.
+
+       --threadpriority
+           Specifies the priority to assign to created threads. The default
+           value is 5.
+
+       --description
+           Descriptive details about the resource.
+
+       --property
+           Optional attribute name/value pairs for configuring the resource.
+
+           GlassFish Server does not define any additional properties for this
+           resource. Moreover, this resource does not currently use any
+           additional properties.
+
+       --target
+           Specifies the target for which you are creating the resource. Valid
+           targets are:
+
+           server
+               Creates the resource for the default server instance. This is
+               the default value.
+
+           domain
+               Creates the resource for the domain.
+
+           cluster_name
+               Creates the resource for every server instance in the specified
+               cluster.
+
+           instance_name
+               Creates the resource for the specified server instance.
+
+OPERANDS
+       jndi_name
+           The JNDI name of this resource.
+
+EXAMPLES
+       Example 1, Creating a Managed Thread Factory Resource
+           This example creates a managed thread factory resource named
+           concurrent/myThreadFactory.
+
+               asadmin> create-managed-thread-factory concurrent/myThreadFactory
+               Managed thread factory concurrent/myThreadFactory created successfully.
+               Command create-managed-thread-factory executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-managed-thread-factory(1), list-managed-thread-factories(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017         create-managed-thread-factory(1)

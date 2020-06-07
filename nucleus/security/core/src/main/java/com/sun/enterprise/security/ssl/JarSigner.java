@@ -245,6 +245,7 @@ public class JarSigner {
             sig.update(sigFileContent);
 
             // Create PKCS7 block
+            // Can't use X500Principal here as SignerInfo requires X500Name
             PKCS7 pkcs7 = new PKCS7(new AlgorithmId[] { AlgorithmId.get(digestAlgorithm) }, new ContentInfo(sigFileContent), certChain,
                     new SignerInfo[] { new SignerInfo((X500Name) certChain[0].getIssuerDN(), certChain[0].getSerialNumber(),
                             AlgorithmId.get(digestAlgorithm), AlgorithmId.get(keyAlgorithm), sig.sign()) });

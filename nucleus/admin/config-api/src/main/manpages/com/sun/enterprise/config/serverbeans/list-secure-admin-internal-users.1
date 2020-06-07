@@ -1,0 +1,75 @@
+list-secure-admin-internal-users(1)  asadmin Utility Subcommands  list-secure-admin-internal-users(1)
+
+NAME
+       list-secure-admin-internal-users - lists the user names that the
+       GlassFish Server DAS and instances use to authenticate with each other
+       and to authorize admin operations.
+
+SYNOPSIS
+           list-secure-admin-internal-users [--help]
+           [--long={false|true}]
+           [--output output]
+           [--header={false|true}]
+           [name]
+
+DESCRIPTION
+       The list-secure-admin-internal-users subcommand lists the user names
+       that the GlassFish Server DAS and instances use to authenticate with
+       each other and to authorize admin operations.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --long, -l
+           Displays detailed information about each internal user. The default
+           value is false.
+
+       --output, -o
+           Displays specific details about each internal user. Use a
+           comma-separated list to specify the details you want to display and
+           their order. The values are case-insensitive.
+
+           Possible values are as follows:
+
+           username
+               Displays the user name for the internal user.
+
+           password-alias
+               Displays the password alias for the internal user.
+
+       --header, -h
+           Specifies whether column headings are displayed when the --long
+           option is used. The default value is true. To suppress the
+           headings, set the --header option to false.
+
+OPERANDS
+       name
+           The user name for the internal user for which you want to display
+           details.
+
+EXAMPLES
+       Example 1, Listing the User Name for Secure Admin
+           This example lists the user names that the GlassFish Server DAS and
+           instances use to authenticate with each other and to authorize
+           admin operations.
+
+               asadmin> list-secure-admin-internal-users
+
+               Command list-secure-admin-internal-users executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       enable-secure-admin(1)
+
+       enable-secure-admin-internal-user(1)
+
+       asadmin(1M)
+
+Java EE 8              09 Aug 2017       list-secure-admin-internal-users(1)

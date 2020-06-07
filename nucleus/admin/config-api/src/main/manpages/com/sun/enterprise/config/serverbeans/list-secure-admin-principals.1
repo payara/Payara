@@ -1,0 +1,74 @@
+list-secure-admin-principals(1)  asadmin Utility Subcommands  list-secure-admin-principals(1)
+
+NAME
+       list-secure-admin-principals - lists the certificates for which
+       GlassFish Server accepts admin requests from clients.
+
+SYNOPSIS
+           list-secure-admin-principals [--help]
+           [--long={false|true}]
+           [--output output]
+           [--header={false|true}]
+           [name]
+
+DESCRIPTION
+       The list-secure-admin-principals subcommand lists the certificates for
+       which GlassFish Server accepts admin requests from clients.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --long, -l
+           Displays detailed information about the certificates for which
+           GlassFish Server accepts admin requests from clients. The default
+           value is false.
+
+       --output, -o
+           Displays specific details about the certificates for which
+           GlassFish Server accepts admin requests from clients. Use a
+           comma-separated list to specify the details you want to display and
+           their order. The values are case-insensitive.
+
+           Possible values are as follows:
+
+           DN
+               Displays the distinguished name (DN) of each certificate.
+
+       --header, -h
+           Specifies whether column headings are displayed when the --long
+           option is used. The default value is true. To suppress the
+           headings, set the --header option to false.
+
+OPERANDS
+       name
+           The distinguished name of the certificate, specified as a
+           comma-separated list in quotes. For example:
+           "CN=system.amer.oracle.com,OU=GlassFish,O=Oracle
+           Corporation,L=Santa Clara,ST=California,C=US".
+
+EXAMPLES
+       Example 1, Listing the Certificates
+           This example lists the certificates for which GlassFish Server
+           accepts admin requests from clients.
+
+               asadmin> list-secure-admin-principals
+               CN=localhost,OU=GlassFish,O=Oracle Corporation,L=Santa Clara,ST=California,C=US
+               CN=localhost-instance,OU=GlassFish,O=Oracle Corporation,L=Santa Clara,ST=California,C=US
+               Command list-secure-admin-principals executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       enable-secure-admin(1)
+
+       enable-secure-admin-principal(1)
+
+       asadmin(1M)
+
+Java EE 8                09 Aug 2017         list-secure-admin-principals(1)

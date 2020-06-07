@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates.]
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -54,7 +56,8 @@ import javax.inject.Inject;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
+
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
@@ -95,8 +98,12 @@ public class ListNodesCommand implements AdminCommand{
 
         String nodeList = lnh.getNodeList();
 
-         report.setMessage(nodeList);
-        
+        report.setMessage(nodeList);
+
+        Properties extraProperties = new Properties();
+        extraProperties.put("nodeNames", lnh.getNodeNamesList());
+        report.setExtraProperties(extraProperties);
+
         report.setActionExitCode(ExitCode.SUCCESS);
 
     }

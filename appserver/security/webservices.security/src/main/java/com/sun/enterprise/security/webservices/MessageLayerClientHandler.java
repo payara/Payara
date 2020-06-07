@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 /*
  * ClientWSSHandler.java
@@ -61,7 +61,7 @@ import javax.xml.soap.SOAPMessage;
 import com.sun.enterprise.security.SecurityServicesUtil;
 //security apis
 import com.sun.enterprise.security.jauth.ClientAuthContext;
-import com.sun.enterprise.security.jmac.provider.ClientAuthConfig;
+import com.sun.enterprise.security.jauth.jaspic.provider.ClientAuthConfig;
 
 /**
  * Client Side Handler to be invoked from the appclient A similiar copy sans appserver specific
@@ -76,7 +76,7 @@ public class MessageLayerClientHandler implements Handler {
     private static Logger _logger = LogUtils.getLogger();
 
     // key to ClientAuthConfig in HandlerInfo
-    public static final String CLIENT_AUTH_CONFIG = "com.sun.enterprise.security.jmac.provider.ClientAuthConfig";
+    public static final String CLIENT_AUTH_CONFIG = "com.sun.enterprise.security.jaspic.provider.ClientAuthConfig";
 
     // key to ClientAuthContext in SOAPMessageContext
     private static final String CLIENT_AUTH_CONTEXT = "com.sun.enterprise.security.jauth.ClientAuthContext";

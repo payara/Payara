@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package test.admincli.util;
 
@@ -48,10 +49,10 @@ import java.io.*;
  * @author Administrator
  */
 public class StreamGobbler extends Thread {
-    
+
     private final InputStream is;
     private final String type;
-    private final StringBuffer stringBuffer = new StringBuffer();
+    private final StringBuilder builder = new StringBuilder();
 
     public StreamGobbler(InputStream is, String type) {
         this.is = is;
@@ -64,7 +65,7 @@ public class StreamGobbler extends Thread {
             BufferedReader br = new BufferedReader(isr);
             String line = null;
             while ((line = br.readLine()) != null) {
-                stringBuffer.append(type + ">" + line + "\n");
+                builder.append(type + ">" + line + "\n");
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -72,6 +73,6 @@ public class StreamGobbler extends Thread {
     }
 
     public String getOutput() {
-        return stringBuffer.toString();
+        return builder.toString();
     }
 }

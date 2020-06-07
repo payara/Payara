@@ -37,29 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.transaction.api;
 
-import java.rmi.RemoteException;
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TransactionAdminBean implements java.io.Serializable {
 	private Object m_identifier;
-        private String m_id;
+    private String m_id;
 	private String m_status;
 	private long m_elapsedTime;
-        private String m_componentName;
-        private ArrayList<String> m_resourceNames;
+    private String m_componentName;
+    private List<String> m_resourceNames;
 
 	public TransactionAdminBean(Object identifier, String id, String status, long elapsedTime,
-                                    String componentName, ArrayList<String> resourceNames) {
+                                    String componentName, List<String> resourceNames) {
 		m_identifier = identifier;
                 m_id=id;
 		m_status = status;
 		m_elapsedTime = elapsedTime;
-                m_componentName = componentName;
-                m_resourceNames = resourceNames;
+        m_componentName = componentName;
+        m_resourceNames = resourceNames;
 	}
 
 	// getter functions ...
@@ -68,7 +68,7 @@ public class TransactionAdminBean implements java.io.Serializable {
 		return m_identifier;
 	}
 
-        public String getId(){
+    public String getId(){
             return m_id;
         }
 
@@ -80,13 +80,13 @@ public class TransactionAdminBean implements java.io.Serializable {
 		return m_elapsedTime;
 	}
 
-        public String getComponentName() {
-            return m_componentName;
-        }
+    public String getComponentName() {
+        return m_componentName;
+    }
 
-        public ArrayList<String> getResourceNames() {
-            return m_resourceNames;
-        }
+    public List<String> getResourceNames() {
+        return m_resourceNames;
+    }
 
 	// setter functions ...
 
@@ -94,7 +94,7 @@ public class TransactionAdminBean implements java.io.Serializable {
 		m_identifier = id;
         }
 
-        public void setId(String id){
+    public void setId(String id){
             m_id=id;
         }
 
@@ -106,14 +106,14 @@ public class TransactionAdminBean implements java.io.Serializable {
 		m_elapsedTime = time;
 	}
 
-        public void setComponentName(String componentName) {
-            m_componentName = componentName;
-        }
+    public void setComponentName(String componentName) {
+        m_componentName = componentName;
+    }
 
-        public void setResourceNames(ArrayList<String> resourceNames) {
-            m_resourceNames = resourceNames;
-        }
-     
+    public void setResourceNames(ArrayList<String> resourceNames) {
+        m_resourceNames = resourceNames;
+    }
+
 }
 
 

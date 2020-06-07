@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.mbeanserver.ssl;
 
 import java.io.*;
@@ -50,6 +52,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.*;
 import org.glassfish.admin.mbeanserver.Util;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL2;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL2_HELLO;
+import static org.glassfish.grizzly.config.dom.Ssl.SSL3;
+import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
@@ -413,20 +419,20 @@ public class SSLClientConfigurator {
     }
 
     private void configureCiphersAndProtocols() {
-        List<String> tmpSSLArtifactsList = new LinkedList<String>();
+        List<String> tmpSSLArtifactsList = new LinkedList<>();
         // first configure the protocols
         System.out.println("SSLParams ="+ sslParams);
         if (sslParams.getSsl2Enabled()) {
-            tmpSSLArtifactsList.add("SSLv2");
+            tmpSSLArtifactsList.add(SSL2);
         }
         if (sslParams.getSsl3Enabled()) {
-            tmpSSLArtifactsList.add("SSLv3");
+            tmpSSLArtifactsList.add(SSL3);
         }
         if (sslParams.getTlsEnabled()) {
-            tmpSSLArtifactsList.add("TLSv1");
+            tmpSSLArtifactsList.add(TLS1);
         }
         if (sslParams.getSsl3Enabled() || sslParams.getTlsEnabled()) {
-            tmpSSLArtifactsList.add("SSLv2Hello");
+            tmpSSLArtifactsList.add(SSL2_HELLO);
         }
         
         if (tmpSSLArtifactsList.isEmpty()) {

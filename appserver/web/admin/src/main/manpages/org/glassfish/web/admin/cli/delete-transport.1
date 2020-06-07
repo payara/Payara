@@ -1,0 +1,61 @@
+delete-transport(1)       asadmin Utility Subcommands      delete-transport(1)
+
+NAME
+       delete-transport - removes a transport
+
+SYNOPSIS
+           delete-transport [--help]
+           [--target target]
+           transport-name
+
+DESCRIPTION
+       The delete-transport subcommand removes the specified transport. This
+       subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Deletes the transport only from the specified target. Valid values
+           are as follows:
+
+           server
+               Deletes the transport from the default server instance. This is
+               the default value.
+
+           configuration-name
+               Deletes the transport from the specified configuration.
+
+           cluster-name
+               Deletes the transport from all server instances in the
+               specified cluster.
+
+           standalone-instance-name
+               Deletes the transport from the specified standalone server
+               instance.
+
+OPERANDS
+       transport-name
+           The name of the transport to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a Transport
+           The following command deletes the transport named http1-trans:
+
+               asadmin> delete-transport http1-trans
+               Command delete-transport executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-transport(1), list-transports(1)
+
+       asadmin(1M)
+
+Java EE 8                         08 Oct 2010              delete-transport(1)

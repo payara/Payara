@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.util;
 
@@ -197,7 +197,6 @@ public class SystemPropertyConstants {
 
     public static final String JDMK_HOME_PROPERTY = "com.sun.aas.jdmkHome";
 
-    public static final String DERBY_ROOT_PROPERTY = "com.sun.aas.derbyRoot";
     public static final String H2_ROOT_PROPERTY = "fish.payara.aas.h2Root";
 
     /** Java ES Monitoring Framework install directory */
@@ -226,21 +225,19 @@ public class SystemPropertyConstants {
 
     /**
      * A method that returns the passed String as a property that can be replaced at run time.
-     * 
+     *
      * @param name String that represents a property, e.g INSTANCE_ROOT_PROPERTY in this class. The String may not be null.
      * @return a String that represents the replaceable value of passed String. Generally speaking it will be decorated with
      * a pair of braces with $ in the front (e.g. "a" will be returned as "${a}").
      * @throws IllegalArgumentException if the passed String is null
      */
-    public static final String getPropertyAsValue(final String name) {
+    public static String getPropertyAsValue(final String name) {
         if (name == null) {
             final String pn = "spc.null_name";
             final String pv = "property";
             throw new IllegalArgumentException(sm.getString(pn, pv));
         }
-        final StringBuffer sb = new StringBuffer();
-        sb.append(OPEN).append(name).append(CLOSE);
-        return (sb.toString());
+        return OPEN + name + CLOSE;
     }
 
     public static final String OPEN = "${";
@@ -251,7 +248,7 @@ public class SystemPropertyConstants {
      * syntax" the same string is returned. The "system-propery syntax" is "${...}" The given String may not be null. The
      * returned String may be an empty String, if it is of the form "${}" (rarely so).
      */
-    public static final String unSystemProperty(final String sp) {
+    public static String unSystemProperty(final String sp) {
         if (sp == null)
             throw new IllegalArgumentException("null_arg");
         String ret = sp;
@@ -261,7 +258,7 @@ public class SystemPropertyConstants {
         return (ret);
     }
 
-    public static final boolean isSystemPropertySyntax(final String s) {
+    public static boolean isSystemPropertySyntax(final String s) {
         if (s == null)
             throw new IllegalArgumentException("null_arg");
         boolean sp = false;
@@ -275,9 +272,8 @@ public class SystemPropertyConstants {
      * String. Never returns a null. Returned String contains no backslashes. Note that it is <b> not <b> the absolute value
      * of the path on a file system.
      */
-    public static final String getDocRootDefaultValue() {
-        final StringBuffer sb = new StringBuffer(getPropertyAsValue(INSTANCE_ROOT_PROPERTY));
-        return (sb.append("/docroot").toString());
+    public static String getDocRootDefaultValue() {
+        return getPropertyAsValue(INSTANCE_ROOT_PROPERTY) + "/docroot";
     }
 
     /**
@@ -285,36 +281,35 @@ public class SystemPropertyConstants {
      * virtual server is stored, as a String. Never returns a null. Returned String contains no backslashes. Note that it is
      * <b> not <b> the absolute value of the path on a file system.
      */
-    public static final String getAccessLogDefaultValue() {
-        final StringBuffer sb = new StringBuffer(getPropertyAsValue(INSTANCE_ROOT_PROPERTY));
-        return (sb.append("/logs/access").toString());
+    public static String getAccessLogDefaultValue() {
+        return getPropertyAsValue(INSTANCE_ROOT_PROPERTY) + "/logs/access";
     }
 
     /**
      * Returns the system specific file.separator delimited path to the asadmin script. Any changes to file layout should
-     * 
+     *
      * be reflected here. The path will contain '/' as the separator character, regardless of operating platform. Never
      * returns a null. Assumes the the property "INSTALL_ROOT_PROPERTY" is set in the VM before calling this. As of now
      * (September 2005) all the server instances and asadmin VM itself has this property set. The method does not guarantee
      * that the script exists on the given system. It should only be used when caller wants to know the location of the
      * script. Caller should make sure it exists.
-     * 
+     *
      * @return String representing the Path to asadmin script. Might return a string beginning with "null", if the
      * INSTALL_ROOT_PROPERTY is not defined
      */
-    public static final String getAsAdminScriptLocation() {
+    public static String getAsAdminScriptLocation() {
         return getAdminScriptLocation(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
     }
 
-    public static final String getAsAdminScriptLocation(String installRoot) {
+    public static String getAsAdminScriptLocation(String installRoot) {
         return getAdminScriptLocation(installRoot);
     }
 
-    public static final String getAdminScriptLocation(String installRoot) {
+    public static String getAdminScriptLocation(String installRoot) {
         final StringBuilder sb = new StringBuilder();
         final String ext = OS.isWindows() ? OS.WINDOWS_BATCH_FILE_EXTENSION : "";
         final String ASADMIN = "nadmin";
-        final String suffix = new StringBuilder("lib").append(System.getProperty("file.separator")).append(ASADMIN).append(ext).toString();
+        final String suffix = "lib" + System.getProperty("file.separator") + ASADMIN + ext;
         sb.append(installRoot);
         final String fs = System.getProperty("file.separator");
         if (!sb.toString().endsWith(fs))
@@ -327,10 +322,10 @@ public class SystemPropertyConstants {
     /**
      * Returns the component identifier associated with the INSTALL_ROOT. For example if INSTALL_ROOT is
      * /home/glassfish4/glassfish the component name will "glassfish".
-     * 
+     *
      * @return String representing the component identifier.
      */
-    public static final String getComponentName() {
+    public static String getComponentName() {
         final File installRootFile = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
         return installRootFile.getName();
     }

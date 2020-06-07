@@ -83,8 +83,3 @@ public class ModelMBeanInfoStringifier extends MBeanInfoStringifier
     }
 
 }
-
-
-
-
-

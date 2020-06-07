@@ -62,7 +62,7 @@
     jdbc-connection-pool                                              
 -->
 <!ENTITY % isolation
-    "(read-uncommitted | read-committed | repeatable-read | serializable)">    
+    "(read-uncommitted | read-committed | repeatable-read | serializable | snapshot)">    
 
 
 <!-- object-type

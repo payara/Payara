@@ -51,5 +51,3 @@ A marker interface which indicates that this MBean is one-of-a-kind *within its 
 public interface Singleton extends AMXProxy
 {
 }
-
-

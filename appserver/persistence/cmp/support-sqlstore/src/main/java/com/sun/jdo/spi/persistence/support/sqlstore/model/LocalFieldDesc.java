@@ -92,7 +92,7 @@ public class LocalFieldDesc extends FieldDesc {
                 ColumnElement c = (ColumnElement) iter.next();
                 rc = c.isNullable();
             }
-            primitiveMappedToNullableColumn = new Boolean(rc);
+            primitiveMappedToNullableColumn = Boolean.valueOf(rc);
         }
 
         return primitiveMappedToNullableColumn.booleanValue();

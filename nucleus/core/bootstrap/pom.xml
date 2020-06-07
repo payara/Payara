@@ -40,15 +40,15 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>org.glassfish.main.core</groupId>
+        <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
     
     <artifactId>glassfish</artifactId>
@@ -86,8 +86,8 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-			                <classpathLayoutType>custom</classpathLayoutType>
-			                <customClasspathLayout>${artifact.artifactId}.${artifact.extension}</customClasspathLayout>
+                            <classpathLayoutType>custom</classpathLayoutType>
+                            <customClasspathLayout>${artifact.artifactId}.${artifact.extension}</customClasspathLayout>
                             <mainClass>com.sun.enterprise.glassfish.bootstrap.ASMain</mainClass>
                         </manifest>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -110,7 +110,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.main.common</groupId>
+                                    <groupId>fish.payara.server.internal.common</groupId>
                                     <artifactId>simple-glassfish-api</artifactId>
                                     <version>${project.version}</version>
                                     <overWrite>false</overWrite>
@@ -153,7 +153,7 @@
                 part of distribution. Making it a compile scoped dependency forces this jar
                 to be part of all distribution.
             -->
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -161,6 +161,11 @@
           <groupId>org.glassfish.annotations</groupId>
           <artifactId>logging-annotation-processor</artifactId>
           <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.admin</groupId>
+            <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -70,7 +70,10 @@ public class TopicListener implements MessageListener {
     public void setRegistrationID(String registrationID) {
         this.registrationID = registrationID;
     }
-    
+
+    int getReceiverCount() {
+        return receivers.size();
+    }
 
     @Override
     @SuppressWarnings("unchecked")

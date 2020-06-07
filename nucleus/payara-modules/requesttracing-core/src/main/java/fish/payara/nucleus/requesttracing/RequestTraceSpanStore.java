@@ -42,9 +42,13 @@ package fish.payara.nucleus.requesttracing;
 import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.store.IterableThreadLocal;
+
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;
+
+import java.util.Map.Entry;
 import java.util.UUID;
 
 /**
@@ -59,27 +63,26 @@ import java.util.UUID;
 @Singleton
 public class RequestTraceSpanStore {
 
-    private ThreadLocal<RequestTrace> spanStore = new ThreadLocal<RequestTrace>() {
-        @Override
-        protected RequestTrace initialValue() {
-            return new RequestTrace();
-        }      
-    };
+    private IterableThreadLocal<RequestTrace> spanStore = new IterableThreadLocal<>(RequestTrace::new);
+
+    public Iterable<Entry<Thread, RequestTrace>> getTraces() {
+        return spanStore;
+    }
 
     /**
      * Adds a new event to the request trace
      * @param payaraSpan 
      */
-    void storeEvent(RequestTraceSpan payaraSpan) {       
+    void storeEvent(RequestTraceSpan payaraSpan) {
         RequestTrace currentTrace = spanStore.get();
         currentTrace.addEvent(payaraSpan);
     }
-    
-    void storeEvent(RequestTraceSpan payaraSpan, long timestampMillis) {       
+
+    void storeEvent(RequestTraceSpan payaraSpan, long timestampMillis) {
         RequestTrace currentTrace = spanStore.get();
         currentTrace.addEvent(payaraSpan, timestampMillis);
     }
-    
+
     void endTrace() {
         RequestTrace currentTrace = spanStore.get();
         currentTrace.endTrace();
@@ -107,7 +110,7 @@ public class RequestTraceSpanStore {
     String getTraceAsString() {
         return spanStore.get().toString();
     }
-    
+
     // test methods
     /**
      * Returns the full trace
@@ -126,7 +129,7 @@ public class RequestTraceSpanStore {
         RequestTrace trace = spanStore.get();
         return trace.getTraceId();
     }
-    
+
     void setTraceId(UUID newID) {
         RequestTrace trace = spanStore.get();
         trace.setTraceId(newID);

@@ -1,0 +1,82 @@
+list-sub-components(1)    asadmin Utility Subcommands   list-sub-components(1)
+
+NAME
+       list-sub-components - lists EJB or servlet components in a deployed
+       module or module of a deployed application
+
+SYNOPSIS
+           list-sub-components [--help] [--type type]
+           [--appname appname] [--resources]
+           modulename
+
+DESCRIPTION
+       The list-sub-components subcommand lists EJB or servlet components in a
+       deployed module or in a module of a deployed application. If a module
+       is not specified, all modules are listed. The --appname option
+       functions only when the specified module is stand-alone. To display a
+       specific module in an application, you must specify the module name
+       with the --appname option.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --type
+           Specifies the type of component to be listed. The options are ejbs
+           and servlets. If nothing is specified, then all of the components
+           are listed.
+
+       --appname
+           Identifies the name of the application. This option is required
+           when the desired output is the subcomponents of an embedded module
+           of a deployed application.
+
+           The name can include an optional version identifier, which follows
+           the name and is separated from the name by a colon (:). The version
+           identifier must begin with a letter or number. It can contain
+           alphanumeric characters plus underscore (_), dash (-), and period
+           (.) characters. For more information about module and application
+           versions, see "Module and Application Versions" in Oracle GlassFish
+           Server Application Deployment Guide.
+
+       --resources
+           Lists the application-scoped resources for each subcomponent.
+
+OPERANDS
+       modulename
+           Specifies the name of the module containing the subcomponent.
+
+           The name can include an optional version identifier, which follows
+           the name and is separated from the name by a colon (:). The version
+           identifier must begin with a letter or number. It can contain
+           alphanumeric characters plus underscore (_), dash (-), and period
+           (.) characters. For more information about module and application
+           versions, see "Module and Application Versions" in Oracle GlassFish
+           Server Application Deployment Guide.
+
+EXAMPLES
+       Example 1, Listing Subcomponents
+           This example lists the subcomponents of the MEjbApp application
+           within the mejb.jar module.
+
+               asadmin> list-sub-components --appname MEjbApp mejb.jar
+               MEJBBean <StatelessSessionBean>
+               Command list-sub-components executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       enable(1), disable(1), list-components(1)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Application Deployment Guide
+
+Java EE 8                         12 Oct 2009           list-sub-components(1)

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -64,6 +64,7 @@ import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.connector.WeldUtils.BDAType;
+import org.glassfish.weld.services.ResourceInjectionServicesImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
@@ -77,6 +78,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.weld.services.InjectionServicesImpl;
 import org.jboss.weld.injection.spi.InjectionServices;
+import org.jboss.weld.injection.spi.ResourceInjectionServices;
 
 /*
  * Represents a deployment of a CDI (Weld) application.
@@ -426,6 +428,7 @@ public class DeploymentImpl implements CDI11Deployment {
                                           beanClasses, beanXMLUrls, ejbs, context);
         // have to create new InjectionServicesImpl for each new BDA so injection context is propagated for the correct bundle
         newBda.getServices().add(InjectionServices.class, new InjectionServicesImpl(injectionManager, DOLUtils.getCurrentBundleForContext(context), this));
+        newBda.getServices().add(ResourceInjectionServices.class, new ResourceInjectionServicesImpl());
         BeansXml beansXml = newBda.getBeansXml();
         if (beansXml == null || !beansXml.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
             if ( logger.isLoggable( FINE ) ) {
@@ -462,25 +465,39 @@ public class DeploymentImpl implements CDI11Deployment {
 
     @Override
     public Iterable<Metadata<Extension>> getExtensions() {
-        if ( extensions != null ) {
+        if (extensions != null) {
             return extensions;
         }
 
         List<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         ArrayList<Metadata<Extension>> extnList = new ArrayList<>();
-        for ( BeanDeploymentArchive bda : bdas ) {
-            if ( ! ( bda instanceof RootBeanDeploymentArchive ) ) {
-                ClassLoader moduleClassLoader = ( ( BeanDeploymentArchiveImpl ) bda ).getModuleClassLoaderForBDA();
-                extensions = context.getTransientAppMetaData( WeldDeployer.WELD_BOOTSTRAP,
-                                                              WeldBootstrap.class).loadExtensions( moduleClassLoader );
-                if ( extensions != null ) {
-                    for ( Metadata<Extension> bdaExtn : extensions ) {
-                        extnList.add(bdaExtn);
+
+        // Track classloaders to ensure we don't scan the same classloader twice
+        HashSet<ClassLoader> scannedClassLoaders = new HashSet<>();
+
+        // ensure we don't add the same extension twice
+        HashMap<Class,Metadata<Extension>> loadedExtensions = new HashMap<>();
+
+        for (BeanDeploymentArchive bda : bdas) {
+            if (!(bda instanceof RootBeanDeploymentArchive)) {
+                ClassLoader moduleClassLoader = ((BeanDeploymentArchiveImpl)bda).getModuleClassLoaderForBDA();
+                if (!scannedClassLoaders.contains(moduleClassLoader)) {
+                    scannedClassLoaders.add(moduleClassLoader);
+                    extensions = context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP,
+                                                                 WeldBootstrap.class).loadExtensions(moduleClassLoader);
+                    if (extensions != null) {
+                        for (Metadata<Extension> bdaExtn : extensions) {
+                            if (loadedExtensions.get(bdaExtn.getValue().getClass()) == null) {
+                                extnList.add(bdaExtn);
+                                loadedExtensions.put(bdaExtn.getValue().getClass(), bdaExtn);
+                            }
+                        }
                     }
                 }
             }
         }
         extnList.addAll(dynamicExtensions);
+        extensions = extnList;
         return extnList;
     }
 
@@ -552,7 +569,7 @@ public class DeploymentImpl implements CDI11Deployment {
                         entryName.indexOf(SEPARATOR_CHAR, libDir.length() + 1 ) == -1 ) {
                         try {
                             ReadableArchive jarInLib = archive.getSubArchive(entryName);
-                            if (jarInLib.exists(META_INF_BEANS_XML) || WeldUtils.isImplicitBeanArchive(context, jarInLib)) {
+                            if (jarInLib != null && (jarInLib.exists(META_INF_BEANS_XML) || WeldUtils.isImplicitBeanArchive(context, jarInLib))) {
                                 if (libJars == null) {
                                     libJars = new ArrayList<>();
                                 }

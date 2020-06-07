@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  */
 package fish.payara.notification.xmpp;
 
-import com.google.common.base.Strings;
+import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.Param;
@@ -87,6 +87,7 @@ public class XmppNotificationConfigurer extends BaseNotificationConfigurer<XmppN
     @Param(name = "roomId")
     private String roomId;
 
+    @Override
     protected void applyValues(XmppNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
@@ -94,25 +95,25 @@ public class XmppNotificationConfigurer extends BaseNotificationConfigurer<XmppN
         if(this.noisy != null) {
             configuration.noisy(this.noisy);
         }
-        if(!Strings.isNullOrEmpty(hostName)) {
+        if(StringUtils.ok(hostName)) {
             configuration.host(hostName);
         }
         if(port != null) {
             configuration.port(String.valueOf(port));
         }
-        if(!Strings.isNullOrEmpty(serviceName)) {
+        if(StringUtils.ok(serviceName)) {
             configuration.serviceName(serviceName);
         }
-        if(!Strings.isNullOrEmpty(username)) {
+        if(StringUtils.ok(username)) {
             configuration.username(username);
         }
-        if(!Strings.isNullOrEmpty(password)) {
+        if(StringUtils.ok(password)) {
             configuration.password(password);
         }
         if(securityDisabled != null) {
             configuration.securityDisabled(String.valueOf(securityDisabled));
         }
-        if(!Strings.isNullOrEmpty(roomId)) {
+        if(StringUtils.ok(roomId)) {
             configuration.roomId(roomId);
         }
     }

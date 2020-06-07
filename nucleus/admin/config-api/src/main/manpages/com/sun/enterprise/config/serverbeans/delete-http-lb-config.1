@@ -1,0 +1,56 @@
+delete-http-lb-config(1)  asadmin Utility Subcommands delete-http-lb-config(1)
+
+NAME
+       delete-http-lb-config - deletes a load balancer configuration
+
+SYNOPSIS
+           delete-http-lb-config [--help] config_name
+
+DESCRIPTION
+       Use the delete-http-lb-config subcommand to delete a load balancer
+       configuration. The load balancer configuration must not reference any
+       clusters or server instances enabled for load balancing. In addition,
+       the load balancer configuration must not be referenced by any physical
+       load balancers.
+
+           Note
+           +----------------------------------------+
+           |           This subcommand is only      |
+           |           applicable to Oracle         |
+           |           GlassFish Server. This       |
+           |           subcommand is not applicable |
+           |           to GlassFish Server Open     |
+           |           Source Edition.              |
+           +----------------------------------------+
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       config_name
+           The name of the load balancer configuration to delete. The
+           configuration must not reference any clusters or server instances
+           enabled for load balancing, or be used by any physical load
+           balancers.
+
+EXAMPLES
+       Example 1, Deleting a Load Balancer Configuration
+           This example deletes a load balancer configuration named mylbconfig
+
+               asadmin> delete-http-lb-config mylbconfig
+               Command delete-http-lb-config executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-http-lb-config(1), list-http-lb-configs(1)
+
+       asadmin(1M)
+
+Java EE 8                         25 Aug 2010         delete-http-lb-config(1)

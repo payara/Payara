@@ -1,0 +1,48 @@
+list-loggers(1)           asadmin Utility Subcommands          list-loggers(1)
+
+NAME
+       list-loggers - lists existing loggers
+
+SYNOPSIS
+           list-loggers [--help]
+
+DESCRIPTION
+       The list-loggers subcommand lists the existing GlassFish Server
+       loggers. Internal loggers are not listed. The list-loggers subcommand
+       lists the logger name, subsystem, and description.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+EXAMPLES
+       Example 1, Listing the Loggers
+           This example lists the logger name, subsystem, and description for
+           each logger. Some lines of output are omitted from this example for
+           readability.
+
+               asadmin> list-loggers
+               Logger Name                            Subsystem         Logger Description
+               ...
+               javax.enterprise.monitoring            Monitoring        Monitoring Logger
+               javax.enterprise.system.core.ee        AS-CORE           Java EE Core Kernel
+               javax.enterprise.system.jmx            JMX               JMX System Logger
+               javax.enterprise.system.tools.admin    ADMIN             Administration Services
+               ...
+               Command list-loggers executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-log-levels(1), set-log-file-format(1)
+
+       asadmin(1M)
+
+Java EE 8                         06 Feb 2013                  list-loggers(1)

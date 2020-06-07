@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,17 +87,25 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class SetMonitoringServiceConfiguration implements AdminCommand {
 
-    @Param(name = "enabled", optional = true)
-    private Boolean enabled;
+    @Param(name = "enabled", optional = true, alias = "monitoringEnabled")
+    private Boolean monitoringEnabled;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
-    @Param(name = "mbeansenabled", optional = true, alias = "mbeansEnabled")
-    private Boolean mbeansEnabled;
+    @Param(name = "mbeansenabled", optional = true, alias = "mbeanEnabled")
+    private Boolean mbeanEnabled;
 
+    /**
+     *
+     * @deprecated Since 5.194. Use set-amx-enabled command instead.
+     */
+    @Deprecated
     @Param(name = "amxenabled", optional = true, alias = "amxEnabled")
     private Boolean amxEnabled;
+
+    @Param(name = "dtraceenabled", optional = true, alias = "dtraceEnabled")
+    private Boolean dtraceEnabled;
 
     @Inject
     protected Target targetUtil;
@@ -128,12 +136,16 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
             ConfigSupport.apply(new SingleConfigCode<MonitoringService>() {
                 @Override
                 public Object run(final MonitoringService monitoringServiceProxy) throws PropertyVetoException, TransactionFailure {
-                    if (enabled != null) {
-                        monitoringServiceProxy.setMonitoringEnabled(String.valueOf(enabled));
+                    if (monitoringEnabled != null) {
+                        monitoringServiceProxy.setMonitoringEnabled(String.valueOf(monitoringEnabled));
                     }
 
-                    if (mbeansEnabled != null) {
-                        monitoringServiceProxy.setMbeanEnabled(String.valueOf(mbeansEnabled));
+                    if (mbeanEnabled != null) {
+                        monitoringServiceProxy.setMbeanEnabled(String.valueOf(mbeanEnabled));
+                    }
+                    
+                    if (dtraceEnabled != null) {
+                         monitoringServiceProxy.setDtraceEnabled(String.valueOf(dtraceEnabled));
                     }
 
                     if (amxEnabled != null) {

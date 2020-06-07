@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.classfile;
 
@@ -71,7 +72,7 @@ public class InsnMultiDimArrayNew extends Insn {
    * What are the types of the stack operands ?
    */
   public String argTypes() {
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     for (int i=0; i<nDimsOp; i++) {
         buf.append("I");//NOI18N
     }
@@ -125,14 +126,14 @@ public class InsnMultiDimArrayNew extends Insn {
     super(opc_multianewarray, offset);
 
     this.classOp = classOp;
-    this.nDimsOp = nDimsOp; 
+    this.nDimsOp = nDimsOp;
 
     if (classOp == null || nDimsOp < 1)
 	throw new InsnError ("attempt to create an opc_multianewarray" +//NOI18N
 			     " with invalid operands");//NOI18N
   }
 
-  
+
 
   void print (PrintStream out, int indent) {
     ClassPrint.spaces(out, indent);

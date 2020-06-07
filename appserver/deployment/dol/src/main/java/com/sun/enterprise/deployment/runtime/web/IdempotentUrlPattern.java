@@ -37,14 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.runtime.web;
 
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
 public class IdempotentUrlPattern extends RuntimeDescriptor {
-    public static final String URL_PATTERN = "UrlPattern"; 
-    public static final String NUM_OF_RETRIES = "NumOfRetries"; 
+    private static final long serialVersionUID = 4051197393234974055L;
+    
+    public static final String URL_PATTERN = "UrlPattern";
+    public static final String NUM_OF_RETRIES = "NumOfRetries";
 
-    public IdempotentUrlPattern() {}
+    public IdempotentUrlPattern() {
+    }
 }

@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
 
 /** Objects exhiniting this interface represent an error page and the exception type or
-** error code that will cause the redirect from the web container. 
+** error code that will cause the redirect from the web container.
 * @author Danny Coward
 */
 
@@ -50,19 +51,19 @@ public class ErrorPageDescriptor implements java.io.Serializable{
     private int errorCode = -1;  // none
     private String exceptionType;
     private String location;
-    
+
     /** The default constructor.
     */
     public ErrorPageDescriptor() {
-    
+
     }
-    
+
     /** Constructor for error code to error page mapping.*/
     public ErrorPageDescriptor(int errorCode, String location) {
 	this.errorCode = errorCode;
 	this.location = location;
     }
-    
+
      /** Constructor for Java exception type to error page mapping.*/
     public ErrorPageDescriptor(String exceptionType, String location) {
 	this.exceptionType = exceptionType;
@@ -99,11 +100,11 @@ public class ErrorPageDescriptor implements java.io.Serializable{
 	    this.setExceptionType(null);
 	    return;
 	} catch (NumberFormatException nfe) {
-	
+
 	}
 	this.setExceptionType(errorSignifier);
     }
-    
+
     /** Return the exception type or the empty string if none.*/
     public String getExceptionType() {
 	if (this.exceptionType == null) {
@@ -111,7 +112,7 @@ public class ErrorPageDescriptor implements java.io.Serializable{
 	}
 	return this.exceptionType;
     }
-    
+
     /** Sets the exception type.*/
     public void setExceptionType(String exceptionType) {
 	this.exceptionType = exceptionType;
@@ -128,8 +129,8 @@ public class ErrorPageDescriptor implements java.io.Serializable{
 	this.location = location;
     }
     /* A formatted version of my state as a String. */
-    public void print(StringBuffer toStringBuffer) {
-	toStringBuffer.append("ErrorPage ").append(this.getErrorCode()).append(" ").append(
+    public void print(StringBuilder toStringBuilder) {
+	toStringBuilder.append("ErrorPage ").append(this.getErrorCode()).append(" ").append(
             this.getExceptionType()).append(" ").append(this.getLocation());
     }
 

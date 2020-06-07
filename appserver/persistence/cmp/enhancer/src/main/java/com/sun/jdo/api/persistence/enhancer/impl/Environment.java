@@ -37,27 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.impl;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.ArrayList;
-
-import java.io.File;
-//@olsen: added import
-import java.io.PrintWriter;
-
-import com.sun.jdo.api.persistence.enhancer.classfile.ClassFile;
-import com.sun.jdo.api.persistence.enhancer.classfile.ClassField;
-
-import com.sun.jdo.api.persistence.enhancer.util.ClassPath;
+import com.sun.jdo.api.persistence.enhancer.meta.JDOMetaData;
 import com.sun.jdo.api.persistence.enhancer.util.ClassFileSource;
+import com.sun.jdo.api.persistence.enhancer.util.ClassPath;
 import com.sun.jdo.api.persistence.enhancer.util.Support;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+
 //@olsen: added import
-import com.sun.jdo.api.persistence.enhancer.meta.JDOMetaData;
+//@olsen: added import
 
 
 //@lars added: field for last error message
@@ -807,7 +804,7 @@ public final class Environment
      * If the package name isn't valid, return null instead.
      */
     static String validVMPackage(String pkg) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         int i=0;
         while (i<pkg.length()) {

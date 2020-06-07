@@ -1,0 +1,88 @@
+ping-node-ssh(1)          asadmin Utility Subcommands         ping-node-ssh(1)
+
+NAME
+       ping-node-ssh - tests if a node that is enabled for communication over
+       SSH is usable
+
+SYNOPSIS
+           ping-node-ssh [--help]
+           [--validate={false|true}] node-name
+
+DESCRIPTION
+       The ping-node-ssh subcommand tests if a node that is enabled for
+       communication over secure shell (SSH) is usable. This subcommand
+       requires secure shell (SSH) to be configured on the machine where the
+       domain administration server (DAS) is running and on the machine where
+       the node resides. You may run this command from any machine that can
+       contact the DAS.
+
+       If the node is usable, the subcommand displays a confirmation that the
+       subcommand could connect to the node through SSH. This confirmation
+       includes the name of the host that the node represents.
+
+       Optionally, the subcommand can also validate the node to determine if
+       the asadmin(1M) utility can run on the host that the node represents.
+       To validate a node, the subcommand runs the version(1) subcommand. If
+       the node is valid, the subcommand displays the version that the version
+       subcommand returns.
+
+       The node that is specified as the operand of this subcommand must be
+       enabled for communication over SSH. If the node is not enabled for
+       communication over SSH, an error occurs. To determine whether a node is
+       enabled for communication over SSH, use the list-nodes(1) subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --validate
+           Specifies whether the subcommand validates the node.
+
+           Possible values are as follows:
+
+           true
+               The node is validated.
+
+           false
+               The node is not validated (default).
+
+OPERANDS
+       node-name
+           The name of the node to test. The node must be enabled for
+           communication over SSH. Otherwise, an error occurs.
+
+EXAMPLES
+       Example 1, Testing if an SSH-Enabled Node Is Usable
+           This example tests if the SSH-enabled node sj03-node is usable.
+
+               asadmin> ping-node-ssh sj03-node
+               Successfully made SSH connection to node sj03-node (sj03.example.com)
+               Command ping-node-ssh executed successfully.
+
+       Example 2, Validating an SSH-Enabled Node
+           This example validates the SSH-enabled node adc-node.
+
+               asadmin> ping-node-ssh --validate=true adc-node
+               Successfully made SSH connection to node adcnode (adc.example.com)
+               GlassFish version found at /export/glassfish3:
+               Using locally retrieved version string from version class.
+               Version = GlassFish Server Open Source Edition 3.1 (build 40)
+               Command version executed successfully.
+               Command ping-node-ssh executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-node-ssh(1), delete-node-ssh(1), list-nodes(1),
+       setup-ssh(1), update-node-ssh(1), version(1)
+
+       asadmin(1M)
+
+Java EE 8                         8 Dec 2011                  ping-node-ssh(1)

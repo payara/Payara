@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * SelectStatement.java
@@ -76,7 +77,7 @@ public class SelectStatement extends Statement {
     /** Flag indicating if this statement has been joined. */
     private boolean isJoined;
 
-    private StringBuffer orderClause = new StringBuffer();
+    private StringBuilder orderClause = new StringBuilder();
 
     /** SelectQueryplan */
     SelectQueryPlan plan;
@@ -126,7 +127,7 @@ public class SelectStatement extends Statement {
                 && table.getTableDesc().isUpdateLockRequired();
     }
 
-    public void appendTableText(StringBuffer text, QueryTable table) {
+    public void appendTableText(StringBuilder text, QueryTable table) {
         super.appendTableText(text, table);
 
         if (isUpdateLockRequired(table)) {
@@ -167,8 +168,8 @@ public class SelectStatement extends Statement {
         // Because join conditions for ANSI outer joins end up in the
         // from clause, the constraint stack has to be processed before we
         // generate the from clause.
-        StringBuffer constraints = processConstraints();
-        StringBuffer outerJoinText = processOuterJoinConstraints();
+        StringBuilder constraints = processConstraints();
+        StringBuilder outerJoinText = processOuterJoinConstraints();
 
         if (outerJoinText != null && outerJoinText.length() > 0) {
             if (constraints.length() > 0 ) {
@@ -177,7 +178,7 @@ public class SelectStatement extends Statement {
             constraints.append(outerJoinText);
         }
 
-        StringBuffer whereClause = new StringBuffer();
+        StringBuilder whereClause = new StringBuilder();
 
         if (constraints.length() > 0 ) {
             whereClause.append(" where ").append(constraints);
@@ -198,11 +199,11 @@ public class SelectStatement extends Statement {
      * @param whereClause Query's where clause.
      * @see #generateCountStatementText
      */
-    private void generateRegularStatementText(StringBuffer whereClause) {
+    private void generateRegularStatementText(StringBuilder whereClause) {
 
-        statementText = new StringBuffer();
+        statementText = new StringBuilder();
 
-        StringBuffer columnText = generateColumnText();
+        StringBuilder columnText = generateColumnText();
         String tableListText = generateTableListText();
         String aggregateText = getAggregateText();
         String aggregateEnd = (aggregateText.length() > 0) ? ")" : ""; // NOI18N
@@ -212,7 +213,7 @@ public class SelectStatement extends Statement {
         }
 
         final boolean updateLockRequired = isUpdateLockRequired();
-        StringBuffer forUpdateClause = generateForUpdateClause(updateLockRequired);
+        StringBuilder forUpdateClause = generateForUpdateClause(updateLockRequired);
         String distinctText = getDistinctText(updateLockRequired);
 
         // Create the query filling in the column list, table name, etc.
@@ -234,7 +235,7 @@ public class SelectStatement extends Statement {
      * @param whereClause Query's where clause.
      * @see #generateCorrelatedExistsText
      */
-    private void generateCountStatementText(StringBuffer whereClause) {
+    private void generateCountStatementText(StringBuilder whereClause) {
 
         final int selectedColumns = columns.size();
 
@@ -279,9 +280,9 @@ public class SelectStatement extends Statement {
      *
      * @param whereClause Query's where clause.
      */
-    private void generateCorrelatedExistsText(StringBuffer whereClause) {
+    private void generateCorrelatedExistsText(StringBuilder whereClause) {
 
-        statementText = new StringBuffer();
+        statementText = new StringBuilder();
 
         // TODO: Use correlated exists subquery in SelectQueryPlan?
         // - Do we handle secondary tables correctly?
@@ -289,9 +290,9 @@ public class SelectStatement extends Statement {
 
         // Generate for update clause while we still have all tables in tableList
         boolean updateLockRequired = isUpdateLockRequired();
-        StringBuffer forUpdateClause = generateForUpdateClause(updateLockRequired);
+        StringBuilder forUpdateClause = generateForUpdateClause(updateLockRequired);
 
-        StringBuffer primaryTableText = new StringBuffer();
+        StringBuilder primaryTableText = new StringBuilder();
         QueryTable primaryTable = generatePrimaryTableText(primaryTableText);
 
         // Prepare the generation of the correlated "inner" select clause by
@@ -316,7 +317,7 @@ public class SelectStatement extends Statement {
      * @param primaryTableText Takes the resulting statement text.
      * @return The table from the first selected column.
      */
-    private QueryTable generatePrimaryTableText(StringBuffer primaryTableText) {
+    private QueryTable generatePrimaryTableText(StringBuilder primaryTableText) {
         // Get the primary table from the first selected column.
         // TODO: Is the first column always mapped to the primary table?
         QueryTable primaryTable = ((ColumnRef)columns.get(0)).getQueryTable();
@@ -327,8 +328,8 @@ public class SelectStatement extends Statement {
         return primaryTable;
     }
 
-    protected StringBuffer generateColumnText() {
-        StringBuffer columnText = new StringBuffer();
+    protected StringBuilder generateColumnText() {
+        StringBuilder columnText = new StringBuilder();
 
         for (int i = 0; i < columns.size(); i++) {
             ColumnRef cr = (ColumnRef) columns.get(i);
@@ -361,8 +362,8 @@ public class SelectStatement extends Statement {
         }
     }
 
-    private StringBuffer generateForUpdateClause(boolean updateLockRequired) {
-        StringBuffer forUpdateClause = new StringBuffer();
+    private StringBuilder generateForUpdateClause(boolean updateLockRequired) {
+        StringBuilder forUpdateClause = new StringBuilder();
 
         if (updateLockRequired) {
             // Check if vendor actually supports updatelock
@@ -443,7 +444,7 @@ public class SelectStatement extends Statement {
      */
     protected void processRootConstraint(ConstraintOperation opNode,
                                          List stack,
-                                         StringBuffer whereText) {
+                                         StringBuilder whereText) {
         int op = opNode.operation;
         int opInfo = operationFormat(op);
 
@@ -466,7 +467,7 @@ public class SelectStatement extends Statement {
     protected void processIrregularOperation(ConstraintOperation opNode,
                                              int opCode,
                                              List stack,
-                                             StringBuffer result) {
+                                             StringBuilder result) {
         switch (opCode) {
             case ActionDesc.OP_EQUIJOIN:
                 processJoinOperation((ConstraintJoin)opNode, result);
@@ -483,13 +484,13 @@ public class SelectStatement extends Statement {
      * statement. Please note that the returned string buffer will have text
      * only for Oracle
      */
-    private StringBuffer processOuterJoinConstraints() {
-        StringBuffer joinCondition = null;
+    private StringBuilder processOuterJoinConstraints() {
+        StringBuilder joinCondition = null;
         final List joinStack = constraint.getOuterJoinConstraints();
         final int joinStackSize = joinStack.size();
 
         if (joinStackSize > 0) {
-            joinCondition = new StringBuffer();
+            joinCondition = new StringBuilder();
             for (int i = 0; i < joinStackSize; i++) {
                 ConstraintJoin joinNode = (ConstraintJoin) joinStack.get(i);
                 processJoinOperation(joinNode, joinCondition);
@@ -508,7 +509,7 @@ public class SelectStatement extends Statement {
      * join condition is appended to this string buffer.
      */
     private void processJoinOperation(ConstraintJoin jnode,
-                                      StringBuffer whereText) {
+                                      StringBuilder whereText) {
         int opCode = jnode.operation;
         // Generate ANSI outer joins if doAnsiJoin == true,
         // i.e. the vendor has no "native" outer join semantics.
@@ -536,7 +537,7 @@ public class SelectStatement extends Statement {
      * @param opCode Join operation.
      */
     private void generateJoin(ConstraintJoin jnode,
-                              StringBuffer whereText,
+                              StringBuilder whereText,
                               int opCode) {
 
         for (int i = 0; i < jnode.fromColumns.size(); i++) {
@@ -544,6 +545,8 @@ public class SelectStatement extends Statement {
             ColumnElement toColumn = (ColumnElement)jnode.toColumns.get(i);
             QueryTable fromTable = findQueryTable(jnode.fromPlan, fromColumn);
             QueryTable toTable = findQueryTable(jnode.toPlan, toColumn);
+
+            if (toTable == null) throw new IllegalStateException("Target QueryTable is NULL.");
 
             addQueryTable(fromTable);
             addQueryTable(toTable);
@@ -579,12 +582,14 @@ public class SelectStatement extends Statement {
             QueryTable fromTable = findQueryTable(jnode.fromPlan, fromColumn);
             QueryTable toTable = findQueryTable(jnode.toPlan, toColumn);
 
+            if (fromTable == null) throw new IllegalStateException("Join source QueryTable is NULL");
+
             // Process the from clause
             processFromClause(fromTable, toTable);
 
             // Process the on clause.
             if (toTable.onClause == null) {
-                toTable.onClause = new StringBuffer();
+                toTable.onClause = new StringBuilder();
             }
 
             appendJoinCondition(toTable.onClause, fromTable, toTable, fromColumn, toColumn, "="); //NOI18N
@@ -597,7 +602,7 @@ public class SelectStatement extends Statement {
      * Processes specified fromTable and toTable to generate appropriate from
      * clause when table text is generated.
      * toTable is added to fromTable.nextTable if not already present. See
-     * {@link #appendAnsiJoinTableText(StringBuffer,QueryTable)} for
+     * {@link #appendAnsiJoinTableText(StringBuilder,QueryTable)} for
      * details on how this is used to generate table text.
      *
      * @param fromTable The from table
@@ -641,7 +646,7 @@ public class SelectStatement extends Statement {
      * @param toColumn The to column.
      * @param joinOp Join operation.
      */
-    private void appendJoinCondition(StringBuffer result,
+    private void appendJoinCondition(StringBuilder result,
                                      QueryTable fromTable, QueryTable toTable,
                                      ColumnElement fromColumn, ColumnElement toColumn,
                                      String joinOp) {
@@ -696,7 +701,7 @@ public class SelectStatement extends Statement {
     }
 
     private String generateTableListText() {
-        StringBuffer str = new StringBuffer();
+        StringBuilder str = new StringBuilder();
 
         for (int i = 0; i < tableList.size(); i++) {
             QueryTable t = (QueryTable) tableList.get(i);
@@ -734,7 +739,7 @@ public class SelectStatement extends Statement {
         return str.toString();
     }
 
-    private void appendAnsiJoinText(StringBuffer str, QueryTable t) {
+    private void appendAnsiJoinText(StringBuilder str, QueryTable t) {
         // TODO: getTableListStart() and getTableListEnd() returns ""
         // for all the databases. Do we need it ?
         str.append(vendorType.getTableListStart());
@@ -751,7 +756,7 @@ public class SelectStatement extends Statement {
      * @param text The string buffer receiving sql text.
      * @param table Table to be joined.
      */
-    private void appendAnsiJoinTableText(StringBuffer text, QueryTable table) {
+    private void appendAnsiJoinTableText(StringBuilder text, QueryTable table) {
 
         if (table.joinOp == ActionDesc.OP_RIGHTJOIN) {
             text.append(vendorType.getRightJoinPre());
@@ -794,7 +799,7 @@ public class SelectStatement extends Statement {
      */
     private void processOrderByField(ConstraintFieldDesc fieldNode, int op) {
         QueryPlan thePlan = getOriginalPlan(fieldNode);
-        StringBuffer orderText = new StringBuffer();
+        StringBuilder orderText = new StringBuilder();
 
         generateColumnText(fieldNode.desc, thePlan, orderText);
 

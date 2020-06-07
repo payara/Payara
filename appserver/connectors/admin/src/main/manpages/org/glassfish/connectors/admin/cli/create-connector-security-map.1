@@ -1,0 +1,94 @@
+create-connector-security-map(1) asadmin Utility Subcommands  create-connector-security-map(1)
+
+NAME
+       create-connector-security-map - creates a security map for the
+       specified connector connection pool
+
+SYNOPSIS
+           create-connector-security-map [--help]
+           --poolname connector_connection_pool_name
+           [--principals principal-name1[,principal-name2]*]
+           [--usergroups user-group1[,user-group2]*]
+           [--mappedusername user-name]
+           [--target target]
+           mapname
+
+DESCRIPTION
+       The create-connector-security-map subcommand creates a security map for
+       the specified connector connection pool. If the security map is not
+       present, a new one is created. This subcommand can also map the caller
+       identity of the application (principal or user group) to a suitable
+       enterprise information system (EIS) principal in container-managed
+       authentication scenarios. The EIS is any system that holds the data of
+       an organization. It can be a mainframe, a messaging system, a database
+       system, or an application. One or more named security maps can be
+       associated with a connector connection pool. The connector security map
+       configuration supports the use of the wild card asterisk (*) to
+       indicate all users or all user groups.
+
+       To specify the EIS password, you can add the AS_ADMIN_MAPPEDPASSWORD
+       entry to the password file, then specify the file by using the
+       --passwordfile asadmin utility option.
+
+       For this subcommand to succeed, you must have first created a connector
+       connection pool using the create-connector-connection-pool subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --poolname
+           Specifies the name of the connector connection pool to which the
+           security map belongs.
+
+       --principals
+           Specifies a list of backend EIS principals. More than one principal
+           can be specified using a comma-separated list. Use either the
+           --principals or --usergroups options, but not both in the same
+           command.
+
+       --usergroups
+           Specifies a list of backend EIS user group. More than one user
+           groups can be specified using a comma separated list. Use either
+           the --principals or --usergroups options, but not both in the same
+           command.
+
+       --mappedusername
+           Specifies the EIS username.
+
+       --target
+           Do not specify this option. This option is retained for
+           compatibility with earlier releases. If you specify this option, a
+           syntax error does not occur. Instead, the subcommand runs
+           successfully and displays a warning message that the option is
+           ignored.
+
+OPERANDS
+       mapname
+           The name of the security map to be created.
+
+EXAMPLES
+       Example 1, Creating a Connector Security Map
+           This example creates securityMap1 for the existing connection pool
+           named connector-pool1.
+
+               asadmin> create-connector-security-map --poolname connector-pool1
+               --principals principal1,principal2 --mappedusername backend-username securityMap1
+               Command create-connector-security-map executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-connector-security-map(1), list-connector-security-maps(1),
+       update-connector-security-map(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        create-connector-security-map(1)

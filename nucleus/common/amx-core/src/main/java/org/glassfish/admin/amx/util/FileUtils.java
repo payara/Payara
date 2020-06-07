@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -55,15 +56,11 @@ public final class FileUtils
     {
     }
 
-    public static String fileToString(final File src)
-            throws FileNotFoundException, IOException
-    {
+    public static String fileToString(final File src) throws FileNotFoundException, IOException {
         return fileToString(src, 32 * 1024);
     }
 
-    public static String fileToString(final File src, final int readBufferSize)
-            throws FileNotFoundException, IOException
-    {
+    public static String fileToString(final File src, final int readBufferSize) throws FileNotFoundException, IOException {
         final long length = src.length();
         if (length > 1024 * 1024 * 1024)
         {
@@ -73,11 +70,7 @@ public final class FileUtils
         final char[] readBuffer = new char[readBufferSize];
 
         final StringBuilder result = new StringBuilder((int) length);
-        FileReader in = null;
-
-        try
-        {
-            in = new FileReader(src);
+        try (FileReader in = new FileReader(src)) {
             while (true)
             {
                 final int numRead = in.read(readBuffer, 0, readBufferSize);
@@ -89,31 +82,14 @@ public final class FileUtils
                 result.append(readBuffer, 0, numRead);
             }
         }
-        finally
-        {
-            if (in != null) {
-                in.close();
-            }
-        }
 
         return (result.toString());
     }
 
-    public static void stringToFile(final String s, final File dest)
-            throws IOException
-    {
-        final FileWriter out = new FileWriter(dest);
-
-        try
-        {
+    public static void stringToFile(final String s, final File dest) throws IOException {
+        try (FileWriter out = new FileWriter(dest)) {
             out.write(s);
-        }
-        finally
-        {
-            out.close();
         }
     }
 
-};
-
-
+}

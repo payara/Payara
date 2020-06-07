@@ -1,0 +1,66 @@
+list-jacc-providers(1)    asadmin Utility Subcommands   list-jacc-providers(1)
+
+NAME
+       list-jacc-providers - enables administrators to list JACC providers
+       defined for a domain
+
+SYNOPSIS
+           list-jacc-providers [--help] [target]
+
+DESCRIPTION
+       The list-jacc-providers subcommand enables administrators to list the
+       JACC providers defined for a domain. JACC providers are defined as
+       jacc-provider elements in the security-service element in the domain's
+       domain.xml file. JACC providers can be created using the GlassFish
+       Server Admin Console or the create-jacc-provider subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           Specifies the target for which you want to list JACC providers. The
+           following values are valid:
+
+           server
+               Lists the JACC providers on the default server instance. This
+               is the default value.
+
+           configuration_name
+               Lists the JACC providers in the specified configuration.
+
+           cluster_name
+               Lists the JACC providers on all server instances in the
+               specified cluster.
+
+           instance_name
+               Lists the JACC providers on a specified server instance.
+
+EXAMPLES
+       Example 1, Listing JACC providers
+           The following example shows how to list JACC providers for the
+           default domain.
+
+               asadmin> list-jacc-providers
+               default
+               simple
+               testJACC
+
+               Command list-jacc-providers executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jacc-provider(1), delete-jacc-provider(1)
+
+       asadmin(1M)
+
+Java EE 8                         21 Jun 2011           list-jacc-providers(1)

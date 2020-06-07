@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi;
 
@@ -50,20 +50,6 @@ import com.sun.gjc.util.SQLTraceDelegator;
 import com.sun.gjc.util.SQLTraceLogger;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
-import fish.payara.jdbc.SlowSQLLogger;
-import org.glassfish.api.jdbc.ConnectionValidation;
-import org.glassfish.api.jdbc.SQLTraceListener;
-import org.glassfish.external.probe.provider.PluginPoint;
-import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ConfigProperty;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ResourceAdapterAssociation;
-import javax.resource.spi.ResourceAllocationException;
-import javax.resource.spi.security.PasswordCredential;
-import javax.sql.PooledConnection;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -72,9 +58,20 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.resource.ResourceException;
+import javax.resource.spi.ConfigProperty;
+import javax.resource.spi.ConnectionRequestInfo;
+import javax.resource.spi.ResourceAdapterAssociation;
+import javax.resource.spi.ResourceAllocationException;
+import javax.resource.spi.security.PasswordCredential;
+import javax.sql.PooledConnection;
+import org.glassfish.api.jdbc.ConnectionValidation;
+import org.glassfish.api.jdbc.SQLTraceListener;
+import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 /**
  * <code>ManagedConnectionFactory</code> implementation for Generic JDBC Connector.
@@ -160,13 +157,11 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      *                      as a result of the invocation <code>getConnection(user, password)</code>
      *                      on the <code>DataSource</code> object
      * @return <code>ManagedConnection</code> object created
-     * @throws ResourceException if there is an error in instantiating the
-     *                           <code>DataSource</code> object used for the
-     *                           creation of the <code>ManagedConnection</code> object
-     * @throws SecurityException if there ino <code>PasswordCredential</code> object
-     *                           satisfying this request
-     * @throws ResourceException if there is an error in allocating the
-     *                           physical connection
+     * @throws ResourceException if there is an error in instantiating the <code>DataSource</code> 
+     *      object used for the creation of the <code>ManagedConnection</code> object; or if there is an
+     *      error in allocating the physical connection
+     * @throws SecurityException if there no <code>PasswordCredential</code> object
+     *      satisfying this request
      */
     @Override
     public abstract javax.resource.spi.ManagedConnection createManagedConnection
@@ -328,16 +323,21 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
          */
         java.sql.Connection con = mc.getActualConnection();
 
-        if(validationMethod.equals("custom-validation")) {
-            isValidByCustomValidation(con, spec.getDetail(DataSourceSpec.VALIDATIONCLASSNAME));
-        } else if (validationMethod.equals("auto-commit")) {
-            isValidByAutoCommit(con);
-        } else if (validationMethod.equals("meta-data")) {
-            isValidByMetaData(con);
-        } else if (validationMethod.equals("table")) {
-            isValidByTableQuery(con, spec.getDetail(DataSourceSpec.VALIDATIONTABLENAME));
-        } else {
-            throw new ResourceException("The validation method is not proper");
+        switch (validationMethod) {
+            case "custom-validation":
+                isValidByCustomValidation(con, spec.getDetail(DataSourceSpec.VALIDATIONCLASSNAME));
+                break;
+            case "auto-commit":
+                isValidByAutoCommit(con);
+                break;
+            case "meta-data":
+                isValidByMetaData(con);
+                break;
+            case "table":
+                isValidByTableQuery(con, spec.getDetail(DataSourceSpec.VALIDATIONTABLENAME));
+                break;
+            default:
+                throw new ResourceException("The validation method is not proper");
         }
     }
     
@@ -582,10 +582,10 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             while (st.hasMoreTokens()) {
                 String sqlTraceListener = st.nextToken().trim();            
                 if(!sqlTraceListener.equals("")) {
-                    Class listenerClass = null;
+                    Class<?> listenerClass = null;
                     SQLTraceListener listener = null;
-                    Constructor[] constructors = null;
-                    Class[] parameterTypes = null;                    
+                    Constructor<?>[] constructors = null;
+                    Class<?>[] parameterTypes = null;                    
                     Object[] initargs = null;
                     //Load the listener class 
                     try {
@@ -597,33 +597,35 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                             _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_cnfe", sqlTraceListener);
                         }
                     }
-                    Class intf[] = listenerClass.getInterfaces();
-                    for (Class interfaceName : intf) {
-                        if (interfaceName.getName().equals("org.glassfish.api.jdbc.SQLTraceListener")) {
+                    if (listenerClass != null) {
+                        Class<?>[] intf = listenerClass.getInterfaces();
+                        for (Class<?> interfaceName : intf) {
+                            if (interfaceName.getName().equals("org.glassfish.api.jdbc.SQLTraceListener")) {
 
-                            try {
+                                try {
 
-                                constructors = listenerClass.getConstructors();
-                                for (Constructor constructor : constructors) {
-                                    parameterTypes = constructor.getParameterTypes();
-                                    //For now only the no argument constructors are allowed.
-                                    //TODO should this be documented?
-                                    if (parameterTypes != null && parameterTypes.length == 0) {
-                                        listener = (SQLTraceListener) constructor.newInstance(initargs);
+                                    constructors = listenerClass.getConstructors();
+                                    for (Constructor<?> constructor : constructors) {
+                                        parameterTypes = constructor.getParameterTypes();
+                                        //For now only the no argument constructors are allowed.
+                                        //TODO should this be documented?
+                                        if (parameterTypes != null && parameterTypes.length == 0) {
+                                            listener = (SQLTraceListener) constructor.newInstance(initargs);
+                                        }
                                     }
+                                } catch (InstantiationException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                } catch (IllegalAccessException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                } catch (IllegalArgumentException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                } catch (InvocationTargetException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                } catch (SecurityException ex) {
+                                    _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
                                 }
-                            } catch (InstantiationException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (IllegalAccessException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (IllegalArgumentException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (InvocationTargetException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
-                            } catch (SecurityException ex) {
-                                _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_exception", ex.getMessage());
+                                sqlTraceDelegator.registerSQLTraceListener(listener);
                             }
-                            sqlTraceDelegator.registerSQLTraceListener(listener);
                         }
                     }
                 }
@@ -649,10 +651,12 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             return java.sql.Connection.TRANSACTION_REPEATABLE_READ;
         } else if (tranIsolation.equalsIgnoreCase("serializable")) {
             return java.sql.Connection.TRANSACTION_SERIALIZABLE;
+        } else if (tranIsolation.equalsIgnoreCase("snapshot")) {  
+            return fish.payara.sql.Connection.TRANSACTION_SNAPSHOT;
         } else {
             throw new ResourceException("Invalid transaction isolation; the transaction "
                     + "isolation level can be empty or any of the following: "
-                    + "read-uncommitted, read-committed, repeatable-read, serializable");
+                    + "read-uncommitted, read-committed, repeatable-read, serializable, custom");
         }
     }
 
@@ -763,7 +767,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      *
      * @param className <code>String</code>
      */
-    @ConfigProperty(type = String.class, defaultValue = "org.apache.derby.jdbc.ClientConnectionPoolDataSource")
+    @ConfigProperty(type = String.class, defaultValue = "org.h2.jdbcx.JdbcDataSource")
     public void setClassName(String className) {
         spec.setDetail(DataSourceSpec.CLASSNAME, className);
     }
@@ -1192,22 +1196,21 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             detectSqlTraceListeners();
         }
     }
-    
+
     public void setSlowQueryThresholdInSeconds(String seconds) {
         spec.setDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD, seconds);
-        double threshold = Double.valueOf(seconds);
+        double threshold = Double.parseDouble(seconds);
         if (threshold > 0) {
             if (sqlTraceDelegator == null) {
                 sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
             }
-            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((long)(threshold * 1000), TimeUnit.MILLISECONDS));
         }
     }
-    
+
     public String getSlowQueryThresholdInSeconds() {
-         return spec.getDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD);       
+        return spec.getDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD);
     }
-    
+
     public void setLogJdbcCalls(String enabled) {
         spec.setDetail(DataSourceSpec.LOGJDBCCALLS, enabled);
         if (Boolean.valueOf(enabled)) {
@@ -1228,7 +1231,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
      * @param desc <code>String</code>
      * @see <code>getDescription</code>
      */
-    @ConfigProperty(type = String.class, defaultValue = "Derby driver for datasource")
+    @ConfigProperty(type = String.class, defaultValue = "H2 driver for datasource")
     public void setDescription(String desc) {
         spec.setDetail(DataSourceSpec.DESCRIPTION, desc);
     }
@@ -1427,7 +1430,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         boolean poolProperty = false;
         String statementWrappingString = getStatementWrapping();
         if (statementWrappingString != null)
-            poolProperty = Boolean.valueOf(statementWrappingString);
+            poolProperty = Boolean.parseBoolean(statementWrappingString);
 
         if (wrapStatement == JVM_OPTION_STATEMENT_WRAPPING_ON ||
                 (wrapStatement == JVM_OPTION_STATEMENT_WRAPPING_NOT_SET && poolProperty)) {
@@ -1558,7 +1561,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         String stmtLeakReclaim = getStatementLeakReclaim();
         if (stmtLeakTimeout != null) {
             statementLeakTimeout = Integer.parseInt(stmtLeakTimeout) * 1000L;
-            statementLeakReclaim = Boolean.valueOf(stmtLeakReclaim);
+            statementLeakReclaim = Boolean.parseBoolean(stmtLeakReclaim);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "StatementLeakTimeout in seconds: "
                         + statementLeakTimeout + " & StatementLeakReclaim: "

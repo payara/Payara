@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-admin-object</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-admin-object</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="copy-config.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-application-ref.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-admin-object-1"></a><a id="GSRFM00012"></a><a id="create-admin-object"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_admin_object">create-admin-object</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>adds the administered object with the specified JNDI name for a resource
+adapter</p>
+</div>
+<div id="sthref115" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-admin-object [--help]
+[--target target]
+--restype restype
+[--classname classname]
+--raname raname
+[--enabled={true|false}]
+[--description description]
+[--property name=value[:name=value]*]
+jndi_name</code></pre>
+</div>
+</div>
+<div id="sthref116" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-admin-object</code> subcommand creates the administered object
+with the specified JNDI name and the interface definition for a resource
+adapter.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref117" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target on which you are creating the administered
+object. Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the administered object for the default server instance
+<code>server</code> and is the default value.</p>
+</dd>
+<dt class="hdlist1">configuration_name</dt>
+<dd>
+<p>Creates the administered object for the named configuration.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Creates the administered object for every server instance in the
+cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Creates the administered object for a particular server instance.<br></p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Note:</p>
+</div>
+<div class="paragraph">
+<p>The resource is always created for the domain as a whole, but the
+<code>resource-ref</code> for the resource is only created for the specified
+<code>--target</code>. This means that although the resource is defined at the
+domain level, it is only available at the specified target level. Use
+the <code>create-resource-ref</code> subcommand to refer to the resource in
+multiple targets if needed.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>--restype</code></dt>
+<dd>
+<p>Specifies the interface definition for the administered object. The
+resource type must be an interface definition that is specified in the
+<code>ra.xml</code> file of the resource adapter.</p>
+</dd>
+<dt class="hdlist1"><code>--classname</code></dt>
+<dd>
+<p>Specifies the class name of the administered object. Required if
+multiple administered objects use the same interface definition.</p>
+</dd>
+<dt class="hdlist1"><code>--raname</code></dt>
+<dd>
+<p>Specifies the name of the resource adapter associated with this
+administered object.</p>
+</dd>
+<dt class="hdlist1"><code>--enabled</code></dt>
+<dd>
+<p>Specifies if this object is enabled. Default is true.</p>
+</dd>
+<dt class="hdlist1"><code>--description</code></dt>
+<dd>
+<p>Text string describing the administered object.</p>
+</dd>
+<dt class="hdlist1"><code>--property</code></dt>
+<dd>
+<p>Description of the name/values pairs for configuring the resource.
+Dependent on the resource adapter. For JMS properties, see
+<a href="create-jms-resource.html#create-jms-resource-1"><code>create-jms-resource</code>(1)</a>
+for JMS destination resources.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref118" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">jndi_name</dt>
+<dd>
+<p>JNDI name of the administered object to be created.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref119" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM457"></a><a id="sthref120"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating an Administered Object</p>
+</div>
+<div class="paragraph">
+<p>In this example, <code>jmsra</code> is a system resource adapter with the admin
+object interfaces, <code>javax.jms.Queue</code> and <code>javax.jms.Topic</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-admin-object --restype javax.jms.Queue
+--raname jmsra --description "sample administered object"
+--property Name=sample_jmsqueue jms/samplequeue
+Command create-admin-object executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref121" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref122" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-resource-ref.html#create-resource-ref-1"><code>create-resource-ref</code>(1)</a>,
+<a href="delete-admin-object.html#delete-admin-object-1"><code>delete-admin-object</code>(1)</a>,
+<a href="list-admin-objects.html#list-admin-objects-1"><code>list-admin-objects</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="copy-config.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-application-ref.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

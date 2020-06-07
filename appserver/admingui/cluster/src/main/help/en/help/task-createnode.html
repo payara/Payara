@@ -1,0 +1,101 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-createnode" name="task-createnode"></a><a id="GHCLU00081" name="GHCLU00081"></a></p>
+
+<h4><a id="sthref224" name="sthref224"></a>To Create a Node</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>A node represents a host on which the GlassFish Server software is installed. A node must exist for every host on which GlassFish Server instances reside.</p>
+<ol>
+<li>
+<p>In the navigation tree, select the Nodes node.</p>
+<p>The Nodes page opens.</p>
+</li>
+<li>
+<p>On the Nodes page, click New.</p>
+<p>The New Node page opens.</p>
+</li>
+<li>
+<p>In the Name field, type your choice of name for the node.</p>
+</li>
+<li>
+<p>From the Type drop-down list, select the type of the node to create.</p>
+<ul>
+<li>
+<p>To create a node supports communication over secure shell (SSH), select SSH.</p>
+</li>
+<li>
+<p>To create a node that does not support remote communication, select CONFIG.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>In the Node Host field, type the name of the host that the node represents.</p>
+<p>Whether this field is mandatory depends on the type of the node:</p>
+<ul>
+<li>
+<p>If the type of the node is CONFIG, the name of the host may be omitted. The name of the host can be determined when instances that reside on the node are created.</p>
+</li>
+<li>
+<p>If the type of the node is SSH, the name of the host must be specified. Otherwise, an error occurs.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>In the Node Directory field, type the path to the directory that is to contain GlassFish Server instances that are created on the node.</p>
+<p>If the type of the node is CONFIG, leave this field empty. The node directory can be determined when instances that reside on the node are created.</p>
+<p>If you type a relative path, the path is relative to the <i>as-install</i> directory, where <i>as-install</i> is the base installation directory of the GlassFish Server software on the host.</p>
+</li>
+<li>
+<p>In the Installation Directory field, type the full path to the <i>parent</i> of the base installation directory of the GlassFish Server software on the host, for example, <code>/export/glassfish3</code>.</p>
+<p>If the type of the node is CONFIG, leave this field empty. The installation directory can be determined when instances that reside on the node are created.</p>
+</li>
+<li>
+<p>Finish the creation of the node as required by the type of the node.</p>
+<ol type="a">
+<li>
+<p>If the type of the node is CONFIG, click Save.</p>
+</li>
+<li>
+<p>If the type of the node is SSH, follow the instructions in <a href="task-nodenewssh.html">To Finish the Creation of an SSH Node</a>.</p>
+</li>
+</ol>
+</li>
+</ol>
+<a id="sthref225" name="sthref225"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-nodenewssh.html">To Finish the Creation of an SSH Node</a></p>
+</li>
+<li>
+<p><a href="task-deletenode.html">To Delete Nodes</a></p>
+</li>
+<li>
+<p><a href="task-listnodes.html">To List All Nodes in the Current Domain</a></p>
+</li>
+<li>
+<p><a href="task-pingnode.html">To Test if a Node Is Reachable</a></p>
+</li>
+<li>
+<p><a href="task-editnode.html">To Edit a Node</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

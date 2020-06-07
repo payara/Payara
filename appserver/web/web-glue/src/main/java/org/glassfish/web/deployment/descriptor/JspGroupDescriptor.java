@@ -37,20 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
 import com.sun.enterprise.deployment.OrderedSet;
 import org.glassfish.deployment.common.Descriptor;
 
-import java.util.Set;
 import javax.servlet.descriptor.JspPropertyGroupDescriptor;
+import java.util.Set;
 
 /**
  */
 public class JspGroupDescriptor extends Descriptor
         implements JspPropertyGroupDescriptor {
-    
+
     private String elIgnored;
     private String scriptingInvalid;
     private String isXml;
@@ -63,7 +64,7 @@ public class JspGroupDescriptor extends Descriptor
     private String defaultContentType = null;
     private String buffer = null;
     private String errorOnUndeclaredNamespace;
-    
+
     /**
      * Return the set of URL pattern aliases for this group.
      */
@@ -81,7 +82,7 @@ public class JspGroupDescriptor extends Descriptor
         this.getUrlPatterns().add(urlPattern);
 
     }
-   
+
     /**
      * Removes a URL pattern from this jsp group.
      */
@@ -107,9 +108,9 @@ public class JspGroupDescriptor extends Descriptor
         this.getIncludePreludes().add(prelude);
 
     }
-   
+
     /**
-     * Removes an element 
+     * Removes an element
      */
     public void removeIncludePrelude(String prelude) {
         this.getIncludePreludes().remove(prelude);
@@ -133,9 +134,9 @@ public class JspGroupDescriptor extends Descriptor
         this.getIncludeCodas().add(coda);
 
     }
-   
+
     /**
-     * Removes an element 
+     * Removes an element
      */
     public void removeIncludeCoda(String coda) {
         this.getIncludeCodas().remove(coda);
@@ -152,7 +153,7 @@ public class JspGroupDescriptor extends Descriptor
     public String getElIgnored() {
         return elIgnored;
     }
-    
+
     /**
      * enable/disable scripting
      */
@@ -165,12 +166,12 @@ public class JspGroupDescriptor extends Descriptor
     }
 
     /**
-     * enable/disable xml 
+     * enable/disable xml
      */
     public void setIsXml(String value) {
         isXml = value;
     }
-    
+
     public String getIsXml() {
         return isXml;
     }
@@ -196,7 +197,7 @@ public class JspGroupDescriptor extends Descriptor
     public String getTrimDirectiveWhitespaces() {
         return trimDirectiveWhitespaces;
     }
-    
+
     /**
      * get display name.
      */
@@ -265,22 +266,22 @@ public class JspGroupDescriptor extends Descriptor
     /**
      * @return a string describing the values I hold
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\n JspGroupDescriptor");
-        toStringBuffer.append( "\n");
-        super.print(toStringBuffer);
-        toStringBuffer.append( "\n DisplayName:").append(this.getDisplayName());
-        toStringBuffer.append( "\n PageEncoding:").append(pageEncoding);
-        toStringBuffer.append( "\n El-Ignored:").append(elIgnored);
-        toStringBuffer.append( "\n Scripting Invalid:").append(scriptingInvalid);
-        toStringBuffer.append( "\n urlPatterns: ").append(urlPatterns);
-        toStringBuffer.append( "\n includePreludes: ").append(includePreludes);
-        toStringBuffer.append( "\n includeCoda: ").append(includeCodas);
-        toStringBuffer.append( "\n Is XML:").append(isXml);
-        toStringBuffer.append( "\n DeferredSyntaxAllowedAsLiteral: ").append(deferredSyntaxAllowedAsLiteral);
-        toStringBuffer.append( "\n TrimDirectiveWhitespaces:").append(trimDirectiveWhitespaces);
-        toStringBuffer.append( "\n defaultContentType: ").append(defaultContentType);
-        toStringBuffer.append( "\n buffer: ").append(buffer);
-        toStringBuffer.append( "\n errorOnUndeclaredNamespace: ").append(errorOnUndeclaredNamespace);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\n JspGroupDescriptor");
+        toStringBuilder.append( "\n");
+        super.print(toStringBuilder);
+        toStringBuilder.append( "\n DisplayName:").append(this.getDisplayName());
+        toStringBuilder.append( "\n PageEncoding:").append(pageEncoding);
+        toStringBuilder.append( "\n El-Ignored:").append(elIgnored);
+        toStringBuilder.append( "\n Scripting Invalid:").append(scriptingInvalid);
+        toStringBuilder.append( "\n urlPatterns: ").append(urlPatterns);
+        toStringBuilder.append( "\n includePreludes: ").append(includePreludes);
+        toStringBuilder.append( "\n includeCoda: ").append(includeCodas);
+        toStringBuilder.append( "\n Is XML:").append(isXml);
+        toStringBuilder.append( "\n DeferredSyntaxAllowedAsLiteral: ").append(deferredSyntaxAllowedAsLiteral);
+        toStringBuilder.append( "\n TrimDirectiveWhitespaces:").append(trimDirectiveWhitespaces);
+        toStringBuilder.append( "\n defaultContentType: ").append(defaultContentType);
+        toStringBuilder.append( "\n buffer: ").append(buffer);
+        toStringBuilder.append( "\n errorOnUndeclaredNamespace: ").append(errorOnUndeclaredNamespace);
     }
 }

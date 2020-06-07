@@ -37,49 +37,65 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.node.*;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.TagNames;
+import static com.sun.enterprise.deployment.util.DOLUtils.getConfigurationDeploymentDescriptorFiles;
+import static com.sun.enterprise.deployment.xml.TagNames.MODULE_NAME;
+import static org.glassfish.web.deployment.xml.WebTagNames.ABSOLUTE_ORDERING;
+import static org.glassfish.web.deployment.xml.WebTagNames.DEFAULT_CONTEXT_PATH;
+import static org.glassfish.web.deployment.xml.WebTagNames.LOAD_ON_STARTUP;
+import static org.glassfish.web.deployment.xml.WebTagNames.REQUEST_CHARACTER_ENCODING;
+import static org.glassfish.web.deployment.xml.WebTagNames.RESPONSE_CHARACTER_ENCODING;
+import static org.glassfish.web.deployment.xml.WebTagNames.URL_PATTERN;
+import static org.glassfish.web.deployment.xml.WebTagNames.WEB_BUNDLE;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
-import java.util.*;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.node.SaxParserHandler;
+import com.sun.enterprise.deployment.node.XMLElement;
 
 /**
  * This node is responsible for handling the web-app xml tree
  *
- * @author  Jerome Dochez
- * @version 
+ * @author Jerome Dochez
+ * @version
  */
 public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
 
     public final static XMLElement tag = new XMLElement(WebTagNames.WEB_BUNDLE);
 
-    /** 
+    /**
      * The public ID for my documents.
      */
     public final static String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN";
     public final static String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN";
-    /** 
-     * The system ID of my documents. 
+    /**
+     * The system ID of my documents.
      */
     public final static String SYSTEM_ID = "http://java.sun.com/dtd/web-app_2_3.dtd";
-    public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/web-app_2_2.dtd";   
-    
+    public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/web-app_2_2.dtd";
+
     public final static String SCHEMA_ID_24 = "web-app_2_4.xsd";
     public final static String SCHEMA_ID_25 = "web-app_2_5.xsd";
     public final static String SCHEMA_ID_30 = "web-app_3_0.xsd";
     public final static String SCHEMA_ID_31 = "web-app_3_1.xsd";
     public final static String SCHEMA_ID = "web-app_4_0.xsd";
     private final static List<String> systemIDs = initSystemIDs();
-
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
@@ -90,27 +106,24 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         systemIDs.add(SCHEMA_ID_31);
         return Collections.unmodifiableList(systemIDs);
     }
-    
-   /**
-    * register this node as a root node capable of loading entire DD files
-    * 
-    * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
-    * @return the doctype tag name
-    */
+
+    /**
+     * register this node as a root node capable of loading entire DD files
+     * 
+     * @param publicIDToDTD is a mapping between xml Public-ID to DTD
+     * @return the doctype tag name
+     */
     @Override
     public String registerBundle(Map<String, String> publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
         return tag.getQName();
     }
-    
-    @Override
-     public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD, Map<String, List<Class>> versionUpgrades) {
-        final Map<String,Class> result = new HashMap<String,Class>();
-        for (ConfigurationDeploymentDescriptorFile wddFile :
-                DOLUtils.getConfigurationDeploymentDescriptorFiles(
-                        habitat, WarType.ARCHIVE_TYPE)) {
 
+    @Override
+    public Map<String, Class<?>> registerRuntimeBundle(final Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
+        Map<String, Class<?>> result = new HashMap<>();
+        for (ConfigurationDeploymentDescriptorFile wddFile : getConfigurationDeploymentDescriptorFiles(serviceLocator, WarType.ARCHIVE_TYPE)) {
             wddFile.registerBundle(result, publicIDToDTD, versionUpgrades);
         }
 
@@ -119,43 +132,42 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
 
     @Override
     public Collection<String> elementsAllowingEmptyValue() {
-        final Set<String> result = new HashSet<String>();
-        result.add(WebTagNames.LOAD_ON_STARTUP);
+        Set<String> result = new HashSet<>();
+        result.add(LOAD_ON_STARTUP);
+        
         return result;
     }
 
     @Override
     public Collection<String> elementsPreservingWhiteSpace() {
-        final Set<String> result = new HashSet<String>();
-        result.add(WebTagNames.URL_PATTERN);
+        Set<String> result = new HashSet<>();
+        result.add(URL_PATTERN);
+        
         return result;
     }
-    
-    
-    
+
     /** Creates new WebBundleNode */
-    public WebBundleNode()  {
+    public WebBundleNode() {
         super();
-        registerElementHandler(new XMLElement(WebTagNames.ABSOLUTE_ORDERING),
-               AbsoluteOrderingNode.class, "setAbsoluteOrderingDescriptor");
-        SaxParserHandler.registerBundleNode(this, WebTagNames.WEB_BUNDLE);
+        registerElementHandler(new XMLElement(ABSOLUTE_ORDERING), AbsoluteOrderingNode.class, "setAbsoluteOrderingDescriptor");
+        SaxParserHandler.registerBundleNode(this, WEB_BUNDLE);
     }
 
     @Override
     public void setElementValue(XMLElement element, String value) {
-        if (TagNames.MODULE_NAME.equals(element.getQName())) {
+        if (MODULE_NAME.equals(element.getQName())) {
             WebBundleDescriptor bundleDesc = getDescriptor();
             bundleDesc.getModuleDescriptor().setModuleName(value);
-        } else if (WebTagNames.DEFAULT_CONTEXT_PATH.equals(element.getQName())) {
+        } else if (DEFAULT_CONTEXT_PATH.equals(element.getQName())) {
             WebBundleDescriptor bundleDesc = getDescriptor();
             bundleDesc.setContextRoot(value);
-		} else if (WebTagNames.REQUEST_CHARACTER_ENCODING.equals(element.getQName())) {
-			WebBundleDescriptor bundleDesc = getDescriptor();
-			bundleDesc.setRequestCharacterEncoding(value);
-		} else if (WebTagNames.RESPONSE_CHARACTER_ENCODING.equals(element.getQName())) {
-			WebBundleDescriptor bundleDesc = getDescriptor();
-			bundleDesc.setResponseCharacterEncoding(value);
-		} else {
+        } else if (REQUEST_CHARACTER_ENCODING.equals(element.getQName())) {
+            WebBundleDescriptor bundleDesc = getDescriptor();
+            bundleDesc.setRequestCharacterEncoding(value);
+        } else if (RESPONSE_CHARACTER_ENCODING.equals(element.getQName())) {
+            WebBundleDescriptor bundleDesc = getDescriptor();
+            bundleDesc.setResponseCharacterEncoding(value);
+        } else {
             super.setElementValue(element, value);
         }
     }
@@ -169,25 +181,25 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
             return super.endElement(element);
         }
     }
-    
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
     @Override
     public WebBundleDescriptorImpl getDescriptor() {
-        if (descriptor==null) {
+        if (descriptor == null) {
             descriptor = new WebBundleDescriptorImpl();
         }
         return descriptor;
-    }  
+    }
 
-   /**
+    /**
      * @return the XML tag associated with this XMLNode
      */
-   @Override
-   protected XMLElement getXMLRootTag() {
+    @Override
+    protected XMLElement getXMLRootTag() {
         return tag;
-    }       
+    }
 
     /**
      * @return the DOCTYPE of the XML file
@@ -196,7 +208,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
     public String getDocType() {
         return null;
     }
-    
+
     /**
      * @return the SystemID of the XML file
      */
@@ -221,8 +233,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
      * @return the DOM tree top node
      */
     @Override
-    public Node writeDescriptor(Node parent, 
-        WebBundleDescriptorImpl webBundleDesc) {
+    public Node writeDescriptor(Node parent, WebBundleDescriptorImpl webBundleDesc) {
 
         Node jarNode = super.writeDescriptor(parent, webBundleDesc);
         if (webBundleDesc.isDenyUncoveredHttpMethods()) {
@@ -230,8 +241,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         }
         if (webBundleDesc.getAbsoluteOrderingDescriptor() != null) {
             AbsoluteOrderingNode absOrderingNode = new AbsoluteOrderingNode();
-            absOrderingNode.writeDescriptor(jarNode, WebTagNames.ABSOLUTE_ORDERING,
-                    webBundleDesc.getAbsoluteOrderingDescriptor());
+            absOrderingNode.writeDescriptor(jarNode, WebTagNames.ABSOLUTE_ORDERING, webBundleDesc.getAbsoluteOrderingDescriptor());
         }
         return jarNode;
     }

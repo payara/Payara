@@ -37,25 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package com.sun.enterprise.transaction.monitoring;
 
-import java.util.List;
-import java.util.logging.*;
-
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.transaction.api.TransactionAdminBean;
+import org.glassfish.external.probe.provider.annotations.ProbeListener;
+import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.StringStatistic;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;
 import org.glassfish.external.statistics.impl.StringStatisticImpl;
-import org.glassfish.external.probe.provider.annotations.*;
 import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import com.sun.enterprise.transaction.api.TransactionAdminBean;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Collects the Transaction Service monitoring data and provides it to the callers.
@@ -70,21 +70,21 @@ public class TransactionServiceStatsProvider {
     private static final int COLUMN_LENGTH = 25;
     private static final String LINE_BREAK = "%%%EOL%%%";
 
-    private CountStatisticImpl activeCount = new CountStatisticImpl("ActiveCount", "count", 
+    private CountStatisticImpl activeCount = new CountStatisticImpl("ActiveCount", "count",
             "Provides the number of transactions that are currently active.");
 
-    private CountStatisticImpl committedCount = new CountStatisticImpl("CommittedCount", "count", 
+    private CountStatisticImpl committedCount = new CountStatisticImpl("CommittedCount", "count",
             "Provides the number of transactions that have been committed.");
 
-    private CountStatisticImpl rolledbackCount = new CountStatisticImpl("RolledbackCount", "count", 
+    private CountStatisticImpl rolledbackCount = new CountStatisticImpl("RolledbackCount", "count",
             "Provides the number of transactions that have been rolled back.");
 
-    private StringStatisticImpl inflightTransactions = new StringStatisticImpl("ActiveIds", "List", 
-                "Provides the IDs of the transactions that are currently active a.k.a. in-flight " 
-                + "transactions. Every such transaction can be rolled back after freezing the transaction " 
+    private StringStatisticImpl inflightTransactions = new StringStatisticImpl("ActiveIds", "List",
+                "Provides the IDs of the transactions that are currently active a.k.a. in-flight "
+                + "transactions. Every such transaction can be rolled back after freezing the transaction "
                 + "service." );
 
-    private StringStatisticImpl state = new StringStatisticImpl("State", "String", 
+    private StringStatisticImpl state = new StringStatisticImpl("State", "String",
                 "Indicates if the transaction service has been frozen.");
 
     private boolean isFrozen = false;
@@ -115,14 +115,14 @@ public class TransactionServiceStatsProvider {
     public CountStatistic getRolledbackCount() {
         return rolledbackCount;
     }
-    
+
     @ManagedAttribute(id="state")
     @Description( "Indicates if the transaction service has been frozen." )
     public StringStatistic getState() {
         state.setCurrent((isFrozen)? "True": "False");
         return state;
     }
-    
+
     @ManagedAttribute(id="activeids")
     @Description( "List of inflight transactions." )
     public StringStatistic getActiveIds() {
@@ -134,7 +134,7 @@ public class TransactionServiceStatsProvider {
         }
 
         List aList = txMgr.getActiveTransactions();
-        StringBuffer strBuf = new StringBuffer(1024);
+        StringBuilder strBuf = new StringBuilder(1024);
         if (!aList.isEmpty()) {
             //Set the headings for the tabular output
             int componentNameLength = COLUMN_LENGTH;
@@ -151,7 +151,7 @@ public class TransactionServiceStatsProvider {
                 }
             }
             if (aList.size() > 0) {
-                
+
                 strBuf.append(LINE_BREAK).append(LINE_BREAK);
                 appendColumn(strBuf, "Transaction Id", txIdLength);
                 appendColumn(strBuf, "Status", COLUMN_LENGTH);
@@ -186,7 +186,7 @@ public class TransactionServiceStatsProvider {
         inflightTransactions.setCurrent(strBuf.toString());
         return inflightTransactions;
     }
-    
+
     @ProbeListener("glassfish:transaction:transaction-service:activated")
     public void transactionActivatedEvent() {
         _logger.fine("=== transaction-service active ++");
@@ -218,7 +218,7 @@ public class TransactionServiceStatsProvider {
         isFrozen = b;
     }
 
-    private void appendColumn(StringBuffer buf, String text, int length) {
+    private void appendColumn(StringBuilder buf, String text, int length) {
         buf.append(text);
         for (int i=text.length(); i<length; i++){
             buf.append(" ");

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portion Copyright [2018] Payara Foundation and/or affiliates
+// Portion Copyright [2018-2019] Payara Foundation and/or affiliates
 
 /*
  * MappingFile.java
@@ -85,7 +85,7 @@ public class MappingFile {
 
     private static final String JAVA_TYPE_SET = "java.util.Set"; //NOI18N
     private static final String JAVA_TYPE_COLLECTION = "java.util.Collection"; //NOI18N
-    private static final List types = new ArrayList();
+    private static final List<String> types = new ArrayList<>();
 
     /** Definitive location for a  mapping file in an ejb-jar file. */
     public static final String DEFAULT_LOCATION_IN_EJB_JAR;
@@ -104,7 +104,7 @@ public class MappingFile {
         types.add(JAVA_TYPE_SET);
         types.add(JAVA_TYPE_COLLECTION);
 
-        DEFAULT_LOCATION_IN_EJB_JAR = new StringBuffer(I18NHelper.getMessage(
+        DEFAULT_LOCATION_IN_EJB_JAR = new StringBuilder(I18NHelper.getMessage(
             messages, "CONST_IAS_MAPPING_FILE_LOC")). //NOI18N
             append(File.separator).
             append(I18NHelper.getMessage(
@@ -149,7 +149,7 @@ public class MappingFile {
      * @return A Collection of MappingClassElement objects
      * @throws DBException
      * @throws ModelException
-     * @throws ConversionException 
+     * @throws ConversionException
      */
     public Map intoMappingClasses(SunCmpMappings content,
         ConversionHelper helper)
@@ -312,7 +312,7 @@ public class MappingFile {
                                 beanMapping.addSecondaryTable(sT);
                             else
                                 if (logger.isLoggable(Logger.FINE))
-                                    logger.fine( 
+                                    logger.fine(
                                         I18NHelper.getMessage(
                                         messages,
                                         "WARN_ILLEGAL_PAIR", //NOI18N
@@ -916,7 +916,6 @@ public class MappingFile {
         }
         else {
             CheckVersionOfAccessedInstances versionIns =
-                (CheckVersionOfAccessedInstances)
                 c.getCheckVersionOfAccessedInstances();
 
             if (c.isCheckModifiedAtCommit())
@@ -1676,7 +1675,7 @@ public class MappingFile {
                         messages,
                         "WARN_INVALID_CMRFIELD", //NOI18N
                         beanName, fieldName));
-                } 
+                }
                 fieldName.trim().charAt(0);
                 String otherField = helper.getInverseFieldName(beanName,
                     fieldName);
@@ -1700,7 +1699,7 @@ public class MappingFile {
                     CmrFieldMapping inverseMapping = new CmrFieldMapping();
                     inverseMapping.setCmrFieldName(otherField);
                     inverseMapping.setColumnPair(
-                        reverseCPArray(cmrsInEM[i].getColumnPair(), pt, 
+                        reverseCPArray(cmrsInEM[i].getColumnPair(), pt,
                             beanName, fieldName));
                     otherEM.addCmrFieldMapping(inverseMapping);
                 }
@@ -1743,7 +1742,7 @@ public class MappingFile {
         DBIdentifier dbId, ConversionHelper helper)
         throws DBException, ConversionException {
 
-        TableElement retVal = ((schema != null) ? 
+        TableElement retVal = ((schema != null) ?
             schema.getTable(dbId) : null);
 
         if (null == retVal && !helper.ensureValidation()) {
@@ -1763,7 +1762,7 @@ public class MappingFile {
 
             // Type numeric=2
             fakeKeyCol.setType(2);
-            fakeKeyCol.setPrecision(new Integer(MINIMUM_PRECISION));
+            fakeKeyCol.setPrecision(Integer.valueOf(MINIMUM_PRECISION));
             tkey.setPrimaryKey(true);
             tkey.addColumn(fakeKeyCol);
             retVal.addColumn(fakeKeyCol);
@@ -1829,7 +1828,7 @@ public class MappingFile {
      * @param fieldMappedToABlob boolean type to indicate that field is blob
      * type or not
      * @throws ModelException
-     * @throws ConversionException 
+     * @throws ConversionException
      */
     private void setFetchGroup(FetchedWith fw, MappingFieldElement mfe,
         String beanName, boolean fieldMappedToABlob)
@@ -1842,9 +1841,9 @@ public class MappingFile {
                 tryLevel = true;
             }
             catch (RuntimeException e) {
-                // If there is no level set, schema2beans throws 
+                // If there is no level set, schema2beans throws
                 // RuntimeException.
-                // Need to do more investigation on why throws this exception. 
+                // Need to do more investigation on why throws this exception.
                 // it is very likely that there is no level set, which would
                 // throw an exception here..  Which we are going to ignore
             }

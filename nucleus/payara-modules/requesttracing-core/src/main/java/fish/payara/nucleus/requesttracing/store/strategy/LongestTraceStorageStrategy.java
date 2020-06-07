@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,62 +40,40 @@
 package fish.payara.nucleus.requesttracing.store.strategy;
 
 import fish.payara.notification.requesttracing.RequestTrace;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.Iterator;
 
 /**
- * Strategy for finding traces that need removing from a list. Will remove the
- * trace at the end of the
- * {@link RequestTrace RequestTrace} object's
- * natural ordering.
+ * Strategy for finding traces that need removing from a list. Will remove the trace at the shortest traces in the given
+ * set of traces. If multiple traces are equally short the oldest is removed first.
  */
 public class LongestTraceStorageStrategy implements TraceStorageStrategy {
 
     /**
-     * Gets the trace that needs removing. Sorts by the request trace's natural
-     * ordering.
+     * Gets the trace that needs removing. Removes the provided trace if present, or selects the shortest of the given
+     * traces should their number be larger then maxSize.
      *
-     * @param traces the list of traces to test.
-     * @param maxSize the maximum size of the list.
-     * @return the trace that needs removing, or null if no traces need
-     * removing.
-     */
-    @Override
-    public RequestTrace getTraceForRemoval(Collection<RequestTrace> traces, int maxSize) {
-        if (traces == null || traces.isEmpty() || traces.size() <= maxSize) {
-            return null;
-        }
-        // Sort and return shortest request
-        List<RequestTrace> tracesCopy = new ArrayList<>(traces);
-        Collections.sort(tracesCopy);
-        return traces.toArray(new RequestTrace[]{})[traces.size() - 1];
-    }
-
-    /**
-     * Gets the trace that needs removing. Removes the provided trace if present, or sorts by the request traces' 
-     * natural ordering if not.
-     *
-     * @param traces the list of traces to test.
-     * @param maxSize the maximum size of the list.
-     * @param traceToRemove the trace to remove if present
-     * @return the trace that needs removing, or null if no traces need
-     * removing.
+     * @see TraceStorageStrategy#getTraceForRemoval(Collection, int, RequestTrace)
      */
     @Override
     public RequestTrace getTraceForRemoval(Collection<RequestTrace> traces, int maxSize, RequestTrace traceToRemove) {
         if (traces == null || traces.isEmpty() || traces.size() <= maxSize) {
             return null;
         }
-        
-        if (traces.contains(traceToRemove)) {
-            return traceToRemove;
-        } else {
-            // Sort and return shortest request
-            List<RequestTrace> tracesCopy = new ArrayList<>(traces);
-            Collections.sort(tracesCopy);
-            return traces.toArray(new RequestTrace[]{})[traces.size() - 1];
+        return traceToRemove != null && traces.contains(traceToRemove) ? traceToRemove : findShortestTrace(traces);
+    }
+
+    private static RequestTrace findShortestTrace(Collection<RequestTrace> traces) {
+        Iterator<RequestTrace> iter = traces.iterator();
+        RequestTrace shortest = iter.next();
+        while (iter.hasNext()) {
+            RequestTrace next = iter.next();
+            if (next.getElapsedTime() < shortest.getElapsedTime() 
+                || next.getElapsedTime() == shortest.getElapsedTime() 
+                    && next.getStartTime().isBefore(shortest.getStartTime())) {
+                shortest = next;
+            }
         }
+        return shortest;
     }
 }

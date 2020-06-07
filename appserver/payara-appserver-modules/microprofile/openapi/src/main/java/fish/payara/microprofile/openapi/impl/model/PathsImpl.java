@@ -39,40 +39,47 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
 
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
-public class PathsImpl extends TreeMap<String, PathItem> implements Paths {
+public class PathsImpl extends ExtensibleTreeMap<PathItem, Paths> implements Paths {
 
     private static final long serialVersionUID = -3876996963579977405L;
 
-    protected Map<String, Object> extensions = new HashMap<>();
+    public PathsImpl() {
+        super();
+    }
+
+    public PathsImpl(Map<String, ? extends PathItem> items) {
+        super(items);
+    }
 
     @Override
     public Paths addPathItem(String name, PathItem item) {
-        super.put(name, item);
+        if (item != null) {
+            put(name, item);
+        }
         return this;
     }
 
     @Override
-    public Map<String, Object> getExtensions() {
-        return extensions;
+    public void removePathItem(String name) {
+        remove(name);
     }
 
     @Override
-    public void addExtension(String name, Object value) {
-        extensions.put(name, value);
+    public Map<String, PathItem> getPathItems() {
+        return new PathsImpl(this);
     }
 
     @Override
-    public void setExtensions(Map<String, Object> extensions) {
-        this.extensions = extensions;
+    public void setPathItems(Map<String, PathItem> items) {
+        clear();
+        putAll(items);
     }
 
     public static void merge(Paths from, Paths to, boolean override) {
@@ -80,10 +87,10 @@ public class PathsImpl extends TreeMap<String, PathItem> implements Paths {
             return;
         }
         from.entrySet().forEach(entry -> {
-            if (!to.containsKey(entry.getKey())) {
+            if (!to.hasPathItem(entry.getKey())) {
                 to.addPathItem(entry.getKey(), entry.getValue());
             } else {
-                ModelUtils.merge(entry.getValue(), to.get(entry.getKey()), override);
+                ModelUtils.merge(entry.getValue(), to.getPathItem(entry.getKey()), override);
             }
         });
     }

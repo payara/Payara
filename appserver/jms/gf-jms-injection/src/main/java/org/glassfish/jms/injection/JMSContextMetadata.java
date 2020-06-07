@@ -37,19 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.jms.injection;
 
-import java.io.Serializable;
-import java.security.MessageDigest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.internal.api.RelativePathResolver;
+
 import javax.jms.JMSConnectionFactory;
 import javax.jms.JMSContext;
 import javax.jms.JMSPasswordCredential;
 import javax.jms.JMSSessionMode;
-import org.glassfish.internal.api.RelativePathResolver;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.io.Serializable;
+import java.security.MessageDigest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Serializable object which holds the information about the JMSContext
@@ -106,7 +108,7 @@ public class JMSContextMetadata implements Serializable {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("JMSContextMetadata[");
         sb.append("lookup=").append(lookup);
         sb.append(", sessionMode=").append(sessionMode);
@@ -141,7 +143,7 @@ public class JMSContextMetadata implements Serializable {
                     md.update(password.getBytes("ISO-8859-1"));
                 md.update(delimer);
                 byte[] result = md.digest();
-                StringBuffer buff = new StringBuffer();
+                StringBuilder buff = new StringBuilder();
                 for(int i=0; i<result.length; i++) {
                     String byteStr = Integer.toHexString(result[i] & 0xFF);
                     if(byteStr.length() < 2)
@@ -170,7 +172,7 @@ public class JMSContextMetadata implements Serializable {
                     return unalisedPwd;
             } catch (Exception e) {
                 if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, localStrings.getLocalString("decrypt.password.fail", 
+                    logger.log(Level.WARNING, localStrings.getLocalString("decrypt.password.fail",
                                "Failed to unalias password for the reason: {0}."), e.toString());
                 }
             }

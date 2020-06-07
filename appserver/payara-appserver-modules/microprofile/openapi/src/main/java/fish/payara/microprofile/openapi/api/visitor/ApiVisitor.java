@@ -64,8 +64,10 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.callbacks.Callback;
 import org.eclipse.microprofile.openapi.annotations.callbacks.Callbacks;
 import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
+import org.eclipse.microprofile.openapi.annotations.extensions.Extensions;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -108,16 +110,16 @@ public interface ApiVisitor {
 
     void visitConsumes(Consumes produces, AnnotatedElement element, ApiContext context);
 
-    void visitQueryParam(QueryParam param, java.lang.reflect.Parameter element, ApiContext context);
+    void visitQueryParam(QueryParam param, AnnotatedElement element, ApiContext context);
 
-    void visitPathParam(PathParam param, java.lang.reflect.Parameter element, ApiContext context);
+    void visitPathParam(PathParam param, AnnotatedElement element, ApiContext context);
 
-    void visitFormParam(FormParam param, java.lang.reflect.Parameter element, ApiContext context);
+    void visitFormParam(FormParam param, AnnotatedElement element, ApiContext context);
 
-    void visitHeaderParam(HeaderParam param, java.lang.reflect.Parameter element, ApiContext context);
+    void visitHeaderParam(HeaderParam param, AnnotatedElement element, ApiContext context);
 
-    void visitCookieParam(CookieParam param, java.lang.reflect.Parameter element, ApiContext context);
-
+    void visitCookieParam(CookieParam param, AnnotatedElement element, ApiContext context);
+    
     // OpenAPI annotations
 
     void visitOpenAPI(OpenAPIDefinition definition, AnnotatedElement element, ApiContext context);
@@ -125,6 +127,8 @@ public interface ApiVisitor {
     void visitSchema(Schema schema, AnnotatedElement element, ApiContext context);
 
     void visitExtension(Extension extension, AnnotatedElement element, ApiContext context);
+
+    void visitExtensions(Extensions extensions, AnnotatedElement element, ApiContext context);
 
     void visitOperation(Operation operation, AnnotatedElement element, ApiContext context);
 
@@ -139,6 +143,8 @@ public interface ApiVisitor {
     void visitAPIResponses(APIResponses apiResponses, AnnotatedElement element, ApiContext context);
 
     void visitParameter(Parameter parameter, AnnotatedElement element, ApiContext context);
+
+    void visitParameters(Parameters parameters, AnnotatedElement element, ApiContext context);
 
     void visitExternalDocumentation(ExternalDocumentation externalDocs, AnnotatedElement element, ApiContext context);
 

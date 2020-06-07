@@ -399,7 +399,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         if (name.startsWith("//")) {
             name = name.substring(2);
         }
-        int slash = name.indexOf("/");
+        int slash = name.indexOf('/');
         if (slash != -1) {
             hostName = name.substring(0, slash);
             contextName = name.substring(slash);
@@ -437,7 +437,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         if (name.startsWith("//")) {
             name = name.substring(2);
         }
-        int slash = name.indexOf("/");
+        int slash = name.indexOf('/');
         if (slash != -1) {
             hostName = name.substring(0, slash);
             contextName = name.substring(slash);
@@ -490,7 +490,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         if (name.startsWith("//")) {
             name = name.substring(2);
         }
-        int slash = name.indexOf("/");
+        int slash = name.indexOf('/');
         if (slash != -1) {
             hostName = name.substring(0, slash);
             contextName = name.substring(slash);
@@ -539,7 +539,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         if (name.startsWith("//")) {
             name = name.substring(2);
         }
-        int slash = name.indexOf("/");
+        int slash = name.indexOf('/');
         if (slash != -1) {
             hostName = name.substring(0, slash);
             contextName = name.substring(slash);

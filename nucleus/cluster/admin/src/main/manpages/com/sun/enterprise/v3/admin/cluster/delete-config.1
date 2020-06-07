@@ -1,0 +1,50 @@
+delete-config(1)          asadmin Utility Subcommands         delete-config(1)
+
+NAME
+       delete-config - deletes an existing named configuration
+
+SYNOPSIS
+           delete-config [--help] configuration-name
+
+DESCRIPTION
+       The delete-config subcommand deletes an existing named configuration
+       from the configuration of the domain administration server (DAS). You
+       can delete a configuration only if no GlassFish Server instances or
+       clusters refer to the configuration. A standalone configuration is
+       automatically deleted when the instance or cluster that refers to it is
+       deleted. You cannot delete the default-config configuration that is
+       copied to create standalone configurations.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       configuration-name
+           The name of the configuration that you are deleting.
+
+EXAMPLES
+       Example 1, Deleting a Named Configuration
+           This example deletes the named configuration pmdconfig.
+
+               asadmin> delete-config pmdconfig
+
+               Command delete-config executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       copy-config(1), list-configs(1)
+
+       asadmin(1M)
+
+       configuration(5ASC)
+
+Java EE 8                         7 Dec 2010                  delete-config(1)

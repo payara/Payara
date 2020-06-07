@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Poritons Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -55,8 +56,17 @@ import org.glassfish.api.admin.Payload;
  * @author tjquinn
  */
 public class PayloadImpl implements Payload {
+    
+    private static final String DATA_REQUESTIS_RECURSIVE = "data-request-is-recursive";
 
     public abstract static class Outbound implements Payload.Outbound {
+        
+        private static final String LAST_MODIFIED = "last-modified";
+        private static final String DATA_REQUEST_NAME = "data-request-name";
+        private static final String DATA_REQUEST_TYPE = "data-request-type";
+        
+        private static final String APPLICATION_OCTETSTREAM = "application/octet-stream";
+        
         /**
          * Partial implementation of the Outbound Payload.
          */
@@ -145,10 +155,10 @@ public class PayloadImpl implements Payload {
             if (props != null) {
                 enhancedProps.putAll(props);
             }
-            enhancedProps.setProperty("data-request-type", "file-xfer");
-            enhancedProps.setProperty("data-request-name", dataRequestName);
-            enhancedProps.setProperty("data-request-is-recursive", Boolean.toString(isRecursive));
-            enhancedProps.setProperty("last-modified", Long.toString(file.lastModified())
+            enhancedProps.setProperty(DATA_REQUEST_TYPE, "file-xfer");
+            enhancedProps.setProperty(DATA_REQUEST_NAME, dataRequestName);
+            enhancedProps.setProperty(DATA_REQUESTIS_RECURSIVE, Boolean.toString(isRecursive));
+            enhancedProps.setProperty(LAST_MODIFIED, Long.toString(file.lastModified())
                     );
 
             if (file.isDirectory() && isRecursive) {
@@ -156,7 +166,7 @@ public class PayloadImpl implements Payload {
                 if (relativeURIPath.endsWith("/")) {
                     relativeURIPath = relativeURIPath.substring(0, relativeURIPath.length() - 1);
                 }
-                relativeURIPath = relativeURIPath.substring(0, relativeURIPath.lastIndexOf("/") + 1);
+                relativeURIPath = relativeURIPath.substring(0, relativeURIPath.lastIndexOf('/') + 1);
 
                 attachFilesRecursively(
                         file.getParentFile().toURI(),
@@ -187,18 +197,17 @@ public class PayloadImpl implements Payload {
             if (props != null) {
                 enhancedProps.putAll(props);
             }
-            enhancedProps.setProperty("data-request-type", "file-replace");
-            enhancedProps.setProperty("data-request-name", dataRequestName);
-            enhancedProps.setProperty("data-request-is-recursive", Boolean.toString(isRecursive));
-	    enhancedProps.setProperty("last-modified", Long.toString(file.lastModified()));
+            enhancedProps.setProperty(DATA_REQUEST_TYPE, "file-replace");
+            enhancedProps.setProperty(DATA_REQUEST_NAME, dataRequestName);
+            enhancedProps.setProperty(DATA_REQUESTIS_RECURSIVE, Boolean.toString(isRecursive));
+	    enhancedProps.setProperty(LAST_MODIFIED, Long.toString(file.lastModified()));
 
             /*
              * Add a dummy part for the replacement of the directory - if
              * the part refers to a directory.
              */
             if (file.isDirectory()) {
-                parts.add(Part.newInstance(
-                        "application/octet-stream", /* not much effect */
+                parts.add(Part.newInstance(APPLICATION_OCTETSTREAM, /* not much effect */
                         fileURI.getRawPath(),
                         enhancedProps,
                         (String) null));
@@ -207,11 +216,10 @@ public class PayloadImpl implements Payload {
                  * Parts for the files in the directory.
                  */
                 if (isRecursive) {
-                    enhancedProps.setProperty("data-request-type", "file-xfer");
+                    enhancedProps.setProperty(DATA_REQUEST_TYPE, "file-xfer");
                     attachContainedFilesRecursively(
                             file.toURI(),
                             fileURI,
-                            dataRequestName,
                             enhancedProps,
                             file);
                 }
@@ -232,13 +240,12 @@ public class PayloadImpl implements Payload {
         private void attachContainedFilesRecursively(
                 final URI actualBaseDirAbsURI,
                 final URI targetBaseDirRelURI,
-                final String dataRequestName,
                 final Properties enhancedProps,
                 final File dirFile) throws FileNotFoundException, IOException {
 
             for (File f : dirFile.listFiles()) {
                 if (f.isDirectory()) {
-                    enhancedProps.setProperty("last-modified", Long.toString(f.lastModified()));
+                    enhancedProps.setProperty(LAST_MODIFIED, Long.toString(f.lastModified()));
                     attachFilesRecursively(
                             actualBaseDirAbsURI,
                             targetBaseDirRelURI,
@@ -249,19 +256,14 @@ public class PayloadImpl implements Payload {
                 } else {
                     String contentType = URLConnection.guessContentTypeFromName(f.getName());
                     if (contentType == null) {
-                        final InputStream is = new BufferedInputStream(new FileInputStream(f));
-                        try {
+                        try (InputStream is = new BufferedInputStream(new FileInputStream(f))) {
                             contentType = URLConnection.guessContentTypeFromStream(is);
                             if (contentType == null) {
-                                contentType = "application/octet-stream";
-                            }
-                        } finally {
-                            if (is != null) {
-                                is.close();
+                                contentType = APPLICATION_OCTETSTREAM;
                             }
                         }
                     }
-                    enhancedProps.setProperty("last-modified", Long.toString(f.lastModified()));
+                    enhancedProps.setProperty(LAST_MODIFIED, Long.toString(f.lastModified()));
                     final URI fileURI = targetBaseDirRelURI.resolve(actualBaseDirAbsURI.relativize(f.toURI()));
                     parts.add(Part.newInstance(
                             contentType,
@@ -280,8 +282,7 @@ public class PayloadImpl implements Payload {
                 final Properties enhancedProps,
                 final File dirFile) throws FileNotFoundException, IOException {
             final String dirFileURIPath = dirFileURI.getRawPath();
-            parts.add(Part.newInstance(
-                "application/octet-stream", /* for the directory itself */
+            parts.add(Part.newInstance(APPLICATION_OCTETSTREAM, /* for the directory itself */
                 dirFileURIPath + (dirFileURIPath.endsWith("/") ? "" : "/"),
                 enhancedProps,
                 (InputStream) null));
@@ -292,11 +293,10 @@ public class PayloadImpl implements Payload {
              * the injectable value when in fact the higher-level directory is
              * the correct value.
              */
-            enhancedProps.remove("data-request-name");
+            enhancedProps.remove(DATA_REQUEST_NAME);
             attachContainedFilesRecursively(
                     actualBaseDirAbsURI,
                     targetBaseDirRelURI,
-                    dataRequestName,
                     enhancedProps,
                     dirFile);
 
@@ -321,11 +321,10 @@ public class PayloadImpl implements Payload {
             if (props != null) {
                 enhancedProps.putAll(props);
             }
-            enhancedProps.setProperty("data-request-type", "file-remove");
-            enhancedProps.setProperty("data-request-name", dataRequestName);
-            enhancedProps.setProperty("data-request-is-recursive", Boolean.toString(isRecursive));
-            parts.add(Part.newInstance(
-                    "application/octet-stream", /* not much effect */
+            enhancedProps.setProperty(DATA_REQUEST_TYPE, "file-remove");
+            enhancedProps.setProperty(DATA_REQUEST_NAME, dataRequestName);
+            enhancedProps.setProperty(DATA_REQUESTIS_RECURSIVE, Boolean.toString(isRecursive));
+            parts.add(Part.newInstance(APPLICATION_OCTETSTREAM, /* not much effect */
                     fileURI.getRawPath(),
                     enhancedProps,
                     (String) null));
@@ -432,7 +431,7 @@ public class PayloadImpl implements Payload {
     /**
      * Partial implementation of the Inbound interface.
      */
-    public static abstract class Inbound implements Payload.Inbound {
+    public abstract static class Inbound implements Payload.Inbound {
 
         /**
          * Creates a new Inbound Payload of the given content type, read from
@@ -477,11 +476,11 @@ public class PayloadImpl implements Payload {
     /**
      * Partial implementation of Part.
      */
-    public static abstract class Part implements Payload.Part {
-        private String name;
-        private String contentType;
-        private Properties props;
-        private boolean isRecursive;
+    public abstract static class Part implements Payload.Part {
+        private final String name;
+        private final String contentType;
+        private final Properties props;
+        private final boolean isRecursive;
         private File extractedFile;
 
         /**
@@ -501,7 +500,7 @@ public class PayloadImpl implements Payload {
             if (props != null) {
                 this.props.putAll(props);
             }
-            isRecursive = Boolean.valueOf(this.props.getProperty("data-request-is-recursive"));
+            isRecursive = Boolean.valueOf(this.props.getProperty(DATA_REQUESTIS_RECURSIVE));
         }
 
         @Override

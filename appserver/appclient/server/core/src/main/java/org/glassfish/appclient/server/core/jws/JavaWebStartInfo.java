@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.appclient.server.core.jws;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.logging.LogDomains;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -70,7 +70,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.appclient.server.core.AppClientDeployerHelper;
 import org.glassfish.appclient.server.core.AppClientServerApplication;
-import org.glassfish.appclient.server.core.jws.ExtensionFileManager.Extension;
 import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
 import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.Content;
@@ -378,16 +377,16 @@ public class JavaWebStartInfo implements ConfigListener {
     }
 
     private void processExtensionReferences() throws IOException {
-        
+
         // TODO: needs to be expanded to handle signed library JARS, perhap signed by different certs
         final URI fileURI = URI.create("file:" + helper.appClientServerOriginalAnchor(dc).getRawSchemeSpecificPart());
-        Set<Extension> exts = extensionFileManager.findExtensionTransitiveClosure(
+        Set<ExtensionFileManager.Extension> exts = extensionFileManager.findExtensionTransitiveClosure(
                 new File(fileURI),
                 //new File(helper.appClientServerURI(dc)).getParentFile(),
                 dc.getSource().getManifest().getMainAttributes());
-        tHelper.setProperty(APP_LIBRARY_EXTENSION_PROPERTY_NAME, 
+        tHelper.setProperty(APP_LIBRARY_EXTENSION_PROPERTY_NAME,
                 jarElementsForExtensions(exts));
-        for (Extension e : exts) {
+        for (ExtensionFileManager.Extension e : exts) {
             final URI uri = URI.create(JWSAdapterManager.publicExtensionLookupURIText(e));
             final StaticContent newSystemContent = createSignedStaticContent(
                     e.getFile(),
@@ -425,17 +424,17 @@ public class JavaWebStartInfo implements ConfigListener {
     }
 
     private URI relativeURIToDomainFile(final File domainFile) {
-        return serverEnv.getDomainRoot().toURI().relativize(domainFile.toURI());
+        return serverEnv.getInstanceRoot().toURI().relativize(domainFile.toURI());
     }
 
-    private String jarElementsForExtensions(final Set<Extension> exts) {
+    private String jarElementsForExtensions(final Set<ExtensionFileManager.Extension> exts) {
         final StringBuilder sb = new StringBuilder();
-        for (Extension e : exts) {
+        for (ExtensionFileManager.Extension e : exts) {
             sb.append("<jar href=\"").append(JWSAdapterManager.publicExtensionHref(e)).append("\"/>");
         }
         return sb.toString();
     }
-    
+
     private void stopJWSServices() throws EndpointRegistrationException {
         /*
          * Mark all this client's content as stopped so the Grizzly adapter

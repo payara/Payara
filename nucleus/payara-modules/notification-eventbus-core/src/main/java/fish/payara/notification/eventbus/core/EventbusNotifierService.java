@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,23 +39,26 @@
  */
 package fish.payara.notification.eventbus.core;
 
-import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.eventbus.EventBus;
 import fish.payara.nucleus.notification.configuration.EventbusNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
+import org.glassfish.hk2.api.messaging.SubscribeTo;
 
 /**
  * @author mertcaliskan
  */
 @Service(name = "service-eventbus")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class EventbusNotifierService extends BaseNotifierService<EventbusNotificationEvent,
         EventbusNotifier,
         EventbusNotifierConfiguration> {
@@ -66,17 +69,16 @@ public class EventbusNotifierService extends BaseNotifierService<EventbusNotific
     private EventbusNotifierConfigurationExecutionOptions executionOptions;
 
     @Override
-    @Subscribe
-    public void handleNotification(EventbusNotificationEvent event) {
-        if(executionOptions != null && executionOptions.isEnabled()) {
-            EventbusMessageImpl message = new EventbusMessageImpl(event, event.getSubject(), event.getMessage());
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof EventbusNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
+            EventbusMessageImpl message = new EventbusMessageImpl((EventbusNotificationEvent) event, event.getSubject(), event.getMessage());
             eventBus.publish(executionOptions.getTopicName(), new ClusterMessage<>(message));
         }
     }
 
     @Override
     public void bootstrap() {
-        register(NotifierType.EVENTBUS, EventbusNotifier.class, EventbusNotifierConfiguration.class, this);
+        register(NotifierType.EVENTBUS, EventbusNotifier.class, EventbusNotifierConfiguration.class);
 
         executionOptions = (EventbusNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
     }

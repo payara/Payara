@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,8 +44,8 @@ import com.sun.enterprise.glassfish.bootstrap.SingleHK2Factory;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.module.single.SingleModulesRegistry;
-import java.util.Arrays;
+import com.sun.enterprise.module.common_impl.AbstractFactory;
+import fish.payara.micro.boot.loader.OpenURLClassLoader;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
@@ -56,14 +56,17 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.DuplicatePostProcessor;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Arrays;
+
 /**
  *
  * @author Steve Millidge
  */
 public class MicroGlassFishRuntime extends GlassFishRuntime {
     
-    ModulesRegistry registry;
-    ServiceLocator habitat;
     MicroGlassFish gf;
 
     MicroGlassFishRuntime() {
@@ -85,10 +88,16 @@ public class MicroGlassFishRuntime extends GlassFishRuntime {
         
         StartupContext context = new StartupContext(glassfishProperties.getProperties());
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        SingleHK2Factory.initialize(tccl);
-        registry = new SingleModulesRegistry(tccl);
-        registry.setParentClassLoader(tccl);  
-        habitat = registry.newServiceLocator();
+        if (tccl instanceof OpenURLClassLoader) {
+            // Only our runtime classloaders list individual runtime jars.
+            SingleHK2Factory.initialize(tccl);
+        } else {
+            // Otherwise we assume we're in rootdir classloader and runtime jars are listed in boot jar's Class-Path
+            // manifest attribute
+            initializeWithJarManifest(tccl);
+        }
+        ModulesRegistry registry = AbstractFactory.getInstance().createModulesRegistry();
+        ServiceLocator habitat = registry.newServiceLocator();
         DynamicConfigurationService dcs = habitat.getService(DynamicConfigurationService.class);
         DynamicConfiguration config = dcs.createDynamicConfiguration();
         config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(context));
@@ -99,5 +108,14 @@ public class MicroGlassFishRuntime extends GlassFishRuntime {
         gf = new MicroGlassFish(kernel, habitat, glassfishProperties.getProperties());
         return gf;
     }
-    
+
+    private void initializeWithJarManifest(ClassLoader tccl) throws GlassFishException {
+        URI bootJar = URI.create(System.getProperty("fish.payara.micro.BootJar"));
+        try {
+            JarManifestHk2Factory.initialize(tccl, bootJar);
+        } catch (IOException e) {
+            throw new GlassFishException("Could not initialize Micro running from Manifest-defined Class path",e);
+        }
+    }
+
 }

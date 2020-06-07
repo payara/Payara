@@ -37,28 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.connectors.module;
 
-import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import com.sun.appserv.connectors.internal.api.ConnectorsClassLoaderUtil;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.connectors.connector.module.RarDetector;
-import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
-import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
-import com.sun.enterprise.security.perms.PermsArchiveDelegate;
-import com.sun.logging.LogDomains;
-import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ArchiveDetector;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.annotations.Service;
+import static java.security.AccessController.doPrivileged;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.util.List;
 import java.util.logging.Level;
@@ -66,6 +53,21 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsClassLoaderUtil;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.connectors.connector.module.RarDetector;
+import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.security.permissionsxml.CommponentType;
+import com.sun.enterprise.security.permissionsxml.SetPermissionsAction;
+import com.sun.logging.LogDomains;
 
 /**
  * Archive handler for resource-adapters
@@ -133,12 +135,8 @@ public class RarHandler extends AbstractArchiveHandler {
             }
                         
             try {
-                final DeploymentContext dc = context;
-                final ClassLoader cl = carCL;
-                
-                AccessController.doPrivileged(
-                        new PermsArchiveDelegate.SetPermissionsAction(
-                                SMGlobalPolicyUtil.CommponentType.rar, dc, cl));
+                doPrivileged(
+                        new SetPermissionsAction(CommponentType.rar, context, carCL));
             } catch (PrivilegedActionException e) {
                 throw new SecurityException(e.getException());
             }

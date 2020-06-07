@@ -37,17 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.admingui.common.util;
 
-import org.w3c.dom.*;
-
-import javax.ws.rs.core.Response;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,11 +51,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.ws.rs.core.Response;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.glassfish.admin.rest.utils.JsonUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * <p>	This class abstracts the response from the admin console code so that
@@ -126,6 +129,7 @@ public abstract class RestResponse {
 
 
 class JerseyRestResponse extends RestResponse {
+    private static final Logger LOG = Logger.getLogger(JerseyRestResponse.class.getName());
     protected Response response;
     private String body = null;
 
@@ -152,13 +156,12 @@ class JerseyRestResponse extends RestResponse {
      */
     @Override
     public Map<String, Object> getResponse() {
+        LOG.finest("getResponse()");
         // Prepare the result object
-        Map<String, Object> result = new HashMap<String, Object>(5);
+        Map<String, Object> result = new HashMap<>(5);
 
         // Add the Response Code
         result.put("responseCode", getResponseCode());
-        // Add the Response Body
-// FIXME: Do not put responseBody into the Map... too big, not needed
         result.put("responseBody", getResponseBody());
 
         String contentType = response.getHeaderString("Content-type");
@@ -229,9 +232,7 @@ class JerseyRestResponse extends RestResponse {
                 JsonObject object = reader.readObject();
                 result.put("data", JsonUtil.jsonObjectToMap(object));
             } else {
-                // Unsupported Response Format!
-                System.out.println("Unsupported Response Format: '"
-		    + contentType + "'!");
+                LOG.severe("Unsupported Response Format: '" + contentType + "'!");
             }
         }
 
@@ -248,7 +249,7 @@ class JerseyRestResponse extends RestResponse {
      */
     private Map<String, Object> getJavaFromXML(Element element) {
         // Create a new Map to store the properties and children.
-        Map<String, Object> result = new HashMap<String, Object>(10);
+        Map<String, Object> result = new HashMap<>(10);
 
         // Add all the attributes...
         NamedNodeMap attributes = element.getAttributes();
@@ -274,7 +275,7 @@ class JerseyRestResponse extends RestResponse {
                     childList = (List<Map<String, Object>>) result.get(childName);
                 } else {
                     // Not created yet, create it
-                    childList = new ArrayList<Map<String, Object>>(5);
+                    childList = new ArrayList<>(5);
                     result.put(childName, childList);
                 }
                 // Add the child to the List
@@ -292,7 +293,7 @@ class JerseyRestResponse extends RestResponse {
      */
     private Map<String, Object> processMessagePart(Node messageNode) {
         // Create a Map to hold all the Message info...
-        Map<String, Object> message = new HashMap<String, Object>(5);
+        Map<String, Object> message = new HashMap<>(5);
 
         // Pull off all the attributes from the message...
         NamedNodeMap attributes = messageNode.getAttributes();
@@ -318,7 +319,7 @@ class JerseyRestResponse extends RestResponse {
                     // Recursively add this new message-part child
                     if (!hasChildMessages) {
                         // Create a List to hold the messages.
-                        messages = new ArrayList<Map<String, Object>>(2);
+                        messages = new ArrayList<>(2);
                         message.put("messages", messages);
                         hasChildMessages = true;
                     }
@@ -328,7 +329,7 @@ class JerseyRestResponse extends RestResponse {
                     // Add this new property
                     if (!hasProperty) {
                         // Create a List to hold the properties.
-                        properties = new ArrayList<Map<String, Object>>(10);
+                        properties = new ArrayList<>(10);
                         message.put("properties", properties);
                         hasProperty = true;
                     }
@@ -348,7 +349,7 @@ class JerseyRestResponse extends RestResponse {
      */
     private Map<String, Object> processProperty(Node propertyNode) {
         // Create a Map to hold all the Message info...
-        Map<String, Object> property = new HashMap<String, Object>(5);
+        Map<String, Object> property = new HashMap<>(5);
 
         // Pull off all the attributes from the property...
         NamedNodeMap attributes = propertyNode.getAttributes();
@@ -372,7 +373,7 @@ class JerseyRestResponse extends RestResponse {
                     // Add this new property
                     if (!hasProperty) {
                         // Create a List to hold the properties.
-                        properties = new ArrayList<Map<String, Object>>(10);
+                        properties = new ArrayList<>(10);
                         property.put("properties", properties);
                         hasProperty = true;
                     }
@@ -386,9 +387,9 @@ class JerseyRestResponse extends RestResponse {
         return property;
     }
 
-    private static Map processXmlMap(XMLStreamReader parser) throws XMLStreamException {
+    private static Map<String, Object> processXmlMap(XMLStreamReader parser) throws XMLStreamException {
         boolean endOfMap = false;
-        Map<String, Object> entry = new HashMap<String, Object>();
+        Map<String, Object> entry = new HashMap<>();
         String key = null;
         String element = null;
         while (!endOfMap) {
@@ -403,10 +404,10 @@ class JerseyRestResponse extends RestResponse {
                             key = null;
                         }
                     } else if ("map".equals(parser.getLocalName())) {
-                        Map value = processXmlMap(parser);
+                        Map<String, Object> value = processXmlMap(parser);
                         entry.put(key, value);
                     } else if ("list".equals(parser.getLocalName())) {
-                        List value = processXmlList(parser);
+                        List<Object> value = processXmlList(parser);
                         entry.put(key, value);
                     } else {
                         element = parser.getLocalName();
@@ -441,8 +442,8 @@ class JerseyRestResponse extends RestResponse {
         return entry;
     }
 
-    private static List processXmlList(XMLStreamReader parser) throws XMLStreamException {
-        List list = new ArrayList();
+    private static List<Object> processXmlList(XMLStreamReader parser) throws XMLStreamException {
+        List<Object> list = new ArrayList<>();
         boolean endOfList = false;
         String element = null;
         while (!endOfList) {

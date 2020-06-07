@@ -37,40 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.deployment.admin;
 
-import javax.security.auth.Subject;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RestParam;
-import org.glassfish.api.Param;
-import org.glassfish.api.I18n;
-import org.glassfish.api.container.Sniffer;
-import org.glassfish.internal.deployment.SnifferManager;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.config.support.CommandTarget;
-import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
-import javax.inject.Inject;
-import org.glassfish.hk2.api.PerLookup;
-
-import java.util.*;
-import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
-import org.glassfish.api.admin.AdminCommandSecurity;
+import org.glassfish.api.container.Sniffer;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.deployment.SnifferManager;
+import org.jvnet.hk2.annotations.Service;
+import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import javax.inject.Inject;
+import javax.security.auth.Subject;
+import java.util.*;
 
 /**
  * list-components command
@@ -83,22 +70,22 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="list-components", 
+        opType=RestEndpoint.OpType.GET,
+        path="list-components",
         description="list-components",
         params={
             @RestParam(name="target", value="$parent")
         }),
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="list-components", 
+        opType=RestEndpoint.OpType.GET,
+        path="list-components",
         description="list-components",
         params={
             @RestParam(name="target", value="$parent")
         }),
     @RestEndpoint(configBean=Server.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="list-components", 
+        opType=RestEndpoint.OpType.GET,
+        path="list-components",
         description="list-components",
         params={
             @RestParam(name="target", value="$parent")
@@ -131,10 +118,10 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
 
     @Inject
     SnifferManager snifferManager;
- 
+
     @Inject
     CommandRunner commandRunner;
-    
+
     private final List<Application> apps = new ArrayList<Application>();
 
     @Override
@@ -142,7 +129,7 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
         final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
         /* Read access to the collection of applications. */
         accessChecks.add(new AccessCheck(DeploymentCommandUtils.APPLICATION_RESOURCE_NAME, "read"));
-        
+
         /*
          * Because the command displays detailed information about the matching
          * apps, require read access to each app to be displayed.
@@ -157,17 +144,17 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
         }
         return accessChecks;
     }
-    
-    
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListComponentsCommand.class);    
+
+
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListComponentsCommand.class);
 
     public void execute(AdminCommandContext context) {
-        
+
         final ActionReport report = context.getActionReport();
         final ActionReport subReport = report.addSubActionsReport();
 
-        ActionReport.MessagePart part = report.getTopMessagePart();        
+        ActionReport.MessagePart part = report.getTopMessagePart();
         int numOfApplications = 0;
         List<String[]> rowList = new ArrayList<String[]>();
 
@@ -179,7 +166,7 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
                 return;
             }
         }
-        
+
         for (Application app : apps) {
             String[] currentRow;
             if( !terse && long_opt ){
@@ -190,7 +177,7 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
                 currentRow = new String[]{ app.getName(),
                     getAppSnifferEngines(app, true)};
             }
-            part.addProperty(app.getName(), 
+            part.addProperty(app.getName(),
                 getAppSnifferEngines(app, false));
             rowList.add(currentRow);
             numOfApplications++;
@@ -304,7 +291,7 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
         return getSniffers (module.getEngines(), format);
     }
 
-    private String getSniffers(final List<Engine> engineList, 
+    private String getSniffers(final List<Engine> engineList,
         final boolean format) {
         Set<String> snifferSet = new LinkedHashSet<String>();
         for (Engine engine : engineList) {
@@ -314,7 +301,7 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
             }
         }
 
-        StringBuffer se = new StringBuffer();
+        StringBuilder se = new StringBuilder();
 
         if (!snifferSet.isEmpty()) {
             if (format) {

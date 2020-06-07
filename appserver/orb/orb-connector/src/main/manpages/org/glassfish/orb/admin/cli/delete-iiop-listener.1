@@ -1,0 +1,58 @@
+delete-iiop-listener(1)   asadmin Utility Subcommands  delete-iiop-listener(1)
+
+NAME
+       delete-iiop-listener - removes an IIOP listener
+
+SYNOPSIS
+           delete-iiop-listener [--help] [--target target] listener_id
+
+DESCRIPTION
+       The delete-iiop-listener subcommand removes the specified IIOP
+       listener. This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target from which you are deleting the IIOP listener.
+           Valid values are
+
+           server
+               Deletes the listener from the default server instance server
+               and is the default value.
+
+           configuration_name
+               Deletes the listener from the named configuration.
+
+           cluster_name
+               Deletes the listener from every server instance in the cluster.
+
+           instance_name
+               Deletes the listener from a particular server instance.
+
+OPERANDS
+       listener_id
+           The unique identifier for the IIOP listener to be deleted.
+
+EXAMPLES
+       Example 1, Deleting an IIOP Listener
+           The following command deletes the IIOP listener named
+           sample_iiop_listener:
+
+               asadmin> delete-iiop-listener sample_iiop_listener
+               Command delete-iiop-listener executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-iiop-listener(1), list-iiop-listeners(1)
+
+       asadmin(1M)
+
+Java EE 8                         18 Aug 2010          delete-iiop-listener(1)

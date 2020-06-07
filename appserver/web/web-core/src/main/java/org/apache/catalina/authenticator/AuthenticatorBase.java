@@ -55,7 +55,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+
 package org.apache.catalina.authenticator;
 
 import static java.util.logging.Level.FINE;
@@ -72,9 +73,7 @@ import java.lang.reflect.Method;
 import java.security.Principal;
 import java.security.SecureRandom;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -124,11 +123,6 @@ public abstract class AuthenticatorBase extends ValveBase
         // START CR 6411114
         implements Authenticator {
     // END CR 6411114
-
-    // ----------------------------------------------------- Static Variables
-
-    protected static final Logger log = LogFacade.getLogger();
-    protected static final ResourceBundle rb = log.getResourceBundle();
 
     /**
      * Descriptive information about this implementation.
@@ -243,6 +237,7 @@ public abstract class AuthenticatorBase extends ValveBase
     /**
      * Return the Container to which this Valve is attached.
      */
+    @Override
     public Container getContainer() {
         return context;
     }
@@ -252,6 +247,7 @@ public abstract class AuthenticatorBase extends ValveBase
      *
      * @param container The container to which we are attached
      */
+    @Override
     public void setContainer(Container container) {
         if (!(container instanceof Context)) {
             throw new IllegalArgumentException(rb.getString(LogFacade.CONFIG_ERROR_MUST_ATTACH_TO_CONTEXT));
@@ -265,6 +261,7 @@ public abstract class AuthenticatorBase extends ValveBase
     /**
      * Return the debugging detail level for this component.
      */
+    @Override
     public int getDebug() {
         return debug;
     }
@@ -274,6 +271,7 @@ public abstract class AuthenticatorBase extends ValveBase
      *
      * @param debug The new debugging detail level
      */
+    @Override
     public void setDebug(int debug) {
         this.debug = debug;
     }
@@ -332,7 +330,7 @@ public abstract class AuthenticatorBase extends ValveBase
 
     /**
      * Set the value of the flag that states if we add headers to disable caching by proxies.
-     * 
+     *
      * @param nocache <code>true</code> if we add headers to disable proxy caching, <code>false</code> if we leave the
      * headers alone.
      */
@@ -349,7 +347,7 @@ public abstract class AuthenticatorBase extends ValveBase
 
     /**
      * Set the value of the flag that states what headers we add to disable proxy caching.
-     * 
+     *
      * @param securePagesWithPragma <code>true</code> if we add headers which are incompatible with downloading office
      * documents in IE under SSL but which fix a caching problem in Mozilla.
      */
@@ -359,7 +357,7 @@ public abstract class AuthenticatorBase extends ValveBase
 
     /**
      * Return the flag that states if we should change the session ID of an existing session upon successful authentication.
-     * 
+     *
      * @return <code>true</code> to change session ID upon successful authentication, <code>false</code> to do not perform
      * the change.
      */
@@ -370,7 +368,7 @@ public abstract class AuthenticatorBase extends ValveBase
     /**
      * Set the value of the flag that states if we should change the session ID of an existing session upon successful
      * authentication.
-     * 
+     *
      * @param changeSessionIdOnAuthentication <code>true</code> to change session ID upon successful authentication,
      * <code>false</code> to do not perform the change.
      */
@@ -407,7 +405,7 @@ public abstract class AuthenticatorBase extends ValveBase
             } catch (IllegalStateException | IOException e) {
                 ;
             }
-            
+
             return END_PIPELINE;
         }
         // END GlassFish 247
@@ -431,7 +429,7 @@ public abstract class AuthenticatorBase extends ValveBase
                         if (log.isLoggable(FINE)) {
                             log.fine("We have cached auth type " + session.getAuthType() + " for principal " + session.getPrincipal());
                         }
-                        
+
                         hrequest.setAuthType(session.getAuthType());
                         hrequest.setUserPrincipal(principal);
                     }
@@ -578,7 +576,7 @@ public abstract class AuthenticatorBase extends ValveBase
     protected synchronized String generateSessionId() {
 
         // Generate a byte array containing a session identifier
-        byte bytes[] = new byte[SESSION_ID_BYTES];
+        byte[] bytes = new byte[SESSION_ID_BYTES];
         getRandom().nextBytes(bytes);
 
         // Render the result as a String of hexadecimal digits
@@ -610,9 +608,9 @@ public abstract class AuthenticatorBase extends ValveBase
                 Class clazz = Class.forName(randomClass);
                 this.random = (SecureRandom) clazz.newInstance();
                 long seed = System.currentTimeMillis();
-                char entropy[] = getEntropy().toCharArray();
-                for (int i = 0; i < entropy.length; i++) {
-                    long update = ((byte) entropy[i]) << ((i % 8) * 8);
+                char[] entropyCh = getEntropy().toCharArray();
+                for (int i = 0; i < entropyCh.length; i++) {
+                    long update = ((byte) entropyCh[i]) << ((i % 8) * 8);
                     seed ^= update;
                 }
                 this.random.setSeed(seed);
@@ -677,7 +675,7 @@ public abstract class AuthenticatorBase extends ValveBase
         if (logger != null) {
             logger.log("Authenticator[" + context.getPath() + "]: " + message, t, org.apache.catalina.Logger.WARNING);
         } else {
-            String msg = MessageFormat.format(rb.getString(LogFacade.AUTHENTICATOR_INFO), new Object[] { context.getPath(), message });
+            String msg = MessageFormat.format(rb.getString(LogFacade.AUTHENTICATOR_INFO), context.getPath(), message);
             log.log(Level.WARNING, msg, t);
         }
     }
@@ -716,13 +714,13 @@ public abstract class AuthenticatorBase extends ValveBase
             if (session != null) {
                 session.setAuthType(authType);
                 session.setPrincipal(principal);
-                
+
                 if (username != null) {
                     session.setNote(SESS_USERNAME_NOTE, username);
                 } else {
                     session.removeNote(SESS_USERNAME_NOTE);
                 }
-                
+
                 if (password != null) {
                     session.setNote(SESS_PASSWORD_NOTE, password);
                 } else {
@@ -735,7 +733,7 @@ public abstract class AuthenticatorBase extends ValveBase
         if (sso == null) {
             return;
         }
-        
+
         HttpServletRequest hreq = (HttpServletRequest) request.getRequest();
         HttpServletResponse hres = (HttpServletResponse) response.getResponse();
 
@@ -750,7 +748,7 @@ public abstract class AuthenticatorBase extends ValveBase
         Cookie cookie = new Cookie(SINGLE_SIGN_ON_COOKIE, value);
         cookie.setMaxAge(-1);
         cookie.setPath("/");
-        
+
         StandardHost host = (StandardHost) context.getParent();
         if (host != null) {
             host.configureSingleSignOnCookieSecure(cookie, hreq);
@@ -846,9 +844,9 @@ public abstract class AuthenticatorBase extends ValveBase
     /**
      * CR 6411114 (Lifecycle implementation moved to ValveBase) public void addLifecycleListener(LifecycleListener listener)
      * {
-     * 
+     *
      * lifecycle.addLifecycleListener(listener);
-     * 
+     *
      * }
      */
 
@@ -858,9 +856,9 @@ public abstract class AuthenticatorBase extends ValveBase
      */
     /**
      * CR 6411114 (Lifecycle implementation moved to ValveBase) public LifecycleListener[] findLifecycleListeners() {
-     * 
+     *
      * return lifecycle.findLifecycleListeners();
-     * 
+     *
      * }
      */
 
@@ -872,9 +870,9 @@ public abstract class AuthenticatorBase extends ValveBase
     /**
      * CR 6411114 (Lifecycle implementation moved to ValveBase) public void removeLifecycleListener(LifecycleListener
      * listener) {
-     * 
+     *
      * lifecycle.removeLifecycleListener(listener);
-     * 
+     *
      * }
      */
 
@@ -884,20 +882,21 @@ public abstract class AuthenticatorBase extends ValveBase
      *
      * @exception LifecycleException if this component detects a fatal error that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
         // START CR 6411114
         if (started) // Ignore multiple starts
             return;
         super.start();
         // END CR 6411114
-        if ("org.apache.catalina.core.StandardContext".equals(context.getClass().getName())) {
+        if (context instanceof org.apache.catalina.core.StandardContext) {
             try {
                 // XXX What is this ???
-                Class paramTypes[] = new Class[0];
-                Object paramValues[] = new Object[0];
+                Class[] paramTypes = new Class[0];
+                Object[] paramValues = new Object[0];
                 Method method = context.getClass().getMethod("getDebug", paramTypes);
                 Integer result = (Integer) method.invoke(context, paramValues);
-                setDebug(result.intValue());
+                setDebug(result);
             } catch (Exception e) {
                 log.log(Level.SEVERE, LogFacade.GETTING_DEBUG_VALUE_EXCEPTION, e);
             }
@@ -914,10 +913,10 @@ public abstract class AuthenticatorBase extends ValveBase
                 parent = parent.getParent();
                 continue;
             }
-            GlassFishValve valves[] = ((Pipeline) parent).getValves();
-            for (int i = 0; i < valves.length; i++) {
-                if (valves[i] instanceof SingleSignOn) {
-                    sso = (SingleSignOn) valves[i];
+            GlassFishValve[] valves = ((Pipeline) parent).getValves();
+            for (GlassFishValve valve : valves) {
+                if (valve instanceof SingleSignOn) {
+                    sso = (SingleSignOn) valve;
                     break;
                 }
             }

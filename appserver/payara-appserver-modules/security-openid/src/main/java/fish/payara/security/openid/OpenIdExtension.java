@@ -51,17 +51,28 @@ import fish.payara.security.openid.domain.OpenIdContextImpl;
 import java.util.ArrayList;
 import java.util.List;
 import static java.util.Objects.nonNull;
+import java.util.Optional;
+import java.util.logging.Level;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.AfterTypeDiscovery;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.DefinitionException;
 import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.ProcessBean;
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.identitystore.IdentityStore;
+import org.glassfish.soteria.cdi.CdiExtension;
+import org.glassfish.soteria.cdi.CdiProducer;
+import static org.glassfish.soteria.cdi.CdiUtils.getAnnotation;
 
 /**
  * Activates {@link OpenIdAuthenticationMechanism} with the
@@ -71,7 +82,10 @@ import javax.security.enterprise.identitystore.IdentityStore;
  */
 public class OpenIdExtension implements Extension {
 
-    private final List<OpenIdAuthenticationDefinition> definitions = new ArrayList<>();
+    private final List<Bean<IdentityStore>> identityStoreBeans = new ArrayList<>();
+    private Bean<HttpAuthenticationMechanism> authenticationMechanismBean;
+
+    private static final Logger LOGGER = Logger.getLogger(OpenIdExtension.class.getName());
 
     protected void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager manager) {
         addAnnotatedType(OpenIdAuthenticationMechanism.class, manager, beforeBeanDiscovery);
@@ -96,15 +110,44 @@ public class OpenIdExtension implements Extension {
      * Find the {@link OpenIdAuthenticationDefinition} annotation and validate.
      *
      * @param <T>
-     * @param bean
+     * @param eventIn
      * @param beanManager
      */
-    protected <T> void findOpenIdDefinitionAnnotation(@Observes ProcessBean<T> bean, BeanManager beanManager) {
-        OpenIdAuthenticationDefinition definition = bean.getAnnotated().getAnnotation(OpenIdAuthenticationDefinition.class);
-        if (nonNull(definition) && !definitions.contains(definition)) {
-            definitions.add(definition);
+    protected <T> void findOpenIdDefinitionAnnotation(@Observes ProcessBean<T> eventIn, BeanManager beanManager) {
+
+        ProcessBean<T> event = eventIn;
+
+        //create the bean being proccessed.
+        Class<?> beanClass = event.getBean().getBeanClass();
+
+        //get the identity store from the annotation (if it exists)
+        Optional<OpenIdAuthenticationDefinition> optionalOpenIdStore
+                = getAnnotation(beanManager, event.getAnnotated(), OpenIdAuthenticationDefinition.class);
+
+        optionalOpenIdStore.ifPresent(definition -> {
             validateExtraParametersFormat(definition);
-        }
+            logActivatedIdentityStore(OpenIdIdentityStore.class, beanClass);
+
+            identityStoreBeans.add(new CdiProducer<IdentityStore>()
+                    .scope(ApplicationScoped.class)
+                    .beanClass(IdentityStore.class)
+                    .types(Object.class, IdentityStore.class)
+                    .addToId(OpenIdIdentityStore.class)
+                    .create(e -> CDI.current().select(OpenIdIdentityStore.class).get())
+            );
+
+            logActivatedAuthenticationMechanism(OpenIdAuthenticationMechanism.class, beanClass);
+            authenticationMechanismBean = new CdiProducer<HttpAuthenticationMechanism>()
+                    .scope(ApplicationScoped.class)
+                    .beanClass(HttpAuthenticationMechanism.class)
+                    .types(Object.class, HttpAuthenticationMechanism.class)
+                    .addToId(OpenIdAuthenticationMechanism.class)
+                    .create(e -> {
+                        OpenIdAuthenticationMechanism mechanism = CDI.current().select(OpenIdAuthenticationMechanism.class).get();
+                        mechanism.setConfiguration(definition);
+                        return mechanism;
+                    });
+        });
     }
 
     protected void validateExtraParametersFormat(OpenIdAuthenticationDefinition definition) {
@@ -120,24 +163,24 @@ public class OpenIdExtension implements Extension {
         }
     }
 
-    protected void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBean, BeanManager beanManager) {
-        if (!definitions.isEmpty() && beanManager.getBeans(IdentityStore.class).isEmpty()) {
-            afterBean.addBean()
-                    .scope(ApplicationScoped.class)
-                    .beanClass(IdentityStore.class)
-                    .types(IdentityStore.class, Object.class)
-                    .createWith(obj -> CDI.current().select(OpenIdIdentityStore.class).get());
+    protected void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+
+        if (!identityStoreBeans.isEmpty()) {
+            identityStoreBeans.forEach(afterBeanDiscovery::addBean);
         }
 
-        for (OpenIdAuthenticationDefinition definition : definitions) {
-            afterBean.addBean()
-                    .scope(ApplicationScoped.class)
-                    .beanClass(HttpAuthenticationMechanism.class)
-                    .types(HttpAuthenticationMechanism.class, Object.class)
-                    .createWith(obj -> CDI.current().select(OpenIdAuthenticationMechanism.class).get().setConfiguration(definition));
+        if (authenticationMechanismBean != null) {
+            LOGGER.log(FINE, "Creating OpenId Mechanism");
+            afterBeanDiscovery.addBean(authenticationMechanismBean);
         }
+    }
 
-        definitions.clear();
+    private void logActivatedIdentityStore(Class<?> identityStoreClass, Class<?> beanClass) {
+        LOGGER.log(INFO, "Activating {0} identity store from {1} class", new Object[]{identityStoreClass.getName(), beanClass.getName()});
+    }
+
+    private void logActivatedAuthenticationMechanism(Class<?> authenticationMechanismClass, Class<?> beanClass) {
+        LOGGER.log(INFO, "Activating {0} authentication mechanism from {1} class", new Object[]{authenticationMechanismClass.getName(), beanClass.getName()});
     }
 
 }

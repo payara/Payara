@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.logviewer;
 
@@ -78,8 +78,8 @@ public class LogRecord {
         return message;
     }
 
-    public void setMessage(String Message) {
-        this.message = Message;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     @XmlAttribute

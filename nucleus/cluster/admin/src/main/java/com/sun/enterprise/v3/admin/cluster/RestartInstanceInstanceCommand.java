@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -44,7 +45,6 @@ import com.sun.enterprise.module.ModulesRegistry;
 import org.glassfish.api.*;
 import org.glassfish.api.admin.*;
 import javax.inject.Inject;
-import com.sun.enterprise.v3.admin.RestartServer;
 import com.sun.enterprise.v3.admin.RestartServer;
 
 

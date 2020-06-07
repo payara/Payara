@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.gjc.spi;
 
 import com.sun.enterprise.util.i18n.StringManager;
@@ -94,6 +95,7 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @throws ResourceAllocationException if there is an error in allocating the
      *                                     physical connection
      */
+    @Override
     public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
@@ -157,6 +159,7 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @return DataSource of jdbc vendor
      * @throws ResourceException
      */
+    @Override
     public javax.sql.DataSource getDataSource() throws ResourceException {
         if (dataSourceObj == null) {
             try {
@@ -178,6 +181,7 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *         <code>ManagedConnectionFactory</code> objects are the same
      *         false	otherwise
      */
+    @Override
     public boolean equals(Object other) {
         logFine("In equals");
         /**

@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
@@ -290,10 +291,11 @@ public class InterceptorBindingTranslator {
             }
         }
 
-        for(MethodDescriptor nextMethod : methodInterceptorsMap.keySet()) {
+        for (Entry<MethodDescriptor, LinkedList<String>> entry : methodInterceptorsMap.entrySet()) {
+            MethodDescriptor nextMethod = entry.getKey();
 
             List<String> interceptorClassChain = (List<String>)
-                methodInterceptorsMap.get(nextMethod);
+                entry.getValue();
             
             List<EjbInterceptor> interceptorChain = 
                 new LinkedList<EjbInterceptor>();

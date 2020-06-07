@@ -37,83 +37,87 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node.runtime.application.wls;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import org.glassfish.security.common.Role;
-import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
-import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
-import com.sun.enterprise.deployment.node.DataSourceNameVersionUpgrade;
-import com.sun.enterprise.deployment.node.StartMdbsWithApplicationVersionUpgrade;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import static com.sun.enterprise.deployment.xml.TagNames.SCHEMA_LOCATION_TAG;
+import static com.sun.enterprise.deployment.xml.TagNames.VERSION;
+import static com.sun.enterprise.deployment.xml.TagNames.W3C_XML_SCHEMA_INSTANCE;
+import static com.sun.enterprise.deployment.xml.TagNames.WLS_APPLICATION_NAMESPACE;
+import static com.sun.enterprise.deployment.xml.TagNames.WLS_APPLICATION_SCHEMA_LOCATION;
+import static com.sun.enterprise.deployment.xml.TagNames.XMLNS;
+import static com.sun.enterprise.deployment.xml.TagNames.XMLNS_XSI;
+import static java.util.Collections.unmodifiableList;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.node.DataSourceNameVersionUpgrade;
+import com.sun.enterprise.deployment.node.StartMdbsWithApplicationVersionUpgrade;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
+import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
 /**
- * This node is responsible for handling all WebLogic runtime information for 
- * application.
+ * This node is responsible for handling all WebLogic runtime information for application.
  */
 public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
 
     public final static String SCHEMA_ID = "weblogic-application.xsd";
+    public final static String PUBLIC_DTD_ID_2 = "-//BEA Systems, Inc.//DTD WebLogic Application 8.1.0//EN";
+    public final static String SYSTEM_ID_2 = "http://www.beasys.com/servers/wls810/dtd/weblogic-application_2_0.dtd";
 
     private final static List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
-        List<String> systemIDs = new ArrayList<String>();
+        List<String> systemIDs = new ArrayList<>();
         systemIDs.add(SCHEMA_ID);
-        return Collections.unmodifiableList(systemIDs);
+        
+        return unmodifiableList(systemIDs);
     }
-
-    public final static String PUBLIC_DTD_ID_2 = "-//BEA Systems, Inc.//DTD WebLogic Application 8.1.0//EN";
-    public final static String SYSTEM_ID_2 = "http://www.beasys.com/servers/wls810/dtd/weblogic-application_2_0.dtd";
-
+   
     /** Creates new WeblogicApplicationNode */
     public WeblogicApplicationNode(Application descriptor) {
         super(descriptor);
     }
-    
+
     /** Creates new WeblogicApplicationNode */
     public WeblogicApplicationNode() {
-        super(null);    
+        super(null);
     }
-    
+
     /**
      * Initialize the child handlers
      */
     protected void init() {
         super.init();
-        registerElementHandler(new XMLElement(
-                RuntimeTagNames.APPLICATION_PARAM), ApplicationParamNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.APPLICATION_PARAM), ApplicationParamNode.class);
     }
 
-   /**
-    * register this node as a root node capable of loading entire DD files
-    *
-    * @param publicIDToDTD is a mapping between xml Public-ID to DTD
-    * @param versionUpgrades The list of upgrades from older versions
-    * @return the doctype tag name
-    */
-    public static String registerBundle(Map publicIDToDTD,
-                                        Map<String, List<Class>> versionUpgrades) {
+    /**
+     * register this node as a root node capable of loading entire DD files
+     *
+     * @param publicIDToDTD is a mapping between xml Public-ID to DTD
+     * @param versionUpgrades The list of upgrades from older versions
+     * @return the doctype tag name
+     */
+    public static String registerBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
         // TODO: fill in all the previously supported DTD versions
         // for backward compatibility
         publicIDToDTD.put(PUBLIC_DTD_ID_2, SYSTEM_ID_2);
-        List<Class> list = new ArrayList<Class>();
+        List<Class<?>> list = new ArrayList<>();
         list.add(DataSourceNameVersionUpgrade.class);
         list.add(StartMdbsWithApplicationVersionUpgrade.class);
-        versionUpgrades.put(RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG,
-                            list);
+        versionUpgrades.put(RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG, list);
+        
         return RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG;
     }
 
@@ -122,15 +126,15 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
      */
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG);
-    }    
-    
-    /** 
+    }
+
+    /**
      * @return the DOCTYPE that should be written to the XML file
      */
     public String getDocType() {
         return null;
     }
-    
+
     /**
      * @return the SystemID of the XML file
      */
@@ -144,28 +148,29 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     public List<String> getSystemIDs() {
         return systemIDs;
     }
-    
-   /**
-    * @return the application instance to associate with this XMLNode
-    */    
-    public Application getDescriptor() {    
-	return descriptor;               
-    }
-    
+
     /**
-     * Adds  a new DOL descriptor instance to the descriptor instance 
-     * associated with this XMLNode
+     * @return the application instance to associate with this XMLNode
+     */
+    public Application getDescriptor() {
+        return descriptor;
+    }
+
+    /**
+     * Adds a new DOL descriptor instance to the descriptor instance associated with this XMLNode
      *
      * @param descriptor the new descriptor
      */
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof EnvironmentProperty) {
-            descriptor.addApplicationParam((ApplicationParam)newDescriptor);
-        } else super.addDescriptor(newDescriptor);
+            descriptor.addApplicationParam((ApplicationParam) newDescriptor);
+        } else {
+            super.addDescriptor(newDescriptor);
+        }
     }
 
     /**
-     * write the descriptor class to a DOM tree and return it
+     * Write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
      * @param nodeName the node name
@@ -173,19 +178,13 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
      * @return the DOM tree top node
      */
     public Node writeDescriptor(Node parent, String nodeName, Application application) {
-        Element root = appendChildNS(parent, getXMLRootTag().getQName(),
-                    TagNames.WLS_APPLICATION_NAMESPACE);
-        root.setAttributeNS(TagNames.XMLNS,
-                            TagNames.XMLNS_XSI,
-                            TagNames.W3C_XML_SCHEMA_INSTANCE);    
-        root.setAttributeNS(TagNames.W3C_XML_SCHEMA_INSTANCE,
-                            TagNames.SCHEMA_LOCATION_TAG,
-                            TagNames.WLS_APPLICATION_SCHEMA_LOCATION);
-        root.setAttribute(TagNames.VERSION, getSpecVersion());        
+        Element root = appendChildNS(parent, getXMLRootTag().getQName(), WLS_APPLICATION_NAMESPACE);
+        root.setAttributeNS(XMLNS, XMLNS_XSI, W3C_XML_SCHEMA_INSTANCE);
+        root.setAttributeNS(W3C_XML_SCHEMA_INSTANCE, SCHEMA_LOCATION_TAG, WLS_APPLICATION_SCHEMA_LOCATION);
+        root.setAttribute(VERSION, getSpecVersion());
 
         writeSubDescriptors(root, nodeName, application);
 
         return root;
-        
     }
 }

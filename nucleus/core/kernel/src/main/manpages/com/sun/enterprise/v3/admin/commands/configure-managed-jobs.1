@@ -1,0 +1,66 @@
+configure-managed-jobs(1)  asadmin Utility Subcommands  configure-managed-jobs(1)
+
+NAME
+       configure-managed-jobs - configures how long information about
+       subcommands that were started using asadmin --detach or that contain
+       progress information is kept
+
+SYNOPSIS
+           configure-managed-jobs [--help]
+           [--in-memory-retention-period in-memory-retention-period]
+           [--job-retention-period job-retention-period]
+           [--cleanup-initial-delay cleanup-initial-delay]
+           [--cleanup-poll-interval cleanup-poll-interval]
+
+DESCRIPTION
+       The configure-managed-jobs subcommand configures how long information
+       about subcommands (jobs) that were started using the asadmin utility
+       option --detach or that contain progress information is kept. The
+       --detach option detaches long-running subcommands and executes them in
+       the background in detach mode. Job information includes subcommand
+       progress and status.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       in-memory-retention-period
+           Specifies how long a completed job is kept in memory after the job
+           is finished. The default value is 1 hour.
+
+       --job-retention-period
+           Specifies how long a job is stored. The default value is 24 hours.
+
+       --cleanup-initial-delay
+           After server startup, specifies the initial delay after which the
+           cleanup service starts purging jobs. The default value is 5
+           minutes.
+
+       --cleanup-poll-interval
+           Specifies the time interval after which the cleanup service polls
+           for expired jobs. The default value is 20 minutes.
+
+EXAMPLES
+       Example 1, Configuring the Job Retention Period
+           This example sets the job retention period to 36 hours. Time
+           periods can be specified in Hh|Mm|Ss for hours, minutes, or
+           seconds.
+
+               asadmin> configure-managed-jobs --job-retention-period=36h
+               Command configure-managed-jobs executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-jobs(1)
+
+       asadmin(1M)
+
+Java EE 8                   09 Aug 2017            configure-managed-jobs(1)

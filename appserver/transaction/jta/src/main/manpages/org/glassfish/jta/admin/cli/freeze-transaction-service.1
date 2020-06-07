@@ -1,0 +1,66 @@
+freeze-transaction-service(1)  asadmin Utility Subcommands  freeze-transaction-service(1)
+
+NAME
+       freeze-transaction-service - freezes the transaction subsystem
+
+SYNOPSIS
+           freeze-transaction-service [--help] [--target target]
+
+DESCRIPTION
+       The freeze-transaction-service subcommand freezes the transaction
+       subsystem, preventing the transaction manager from starting,
+       completing, or changing the state of all in-flight transactions. Invoke
+       this command before rolling back any in-flight transactions. Invoking
+       this subcommand on an already frozen transaction subsystem has no
+       effect. Restarting the server unfreezes the transaction subsystem. This
+       subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target on which you are freezing the
+           transaction service. Valid values are:
+
+           server
+               Freezes the transaction service for the default server instance
+               server and is the default value.
+
+           configuration_name
+               Freezes the transaction service for all server instances that
+               use the named configuration.
+
+           cluster_name
+               Freezes the transaction service for every server instance in
+               the cluster.
+
+           instance_name
+               Freezes the transaction service for a particular server
+               instance.
+
+EXAMPLES
+       Example 1, Using freeze-transaction-service
+
+               % asadmin freeze-transaction-service
+               Command freeze-transaction-service executed successfully
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       unfreeze-transaction-service(1), rollback-transaction(1),
+       recover-transactions(1)
+
+       asadmin(1M)
+
+       "Administering Transactions" in Oracle GlassFish Server Administration
+       Guide
+
+       "Transactions" in The Java EE 8 Tutorial
+
+Java EE 8               31 Aug 2017           freeze-transaction-service(1)

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.server;
 
@@ -98,7 +98,7 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
     private /*almost final*/ String instanceName;
     private RuntimeType serverType = RuntimeType.DAS; //set to DAS to avoid null
 
-    private final static String INSTANCE_ROOT_PROP_NAME = "com.sun.aas.instanceRoot";
+    private static final String INSTANCE_ROOT_PROP_NAME = "com.sun.aas.instanceRoot";
     private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot";
 
     /**
@@ -222,6 +222,7 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
 
     // XXX - many of these methods should be on ServerEnvironment
 
+    @Override
     public String getDomainName() {
         return domainName;
     }
@@ -230,17 +231,6 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
     public File getInstanceRoot() {
         return root;
     }
-
-    /**
-     * @return the instance root
-     * @deprecated  As of GlassFish 3.1 replaced with {@link #getInstanceRoot() }
-     */
-    @Deprecated
-    @Override
-    public File getDomainRoot() {
-        return getInstanceRoot();
-    }
-
 
     @Override
     public StartupContext getStartupContext() {
@@ -324,27 +314,10 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
      * Gets the directory to store external alternate deployment descriptors
      * Normally {@code ROOT/generated/altdd}
      */
+    @Override
     public File getApplicationAltDDPath() {
         return new File(getApplicationStubPath(), kAppAltDDDirName);
     }
-
-    /*
-     * XXX - no one is using these methods, so I'm commenting them out
-     * for now.  When they're needed, they should probably be added to
-     * the ServerEnvironment Interface.
-     *
-    public String getJavaWebStartPath() {
-        return null;
-    }
-
-    public String getApplicationBackupRepositoryPath() {
-        return null;
-    }
-
-    public String getInstanceClassPath() {
-        return null;
-    }
-     */
 
     /**
      * Return the value of one property.
@@ -371,7 +344,7 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
      */
     public File getDefaultAdminConsoleFolderOnDisk() {
         File install = new File(asenv.getProps().get(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-        File agp = new File(new File(new File(install, "lib"), "install"), "applications");
+        File agp = new File(new File(new File(install, "lib"), "install"), kRepositoryDirName);
         return (agp);
     }
 

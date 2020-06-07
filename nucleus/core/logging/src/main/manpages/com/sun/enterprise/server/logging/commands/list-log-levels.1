@@ -1,0 +1,105 @@
+list-log-levels(1)        asadmin Utility Subcommands       list-log-levels(1)
+
+NAME
+       list-log-levels - lists the loggers and their log levels
+
+SYNOPSIS
+           list-log-levels [--help] [--target target]
+
+DESCRIPTION
+       The list-log-levels subcommand lists the current GlassFish Server
+       loggers and their log levels. This subcommand reports on all the
+       loggers that are listed in the logging.properties file. In some cases,
+       loggers that have not been created by the respective containers will
+       appear in the list.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           The server, cluster or server instance for which log levels will be
+           listed.
+
+OPERANDS
+       target
+           Valid values are:
+
+           *   server_name - Default target is server. If no target is
+               specified then log levels are listed for the server.
+
+           *   cluster_name - The name of a target cluster.
+
+           *   instance_name - The name of a target server instance.
+
+EXAMPLES
+       Example 1, Listing the Log Levels
+           This example lists the existing loggers and indicates how their log
+           levels are set.
+
+               asadmin> list-log-levels
+               java.util.logging.ConsoleHandler        <FINEST>
+               javax.enterprise.resource.corba <INFO>
+               javax.enterprise.resource.javamail      <INFO>
+               javax.enterprise.resource.jdo   <INFO>
+               javax.enterprise.resource.jms   <INFO>
+               javax.enterprise.resource.jta   <INFO>
+               javax.enterprise.resource.resourceadapter       <INFO>
+               javax.enterprise.resource.sqltrace      <FINE>
+               javax.enterprise.resource.webcontainer.jsf.application  <INFO>
+               javax.enterprise.resource.webcontainer.jsf.config       <INFO>
+               javax.enterprise.resource.webcontainer.jsf.context      <INFO>
+               javax.enterprise.resource.webcontainer.jsf.facelets     <INFO>
+               javax.enterprise.resource.webcontainer.jsf.lifecycle    <INFO>
+               javax.enterprise.resource.webcontainer.jsf.managedbean  <INFO>
+               javax.enterprise.resource.webcontainer.jsf.renderkit    <INFO>
+               javax.enterprise.resource.webcontainer.jsf.resource     <INFO>
+               javax.enterprise.resource.webcontainer.jsf.taglib       <INFO>
+               javax.enterprise.resource.webcontainer.jsf.timing       <INFO>
+               javax.enterprise.system.container.cmp   <INFO>
+               javax.enterprise.system.container.ejb   <INFO>
+               javax.enterprise.system.container.ejb.mdb       <INFO>
+               javax.enterprise.system.container.web   <INFO>
+               javax.enterprise.system.core.classloading       <INFO>
+               javax.enterprise.system.core.config     <INFO>
+               javax.enterprise.system.core    <INFO>
+               javax.enterprise.system.core.naming     <INFO>
+               javax.enterprise.system.core.security   <INFO>
+               javax.enterprise.system.core.selfmanagement     <INFO>
+               javax.enterprise.system.core.transaction        <INFO>
+               javax.enterprise.system <INFO>
+               javax.enterprise.system.tools.admin     <INFO>
+               javax.enterprise.system.tools.backup    <INFO>
+               javax.enterprise.system.tools.deployment        <INFO>
+               javax.enterprise.system.util    <INFO>
+               javax.enterprise.system.webservices.registry    <INFO>
+               javax.enterprise.system.webservices.rpc <INFO>
+               javax.enterprise.system.webservices.saaj        <INFO>
+               javax   <INFO>
+               javax.org.glassfish.persistence <INFO>
+               org.apache.catalina     <INFO>
+               org.apache.coyote       <INFO>
+               org.apache.jasper       <INFO>
+               org.glassfish.admingui  <INFO>
+               org.jvnet.hk2.osgiadapter       <INFO>
+               Command list-log-levels executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       collect-log-files(1), list-log-attributes(1), rotate-log(1),
+       set-log-attributes(1), set-log-levels(1)
+
+       asadmin(1M)
+
+       "Administering the Logging Service" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         12 Feb 2011               list-log-levels(1)

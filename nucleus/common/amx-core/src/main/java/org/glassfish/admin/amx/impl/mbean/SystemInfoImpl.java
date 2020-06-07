@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import java.util.ArrayList;
@@ -81,7 +83,7 @@ public final class SystemInfoImpl extends AMXImplBase //implements SystemInfo
             throw new IllegalArgumentException();
         }
 
-        mFeatures.put(featureName, Boolean.valueOf(available));
+        mFeatures.put(featureName, available);
     }
 
     public String[] getFeatureNames() {
@@ -95,7 +97,6 @@ public final class SystemInfoImpl extends AMXImplBase //implements SystemInfo
     }
 
     public boolean supportsFeature(final String key) {
-        boolean supports = false;
 
         Boolean result = mFeatures.get(key);
         if (result == null) {

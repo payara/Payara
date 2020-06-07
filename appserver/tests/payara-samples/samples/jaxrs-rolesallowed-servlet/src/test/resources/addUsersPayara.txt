@@ -1,0 +1,1 @@
+create-file-user --groups a --passwordfile ${user.dir}/src/test/resources/password.txt test

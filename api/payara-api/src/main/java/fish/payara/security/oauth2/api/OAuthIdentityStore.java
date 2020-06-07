@@ -41,7 +41,6 @@ package fish.payara.security.oauth2.api;
 
 import java.util.EnumSet;
 import java.util.Set;
-import javax.security.enterprise.credential.Credential;
 import javax.security.enterprise.credential.RememberMeCredential;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;

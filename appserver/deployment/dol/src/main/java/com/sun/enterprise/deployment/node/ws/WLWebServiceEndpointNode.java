@@ -300,8 +300,8 @@ public class WLWebServiceEndpointNode extends DeploymentDescriptorNode {
             String serviceUri;
             String endpointAddressUri = descriptor.getEndpointAddressUri();
             if (descriptor.implementedByEjbComponent()) {
-                ctxtPath = endpointAddressUri.substring(0, endpointAddressUri.lastIndexOf("/") - 1);
-                serviceUri = endpointAddressUri.substring(endpointAddressUri.lastIndexOf("/"));
+                ctxtPath = endpointAddressUri.substring(0, endpointAddressUri.lastIndexOf('/') - 1);
+                serviceUri = endpointAddressUri.substring(endpointAddressUri.lastIndexOf('/'));
             } else {
                 //for servlet endpoint, use web application context root
                 ctxtPath = descriptor.getWebComponentImpl().getWebBundleDescriptor().getContextRoot();

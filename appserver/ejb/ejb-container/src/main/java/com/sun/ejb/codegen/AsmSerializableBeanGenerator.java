@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.codegen;
 
-import org.glassfish.hk2.external.org.objectweb.asm.*;
+import org.objectweb.asm.*;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -51,8 +51,7 @@ import java.security.Permission;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 
-public class AsmSerializableBeanGenerator
-    implements Opcodes {
+public class AsmSerializableBeanGenerator implements Opcodes {
 
     private static final int INTF_FLAGS = ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES;
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.cli;
 
@@ -120,8 +121,7 @@ public class SupportsUserManagementCommand implements AdminCommand {
     @Inject
     RealmsManager realmsManager;
 
-    private static final LocalStringManagerImpl _localStrings =
-	new LocalStringManagerImpl(SupportsUserManagementCommand.class);
+    private static final LocalStringManagerImpl _localStrings = new LocalStringManagerImpl(SupportsUserManagementCommand.class);
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -165,9 +165,9 @@ public class SupportsUserManagementCommand implements AdminCommand {
 
     private boolean supportsUserManagement(String realmName)
             throws BadRealmException, NoSuchRealmException {
-        Realm r = realmsManager.getFromLoadedRealms(config.getName(), realmName);
-        if (r != null) {
-            return r.supportsUserManagement();
+        Realm realm = realmsManager.getFromLoadedRealms(config.getName(), realmName);
+        if (realm != null) {
+            return realm.supportsUserManagement();
         }
         List<AuthRealm> authRealmConfigs = config.getSecurityService().getAuthRealm();
         for (AuthRealm authRealm : authRealmConfigs) {
@@ -178,13 +178,11 @@ public class SupportsUserManagementCommand implements AdminCommand {
                     String value = p.getValue();
                     props.setProperty(p.getName(), value);
                 }
-                r = Realm.instantiate(authRealm.getName(), authRealm.getClassname(), props, config.getName());
-                return r.supportsUserManagement();
+                realm = Realm.instantiate(authRealm.getName(), authRealm.getClassname(), props, config.getName());
+                return realm.supportsUserManagement();
             }
         }
-        throw new NoSuchRealmException(
-                _localStrings.getLocalString("NO_SUCH_REALM", "No Such Realm: {0}",
-                new Object[] {realmName}));
+        throw new NoSuchRealmException(_localStrings.getLocalString("NO_SUCH_REALM", "No Such Realm: {0}", realmName));
     }
     
 }

@@ -55,19 +55,19 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 
-public class HeaderImpl extends ExtensibleImpl implements Header {
+public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
-    protected String ref;
-    protected String description;
-    protected Boolean required;
-    protected Boolean deprecated;
-    protected Boolean allowEmptyValue;
-    protected Style style;
-    protected Boolean explode;
-    protected Schema schema;
-    protected Map<String, Example> examples = new HashMap<>();
-    protected Object example;
-    protected Content content;
+    private String ref;
+    private String description;
+    private Boolean required;
+    private Boolean deprecated;
+    private Boolean allowEmptyValue;
+    private Style style;
+    private Boolean explode;
+    private Schema schema;
+    private Map<String, Example> examples = new HashMap<>();
+    private Object example;
+    private Content content;
 
     @Override
     public String getRef() {
@@ -83,12 +83,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     }
 
     @Override
-    public Header ref(String ref) {
-        setRef(ref);
-        return this;
-    }
-
-    @Override
     public String getDescription() {
         return description;
     }
@@ -96,12 +90,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     @Override
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public Header description(String description) {
-        setDescription(description);
-        return this;
     }
 
     @Override
@@ -115,12 +103,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     }
 
     @Override
-    public Header required(Boolean required) {
-        setRequired(required);
-        return this;
-    }
-
-    @Override
     public Boolean getDeprecated() {
         return deprecated;
     }
@@ -128,12 +110,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     @Override
     public void setDeprecated(Boolean deprecated) {
         this.deprecated = deprecated;
-    }
-
-    @Override
-    public Header deprecated(Boolean deprecated) {
-        setDeprecated(deprecated);
-        return this;
     }
 
     @Override
@@ -147,12 +123,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     }
 
     @Override
-    public Header allowEmptyValue(Boolean allowEmptyValue) {
-        setAllowEmptyValue(allowEmptyValue);
-        return this;
-    }
-
-    @Override
     public Style getStyle() {
         return style;
     }
@@ -160,12 +130,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     @Override
     public void setStyle(Style style) {
         this.style = style;
-    }
-
-    @Override
-    public Header style(Style style) {
-        setStyle(style);
-        return this;
     }
 
     @Override
@@ -179,12 +143,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     }
 
     @Override
-    public Header explode(Boolean explode) {
-        setExplode(explode);
-        return this;
-    }
-
-    @Override
     public Schema getSchema() {
         return schema;
     }
@@ -192,12 +150,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     @Override
     public void setSchema(Schema schema) {
         this.schema = schema;
-    }
-
-    @Override
-    public Header schema(Schema schema) {
-        setSchema(schema);
-        return this;
     }
 
     @Override
@@ -211,15 +163,16 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     }
 
     @Override
-    public Header examples(Map<String, Example> examples) {
-        setExamples(examples);
+    public Header addExample(String key, Example examplesItem) {
+        if (examplesItem != null) {
+            this.examples.put(key, examplesItem);
+        }
         return this;
     }
 
     @Override
-    public Header addExample(String key, Example examplesItem) {
-        this.examples.put(key, examplesItem);
-        return this;
+    public void removeExample(String key) {
+        this.examples.remove(key);
     }
 
     @Override
@@ -233,12 +186,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     }
 
     @Override
-    public Header example(Object example) {
-        setExample(example);
-        return this;
-    }
-
-    @Override
     public Content getContent() {
         return content;
     }
@@ -246,12 +193,6 @@ public class HeaderImpl extends ExtensibleImpl implements Header {
     @Override
     public void setContent(Content content) {
         this.content = content;
-    }
-
-    @Override
-    public Header content(Content content) {
-        setContent(content);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.headers.Header from, Header to,

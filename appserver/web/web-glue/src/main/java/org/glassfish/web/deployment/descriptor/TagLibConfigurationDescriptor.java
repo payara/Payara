@@ -37,14 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
-import java.io.Serializable;
 import javax.servlet.descriptor.TaglibDescriptor;
+import java.io.Serializable;
 
-/** 
- * This descriptor represent the information about a tag library used in a 
+/**
+ * This descriptor represent the information about a tag library used in a
  * web application.
  *
  * @author Danny Coward
@@ -53,16 +54,16 @@ import javax.servlet.descriptor.TaglibDescriptor;
 public class TagLibConfigurationDescriptor
         implements Serializable, TaglibDescriptor {
 
-    private String uri; 
+    private String uri;
     private String location;
-    
-    /** 
+
+    /**
      * Default constructor.
      */
     public TagLibConfigurationDescriptor() {
     }
-    
-    /** 
+
+    /**
      * Construct a tag library configuration with the given location and URI.
      * @param the URI.
      * @param the location.
@@ -71,7 +72,7 @@ public class TagLibConfigurationDescriptor
 	this.uri = uri;
 	this.location = location;
     }
-    
+
     /**
      * Sets the URI of this tag lib.
      * @param the URI of the tag library.
@@ -79,7 +80,7 @@ public class TagLibConfigurationDescriptor
     public void setTagLibURI(String uri) {
         this.uri = uri;
     }
-    
+
     /**
      * Return the URI of this tag lib.
      * @return the URI of the tag library.
@@ -102,7 +103,7 @@ public class TagLibConfigurationDescriptor
     public void setTagLibLocation(String location) {
         this.location = location;
     }
-    
+
     /**
      * Describes the location of the tag library file.
      * @return the location of the tag library.
@@ -117,12 +118,12 @@ public class TagLibConfigurationDescriptor
     public String getTaglibLocation() {
         return getTagLibLocation();
     }
-    
-    /** 
+
+    /**
      * Return a formatted String representing my state.
      */
-    public void print(StringBuffer toStringBuffer) {
-	toStringBuffer.append("TGLIB: ").append(uri).append(", ").append(location);
+    public void print(StringBuilder toStringBuilder) {
+	toStringBuilder.append("TGLIB: ").append(uri).append(", ").append(location);
     }
-    
+
 }

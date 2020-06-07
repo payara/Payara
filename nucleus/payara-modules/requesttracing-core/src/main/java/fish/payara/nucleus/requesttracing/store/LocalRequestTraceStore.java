@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,15 @@
  */
 package fish.payara.nucleus.requesttracing.store;
 
-import fish.payara.nucleus.notification.domain.BoundedTreeSet;
 import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.nucleus.requesttracing.store.strategy.TraceStorageStrategy;
-import java.util.Collection;
-import java.util.stream.Collectors;
 
-import org.glassfish.api.event.Events;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntSupplier;
+import java.util.stream.Collectors;
 
 /**
  * A store of {@link RequestTrace} objects.
@@ -53,40 +55,30 @@ import org.glassfish.api.event.Events;
  */
 public class LocalRequestTraceStore implements RequestTraceStoreInterface {
 
-    private Events events;
-    private BoundedTreeSet<RequestTrace> store;
-    private int maxStoreSize;
+    private final Set<RequestTrace> store = ConcurrentHashMap.newKeySet();
+    private IntSupplier maxStoreSize;
 
     private final TraceStorageStrategy strategy;
 
     LocalRequestTraceStore(TraceStorageStrategy strategy) {
-        this.store = new BoundedTreeSet<>(0);
-        this.maxStoreSize = store.size();
+        this.maxStoreSize = () -> 0;
         this.strategy = strategy;
-        this.events = events;
     }
 
     @Override
     public RequestTrace addTrace(RequestTrace trace) {
-        store.add(trace);
-        RequestTrace traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize);
-        if (traceToRemove == null) {
-            return null;
-        }
-        store.remove(traceToRemove);
-        
-        return traceToRemove;
+        return addTrace(trace, null);
     }
-    
+
     @Override
     public RequestTrace addTrace(RequestTrace trace, RequestTrace traceToRemove) {
         store.add(trace);
-        traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize, traceToRemove);
+        traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize.getAsInt(), traceToRemove);
         if (traceToRemove == null) {
             return null;
         }
         store.remove(traceToRemove);
-        
+
         return traceToRemove;
     }
 
@@ -101,21 +93,22 @@ public class LocalRequestTraceStore implements RequestTraceStoreInterface {
     }
 
     @Override
-    public void setSize(int maxSize) {
-        // Set the store to be one bigger than the specified value. Allows the store to transparently select which item to remove
-        this.store = new BoundedTreeSet<>(maxSize + 1);
+    public void setSize(IntSupplier maxSize) {
+        int currentMaxSize = maxSize.getAsInt();
+        while (store.size() > currentMaxSize) {
+            store.remove(strategy.getTraceForRemoval(getTraces(), currentMaxSize, null));
+        }
         this.maxStoreSize = maxSize;
     }
 
     @Override
     public int getStoreSize() {
-        return this.store.size();
+        return maxStoreSize.getAsInt();
     }
 
     @Override
     public Collection<RequestTrace> emptyStore() {
-        Collection<RequestTrace> traces = new BoundedTreeSet<>(store.size());
-        traces.addAll(store);
+        Collection<RequestTrace> traces = new ArrayList<>(store);
         store.clear();
         return traces;
     }

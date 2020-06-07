@@ -37,8 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node.runtime;
+
+import static com.sun.enterprise.deployment.xml.WebServicesTagNames.CALL_PROPERTY;
+import static com.sun.enterprise.deployment.xml.WebServicesTagNames.MESSAGE_SECURITY_BINDING;
+import static com.sun.enterprise.deployment.xml.WebServicesTagNames.STUB_PROPERTY;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.namespace.QName;
+
+import org.w3c.dom.Node;
 
 import com.sun.enterprise.deployment.NameValuePairDescriptor;
 import com.sun.enterprise.deployment.ServiceRefPortInfo;
@@ -48,50 +60,38 @@ import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.common.MessageSecurityBindingNode;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import org.w3c.dom.Node;
-
-import javax.xml.namespace.QName;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 /**
- * This node is responsible for handling runtime info for
- * a service reference wsdl port.
+ * This node is responsible for handling runtime info for a service reference WSDL port.
  *
- * @author  Kenneth Saks
- * @version 
+ * @author Kenneth Saks
+ * @version
  */
-public class ServiceRefPortInfoRuntimeNode extends DeploymentDescriptorNode {
+public class ServiceRefPortInfoRuntimeNode extends DeploymentDescriptorNode<ServiceRefPortInfo> {
 
     private String namespaceUri;
 
     public ServiceRefPortInfoRuntimeNode() {
         super();
-        registerElementHandler
-            (new XMLElement(WebServicesTagNames.STUB_PROPERTY),
-             NameValuePairNode.class, "addStubProperty");
-        registerElementHandler
-            (new XMLElement(WebServicesTagNames.CALL_PROPERTY),
-             NameValuePairNode.class, "addCallProperty");
-        registerElementHandler(new XMLElement(WebServicesTagNames.MESSAGE_SECURITY_BINDING), MessageSecurityBindingNode.class, "setMessageSecurityBinding");
+        registerElementHandler(new XMLElement(STUB_PROPERTY), NameValuePairNode.class, "addStubProperty");
+        registerElementHandler(new XMLElement(CALL_PROPERTY), NameValuePairNode.class, "addCallProperty");
+        registerElementHandler(new XMLElement(MESSAGE_SECURITY_BINDING), MessageSecurityBindingNode.class, "setMessageSecurityBinding");
     }
 
     /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
+     * all sub-implementation of this class can use a dispatch table to map xml element to method name on the descriptor
+     * class for setting the element value.
+     * 
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {    
+     */
+    protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
-        table.put(WebServicesTagNames.SERVICE_ENDPOINT_INTERFACE, 
-                  "setServiceEndpointInterface");
+        table.put(WebServicesTagNames.SERVICE_ENDPOINT_INTERFACE, "setServiceEndpointInterface");
         return table;
     }
-    
+
     /**
-     * receives notiification of the value for a particular tag
+     * Receives notifications of the value for a particular tag
      * 
      * @param element the xml element
      * @param value it's associated value
@@ -102,15 +102,15 @@ public class ServiceRefPortInfoRuntimeNode extends DeploymentDescriptorNode {
         if (WebServicesTagNames.NAMESPACE_URI.equals(name)) {
             namespaceUri = value;
         } else if (WebServicesTagNames.LOCAL_PART.equals(name)) {
-            ServiceRefPortInfo desc = (ServiceRefPortInfo)
-                getDescriptor();
+            ServiceRefPortInfo desc = (ServiceRefPortInfo) getDescriptor();
             QName wsdlPort = new QName(namespaceUri, value);
             desc.setWsdlPort(wsdlPort);
             namespaceUri = null;
-        } else super.setElementValue(element, value);
-        
+        } else
+            super.setElementValue(element, value);
+
     }
-    
+
     /**
      * write the descriptor class to a DOM tree and return it
      *
@@ -118,27 +118,18 @@ public class ServiceRefPortInfoRuntimeNode extends DeploymentDescriptorNode {
      * @param node name for the descriptor
      * @param the descriptor to write
      * @return the DOM tree top node
-     */    
-    public Node writeDescriptor(Node parent, String nodeName, 
-                                ServiceRefPortInfo desc) {
-        Node serviceRefPortInfoRuntimeNode = 
-            super.writeDescriptor(parent, nodeName, desc);
+     */
+    public Node writeDescriptor(Node parent, String nodeName, ServiceRefPortInfo desc) {
+        Node serviceRefPortInfoRuntimeNode = super.writeDescriptor(parent, nodeName, desc);
 
-        appendTextChild(serviceRefPortInfoRuntimeNode,
-                        WebServicesTagNames.SERVICE_ENDPOINT_INTERFACE,
-                        desc.getServiceEndpointInterface());
+        appendTextChild(serviceRefPortInfoRuntimeNode, WebServicesTagNames.SERVICE_ENDPOINT_INTERFACE, desc.getServiceEndpointInterface());
 
         QName port = desc.getWsdlPort();
 
-        if( port != null ) {
-            Node wsdlPortNode = appendChild(serviceRefPortInfoRuntimeNode,
-                                            WebServicesTagNames.WSDL_PORT);
-            appendTextChild(wsdlPortNode, 
-                            WebServicesTagNames.NAMESPACE_URI,
-                            port.getNamespaceURI());
-            appendTextChild(wsdlPortNode,
-                            WebServicesTagNames.LOCAL_PART,
-                            port.getLocalPart());
+        if (port != null) {
+            Node wsdlPortNode = appendChild(serviceRefPortInfoRuntimeNode, WebServicesTagNames.WSDL_PORT);
+            appendTextChild(wsdlPortNode, WebServicesTagNames.NAMESPACE_URI, port.getNamespaceURI());
+            appendTextChild(wsdlPortNode, WebServicesTagNames.LOCAL_PART, port.getLocalPart());
         }
 
         // stub-property*
@@ -146,32 +137,25 @@ public class ServiceRefPortInfoRuntimeNode extends DeploymentDescriptorNode {
         NameValuePairNode nameValueNode = new NameValuePairNode();
 
         Set stubProperties = desc.getStubProperties();
-        for(Iterator iter = stubProperties.iterator(); iter.hasNext();) {
-            NameValuePairDescriptor next = (NameValuePairDescriptor)iter.next();
-            nameValueNode.writeDescriptor
-                (serviceRefPortInfoRuntimeNode,
-                 WebServicesTagNames.STUB_PROPERTY, next);
+        for (Iterator iter = stubProperties.iterator(); iter.hasNext();) {
+            NameValuePairDescriptor next = (NameValuePairDescriptor) iter.next();
+            nameValueNode.writeDescriptor(serviceRefPortInfoRuntimeNode, WebServicesTagNames.STUB_PROPERTY, next);
         }
 
         // call-property*
-        for(Iterator iter = desc.getCallProperties().iterator();
-            iter.hasNext();) {
-            NameValuePairDescriptor next = (NameValuePairDescriptor)iter.next();
-            nameValueNode.writeDescriptor
-                (serviceRefPortInfoRuntimeNode, 
-                 WebServicesTagNames.CALL_PROPERTY, next);
+        for (Iterator iter = desc.getCallProperties().iterator(); iter.hasNext();) {
+            NameValuePairDescriptor next = (NameValuePairDescriptor) iter.next();
+            nameValueNode.writeDescriptor(serviceRefPortInfoRuntimeNode, WebServicesTagNames.CALL_PROPERTY, next);
         }
 
         // message-security-binding
-        MessageSecurityBindingDescriptor messageSecBindingDesc =
-            desc.getMessageSecurityBinding();
+        MessageSecurityBindingDescriptor messageSecBindingDesc = desc.getMessageSecurityBinding();
         if (messageSecBindingDesc != null) {
-            MessageSecurityBindingNode messageSecBindingNode =
-                new MessageSecurityBindingNode();
+            MessageSecurityBindingNode messageSecBindingNode = new MessageSecurityBindingNode();
             messageSecBindingNode.writeDescriptor(serviceRefPortInfoRuntimeNode, WebServicesTagNames.MESSAGE_SECURITY_BINDING, messageSecBindingDesc);
         }
 
         return serviceRefPortInfoRuntimeNode;
-    }  
-    
+    }
+
 }

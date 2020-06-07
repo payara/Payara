@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.openinstaller.provider.conf;
 
 import org.openinstaller.config.PropertySheet;
@@ -502,8 +504,8 @@ public final class InstallationConfigurator implements Configurator, Notificatio
         LOGGER.log(Level.INFO, Msg.get("UNPACK_HEADER", null));
         String dirList[] = {
             productRef.getInstallLocation() + File.separator + "glassfish" + File.separator + "modules",
-            productRef.getInstallLocation() + File.separator + "glassfish" + File.separator + "modules" + File.separator + "endorsed",
-            productRef.getInstallLocation() + File.separator + "glassfish" + File.separator + "modules" + File.separator + "autostart"};
+            productRef.getInstallLocation() + File.separator + "glassfish" + File.separator + "modules" + File.separator + "autostart"
+        };
 
         // if the jar extraction fails, then there is something really wrong.
         for (int i = 0; i < dirList.length; i++) {

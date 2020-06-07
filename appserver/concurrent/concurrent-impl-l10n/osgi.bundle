@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.concurrent.admin; bundle-version=${project.osgi.version} 
+Fragment-Host: fish.payara.server.internal.concurrent.impl; bundle-version=${project.osgi.version}

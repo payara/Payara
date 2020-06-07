@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.ModuleDefinition;
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 import java.io.ByteArrayOutputStream;
 import javax.inject.Inject;
 import javax.xml.stream.XMLEventReader;
@@ -81,9 +81,9 @@ public abstract class GenericSniffer implements Sniffer {
     final private String containerName;
     final private String appStigma;
     final private String urlPattern;
-    
+
     final private static XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-    private Module[] modules;
+    private HK2Module[] modules;
 
     public GenericSniffer(String containerName, String appStigma, String urlPattern) {
         this.containerName = containerName;
@@ -191,23 +191,23 @@ public abstract class GenericSniffer implements Sniffer {
      * @throws java.io.IOException exception if something goes sour
      */
     @Override
-    public synchronized Module[] setup(String containerHome, Logger logger) throws IOException {   // TODO(Sahoo): Change signature to not accept containerHome or logger
+    public synchronized HK2Module[] setup(String containerHome, Logger logger) throws IOException {   // TODO(Sahoo): Change signature to not accept containerHome or logger
         if (modules != null) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.logp(Level.FINE, "GenericSniffer", "setup", "{0} has already setup {1} container, so just returning.", new Object[]{this, containerName});
             }
             return modules;
         }
-        List<Module> tmp = new ArrayList<Module>();
+        List<HK2Module> tmp = new ArrayList<HK2Module>();
         for (String moduleName : getContainerModuleNames()) {
-            Module m = modulesRegistry.makeModuleFor(moduleName, null);
+            HK2Module m = modulesRegistry.makeModuleFor(moduleName, null);
             if (m != null) {
                 tmp.add(m);
             } else {
                 throw new RuntimeException("Unable to set up module " + moduleName);
             }
         }
-        modules = tmp.toArray(new Module[tmp.size()]);
+        modules = tmp.toArray(new HK2Module[tmp.size()]);
         return modules;
     }
 
@@ -217,7 +217,7 @@ public abstract class GenericSniffer implements Sniffer {
     /**
      * Tears down a container, remove all imported libraries from the module
      * subsystem.
-     * 
+     *
      */
     @Override
     public void tearDown() {
@@ -261,7 +261,7 @@ public abstract class GenericSniffer implements Sniffer {
         if (other instanceof Sniffer) {
             Sniffer otherSniffer = (Sniffer)other;
             return getModuleType().equals(otherSniffer.getModuleType());
-        } 
+        }
         return false;
     }
 
@@ -271,11 +271,11 @@ public abstract class GenericSniffer implements Sniffer {
         hash = 71 * hash + (getModuleType() != null ? getModuleType().hashCode() : 0);
         return hash;
     }
-    
+
     /**
      * Returns a map of deployment configurations composed by reading from a
      * list of paths in the readable archive.  (For Java EE applications the
-     * deployment configurations correspond to the deployment descriptors.)  The 
+     * deployment configurations correspond to the deployment descriptors.)  The
      * {@link #getDeploymentConfigurationPaths} method returns this list of paths
      * which might exist in archives that this sniffer handles.
      * <p>
@@ -285,57 +285,60 @@ public abstract class GenericSniffer implements Sniffer {
      * <p>
      * Sniffers for applications that do not store their configurations as
      * deployment descriptors at predictable paths within an archive are free
-     * to override this implementation to return whatever information is 
+     * to override this implementation to return whatever information is
      * appropriate to that application type.  A key usage of the returned
-     * Map is in the application type's GUI plug-in (if desired) to allow 
+     * Map is in the application type's GUI plug-in (if desired) to allow
      * users to customize the deployment configuration after the application
      * has been deployed.  The concrete Sniffer implementation and the
      * GUI plug-in must agree on the conventions for storing deployment
      * configuration inforation in the Map.
-     * 
+     *
      * @param location the readable archive for the application of interest
      * @return a map from path names to the contents of the archive entries
      * at those paths
-     * @throws java.io.IOException in case of errors retrieving an entry or 
+     * @throws java.io.IOException in case of errors retrieving an entry or
      * reading the archive contents at an entry
      */
     @Override
     public Map<String,String> getDeploymentConfigurations(final ReadableArchive location) throws IOException {
-        final Map<String,String> deploymentConfigs = new HashMap<String,String>();
+        final Map<String,String> deploymentConfigs = new HashMap<>();
 
-        for (String path : getDeploymentConfigurationPaths()) {
-            InputStream is = null;
-            try {
-                is = location.getEntry(path);
-                if (is != null) {
-                    String dc = readDeploymentConfig(is);
-                    deploymentConfigs.put(path, dc);
-                }
-            } finally {
-                if (is != null) {
-                    is.close();
+        if (location != null) {
+            for (String path : getDeploymentConfigurationPaths()) {
+                InputStream is = null;
+                try {
+                    is = location.getEntry(path);
+                    if (is != null) {
+                        String dc = readDeploymentConfig(is);
+                        deploymentConfigs.put(path, dc);
+                    }
+                } finally {
+                    if (is != null) {
+                        is.close();
+                    }
                 }
             }
         }
+
         return deploymentConfigs;
     }
 
     /**
      * Returns a list of paths within an archive that represents deployment
-     * configuration files.  
+     * configuration files.
      * <p>
      * Sniffers that recognize Java EE applications typically override this
      * default implementation to return a list of the deployment descriptors
      * that might appear in the type of Java EE application which the sniffer
      * recognizes.  For example, the WebSniffer implementation of this method
-     * returns WEB-INF/web.xml, WEB-INF/glassfish-web.xml, WEB-INF/payara-web.xml and 
+     * returns WEB-INF/web.xml, WEB-INF/glassfish-web.xml, WEB-INF/payara-web.xml and
      * WEB-INF/sun-web.xml.
-     * 
+     *
      * @return list of paths in the archive where deployment configuration
      * archive entries might exist
      */
     protected List<String> getDeploymentConfigurationPaths() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     /**

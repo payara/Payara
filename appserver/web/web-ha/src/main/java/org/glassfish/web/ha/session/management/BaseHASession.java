@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 /*
  * BaseHASession.java
@@ -74,7 +74,7 @@ public abstract class BaseHASession extends StandardSession
     public BaseHASession(Manager manager) {
         super(manager);
     }
-    
+
     /**
      * Set the session identifier for this session.
      *
@@ -90,7 +90,7 @@ public abstract class BaseHASession extends StandardSession
             setNote(Globals.JREPLICA_SESSION_NOTE, jReplicaValue);
         }
 
-    } 
+    }
 
 
     /**
@@ -99,43 +99,43 @@ public abstract class BaseHASession extends StandardSession
      */
     public abstract boolean isDirty();
 
-    /** 
+    /**
      * this is deliberately a no-op
      * store framework calls this method
      * so it must be there but must not have
      * any effect
      * @param value
-     */    
+     */
     public abstract void setDirty(boolean value);
 
-    /** 
+    /**
      * is the session persistent
-     */    
+     */
     public boolean isPersistent() {
         return persistentFlag;
     }
-    
-    /** 
+
+    /**
      * this sets the persistent flag
-     */    
+     */
     public void setPersistent(boolean value) {
         persistentFlag = value;
-    }    
-    
-    /** 
+    }
+
+    /**
      * this returns the user name
-     */    
+     */
     public String getUserName() {
         return userName;
     }
-    
-    /** 
+
+    /**
      * this sets the user name
-     */    
+     */
     public void setUserName(String value) {
         userName = value;
     }
-    
+
     /**
      * Overriding the setPrincipal of StandardSession
      *
@@ -144,12 +144,12 @@ public abstract class BaseHASession extends StandardSession
     public void setPrincipal(Principal principal) {
         super.setPrincipal(principal);
         this.setDirty(true);
-    }   
+    }
 
     public boolean isPersistentFlag() {
         return persistentFlag;
     }
-    
+
 
     public void recycle() {
         super.recycle();
@@ -166,18 +166,18 @@ public abstract class BaseHASession extends StandardSession
     }
 
     public void sync() {
-        
+
         HttpSessionBindingEvent event = null;
         event = new HttpSessionBindingEvent
-                ((HttpSession) this, null, null);       
-        
+                ((HttpSession) this, null, null);
+
         // Notify special event listeners on sync()
         Manager manager = this.getManager();
         StandardContext stdContext = (StandardContext) manager.getContainer();
-        // fire container event       
+        // fire container event
         stdContext.fireContainerEvent("sessionSync", event);
     }
-    
+
     /**
      * Read a serialized version of this session object from the specified
      * object input stream.
@@ -195,8 +195,8 @@ public abstract class BaseHASession extends StandardSession
 
         // Deserialize the scalar instance variables (except Manager)
         userName = (String) stream.readObject();
-    }    
-    
+    }
+
     /**
      * Write a serialized version of this session object to the specified
      * object output stream.
@@ -221,44 +221,44 @@ public abstract class BaseHASession extends StandardSession
         // Write the scalar instance variables
         stream.writeObject(userName);
     }
-    
+
     /**
      * Return a string representation of this object.
      */
-    public String superToString() {
+    private CharSequence superToString() {
 
-        StringBuffer sb = new StringBuffer(1000);
+        final StringBuilder sb = new StringBuilder(1000);
         sb.append("BaseHASession[");
         sb.append(id);
         sb.append("]");
-        
+
         sb.append("\n");
-        sb.append("isValid:" + this.isValid);
-        
-        if (this.isValid) {
-            Enumeration<String> attrNamesEnum = getAttributeNames();
+        sb.append("isValid:").append(getIsValid());
+
+        if (getIsValid()) {
+            final Enumeration<String> attrNamesEnum = getAttributeNamesInternal();
             while(attrNamesEnum.hasMoreElements()) {
-                String nextAttrName = attrNamesEnum.nextElement();
-                Object nextAttrValue = getAttributeInternal(nextAttrName);
+                final String nextAttrName = attrNamesEnum.nextElement();
+                final Object nextAttrValue = getAttributeInternal(nextAttrName);
                 sb.append("\n");
-                sb.append("attrName = " + nextAttrName);
-                sb.append(" : attrValue = " + nextAttrValue);
+                sb.append("attrName = ").append(nextAttrName);
+                sb.append(" : attrValue = ").append(nextAttrValue);
             }
         }
 
-        return sb.toString();
+        return sb;
         // END S1AS
-    }    
-    
+    }
+
+    @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer(200);
-        //sb.append(super.toString());
-        sb.append(this.superToString());
-        sb.append(" ssoid: " + this.getSsoId());
-        sb.append(" userName: " + this.getUserName());
-        sb.append(" version: " + this.getVersion());
-        sb.append(" persistent: " + this.isPersistent());
+        final StringBuilder sb = new StringBuilder(1200);
+        sb.append(superToString());
+        sb.append(" ssoid: ").append(getSsoId());
+        sb.append(" userName: ").append(getUserName());
+        sb.append(" version: ").append(getVersion());
+        sb.append(" persistent: ").append(isPersistent());
         return sb.toString();
     }
-    
+
 }

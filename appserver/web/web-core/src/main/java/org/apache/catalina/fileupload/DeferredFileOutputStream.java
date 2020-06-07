@@ -56,6 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.fileupload;
 
@@ -179,8 +180,8 @@ class DeferredFileOutputStream
      *
      * @exception IOException if an error occurs.
      */
-    protected OutputStream getStream() throws IOException
-    {
+    @Override
+    protected OutputStream getStream() throws IOException {
         return currentOutputStream;
     }
 
@@ -193,8 +194,8 @@ class DeferredFileOutputStream
      *
      * @exception IOException if an error occurs.
      */
-    protected void thresholdReached() throws IOException
-    {
+    @Override
+    protected void thresholdReached() throws IOException {
         if (prefix != null) {
             outputFile = File.createTempFile(prefix, suffix, directory);
         }
@@ -272,8 +273,8 @@ class DeferredFileOutputStream
      *
      * @exception IOException if an error occurs.
      */
-    public void close() throws IOException
-    {
+    @Override
+    public void close() throws IOException {
         super.close();
         closed = true;
     }

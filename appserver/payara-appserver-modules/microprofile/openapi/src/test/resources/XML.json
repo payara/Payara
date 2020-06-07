@@ -1,0 +1,10 @@
+[
+{
+          "namespace": "http://example.com/schema/sample",
+          "prefix": "sample"
+},
+{
+      "name": "aliens",
+      "wrapped": true
+}
+]

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
  
 /*
  * InstanceHandler.java
@@ -58,13 +58,11 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-
-import java.util.Map;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
-
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 
@@ -211,6 +209,7 @@ public class LoggingHandlers {
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode") ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ) ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation") ||
+                      key.equals("com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams") ||
                       key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.logtoFile") ||
                       key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange") ||
                       key.equals("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation"))
@@ -220,7 +219,7 @@ public class LoggingHandlers {
                 props.put("id", key + "='" + attrs.get(key) + "'");
                 props.put("target", config);
                 RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/set-log-attributes",
-                    props, "POST", null, false, true);
+                        props, "POST", null, false, true);
             }
         }catch (Exception ex){
             GuiUtil.handleException(handlerCtx, ex);

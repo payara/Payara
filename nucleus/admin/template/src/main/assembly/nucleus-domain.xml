@@ -55,5 +55,9 @@
             <directory>${project.build.directory}/dependency/glassfish/lib/templates</directory>
             <outputDirectory>.</outputDirectory>
          </fileSet>
+         <fileSet>
+            <directory>${project.build.directory}/endpoints</directory>
+            <outputDirectory>endpoints</outputDirectory>
+         </fileSet>
     </fileSets>
 </assembly>

@@ -40,19 +40,26 @@
 
 package com.sun.enterprise.deployment.web;
 
-    /** Objects exhibiting this interface represent an indirecction between
-    * a hard coded role name in the servlet or jsp and an ebstact security role
-    * in the wen application. */
-
+/**
+ * Objects exhibiting this interface represent an indirection between a hard coded role name in a Servlet or JSP 
+ * and an abstract security role in the web application.
+ */
 public interface SecurityRoleReference {
     
-    /** The one in the dd. */
-    public SecurityRole getSecurityRoleLink();
-    public void setSecurityRoleLink(SecurityRole securityRole);
-    public String getDescription();
-    public void setDescription(String description);
-    /** the one in the code. */
-    public String getRoleName();
-    public void setRoleName(String rolename);
-}
+    /** 
+     * The name of this role reference, which is a role that is locally scoped to a single Servlet.
+     */
+    String getRoleName();
+    void setRoleName(String rolename);
 
+    /** The link to the global (application scoped) role, which is the role declared in <code>web.xml</code>
+     * or via the <code>DeclareRoles</code> annotation.  
+     * 
+     * This link is expressed via the e.g. the <code><role-link></code> tag in <code>web.xml</code>. 
+     */
+    SecurityRole getSecurityRoleLink();
+    void setSecurityRoleLink(SecurityRole securityRole);
+
+    String getDescription();
+    void setDescription(String description);
+}

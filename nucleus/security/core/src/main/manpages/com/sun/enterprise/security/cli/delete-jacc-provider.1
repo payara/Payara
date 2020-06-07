@@ -1,0 +1,84 @@
+delete-jacc-provider(1)   asadmin Utility Subcommands  delete-jacc-provider(1)
+
+NAME
+       delete-jacc-provider - enables administrators to delete JACC providers
+       defined for a domain
+
+SYNOPSIS
+           delete-jacc-provider [--help]
+           [--target target] jacc-provider-name
+
+DESCRIPTION
+       The delete-jacc-provider subcommand enables administrators to delete
+       JACC providers defined for a domain. JACC providers are defined as
+       jacc-provider elements in the security-service element in the domain's
+       domain.xml file. JACC providers can be created using the GlassFish
+       Server Admin Console or the create-jacc-provider subcommand.
+
+       The default GlassFish Server installation includes two JACC providers,
+       named default and simple. These default providers should not be
+       deleted.
+
+       The JACC provider used byGlassFish Server for authorization is
+       identified by the jacc-provider element of security-service in
+       domain.xml. Therefore, if you delete the jacc-provider provider, make
+       sure you change jacc-provider to the name of some other JACC provider
+       that exists under security-service.
+
+       If you change the jacc-provider element to point to a different JACC
+       provider, you must restart GlassFish Server.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       If an option has a short option name, then the short option precedes
+       the long option name. Short options have one dash whereas long options
+       have two dashes.
+
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target from which you are deleting the JACC provider.
+           The following values are valid:
+
+           server
+               Deletes the JACC provider on the default server instance. This
+               is the default value.
+
+           configuration_name
+               Deletes the JACC provider in the specified configuration.
+
+           cluster_name
+               Deletes the JACC provider on all server instances in the
+               specified cluster.
+
+           instance_name
+               Deletes the JACC provider on a specified server instance.
+
+OPERANDS
+       jacc-provider-name
+           The name of the JACC provider to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a JACC provider
+           The following example shows how to delete a JACC provider named
+           testJACC from the default domain.
+
+               asadmin> delete-jacc-provider testJACC
+
+               Command delete-jacc-provider executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jacc-provider(1), list-jacc-providers(1)
+
+       asadmin(1M)
+
+Java EE 8                         14 Jun 2011          delete-jacc-provider(1)

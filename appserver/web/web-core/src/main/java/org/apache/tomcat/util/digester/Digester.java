@@ -55,8 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-// $Id: Digester.java 565464 2007-08-13 18:13:47Z remm $
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -107,6 +106,7 @@ public class Digester extends DefaultHandler {
 
     private static class SystemPropertySource 
         implements IntrospectionUtils.PropertySource {
+        @Override
         public String getProperty( String key ) {
             return System.getProperty(key);
         }
@@ -491,7 +491,7 @@ public class Digester extends DefaultHandler {
      */
     public void setDebug(int debug) {
 
-        ; // No action is taken
+        // No action is taken
 
     }
 
@@ -1034,11 +1034,11 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing error is to be reported
      */
-    public void characters(char buffer[], int start, int length)
-            throws SAXException {
+    @Override
+    public void characters(char buffer[], int start, int length) throws SAXException {
         
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "characters(" + new String(buffer, start, length) + ")");
+            saxLog.log(Level.FINE, "characters({0})", new String(buffer, start, length));
         }
 
         bodyText.append(buffer, start, length);
@@ -1051,12 +1051,12 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing error is to be reported
      */
+    @Override
     public void endDocument() throws SAXException {
 
         if (saxLog.isLoggable(Level.FINE)) {
             if (getCount() > 1) {
-                saxLog.log(Level.FINE, "endDocument():  " + getCount() +
-                        " elements left");
+                saxLog.log(Level.FINE, "endDocument():  {0} elements left", getCount());
             } else {
                 saxLog.log(Level.FINE, "endDocument()");
             }
@@ -1099,18 +1099,17 @@ public class Digester extends DefaultHandler {
      *   empty string if qualified names are not available.
      * @exception SAXException if a parsing error is to be reported
      */
-    public void endElement(String namespaceURI, String localName,
-                           String qName) throws SAXException {
+    @Override
+    public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 
         boolean debug = log.isLoggable(Level.FINE);
 
         if (debug) {
             if (saxLog.isLoggable(Level.FINE)) {
-                saxLog.log(Level.FINE, "endElement(" + namespaceURI + "," + localName +
-                        "," + qName + ")");
+                saxLog.log(Level.FINE, "endElement({0},{1},{2})", new Object[]{namespaceURI, localName, qName});
             }
-            log.log(Level.FINE, "  match='" + match + "'");
-            log.log(Level.FINE, "  bodyText='" + bodyText + "'");
+            log.log(Level.FINE, "  match=''{0}''", match);
+            log.log(Level.FINE, "  bodyText=''{0}''", bodyText);
         }
 
         // Parse system properties
@@ -1131,7 +1130,7 @@ public class Digester extends DefaultHandler {
                 try {
                     Rule rule = rules.get(i);
                     if (debug) {
-                        log.log(Level.FINE, "  Fire body() for " + rule);
+                        log.log(Level.FINE, "  Fire body() for {0}", rule);
                     }
                     rule.body(namespaceURI, name, bodyText);
                 } catch (Exception e) {
@@ -1144,7 +1143,7 @@ public class Digester extends DefaultHandler {
             }
         } else {
             if (debug) {
-                log.log(Level.FINE, "  No rules found matching '" + match + "'.");
+                log.log(Level.FINE, "  No rules found matching ''{0}''.", match);
             }
             if (rulesValidation) {
                 log.log(Level.WARNING, LogFacade.NO_RULES_FOUND_MATCHING_EXCEPTION, match);
@@ -1154,7 +1153,7 @@ public class Digester extends DefaultHandler {
         // Recover the body text from the surrounding element
         bodyText = bodyTexts.pop();
         if (debug) {
-            log.log(Level.FINE, "  Popping body text '" + bodyText.toString() + "'");
+            log.log(Level.FINE, "  Popping body text ''{0}''", bodyText.toString());
         }
 
         // Fire "end" events for all relevant rules in reverse order
@@ -1164,7 +1163,7 @@ public class Digester extends DefaultHandler {
                 try {
                     Rule rule = rules.get(j);
                     if (debug) {
-                        log.log(Level.FINE, "  Fire end() for " + rule);
+                        log.log(Level.FINE, "  Fire end() for {0}", rule);
                     }
                     rule.end(namespaceURI, name);
                 } catch (Exception e) {
@@ -1195,10 +1194,11 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing error is to be reported
      */
+    @Override
     public void endPrefixMapping(String prefix) throws SAXException {
 
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "endPrefixMapping(" + prefix + ")");
+            saxLog.log(Level.FINE, "endPrefixMapping({0})", prefix);
         }
 
         // Deregister this prefix mapping
@@ -1227,15 +1227,14 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing error is to be reported
      */
-    public void ignorableWhitespace(char buffer[], int start, int len)
-            throws SAXException {
+    @Override
+    public void ignorableWhitespace(char buffer[], int start, int len) throws SAXException {
 
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "ignorableWhitespace(" +
-                    new String(buffer, start, len) + ")");
+            saxLog.log(Level.FINE, "ignorableWhitespace({0})", new String(buffer, start, len));
         }
 
-        ;   // No processing required
+        // No processing required
 
     }
 
@@ -1248,11 +1247,12 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing error is to be reported
      */
+    @Override
     public void processingInstruction(String target, String data)
             throws SAXException {
 
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "processingInstruction('" + target + "','" + data + "')");
+            saxLog.log(Level.FINE, "processingInstruction(''{0}'',''{1}'')", new Object[]{target, data});
         }
 
         ;   // No processing is required
@@ -1276,10 +1276,11 @@ public class Digester extends DefaultHandler {
      *
      * @param locator The new locator
      */
+    @Override
     public void setDocumentLocator(Locator locator) {
 
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "setDocumentLocator(" + locator + ")");
+            saxLog.log(Level.FINE, "setDocumentLocator({0})", locator);
         }
 
         this.locator = locator;
@@ -1294,13 +1295,14 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing error is to be reported
      */
+    @Override
     public void skippedEntity(String name) throws SAXException {
 
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "skippedEntity(" + name + ")");
+            saxLog.log(Level.FINE, "skippedEntity({0})", name);
         }
 
-        ; // No processing required
+        // No processing required
 
     }
 
@@ -1310,6 +1312,7 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing error is to be reported
      */
+    @Override
     public void startDocument() throws SAXException {
 
         if (saxLog.isLoggable(Level.FINE)) {
@@ -1336,14 +1339,12 @@ public class Digester extends DefaultHandler {
      *   no attributes, it shall be an empty Attributes object. 
      * @exception SAXException if a parsing error is to be reported
      */
-    public void startElement(String namespaceURI, String localName,
-                             String qName, Attributes list)
-            throws SAXException {
+    @Override
+    public void startElement(String namespaceURI, String localName, String qName, Attributes list) throws SAXException {
         boolean debug = log.isLoggable(Level.FINE);
         
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "startElement(" + namespaceURI + "," + localName + "," +
-                    qName + ")");
+            saxLog.log(Level.FINE, "startElement({0},{1},{2})", new Object[]{namespaceURI, localName, qName});
         }
         
         // Parse system properties
@@ -1352,7 +1353,7 @@ public class Digester extends DefaultHandler {
         // Save the body text accumulated for our surrounding element
         bodyTexts.push(bodyText);
         if (debug) {
-            log.log(Level.FINE, "  Pushing body text '" + bodyText.toString() + "'");
+            log.log(Level.FINE, "  Pushing body text ''{0}''", bodyText.toString());
         }
         bodyText = new StringBuilder();
 
@@ -1371,7 +1372,7 @@ public class Digester extends DefaultHandler {
         sb.append(name);
         match = sb.toString();
         if (debug) {
-            log.log(Level.FINE, "  New match='" + match + "'");
+            log.log(Level.FINE, "  New match=''{0}''", match);
         }
 
         // Fire "begin" events for all relevant rules
@@ -1382,7 +1383,7 @@ public class Digester extends DefaultHandler {
                 try {
                     Rule rule = rules.get(i);
                     if (debug) {
-                        log.log(Level.FINE, "  Fire begin() for " + rule);
+                        log.log(Level.FINE, "  Fire begin() for {0}", rule);
                     }
                     rule.begin(namespaceURI, name, list);
                 } catch (Exception e) {
@@ -1395,7 +1396,7 @@ public class Digester extends DefaultHandler {
             }
         } else {
             if (debug) {
-                log.log(Level.FINE, "  No rules found matching '" + match + "'.");
+                log.log(Level.FINE, "  No rules found matching ''{0}''.", match);
             }
         }
 
@@ -1410,11 +1411,11 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing error is to be reported
      */
-    public void startPrefixMapping(String prefix, String namespaceURI)
-            throws SAXException {
+    @Override
+    public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
 
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "startPrefixMapping(" + prefix + "," + namespaceURI + ")");
+            saxLog.log(Level.FINE, "startPrefixMapping({0},{1})", new Object[]{prefix, namespaceURI});
         }
 
         // Register this prefix mapping
@@ -1438,11 +1439,11 @@ public class Digester extends DefaultHandler {
      * @param publicId The public identifier (if any)
      * @param systemId The system identifier (if any)
      */
+    @Override
     public void notationDecl(String name, String publicId, String systemId) {
 
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "notationDecl(" + name + "," + publicId + "," +
-                    systemId + ")");
+            saxLog.log(Level.FINE, "notationDecl({0},{1},{2})", new Object[]{name, publicId, systemId});
         }
 
     }
@@ -1456,12 +1457,12 @@ public class Digester extends DefaultHandler {
      * @param systemId The system identifier (if any)
      * @param notation The name of the associated notation
      */
+    @Override
     public void unparsedEntityDecl(String name, String publicId,
                                    String systemId, String notation) {
 
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "unparsedEntityDecl(" + name + "," + publicId + "," +
-                    systemId + "," + notation + ")");
+            saxLog.log(Level.FINE, "unparsedEntityDecl({0},{1},{2},{3})", new Object[]{name, publicId, systemId, notation});
         }
 
     }
@@ -1497,11 +1498,12 @@ public class Digester extends DefaultHandler {
      * @exception SAXException if a parsing exception occurs
      * 
      */
+    @Override
     public InputSource resolveEntity(String publicId, String systemId)
             throws SAXException {     
                 
         if (saxLog.isLoggable(Level.FINE)) {
-            saxLog.log(Level.FINE, "resolveEntity('" + publicId + "', '" + systemId + "')");
+            saxLog.log(Level.FINE, "resolveEntity(''{0}'', ''{1}'')", new Object[]{publicId, systemId});
         }
         
         if (publicId != null)
@@ -1522,14 +1524,14 @@ public class Digester extends DefaultHandler {
             if (systemId == null) {
                 // cannot resolve
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, " Cannot resolve entity: '" + publicId + "'");
+                    log.log(Level.FINE, " Cannot resolve entity: ''{0}''", publicId);
                 }
                 return (null);
                 
             } else {
                 // try to resolve using system ID
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, " Trying to resolve using system ID '" + systemId + "'");
+                    log.log(Level.FINE, " Trying to resolve using system ID ''{0}''", systemId);
                 }
                 entityURL = systemId;
             }
@@ -1537,7 +1539,7 @@ public class Digester extends DefaultHandler {
         
         // Return an input source to our alternative URL
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, " Resolving to alternate DTD '" + entityURL + "'");
+            log.log(Level.FINE, " Resolving to alternate DTD ''{0}''", entityURL);
         }
         
         try {
@@ -1559,6 +1561,7 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing exception occurs
      */
+    @Override
     public void error(SAXParseException exception) throws SAXException {
 
         String msg = MessageFormat.format(rb.getString(LogFacade.PARSE_ERROR),
@@ -1580,6 +1583,7 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing exception occurs
      */
+    @Override
     public void fatalError(SAXParseException exception) throws SAXException {
 
         String msg = MessageFormat.format(rb.getString(LogFacade.PARSE_FATAL_ERROR),
@@ -1602,6 +1606,7 @@ public class Digester extends DefaultHandler {
      *
      * @exception SAXException if a parsing exception occurs
      */
+    @Override
     public void warning(SAXParseException exception) throws SAXException {
          if (errorHandler != null) {
              log.log(Level.WARNING, LogFacade.PARSE_WARNING_ERROR,
@@ -1756,7 +1761,7 @@ public class Digester extends DefaultHandler {
     public void register(String publicId, String entityURL) {
 
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "register('" + publicId + "', '" + entityURL + "'");
+            log.log(Level.FINE, "register(''{0}'', ''{1}''", new Object[]{publicId, entityURL});
         }
         entityValidator.put(publicId, entityURL);
 
@@ -1794,7 +1799,7 @@ public class Digester extends DefaultHandler {
             if (newNamespaceURI == null) {
                 log.log(Level.FINE, "addRuleSet() with no namespace URI");
             } else {
-                log.log(Level.FINE, "addRuleSet() with namespace URI " + newNamespaceURI);
+                log.log(Level.FINE, "addRuleSet() with namespace URI {0}", newNamespaceURI);
             }
         }
         setRuleNamespaceURI(newNamespaceURI);
@@ -2522,7 +2527,7 @@ public class Digester extends DefaultHandler {
      */
     public void push(Object object) {
 
-        if (stack.size() == 0) {
+        if (stack.isEmpty()) {
             root = object;
         }
         stack.push(object);
@@ -2565,7 +2570,7 @@ public class Digester extends DefaultHandler {
         ArrayStack<Object> namedStack = stacksByName.get(stackName);
         if (namedStack == null) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Stack '" + stackName + "' is empty");
+                log.log(Level.FINE, "Stack ''{0}'' is empty", stackName);
             }
             throw new EmptyStackException();
             
@@ -2595,7 +2600,7 @@ public class Digester extends DefaultHandler {
         ArrayStack<Object> namedStack = stacksByName.get(stackName);
         if (namedStack == null ) {
             if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Stack '" + stackName + "' is empty");
+                log.log(Level.FINE, "Stack ''{0}'' is empty", stackName);
             }
             throw new EmptyStackException();
         
@@ -2698,7 +2703,7 @@ public class Digester extends DefaultHandler {
     protected void initialize() {
 
         // Perform lazy initialization as needed
-        ; // Nothing required by default
+        // Nothing required by default
 
     }    
 

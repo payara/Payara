@@ -1,0 +1,84 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-confmonitor" name="task-confmonitor"></a><a id="GHCOM00213" name="GHCOM00213"></a></p>
+
+<h4><a id="sthref113" name="sthref113"></a>To Configure the Monitoring Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>To open the Monitoring Service page, do either of the following:</p>
+<ul>
+<li>
+<p>Select the Monitoring Data node, and click on the Configure Monitoring link for the server instance for which you want to configure monitoring. To configure monitoring for a cluster, choose any instance in the cluster.</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>Under the Configurations node, expand the server instance or cluster configuration for which you want to configure monitoring, and expand the Monitoring node.</p>
+</li>
+</ul>
+<p>The Monitoring Service page opens.</p>
+</li>
+<li>
+<p>Select the Monitoring Service Enabled checkbox to enable monitoring for the GlassFish Server, or deselect the checkbox to disable monitoring.</p>
+<p>This option is enabled by default.</p>
+</li>
+<li>
+<p>Select the Monitoring MBeans Enabled checkbox to deploy all MBeans needed for monitoring, or deselect the checkbox to undeploy these MBeans.</p>
+<p>This option is enabled by default.</p>
+<p>If the checkbox is not selected, you cannot view monitoring data in the Administration Console, even if the Monitoring Service checkbox is selected. Instead, you must use the command line to view monitoring data. If you deselect the checkbox, the memory footprint of the GlassFish Server is reduced.</p>
+</li>
+<li>
+<p>Select the DTrace Enabled checkbox to enable use of the Solaris DTrace facility.</p>
+<p>In order to use the Solaris DTrace facility, you must also have Oracle Enterprise Manager DTrace Monitoring. This option is disabled by default.</p>
+</li>
+<li>
+<p>In the table, perform one of the following actions.</p>
+<ul>
+<li>
+<p>In the Monitoring Level column, select LOW or HIGH from the drop-down list for one or more components in the Component column to enable monitoring for those components.</p>
+</li>
+<li>
+<p>Select the checkboxes next to one or more components, then select LOW or HIGH from the Level drop-down list at the top of the table and click the Change Level button to set the monitoring level to that value for all of those components.</p>
+</li>
+</ul>
+<p>There is no difference between levels of monitoring offered by the LOW and HIGH options in this release. To disable monitoring for one or more components, select OFF. The default value is OFF.</p>
+<p>You must deploy an application, component, or service before you configure monitoring for it.</p>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="GHCOM324" name="GHCOM324"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-appmonitoringdata.html">To View Application Monitoring Data</a></p>
+</li>
+<li>
+<p><a href="task-servermonitoringdata.html">To View Server Monitoring Data</a></p>
+</li>
+<li>
+<p><a href="task-resourcemonitoringdata.html">To View Resource Monitoring Data</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

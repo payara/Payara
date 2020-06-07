@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.api.enabler;
 
@@ -82,12 +83,6 @@ public class ORBConnectorStartup implements PostConstruct {
                "com.sun.corba.ee.impl.orb.ORBImpl";
     private static final String ORB_SINGLETON_CLASS =
                "com.sun.corba.ee.impl.orb.ORBSingleton";
-
-    private static final String ORB_SE_CLASS =
-               "com.sun.corba.se.impl.orb.ORBImpl";
-    private static final String ORB_SE_SINGLETON_CLASS =
-               "com.sun.corba.se.impl.orb.ORBSingleton";
-
     private static final String RMI_UTIL_CLASS =
                "com.sun.corba.ee.impl.javax.rmi.CORBA.Util";
     private static final String RMI_STUB_CLASS =

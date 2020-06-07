@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.integration;
 
 import java.security.CodeSource;
@@ -47,113 +47,101 @@ import java.security.Permissions;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 public class PermsHolder {
 
+    /**
+     * The PermissionCollection for each CodeSource
+     */
+    private ConcurrentHashMap<String, PermissionCollection> loaderPC = new ConcurrentHashMap<String, PermissionCollection>();
 
     /**
-     * The PermissionCollection for each CodeSource 
+     * EE permissions for a module
      */
-    private ConcurrentHashMap<String, PermissionCollection> loaderPC =
-        new ConcurrentHashMap<String, PermissionCollection>();
-
-    
-    /**
-     * EE permissions for  a module
-     */
-    private PermissionCollection eePermissionCollection = null;
+    private PermissionCollection eePermissionCollection;
 
     /**
-     * declared permissions in  a module
+     * Declared permissions in a module
      */
-    private PermissionCollection declaredPermissionCollection = null;
+    private PermissionCollection declaredPermissionCollection;
 
     /**
      * EE restriction list
      */
-    private PermissionCollection restrictPermissionCollection = null;
+    private PermissionCollection restrictPermissionCollection;
 
-    
     public PermsHolder() {
-        
+
     }
 
-    public PermsHolder(PermissionCollection eePC, 
-            PermissionCollection declPC,
-            PermissionCollection restrictPC) {
-     
+    public PermsHolder(PermissionCollection eePC, PermissionCollection declPC, PermissionCollection restrictPC) {
         setEEPermissions(eePC);
         setDeclaredPermissions(declPC);
         setRestrictPermissions(restrictPC);
     }
 
-    public void setEEPermissions(PermissionCollection eePc) {        
+    public void setEEPermissions(PermissionCollection eePc) {
         eePermissionCollection = eePc;
     }
 
-
-    public void setDeclaredPermissions(PermissionCollection declaredPc) {        
+    public void setDeclaredPermissions(PermissionCollection declaredPc) {
         declaredPermissionCollection = declaredPc;
     }
-    
+
     public void setRestrictPermissions(PermissionCollection restrictPC) {
         restrictPermissionCollection = restrictPC;
     }
-    public PermissionCollection getCachedPerms(CodeSource codesource) {
 
-        if (codesource == null)
+    public PermissionCollection getCachedPerms(CodeSource codesource) {
+        if (codesource == null) {
             return null;
-        
-        String codeUrl = codesource.getLocation().toString();
-        
-        return loaderPC.get(codeUrl);
+        }
+
+        return loaderPC.get(codesource.getLocation().toString());
     }
-    
-    public PermissionCollection getPermissions(CodeSource codesource, 
-            PermissionCollection parentPC ) {
+
+    public PermissionCollection getPermissions(CodeSource codesource, PermissionCollection parentPC) {
 
         String codeUrl = codesource.getLocation().toString();
         PermissionCollection cachedPermissons = loaderPC.get(codeUrl);
 
-        if (cachedPermissons != null)
-            return cachedPermissons;        
-        else 
-            cachedPermissons = new Permissions();
+        if (cachedPermissons != null) {
+            return cachedPermissons;
+        }
         
+        cachedPermissons = new Permissions();
+
         PermissionCollection pc = parentPC;
 
         if (pc != null) {
-            Enumeration<Permission> perms =  pc.elements();
+            Enumeration<Permission> perms = pc.elements();
             while (perms.hasMoreElements()) {
                 Permission p = perms.nextElement();
                 cachedPermissons.add(p);
             }
         }
-        
-            
+
         if (declaredPermissionCollection != null) {
-            Enumeration<Permission> dperms =  this.declaredPermissionCollection.elements();
+            Enumeration<Permission> dperms = this.declaredPermissionCollection.elements();
             while (dperms.hasMoreElements()) {
                 Permission p = dperms.nextElement();
                 cachedPermissons.add(p);
             }
         }
-        
+
         if (eePermissionCollection != null) {
-            Enumeration<Permission> eeperms =  eePermissionCollection.elements();
+            Enumeration<Permission> eeperms = eePermissionCollection.elements();
             while (eeperms.hasMoreElements()) {
                 Permission p = eeperms.nextElement();
                 cachedPermissons.add(p);
             }
-            
+
         }
- 
-        PermissionCollection tmpPc = loaderPC.putIfAbsent(codeUrl, cachedPermissons);                
+
+        PermissionCollection tmpPc = loaderPC.putIfAbsent(codeUrl, cachedPermissons);
         if (tmpPc != null) {
             cachedPermissons = tmpPc;
         }
 
         return cachedPermissons;
-        
     }
 }

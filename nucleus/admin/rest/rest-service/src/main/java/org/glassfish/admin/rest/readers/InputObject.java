@@ -37,13 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.readers;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Iterator;
 import java.util.Map;
 import org.glassfish.admin.rest.provider.ProviderUtil;
@@ -52,6 +49,8 @@ import org.glassfish.admin.rest.provider.ProviderUtil;
  * @author rajeshwar patil
  */
 public abstract class InputObject extends ProviderUtil {
+    
+    protected Map map;
 
     /**
      * Get the map of key-value pairs represented by this object.
@@ -113,7 +112,7 @@ public abstract class InputObject extends ProviderUtil {
         try {
             return o instanceof Number ?
                 ((Number)o).doubleValue() :
-                Double.valueOf((String)o).doubleValue();
+                    Double.valueOf((String) o);
         } catch (Exception e) {
             throw new InputException("InputObject[" + quote(key) +
                 "] is not a number.");
@@ -193,8 +192,7 @@ public abstract class InputObject extends ProviderUtil {
      */
     public boolean isNull(String key) {
         Object value = getValue(key);
-        if (value == null) return true;
-        return false;
+        return value == null;
     }
 
 
@@ -217,26 +215,13 @@ public abstract class InputObject extends ProviderUtil {
         return map.size();
     }
 
-
-    /*static protected final String readAsString(InputStream in) throws IOException {
-        Reader reader = new InputStreamReader(in);
-        StringBuilder sb = new StringBuilder();
-        char[] c = new char[1024];
-        int l;
-        while ((l = reader.read(c)) != -1) {
-            sb.append(c, 0, l);
-        }
-        return sb.toString();
-    }*/
-
-
     /**
      * Try to convert a string into a number, boolean, or null. If the string
      * can't be converted, return the string.
      * @param s A String.
      * @return A simple JSON value.
      */
-    static public Object stringToValue(String s) {
+    public static Object stringToValue(String s) {
         if (s.equals("")) {
             return s;
         }
@@ -322,9 +307,17 @@ public abstract class InputObject extends ProviderUtil {
     }
 
 
+    /**
+     * Adds all entries in a map to the current one
+     * @param key ignored
+     * @param value map to add
+     * @return this
+     * @deprecated replaced by {@link #putMap(java.util.Map)}
+     */
+    @Deprecated
     public InputObject putMap(String key, Map value) {
         // This method is called in case of xml input
-        //We can safely ignor key input value - we know the object we are modifying
+        //We can safely ignore key input value - we know the object we are modifying
         //from the input url.
         //We do not need to check for duplicate enteries - put/post of a resource
         //modifies only the resource and not any of its child resources.
@@ -333,7 +326,17 @@ public abstract class InputObject extends ProviderUtil {
         this.map.putAll(value); 
         return this;
     }
-
+    
+    /**
+     * Adds a map to the current object
+     * @param value map to add
+     * @return this
+     * @see java.util.Map#putAll(java.util.Map)
+     */
+    public InputObject putMap(Map value) {
+        this.map.putAll(map);
+        return this;
+    }
 
     /**
      * Throw an exception if the object is an NaN or infinite number.
@@ -355,7 +358,5 @@ public abstract class InputObject extends ProviderUtil {
             }
         }
     }
-
-
-    protected Map map;
+    
 }

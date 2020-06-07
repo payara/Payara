@@ -37,51 +37,60 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.security.services.commands;
 
-//import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.security.auth.realm.Realm;
+import com.sun.enterprise.config.serverbeans.AdminService;
+import com.sun.enterprise.config.serverbeans.AuthRealm;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.security.auth.login.LDAPLoginModule;
+import com.sun.enterprise.security.auth.realm.AbstractStatefulRealm;
 import com.sun.enterprise.security.auth.realm.ldap.LDAPRealm;
-import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.security.services.impl.ServiceLogging;
-import java.beans.PropertyChangeEvent;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.internal.api.Target;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
+import com.sun.enterprise.util.i18n.StringManager;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
 import javax.naming.AuthenticationNotSupportedException;
-import org.glassfish.api.admin.*;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.Target;
 import org.glassfish.security.services.config.AuthenticationService;
 import org.glassfish.security.services.config.LoginModuleConfig;
 import org.glassfish.security.services.config.SecurityConfigurations;
 import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.config.SecurityProviderConfig;
-import com.sun.enterprise.security.auth.login.LDAPLoginModule;
+import org.glassfish.security.services.impl.ServiceLogging;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.RetryableException;
 import org.jvnet.hk2.config.Transaction;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
 
 /**  A convenience command to configure LDAP for administration. There are several properties and attributes that
  *   user needs to remember and that's rather user unfriendly. That's why this command is being developed.
@@ -94,8 +103,8 @@ import org.jvnet.hk2.config.Transaction;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="configure-ldap-for-admin", 
+        opType=RestEndpoint.OpType.POST,
+        path="configure-ldap-for-admin",
         description="configure-ldap-for-admin")
 })
 public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSecurity.Preauthorization {
@@ -109,10 +118,10 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
 
     @Param(name="ldap-group", shortName="g", optional=true)
     public volatile String ldapGroupName;
-    
+
     @Inject
     Target targetService;
-    
+
     @Inject
     private ConfigBeansUtilities configBeansUtilities;
 
@@ -132,32 +141,32 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
     public static final String LDAPS_URL = "ldaps://";
 
     private static final Logger logger = Logger.getLogger(ServiceLogging.SEC_COMMANDS_LOGGER, ServiceLogging.SHARED_LOGMESSAGE_RESOURCE);
-    
+
     private static final String AUTHENTICATION_SERVICE_PROVIDER_NAME = "adminAuth";
     private static final String FILE_REALM_SECURITY_PROVIDER_NAME = "adminFile";
     private static final String ADMIN_FILE_LM_NAME = "adminFileLM";
 
     private Config asc;
-    
+
     @AccessRequired.To("update")
     private AuthRealm adminAuthRealm;
-    
+
     @AccessRequired.To("update")
     private AdminService adminService;
-    
+
     @AccessRequired.To("update")
     private SecurityProvider fileRealmProvider;
-    
+
     @Inject
     private SecurityConfigurations securityConfigs;
-    
+
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
         asc = chooseConfig();
         final SecurityService ss = asc.getSecurityService();
         adminAuthRealm = getAdminRealm(ss);
         adminService = asc.getAdminService();
-        final AuthenticationService adminAuthService = (AuthenticationService) 
+        final AuthenticationService adminAuthService = (AuthenticationService)
                 securityConfigs.getSecurityServiceByName(AUTHENTICATION_SERVICE_PROVIDER_NAME);
         final ActionReport report = context.getActionReport();
         if (adminAuthService == null) {
@@ -172,7 +181,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
             return false;
         }
         if ( ! "LoginModule".equals(fileRealmProvider.getType())) {
-            report.setMessage(lsm.getString("ldap.fileRealmProviderNotLoginModuleType", 
+            report.setMessage(lsm.getString("ldap.fileRealmProviderNotLoginModuleType",
                     FILE_REALM_SECURITY_PROVIDER_NAME,
                     adminAuthService.getName(),
                     fileRealmProvider.getType()));
@@ -182,11 +191,12 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
         return true;
     }
 
-    
 
-    /** Field denoting the name of the realm used for administration. This is fixed in entire of v3. Note that
-     *  the same name is used in admin GUI's web.xml and sun-web.xml. The name of the realm is the key, the
-     *  underlying backend (LDAP, File, Database) can change.
+
+    /**
+     * Field denoting the name of the realm used for administration. This is fixed in entire of v3.
+     * Note that the same name is used in admin GUI's web.xml and sun-web.xml. The name of the realm
+     * is the key, the underlying backend (LDAP, File, Database) can change.
      */
     public static final String FIXED_ADMIN_REALM_NAME = "admin-realm";
     public static final String ORIG_ADMIN_REALM_NAME  = "admin-realm-original";
@@ -195,9 +205,9 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
     public void execute(AdminCommandContext context) {
         ActionReport rep = context.getActionReport();
         StringBuilder sb = new StringBuilder();
-        if(url != null) {
+        if (url != null) {
             if (!url.startsWith("ldap://") && !url.startsWith("ldaps://")) {
-                url = "ldap://" + url;        //it's ok to accept just host:port
+                url = "ldap://" + url; //it's ok to accept just host:port
             }
         }
         if (!pingLDAP(sb)) {
@@ -220,23 +230,9 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
             rep.setMessage(re.getMessage());
             rep.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-/*
-        catch (NoSuchRealmException e) {
-            ActionReport ar = rep.addSubActionsReport();
-            ar.setMessage(lsm.getString("realm.not.refreshed"));
-            ar.setActionExitCode(ActionReport.ExitCode.WARNING);
-        } catch (BadRealmException e) {
-            ActionReport ar = rep.addSubActionsReport();
-            ar.setMessage(lsm.getString("realm.not.refreshed"));
-            ar.setActionExitCode(ActionReport.ExitCode.WARNING);
-        }
-*/
     }
 
     private void configure(StringBuilder sb) throws TransactionFailure, PropertyVetoException, RetryableException {
-        
-        //createBackupRealm(sb, getAdminRealm(asc.getSecurityService()), getNewRealmName(asc.getSecurityService()));
-        
         Transaction t = new Transaction();
         final SecurityService w_asc = t.enroll(asc.getSecurityService());
         AdminService w_adminSvc = t.enroll(asc.getAdminService());
@@ -246,18 +242,6 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
         updateSecurityProvider(t, fileRealmProvider, sb);
         t.commit();
     }
-
-/*    private String getNewRealmName(SecurityService ss) {
-        List<AuthRealm> realms = ss.getAuthRealm();
-        String pref = ORIG_ADMIN_REALM_NAME + "-";
-        int index = 0;  //last one
-        for (AuthRealm realm : realms) {
-            if (realm.getName().indexOf(pref) >= 0) {
-                index = Integer.parseInt(realm.getName().substring(pref.length()));
-            }
-        }
-        return pref + (index+1);
-    }*/
 
     private void updateSecurityProvider(final Transaction t, final SecurityProvider w_sp,
             final StringBuilder sb) throws TransactionFailure, PropertyVetoException {
@@ -272,17 +256,19 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
         throw new TransactionFailure(
                 lsm.getString("ldap.noAuthProviderConfig", w_sp.getName(), ADMIN_FILE_LM_NAME));
     }
-    
+
     private AuthRealm getAdminRealm(SecurityService ss) {
         List<AuthRealm> realms = ss.getAuthRealm();
         for (AuthRealm realm : realms) {
-            if (FIXED_ADMIN_REALM_NAME.equals(realm.getName()))
+            if (FIXED_ADMIN_REALM_NAME.equals(realm.getName())) {
                 return realm;
+            }
         }
-        return null;  //unlikely - represents an assertion
+        // unlikely - represents an assertion
+        return null;
     }
 
-    private void configureAdminService(AdminService as) throws PropertyVetoException, TransactionFailure {
+    private void configureAdminService(AdminService as) {
         as.setAuthRealmName(FIXED_ADMIN_REALM_NAME);  //just in case ...
     }
 
@@ -293,29 +279,11 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
     }
 
     // delete and create a new realm to replace it in a single transaction
-    private void deleteRealm(SecurityService w_ss, final StringBuilder sb) throws TransactionFailure {
-        
-        
+    private void deleteRealm(SecurityService w_ss, final StringBuilder sb) {
         AuthRealm oldAdminRealm = getAdminRealm(w_ss);
         w_ss.getAuthRealm().remove(oldAdminRealm);
         appendNL(sb,"...");
-        //AuthRealm ldapr = createLDAPRealm(ss);
-        //ss.getAuthRealm().add(ldapr);
-        //appendNL(sb,lsm.getString("ldap.realm.setup", FIXED_ADMIN_REALM_NAME));
     }
-
-    // this had been called renameRealm, but in the SecurityConfigListener, the method authRealmUpdated actually does a create...
-/*    private void createBackupRealm(final StringBuilder sb, AuthRealm realm, final String to) throws PropertyVetoException, TransactionFailure {
-        SingleConfigCode<AuthRealm> scc = new SingleConfigCode<AuthRealm>() {
-            @Override
-            public Object run(AuthRealm realm) throws PropertyVetoException, TransactionFailure {
-                appendNL(sb, lsm.getString("config.to.ldap", FIXED_ADMIN_REALM_NAME, to));
-                realm.setName(to);
-                return realm;
-            }
-        };
-        ConfigSupport.apply(scc, realm);
-    }*/
 
     private AuthRealm createLDAPRealm(SecurityService ss) throws TransactionFailure, PropertyVetoException {
         AuthRealm ar = ss.createChild(AuthRealm.class);
@@ -340,11 +308,11 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
 
         if (ldapGroupName!= null) {
             p = ar.createChild(Property.class);
-            p.setName(Realm.PARAM_GROUP_MAPPING);
-            p.setValue(ldapGroupName +"->asadmin"); //appears as gfdomain1->asadmin in domain.xml
+            p.setName(AbstractStatefulRealm.PARAM_GROUP_MAPPING);
+            p.setValue(ldapGroupName +"->asadmin"); // appears as gfdomain1->asadmin in domain.xml
             props.add(p);
         }
-        
+
         return ar;
     }
 
@@ -352,10 +320,9 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
         Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         env.put(Context.PROVIDER_URL, url);
-        
+
         if (url != null && url.startsWith(LDAPS_URL)) {
-            env.put(LDAP_SOCKET_FACTORY,
-                    DEFAULT_SSL_LDAP_SOCKET_FACTORY);
+            env.put(LDAP_SOCKET_FACTORY, DEFAULT_SSL_LDAP_SOCKET_FACTORY);
         }
         try {
             new InitialContext(env);
@@ -380,7 +347,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
     private static void appendNL(StringBuilder sb, String s) {
         sb.append(s).append("%%%EOL%%%");
     }
-    
+
     private Config chooseConfig() {
         Server s = configBeansUtilities.getServerNamed(ADMIN_SERVER);
         String ac = s.getConfigRef();

@@ -37,23 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
-import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.DomainConfigValidator;
-import com.sun.enterprise.admin.servermgmt.FileValidator;
-import com.sun.enterprise.admin.servermgmt.InvalidConfigException;
-import com.sun.enterprise.admin.servermgmt.PortValidator;
-import com.sun.enterprise.admin.servermgmt.StringValidator;
+import com.sun.enterprise.admin.servermgmt.*;
 import com.sun.enterprise.util.i18n.StringManager;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+
+import java.util.*;
 
 /**
  * This class defines the domain config entries that are required to create a
@@ -74,7 +65,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
     private static final String HOST_NAME       = STRING_MANAGER.getString("hostName");
     private static final String JMS_PORT        = STRING_MANAGER.getString("jmsPort");
     private static final String ORB_PORT        = STRING_MANAGER.getString("orbPort");
-    
+
     private static final String STRING_TYPE = String.class.getCanonicalName();
     private static final String INTEGER_TYPE = Integer.class.getCanonicalName();
 
@@ -170,7 +161,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
          * @param map a map of key to Set of value
          */
     private String printDuplicatesFromMap(final Map map){
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         final Iterator it = map.entrySet().iterator();
         Map.Entry entry = getNextDuplicate(it);
         if (entry != null){
@@ -182,7 +173,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
         }
         return sb.toString();
     }
-  
+
 
         /**
          * Get next entry from iterator whose value is a set of
@@ -198,7 +189,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
         return null;
     }
 
-    private void printEntry(final StringBuffer sb, final Map.Entry entry){
+    private void printEntry(final StringBuilder sb, final Map.Entry entry){
         printEntry(sb, (Object) entry.getKey(), (Set) entry.getValue());
     }
 
@@ -207,7 +198,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
          * buffer. Note that the set is considered to contain more than
          * one object
          */
-    private void printEntry(final StringBuffer sb, final Object key, final Set dups){
+    private void printEntry(final StringBuilder sb, final Object key, final Set dups){
         sb.append(key).append(" -> ");
         printSet(sb, dups);
     }
@@ -215,7 +206,7 @@ public class PEDomainConfigValidator extends DomainConfigValidator
         /**
          * Print the given set on the given string buffer
          */
-    private void printSet(final StringBuffer sb, final Set set){
+    private void printSet(final StringBuilder sb, final Set set){
         sb.append("{");
         String separator = "";
         for (Iterator it = set.iterator(); it.hasNext(); ){

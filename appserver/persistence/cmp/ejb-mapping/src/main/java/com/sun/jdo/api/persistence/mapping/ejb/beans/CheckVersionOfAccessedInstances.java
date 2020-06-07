@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.mapping.ejb.beans;
 
-import org.w3c.dom.*;
-import org.netbeans.modules.schema2beans.*;
-import java.beans.*;
-import java.util.*;
+import org.netbeans.modules.schema2beans.Common;
+
+import java.util.Vector;
 
 // BEGIN_NOI18N
 
@@ -65,8 +65,8 @@ public class CheckVersionOfAccessedInstances extends org.netbeans.modules.schema
 		// Properties (see root bean comments for the bean graph)
 		initPropertyTables(1);
 		this.createProperty("column-name", 	// NOI18N
-			COLUMN_NAME, 
-			Common.TYPE_1_N | Common.TYPE_STRING | Common.TYPE_KEY, 
+			COLUMN_NAME,
+			Common.TYPE_1_N | Common.TYPE_STRING | Common.TYPE_KEY,
 			String.class);
 		this.initialize(options);
 	}
@@ -167,7 +167,7 @@ public class CheckVersionOfAccessedInstances extends org.netbeans.modules.schema
 		The following schema file has been used for generation:
 
 <!--
-  XML DTD for Sun ONE Application Server specific Object Relational Mapping 
+  XML DTD for Sun ONE Application Server specific Object Relational Mapping
   with Container Managed Persistence.
 -->
 
@@ -180,8 +180,8 @@ but we are currently using schema2beans from NB 3.5, and so must use this
 workaround.
 
 Because of the workaround, the file here differs from the official one in
-appserv-commons/lib/dtds (which also has previous versions of sun-cmp-mapping 
-dtds) in the definition of the column pair element.  This difference is so 
+appserv-commons/lib/dtds (which also has previous versions of sun-cmp-mapping
+dtds) in the definition of the column pair element.  This difference is so
 that schema2beans can produce usable beans.  The official dtd has:
 
     <!ELEMENT column-pair (column-name, column-name) >
@@ -192,7 +192,7 @@ and the one in here has:
 
 -->
 
-<!-- This file maps at least one set of beans to tables and columns in a 
+<!-- This file maps at least one set of beans to tables and columns in a
      specific db schema
 -->
 <!ELEMENT sun-cmp-mappings ( sun-cmp-mapping+ ) >
@@ -200,14 +200,14 @@ and the one in here has:
 <!-- At least one bean is mapped to database columns in the named schema -->
 <!ELEMENT sun-cmp-mapping ( schema, entity-mapping+) >
 
-<!-- A cmp bean has a name, a primary table, one or more fields, zero or 
-     more relationships, and zero or more secondary tables, plus flags for 
+<!-- A cmp bean has a name, a primary table, one or more fields, zero or
+     more relationships, and zero or more secondary tables, plus flags for
      consistency checking.
- 
-     If the consistency checking flag element is not present, then none 
-     is assumed 
---> 
-<!ELEMENT entity-mapping (ejb-name, table-name, cmp-field-mapping+, 
+
+     If the consistency checking flag element is not present, then none
+     is assumed
+-->
+<!ELEMENT entity-mapping (ejb-name, table-name, cmp-field-mapping+,
         cmr-field-mapping*, secondary-table*, consistency?)>
 
 <!ELEMENT consistency (none | check-modified-at-commit | lock-when-loaded |
@@ -216,42 +216,42 @@ and the one in here has:
 
 <!ELEMENT read-only EMPTY>
 
-<!-- A cmp-field-mapping has a field, one or more columns that it maps to.  
-     The column can be from a bean's primary table or any defined secondary 
+<!-- A cmp-field-mapping has a field, one or more columns that it maps to.
+     The column can be from a bean's primary table or any defined secondary
      table.  If a field is mapped to multiple columns, the column listed first
-     is used as the SOURCE for getting the value from the database.  The 
-     columns are updated in their order.  A field may also be marked as 
-     read-only.  It may also participate in a hierarchial or independent 
+     is used as the SOURCE for getting the value from the database.  The
+     columns are updated in their order.  A field may also be marked as
+     read-only.  It may also participate in a hierarchial or independent
      fetch group. If the fetched-with element is not present, the value,
           <fetched-with><none/></fetched-with>
      is assumed.
 -->
-<!ELEMENT cmp-field-mapping (field-name, column-name+, read-only?, 
+<!ELEMENT cmp-field-mapping (field-name, column-name+, read-only?,
         fetched-with?) >
-            
-<!-- The java identifier of a field. Must match the value of the field-name 
-     sub-element of the cmp-field that is being mapped. 
+
+<!-- The java identifier of a field. Must match the value of the field-name
+     sub-element of the cmp-field that is being mapped.
 -->
 <!ELEMENT field-name (#PCDATA) >
 
-<!-- The java identifier of a field.  Must match the value of the 
-     cmr-field-name sub-element of the cmr-field tat is being mapped. 
+<!-- The java identifier of a field.  Must match the value of the
+     cmr-field-name sub-element of the cmr-field tat is being mapped.
 -->
 <!ELEMENT cmr-field-name (#PCDATA) >
 
-<!-- The ejb-name from the standard EJB-jar DTD--> 
+<!-- The ejb-name from the standard EJB-jar DTD-->
 <!ELEMENT ejb-name (#PCDATA) >
 
-<!-- The COLUMN name of a column from the primary table, or the table 
-     qualified name (TABLE.COLUMN) of a column from a secondary or related 
+<!-- The COLUMN name of a column from the primary table, or the table
+     qualified name (TABLE.COLUMN) of a column from a secondary or related
      table
---> 
+-->
 <!ELEMENT column-name (#PCDATA) >
 
 <!-- Holds the fetch group configuration for fields and relationships -->
 <!ELEMENT fetched-with (default | level | named-group | none) >
 
-<!-- Sub element of fetched-with. Implies that a field belongs to the default 
+<!-- Sub element of fetched-with. Implies that a field belongs to the default
      hierarchical fetch group. -->
 <!ELEMENT default EMPTY>
 
@@ -262,7 +262,7 @@ and the one in here has:
 -->
 <!ELEMENT level (#PCDATA) >
 
-<!-- The name of an independent fetch group.  All the fields and relationships 
+<!-- The name of an independent fetch group.  All the fields and relationships
   that are part of a named-group are fetched at the same time-->
 <!ELEMENT named-group (#PCDATA) >
 
@@ -275,17 +275,17 @@ and the one in here has:
 <!-- the pair of columns -->
 <!ELEMENT column-pair (column-name+) >
 
-<!-- cmr-field mapping.  A cmr field has a name and one or more column 
-     pairs that define the relationship. The relationship can also 
+<!-- cmr-field mapping.  A cmr field has a name and one or more column
+     pairs that define the relationship. The relationship can also
      participate in a fetch group.
-     
+
      If the fetched-with element is not present, the value,
           <fetched-with><none/></fetched-with>
-     is assumed. 
+     is assumed.
 -->
 <!ELEMENT cmr-field-mapping (cmr-field-name, column-pair+, fetched-with? ) >
 
-<!-- The path name to the schema file--> 
+<!-- The path name to the schema file-->
 <!ELEMENT schema (#PCDATA) >
 
 <!-- flag elements for consistency levels -->

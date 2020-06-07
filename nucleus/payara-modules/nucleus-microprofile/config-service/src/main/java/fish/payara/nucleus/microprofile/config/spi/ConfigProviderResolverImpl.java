@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,11 +39,13 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import static fish.payara.nucleus.microprofile.config.spi.PayaraConfigBuilder.getTypeForConverter;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -53,13 +55,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
+import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
+import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -75,6 +80,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ModuleInfo;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
@@ -106,14 +112,19 @@ import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource
  *
  * @author Steve Millidge (Payara Foundation)
  */
-@Service(name = "microprofile-config-provider") // this specifies that the classis an HK2 service
-@RunLevel(StartupRunLevel.VAL)
+@Service(name = "microprofile-config-provider")
+@ContractsProvided({ConfigProviderResolver.class, ConfigProviderResolverImpl.class})
+@RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
 public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
+    private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
+
+    private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
     private static final String METADATA_KEY = "MICROPROFILE_APP_CONFIG";
     private static final String CUSTOM_SOURCES_KEY = "MICROPROFILE_CUSTOM_SOURCES";
     private static final String CUSTOM_CONVERTERS_KEY = "MICROPROFILE_CUSTOM_CONVERTERS";
     private final static String APP_METADATA_KEY = "payara.microprofile.config";
+    private final static String APP_EXPRESSION_METADATA_KEY = "payara.microprofile.config.expression";
 
     @Inject
     private InvocationManager invocationManager;
@@ -123,32 +134,55 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     // Gives access to deployed applications
     @Inject
-    ApplicationRegistry applicationRegistry;
+    private ApplicationRegistry applicationRegistry;
 
     // This injects the configuration from the domain.xml magically
     // and for the correct server configuation
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional // PAYARA-2255 make optional due to race condition writing a missing entry into domain.xml
-    MicroprofileConfigConfiguration configuration;
+    private MicroprofileConfigConfiguration configuration;
 
     // a config used at the server level when there is no application associated with the thread
     private Config serverLevelConfig;
 
+    /**
+     * Logs constructor as finest - may be useful to watch sequence of operations.
+     */
     public ConfigProviderResolverImpl() {
+        LOG.finest("ConfigProviderResolverImpl()");
     }
 
+    /**
+     * Sets the global {@link ConfigProviderResolver#instance()} to this instance.
+     */
     @PostConstruct
     public void postConstruct() {
-        ConfigProviderResolver.setInstance(this);
+        // the setInstance is not synchronized, but instance() method body is.
+        // this will block possible concurrent access.
+        synchronized (ConfigProviderResolver.class) {
+            LOG.log(Level.CONFIG, "Setting global ConfigProviderResolver instance to {0}", this);
+            ConfigProviderResolver.setInstance(this);
+        }
     }
-
 
     public MicroprofileConfigConfiguration getMPConfig() {
         if (configuration == null) {
+            LOG.config("getMPConfig() - initialization of the configuration field (not set by @Inject annotation).");
             configuration = context.getConfigBean().getConfig().getExtensionByType(MicroprofileConfigConfiguration.class);
         }
         return configuration;
+    }
+
+    int getCacheDurationSeconds() {
+        if (serverLevelConfig != null) {
+            java.util.Optional<Integer> cacheDuration = serverLevelConfig.getOptionalValue(MP_CONFIG_CACHE_DURATION,
+                    Integer.class);
+            if (cacheDuration.isPresent()) {
+                return cacheDuration.get();
+            }
+        }
+        return Integer.parseInt(getMPConfig().getCacheDurationSeconds());
     }
 
     @Override
@@ -161,7 +195,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         // fast check against current app
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         if (currentInvocation == null) {
-            // OK we are not a normal request see if we can find the app name from the 
+            // OK we are not a normal request see if we can find the app name from the
             // app registry via the classloader
             Set<String> allApplicationNames = applicationRegistry.getAllApplicationNames();
             for (String allApplicationName : allApplicationNames) {
@@ -196,10 +230,12 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             }
         }
 
-        // fast check fails search the app registry 
+        // fast check fails search the app registry
         for (String name : applicationRegistry.getAllApplicationNames()) {
             ApplicationInfo testInfo = applicationRegistry.get(name);
-            if (testInfo.getClassLoaders().contains(loader) || testInfo.getAppClassLoader().equals(loader)) {
+            if (testInfo.getClassLoaders().contains(loader) ||
+                    // when loading an application, no class loader is assigned
+                    (testInfo.getAppClassLoader() != null && testInfo.getAppClassLoader().equals(loader))) {
                 return testInfo;
             }
         }
@@ -207,16 +243,17 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     }
 
     Config getConfig(ApplicationInfo appInfo) {
+        LOG.log(Level.FINEST, "getConfig(appInfo={0})", appInfo);
         Config result;
         // manage server level config first
         if (appInfo == null) {
             result = serverLevelConfig;
             if (result == null) {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                Map<Type, Converter> converters = new HashMap<>();
+                Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
                 converters.putAll(getDefaultConverters());
-                serverLevelConfig = new PayaraConfig(sources, converters);
+                serverLevelConfig = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 result = serverLevelConfig;
             }
         } else { // look for an application specific one
@@ -225,12 +262,12 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 // build an application specific configuration
                 initialiseApplicationConfig(appInfo);
                 LinkedList<ConfigSource> sources = new LinkedList<>();
-                Map<Type, Converter> converters = new HashMap<>();
+                Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources(appInfo));
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
-                result = new PayaraConfig(sources, converters);
+                result = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 appInfo.addTransientAppMetaData(METADATA_KEY, result);
             }
         }
@@ -253,7 +290,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         if (info != null) {
             result = info.getTransientAppMetaData(METADATA_KEY, Config.class);
             if (result == null) {
-                // rebuild it form scratch
+                // rebuild it from scratch
                 result = getConfig(info);
             }
         }
@@ -278,16 +315,20 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             sources.add(new ApplicationConfigSource(appName));
             sources.add(new ModuleConfigSource(appName, moduleName));
             for (Properties props : getDeployedApplicationProperties(appName)) {
-                sources.add(new PropertiesConfigSource(props, appName));
+                sources.add(new PropertiesConfigSource(props));
+            }
+            for (Properties props : getDeployedApplicationPayaraExpressionConfigProperties(appName)) {
+                sources.add(new PayaraExpressionConfigSource(props));
             }
         }
         return sources;
     }
+
     List<ConfigSource> getDefaultSources() {
         return getDefaultSources(null);
     }
 
-    List<ConfigSource> getDefaultSources(ApplicationInfo appInfo) {
+    private List<ConfigSource> getDefaultSources(ApplicationInfo appInfo) {
         String appName = null;
         String moduleName = null;
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
@@ -321,7 +362,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     public List<Properties> getDeployedApplicationProperties(String applicationName) {
         ApplicationInfo info = applicationRegistry.get(applicationName);
-        List<Properties> result = Collections.EMPTY_LIST;
+        List<Properties> result = Collections.emptyList();
         if (info != null) {
             List<Properties> transientAppMetaData = info.getTransientAppMetaData(APP_METADATA_KEY, LinkedList.class);
             if (transientAppMetaData != null) {
@@ -343,6 +384,18 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                         break;
                     }
                 }
+            }
+        }
+        return result;
+    }
+
+    public List<Properties> getDeployedApplicationPayaraExpressionConfigProperties(String applicationName) {
+        ApplicationInfo info = applicationRegistry.get(applicationName);
+        List<Properties> result = Collections.emptyList();
+        if (info != null) {
+            List<Properties> transientAppMetaData = info.getTransientAppMetaData(APP_EXPRESSION_METADATA_KEY, LinkedList.class);
+            if (transientAppMetaData != null) {
+                result = transientAppMetaData;
             }
         }
         return result;
@@ -372,8 +425,8 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return sources;
     }
 
-    Map<Type,Converter> getDefaultConverters() {
-        Map<Type,Converter> result = new HashMap<>();
+    Map<Class<?>,Converter<?>> getDefaultConverters() {
+        Map<Class<?>,Converter<?>> result = new HashMap<>();
         result.put(Boolean.class, new BooleanConverter());
         result.put(Integer.class, new IntegerConverter());
         result.put(Long.class, new LongConverter());
@@ -382,18 +435,20 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.put(InetAddress.class, new InetAddressConverter());
         result.put(Class.class, new ClassConverter());
         result.put(String.class, new StringConverter());
+        result.put(Character.class, new CharacterConverter());
+        result.put(Short.class, new ShortConverter());
         return result;
 
     }
 
-    Map<Type, Converter> getDiscoveredConverters(ApplicationInfo appInfo) {
-        Map<Type, Converter> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
+    Map<Class<?>, Converter<?>> getDiscoveredConverters(ApplicationInfo appInfo) {
+        Map<Class<?>, Converter<?>> converters = appInfo.getTransientAppMetaData(CUSTOM_CONVERTERS_KEY, Map.class);
         if (converters == null) {
             converters = new HashMap<>();
             // resolve custom config sources
             ServiceLoader<Converter> serviceLoader = ServiceLoader.load(Converter.class, appInfo.getAppClassLoader());
-            for (Converter converter : serviceLoader) {
-                Type type = PayaraConfigBuilder.getTypeForConverter(converter);
+            for (Converter<?> converter : serviceLoader) {
+                Class<?> type = getTypeForConverter(converter);
                 if (type != null) {
                     converters.put(type,converter);
                 }
@@ -402,31 +457,41 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         }
         return converters;
     }
-    
-    private void initialiseApplicationConfig(ApplicationInfo info) {
+
+    private static void initialiseApplicationConfig(ApplicationInfo info) {
         LinkedList<Properties> appConfigProperties = new LinkedList<>();
         info.addTransientAppMetaData(APP_METADATA_KEY, appConfigProperties);
         try {
             // Read application defined properties and add as transient metadata
-            appConfigProperties.add(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config.properties"));
-            appConfigProperties.add(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config.properties"));
+            appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/microprofile-config.properties"));
+            appConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/microprofile-config.properties"));
         } catch (IOException ex) {
-            Logger.getLogger(ConfigProviderResolverImpl.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
+        }
+        LinkedList<Properties> appPayaraExpressionConfigProperties = new LinkedList<>();
+        info.addTransientAppMetaData(APP_EXPRESSION_METADATA_KEY, appPayaraExpressionConfigProperties);
+        try {
+            // Read application defined expression properties and add as transient metadata
+            appPayaraExpressionConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "META-INF/payara-expression-config.properties"));
+            appPayaraExpressionConfigProperties.addAll(getPropertiesFromFile(info.getAppClassLoader(), "../../META-INF/payara-expression-config.properties"));
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
-    private Properties getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
+    private static List<Properties> getPropertiesFromFile(ClassLoader appClassLoader, String fileName) throws IOException {
+        List<Properties> props = new ArrayList<>();
         // Read application defined properties and add as transient metadata
         Enumeration<URL> resources = appClassLoader.getResources(fileName);
         while (resources.hasMoreElements()) {
             URL url = resources.nextElement();
             Properties p = new Properties();
             try (InputStream is = url.openStream()) {
-                p.load(url.openStream());
+                p.load(is);
             }
-            return p;
+            props.add(p);
         }
-        return new Properties();
+        return props;
     }
 
 }

@@ -1,0 +1,111 @@
+create-admin-object(1)    asadmin Utility Subcommands   create-admin-object(1)
+
+NAME
+       create-admin-object - adds the administered object with the specified
+       JNDI name for a resource adapter
+
+SYNOPSIS
+           create-admin-object [--help] [--target target]
+           --restype restype
+           [--classname classname]
+           --raname raname
+           [--enabled={true|false}]
+           [--description description]
+           [--property name=value[:name=value]*]
+           jndi_name
+
+DESCRIPTION
+       The create-admin-object subcommand creates the administered object with
+       the specified JNDI name and the interface definition for a resource
+       adapter.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target on which you are creating the administered
+           object. Valid values are as follows:
+
+           server
+               Creates the administered object for the default server instance
+               server and is the default value.
+
+           configuration_name
+               Creates the administered object for the named configuration.
+
+           cluster_name
+               Creates the administered object for every server instance in
+               the cluster.
+
+           instance_name
+               Creates the administered object for a particular server
+               instance.
+
+               Note
+               +----------------------------------------+
+               |The resource is always created for the  |
+               |domain as a whole, but the resource-ref |
+               |for the resource is only created for    |
+               |the specified --target. This means that |
+               |although the resource is defined at the |
+               |domain level, it is only available at   |
+               |the specified target level. Use the     |
+               |create-resource-ref subcommand to refer |
+               |to the resource in multiple targets if  |
+               |needed.                                 |
+               +----------------------------------------+
+
+       --restype
+           Specifies the interface definition for the administered object. The
+           resource type must be an interface definition that is specified in
+           the ra.xml file of the resource adapter.
+
+       --classname
+           Specifies the class name of the administered object. Required if
+           multiple administered objects use the same interface definition.
+
+       --raname
+           Specifies the name of the resource adapter associated with this
+           administered object.
+
+       --enabled
+           Specifies if this object is enabled. Default is true.
+
+       --description
+           Text string describing the administered object.
+
+       --property
+           Description of the name/values pairs for configuring the resource.
+           Dependent on the resource adapter. For JMS properties, see
+           create-jms-resource(1) for JMS destination resources.
+
+OPERANDS
+       jndi_name
+           JNDI name of the administered object to be created.
+
+EXAMPLES
+       Example 1, Creating an Administered Object
+           In this example, jmsra is a system resource adapter with the admin
+           object interfaces, javax.jms.Queue and javax.jms.Topic.
+
+               asadmin> create-admin-object --restype javax.jms.Queue
+               --raname jmsra --description "sample administered object"
+               --property Name=sample_jmsqueue jms/samplequeue
+               Command create-admin-object executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-admin-object(1), list-admin-objects(1), create-resource-ref(1)
+
+       asadmin(1M)
+
+Java EE 8                         10 Feb 2011           create-admin-object(1)

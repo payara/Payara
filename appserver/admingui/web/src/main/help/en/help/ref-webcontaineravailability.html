@@ -1,0 +1,125 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-webcontaineravailability" name="ref-webcontaineravailability"></a><a id="GHWEB00001" name="GHWEB00001"></a></p>
+
+<h4><a id="sthref79" name="sthref79"></a><a id="sthref80" name="sthref80"></a>Web Container Availability</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Web Container Availability page to configure availability settings for the web container.</p>
+<p>The Web Container Availability page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Availability Service</dt>
+<dd>
+<p>If the Enabled checkbox is selected, availability is enabled for the web container.</p>
+</dd>
+<dt>Persistence Type</dt>
+<dd>
+<p>The persistence mechanism used.</p>
+<ul>
+<li>
+<p>If Availability Service Enabled is <i>not</i> checked, select one of the following:</p>
+<ul>
+<li>
+<p><code>memory</code> for no session persistence</p>
+</li>
+<li>
+<p><code>file</code> for session persistence based on the file system that is not highly available</p>
+</li>
+</ul>
+</li>
+<li>
+<p>If Availability Service Enabled is checked, select <code>replicated</code> for session persistence based on cluster failover that is highly available.</p>
+</li>
+</ul>
+</dd>
+<dt>Persistence Frequency</dt>
+<dd>
+<p>The frequency at which the HTTP session is stored:</p>
+<ul>
+<li>
+<p><code>web-method</code> &mdash; The session state is stored at the end of each web request prior to sending a response back to the client. This mode provides the best guarantee that the session state is fully updated in case of failure. This is the default.</p>
+</li>
+</ul>
+</dd>
+<dt>Persistence Scope</dt>
+<dd>
+<p>The scope of HTTP session changes required for storage to occur:</p>
+<ul>
+<li>
+<p><code>session</code> &mdash; The entire session state is stored every time. This mode provides the best guarantee that your session data is correctly stored for any distributable web application.</p>
+</li>
+<li>
+<p><code>modified-session</code> &mdash; The entire session state is stored if it has been modified. A session is considered to have been modified if <code>HttpSession.setAttribute()</code> or <code>HttpSession.removeAttribute()</code> was called. You must guarantee that <code>setAttribute()</code> is called every time an attribute is changed. This is not a Java EE specification requirement, but it is required for this mode to work properly.</p>
+</li>
+<li>
+<p><code>modified-attribute</code> &mdash; Only modified session attributes are stored. For this mode to work properly, you must follow these guidelines:</p>
+<ul>
+<li>
+<p>Call <code>setAttribute()</code> every time the session state is modified.</p>
+</li>
+<li>
+<p>Make sure there are no cross-references between attributes. The object graph under each distinct attribute key is serialized and stored separately. If there are any object cross references between the objects under each separate key, they are not serialized and deserialized correctly.</p>
+</li>
+<li>
+<p>Distribute the session state across multiple attributes, or at least between a read-only attribute and a modifiable attribute.</p>
+</li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt>Single-Sign-On State</dt>
+<dd>
+<p>If the Enabled checkbox is selected, the single sign-on state available for failover.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for Web Container Availability.</p>
+<p>The GlassFish Server does not define any additional Web Container Availability properties.</p>
+</dd>
+</dl>
+<a id="sthref81" name="sthref81"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-webcontainergeneral.html">To Configure General Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainersessiontimeout.html">To Configure Session Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainermanagerprops.html">To Configure Manager Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainerstoreprops.html">To Configure Store Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontaineravailability.html">To Configure Availability Settings for the Web Container</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

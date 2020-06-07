@@ -1,0 +1,117 @@
+list-batch-job-executions(1)  asadmin Utility Subcommands  list-batch-job-executions(1)
+
+NAME
+       list-batch-job-executions - lists batch job executions and execution
+       details
+
+SYNOPSIS
+           list-batch-job-executions [--help]
+           [--target target]
+           [--executionid execution-id]
+           [--long={false|true}]
+           [--output output]
+           [--header={false|true}]
+           [instance_ID]
+
+DESCRIPTION
+       The list-batch-job-executions subcommand lists batch job executions and
+       execution details.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which to list batch job executions and
+           execution details. Valid values are as follows:
+
+           server
+               Lists executions for the default server instance server and is
+               the default value.
+
+           cluster-name
+               Lists executions for every server instance in the cluster.
+
+           instance-name
+               Lists executions for a particular server instance.
+
+       --executionid, -x
+           Specifies the execution ID of a specific batch job execution.
+
+       --long, -l
+           Displays detailed information about batch job executions. The
+           default value is false.
+
+       --output, -o
+           Displays specific details about batch job executions. Use a
+           comma-separated list to specify the details to display and their
+           order. The values are case-insensitive. A subset of all possible
+           headings is displayed by default.
+
+           Possible values are as follows:
+
+           jobname
+               Displays the name of the job.
+
+           executionid
+               Displays the ID assigned to the execution of the batch job. A
+               new execution is created the first time a job is started and
+               every time the existing execution is restarted.
+
+           starttime
+               Displays the start time of the execution.
+
+           endtime
+               Displays the finish time of the execution.
+
+           batchstatus
+               Displays the status of the execution as set by the batch
+               runtime.
+
+           exitstatus
+               Displays the status of the execution as set by the Job XML for
+               the job or by the batch application. By default, the exit
+               status and the batch status are the same unless the exit status
+               is explicitly overridden.
+
+           jobparameters
+               Displays the properties passed to the batch runtime for the
+               batch job execution, listed as name/value pairs.
+
+           stepcount
+               Displays the number of steps in the batch job execution.
+
+       --header, -h
+           Specifies whether column headings are displayed when the --long
+           option is used. The default value is true. To suppress the
+           headings, set the --header option to false.
+
+OPERANDS
+       instance_id
+           The ID of the job instance for which to list execution details.
+
+EXAMPLES
+       Example 1, Listing Batch Job Executions
+           This example lists batch job executions for the default server
+           instance and displays specific details.
+
+               asadmin> list-batch-job-executions -o=jobname,executionid,batchstatus,exitstatus
+               JOBNAME  EXECUTIONID  BATCHSTATUS  EXITSTATUS
+               payroll  9            COMPLETED    COMPLETED
+               bonus    6            FAILED       FAILED
+               Command list-batch-job-executions executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-batch-jobs(1), list-batch-job-steps(1),
+       set-batch-runtime-configuration(1), list-batch-runtime-configuration(1)
+
+       asadmin(1M)
+
+Java EE 8                09 Aug 2017             list-batch-job-executions(1)

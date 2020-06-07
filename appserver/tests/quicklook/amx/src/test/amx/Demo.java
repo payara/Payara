@@ -133,7 +133,7 @@ public final class Demo {
             
             if ( arg.startsWith(name) || arg.startsWith("--" + name) )
             {
-                final int idx = arg.indexOf("=");
+                final int idx = arg.indexOf('=');
                 value = arg.substring(idx+1);
                 break;
             }

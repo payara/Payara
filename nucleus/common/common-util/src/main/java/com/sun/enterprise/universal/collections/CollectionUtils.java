@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.collections;
 
@@ -148,5 +149,5 @@ public class CollectionUtils {
         }
         return ss;
     }
-    private static final String EOL = System.getProperty("line.separator");
+    private static final String EOL = System.lineSeparator();
 }

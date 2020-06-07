@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.common;
 
@@ -225,7 +225,7 @@ public class DataSourceSpec implements java.io.Serializable {
         }
 
 
-        private enum Containment { NONE_CONTAIN, ONE_CONTAINS, BOTH_CONTAIN };
+        private enum Containment { NONE_CONTAIN, ONE_CONTAINS, BOTH_CONTAIN }
 
 
         private final List<Integer> ignoredList;

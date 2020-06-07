@@ -59,24 +59,18 @@ import java.io.BufferedReader;
 
 //@olsen:
 //import java.util.*;
-import java.util.Map;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import java.util.zip.ZipFile;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import java.util.zip.ZipException;
 
 import java.net.URL;
 
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.jdo.api.persistence.model.Model;
 
 //import com.sun.jdo.api.persistence.enhancer.util.ClassFileSource;
@@ -895,9 +889,8 @@ public class Main
     {
 
         //noWrite or (not enhanced and not forceWrite)
-        if  (this.cmdLineOpts.noWrite  ||  ( ! enhanced  &&  ! this.cmdLineOpts.forceWrite))
-        {
-            temp.deleteOnExit ();
+        if  (this.cmdLineOpts.noWrite  ||  ( ! enhanced  &&  ! this.cmdLineOpts.forceWrite)) {
+            FileUtils.deleteOnExit(temp);
             return;
         }
 

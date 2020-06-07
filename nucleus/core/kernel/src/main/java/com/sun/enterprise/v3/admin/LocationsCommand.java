@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
@@ -90,7 +91,7 @@ public class LocationsCommand implements AdminCommand {
         report.setMessage(env.getInstanceRoot().getAbsolutePath().replace('\\', '/'));
         MessagePart mp = report.getTopMessagePart();
         mp.addProperty("Base-Root", StartupContextUtil.getInstallRoot(env.getStartupContext()).getAbsolutePath());
-        mp.addProperty("Domain-Root", env.getDomainRoot().getAbsolutePath());
+        mp.addProperty("Domain-Root", env.getInstanceRoot().getAbsolutePath());
         mp.addProperty("Instance-Root", env.getInstanceRoot().getAbsolutePath());
         mp.addProperty("Config-Dir", env.getConfigDirPath().getAbsolutePath());
         mp.addProperty("Uptime", ""+getUptime());

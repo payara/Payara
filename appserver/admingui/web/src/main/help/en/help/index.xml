@@ -1,0 +1,143 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<index version="2.0">
+  <indexitem text="access log">
+    <indexitem text="configuring for HTTP service (reference)" target="ref-accesslog"></indexitem>
+    <indexitem text="configuring for HTTP service (task)" target="task-accesslog"></indexitem>
+  </indexitem>
+  <indexitem text="availability">
+    <indexitem text="web container (reference)" target="ref-webcontaineravailability"></indexitem>
+    <indexitem text="web container (task)" target="task-webcontaineravailability"></indexitem>
+  </indexitem>
+  <indexitem text="file cache settings">
+    <indexitem text="protocols (reference)" target="ref-protocolfilecacheedit"></indexitem>
+    <indexitem text="protocols (task)" target="task-protocolfilecacheedit"></indexitem>
+  </indexitem>
+  <indexitem text="HTTP listeners">
+    <indexitem text="creating (reference)" target="ref-httplistenernew"></indexitem>
+    <indexitem text="editing (reference)" target="ref-httplisteneredit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-httplisteners"></indexitem>
+  </indexitem>
+  <indexitem text="HTTP service">
+    <indexitem text="configuring access log (reference)" target="ref-accesslog"></indexitem>
+    <indexitem text="configuring access log (task)" target="task-accesslog"></indexitem>
+    <indexitem text="properties" target="ref-httpserviceprops"></indexitem>
+  </indexitem>
+  <indexitem text="HTTP settings">
+    <indexitem text="protocols (reference)" target="ref-protocolhttpedit"></indexitem>
+    <indexitem text="protocols (task)" target="task-protocolhttpedit"></indexitem>
+  </indexitem>
+  <indexitem text="manager properties">
+    <indexitem text="web container" target="ref-managerproptab"></indexitem>
+    <indexitem text="web container (task)" target="task-webcontainermanagerprops"></indexitem>
+  </indexitem>
+  <indexitem text="network listeners">
+    <indexitem text="creating (reference)" target="ref-networklistenernew"></indexitem>
+    <indexitem text="creating (task)" target="task-httplistenernew"></indexitem>
+    <indexitem text="creating (task)" target="task-networklistenernew"></indexitem>
+    <indexitem text="deleting" target="task-httplistenerdelete"></indexitem>
+    <indexitem text="deleting" target="task-networklistenerdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-networklisteneredit"></indexitem>
+    <indexitem text="editing (task)" target="task-httplisteneredit"></indexitem>
+    <indexitem text="editing (task)" target="task-networklisteneredit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-networklisteners"></indexitem>
+  </indexitem>
+  <indexitem text="properties">
+    <indexitem text="HTTP service" target="ref-httpserviceprops"></indexitem>
+    <indexitem text="virtual servers" target="ref-virtualserverprops"></indexitem>
+    <indexitem text="web container" target="ref-webcontainerprops"></indexitem>
+    <indexitem text="web container manager (reference)" target="ref-websessionproperties"></indexitem>
+    <indexitem text="web container manager (task)" target="task-webcontainermanagerprops"></indexitem>
+    <indexitem text="web container session (reference)" target="ref-sessionproptab"></indexitem>
+    <indexitem text="web container session (task)" target="task-webcontainersessiontimeout"></indexitem>
+    <indexitem text="web container sessions (reference)" target="ref-websessionproperties"></indexitem>
+    <indexitem text="web container store (reference)" target="ref-storeproptab"></indexitem>
+    <indexitem text="web container store (task)" target="task-webcontainerstoreprops"></indexitem>
+  </indexitem>
+  <indexitem text="protocols">
+    <indexitem text="creating (reference)" target="ref-protocolnew"></indexitem>
+    <indexitem text="creating (task)" target="task-protocolnew"></indexitem>
+    <indexitem text="deleting" target="task-protocoldelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-protocoledit"></indexitem>
+    <indexitem text="editing (task)" target="task-protocoledit"></indexitem>
+    <indexitem text="editing file cache settings (reference)" target="ref-protocolfilecacheedit"></indexitem>
+    <indexitem text="editing file cache settings (task)" target="task-protocolfilecacheedit"></indexitem>
+    <indexitem text="editing HTTP settings (reference)" target="ref-protocolhttpedit"></indexitem>
+    <indexitem text="editing HTTP settings (task)" target="task-protocolhttpedit"></indexitem>
+    <indexitem text="editing SSL settings (reference)" target="ref-protocolssledit"></indexitem>
+    <indexitem text="editing SSL settings (task)" target="task-httplistenerssl"></indexitem>
+    <indexitem text="editing SSL settings (task)" target="task-protocolssledit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-protocols"></indexitem>
+  </indexitem>
+  <indexitem text="session properties">
+    <indexitem text="web container (reference)" target="ref-sessionproptab"></indexitem>
+    <indexitem text="web container (task)" target="task-webcontainersessiontimeout"></indexitem>
+  </indexitem>
+  <indexitem text="SSL settings">
+    <indexitem text="protocols (reference)" target="ref-protocolssledit"></indexitem>
+    <indexitem text="protocols (task)" target="task-httplistenerssl"></indexitem>
+    <indexitem text="protocols (task)" target="task-protocolssledit"></indexitem>
+  </indexitem>
+  <indexitem text="store properties">
+    <indexitem text="web container (reference)" target="ref-storeproptab"></indexitem>
+    <indexitem text="web container (task)" target="task-webcontainerstoreprops"></indexitem>
+  </indexitem>
+  <indexitem text="thread pools">
+    <indexitem text="concepts" target="ref-threadpools"></indexitem>
+    <indexitem text="creating (reference)" target="ref-threadpoolnew"></indexitem>
+    <indexitem text="creating (task)" target="task-threadpoolnew"></indexitem>
+    <indexitem text="deleting" target="task-threadpooldelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-threadpooledit"></indexitem>
+    <indexitem text="editing (task)" target="task-threadpooledit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-threadpools"></indexitem>
+  </indexitem>
+  <indexitem text="transports">
+    <indexitem text="creating (reference)" target="ref-transportnew"></indexitem>
+    <indexitem text="creating (task)" target="task-transportnew"></indexitem>
+    <indexitem text="deleting" target="task-transportdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-transportedit"></indexitem>
+    <indexitem text="editing (task)" target="task-transportedit"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-transports"></indexitem>
+  </indexitem>
+  <indexitem text="virtual servers">
+    <indexitem text="creating (reference)" target="ref-virtualservernew"></indexitem>
+    <indexitem text="creating (task)" target="task-virtualservercreate"></indexitem>
+    <indexitem text="deleting" target="task-virtualserverdelete"></indexitem>
+    <indexitem text="editing (reference)" target="ref-virtualserveredit"></indexitem>
+    <indexitem text="editing (task)" target="task-virtualserveredit"></indexitem>
+    <indexitem text="properties" target="ref-virtualserverprops"></indexitem>
+    <indexitem text="viewing and configuring" target="ref-virtualservers"></indexitem>
+  </indexitem>
+  <indexitem text="web container">
+    <indexitem text="configuring availability settings (reference)" target="ref-webcontaineravailability"></indexitem>
+    <indexitem text="configuring availability settings (task)" target="task-webcontaineravailability"></indexitem>
+    <indexitem text="configuring general properties (reference)" target="ref-generalproptab"></indexitem>
+    <indexitem text="configuring general properties (task)" target="task-webcontainergeneral"></indexitem>
+    <indexitem text="configuring manager properties" target="ref-managerproptab"></indexitem>
+    <indexitem text="configuring manager properties (task)" target="task-webcontainermanagerprops"></indexitem>
+    <indexitem text="configuring session properties (reference)" target="ref-sessionproptab"></indexitem>
+    <indexitem text="configuring session properties (task)" target="task-webcontainersessiontimeout"></indexitem>
+    <indexitem text="configuring store properties (reference)" target="ref-storeproptab"></indexitem>
+    <indexitem text="configuring store properties (task)" target="task-webcontainerstoreprops"></indexitem>
+    <indexitem text="disabling availability (task)" target="task-webcontaineravailability"></indexitem>
+    <indexitem text="enabling availability (task)" target="task-webcontaineravailability"></indexitem>
+    <indexitem text="properties" target="ref-webcontainerprops"></indexitem>
+    <indexitem text="session properties (reference)" target="ref-websessionproperties"></indexitem>
+  </indexitem>
+</index>

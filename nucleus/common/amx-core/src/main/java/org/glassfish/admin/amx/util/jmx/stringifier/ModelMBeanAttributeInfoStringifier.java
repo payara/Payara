@@ -37,19 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
-/*
- * $Header: /cvs/glassfish/appserv-api/src/java/com/sun/appserv/management/util/jmx/stringifier/ModelMBeanAttributeInfoStringifier.java,v 1.2 2007/05/05 05:31:05 tcfujii Exp $
- * $Revision: 1.2 $
- * $Date: 2007/05/05 05:31:05 $
- */
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
-public class ModelMBeanAttributeInfoStringifier
-        extends MBeanAttributeInfoStringifier 
-{
-    public final static ModelMBeanAttributeInfoStringifier DEFAULT =
-            new ModelMBeanAttributeInfoStringifier();
+/**
+ * Creates a String representation of an {@link MBeanAttributeInfo}
+ * @author tcfujii
+ * @since 2007/05/05
+ * @version 1.2
+ */
+public class ModelMBeanAttributeInfoStringifier extends MBeanAttributeInfoStringifier {
+    public static final ModelMBeanAttributeInfoStringifier DEFAULT = new ModelMBeanAttributeInfoStringifier();
 
     public ModelMBeanAttributeInfoStringifier()
     {

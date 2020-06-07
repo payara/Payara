@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -63,8 +64,7 @@ public class DeleteInstanceFilesystem extends LocalInstanceCommand {
     private String instanceName0;
 
     @Override
-    final protected void validate()
-            throws CommandException, CommandValidationException {
+    protected final void validate() throws CommandException, CommandValidationException {
         instanceName = instanceName0;
         super.validate();
 
@@ -72,10 +72,8 @@ public class DeleteInstanceFilesystem extends LocalInstanceCommand {
             throw new CommandException(Strings.get("DeleteInstance.noInstanceName"));
     }
 
-    /**
-     */
     @Override
-    final protected int executeCommand() throws CommandException {
+    protected final int executeCommand() throws CommandException {
 
         if (isRunning()) {
             throw new CommandException(Strings.get("DeleteInstance.running"));

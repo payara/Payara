@@ -37,20 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
 import org.glassfish.deployment.common.Descriptor;
 
 /**
- * This descriptor describes a name value pair association 
+ * This descriptor describes a name value pair association
  *
  * @author Jerome Dochez
  */
 public class NameValuePairDescriptor extends Descriptor {
-    
+
     private String value=null;
-    
+
     /**
     * copy constructor.
     */
@@ -72,19 +73,19 @@ public class NameValuePairDescriptor extends Descriptor {
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     /**
      * @return the value
      */
     public String getValue() {
-        return value;        
+        return value;
     }
-    
+
     /**
      * @return a string describing the values I hold
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\nProp : ").append(getName()).append("->").append(value);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\nProp : ").append(getName()).append("->").append(value);
     }
 
 }

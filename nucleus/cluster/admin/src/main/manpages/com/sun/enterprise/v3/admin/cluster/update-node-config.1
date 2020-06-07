@@ -1,0 +1,80 @@
+update-node-config(1)     asadmin Utility Subcommands    update-node-config(1)
+
+NAME
+       update-node-config - updates the configuration data of a node
+
+SYNOPSIS
+           update-node-config [--help]
+           [--nodehost node-host]
+           [--installdir as-install-parent] [--nodedir node-dir]
+           node-name
+
+DESCRIPTION
+       The update-node-config subcommand updates the configuration data of a
+       node.
+
+       This subcommand can update any node, regardless of whether the node is
+       enabled for remote communication. If a node that is enabled for remote
+       communication is updated, the node is not enabled for remote
+       communication after the update.
+
+       Options of this subcommand specify the new values of the node's
+       configuration data. The default for these options is to leave the
+       existing value unchanged.
+
+       This subcommand does not require the secure shell (SSH) to be configured
+       to update the node. You may run this subcommand from any host that can contact
+       the DAS.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --nodehost
+           The name of the host that the node is to represent after the node
+           is updated.
+
+       --installdir
+           The full path to the parent of the base installation directory of
+           the GlassFish Server software on the host, for example,
+           /export/glassfish3.
+
+       --nodedir
+           The path to the directory that is to contain GlassFish Server
+           instances that are created on the node. If a relative path is
+           specified, the path is relative to the as-install directory, where
+           as-install is the base installation directory of the GlassFish
+           Server software on the host.
+
+OPERANDS
+       node-name
+           The name of the node to update. The node must exist. Otherwise, an
+           error occurs.
+
+EXAMPLES
+       Example 1, Updating the Host That a Node Represents
+           This example updates the host that the node sj04 represents to
+           hsj04.
+
+               asadmin> update-node-config --nodehost hsj04 sj04
+               Command update-node-config executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-node-config(1), create-node-ssh(1),
+       delete-node-config(1), delete-node-ssh(1),
+       install-node(1), install-node-ssh(1),
+       list-nodes(1), uninstall-node(1),
+       uninstall-node-ssh(1), update-node-ssh(1)
+
+       asadmin(1M)
+
+Java EE 8                         8 Dec 2011             update-node-config(1)

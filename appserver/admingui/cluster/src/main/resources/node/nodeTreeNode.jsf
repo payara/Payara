@@ -51,8 +51,8 @@
 	text="$resource{i18ncs.tree.nodes}"
 	url="/cluster/node/nodes.jsf">
     <ui:event type="beforeCreate">
-	setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
-	gf.restRequest(endpoint="#{sessionScope.REST_URL}/nodes/node.json" method="get" result="#{requestScope.resp}"); 
-	setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.childResources}");
+	    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+        py.getNodesListNavTree(parentEndpoint="#{sessionScope.REST_URL}/nodes", childType="node", result="#{requestScope.nonHiddenNodes}");
+        setAttribute(key="children" value="#{requestScope.nonHiddenNodes}");
     </ui:event>
 </dynamicTreeNode>

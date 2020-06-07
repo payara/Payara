@@ -38,11 +38,13 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.v3.common.DoNothingActionReporter;
+import com.sun.enterprise.admin.report.DoNothingActionReporter;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Server;

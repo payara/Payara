@@ -1,0 +1,141 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-transportedit" name="task-transportedit"></a><a id="GHWEB00049" name="GHWEB00049"></a></p>
+
+<h4><a id="sthref69" name="sthref69"></a>To Edit a Transport</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Under the Configuration node, expand the Network Config node.</p>
+</li>
+<li>
+<p>Under the Network Config node, select the Transports node.</p>
+<p>The Transports page opens.</p>
+</li>
+<li>
+<p>On the Transports page, click the name of the transport that you are editing.</p>
+<p>The Edit Transport page opens.</p>
+</li>
+<li>
+<p>In the Classname field, type the class name of the transport implementation.</p>
+<p>The default value is <code>com.sun.grizzly.TCPSelectorHandler</code>.</p>
+</li>
+<li>
+<p>In the Selection Key Handler field, type the class name of the selection key handler.</p>
+<p>The class name of the selection key handler. A selection key handler is an abstract class that manages the lifecycle of selection keys. If you do not specify a value, a default implementation is used.</p>
+</li>
+<li>
+<p>From the Byte Buffer Type drop-down list, select the type of <code>ByteBuffer</code> to be used.</p>
+<p>Available choices are <code>HEAP</code> and <code>DIRECT</code>. The default value is <code>HEAP</code>.</p>
+</li>
+<li>
+<p>In the Acceptor Threads field, type the number of processors in the machine.</p>
+<p>A value of -1 indicates that Grizzly will calculate the number of acceptor threads itself, based on the number of processors in the machine. The default value is 1.</p>
+<p>To set the number of request processing threads, set the Max Thread Pool Size value of the thread pool used by a network listener that uses this transport.</p>
+</li>
+<li>
+<p>In the Max Connections Count field, type the maximum number of pending connections on a network listener that uses this transport.</p>
+<p>The default value is 4096.</p>
+</li>
+<li>
+<p>In the Buffer Size field, type the size, in bytes, of the buffer to be provided for input streams created by a network listener that uses this transport.</p>
+<p>The default value is 8192.</p>
+</li>
+<li>
+<p>In the Idle Key Timeout field, type the number of seconds after which an idle key will be cancelled and the channel closed.</p>
+<p>The default value is 30.</p>
+</li>
+<li>
+<p>In the Read Timeout field, type the number of milliseconds the GlassFish Serverwaits during the header and body parsing phase of a read operation.</p>
+<p>The default value is 30,000.</p>
+</li>
+<li>
+<p>In the Selector Poll Timeout field, type the number of milliseconds a NIO Selector will block waiting for events (users' requests).</p>
+<p>The default value is 1000.</p>
+</li>
+<li>
+<p>In the Write Timeout field, type the number of milliseconds the GlassFish Serverwaits before considering the remote client disconnected when writing the response.</p>
+<p>The default value is 30,000.</p>
+</li>
+<li>
+<p>Select the Display Configuration Enabled checkbox to flush Grizzly's internal configuration to the server logs.</p>
+<p>This option may provide useful information for debugging. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the Snoop Enabled checkbox to dump the requests/response information to the server log.</p>
+<p>This option may provide useful information for debugging, but will significantly reduce performance. This option is disabled by default.</p>
+</li>
+<li>
+<p>Select the TCP No Delay checkbox to enable TCP_NODELAY (also calledNagle's algorithm).</p>
+<p>This option is enabled by default.</p>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+</ol>
+<a id="sthref70" name="sthref70"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-networklistenernew.html">To Create a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-networklisteneredit.html">To Edit a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-networklistenerdelete.html">To Delete a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-protocolnew.html">To Create a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoledit.html">To Edit a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolssledit.html">To Edit SSL Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolhttpedit.html">To Edit HTTP Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolfilecacheedit.html">To Edit File Cache Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoldelete.html">To Delete a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-transportnew.html">To Create a Transport</a></p>
+</li>
+<li>
+<p><a href="task-transportdelete.html">To Delete a Transport</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

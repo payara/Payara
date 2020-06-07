@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.commands;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -80,7 +81,7 @@ import java.util.*;
 public class ListLoggerLevels implements AdminCommand {
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    private LoggingConfigFactory loggingConfigFactory;
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -143,12 +144,12 @@ public class ListLoggerLevels implements AdminCommand {
             }
 
             if (isCluster || isInstance) {
-                props = (HashMap<String, String>) loggingConfig.getLoggingProperties(targetConfigName);
+                props = (HashMap<String, String>) loggingConfigFactory.provide(targetConfigName).getLoggingProperties();
             } else if (isDas) {
-                props = (HashMap<String, String>) loggingConfig.getLoggingProperties();
+                props = (HashMap<String, String>) loggingConfigFactory.provide().getLoggingProperties();
             } else if (isConfig) {
                 // This loop is for the config which is not part of any target
-                props = (HashMap<String, String>) loggingConfig.getLoggingProperties(targetConfigName);
+                props = (HashMap<String, String>) loggingConfigFactory.provide(targetConfigName).getLoggingProperties();
             } else {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 String msg = localStrings.getLocalString("invalid.target.sys.props",

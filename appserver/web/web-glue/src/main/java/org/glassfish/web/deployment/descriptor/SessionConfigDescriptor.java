@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
-
-import java.util.EnumSet;
-import java.util.Set;
-import javax.servlet.SessionTrackingMode;
 
 import com.sun.enterprise.deployment.web.CookieConfig;
 import com.sun.enterprise.deployment.web.SessionConfig;
 import org.glassfish.deployment.common.Descriptor;
+
+import javax.servlet.SessionTrackingMode;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * This represents the session-config in web.xml.
@@ -115,15 +116,15 @@ public class SessionConfigDescriptor extends Descriptor implements SessionConfig
         return trackingModes;
     }
 
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\n sessionTimeout ").append(sessionTimeout);
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\n sessionTimeout ").append(sessionTimeout);
         if (cookieConfig!= null) {
-            toStringBuffer.append(cookieConfig);
+            toStringBuilder.append(cookieConfig);
         }
         if (trackingModes != null) {
-            toStringBuffer.append("\n trackingModes ");
+            toStringBuilder.append("\n trackingModes ");
             for (SessionTrackingMode tm : trackingModes) {
-                toStringBuffer.append(tm);
+                toStringBuilder.append(tm);
             }
         }
     }

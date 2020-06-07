@@ -52,9 +52,3 @@ public interface AttributeFilter
     public boolean filterAttribute(final MBeanAttributeInfo info);
 
 }
-
-
-
-
-
-

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.util.io;
 
@@ -45,7 +45,6 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Map;
 
@@ -164,13 +163,11 @@ public final class DomainDirs {
     private File getTheOneAndOnlyDir(File parent) throws IOException {
         // look for subdirs in the parent dir -- there must be one and only one
 
-        File[] files = parent.listFiles(new FileFilter() {
-            public boolean accept(File f) {
-                File config = new File(f, "config");
-                File dxml = new File(config, "domain.xml");
-                return f.isDirectory() && config.isDirectory() &&
-                        dxml.isFile();
-            }
+        File[] files = parent.listFiles((File f) -> {
+            File config = new File(f, "config");
+            File dxml = new File(config, "domain.xml");
+            return f.isDirectory() && config.isDirectory() &&
+                    dxml.isFile();
         });
 
         if (files == null || files.length == 0)
@@ -201,5 +198,5 @@ public final class DomainDirs {
     }
 
     private final ServerDirs dirs;
-    private final static LocalStringsImpl strings = new LocalStringsImpl(DomainDirs.class);
+    private static final LocalStringsImpl strings = new LocalStringsImpl(DomainDirs.class);
 }

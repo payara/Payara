@@ -38,9 +38,11 @@
  * holder.
  */
 
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.rest.provider;
 
-import com.sun.enterprise.v3.common.ActionReporter;
+import com.sun.enterprise.admin.report.ActionReporter;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
@@ -59,7 +61,7 @@ public class ActionReportResultXmlProvider extends BaseProvider<ActionReportResu
 
     @Override
     public String getContent(ActionReportResult proxy) {
-        ActionReporter ar = (ActionReporter)proxy.getActionReport();
+        ActionReporter ar = proxy.getActionReport();
         ActionReportXmlProvider provider = new ActionReportXmlProvider();
         return provider.getContent(ar);
     }

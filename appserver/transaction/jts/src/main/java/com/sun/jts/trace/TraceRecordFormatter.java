@@ -37,23 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jts.trace;
 
-import org.omg.CosTransactions.*;
-import javax.transaction.xa.*;
-import java.util.*;
+import org.omg.CosTransactions.otid_t;
+
+import javax.transaction.xa.Xid;
+import java.util.Enumeration;
+import java.util.Properties;
 
 /**
- * This class is used to format the trace record. 
+ * This class is used to format the trace record.
  *
  * @author <a href="mailto:kannan.srinivasan@sun.com">Kannan Srinivasan</a>
  * @version 1.0
  */
-public class TraceRecordFormatter 
+public class TraceRecordFormatter
 {
   /**
-   * Returns the formatted record, by accepting the simple string 
+   * Returns the formatted record, by accepting the simple string
    * message, tid and originator, which can be written to OutputStream
    * @param tid an <code>Object</code> value
    * @param origin an <code>Object</code> value
@@ -62,7 +65,7 @@ public class TraceRecordFormatter
    */
     public static String createTraceRecord(Object tid, Object origin, String message)
     {
-        StringBuffer strBuf = new StringBuffer(TraceUtil.getTraceRecordTag());
+        StringBuilder strBuf = new StringBuilder(TraceUtil.getTraceRecordTag());
         strBuf.append(TraceUtil.getCurrentTraceLevel())
               .append(TraceUtil.getFieldDelimiter());
         if(tid == null)
@@ -76,7 +79,7 @@ public class TraceRecordFormatter
                 strBuf.append(tid);
             }
             else if(tid instanceof otid_t)
-            {    
+            {
                         strBuf.append(convertToString(((otid_t)tid).tid));
             }
         }
@@ -116,11 +119,11 @@ public class TraceRecordFormatter
     public static String convertToString(byte[] byteArray)
     {
         int i;
-        StringBuffer strBuf=new StringBuffer();
+        StringBuilder strBuf=new StringBuilder();
         for(i = 0; i < byteArray.length; i++)
          {
-            strBuf.append(byteArray[i]);    
-        }    
+            strBuf.append(byteArray[i]);
+        }
         return strBuf.toString();
     }
 
@@ -135,7 +138,7 @@ public class TraceRecordFormatter
     if(xidArray.length != 0)
     {
             int i;
-            StringBuffer strBuf = new StringBuffer("[ ");
+            StringBuilder strBuf = new StringBuilder("[ ");
             for(i = 0; i < xidArray.length - 1; i++)
             {
                 strBuf.append(convertToString(xidArray[i].getGlobalTransactionId()))
@@ -159,7 +162,7 @@ public class TraceRecordFormatter
         if(prop==null){
         return "{null}";
         }
-        StringBuffer strBuf =  new StringBuffer("{ ");
+        StringBuilder strBuf =  new StringBuilder("{ ");
         for(Enumeration e = prop.propertyNames(); e.hasMoreElements(); )
         {
             Object obj = e.nextElement();
@@ -168,10 +171,10 @@ public class TraceRecordFormatter
             if(val==null)
                 strBuf.append("null");
             else
-                strBuf.append((String)val);        
+                strBuf.append((String)val);
             strBuf.append(" ] ");
-        }        
+        }
         strBuf.append("}");
         return strBuf.toString();
-    } 
+    }
 }

@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
-import org.glassfish.j2ee.statistics.Stats;
-import org.glassfish.j2ee.statistics.CountStatistic;
-import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
+
+import javax.management.j2ee.statistics.Stats;
+import javax.management.j2ee.statistics.CountStatistic;
+import javax.management.j2ee.statistics.BoundedRangeStatistic;
 
 /** A Stats interface to represent the statistical data exposed by an EJB Bean Pool.
  * These are based on the statistics exposed in S1AS7.0. 
@@ -51,7 +53,6 @@ import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
  * @since S1AS8.0
  * @version 1.0
  */
-
 public interface EJBPoolStats extends Stats {
 
 	/** Returns the statistical information about the number of EJBs in the associated pool, as an instance of BoundedRangeStatistic.

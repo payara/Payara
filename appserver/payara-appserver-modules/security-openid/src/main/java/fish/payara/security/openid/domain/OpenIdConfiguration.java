@@ -65,6 +65,9 @@ public class OpenIdConfiguration {
     private int jwksReadTimeout;
     private OpenIdProviderMetadata providerMetadata;
     private OpenIdTokenEncryptionMetadata encryptionMetadata;
+    private ClaimsConfiguration claimsConfiguration;
+    private boolean tokenAutoRefresh;
+    private int tokenMinValidity;
 
     private static final String BASE_URL_EXPRESSION = "${baseURL}";
 
@@ -203,12 +206,39 @@ public class OpenIdConfiguration {
         return this;
     }
 
+    public ClaimsConfiguration getClaimsConfiguration() {
+        return claimsConfiguration;
+    }
+
+    public OpenIdConfiguration setClaimsConfiguration(ClaimsConfiguration claimsConfiguration) {
+        this.claimsConfiguration = claimsConfiguration;
+        return this;
+    }
+
     public OpenIdTokenEncryptionMetadata getEncryptionMetadata() {
         return encryptionMetadata;
     }
 
     public OpenIdConfiguration setEncryptionMetadata(OpenIdTokenEncryptionMetadata encryptionMetadata) {
         this.encryptionMetadata = encryptionMetadata;
+        return this;
+    }
+
+    public boolean isTokenAutoRefresh() {
+        return tokenAutoRefresh;
+    }
+
+    public OpenIdConfiguration setTokenAutoRefresh(boolean tokenAutoRefresh) {
+        this.tokenAutoRefresh = tokenAutoRefresh;
+        return this;
+    }
+
+    public int getTokenMinValidity() {
+        return tokenMinValidity;
+    }
+
+    public OpenIdConfiguration setTokenMinValidity(int tokenMinValidity) {
+        this.tokenMinValidity = tokenMinValidity;
         return this;
     }
 
@@ -228,7 +258,10 @@ public class OpenIdConfiguration {
                 + ", useNonce=" + useNonce
                 + ", useSession=" + useSession
                 + ", providerMetadata=" + providerMetadata
+                + ", claimsConfiguration=" + claimsConfiguration
                 + ", encryptionMetadata=" + encryptionMetadata
+                + ", tokenAutoRefresh=" + tokenAutoRefresh
+                + ", tokenMinValidity=" + tokenMinValidity
                 + '}';
     }
 

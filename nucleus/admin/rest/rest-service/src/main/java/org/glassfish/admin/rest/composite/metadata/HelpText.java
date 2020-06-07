@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.composite.metadata;
 
 import java.lang.annotation.Documented;
@@ -45,7 +47,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.inject.Qualifier;
-import org.jvnet.hk2.annotations.Contract;
 
 /**
  * Any property for which help text needs to be specified should be marked with this annotation.  The help text will be

@@ -677,7 +677,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
                 result = envProp.getValue();
             }
         }
-        return (String)TranslatedConfigView.getTranslatedValue(result);
+        return TranslatedConfigView.expandValue(result);
     }
 
     private ResourcePrincipal getDefaultResourcePrincipal( PoolInfo poolInfo,

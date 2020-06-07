@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.kernel.embedded;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.common.PlainTextActionReporter;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
@@ -112,7 +113,7 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
 
     @Override
     public File getAutoDeployDir() {
-        return new File(env.getDomainRoot(), config.getAutodeployDir());
+        return new File(env.getInstanceRoot(), config.getAutodeployDir());
     }
 
     @Override

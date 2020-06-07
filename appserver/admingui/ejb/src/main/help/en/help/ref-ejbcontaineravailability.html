@@ -1,0 +1,66 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-ejbcontaineravailability" name="ref-ejbcontaineravailability"></a><a id="GHEJB00001" name="GHEJB00001"></a></p>
+
+<h4><a id="sthref15" name="sthref15"></a><a id="sthref16" name="sthref16"></a>EJB Container Availability</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the EJB Container Availability page to configure availability settings for the EJB container.</p>
+<p>The EJB Container Availability page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Availability Service</dt>
+<dd>
+<p>If the Enabled checkbox is selected, availability is enabled for the EJB container.</p>
+</dd>
+<dt>HA Persistence Type</dt>
+<dd>
+<p>The persistence mechanism used when Availability Service Enabled is checked. The default is <code>replicated</code>, which provides persistence based on failover in a cluster. Do not change this value.</p>
+</dd>
+<dt>SFSB Persistence Type</dt>
+<dd>
+<p>The persistence mechanism used when Availability Service Enabled is <i>not</i> checked. The default is <code>file</code>, which provides persistence based on the file system. Do not change this value.</p>
+<p>The Session Store Location field determines where SFSB checkpoint states are persisted. To set the Session Store Location, see <a href="../../../ejb-lite/en/help/task-ejbgeneral.html">To Configure EJB Settings</a>.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for EJB Container Availability.</p>
+<p>The GlassFish Server does not define any additional EJB Container Availability properties.</p>
+</dd>
+</dl>
+<a id="sthref17" name="sthref17"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-ejbcontaineravailability.html">To Configure Availability Settings for the EJB Container</a></p>
+</li>
+<li>
+<p><a href="../../../ejb-lite/en/help/task-ejbgeneral.html">To Configure EJB Settings</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -59,20 +59,3 @@ public interface Ext extends AMXProxy, Singleton, Utility
     public Realms getRealms();
  
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

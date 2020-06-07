@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.security.factory;
 
-import java.util.ArrayList;
+import static java.util.logging.Level.FINE;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -71,32 +72,55 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
     private static Logger _logger = LogDomains.getLogger(EJBSecurityManagerFactory.class, LogDomains.SECURITY_LOGGER, false);
 
     @Inject
-    InvocationManager invMgr;
+    private InvocationManager invocationManager;
 
     @Inject
-    AppServerAuditManager auditManager;
+    private AppServerAuditManager auditManager;
 
     private EjbSecurityProbeProvider probeProvider = new EjbSecurityProbeProvider();
 
-    /**
-     * Creates a new instance of EJBSecurityManagerFactory
-     */
-    public EJBSecurityManagerFactory() {
-    }
-
     // stores the context ids to appnames for apps
-    private Map<String, ArrayList<String>> CONTEXT_IDS = new HashMap<String, ArrayList<String>>();
-    private Map<String, Map<String, EJBSecurityManager>> SECURITY_MANAGERS = new HashMap<String, Map<String, EJBSecurityManager>>();
+    private Map<String, List<String>> CONTEXT_IDS = new HashMap<>();
+    private Map<String, Map<String, EJBSecurityManager>> SECURITY_MANAGERS = new HashMap<>();
+    
+    public EJBSecurityManager createManager(EjbDescriptor ejbDescriptor, boolean register) {
+        String contextId = EJBSecurityManager.getContextID(ejbDescriptor);
+        String ejbName = ejbDescriptor.getName();
+        EJBSecurityManager manager = null;
+        
+        if (register) {
+            manager = getManager(contextId, ejbName, false);
+        }
+        
+        if (manager == null || !register) {
+            try {
+                probeProvider.securityManagerCreationStartedEvent(ejbName);
+                manager = new EJBSecurityManager(ejbDescriptor, invocationManager, this);
+                probeProvider.securityManagerCreationEndedEvent(ejbName);
+                
+                if (register) {
+                    String appName = ejbDescriptor.getApplication().getRegistrationName();
+                    addManagerToApp(contextId, ejbName, appName, manager);
+                    probeProvider.securityManagerCreationEvent(ejbName);
+                }
+            } catch (Exception ex) {
+                _logger.log(FINE, "[EJB-Security] FATAL Exception. Unable to create EJBSecurityManager: " + ex.getMessage());
+                throw new RuntimeException(ex);
+            }
+        }
+        
+        return manager;
+    }
 
     public <T> EJBSecurityManager getManager(String ctxId, String name, boolean remove) {
         return getManager(SECURITY_MANAGERS, ctxId, name, remove);
     }
 
-    public <T> ArrayList<EJBSecurityManager> getManagers(String ctxId, boolean remove) {
+    public <T> List<EJBSecurityManager> getManagers(String ctxId, boolean remove) {
         return getManagers(SECURITY_MANAGERS, ctxId, remove);
     }
 
-    public <T> ArrayList<EJBSecurityManager> getManagersForApp(String appName, boolean remove) {
+    public <T> List<EJBSecurityManager> getManagersForApp(String appName, boolean remove) {
         return getManagersForApp(SECURITY_MANAGERS, CONTEXT_IDS, appName, remove);
     }
 
@@ -106,35 +130,6 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
 
     public <T> void addManagerToApp(String ctxId, String name, String appName, EJBSecurityManager manager) {
         addManagerToApp(SECURITY_MANAGERS, CONTEXT_IDS, ctxId, name, appName, manager);
-    }
-
-    public EJBSecurityManager createManager(EjbDescriptor ejbDesc, boolean register) {
-        String ctxId = EJBSecurityManager.getContextID(ejbDesc);
-        String ejbName = ejbDesc.getName();
-        EJBSecurityManager manager = null;
-        
-        if (register) {
-            manager = getManager(ctxId, ejbName, false);
-        }
-        
-        if (manager == null || !register) {
-            try {
-                probeProvider.securityManagerCreationStartedEvent(ejbName);
-                manager = new EJBSecurityManager(ejbDesc, this.invMgr, this);
-                probeProvider.securityManagerCreationEndedEvent(ejbName);
-                
-                if (register) {
-                    String appName = ejbDesc.getApplication().getRegistrationName();
-                    addManagerToApp(ctxId, ejbName, appName, manager);
-                    probeProvider.securityManagerCreationEvent(ejbName);
-                }
-            } catch (Exception ex) {
-                _logger.log(Level.FINE, "[EJB-Security] FATAL Exception. Unable to create EJBSecurityManager: " + ex.getMessage());
-                throw new RuntimeException(ex);
-            }
-        }
-        
-        return manager;
     }
 
     public final AppServerAuditManager getAuditManager() {

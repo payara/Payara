@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] 
 
 package org.glassfish.admingui.devtests;
 
-import com.google.common.base.Function;
 import com.thoughtworks.selenium.Selenium;
 import com.thoughtworks.selenium.SeleniumException;
 import org.junit.*;
@@ -53,9 +52,9 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.admingui.devtests.util.ElementFinder;
 import org.glassfish.admingui.devtests.util.SeleniumHelper;
 import org.openqa.selenium.support.ui.ExpectedCondition;

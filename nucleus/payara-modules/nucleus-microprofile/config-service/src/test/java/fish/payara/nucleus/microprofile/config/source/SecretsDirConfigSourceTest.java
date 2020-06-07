@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,15 +45,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
 /**
@@ -61,18 +62,10 @@ import static org.junit.Assert.*;
  * @author steve
  */
 public class SecretsDirConfigSourceTest {
-    
-    public SecretsDirConfigSourceTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
+
+    private Path testDirectory;
+    private SecretsDirConfigSource source;
+
     @Before
     public void setUp() throws IOException {
         testDirectory = Files.createTempDirectory("microprofile-config-test");
@@ -83,8 +76,9 @@ public class SecretsDirConfigSourceTest {
         Files.write(file1, "value1".getBytes());
         file2 = Files.createFile(file2);
         Files.write(file2, "value2".getBytes());
+        source = new SecretsDirConfigSource(testDirectory);
     }
-    
+
     @After
     public void tearDown() throws IOException {
         for (File file : testDirectory.toFile().listFiles()) {
@@ -93,17 +87,15 @@ public class SecretsDirConfigSourceTest {
         Files.delete(testDirectory);
     }
 
-    Path testDirectory;
-    
     /**
      * Test of getProperties method, of class SecretsDirConfigSource.
      */
     @Test
     public void testGetProperties() {
-        SecretsDirConfigSource instance = new SecretsDirConfigSource(testDirectory);
-        Map<String, String> result = instance.getProperties();
-        assertEquals(2, result.size());
-
+        Map<String, String> expected = new HashMap<>();
+        expected.put("property1", "value1");
+        expected.put("property2", "value2");
+        assertEquals(expected, source.getProperties());
     }
 
     /**
@@ -111,11 +103,7 @@ public class SecretsDirConfigSourceTest {
      */
     @Test
     public void testGetPropertyNames() {
-        SecretsDirConfigSource instance = new SecretsDirConfigSource(testDirectory);
-        Set<String> result = instance.getPropertyNames();
-        assertEquals(2, result.size());
-        assertTrue(result.contains("property1"));
-        assertTrue(result.contains("property2"));
+        assertEquals(new HashSet<>(asList("property1", "property2")), source.getPropertyNames());
     }
 
     /**
@@ -123,14 +111,8 @@ public class SecretsDirConfigSourceTest {
      */
     @Test
     public void testGetValue() {
-        String property = "";
-        SecretsDirConfigSource instance = new SecretsDirConfigSource(testDirectory);
-        String expResult = "value1";
-        String result = instance.getValue("property1");
-        assertEquals(expResult, result);
-        expResult = "value2";
-        result = instance.getValue("property2");
-        assertEquals(expResult, result);
+        assertEquals("value1", source.getValue("property1"));
+        assertEquals("value2", source.getValue("property2"));
     }
 
     /**
@@ -138,54 +120,48 @@ public class SecretsDirConfigSourceTest {
      */
     @Test
     public void testGetName() {
-        SecretsDirConfigSource instance = new SecretsDirConfigSource(testDirectory);
-        String expResult = "Secrets Directory";
-        String result = instance.getName();
-        assertEquals(expResult, result);
+        assertEquals("Secrets Directory", source.getName());
     }
-    
+
     /**
      * Test the changed Property
      * @throws java.io.IOException
      */
     @Test
-    public void testChangeProperty() throws IOException, InterruptedException {
-        SecretsDirConfigSource instance = new SecretsDirConfigSource(testDirectory);
-        String value = instance.getValue("property1");
-        assertEquals("value1", value);
+    public void testChangeProperty() throws IOException {
+        assertEquals("value1", source.getValue("property1"));
         // change the file
         Path file1 = Paths.get(testDirectory.toString(), "property1");
-        System.out.println("Test measured last modified time before write " + Files.getLastModifiedTime(file1));
         Files.write(file1, "value-changed".getBytes());
-        FileTime nowplus1sec = FileTime.fromMillis(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(1));
-        Files.setLastModifiedTime(file1, nowplus1sec);
-        System.out.println("Test measured last modified time after write" + Files.getLastModifiedTime(file1));
-        value = instance.getValue("property1");
-        //assertEquals("value-changed", value);
-        // clean up
-        Files.write(file1, "value1".getBytes());
+        try {
+            FileTime nowplus1sec = FileTime.fromMillis(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(1));
+            Files.setLastModifiedTime(file1, nowplus1sec);
+            assertEquals("value-changed", source.getValue("property1"));
+        } finally {
+            // clean up
+            Files.write(file1, "value1".getBytes());
+        }
     }
-    
+
     /**
      * Tests getting a new property as the file has now appeared
      */
     @Test
     public void testNewFile() throws IOException {
-        SecretsDirConfigSource instance = new SecretsDirConfigSource(testDirectory);
-        String value = instance.getValue("property-new");
-        assertNull(value);
+        assertNull(source.getValue("property-new"));
         // change the file
         Path file1 = Paths.get(testDirectory.toString(), "property-new");
         Files.write(file1, "newValue".getBytes());
-        value = instance.getValue("property-new");
-        assertEquals("newValue", value);
-        // clean up
-        Files.delete(file1);
+        try {
+            assertEquals("newValue", source.getValue("property-new"));
+        } finally {
+            // clean up
+            Files.delete(file1);
+        }
     }
-    
+
     @Test
     public void testBadDirectoryNoBlowUp() {
-        SecretsDirConfigSource instance = new SecretsDirConfigSource(Paths.get(testDirectory.toString(), "FOOBLE"));
-        assertNull(instance.getValue("BILLY"));       
+        assertNull(new SecretsDirConfigSource(Paths.get(testDirectory.toString(), "FOOBLE")).getValue("BILLY"));
     }
 }

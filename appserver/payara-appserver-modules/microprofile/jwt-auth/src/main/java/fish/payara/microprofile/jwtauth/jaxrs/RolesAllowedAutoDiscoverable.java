@@ -49,6 +49,7 @@ import javax.ws.rs.ConstrainedTo;
 import javax.ws.rs.core.FeatureContext;
 
 import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 
 import com.sun.enterprise.deployment.BundleDescriptor;
@@ -72,13 +73,19 @@ public final class RolesAllowedAutoDiscoverable implements ForcedAutoDiscoverabl
 
     @Override
     public void configure(FeatureContext context) {
+        
+        ExtendedDeploymentContext deploymentContext = 
+                getDefaultHabitat().getService(Deployment.class).
+                                   getCurrentDeploymentContext();
+        
+        // Only register for application deployments (not the admin console)
+        if (deploymentContext == null) {
+            return;
+        }
 
         boolean shouldRegister = true;
 
-        BundleDescriptor descriptor =
-            getCurrentBundleForContext(
-                getDefaultHabitat().getService(Deployment.class)
-                                   .getCurrentDeploymentContext());
+        BundleDescriptor descriptor = getCurrentBundleForContext(deploymentContext);
 
         if (descriptor instanceof WebBundleDescriptor) {
             shouldRegister = ((WebBundleDescriptor) descriptor).isJaxrsRolesAllowedEnabled();

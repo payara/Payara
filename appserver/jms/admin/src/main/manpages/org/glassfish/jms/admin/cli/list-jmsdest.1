@@ -1,0 +1,74 @@
+list-jmsdest(1)           asadmin Utility Subcommands          list-jmsdest(1)
+
+NAME
+       list-jmsdest - lists the existing JMS physical destinations
+
+SYNOPSIS
+           list-jmsdest [--help]
+           [--desttype type]
+           [target]
+
+DESCRIPTION
+       The list-jmsdest subcommand lists the Java Message Service (JMS)
+       physical destinations.
+
+       This subcommand is supported in remote mode only. Remote asadmin
+       subcommands require a running domain administration server (DAS).
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --desttype
+           The type of JMS destination to be listed. Valid values are topic
+           and queue.
+
+OPERANDS
+       target
+           Restricts the listing to physical destinations for a specified
+           target. Valid values are as follows:
+
+           server
+               Lists the physical destinations for the default server
+               instance. This is the default value.
+
+           configuration-name
+               Lists the physical destinations in the specified configuration.
+
+           cluster-name
+               Lists the physical destinations for every server instance in
+               the specified cluster.
+
+           instance-name
+               Lists the physical destinations for the specified server
+               instance.
+
+EXAMPLES
+       Example 1, Listing all physical destinations
+           The following subcommand lists all the physical destinations.
+
+               asadmin> list-jmsdest
+               PhysicalQueue
+               PhysicalTopic
+               Command list-jmsdest executed successfully.
+
+       Example 2, Listing all physical destinations of a specified type
+           The following subcommand lists all physical topics.
+
+               asadmin> list-jmsdest --desttype topic
+               PhysicalTopic
+               Command list-jmsdest executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jmsdest(1), delete-jmsdest(1), flush-jmsdest(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Feb 2011                  list-jmsdest(1)

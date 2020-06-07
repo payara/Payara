@@ -38,33 +38,34 @@
  * holder.
  */
 
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.jdbc.admin.cli;
 
+import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
-
 import java.util.List;
-
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
+import org.glassfish.tests.utils.ConfigApiTest;
+import org.glassfish.tests.utils.Utils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.ActionReport.MessagePart;
-import org.glassfish.tests.utils.Utils;
-import org.glassfish.tests.utils.ConfigApiTest;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -164,7 +165,7 @@ public class ListJdbcResourcesTest extends ConfigApiTest {
     
     /**
      * Test of execute method, of class ListJdbcResource.
-     * create-jdbc-resource --connectionpoolid DerbyPool bob
+     * create-jdbc-resource --connectionpoolid H2Pool bob
      * list-jdbc-resources
      */
     @Test
@@ -176,7 +177,7 @@ public class ListJdbcResourcesTest extends ConfigApiTest {
         createCommand = habitat.getService(CreateJdbcResource.class);
         assertTrue(createCommand!=null);
 
-        parameters.add("connectionpoolid", "DerbyPool");
+        parameters.add("connectionpoolid", "H2Pool");
         parameters.add("DEFAULT", "bob");
         
         context = new AdminCommandContextImpl(
@@ -226,7 +227,7 @@ public class ListJdbcResourcesTest extends ConfigApiTest {
         createCommand = habitat.getService(CreateJdbcResource.class);
         assertTrue(createCommand!=null);
         
-        parameters.add("connectionpoolid", "DerbyPool");
+        parameters.add("connectionpoolid", "H2Pool");
         parameters.add("DEFAULT", "bob2");
         
         context = new AdminCommandContextImpl(

@@ -66,7 +66,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 /**
  * Create Jndi Resource
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean=Resources.class,
                 opType=RestEndpoint.OpType.POST,

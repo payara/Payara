@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.ssi;
 
@@ -97,7 +98,7 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
             }
         };
 
-    private SimpleDateFormat rfc1123Format;
+    private final SimpleDateFormat rfc1123Format;
     protected long lastModified = -1;
     private String contentType = null;
 
@@ -108,8 +109,8 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
     protected ServletOutputStream servletOutputStream;
     protected PrintWriter printWriter;
     
-    private ServletContext context;
-    private HttpServletRequest request;
+    private final ServletContext context;
+    private final HttpServletRequest request;
 
 
     /**
@@ -155,6 +156,7 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
      * @exception java.io.IOException
      *                if the outputstream already been called
      */
+    @Override
     public PrintWriter getWriter() throws java.io.IOException {
         if (servletOutputStream == null) {
             if (printWriter == null) {
@@ -177,6 +179,7 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
      * @exception java.io.IOException
      *                if the printwriter already been called
      */
+    @Override
     public ServletOutputStream getOutputStream() throws java.io.IOException {
         if (printWriter == null) {
             if (servletOutputStream == null) {
@@ -222,6 +225,7 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
      * @return the content type of the resource referenced by this
      *   <code>ResponseIncludeWrapper</code>, or <code>null</code> if not known.
      */
+    @Override
     public String getContentType() {
         if (contentType == null) {
             String url = request.getRequestURI();
@@ -244,6 +248,7 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
      *
      * @param mime a mime type
      */
+    @Override
     public void setContentType(String mime) {
         contentType = mime;
         if (contentType != null) {
@@ -252,6 +257,7 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
     }
 
 
+    @Override
     public void addDateHeader(String name, long value) {
         super.addDateHeader(name, value);
         String lname = name.toLowerCase(Locale.ENGLISH);
@@ -260,6 +266,7 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
         }
     }
 
+    @Override
     public void addHeader(String name, String value) {
         super.addHeader(name, value);
         String lname = name.toLowerCase(Locale.ENGLISH);
@@ -272,6 +279,7 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
         }
     }
 
+    @Override
     public void setDateHeader(String name, long value) {
         super.setDateHeader(name, value);
         String lname = name.toLowerCase(Locale.ENGLISH);
@@ -280,6 +288,7 @@ public class ResponseIncludeWrapper extends HttpServletResponseWrapper {
         }
     }
 
+    @Override
     public void setHeader(String name, String value) {
         super.setHeader(name, value);
         String lname = name.toLowerCase(Locale.ENGLISH);

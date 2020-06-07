@@ -37,34 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.jms.system;
-
-import java.lang.reflect.Method;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SocketChannel;
-import java.rmi.Naming;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.ResourceAdapterInternalException;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -108,15 +83,40 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import com.sun.logging.LogDomains;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SocketChannel;
+import java.rmi.Naming;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.BootstrapContext;
+import javax.resource.spi.ManagedConnectionFactory;
+import javax.resource.spi.ResourceAdapterInternalException;
 import org.glassfish.admin.mbeanserver.JMXStartupService;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.connectors.config.AdminObjectResource;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
@@ -126,27 +126,19 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.resourcebase.resources.api.ResourceConstants;
 import org.glassfish.server.ServerEnvironmentImpl;
-
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.MultiException;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.inject.Singleton;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.ORBLocator;
-import org.glassfish.api.logging.LogHelper;
 import org.jvnet.hk2.config.types.Property;
-
-//import com.sun.messaging.jmq.util.service.PortMapperClientHandler;
 
 
 /**
@@ -166,7 +158,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     private static final Logger _logger = JMSLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActiveJmsResourceAdapter.class);
-    
+
     private final String SETTER = "setProperty";
     private static final String SEPARATOR = "#";
     private static final String MQ_PASS_FILE_PREFIX = "asmq";
@@ -576,7 +568,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * URL, apart from the default URL derived from brokerhost:brokerport
      * and reported a PE connection url limitation.
      *
-     * @return 
+     * @return
      */
     @Override
      protected Set mergeRAConfiguration(ResourceAdapterConfig raConfig, List<Property> raConfigProps) {
@@ -877,7 +869,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         String propertyPrefix = fullprefix + "property.";
 
         if(dbJdbcUrl != null) {
-		if ("derby".equals(dbVendor))
+		if ("h2".equals(dbVendor))
 			dbProps.setProperty(fullprefix + "opendburl", dbJdbcUrl);
 		else
 			dbProps.setProperty(propertyPrefix + "url", dbJdbcUrl);
@@ -1303,7 +1295,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private String getMQVarDir(){
-        String asInstanceRoot = getServerEnvironment().getDomainRoot().getPath();
+        String asInstanceRoot = getServerEnvironment().getInstanceRoot().getPath();
                             /*ApplicationServer.getServerContext().
                                   getInstanceEnvironment().getInstancesRoot();   */
         String mqInstanceDir =  asInstanceRoot + java.io.File.separator
@@ -1333,7 +1325,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 java.io.File.separator + "imq" ;
                 //java.io.File.separator + "bin"; hack until MQ RA changes
             //XXX: This doesn't work in clustered instances.
-            brokerHomeDir = getServerEnvironment().getDomainRoot()//ApplicationServer.getServerContext().getInstallRoot()
+            brokerHomeDir = getServerEnvironment().getInstanceRoot()//ApplicationServer.getServerContext().getInstallRoot()
                                 + IMQ_INSTALL_SUBDIR;
         } else {
             //hack until MQ RA changes
@@ -1536,7 +1528,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private static String convertStringToValidMQIdentifier(String s) {
         if (s == null) return "";
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for(int i = 0; i < s.length(); i++) {
             if(Character.isLetterOrDigit(s.charAt(i))){
                             //|| s.charAt(i) == '_'){
@@ -1830,7 +1822,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 configuredPort = getConfiguredRmiRegistryPort();
             } catch (Exception ex) {
                 if (_logger.isLoggable(Level.WARNING)) {
-                    _logger.log(Level.WARNING, JMSLoggerInfo.GET_RMIPORT_FAIL, 
+                    _logger.log(Level.WARNING, JMSLoggerInfo.GET_RMIPORT_FAIL,
                             new Object[]{ex.getLocalizedMessage()});
                 }
                 if (_logger.isLoggable(Level.FINE)) {
@@ -1972,7 +1964,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * solutuion is available from the broker.
      * @param cpr <code>ConnectorConnectionPool</code> object
      * @param loader Class Loader.
-     * @return 
+     * @return
      */
     @Override
    public ManagedConnectionFactory [] createManagedConnectionFactories
@@ -2085,7 +2077,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      *
      * @param cpr <code>ConnectorConnectionPool</code> object
      * @param loader Class Loader.
-     * @return 
+     * @return
      */
     @Override
     public ManagedConnectionFactory createManagedConnectionFactory
@@ -2241,7 +2233,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                         new EnvironmentProperty(DESTINATION_TYPE,
                                 destination.getInterfaceName(), null));
                 if (_logger.isLoggable(Level.INFO)) {
-                    _logger.log(Level.INFO, JMSLoggerInfo.ENDPOINT_DEST_NAME, 
+                    _logger.log(Level.INFO, JMSLoggerInfo.ENDPOINT_DEST_NAME,
                             new Object[]{destination.getInterfaceName(), destination.getName(), descriptor_.getName()});
                 }
             } else {
@@ -2723,7 +2715,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             Method m = c.getMethod("setClusterBrokerList", String.class);
             m.invoke(resourceadapter_, brokerList);
             if (_logger.isLoggable(Level.INFO)) {
-                _logger.log(Level.INFO, JMSLoggerInfo.CLUSTER_BROKER_SUCCESS, 
+                _logger.log(Level.INFO, JMSLoggerInfo.CLUSTER_BROKER_SUCCESS,
                         new Object[]{brokerList});
             }
         }catch (Exception ex){

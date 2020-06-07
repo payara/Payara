@@ -37,16 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.util;
 
-import java.util.StringTokenizer;
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
-import java.util.Vector;
 import java.io.File;
 import java.io.IOException;
-import java.io.FilenameFilter;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 
 /**
@@ -94,7 +92,7 @@ public class FilePath {
      */
     String absolutePath = getAbsolutePath(file);
     Vector components = new Vector();
-    StringTokenizer parser = 
+    StringTokenizer parser =
       new StringTokenizer(absolutePath, File.separator, true);
     while (parser.hasMoreElements())
       components.addElement(parser.nextToken());
@@ -143,7 +141,7 @@ public class FilePath {
 		File.separator))
       components.removeElementAt(components.size()-1);
 
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
     for (int j=0; j<components.size(); j++)
       result.append((String)components.elementAt(j));
 

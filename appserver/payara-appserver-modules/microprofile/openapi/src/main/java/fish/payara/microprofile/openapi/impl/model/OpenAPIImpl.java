@@ -61,7 +61,7 @@ import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
-public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
+public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     protected String openapi;
     protected Info info;
@@ -83,12 +83,6 @@ public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
     }
 
     @Override
-    public OpenAPI openapi(String openapi) {
-        setOpenapi(openapi);
-        return this;
-    }
-
-    @Override
     public Info getInfo() {
         return info;
     }
@@ -96,12 +90,6 @@ public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
     @Override
     public void setInfo(Info info) {
         this.info = info;
-    }
-
-    @Override
-    public OpenAPI info(Info info) {
-        setInfo(info);
-        return this;
     }
 
     @Override
@@ -115,12 +103,6 @@ public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
     }
 
     @Override
-    public OpenAPI externalDocs(ExternalDocumentation externalDocs) {
-        setExternalDocs(externalDocs);
-        return this;
-    }
-
-    @Override
     public List<Server> getServers() {
         return servers;
     }
@@ -128,12 +110,6 @@ public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
     @Override
     public void setServers(List<Server> servers) {
         this.servers = servers;
-    }
-
-    @Override
-    public OpenAPI servers(List<Server> servers) {
-        setServers(servers);
-        return this;
     }
 
     @Override
@@ -154,6 +130,11 @@ public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
     }
 
     @Override
+    public void removeServer(Server server) {
+        servers.remove(server);
+    }
+
+    @Override
     public List<SecurityRequirement> getSecurity() {
         return security;
     }
@@ -164,15 +145,14 @@ public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
     }
 
     @Override
-    public OpenAPI security(List<SecurityRequirement> security) {
-        setSecurity(security);
+    public OpenAPI addSecurityRequirement(SecurityRequirement securityRequirement) {
+        security.add(securityRequirement);
         return this;
     }
 
     @Override
-    public OpenAPI addSecurityRequirement(SecurityRequirement securityRequirement) {
-        security.add(securityRequirement);
-        return this;
+    public void removeSecurityRequirement(SecurityRequirement securityRequirement) {
+        security.remove(securityRequirement);
     }
 
     @Override
@@ -186,15 +166,14 @@ public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
     }
 
     @Override
-    public OpenAPI tags(List<Tag> tags) {
-        setTags(tags);
+    public OpenAPI addTag(Tag tag) {
+        tags.add(tag);
         return this;
     }
 
     @Override
-    public OpenAPI addTag(Tag tag) {
-        tags.add(tag);
-        return this;
+    public void removeTag(Tag tag) {
+        tags.remove(tag);
     }
 
     @Override
@@ -205,12 +184,6 @@ public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
     @Override
     public void setPaths(Paths paths) {
         this.paths = paths;
-    }
-
-    @Override
-    public OpenAPI paths(Paths paths) {
-        setPaths(paths);
-        return this;
     }
 
     @Override
@@ -227,12 +200,6 @@ public class OpenAPIImpl extends ExtensibleImpl implements OpenAPI {
     @Override
     public void setComponents(Components components) {
         this.components = components;
-    }
-
-    @Override
-    public OpenAPI components(Components components) {
-        setComponents(components);
-        return this;
     }
 
     public static void merge(OpenAPIDefinition from, OpenAPI to, boolean override) {

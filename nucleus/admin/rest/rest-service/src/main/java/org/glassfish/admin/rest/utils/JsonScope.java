@@ -37,21 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.utils;
 
 import java.util.Stack;
 
-import org.glassfish.admin.rest.model.ResponseBody;
-
 /**
+ * @deprecated In 5.182 as this class appears unused.
  * @author tmoreau
  */
+@Deprecated
 public class JsonScope {
 
     private String scope;
     private Stack<ScopeElement> scopeStack = new Stack<ScopeElement>();
-
-    public JsonScope() {}
 
     public void beginObjectAttr(String name) {
         if (!scopeStack.isEmpty() && scopeStack.peek() instanceof ArrayAttr) {
@@ -131,7 +131,7 @@ public class JsonScope {
     private interface ScopeElement {}
 
     private static class ObjectAttr implements ScopeElement {
-        private String name;
+        private final String name;
         private ObjectAttr(String name) {
             this.name = name;
         }

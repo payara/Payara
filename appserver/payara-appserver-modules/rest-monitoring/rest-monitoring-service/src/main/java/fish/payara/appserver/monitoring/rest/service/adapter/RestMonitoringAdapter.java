@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -315,22 +316,22 @@ public final class RestMonitoringAdapter extends HttpHandler implements Adapter 
 
     @Override
     public String getContextRoot() {
-        return endpointDecider.getContextRoot();
+        return endpointDecider == null ? null : endpointDecider.getContextRoot();
     }
 
     @Override
     public int getListenPort() {
-        return endpointDecider.getListenPort();
+        return endpointDecider == null ? -1 : endpointDecider.getListenPort();
     }
 
     @Override
     public InetAddress getListenAddress() {
-        return endpointDecider.getListenAddress();
+        return endpointDecider == null ? null : endpointDecider.getListenAddress();
     }
 
     @Override
     public List<String> getVirtualServers() {
-        return endpointDecider.getHosts();
+        return endpointDecider == null ? Collections.emptyList() : endpointDecider.getHosts();
     }
 
     @Override

@@ -37,20 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.ejb.deployment.descriptor;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Vector;
-import java.util.logging.Level;
-
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import java.util.Locale;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.ejb.deployment.BeanMethodCalculatorImpl;
 
-/** 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Locale;
+import java.util.Vector;
+import java.util.logging.Level;
+
+/**
  * This class contains information about EJB1.1 and EJB2.0 CMP EntityBeans.
  * @author Sanjeev Krishnan
  */
@@ -77,8 +79,8 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
     public EjbCMPEntityDescriptor() {
 	this.setPersistenceType(CONTAINER_PERSISTENCE);
     }
-    
-    /** 
+
+    /**
      * The copy constructor.
      */
     public EjbCMPEntityDescriptor(EjbDescriptor other) {
@@ -93,42 +95,39 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
 	    this.abstractSchemaName = entity.abstractSchemaName;
 	}
     }
- 
+
     /**
-     * Sets the State class implementation classname. 
+     * Sets the State class implementation classname.
      */
     public void setStateImplClassName(String name) {
 	this.stateImplClassName = name;
     }
-    
+
     /**
-     * Returns the classname of the State class impl. 
+     * Returns the classname of the State class impl.
      */
     public String getStateImplClassName() {
 	return this.stateImplClassName;
     }
 
     @Override
-    public Vector getFields() {
-        Vector fields = new Vector();
+    public Vector<Field> getFields() {
         if( isEJB20() ) {
             // All cmp "fields" are abstract, so we can't construct
             // java.lang.reflect.Field elements from them.  Use
             // getFieldDescriptors() instead.
-        } else {
-            fields = super.getFields();
-        } 
-        return fields;
+            return new Vector<>();
+        }
+        return super.getFields();
     }
 
     @Override
-    public Vector getFieldDescriptors() {
-        Vector fieldDescriptors = new Vector();
+    public Vector<FieldDescriptor> getFieldDescriptors() {
+        Vector<FieldDescriptor> fieldDescriptors = new Vector<>();
         if( isEJB20() ) {
             try {
                 ClassLoader cl = getEjbBundleDescriptor().getClassLoader();
-                BeanMethodCalculatorImpl bmc = new BeanMethodCalculatorImpl();
-                fieldDescriptors = bmc.getPossibleCmpCmrFields(cl, this.getEjbClassName());
+                fieldDescriptors = BeanMethodCalculatorImpl.getPossibleCmpCmrFields(cl, this.getEjbClassName());
             } catch(Throwable t) {
                 String errorMsg = localStrings.getLocalString
                     ("enterprise.deployment.errorloadingejbclass",
@@ -175,25 +174,25 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
                                          new Object[]{Integer.valueOf(version)})); // NOI18N
         }
     }
-    
+
     /**
      * return true if this is an EJB2.0 CMP Entitybean
      * DEPRECATED
      */
     public boolean isEJB20() {
 	return getCMPVersion()==CMP_2_x;
-    }    
-    
+    }
+
     @Override
     public void setEjbBundleDescriptor(EjbBundleDescriptorImpl bundleDescriptor) {
         super.setEjbBundleDescriptor(bundleDescriptor);
     }
 
     @Override
-    public Vector getPossibleTransactionAttributes() {
-        Vector txAttributes = null;
+    public Vector<ContainerTransaction> getPossibleTransactionAttributes() {
+        Vector<ContainerTransaction> txAttributes = null;
         if( isEJB20() ) {
-            txAttributes = new Vector();
+            txAttributes = new Vector<>();
             txAttributes.add(new ContainerTransaction
                 (ContainerTransaction.REQUIRED, ""));
             txAttributes.add(new ContainerTransaction
@@ -209,7 +208,7 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
         }
         return txAttributes;
     }
- 
+
     public void setPersistenceDescriptor(PersistenceDescriptor pd)
     {
 	this.pers = pd;
@@ -262,25 +261,22 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
     public void setEjbImplementationImplClassName(String className) {
         ejbImplementationImplClassName = className;
     }
-    
+
     /**
-     * @return the generated implementation class 
+     * @return the generated implementation class
      */
     public String getEjbImplementationImplClassName() {
         return ejbImplementationImplClassName;
-    }  
-    
-    public static Vector getPossibleCmpCmrFields(ClassLoader cl,
-                                                 String className) 
-        throws Exception {
+    }
 
-        Vector fieldDescriptors = new Vector();
-        Class theClass = cl.loadClass(className);
+    public static Vector<FieldDescriptor> getPossibleCmpCmrFields(ClassLoader cl, String className) throws Exception {
+        Vector<FieldDescriptor> fieldDescriptors = new Vector<>();
+        Class<?> theClass = cl.loadClass(className);
 
         // Start with all *public* methods
         Method[] methods = theClass.getMethods();
 
-        // Find all accessors that could be cmp fields. This list 
+        // Find all accessors that could be cmp fields. This list
         // will contain all cmr field accessors as well, since there
         // is no good way to distinguish between the two purely based
         // on method signature.
@@ -291,29 +287,29 @@ public class EjbCMPEntityDescriptor extends EjbEntityDescriptor {
             if( Modifier.isAbstract(nextModifiers) ) {
                 if( nextName.startsWith(FIELD_ACCESS_METHOD_PREFIX) &&
                     nextName.length() > 3 ) {
-                    String field = 
-                        nextName.substring(3,4).toLowerCase(Locale.US) + 
+                    String field =
+                        nextName.substring(3,4).toLowerCase(Locale.US) +
                         nextName.substring(4);
                     fieldDescriptors.add(new FieldDescriptor(field));
                 }
             }
         }
         return fieldDescriptors;
-    }    
-  
+    }
+
     /**
     * Return my formatted string representation.
     */
     @Override
-    public void print(StringBuffer toStringBuffer) {
-	super.print(toStringBuffer);
-	toStringBuffer.append("\n cmpVersion ").append(cmpVersion).
+    public void print(StringBuilder toStringBuilder) {
+	super.print(toStringBuilder);
+	toStringBuilder.append("\n cmpVersion ").append(cmpVersion).
             append("\n primKeyField ");
 
         if(getPrimaryKeyFieldDesc() != null)
-            ((Descriptor)getPrimaryKeyFieldDesc()).print(toStringBuffer); 
+            ((Descriptor)getPrimaryKeyFieldDesc()).print(toStringBuilder);
 
         if(pers != null)
-            ((Descriptor)pers).print(toStringBuffer);
-    }        
+            ((Descriptor)pers).print(toStringBuilder);
+    }
 }

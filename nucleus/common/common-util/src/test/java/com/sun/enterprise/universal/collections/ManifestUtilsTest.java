@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.collections;
 
@@ -103,7 +104,7 @@ public class ManifestUtilsTest {
         assertFalse(normFooAtt.get("fooKey2").equals(hasToken));
         assertTrue(normFooAtt.get("fooKey2").equals(convertedHasToken));
         assertFalse(hasToken.equals(convertedHasToken));
-        assertEquals(normMainAtt.get("mainKey"), "mainValue");
+        assertEquals("mainValue", normMainAtt.get("mainKey"));
     }
 
     @Test

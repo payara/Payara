@@ -1,0 +1,102 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-serverinstappsconfig" name="ref-serverinstappsconfig"></a><a id="GHCOM00053" name="GHCOM00053"></a></p>
+
+<h4><a id="sthref124" name="sthref124"></a><a id="sthref125" name="sthref125"></a><a id="sthref126" name="sthref126"></a><a id="sthref127" name="sthref127"></a><a id="sthref128" name="sthref128"></a>Applications Configuration</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Applications Configuration page to set properties that help ensure that changes to deployed applications are detected and that the modified classes are reloaded.</p>
+<p>The Applications Configuration page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Reload</dt>
+<dd>
+<p>If this option is enabled, modified classes are reloaded dynamically. The server periodically checks for changes in the deployment directory and redeploys the application, automatically and dynamically, with the changes. This is useful in a development environment, because it allows code changes to be tested quickly. In a production environment, however, dynamic reloading might degrade performance. In addition, whenever a reload is done, the sessions at that transit time become invalid. The client must restart the session. This option is enabled by default.</p>
+</dd>
+<dt>Reload Poll Interval</dt>
+<dd>
+<p>Identifies how often the server should check for code changes in the deployed applications and modules. The default value is 2.</p>
+</dd>
+<dt>Admin Session Timeout</dt>
+<dd>
+<p>Identifies the number of minutes of inactivity before the Administration Console times out and you have to log in again. The default value is 60.</p>
+</dd>
+<dt>Auto Deploy</dt>
+<dd>
+<p>If this option is enabled, applications in the auto-deploy directory are deployed automatically. This option is enabled by default.</p>
+</dd>
+<dt>Auto Deploy Poll Interval</dt>
+<dd>
+<p>Specifies how often the server should check the auto-deploy directory for application or module changes. Changing the poll interval does not affect the time taken for deploying an application or module. The default value is 2.</p>
+</dd>
+<dt>Auto Deploy Retry Timeout</dt>
+<dd>
+<p>Specifies the number of seconds that a partially copied file can remain unchanged in size before an error occurs. The default value is 4.</p>
+<p>If a file is copied slowly into the auto-deploy directory, the file can appear before the entire file is copied. As a result, the attempt to automatically deploy the application fails. If an attempt to automatically deploy an application fails for this reason, the GlassFish Server tries to deploy the application again. If the size of the partially copied file remains unchanged for the specified period of time, an error occurs.</p>
+</dd>
+<dt>Auto Deploy Directory</dt>
+<dd>
+<p>Identifies the directory to monitor for automatic deployment of applications. The default value is <i>domain-dir</i><code>/autodeploy</code>.</p>
+</dd>
+<dt>XML Validation</dt>
+<dd>
+<p>Specifies the type of XML validation to be performed on standard and GlassFish Server deployment descriptors. The type may be any of the following:</p>
+<dl>
+<dt>Full</dt>
+<dd>
+<p>If XML validation fails, deployment fails. This value is the default.</p>
+</dd>
+<dt>Parsing</dt>
+<dd>
+<p>XML validation errors are reported, but deployment occurs.</p>
+</dd>
+<dt>None</dt>
+<dd>
+<p>No XML validation is performed.</p>
+</dd>
+</dl>
+</dd>
+<dt>Verifier</dt>
+<dd>
+<p>If this option is enabled, the verifier is run before autodeployment. If verification fails, deployment is not performed. The verifier examines the structure and content of the file. Verification of large applications is often time-consuming. This option is disabled by default.</p>
+</dd>
+<dt>Precompile</dt>
+<dd>
+<p>If this option is enabled, JavaServer Pages (JSP) files are precompiled. If this option is disabled, JSP files are compiled at runtime when they are first accessed. This option is disabled by default.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for applications. The GlassFish Server does not define any additional properties for applications.</p>
+</dd>
+</dl>
+<a id="GHCOM339" name="GHCOM339"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-setadvanceappconfig.html">To Set the Applications Configuration</a></p>
+</li>
+<li>
+<p><a href="task-setadvancedomainattributes.html">To Set the Domain Attributes</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

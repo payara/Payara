@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.embeddable.web.config;
 
@@ -117,7 +118,7 @@ public class LoginConfig {
      * method is form based authentication
      *
      * @see FormLoginConfig
-     * 
+     *
      * @param flc form login configuration
      */
     public void setFormLoginConfig(FormLoginConfig flc) {
@@ -129,7 +130,7 @@ public class LoginConfig {
      * the authentication scheme is not form based login.
      *
      * @see FormLoginConfig
-     * 
+     *
      * @return form login configuration
      */
     public FormLoginConfig getFormLoginConfig() {
@@ -140,12 +141,12 @@ public class LoginConfig {
      * Returns a formatted string of the state.
      */
     public String toString() {
-        StringBuffer toStringBuffer = new StringBuffer();
-        toStringBuffer.append("LoginConfig: ");
-        toStringBuffer.append(" authMethod: ").append(authMethod);
-        toStringBuffer.append(" formLoginConfig: ").append(formLoginConfig);
-        toStringBuffer.append(" realmName ").append(realmName);
-        return toStringBuffer.toString();
+        StringBuilder toStringBuilder = new StringBuilder();
+        toStringBuilder.append("LoginConfig: ");
+        toStringBuilder.append(" authMethod: ").append(authMethod);
+        toStringBuilder.append(" formLoginConfig: ").append(formLoginConfig);
+        toStringBuilder.append(" realmName ").append(realmName);
+        return toStringBuilder.toString();
     }
 
 }

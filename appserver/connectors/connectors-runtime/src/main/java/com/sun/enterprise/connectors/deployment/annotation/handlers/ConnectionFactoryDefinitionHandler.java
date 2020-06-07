@@ -250,7 +250,7 @@ public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler 
 
                 if (defnProperties.length > 0) {
                     for (String property : defnProperties) {
-                        int index = property.indexOf("=");
+                        int index = property.indexOf('=');
                         // found "=" and not at start or end of string
                         if (index > 0 && index < property.length() - 1) {
                             String name = property.substring(0, index);
@@ -274,7 +274,7 @@ public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler 
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
         desc.setName(defn.name());
-        desc.setResourceAdapter((String) TranslatedConfigView.getTranslatedValue(defn.resourceAdapter()));
+        desc.setResourceAdapter(TranslatedConfigView.expandValue(defn.resourceAdapter()));
         desc.setInterfaceName(defn.interfaceName());
         desc.setTransactionSupport(defn.transactionSupport().toString());
         desc.setMaxPoolSize(defn.maxPoolSize());
@@ -290,12 +290,12 @@ public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler 
             String[] defnProperties = defn.properties();
             if (defnProperties.length > 0) {
                 for (String property : defnProperties) {
-                    int index = property.indexOf("=");
+                    int index = property.indexOf('=');
                     // found "=" and not at start or end of string
                     if (index > 0 && index < property.length() - 1) {
                         String name = property.substring(0, index);
                         String value = property.substring(index + 1);
-                        properties.put(name.trim(), TranslatedConfigView.getTranslatedValue(value.trim()));
+                        properties.put(name.trim(), TranslatedConfigView.expandValue(value.trim()));
                     }
                 }
             }

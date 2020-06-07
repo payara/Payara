@@ -1,0 +1,62 @@
+list-http-listeners(1)    asadmin Utility Subcommands   list-http-listeners(1)
+
+NAME
+       list-http-listeners - lists the existing network listeners
+
+SYNOPSIS
+           list-http-listeners [--help]
+           [target]
+
+DESCRIPTION
+       The list-http-listeners subcommand lists the existing network
+       listeners.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           Restricts the listing to network listeners for a specified target.
+           Valid values are as follows:
+
+           server
+               Lists the netowork listeners for the default server instance.
+               This is the default value.
+
+           configuration-name
+               Lists the network listeners for the specified configuration.
+
+           cluster-name
+               Lists the network listeners for all server instances in the
+               specified cluster.
+
+           instance-name
+               Lists the network listeners for the specified server instance.
+
+EXAMPLES
+       Example 1, Listing Network Listeners
+           The following command lists all the network listeners for the
+           server instance:
+
+               asadmin> list-http-listeners
+               http-listener-1
+               http-listener-2
+               admin-listener
+               Command list-http-listeners executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-http-listener(1), delete-http-listener(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Feb 2011           list-http-listeners(1)

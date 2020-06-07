@@ -1,0 +1,71 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-connectionservice" name="ref-connectionservice"></a><a id="GHJCA00059" name="GHJCA00059"></a></p>
+
+<h4><a id="sthref125" name="sthref125"></a>Connector Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Connector Service page to modify general settings for the Connector Service, which governs resource adapters.</p>
+<p>The Connector Service page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Shutdown Timeout</dt>
+<dd>
+<p>The maximum number of seconds allowed during GlassFish Server shutdown for the <code>ResourceAdapter.stop</code> method of a connector module's instance to complete. Resource adapters that take longer to shut down are ignored, and GlassFish Server shutdown continues. The default value is 30 seconds.</p>
+</dd>
+<dt>Connector Classloading Policy</dt>
+<dd>
+<p>The policy to be used for loading classes. Available choices are:</p>
+<dl>
+<dt><code>derived</code></dt>
+<dd>
+<p>Indicates that the resource adapters are provided according to an application's references to any of the resource adapter's resources. This policy is the default.</p>
+</dd>
+<dt><code>global</code></dt>
+<dd>
+<p>Indicates that all resource adapters will be visible to all applications.</p>
+</dd>
+</dl>
+<p>This policy does not apply to the preinstalled JMS system resource adapter, <code>jmsra</code>, which is always visible to all applications.</p>
+</dd>
+</dl>
+<a id="sthref126" name="sthref126"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-connectionservice.html">To Configure the Connector Service</a></p>
+</li>
+<li>
+<p><a href="../../../common/en/help/task-appdeployconn.html">To Deploy a Connector Module</a></p>
+</li>
+</ul>
+<a id="sthref127" name="sthref127"></a>
+<h5>Related asadmin Commands</h5>
+<p>None.</p>
+
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

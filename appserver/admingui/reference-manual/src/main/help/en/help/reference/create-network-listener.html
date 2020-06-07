@@ -1,0 +1,322 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>create-network-listener</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>create-network-listener</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-module-config.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-node-config.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="create-network-listener-1"></a><a id="GSRFM00046"></a><a id="create-network-listener"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_create_network_listener">create-network-listener</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>adds a new network listener socket</p>
+</div>
+<div id="sthref437" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-network-listener [--help]
+[--address address]
+--listenerport listener-port
+[--threadpool thread-pool]
+--protocol protocol
+[--transport transport]
+[--enabled={true|false}]
+[--jkenabled={false|true}]
+[--target target]
+listener-name</code></pre>
+</div>
+</div>
+<div id="sthref438" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>create-network-listener</code> subcommand creates a network listener.
+This subcommand is supported in remote mode only.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If you edit the special network listener named <code>admin-listener</code>, you
+must restart the server for the changes to take effect. The
+Administration Console does not tell you that a restart is required in
+this case.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>You can use the <code>create-http-listener</code> subcommand to create a network
+listener that uses the HTTP protocol without having to first create a
+protocol, transport, or HTTP configuration. This subcommand is a
+convenient shortcut, but it gives access to only a limited number of
+options.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="sthref439" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--address</code></dt>
+<dd>
+<p>The IP address or the hostname (resolvable by DNS).</p>
+</dd>
+<dt class="hdlist1"><code>--listenerport</code></dt>
+<dd>
+<p>The port number to create the listen socket on. Legal values are
+1-65535. On UNIX, creating sockets that listen on ports 1-1024
+requires superuser privileges. Configuring an SSL listen socket to
+listen on port 443 is standard.</p>
+</dd>
+<dt class="hdlist1"><code>--threadpool</code></dt>
+<dd>
+<p>The name of the thread pool for this listener. Specifying a thread
+pool is optional. The default is <code>http-thread-pool</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--protocol</code></dt>
+<dd>
+<p>The name of the protocol for this listener.</p>
+</dd>
+<dt class="hdlist1"><code>--transport</code></dt>
+<dd>
+<p>The name of the transport for this listener. Specifying a transport is
+optional. The default is <code>tcp</code>.</p>
+</dd>
+<dt class="hdlist1"><code>--enabled</code></dt>
+<dd>
+<p>If set to <code>true</code>, the default, the listener is enabled at runtime.</p>
+</dd>
+<dt class="hdlist1"><code>--jkenabled</code></dt>
+<dd>
+<p>If set to <code>true</code>, <code>mod_jk</code> is enabled for this listener. The default
+is false.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Creates the network listener only on the specified target. Valid
+values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Creates the network listener on the default server instance. This is
+the default value.</p>
+</dd>
+<dt class="hdlist1">configuration-name</dt>
+<dd>
+<p>Creates the network listener in the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Creates the network listener on all server instances in the
+specified cluster.</p>
+</dd>
+<dt class="hdlist1">standalone-instance-name</dt>
+<dd>
+<p>Creates the network listener on the specified standalone server
+instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref440" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">listener-name</dt>
+<dd>
+<p>The name of the network listener.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref441" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM508"></a><a id="sthref442"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Creating a Network Listener</p>
+</div>
+<div class="paragraph">
+<p>The following command creates a network listener named <code>sampleListener</code>
+that is not enabled at runtime:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-network-listener --listenerport 7272 protocol http-1
+--enabled=false sampleListener
+Command create-network-listener executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref443" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref444" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-http-listener.html#create-http-listener-1"><code>create-http-listener</code>(1)</a>,
+<a href="create-protocol.html#create-protocol-1"><code>create-protocol</code>(1)</a>,
+<a href="create-threadpool.html#create-threadpool-1"><code>create-threadpool</code>(1)</a>,
+<a href="create-transport.html#create-transport-1"><code>create-transport</code>(1)</a>,
+<a href="delete-network-listener.html#delete-network-listener-1"><code>delete-network-listener</code>(1)</a>,
+<a href="list-network-listeners.html#list-network-listeners-1"><code>list-network-listeners</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-module-config.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="create-node-config.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

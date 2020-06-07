@@ -224,7 +224,7 @@ public class OpenApiConfiguration {
         return null;
     }
 
-    private boolean findScanDisableFromConfig(Config config) {
+    private static boolean findScanDisableFromConfig(Config config) {
         try {
             return config.getValue(SCAN_DISABLE_KEY, Boolean.class);
         } catch (NoSuchElementException ex) {
@@ -233,7 +233,7 @@ public class OpenApiConfiguration {
         return false;
     }
 
-    private List<String> findScanPackagesFromConfig(Config config) {
+    private static List<String> findScanPackagesFromConfig(Config config) {
         List<String> packages = new ArrayList<>();
         try {
             packages.addAll(Arrays.asList(config.getValue(SCAN_PACKAGES_KEY, String[].class)));
@@ -259,7 +259,7 @@ public class OpenApiConfiguration {
         return classes;
     }
 
-    private List<String> findExcludePackages(Config config) {
+    private static List<String> findExcludePackages(Config config) {
         List<String> packages = new ArrayList<>();
         try {
             packages.addAll(Arrays.asList(config.getValue(SCAN_EXCLUDE_PACKAGES_KEY, String[].class)));
@@ -285,7 +285,7 @@ public class OpenApiConfiguration {
         return classes;
     }
 
-    private List<String> findServers(Config config) {
+    private static List<String> findServers(Config config) {
         List<String> serverList = new ArrayList<>();
         try {
             serverList.addAll(Arrays.asList(config.getValue(SERVERS_KEY, String[].class)));
@@ -295,7 +295,7 @@ public class OpenApiConfiguration {
         return serverList;
     }
 
-    private Map<String, Set<String>> findPathServerMap(Config config) {
+    private static Map<String, Set<String>> findPathServerMap(Config config) {
         Map<String, Set<String>> map = new HashMap<>();
         try {
             for (String propertyName : config.getPropertyNames()) {
@@ -310,7 +310,7 @@ public class OpenApiConfiguration {
         return map;
     }
 
-    private Map<String, Set<String>> findOperationServerMap(Config config) {
+    private static Map<String, Set<String>> findOperationServerMap(Config config) {
         Map<String, Set<String>> map = new HashMap<>();
         try {
             for (String propertyName : config.getPropertyNames()) {

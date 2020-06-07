@@ -1,0 +1,53 @@
+disable-secure-admin(1)   asadmin Utility Subcommands  disable-secure-admin(1)
+
+NAME
+       disable-secure-admin - disables secure admin if it is already enabled.
+
+SYNOPSIS
+           disable-secure-admin [--help]
+
+DESCRIPTION
+       The disable-secure-admin subcommand disables secure admin if it is
+       already enabled.
+
+           Note
+           +----------------------------------------+
+           |           You must restart any running |
+           |           servers in the domain after  |
+           |           you enable or disable secure |
+           |           admin. It is simpler to      |
+           |           enable or disable secure     |
+           |           admin with only the DAS      |
+           |           running, then restart the    |
+           |           DAS, and then start any      |
+           |           other instances.             |
+           +----------------------------------------+
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+EXAMPLES
+       Example 1, Disabling secure admin for a domain
+           The following example shows how to disable secure admin for a
+           domain.
+
+               asadmin> disable-secure-admin
+               server-config
+               default-config
+
+               Command disable-secure-admin executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       enable-secure-admin(1)
+
+       asadmin(1M)
+
+Java EE 8                         25 Jun 2011          disable-secure-admin(1)

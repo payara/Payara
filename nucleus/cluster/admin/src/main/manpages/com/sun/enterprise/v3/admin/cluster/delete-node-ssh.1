@@ -1,0 +1,110 @@
+delete-node-ssh(1)        asadmin Utility Subcommands       delete-node-ssh(1)
+
+NAME
+       delete-node-ssh - deletes a node that is enabled for communication over
+       SSH
+
+SYNOPSIS
+           delete-node-ssh [--help]
+           [--uninstall={false|true}] [--force={false|true}]
+           node-name
+
+DESCRIPTION
+       The delete-node-ssh subcommand deletes a node that is enabled for
+       communication over secure shell (SSH) from the domain. This subcommand
+       does not require SSH to be configured.
+
+       This subcommand can delete only a node that is enabled for
+       communication over SSH. The subcommand for deleting other types of
+       nodes depends on the type of the node:
+
+       *   A node that is not enabled for remote communication must be deleted
+           by using the delete-node-config(1) subcommand.
+
+       To determine whether a node is enabled for communication over SSH, use
+       the list-nodes(1) subcommand.
+
+       No GlassFish Server instances must reside on the node that is being
+       deleted. Otherwise, the subcommand fails. Before running this
+       subcommand, delete any instances that reside on the node by using, for
+       example, the delete-instance(1) subcommand or the
+       delete-local-instance(1) subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --uninstall
+           Specifies whether the GlassFish Server software is uninstalled from
+           host that the node represents.
+
+           Possible values are as follows:
+
+           false
+               The GlassFish Server software is not uninstalled from the host
+               (default).
+
+           true
+               The GlassFish Server software is uninstalled from the host. By
+               default, if any node except the predefined node
+               localhost-domain resides on any host from which GlassFish
+               Server software is being uninstalled, the subcommand fails. To
+               uninstall the GlassFish Server software from a host on which
+               user-defined nodes reside, set the --force option to true. If
+               the --force option is true, the subcommand removes the entire
+               content of the parent of the base installation directory.
+
+       --force
+           If --uninstall is true, specifies whether the subcommand uninstalls
+           the GlassFish Server software from a host even if a user-defined
+           node resides on the host. Possible values are as follows:
+
+           false
+               If a user-defined node resides on a host, the software is not
+               uninstalled and the subcommand fails (default).
+
+               If the --force option is false, the subcommand removes only the
+               GlassFish Server software files. Other content if the parent of
+               the base installation directory, such as configuration files,
+               are not removed.
+
+           true
+               The subcommand uninstalls the GlassFish Server software from
+               the host even if a user-defined node resides on the host.
+
+               If the --force option is true, the subcommand removes the
+               entire content of the parent of the base installation
+               directory.
+
+OPERANDS
+       node-name
+           The name of the node to delete. The node must enabled for
+           communication over SSH. Otherwise, an error occurs.
+
+EXAMPLES
+       Example 1, Deleting a Node That Is Enabled for Communication Over SSH
+           This example deletes the node eg1, which is enabled for
+           communication over SSH.
+
+               asadmin> delete-node-ssh eg1
+               Command delete-node-ssh executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-node-ssh(1), delete-node-config(1),
+       delete-instance(1), delete-local-instance(1),
+       install-node(1), install-node-ssh(1),
+       list-nodes(1), uninstall-node(1),
+       uninstall-node-ssh(1), update-node-ssh(1)
+
+       asadmin(1M)
+
+Java EE 8                         8 Dec 2011                delete-node-ssh(1)

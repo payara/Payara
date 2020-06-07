@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -76,6 +76,14 @@ public @interface GoogleAuthenticationDefinition {
     OpenIdProviderMetadata providerMetadata() default @OpenIdProviderMetadata;
 
     /**
+     * Optional. The claims definition defines the custom claims mapping of
+     * caller name and groups.
+     *
+     * @return
+     */
+    ClaimsDefinition claimsDefinition() default @ClaimsDefinition;
+
+    /**
      * Required. The client identifier issued when the application was
      * registered
      * <p>
@@ -111,7 +119,7 @@ public @interface GoogleAuthenticationDefinition {
      *
      * @return
      */
-    String redirectURI() default "";
+    String redirectURI() default "${baseURL}/Callback";
 
     /**
      * Optional. The scope value defines the access privileges. The basic (and
@@ -197,4 +205,22 @@ public @interface GoogleAuthenticationDefinition {
      * @return
      */
     int jwksReadTimeout() default 500;
+
+    /**
+     * Optional. Enables or disables the automatically performed refresh of
+     * Access and Refresh Token.
+     *
+     * @return {@code true}, if Access and Refresh Token shall be refreshed
+     * automatically when they are expired.
+     */
+    boolean tokenAutoRefresh() default true;
+
+    /**
+     * Optional.Sets the minimum validity time in milliseconds the Access Token
+     * must be valid before it is considered expired. Value must not be negative
+     * and if value is zero then infinite timeout.
+     *
+     * @return
+     */
+    int tokenMinValidity() default 10 * 1000;
 }

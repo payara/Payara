@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
 /**
 Central registry of timing values. Not intended for threaded use.
  */
-public final class TimingDelta
-{
+public final class TimingDelta {
     private long mLastNanos;
 
     public TimingDelta()
@@ -68,47 +68,12 @@ public final class TimingDelta
         return elapsed;
     }
 
-    public long elapsedMicros()
-    {
-        return elapsed() / 1000;
+    public long elapsedMicros() {
+        return elapsedNanos() / 1000;
     }
 
-    public long elapsedMillis()
-    {
-        return elapsed() / (1000 * 1000);
+    public long elapsedMillis() {
+        return elapsedNanos() / (1000 * 1000);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

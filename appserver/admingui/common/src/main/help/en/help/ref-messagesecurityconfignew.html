@@ -1,0 +1,102 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-messagesecurityconfignew" name="ref-messagesecurityconfignew"></a><a id="GHCOM00119" name="GHCOM00119"></a></p>
+
+<h4><a id="sthref227" name="sthref227"></a>New Message Security Configuration</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the New Message Security Configuration page to create an HttpServlet configuration for message security.</p>
+<p>The New Message Security Configuration page contains the following options.</p>
+<dl>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Authentication Layer</dt>
+<dd>
+<p>Specifies the message layer at which authentication is performed. The value must be <code>SOAP</code> or <code>HttpServlet</code>. Because a SOAP configuration is available by default, the only choice is <code>HttpServlet</code>.</p>
+</dd>
+<dt>Provider ID</dt>
+<dd>
+<p>The unique identifier of the provider configuration for this message security configuration.</p>
+</dd>
+<dt>Default Provider</dt>
+<dd>
+<p>If this option is selected, this provider is the default provider. The default provider will be invoked for any application that does not identify a specific provider. Whether the provider is the default client provider, the default server provider, or both is determined by the Provider Type.</p>
+</dd>
+<dt>Provider Type</dt>
+<dd>
+<p>Specifies the type of the provider. Available choices are:</p>
+<dl>
+<dt><code>client</code></dt>
+<dd>
+<p>Specifies that the provider is the client authentication provider.</p>
+</dd>
+<dt><code>server</code></dt>
+<dd>
+<p>Specifies that the provider is the server authentication provider.</p>
+</dd>
+<dt><code>client-server</code></dt>
+<dd>
+<p>Specifies that the provider is both a client and a server authentication provider.</p>
+</dd>
+</dl>
+</dd>
+<dt>Class Name</dt>
+<dd>
+<p>The name of the Java implementation class of the provider. Client authentication providers must implement the <code>com.sun.enterprise.security.jauth.ClientAuthModule</code> interface. Server-side providers must implement the <code>com.sun.enterprise.security.jauth.ServerAuthModule</code> interface. Client-server providers must implement both interfaces.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the message security configuration.</p>
+</dd>
+</dl>
+<a id="GHCOM459" name="GHCOM459"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-configmsgsecproviders.html">To Configure GlassFish Server Facilities for Use by Message Security Providers</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfignew.html">To Create a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigedit.html">To Edit a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityconfigdelete.html">To Delete a Message Security Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfignew.html">To Create a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfigedit.html">To Edit a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-messagesecurityproviderconfigdelete.html">To Delete a Message Security Provider Configuration</a></p>
+</li>
+<li>
+<p><a href="task-enablemesec4appclients.html">To Enable Message Security for Application Clients</a></p>
+</li>
+</ul>
+<a id="GHCOM460" name="GHCOM460"></a>
+<h5>Related asadmin Commands</h5>
+<p>None.</p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -37,20 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.stringifier;
 
 /**
-	Useful as a default Stringifier even though it does nothing more than
-	call toString().
+ * Useful as a default Stringifier even though it does nothing more than
+ * call toString().
  */
-public final class ObjectStringifier implements Stringifier
-{
-		public String
-	stringify( Object o )
-	{
-		return( o.toString() );
-	}
-	
-	public final static ObjectStringifier DEFAULT = new ObjectStringifier();
+public final class ObjectStringifier implements Stringifier {
+
+    @Override
+    public String stringify(Object o) {
+        return (o.toString());
+    }
+
+    public final static ObjectStringifier DEFAULT = new ObjectStringifier();
 }

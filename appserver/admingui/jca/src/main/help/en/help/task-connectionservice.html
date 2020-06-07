@@ -1,0 +1,65 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-connectionservice" name="task-connectionservice"></a><a id="GHJCA00081" name="GHJCA00081"></a></p>
+
+<h4><a id="sthref54" name="sthref54"></a>To Configure the Connector Service</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Under the Configuration node, select the Connector Service node.</p>
+<p>The Connector Service page opens.</p>
+</li>
+<li>
+<p>In the Shutdown Timeout field, type the maximum number of seconds allowed during GlassFish Server shutdown for the <code>ResourceAdapter.stop</code> method of a connector module's instance to complete.</p>
+<p>Resource adapters that take longer to shut down are ignored, and GlassFish Server shutdown continues. The default value is 30 seconds.</p>
+</li>
+<li>
+<p>From the Connector Classloading Policy drop-down list, select the policy to be used.</p>
+<ul>
+<li>
+<p>Select <code>derived</code> to specify that the resource adapters are provided according to an application's references to any of the resource adapter's resources.</p>
+<p>This policy is the default.</p>
+</li>
+<li>
+<p>Select <code>global</code> to specify that all resource adapters will be visible to all applications.</p>
+</li>
+</ul>
+<p>This policy does not apply to the preinstalled JMS system resource adapter, <code>jmsra</code>, which is always visible to all applications.</p>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+</ol>
+<a id="sthref55" name="sthref55"></a>
+<h5>See Also</h5>
+<p><a href="../../../common/en/help/task-appdeployconn.html">To Deploy a Connector Module</a></p>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

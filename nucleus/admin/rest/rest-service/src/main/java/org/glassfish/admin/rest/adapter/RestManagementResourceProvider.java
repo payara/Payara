@@ -192,12 +192,14 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
 
     private void generateASM(ServiceLocator habitat) {
         try {
-            Domain entity = habitat.getService(Domain.class);
-            Dom dom = Dom.unwrap(entity);
+            synchronized (RestManagementResourceProvider.class) {
+                Domain entity = habitat.getService(Domain.class);
+                Dom dom = Dom.unwrap(entity);
 
-            ResourcesGenerator resourcesGenerator = new ASMResourcesGenerator(habitat);
-            resourcesGenerator.generateSingle(dom.document.getRoot().model, dom.document);
-            resourcesGenerator.endGeneration();
+                ResourcesGenerator resourcesGenerator = new ASMResourcesGenerator(habitat);
+                resourcesGenerator.generateSingle(dom.document.getRoot().model, dom.document);
+                resourcesGenerator.endGeneration();
+            }
         } catch (Exception ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }

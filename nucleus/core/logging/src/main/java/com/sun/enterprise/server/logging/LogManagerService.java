@@ -37,33 +37,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
-import com.sun.common.util.logging.LoggingConfigImpl;
-import com.sun.common.util.logging.LoggingOutputStream;
+import com.sun.common.util.logging.LoggingConfig;
+import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.common.util.logging.LoggingXMLNames;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.EarlyLogger;
+import com.sun.enterprise.util.PropertyPlaceholderHelper;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import fish.payara.enterprise.server.logging.JSONLogFormatter;
+import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.logging.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Filter;
 import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.inject.Inject;
-
-import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
+import javax.validation.ValidationException;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
 import org.glassfish.hk2.api.PostConstruct;
@@ -106,7 +126,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     FileMonitoring fileMonitoring;
 
     @Inject
-    LoggingConfigImpl loggingConfig;
+    LoggingConfigFactory loggingConfigFactory;
 
     @Inject
     UnprocessedConfigListener ucl;
@@ -114,7 +134,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     @Inject
     Domain domain;
     
-    final Map<String, Handler> gfHandlers = new HashMap<String, Handler>();
+    final Map<String, Handler> gfHandlers = new HashMap<>();
 
     private static final Logger LOGGER = LogFacade.LOGGING_LOGGER;
 
@@ -142,6 +162,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String fileHandlerFormatterDetail = "";
     String logFormatDateFormatDetail = "";
     String compressOnRotationDetail = "";
+    String logStandardStreamsDetail = "";
     
     //Payara Notification Logging   
     String payaraNotificationLogFileDetail = "";
@@ -176,6 +197,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
     private static final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
     private static final String COMPRESS_ON_ROTATION_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation";
+    private static final String LOG_STANDARD_STREAMS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams";
     
     //Payara Notification Logging
     private static final String PAYARA_NOTIFICATION_LOG_FILE_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.file";
@@ -212,10 +234,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private String excludeFields;
 
     private boolean multiLineMode = false;
-
-    private LoggingOutputStream stdoutOutputStream=null;
-
-    private LoggingOutputStream stderrOutputStream=null;
     
     private  GFFileHandler gfFileHandler = null;
     
@@ -231,19 +249,21 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         Server targetServer = domain.getServerNamed(env.getInstanceName());
 
-        Map<String, String> props = null;
-
-        if (targetServer != null) {
-            if (targetServer.isDas()) {
-                props = loggingConfig.getLoggingProperties();
-            } else if (targetServer.getCluster() != null) {
-                props = loggingConfig.getLoggingProperties(targetServer.getCluster().getConfigRef());
+        // Find the logging config
+        LoggingConfig loggingConfig = loggingConfigFactory.provide();
+        if (targetServer != null && !targetServer.isDas()) {
+            if (targetServer.getCluster() != null) {
+                loggingConfig = loggingConfigFactory.provide(targetServer.getCluster().getConfigRef());
             } else if (targetServer.isInstance()) {
-                props = loggingConfig.getLoggingProperties(targetServer.getConfigRef());
-            } else {
-                props = loggingConfig.getLoggingProperties();
+                loggingConfig = loggingConfigFactory.provide(targetServer.getConfigRef());
             }
-        } else {
+        }
+
+        // Validate the properties
+        Map<String, String> props = loggingConfig.getLoggingProperties();
+        Map<String, String> invalidProps = validateProps(props);
+        if (!invalidProps.isEmpty()) {
+            loggingConfig.deleteLoggingProperties(invalidProps);
             props = loggingConfig.getLoggingProperties();
         }
 
@@ -251,7 +271,64 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     }
 
     /**
-     *  Returns logging file to be monitor during server is running.
+     * Validates the map of logging properties. Will remove any properties from the
+     * map that don't pass the validation, and then throw an exception at the very
+     * end.
+     * 
+     * @param props the map of properties to validate. WILL BE MODIFIED.
+     * @return a map of invalid properties. Will never be null.
+     */
+    public Map<String, String> validateProps(Map<String, String> props) {
+        Map<String, String> invalidProps = new HashMap<>();
+        Iterator<Entry<String, String>> propertyIterator = props.entrySet().iterator();
+        while (propertyIterator.hasNext()) {
+            Entry<String, String> propertyEntry = propertyIterator.next();
+
+            try {
+                validateProp(propertyEntry.getKey(), propertyEntry.getValue());
+            } catch (ValidationException ex) {
+                LOGGER.log(Level.WARNING, "Error validating log property.", ex);
+                propertyIterator.remove();
+                invalidProps.put(propertyEntry.getKey(), propertyEntry.getValue());
+            }
+        }
+        return invalidProps;
+    }
+
+    /**
+     * Validates a property. Throws an exception if validation fails.
+     * 
+     * @param key   the attribute name to validate.
+     * @param value the attribute value to validate.
+     * @throws ValidationException if validation fails.
+     */
+    public void validateProp(String key, String value) {
+        if (key.equals(ROTATIONLIMITINBYTES_PROPERTY)) {
+            int rotationSizeLimit = Integer.parseInt(value);
+            if (rotationSizeLimit != GFFileHandler.DISABLE_LOG_FILE_ROTATION_VALUE
+                    && rotationSizeLimit < GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE) {
+                throw new ValidationException(String.format("'%s' value must be greater than %d, but was %d.",
+                        ROTATIONLIMITINBYTES_PROPERTY, GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE, rotationSizeLimit));
+            }
+        } else if (key.equals(ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
+            int rotationTimeLimit = Integer.parseInt(value);
+            if (rotationTimeLimit < 0) {
+                throw new ValidationException(String.format("'%s' value must be greater than %d, but was %d.",
+                        ROTATIONTIMELIMITINMINUTES_PROPERTY, 0, rotationTimeLimit));
+            }
+
+        } else if (key.equals(PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY)) {
+            int PayaraNotificationRotationTimeLimit = Integer.parseInt(value);
+            if (PayaraNotificationRotationTimeLimit < 0) {
+                throw new ValidationException(String.format("'%s' value must be greater than %d, but was %d.",
+                        PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY, 0,
+                        PayaraNotificationRotationTimeLimit));
+            }
+        }
+    }
+
+    /**
+     * Returns logging file to be monitor during server is running.
      */
     @Override
     public File getLoggingFile() throws IOException {
@@ -299,17 +376,14 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         // logging.properties massaging.
         final LogManager logMgr = LogManager.getLogManager();
-        File logging = null;
+        File loggingPropertiesFile = null;
 
         // reset settings
         try {
 
-
-            logging = getLoggingFile();
-            System.setProperty("java.util.logging.config.file", logging.getAbsolutePath());
+            loggingPropertiesFile = getLoggingFile();
+            System.setProperty("java.util.logging.config.file", loggingPropertiesFile.getAbsolutePath());
             
-
-
             String rootFolder = env.getProps().get(com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
             String templateDir = rootFolder + File.separator + "lib" + File.separator + "templates";
             File src = new File(templateDir, ServerEnvironmentImpl.kLoggingPropertiesFileName);
@@ -320,13 +394,23 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             System.out.println("#!## LogManagerService.postConstruct : src=" +src);
             System.out.println("#!## LogManagerService.postConstruct : dest=" +dest);
 
-            if (!logging.exists()) {
-                LOGGER.log(Level.FINE, "{0} not found, creating new file from template.", logging.getAbsolutePath());
+            if (!loggingPropertiesFile.exists()) {
+                LOGGER.log(Level.FINE, "{0} not found, creating new file from template.", loggingPropertiesFile.getAbsolutePath());
                 FileUtils.copy(src, dest);
-                logging = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
+                loggingPropertiesFile = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
+            
             logMgr.readConfiguration();
 
+            // replace placehoders with values from system environment variables
+            try {
+                final Field propsLogManagerField = logMgr.getClass().getDeclaredField("props");
+                propsLogManagerField.setAccessible(true);
+                Properties props = (Properties) propsLogManagerField.get(logMgr);
+                propsLogManagerField.set(logMgr, new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePropertiesPlaceholder(props));
+            } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException ex) {
+                LOGGER.log(Level.SEVERE, LogFacade.ERROR_PLACEHOLDERS_REPLACEMENT, ex);
+            }
 
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_READING_CONF_FILE, e);
@@ -348,16 +432,26 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             //setting default attributes value for all properties
             setDefaultLoggingProperties(props);
 
+            Collection<Handler> handlers = getHandlerServices(props);
+            if (handlers != null && handlers.size() > 0) {
+                // add the new handlers to the root logger
+                for (Handler handler : handlers) {
+                    addHandler(handler);
+                }
+            }
+
+            // add the filter if there is one
+            String filterClassName = props.get(LoggingXMLNames.xmltoPropsMap.get("log-filter"));
+            if (filterClassName != null) {
+                Filter filterClass = habitat.getService(Filter.class, filterClassName);
+                Logger rootLogger = Logger.getLogger("");
+                if (rootLogger != null) {
+                    rootLogger.setFilter(filterClass);
+                }
+            }
+
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
-        }
-
-        Collection<Handler> handlers = getHandlerServices();
-        if (handlers != null && handlers.size() > 0) {
-            // add the new handlers to the root logger
-            for (Handler handler : handlers) {
-                addHandler(handler);
-            }
         }
 
         // Need to lock Logger.class first before locking LogManager to avoid deadlock.
@@ -384,40 +478,34 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 }
             }
         }
-        
-        // add the filter if there is one
-        try {
+             
+        // finally listen to changes to the loggingPropertiesFile.properties file
+        listenToChangesOnloggingPropsFile(loggingPropertiesFile, logMgr);
+   
+        // Log the messages that were generated very early before this Service
+        // started.  Just use our own logger...
+        List<EarlyLogger.LevelAndMessage> catchUp = EarlyLogger.getEarlyMessages();
 
-            Map<String, String> map = getLoggingProperties();
-
-            String filterClassName = map.get(LoggingXMLNames.xmltoPropsMap.get("log-filter"));
-            if (filterClassName != null) {
-                Filter filterClass = habitat.getService(Filter.class, filterClassName);
-                Logger rootLogger = Logger.getLogger("");
-                if (rootLogger != null) {
-                    rootLogger.setFilter(filterClass);
-                }
+        if (!catchUp.isEmpty()) {
+            for (EarlyLogger.LevelAndMessage levelAndMessage : catchUp) {
+                LOGGER.log(levelAndMessage.getLevel(), levelAndMessage.getMessage());
             }
-        } catch (java.io.IOException ex) {
-
+            catchUp.clear();
         }
 
-        // redirect stderr and stdout, a better way to do this
-        //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
+        ArrayBlockingQueue<LogRecord> catchEarlyMessage = EarlyLogHandler.earlyMessages;
 
-        Logger _ologger = LogFacade.STDOUT_LOGGER;
-        stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO);
-        LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
-        System.setOut(pout);
-
-        Logger _elogger = LogFacade.STDERR_LOGGER;
-        stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE);
-        LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
-        System.setErr(perr);
-                
-        // finally listen to changes to the logging.properties file
-        if (logging != null) {
-            fileMonitoring.monitors(logging, new FileMonitoring.FileChangeListener() {
+        while (!catchEarlyMessage.isEmpty()) {
+            LogRecord logRecord = catchEarlyMessage.poll();
+            if (logRecord != null) {
+                LOGGER.log(logRecord);
+            }
+        }
+    }
+  
+    public void listenToChangesOnloggingPropsFile(File loggingPropertiesFile, LogManager logMgr){
+             if (loggingPropertiesFile != null) {
+            fileMonitoring.monitors(loggingPropertiesFile, new FileMonitoring.FileChangeListener() {
                 @Override
                 public void changed(File changedFile) {
                     synchronized (gfHandlers) {
@@ -662,7 +750,19 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             }
                                         }
                                     }
-                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY)) {
+                                } else if (a.equals(LOG_STANDARD_STREAMS_PROPERTY)) {
+                                    if (!val.equals(logStandardStreamsDetail)) {
+                                        logStandardStreamsDetail = val;
+                                        for (Handler handler : logMgr.getLogger("").getHandlers()) {
+                                            // only get the GFFileHandler
+                                            if (handler.getClass().equals(GFFileHandler.class)) {
+                                                gfFileHandler = (GFFileHandler) handler;
+                                                gfFileHandler.setLogStandardStreams(Boolean.parseBoolean(logStandardStreamsDetail));
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }else if (a.equals(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogFileDetail)) {
                                         Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
                                         if (payaraNotificationLogFileHandlers.length > 0) {
@@ -726,6 +826,22 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
                                         }
                                     }
+                                } else if (a.equals(PAYARA_NOTIFICATION_LOG_ROTATIONONDATECHANGE_PROPERTY)) {
+                                    if (!val.equals(payaraNotificationLogRotationOnDateChangeDetail)) {
+                                        Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
+                                        if (payaraNotificationLogFileHandlers.length > 0) {
+                                            payaraNotificationLogRotationOnDateChangeDetail = val;
+                                            for (Handler handler : payaraNotificationLogFileHandlers) {
+                                                if (handler.getClass().equals(PayaraNotificationFileHandler.class)) {
+                                                    pyFileHandler = (PayaraNotificationFileHandler) handler;
+                                                    pyFileHandler.setRotationOnDateChange(Boolean.parseBoolean(val));
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            LOGGER.log(Level.INFO, PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG);
+                                        }
+                                    }
                                 } else if (a.equals(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY)) {
                                     if (!val.equals(payaraNotificationLogmaxHistoryFilesDetail)) {
                                         Handler[] payaraNotificationLogFileHandlers = logMgr.getLogger(payaraNotificationLogger).getHandlers();
@@ -775,27 +891,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 }
             });
         }
-        // Log the messages that were generated very early before this Service
-        // started.  Just use our own logger...
-        List<EarlyLogger.LevelAndMessage> catchUp = EarlyLogger.getEarlyMessages();
-
-        if (!catchUp.isEmpty()) {
-            for (EarlyLogger.LevelAndMessage levelAndMessage : catchUp) {
-                LOGGER.log(levelAndMessage.getLevel(), levelAndMessage.getMessage());
-            }
-            catchUp.clear();
-        }
-
-        ArrayBlockingQueue<LogRecord> catchEarlyMessage = EarlyLogHandler.earlyMessages;
-
-        while (!catchEarlyMessage.isEmpty()) {
-            LogRecord logRecord = catchEarlyMessage.poll();
-            if (logRecord != null) {
-                LOGGER.log(logRecord);
-            }
-        }
     }
-    
     private void setConsoleHandlerLogFormat(String formatterClassName, Map<String, String> props, LogManager logMgr) {
         if (formatterClassName == null || formatterClassName.isEmpty()) {
             formatterClassName = UniformLogFormatter.class.getName();
@@ -902,6 +998,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         fileHandlerFormatterDetail = props.get(FILEHANDLER_FORMATTER_PROPERTY);
         logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
         compressOnRotationDetail = props.get(COMPRESS_ON_ROTATION_PROPERTY);
+        logStandardStreamsDetail = props.get(LOG_STANDARD_STREAMS_PROPERTY);
 
         //Payara Notification Logging
         payaraNotificationLogFileDetail = props.get(PAYARA_NOTIFICATION_LOG_FILE_PROPERTY);
@@ -916,7 +1013,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         payaraJsonUnderscorePrefix = props.get(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
     }
 
-    private Collection<Handler> getHandlerServices() {
+    private Collection<Handler> getHandlerServices(Map<String, String> props) {
         Set<String> handlerServicesSet = new HashSet<String>();
         handlerServicesSet.add(GFFileHandler.class.getName());
         String[] handlerServicesArray = handlerServices.split(",");
@@ -942,18 +1039,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         
         // Set formatter on custom handler service if configured
         for (Handler handler : customHandlers) {
-            try {
-                Map<String, String> props = getLoggingProperties();
-                String handlerClassName = handler.getClass().getName();
-                String formatterClassName = props.get(handlerClassName+".formatter");
-                Formatter formatter = getCustomFormatter(formatterClassName, gfFileHandler);
-                if (formatter != null) {
-                    handler.setFormatter(formatter);
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
+            String handlerClassName = handler.getClass().getName();
+            String formatterClassName = props.get(handlerClassName+".formatter");
+            Formatter formatter = getCustomFormatter(formatterClassName, gfFileHandler);
+            if (formatter != null) {
+                handler.setFormatter(formatter);
             }
-        }        
+        }
         return result;
     }
 
@@ -985,7 +1077,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             synchronized (gfHandlers) {
                 rootLogger.addHandler(handler);
                 String handlerName = handler.toString();
-                gfHandlers.put(handlerName.substring(0, handlerName.indexOf("@")), handler);
+                gfHandlers.put(handlerName.substring(0, handlerName.indexOf('@')), handler);
             }
         }
     }
@@ -993,22 +1085,12 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     @Override
     public void preDestroy() {
         //destroy the handlers
-        try {
-            for (ServiceHandle<?> i : habitat.getAllServiceHandles(BuilderHelper.createContractFilter(Handler.class.getName()))) {
-                i.destroy();
-            }
-            System.setOut(oStdOutBackup);
-            System.setErr(oStdErrBackup);
-            if (stdoutOutputStream != null) {
-                stdoutOutputStream.close();
-            }
-            if (stderrOutputStream != null) {
-                stderrOutputStream.close();
-            }
-            System.out.println("Completed shutdown of Log manager service");
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (ServiceHandle<?> i : habitat.getAllServiceHandles(BuilderHelper.createContractFilter(Handler.class.getName()))) {
+            i.destroy();
         }
+        System.setOut(oStdOutBackup);
+        System.setErr(oStdErrBackup);
+        System.out.println("Completed shutdown of Log manager service");
     }
 
     @Override

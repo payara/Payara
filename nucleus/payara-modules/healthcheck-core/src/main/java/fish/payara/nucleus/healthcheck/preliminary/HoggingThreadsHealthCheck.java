@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,10 +41,14 @@ package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.HealthCheckHoggingThreadsExecutionOptions;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
-import fish.payara.nucleus.healthcheck.entity.ThreadTimes;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -53,24 +57,74 @@ import javax.annotation.PostConstruct;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 
 /**
- * @author mertcaliskan
+ * A "hogging thread" is a thread that uses most of the CPU during the measured period.
+ * 
+ * @author mertcaliskan (initial version)
+ * @author Jan Bernitt (consumer based and monitoring)
  */
 @Service(name = "healthcheck-threads")
 @RunLevel(StartupRunLevel.VAL)
-public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions,
-        HoggingThreadsChecker> {
+public class HoggingThreadsHealthCheck
+        extends BaseHealthCheck<HealthCheckHoggingThreadsExecutionOptions, HoggingThreadsChecker>
+        implements MonitoringDataSource, MonitoringWatchSource {
 
-    private HashMap<Long, ThreadTimes> threadTimes = new HashMap<Long, ThreadTimes>();
+    @FunctionalInterface
+    private interface HoggingThreadConsumer {
+
+        void accept(int percentage, int threshold, long totalTimeHogging, String initialMethod, ThreadInfo info);
+    }
+
+    /**
+     * Book-keeping record for each thread. All times are in milliseconds.
+     */
+    private static final class ThreadCpuTimeRecord {
+
+        ThreadCpuTimeRecord() {
+            // make visible
+        }
+
+        /**
+         * Timestamp in milliseconds from when the measuring interval started
+         */
+        long startOfIntervalTimestamp;
+        /**
+         * Total number of milliseconds spend by the thread doing CPU at the start of the measuring interval.
+         * This is not zero as only ever increases from zero after the thread has been created.
+         */
+        long startOfIntervalCpuTime;
+        /**
+         * Timestamp in milliseconds from when the thread first exceeded the threshold and was identified as "hogging".
+         */
+        long startOfExceedingThresholdTimestamp;
+        /**
+         * Number of times in a row the check has identified the thread as "hogging" 
+         */
+        int identifiedAsHoggingCount;
+        /**
+         * This is the method on top of the stack trace when thread first is identified as "hogging". This method is the
+         * most likely candidate. Using the "current" method often is misleading as worker threads at some point get
+         * back to idle in the pool which would show the parking as the last method.
+         */
+        String identifiedAsHoggingMethod;
+    }
+
+    private boolean supported;
+    private final Map<Long, ThreadCpuTimeRecord> checkRecordsByThreadId = new ConcurrentHashMap<>();
+    private final Map<Long, ThreadCpuTimeRecord> colletionRecordsByThreadId = new ConcurrentHashMap<>();
 
     @PostConstruct
     void postConstruct() {
         postConstruct(this, HoggingThreadsChecker.class);
+        supported = ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported();
     }
 
     @Override
@@ -87,67 +141,113 @@ public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggin
     }
 
     @Override
-    public HealthCheckResult doCheck() {
-        if (!getOptions().isEnabled()) {
-            return null;
-        }
+    protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
-        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-
-        if (!threadBean.isCurrentThreadCpuTimeSupported()) {
+        if (!supported) {
             result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "JVM implementation or OS does" +
                     " not support getting CPU times"));
             return result;
         }
+        acceptHoggingThreads(checkRecordsByThreadId, 
+                (percentage, threshold, totalTimeHogging, initialMethod, info) ->
+                    result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL,
+                            "Thread with <id-name>: " + info.getThreadId() + "-" + info.getThreadName() +
+                            " is a hogging thread for the last " +
+                            prettyPrintDuration(totalTimeHogging) + "\n" + prettyPrintStackTrace(info.getStackTrace())))
+                );
+        return result;
+    }
 
-        final long[] ids = threadBean.getAllThreadIds();
-        for (long id : ids) {
-            if (id == Thread.currentThread().getId())
-                continue;
-            final long c = threadBean.getThreadCpuTime(id);
-            final long u = threadBean.getThreadUserTime(id);
-            ThreadInfo threadInfo = threadBean.getThreadInfo(id);
-
-            if (c == -1 || u == -1)
-                continue;
-
-            ThreadTimes times = threadTimes.get(id);
-            if (times == null) {
-                times = new ThreadTimes();
-                times.setId(id);
-                times.setName(threadInfo.getThreadName());
-                times.setStartCpuTime(c);
-                times.setEndCpuTime(c);
-                times.setStartUserTime(u);
-                times.setEndUserTime(u);
-                threadTimes.put(id, times);
-            } else {
-                times.setStartCpuTime(times.getEndCpuTime());
-                times.setStartUserTime(times.getEndUserTime());
-                times.setEndCpuTime(c);
-                times.setEndUserTime(u);
-
-                long checkTime = getOptions().getUnit().toMillis(getOptions().getTime());
-                long duration = times.getEndCpuTime() - times.getStartCpuTime();
-                double percentage = ((double) (TimeUnit.NANOSECONDS.toMillis(duration)) / (double) (checkTime)) * 100;
-
-                if (percentage > options.getThresholdPercentage()) {
-                    if (times.getRetryCount() == 0) {
-                        times.setInitialStartCpuTime(System.nanoTime());
-                        times.setInitialStartUserTime(System.nanoTime());
+    @Override
+    @MonitoringData(ns = "health", intervalSeconds = 4)
+    public void collect(MonitoringDataCollector collector) {
+        if (options == null || !options.isEnabled() || !supported) {
+            return;
+        }
+        AtomicInteger hoggingThreadCount = new AtomicInteger(0);
+        AtomicLong hoggingThreadMaxDuration = new AtomicLong(0L);
+        acceptHoggingThreads(colletionRecordsByThreadId, 
+                (percentage, threshold, totalTimeHogging, initialMethod, info) -> {
+                    String thread = info.getThreadName();
+                    if (thread == null || thread.isEmpty()) {
+                        thread = String.valueOf(info.getThreadId());
                     }
-                    if (times.getRetryCount() >= options.getRetryCount()) {
-                        result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL,
-                                "Thread with <id-name>: " + id + "-" + times.getName() +
-                                        " is a hogging thread for the last " +
-                                        prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - times
-                                                .getInitialStartCpuTime())) + "\n" + prettyPrintStackTrace(threadInfo.getStackTrace())));
-                    }
-                    times.setRetryCount(times.getRetryCount() + 1);
+                    collector.annotate("HoggingThreadDuration", totalTimeHogging, true, //
+                            "Thread", thread, //
+                            "Usage%", String.valueOf(percentage), //
+                            "Threshold%", String.valueOf(threshold), //
+                            "Method", initialMethod, //
+                            "Exited", String.valueOf(!initialMethod.equals(getMethod(info))));
+                    hoggingThreadCount.incrementAndGet();
+                    hoggingThreadMaxDuration.updateAndGet(value -> Math.max(value, totalTimeHogging));
+                });
+        collector
+                .collect("HoggingThreadCount", hoggingThreadCount)
+                .collect("HoggingThreadDuration", hoggingThreadMaxDuration);
+    }
+
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        if (options == null || !options.isEnabled() || !supported) {
+            return;
+        }
+        collector.watch("ns:health HoggingThreadCount", "Hogging Threads", "count")
+            .amber(0, -2, false, null, null, false)
+            .red(1, -2, false, null, null, false);
+    }
+
+    private void acceptHoggingThreads(Map<Long, ThreadCpuTimeRecord> recordsById, HoggingThreadConsumer consumer) {
+        final ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        final long now = System.currentTimeMillis();
+        final long currentThreadId = Thread.currentThread().getId();
+        final int retryCount = options.getRetryCount();
+        final int threshold = options.getThresholdPercentage().intValue();
+        for (long threadId : bean.getAllThreadIds()) {
+            if (threadId != currentThreadId) {
+                final long cpuTimeInNanos = bean.getThreadCpuTime(threadId);
+                if (cpuTimeInNanos == -1)
+                    continue;
+                long cpuTime = TimeUnit.NANOSECONDS.toMillis(cpuTimeInNanos); 
+                // from here all times are in millis
+                ThreadCpuTimeRecord record = recordsById.get(threadId);
+                if (record == null) {
+                    record = new ThreadCpuTimeRecord();
+                    recordsById.put(threadId, record);
+                } else {
+                    acceptHoggingThread(bean, now, retryCount, threshold, threadId, cpuTime, record, consumer);
                 }
+                record.startOfIntervalTimestamp = now;
+                record.startOfIntervalCpuTime = cpuTime;
             }
         }
+    }
 
-        return result;
+    private static void acceptHoggingThread(final ThreadMXBean bean, final long now, final int retryCount, final int threshold,
+            long threadId, long cpuTime, ThreadCpuTimeRecord record, HoggingThreadConsumer consumer) {
+        long intervalLength = now - record.startOfIntervalTimestamp;
+        long intervalCpuTime = cpuTime - record.startOfIntervalCpuTime;
+        int percentage = (int) (intervalCpuTime * 100L / intervalLength);
+        if (percentage > threshold) {
+            if (record.identifiedAsHoggingCount == 0) {
+                record.startOfExceedingThresholdTimestamp = record.startOfIntervalTimestamp;
+                record.identifiedAsHoggingMethod = getMethod(bean.getThreadInfo(threadId, 1));
+            }
+            record.identifiedAsHoggingCount++;
+            if (record.identifiedAsHoggingCount > retryCount) {
+                ThreadInfo info = bean.getThreadInfo(threadId, 1);
+                long totalTimeHogging = now - record.startOfExceedingThresholdTimestamp;
+                consumer.accept(percentage, threshold, totalTimeHogging, record.identifiedAsHoggingMethod, info);
+            }
+        } else {
+            record.identifiedAsHoggingCount = 0;
+        }
+    }
+
+    static String getMethod(ThreadInfo info) {
+        if (info.getStackTrace().length == 0) {
+            return "?";
+        }
+        StackTraceElement frame = info.getStackTrace()[0];
+        return frame.getClassName() + "#" + frame.getMethodName() + ":" + frame.getLineNumber();
     }
 }

@@ -70,7 +70,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @since 4.1.2.181
  * @author Steve Millidge (Payara Foundation)
  */
-@Service(name = "set-config-secrets-dir") // the name of the service is the asadmin command name
+@Service(name = "set-config-dir") // the name of the service is the asadmin command name
 @PerLookup // this means one instance is created every time the command is run
 @ExecuteOn()
 @TargetType()
@@ -78,8 +78,8 @@ import org.jvnet.hk2.config.TransactionFailure;
     
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
             opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
-            path = "set-config-secrets-dir",
-            description = "Sets the Secrets Directory for the Secrets Config Source")
+            path = "set-config-dir",
+            description = "Sets the Directory for the Config Source")
 })
 public class SetConfigSecretsDirectory implements AdminCommand {
     
@@ -105,19 +105,19 @@ public class SetConfigSecretsDirectory implements AdminCommand {
         if (!Files.isDirectory(directoryPath) || !Files.exists(directoryPath) || !Files.isReadable(directoryPath)) {
             absolute = false;
             // ok try relative to the server root
-            context.getActionReport().appendMessage("Could not find readable secrets directory at " + directoryPath.toString() + "\n");
+            context.getActionReport().appendMessage("Could not find readable directory at " + directoryPath.toString() + "\n");
             Path instanceRoot = env.getInstanceRoot().toPath();
             Path relative = Paths.get(instanceRoot.toString(), directory);
             if (!Files.isDirectory(relative) || !Files.exists(relative) || !Files.isReadable(relative)) {
-                context.getActionReport().appendMessage("Could not find readable secrets directory at " + relative.toString() + "\n");
+                context.getActionReport().appendMessage("Could not find readable directory at " + relative.toString() + "\n");
                 context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
             relativeFound = true;
             directoryPath = relative;
-            context.getActionReport().appendMessage("Using readable secrets directory at " + relative.toString() + "\n");
+            context.getActionReport().appendMessage("Using readable directory at " + relative.toString() + "\n");
         } else {
-            context.getActionReport().appendMessage("Using readable secrets directory at " + directoryPath.toString() + "\n");            
+            context.getActionReport().appendMessage("Using readable directory at " + directoryPath.toString() + "\n");            
         }
         
         Config configVal = targetUtil.getConfig(target);
@@ -132,8 +132,8 @@ public class SetConfigSecretsDirectory implements AdminCommand {
                 }
             }, serviceConfig);
         } catch (TransactionFailure ex) {
-            Logger.getLogger(SetConfigSecretsDirectory.class.getName()).log(Level.SEVERE, "Could not set Secrets Directory", ex);
-            context.getActionReport().failure(Logger.getLogger(this.getClass().getName()), "Could not set Secrets Directory", ex);
+            Logger.getLogger(SetConfigSecretsDirectory.class.getName()).log(Level.SEVERE, "Could not set Directory", ex);
+            context.getActionReport().failure(Logger.getLogger(this.getClass().getName()), "Could not set Directory", ex);
         }
     }
     

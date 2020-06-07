@@ -1,0 +1,109 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-httplistenernew" name="task-httplistenernew"></a></p>
+
+<h4><a id="sthref23" name="sthref23"></a>To Create an HTTP Listener</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Under the Configuration node, expand the HTTP Service node.</p>
+</li>
+<li>
+<p>Under the Network Config node, select the HTTP Listeners node.</p>
+<p>The HTTP Listeners page opens.</p>
+</li>
+<li>
+<p>On the HTTP Listeners page, click New.</p>
+<p>The New HTTP Listener page opens.</p>
+</li>
+<li>
+<p>In the Name field, type a name for the HTTP listener.</p>
+<p>An HTTP listener name cannot begin with a number.</p>
+</li>
+<li>
+<p>In the Port field, type the port number on which the HTTP listener will listen.</p>
+<p>Legal values are 1 through 65535. On a UNIX system, creating sockets that listen on ports 1 through 1024 requires superuser privileges.</p>
+</li>
+<li>
+<p>Select the Status Enabled checkbox to enable the HTTP listener.</p>
+<p>This option is enabled by default. If the listener is disabled, any attempts to connect to the listener result in a socket exception (<code>java.net.ConnectException</code>).</p>
+<p>In GlassFish Server versions prior to 9.1, a listener whose enabled attribute was set to false returned a 404 response code for any requests sent to it. To achieve this behavior in the current GlassFish Server version, set the listener's status to enabled, and set every associated virtual server's state to OFF. A virtual server lists its associated listeners in its Network Listeners drop-down list (An HTTP listener is a type of network listener).</p>
+</li>
+<li>
+<p>Select the Security Enabled checkbox to enable security for the HTTP listener.</p>
+<p>This option is disabled by default.</p>
+<p>If you are configuring the <code>admin-listener</code> for the domain administration server (DAS), which uses the <code>server-config</code> configuration, this option is read-only. To enable security for this listener, you must enable secure administration. See <a href="../../../common/en/help/ref-securityadmin.html">Secure Administration</a>.</p>
+</li>
+<li>
+<p>Select the JK Listener Enabled checkbox to specify that the listener supports Apache's <code>mod-jk</code> protocol.</p>
+<p>The <code>mod-jk</code> protocol is a proprietary communication/network protocol between Apache's <code>httpd</code> (web server) and an GlassFish Server back-end instance. If the listener supports this protocol, <code>httpd</code> is supposed to handle all static content, whereas any requests for dynamic resources (i.e., Servlets and JSPs) are routed to the <code>mod-jk</code> enabled HTTP listener of the GlassFish Server, using the <code>mod-jk</code> protocol. This option is disabled by default.</p>
+</li>
+<li>
+<p>In the Address field, type the IP address on which the HTTP listener will listen.</p>
+<p>The address can be in dotted-pair or IPv6 notation. It can be <code>any</code> (for <code>INADDR_ANY</code>) to listen on all IP addresses. It can be a hostname.</p>
+</li>
+<li>
+<p>From the Default Virtual Server drop-down list, select the virtual server to be associated with this HTTP listener.</p>
+<p>Use the Virtual Servers page to define virtual servers.</p>
+</li>
+<li>
+<p>From the Thread Pool drop-down list, select the thread pool to be associated with the HTTP listener.</p>
+<p>Normally, you select one of the two thread pools that are configured when you install the GlassFish Server.</p>
+</li>
+<li>
+<p>In the Server Name field, type the host name to be used in the URLs the server sends to the client.</p>
+<p>This name is the alias name if your server uses an alias. If your server does not use an alias, leave this field blank.</p>
+<p>This value affects URLs the server automatically generates; it does not affect the URLs for directories and files stored in the server. If your server uses an alias, the server-name should be the alias name. If a colon and port number are appended, that port is used in URLs the server sends to the client.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="sthref24" name="sthref24"></a>
+<h5>Next Steps</h5>
+<p>If you enabled security for the HTTP listener, you can use the SSL tab to edit the SSL settings of the HTTP listener.</p>
+<p>An HTTP listener is a type of network listener. To access advanced features, you can edit an HTTP listener using the Network Listener pages.</p>
+<a id="sthref25" name="sthref25"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-httplisteneredit.html">To Edit an HTTP Listener</a></p>
+</li>
+<li>
+<p><a href="task-httplistenerdelete.html">To Delete an HTTP Listener</a></p>
+</li>
+<li>
+<p><a href="task-httplistenerssl.html">To Edit SSL Settings for an HTTP Listener</a></p>
+</li>
+<li>
+<p><a href="task-virtualservercreate.html">To Create a Virtual Server</a></p>
+</li>
+<li>
+<p><a href="task-networklistenernew.html">To Create a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-protocolhttpedit.html">To Edit HTTP Settings for a Protocol</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

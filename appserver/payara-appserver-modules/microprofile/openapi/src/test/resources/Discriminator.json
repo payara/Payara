@@ -1,0 +1,7 @@
+{
+   "propertyName": "pet_type",
+   "mapping": {
+      "dog": "#/components/schemas/Dog",
+      "monster": "https://gigantic-server.com/schemas/Monster/schema.json"
+   }
+}

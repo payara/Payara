@@ -40,34 +40,53 @@
     holder.
 
 -->
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
-        <groupId>org.glassfish.main.admin</groupId>
+        <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>admin</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>appserver-domain</artifactId>
     <name>Appserver template</name>
     <description>Appserver template</description>
-	
+
+    <dependencies>
+        <dependency>
+             <groupId>fish.payara.server.internal.admin</groupId>
+             <artifactId>nucleus-domain</artifactId>
+             <version>${project.version}</version>
+             <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>validate-xml-files</id>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>unpack</id>
-                        <phase>validate</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.main.admin</groupId>
+                                    <groupId>fish.payara.server.internal.admin</groupId>
                                     <artifactId>nucleus-domain</artifactId>
                                     <version>${project.version}</version>
                                     <overWrite>false</overWrite>
@@ -78,7 +97,6 @@
                     </execution>
                 </executions>
             </plugin>
-            
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
@@ -93,12 +111,11 @@
                             <inputFiles>
                                 <inputFile>${project.build.directory}/dependency/config/logging.properties</inputFile>
                                 <inputFile>../../logging/logging.properties</inputFile>
-                            </inputFiles>  
+                            </inputFiles>
                         </configuration>
                     </execution>
-                </executions>						 
+                </executions>
             </plugin>
-            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -116,7 +133,7 @@
                             <attach>false</attach>
                             <appendAssemblyId>false</appendAssemblyId>
                             <useProjectArtifact>false</useProjectArtifact>
-                        </configuration>                        
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

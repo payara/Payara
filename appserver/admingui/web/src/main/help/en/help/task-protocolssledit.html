@@ -1,0 +1,120 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-protocolssledit" name="task-protocolssledit"></a><a id="GHWEB00044" name="GHWEB00044"></a></p>
+
+<h4><a id="sthref55" name="sthref55"></a><a id="sthref56" name="sthref56"></a>To Edit SSL Settings for a Protocol</h4>
+<a name="BEGIN" id="BEGIN"></a><a id="sthref57" name="sthref57"></a>
+<h5>Before You Begin</h5>
+<p>This task is meaningful only if security has been enabled for the protocol.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Under the Configuration node, expand the Network Config node.</p>
+</li>
+<li>
+<p>Under the Network Config node, select the Protocols node.</p>
+<p>The Protocols page opens.</p>
+</li>
+<li>
+<p>On the Protocols page, click the name of the protocol that you are editing.</p>
+<p>The Edit Protocol page opens.</p>
+</li>
+<li>
+<p>On the Edit Protocol page, click the SSL tab.</p>
+<p>The SSL page opens.</p>
+</li>
+<li>
+<p>Select the SSL3 Enabled checkbox to enable SSL3.</p>
+<p>This option is enabled by default.</p>
+</li>
+<li>
+<p>Select the TLS Enabled checkbox to enable Transport Layer Security (TLS).</p>
+<p>This option is enabled by default.</p>
+</li>
+<li>
+<p>Select the Client Authentication Enabled checkbox to require clients to identify themselves to the server on every request.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>In the Certificate Nickname field, type the nickname of the server certificate in the certificate database or the PKCS#11 token.</p>
+<p>In the certificate, the name format is <i>tokenname</i><code>:</code><i>nickname</i>. Including the <i>tokenname</i><code>:</code> part of the name in this attribute is optional.</p>
+</li>
+<li>
+<p>In the Key Store field, type the name of the keystore file (for example, <code>keystore.jks</code>).</p>
+</li>
+<li>
+<p>In the Trust Algorithm field, type the name of the trust management algorithm (for example, PKIX) to use for certification path validation.</p>
+</li>
+<li>
+<p>In the Max Certificate Length field, type the maximum number of non-self-issued intermediate certificates that can exist in a certification path.</p>
+<p>This field is used only if the Trust Algorithm field is set to PKIX. A value of 0 implies that the path can only contain a single certificate. A value of -1 implies that the path length is unconstrained (there is no maximum). Setting a value less than -1 causes an exception to be thrown.</p>
+</li>
+<li>
+<p>In the Trust Store field, type the name of the truststore file (for example, <code>cacerts.jks</code>).</p>
+</li>
+<li>
+<p>In the Cipher Suites area, specify the cipher suites to be used.</p>
+<p>If you do not add any cipher suites, all cipher suites will be used.</p>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="sthref58" name="sthref58"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-networklistenernew.html">To Create a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-networklisteneredit.html">To Edit a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-networklistenerdelete.html">To Delete a Network Listener</a></p>
+</li>
+<li>
+<p><a href="task-protocolnew.html">To Create a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoledit.html">To Edit a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolhttpedit.html">To Edit HTTP Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocolfilecacheedit.html">To Edit File Cache Settings for a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-protocoldelete.html">To Delete a Protocol</a></p>
+</li>
+<li>
+<p><a href="task-transportnew.html">To Create a Transport</a></p>
+</li>
+<li>
+<p><a href="task-transportedit.html">To Edit a Transport</a></p>
+</li>
+<li>
+<p><a href="task-transportdelete.html">To Delete a Transport</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -1,0 +1,105 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-integratejdbcdriver" name="task-integratejdbcdriver"></a><a id="GHJDB00031" name="GHJDB00031"></a></p>
+
+<h4><a id="sthref4" name="sthref4"></a>To Integrate a JDBC Driver</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>A driver supporting the JDBC API (JDBC driver) translates the JDBC calls of an application into the protocol of the database server.</p>
+<p>To integrate the JDBC driver into an GlassFish Server domain, do either of the following:</p>
+<ul>
+<li>
+<p>Make the driver accessible to the common class loader.</p>
+<ol>
+<li>
+<p>Copy the JAR and ZIP files of the driver into the <i>domain-dir</i><code>/lib</code> directory.</p>
+
+<hr>
+<p><b>Note:</b></p>
+<p>There is one exception to this rule. If you are using the Oracle JDBC driver and you wish to take advantage of the EclipseLink extensions that are available for use with Oracle databases, you must place the JAR files for the Oracle JDBC driver in the <i>domain-dir</i><code>/lib/ext</code> directory.</p>
+
+<hr>
+
+</li>
+<li>
+<p>Restart the domain.</p>
+</li>
+</ol>
+</li>
+<li>
+<p>Make the driver accessible to the system class loader.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Under the Configuration node, select the JVM Settings node.</p>
+<p>The JVM General Settings page opens.</p>
+</li>
+<li>
+<p>On the JVM General Settings page, click the Path Settings tab.</p>
+</li>
+<li>
+<p>In the Classpath Suffix field, type the fully qualified path name for the JAR file of the driver.</p>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+<li>
+<p>Restart the server.</p>
+</li>
+</ol>
+</li>
+</ul>
+<a id="sthref5" name="sthref5"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-setdbaccess.html">To Set Up Database Access</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcenew.html">To Create a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcesedit.html">To Edit a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcresourcesdelete.html">To Delete a JDBC Resource</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolnew.html">To Create a JDBC Connection Pool</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooledit.html">To Edit JDBC Connection Pool General Settings</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooladvance.html">To Edit JDBC Connection Pool Advanced Attributes</a></p>
+</li>
+<li>
+<p><a href="task-verifyconnpoolsettings.html">To Verify Connection Pool Settings</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpoolproperty.html">To Edit JDBC Connection Pool Properties</a></p>
+</li>
+<li>
+<p><a href="task-jdbcconnectionpooldelete.html">To Delete a JDBC Connection Pool</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

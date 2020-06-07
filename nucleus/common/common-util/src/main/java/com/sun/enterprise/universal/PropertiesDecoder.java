@@ -92,7 +92,7 @@ public class PropertiesDecoder {
         if(!ok(element))
             return; // no harm, no foul
 
-        int index = element.indexOf("=");
+        int index = element.indexOf('=');
 
         // 1.
         if(index < 0)

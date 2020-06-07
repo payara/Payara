@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -79,7 +79,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetMPHealthCheckConfiguration implements AdminCommand {
 
-    private final String OUTPUT_HEADERS[] = {"Enabled", "EndPoint", "VirtualServers"};
+    private final String[] OUTPUT_HEADERS = {"Enabled", "EndPoint", "VirtualServers", "Security Enabled", "Roles"};
 
     @Inject
     private Target targetUtil;
@@ -104,7 +104,9 @@ public class GetMPHealthCheckConfiguration implements AdminCommand {
         Object[] outputValues = {
             healthCheckConfiguration.getEnabled(),
             healthCheckConfiguration.getEndpoint(),
-            healthCheckConfiguration.getVirtualServers()
+            healthCheckConfiguration.getVirtualServers(),
+            healthCheckConfiguration.getSecurityEnabled(),
+            healthCheckConfiguration.getRoles()
         };
         columnFormatter.addRow(outputValues);
 
@@ -114,6 +116,8 @@ public class GetMPHealthCheckConfiguration implements AdminCommand {
         extraPropertiesMap.put("enabled", healthCheckConfiguration.getEnabled());
         extraPropertiesMap.put("endpoint", healthCheckConfiguration.getEndpoint());
         extraPropertiesMap.put("virtualServers", healthCheckConfiguration.getVirtualServers());
+        extraPropertiesMap.put("securityenabled", healthCheckConfiguration.getSecurityEnabled());
+        extraPropertiesMap.put("roles", healthCheckConfiguration.getRoles());
 
         Properties extraProperties = new Properties();
         extraProperties.put("microprofileHealthCheckConfiguration", extraPropertiesMap);

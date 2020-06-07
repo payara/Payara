@@ -60,7 +60,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class StopDomainsCommand extends StopDomainCommand {
 
-    @Param(name = "domain_name", primary = true, optional = true)
+    @Param(name = "domain_name", primary = true)
     protected String userArgDomainName;
     @Param(name = "force", optional = true, defaultValue = "true")
     Boolean force;

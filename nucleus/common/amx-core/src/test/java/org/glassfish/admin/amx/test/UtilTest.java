@@ -65,9 +65,3 @@ public final class UtilTest {
         assert Util.deduceType(DomainRoot.class).equals( "domain-root" );
     }
 }
-
-
-
-
-
-

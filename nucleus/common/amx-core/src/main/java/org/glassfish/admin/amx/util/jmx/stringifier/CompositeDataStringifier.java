@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
@@ -45,56 +46,34 @@ import org.glassfish.admin.amx.util.stringifier.Stringifier;
 
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
-import java.util.Iterator;
 import java.util.Set;
 
-public class CompositeDataStringifier implements Stringifier
-{
+/**
+ * Creates a String representation of an {@link CompositeData}
+ * @see Object#toString() 
+ */
+public class CompositeDataStringifier implements Stringifier {
     public static final CompositeDataStringifier DEFAULT = new CompositeDataStringifier();
 
-    public CompositeDataStringifier()
-    {
-    }
-
+    @Override
     public String stringify(Object o)
     {
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         buf.append("Composite data:\n");
 
         final CompositeData data = (CompositeData) o;
         final CompositeType type = data.getCompositeType();
 
         final Set keySet = type.keySet();
-        final Iterator iter = keySet.iterator();
-        while (iter.hasNext())
-        {
-            final String key = (String) iter.next();
+        for (Object aKeySet : keySet) {
+            final String key = (String) aKeySet;
             final Object item = data.get(key);
 
             final String s = SmartStringifier.toString(item);
-            buf.append(key + "=" + s + "\n");
+            buf.append(key).append("=").append(s).append("\n");
         }
 
         return (buf.toString());
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

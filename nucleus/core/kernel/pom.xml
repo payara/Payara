@@ -40,15 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.core</groupId>
+        <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>5.184-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
     <artifactId>kernel</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -114,31 +113,6 @@
         </resources>
         <plugins>
             <plugin>
-                   <groupId>org.apache.maven.plugins</groupId>
-                   <artifactId>maven-dependency-plugin</artifactId>
-                   <executions>
-                       <execution>
-                           <id>unpack</id>
-                           <phase>process-classes</phase>
-                           <goals>
-                             <goal>unpack</goal>
-                           </goals>
-                           <configuration>
-                               <artifactItems>
-                                   <artifactItem>
-                                       <groupId>org.glassfish.docs.man</groupId>
-                                       <artifactId>kernel-manpage</artifactId>
-                                       <version>${v3-docs.version}</version>
-                                       <type>zip</type>
-                                       <overWrite>true</overWrite>
-                                       <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                                   </artifactItem>
-                                </artifactItems>
-                           </configuration>
-                      </execution>
-                   </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
@@ -156,32 +130,32 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security-services</artifactId>
             <version>${project.version}</version>
         </dependency>
 		<!--dependency>
-			<groupId>org.glassfish.main.common</groupId>
+			<groupId>fish.payara.server.internal.common</groupId>
 			<artifactId>stats77</artifactId>
 			<version>${project.version}</version>
 		</dependency-->
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -195,28 +169,28 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.grizzly</groupId>
+            <groupId>fish.payara.server.internal.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.tests</groupId>
+            <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.flashlight</groupId>
+            <groupId>fish.payara.server.internal.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -234,26 +208,26 @@
 	    <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>logging</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 	<dependency>
-		<groupId>org.glassfish.main.core</groupId>
-		<artifactId>api-exporter</artifactId>
-		<version>${project.version}</version>
-	</dependency>
+            <groupId>fish.payara.server.internal.core</groupId>
+            <artifactId>api-exporter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
@@ -261,12 +235,12 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-stuck</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -276,30 +250,56 @@
             <artifactId>hibernate-validator</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
+            <artifactId>jakarta.el</artifactId>
         </dependency>
-        
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>tiger-types</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.monitoring-console</groupId>
+            <artifactId>monitoring-console-api</artifactId>
+        </dependency>
     </dependencies>
     
     <profiles>
+        <!-- We can't use integration points for custom themes here, so overwrite the image file -->
         <profile>
-            <id>jdk5</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <jdk>1.5</jdk>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>javax.xml.stream</groupId>
-                    <artifactId>stax-api</artifactId>
-                    <scope>provided</scope>
-                </dependency>
-            </dependencies>
+            <id>enterprise</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>use-enterprise-backimage.png</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/classes/com/sun/enterprise/v3/admin/adapter/</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/main/java/fish/payara/enterprise/admin/adapter/</directory>
+                                            <includes>
+                                                <include>backimage.jpg</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

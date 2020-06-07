@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -44,24 +45,20 @@ import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.common.DataSourceSpec;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
-
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.security.PasswordCredential;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.resource.ResourceException;
 import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.ConnectionDefinition;
+import javax.resource.spi.ConnectionRequestInfo;
+import javax.resource.spi.security.PasswordCredential;
 
 /**
  * Driver Manager <code>ManagedConnectionFactory</code> implementation for Generic JDBC Connector.
@@ -102,6 +99,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @throws SecurityException if there ino <code>PasswordCredential</code> object
      *                           satisfying this request
      */
+    @Override
     public javax.resource.spi.ManagedConnection createManagedConnection(javax.security.auth.Subject subject,
                                                                         ConnectionRequestInfo cxRequestInfo) throws ResourceException {
         logFine("In createManagedConnection");
@@ -125,11 +123,11 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
         //Get a set of normal case properties
         Hashtable properties = dsObjBuilder.parseDriverProperties(spec, false);
         Set<Map.Entry<String,Vector>> entries =
-                (Set<Map.Entry<String, Vector>>) properties.entrySet();
+                properties.entrySet();
         for(Map.Entry<String, Vector> entry : entries) {
             String value = "";
-            String key = (String) entry.getKey();
-            Vector values = (Vector) entry.getValue();
+            String key = entry.getKey();
+            Vector values = entry.getValue();
             if(!values.isEmpty() && values.size() == 1) {
                 value = (String) values.firstElement();
             } else if(values.size() > 1) {
@@ -192,34 +190,13 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      * @param key
      * @return
      */
-    private String getParsedKey(String key) throws ResourceException {
-        String parsedKey = null;
-        int indexOfSet = -1;
-        try {
-            indexOfSet = key.indexOf("set");
-        } catch (NullPointerException npe) {
-            if (debug) {
-                _logger.log(Level.FINE, "jdbc.exc_caught_ign", npe.getMessage());
-            }
-
+    private static String getParsedKey(String key) throws ResourceException {
+        String property = key != null && key.startsWith("set") ? key.substring(3).trim() : key;
+        if (property == null || property.isEmpty()) {
+            throw new ResourceException("Invalid driver properties string - " +
+                    "Key cannot be an empty string");
         }
-        if (indexOfSet == 0) {
-            //Find the key String
-
-            try {
-                parsedKey = key.substring(indexOfSet + 3, key.length()).trim();
-            } catch (IndexOutOfBoundsException iobe) {
-                if (debug) {
-                    _logger.log(Level.FINE, "jdbc.exc_caught_ign", iobe.getMessage());
-                }
-            }
-            if (parsedKey != null && parsedKey.equals("")) {
-                throw new ResourceException("Invalid driver properties string - " +
-                        "Key cannot be an empty string");
-            }
-        }
-        return parsedKey;
-        
+        return property;
     }
 
     /**
@@ -357,7 +334,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
      *
      * @param className <code>String</code>
      */
-    @ConfigProperty(type = String.class, defaultValue = "org.apache.derby.jdbc.ClientDriver")
+    @ConfigProperty(type = String.class, defaultValue = "org.h2.Driver")
     @Override
     public void setClassName(String className) {
         spec.setDetail(DataSourceSpec.CLASSNAME, className);

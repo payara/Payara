@@ -55,12 +55,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static org.apache.catalina.LogFacade.UNEXPECTED_ERROR_FORWARDING_TO_LOGIN_PAGE;
 import static org.apache.catalina.authenticator.Constants.FORM_ACTION;
 import static org.apache.catalina.authenticator.Constants.FORM_METHOD;
@@ -88,6 +89,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Realm;
 import org.apache.catalina.Session;
 import org.apache.catalina.deploy.LoginConfig;
@@ -109,10 +111,15 @@ public class FormAuthenticator extends AuthenticatorBase {
     // -------------------------------------------------- Instance Variables
 
     /**
+     * Property that can be set to restrict the HTTP methods permitted when doing a FORM based authentication.
+     */
+    private static final String PERMITTED_FORM_BASED_AUTH_HTTP_METHODS_PROPERTY = "fish.payara.permittedFormBasedAuthHttpMethods";
+
+    /**
      * Descriptive information about this implementation.
      */
     protected static final String info = "org.apache.catalina.authenticator.FormAuthenticator/1.0";
-
+    
     // ---------------------------------------------------------- Properties
 
     /**
@@ -148,6 +155,10 @@ public class FormAuthenticator extends AuthenticatorBase {
         
         // Is this the action request from the login page?
         boolean loginAction = requestURI.startsWith(contextPath) && requestURI.endsWith(FORM_ACTION);
+        if (loginAction && !isPermittedHttpMethod(hreq.getMethod())) {
+            hres.sendError(SC_FORBIDDEN, rb.getString(LogFacade.ACCESS_RESOURCE_DENIED));
+            return false;
+        }
 
         // Have we already authenticated someone?
         Principal principal = hreq.getUserPrincipal();
@@ -519,7 +530,7 @@ public class FormAuthenticator extends AuthenticatorBase {
         SavedRequest savedRequest = new SavedRequest();
         
         // Copy cookies
-        Cookie cookies[] = httpServletRequest.getCookies();
+        Cookie[] cookies = httpServletRequest.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 savedRequest.addCookie(cookie);
@@ -598,9 +609,22 @@ public class FormAuthenticator extends AuthenticatorBase {
         long ssoVersion = 0L;
         Long ssoVersionObj = (Long) request.getNote(REQ_SSO_VERSION_NOTE);
         if (ssoVersionObj != null) {
-            ssoVersion = ssoVersionObj.longValue();
+            ssoVersion = ssoVersionObj;
         }
         
         return ssoVersion;
+    }
+    
+    private static boolean isPermittedHttpMethod(String usedMethod) {
+        String permittedHttpMethods = System.getProperty(PERMITTED_FORM_BASED_AUTH_HTTP_METHODS_PROPERTY);
+        if (permittedHttpMethods == null) {
+            return true;
+        }
+        for (String validMethod : permittedHttpMethods.split(",")) {
+            if (validMethod.equalsIgnoreCase(usedMethod)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

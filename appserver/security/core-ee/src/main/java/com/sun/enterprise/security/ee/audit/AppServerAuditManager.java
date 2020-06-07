@@ -38,99 +38,88 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation]
 
 package com.sun.enterprise.security.ee.audit;
-import java.util.logging.Logger;
 
+import static java.util.logging.Level.INFO;
 
-import com.sun.appserv.security.AuditModule;
-import com.sun.enterprise.security.audit.BaseAuditManager;
-import com.sun.enterprise.security.BaseAuditModule;
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
+
 import org.glassfish.hk2.api.Rank;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.appserv.security.AuditModule;
+import com.sun.enterprise.security.BaseAuditModule;
+import com.sun.enterprise.security.audit.BaseAuditManager;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.logging.LogDomains;
 
 /**
  * An EE-specific implementation of the audit manager.
  * <p>
- * This class delegates the nucleus-based work of handling server start-up and
- * shutdown and user authentication to its superclass, adding only the work
- * specific to EE auditing here.
+ * This class delegates the nucleus-based work of handling server start-up and shutdown and user authentication to its
+ * superclass, adding only the work specific to EE auditing here.
  *
- * @author  Harpreet Singh
- * @author  Shing Wai Chan
- * @author  tjquinn
+ * @author Harpreet Singh
+ * @author Shing Wai Chan
+ * @author tjquinn
  */
 @Service
 @Singleton
 @Rank(20) // so the app server prefers this impl to the non-EE one in nucleus
-public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
-        {
+public final class AppServerAuditManager extends BaseAuditManager<AuditModule> {
 
-    private static final String AUDIT_MGR_WS_INVOCATION_KEY =
-        "auditmgr.webServiceInvocation";
-    private static final String AUDIT_MGR_EJB_AS_WS_INVOCATION_KEY =
-        "auditmgr.ejbAsWebServiceInvocation";
-
-    private static final Logger _logger =
-             LogDomains.getLogger(AppServerAuditManager.class, LogDomains.SECURITY_LOGGER, false);
-
-    private static final LocalStringManagerImpl _localStrings =
-	new LocalStringManagerImpl(AppServerAuditManager.class);
-
+    private static final Logger _logger = LogDomains.getLogger(AppServerAuditManager.class, LogDomains.SECURITY_LOGGER, false);
+    private static final LocalStringManagerImpl _localStrings = new LocalStringManagerImpl(AppServerAuditManager.class);
+    
+    private static final String AUDIT_MGR_WS_INVOCATION_KEY = "auditmgr.webServiceInvocation";
+    private static final String AUDIT_MGR_EJB_AS_WS_INVOCATION_KEY = "auditmgr.ejbAsWebServiceInvocation";
+   
     private List<AuditModule> myAuditModules;
-
-    private synchronized List<AuditModule> myAuditModules() {
-        if (myAuditModules == null) {
-            myAuditModules = instances(AuditModule.class);
-        }
-        return myAuditModules;
-    }
 
     @Override
     public BaseAuditModule addAuditModule(String name, String classname, Properties props) throws Exception {
-        final BaseAuditModule am = super.addAuditModule(name, classname, props);
-        if (AuditModule.class.isAssignableFrom(am.getClass())) {
-            myAuditModules().add((AuditModule) am);
+        BaseAuditModule auditModule = super.addAuditModule(name, classname, props);
+        if (AuditModule.class.isAssignableFrom(auditModule.getClass())) {
+            myAuditModules().add((AuditModule) auditModule);
         }
-        return am;
+        
+        return auditModule;
     }
 
     @Override
     public BaseAuditModule removeAuditModule(String name) {
-        final BaseAuditModule am = super.removeAuditModule(name);
-        if (AuditModule.class.isAssignableFrom(am.getClass())) {
-            myAuditModules().remove((AuditModule) am);
+        BaseAuditModule auditModule = super.removeAuditModule(name);
+        if (AuditModule.class.isAssignableFrom(auditModule.getClass())) {
+            myAuditModules().remove((AuditModule) auditModule);
         }
-        return am;
+        
+        return auditModule;
     }
 
     /**
      * logs the web authorization call for all loaded modules
+     * 
      * @see com.sun.appserv.security.AuditModule.webInvocation
      */
-    public void webInvocation(final String user, final HttpServletRequest req,
-        final String type, final boolean success){
+    public void webInvocation(String user, HttpServletRequest request, String type, boolean success) {
         if (auditOn) {
-            for (AuditModule am : myAuditModules()) {
+            for (AuditModule auditModule : myAuditModules()) {
                 try {
-                    am.webInvocation(user, req, type, success);
+                    auditModule.webInvocation(user, request, type, success);
                 } catch (Exception ex) {
-                    final String name = moduleName(am);
-                    final String msg =
+                    _logger.log(INFO, 
                         _localStrings.getLocalString(
                             "auditmgr.webinvocation",
-                            " Audit Module {0} threw the following exception during web invocation :",
-                            name);
-                    _logger.log(Level.INFO, msg, ex);
+                            " Audit Module {0} threw the following exception during web invocation :", 
+                            moduleName(auditModule)), ex);
                 }
             }
         }
@@ -138,71 +127,67 @@ public final class AppServerAuditManager extends BaseAuditManager<AuditModule>
 
     /**
      * logs the ejb authorization call for all ejb modules
+     * 
      * @see com.sun.appserv.security.AuditModule.ejbInvocation
      */
-    public void ejbInvocation(final String user, final String ejb, final String method,
-            final boolean success){
+    public void ejbInvocation(String user, String ejb, String method, boolean success) {
         if (auditOn) {
-            for (AuditModule am : myAuditModules()) {
+            for (AuditModule auditModule : myAuditModules()) {
                 try {
-                    am.ejbInvocation(user, ejb, method, success);
+                    auditModule.ejbInvocation(user, ejb, method, success);
                 } catch (Exception ex) {
-                    final String name = moduleName(am);
-                    final String msg =
-                        _localStrings.getLocalString(
-                            "auditmgr.ejbinvocation",
-                            " Audit Module {0} threw the following exception during ejb invocation :",
-                            name);
-                    _logger.log(Level.INFO, msg, ex);
+                    _logger.log(INFO, _localStrings.getLocalString("auditmgr.ejbinvocation",
+                            " Audit Module {0} threw the following exception during ejb invocation :", moduleName(auditModule)), ex);
                 }
             }
         }
     }
 
     /**
-     * This method is called for the web service calls with MLS set
-     * and the endpoints deployed as servlets
+     * This method is called for the web service calls with MLS set and the endpoints deployed as servlets
+     * 
      * @see com.sun.appserv.security.AuditModule.webServiceInvocation
      */
-    public void webServiceInvocation(final String uri, final String endpoint,
-                                     final boolean validRequest){
+    public void webServiceInvocation(String uri, String endpoint, boolean validRequest) {
         if (auditOn) {
-            for (AuditModule am : myAuditModules()) {
+            for (AuditModule auditModule : myAuditModules()) {
                 try {
-                    am.webServiceInvocation(uri, endpoint, validRequest);
+                    auditModule.webServiceInvocation(uri, endpoint, validRequest);
                 } catch (Exception ex) {
-                    final String name = moduleName(am);
-                    final String msg =
-                        _localStrings.getLocalString(
-                            AUDIT_MGR_WS_INVOCATION_KEY,
-                            " Audit Module {0} threw the following exception during web service invocation :",
-                            name);
-                    _logger.log(Level.INFO, msg, ex);
+                    final String name = moduleName(auditModule);
+                    final String msg = _localStrings.getLocalString(AUDIT_MGR_WS_INVOCATION_KEY,
+                            " Audit Module {0} threw the following exception during web service invocation :", name);
+                    _logger.log(INFO, msg, ex);
                 }
             }
         }
     }
 
     /**
-     * This method is called for the web service calls with MLS set
-     * and the endpoints deployed as servlets
+     * This method is called for the web service calls with MLS set and the endpoints deployed as servlets
+     * 
      * @see com.sun.appserv.security.AuditModule.webServiceInvocation
      */
-    public void ejbAsWebServiceInvocation(final String endpoint, final boolean validRequest){
+    public void ejbAsWebServiceInvocation(String endpoint, boolean validRequest) {
         if (auditOn) {
-            for (AuditModule am : myAuditModules()) {
+            for (AuditModule auditModule : myAuditModules()) {
                 try {
-                    am.ejbAsWebServiceInvocation(endpoint, validRequest);
+                    auditModule.ejbAsWebServiceInvocation(endpoint, validRequest);
                 } catch (Exception ex) {
-                    final String name = moduleName(am);
-                    final String msg =
-                        _localStrings.getLocalString(
-                            AUDIT_MGR_EJB_AS_WS_INVOCATION_KEY,
-                            " Audit Module {0} threw the following exception during ejb as web service invocation :",
-                            name);
-                    _logger.log(Level.INFO, msg, ex);
+                    final String name = moduleName(auditModule);
+                    final String msg = _localStrings.getLocalString(AUDIT_MGR_EJB_AS_WS_INVOCATION_KEY,
+                            " Audit Module {0} threw the following exception during ejb as web service invocation :", name);
+                    _logger.log(INFO, msg, ex);
                 }
             }
         }
+    }
+    
+    private synchronized List<AuditModule> myAuditModules() {
+        if (myAuditModules == null) {
+            myAuditModules = instances(AuditModule.class);
+        }
+        
+        return myAuditModules;
     }
 }

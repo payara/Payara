@@ -37,8 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.appclient.client;
+
+import static org.junit.Assert.fail;
 
 import org.glassfish.appclient.client.acc.UserError;
 import org.junit.After;
@@ -47,7 +49,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -111,7 +112,7 @@ public class CLIBootstrapTest {
             final CLIBootstrap boot = new CLIBootstrap();
             System.setProperty(CLIBootstrap.ENV_VAR_PROP_PREFIX + envVarName,
                         "shouldnotexistanywhere");
-            CLIBootstrap.JavaInfo javaInfo = boot.initJava();
+            CLIBootstrap.JavaInfo javaInfo = new CLIBootstrap.JavaInfo();
             
         } catch (UserError ex) {
             /*
@@ -126,7 +127,7 @@ public class CLIBootstrapTest {
                        System.getProperty("java.home"));
         try {
             final CLIBootstrap boot = new CLIBootstrap();
-            CLIBootstrap.JavaInfo javaInfo = boot.initJava();
+            CLIBootstrap.JavaInfo javaInfo = new CLIBootstrap.JavaInfo();
             if (javaInfo == null) {
                 fail("chooseJava found no match; expected to match on " + envVarName);
             }

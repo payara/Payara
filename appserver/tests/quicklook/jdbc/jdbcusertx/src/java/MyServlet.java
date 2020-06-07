@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package myapp;
 
@@ -57,7 +58,7 @@ public class MyServlet extends HttpServlet {
     @Resource(name = "jdbc/__default", mappedName = "jdbc/__default")
     DataSource ds1;
 
-    /** 
+    /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
      * @param response servlet response
@@ -68,7 +69,7 @@ public class MyServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         Boolean pass = false;
         SimpleTest[] tests = null;
-        StringBuffer buf = null;
+        StringBuilder buf = null;
         Boolean  notestcase = false;
         String testcase = request.getParameter("testcase");
         System.out.println("testcase="+testcase);
@@ -81,7 +82,7 @@ public class MyServlet extends HttpServlet {
           out.println("<body>");
           out.println("<h1>Servlet MyServlet at " + request.getContextPath() + "</h1>");
 
-          buf = new StringBuffer();
+          buf = new StringBuilder();
 
           try {
 	    if ("usertx".equals(testcase)) {
@@ -147,7 +148,7 @@ public class MyServlet extends HttpServlet {
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
+    /**
      * Handles the HTTP <code>GET</code> method.
      * @param request servlet request
      * @param response servlet response
@@ -157,7 +158,7 @@ public class MyServlet extends HttpServlet {
         processRequest(request, response);
     }
 
-    /** 
+    /**
      * Handles the HTTP <code>POST</code> method.
      * @param request servlet request
      * @param response servlet response
@@ -167,7 +168,7 @@ public class MyServlet extends HttpServlet {
         processRequest(request, response);
     }
 
-    /** 
+    /**
      * Returns a short description of the servlet.
      */
     public String getServletInfo() {

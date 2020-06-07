@@ -38,7 +38,7 @@
  * holder.
  * 
  */
-// Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+// Portions Copyright [2017-2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.utils;
 
@@ -50,7 +50,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -70,6 +69,8 @@ import org.glassfish.admin.rest.model.ResponseBody;
 public class JsonUtil {
     public static final String CONFIDENTIAL_PROPERTY_SET = "@_Oracle_Confidential_Property_Set_V1.1_#";
     public static final String CONFIDENTIAL_PROPERTY_UNSET = null;
+    
+    private JsonUtil() { /* to prevent instantiation */ }
 
     /**
      * Converts an object to a JsonValue
@@ -78,7 +79,7 @@ public class JsonUtil {
      * {@link Integer}, {@link Long}, {@link Double}, {@link Boolean}, {@link BigInteger}, {@link BigDecimal},
      * a class that has a REST model or an array of one of the above.
      * @param object The object to convert
-     * @return
+     * @return The resulting JsonValue
      * @throws JsonException If the object cannot be converted to a JsonValue
      */
     public static JsonValue getJsonValue(Object object) throws JsonException{
@@ -92,25 +93,8 @@ public class JsonUtil {
      * {@link Integer}, {@link Long}, {@link Double}, {@link Boolean}, {@link BigInteger}, {@link BigDecimal},
      * a class that has a REST model or an array of one of the above.
      * @param object The object to convert
-     * @return
-     * @throws JsonException If the object cannot be converted to a JsonValue
-     * @deprecated As of 5.0, replaced by {@link #getJsonValue(Object)} as a more accurately named method
-     * with the removal of Jettison the return value is no longer JSONObject but JsonValue.
-     */
-    @Deprecated
-    public static JsonValue getJsonObject(Object object) throws JsonException {
-        return getJsonValue(object, true);
-    }
-    
-    /**
-     * Converts an object to a JsonValue
-     * <p>
-     * The object must be one of {@link JsonValue}, {@link Collection}, {@link Map}, {@link ResponseBody}, {@link String},
-     * {@link Integer}, {@link Long}, {@link Double}, {@link Boolean}, {@link BigInteger}, {@link BigDecimal},
-     * a class that has a REST model or an array of one of the above.
-     * @param object The object to convert
      * @param hideConfidentialProperties
-     * @return
+     * @return resulting JsonValue
      * @throws JsonException If the object cannot be converted to a JsonValue
      */
     public static JsonValue getJsonValue(Object object, boolean hideConfidentialProperties) throws JsonException {
@@ -188,7 +172,7 @@ public class JsonUtil {
     public static JsonObject getJsonForRestModel(RestModel model, boolean hideConfidentialProperties) {
         JsonObjectBuilder result = Json.createObjectBuilder();
         for (Method m : model.getClass().getDeclaredMethods()) {
-            if (m.getName().startsWith("get")) { // && !m.getName().equals("getClass")) {
+            if (m.getName().startsWith("get")) {
                 String propName = m.getName().substring(3);
                 propName = propName.substring(0,1).toLowerCase(Locale.getDefault()) + propName.substring(1);
                 if (!model.isTrimmed() || model.isSet(propName)) { // TBD - remove once the conversion to the new REST style guide is completed
@@ -387,7 +371,7 @@ public class JsonUtil {
         ValueType type = value.getValueType();
         switch (type) {
             case STRING:
-                return (String) ((JsonString) value).getString();
+                return ((JsonString) value).getString();
             case NUMBER:
                 return ((JsonNumber) value).bigDecimalValue();
             case TRUE:

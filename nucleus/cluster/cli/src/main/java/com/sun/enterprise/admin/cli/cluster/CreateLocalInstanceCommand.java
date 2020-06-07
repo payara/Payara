@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 
 package com.sun.enterprise.admin.cli.cluster;
@@ -48,26 +48,28 @@ import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandValidationException;
-
-import org.glassfish.security.common.FileProtectionUtility;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PerLookup;
-
+import fish.payara.admin.cli.cluster.NamingHelper;
+import fish.payara.util.cluster.PayaraServerNameGenerator;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.security.common.FileProtectionUtility;
+import org.jvnet.hk2.annotations.Service;
+
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
 
 /**
@@ -80,16 +82,18 @@ import java.util.logging.Level;
 @PerLookup
 @I18n("create.local.instance")
 public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesystemCommand {
-    private final String CONFIG = "config";
-    private final String CLUSTER = "cluster";
-    private static final LocalStringsImpl strings =
-            new LocalStringsImpl(CreateLocalInstanceCommand.class);
+    private static final String CONFIG = "config";
+    private static final String CLUSTER = "cluster";
+    private static final String DEPLOYMENT_GROUP = "deploymentGroup";
 
     @Param(name = CONFIG, optional = true)
     private String configName;
 
     @Param(name = CLUSTER, optional = true)
     private String clusterName;
+    
+    @Param(name = DEPLOYMENT_GROUP, optional = true)
+    private String deploymentGroup;
 
     @Param(name="lbenabled", optional = true)
     private Boolean lbEnabled;
@@ -109,6 +113,18 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     @Param(name = "usemasterpassword", optional = true, defaultValue = "false")
     private boolean useMasterPassword = false;
 
+    // Add asadmin utility option so that it isn't mandated to be before the command on the command line
+    // Technically deprecated syntax
+    @Param(name = "autoname", optional = true, shortName = "a", defaultValue = "false")
+    private boolean autoName;
+    
+    @Param(name = "dataGridStartPort", optional = true, alias = "datagridstartport")
+    private String dataGridStartPort;
+
+    // Override for hostname, as getting it from the system can be fragile when comparing against node config
+    @Param(name = "ip", optional = true)
+    private String ip;
+
     private String masterPassword = null;
 
     private static final String RENDEZVOUS_PROPERTY_NAME = "rendezvousOccurred";
@@ -118,22 +134,16 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private String _node;
     private static final String DEFAULT_MASTER_PASSWORD = KeystoreManager.DEFAULT_MASTER_PASSWORD;
     private ParamModelData masterPasswordOption;
-    private static final String MASTER_PASSWORD_ALIAS="master-password";
-
-    /**
-     */
+    
     @Override
-    protected void validate()
-            throws CommandException {
+    protected void validate() throws CommandException {
         echoCommand();
         if (configName != null && clusterName != null) {
-            throw new CommandException(
-                    Strings.get("ConfigClusterConflict"));
+            throw new CommandException(Strings.get("ConfigClusterConflict"));
         }
 
         if (lbEnabled != null && clusterName == null) {
-            throw new CommandException(
-                    Strings.get("lbenabledNotForStandaloneInstance"));
+            throw new CommandException(Strings.get("lbenabledNotForStandaloneInstance"));
         }
 
         setDasDefaultsOnly = true; //Issue 12847 - Call super.validate to setDasDefaults only
@@ -146,24 +156,35 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             //If we are on Windows, call _validate-node on DAS instead of relying on the path processing in the local validation.
             String nodeInstallDir = getNodeInstallDir();
             if (nodeInstallDir == null || nodeInstallDir.isEmpty() || TokenResolver.hasToken(nodeInstallDir) || OS.isWindows()) {
-                validateNode(node, getProductRootPath(), getInstanceHostName(true));
+                if (dockerNode && StringUtils.ok(ip)) {
+                    validateNode(node, getProductRootPath(), ip);
+                } else {
+                    validateNode(node, getProductRootPath(), getInstanceHostName(true));
+                }
             } else {
                 validateNodeInstallDirLocal(nodeInstallDir, getProductRootPath());
-                validateNode(node, null, getInstanceHostName(true));
+                if (dockerNode && StringUtils.ok(ip)) {
+                    validateNode(node, null, ip);
+                } else {
+                    validateNode(node, null, getInstanceHostName(true));
+                }
             }
-
         }
 
         if (!rendezvousWithDAS()) {
-            throw new CommandException(
-                    Strings.get("Instance.rendezvousFailed", DASHost, "" + DASPort));
+            throw new CommandException(Strings.get("Instance.rendezvousFailed", DASHost, "" + DASPort));
         }
         if (instanceName != null && instanceName.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
-            throw new CommandException(
-                    Strings.get("Instance.alreadyExists", SystemPropertyConstants.DAS_SERVER_NAME));
+            throw new CommandException(Strings.get("Instance.alreadyExists", SystemPropertyConstants.DAS_SERVER_NAME));
         }
         setDomainName();
         setDasDefaultsOnly = false;
+
+        if (programOpts.isAutoName() || autoName) {
+            instanceName0 = PayaraServerNameGenerator.validateInstanceNameUnique(instanceName0,
+                    NamingHelper.getAllNamesInUse(programOpts, env));
+        }
+
         super.validate();  // instanceName is validated and set in super.validate(), directories created
         INSTANCE_DOTTED_NAME = "servers.server." + instanceName;
         RENDEZVOUS_DOTTED_NAME = INSTANCE_DOTTED_NAME + ".property." + RENDEZVOUS_PROPERTY_NAME;
@@ -215,6 +236,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             exitCode = super.executeCommand();
             if (exitCode == SUCCESS) {
                 saveMasterPassword();
+
+                if (programOpts.isExtraTerse() || extraTerse) {
+                    logger.info(instanceName);
+                }
             }
         } catch (CommandException ce) {
             String msg = "Something went wrong in creating the local filesystem for instance " + instanceName;
@@ -227,6 +252,23 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
             throw new CommandException(msg, ce);
         }
+        
+        if (StringUtils.ok(dataGridStartPort)) {
+            try {
+                RemoteCLICommand rc = new RemoteCLICommand("set-hazelcast-configuration", this.programOpts, this.env);
+                rc.execute("set-hazelcast-configuration", "--configSpecificDataGridStartPort", dataGridStartPort, "--target", instanceName);
+                
+            } catch (CommandException cex) {
+                String msg = "Something went wrong when setting config specific Data Grid start port for instance " + instanceName;
+                if (cex.getLocalizedMessage() != null) {
+                    msg = msg + ": " + cex.getLocalizedMessage();
+                }
+                logger.severe(msg);
+                throw new CommandException(msg, cex);
+            }
+
+        }
+        
         return exitCode;
     }
 
@@ -252,8 +294,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private int bootstrapSecureAdminFiles() throws CommandException {
         RemoteCLICommand rc = new RemoteCLICommand("_bootstrap-secure-admin", this.programOpts, this.env);
         rc.setFileOutputDirectory(instanceDir);
-        final int result = rc.execute(new String[] {"_bootstrap-secure-admin"});
-        return result;
+        return rc.execute(new String[] {"_bootstrap-secure-admin"});
     }
 
     /**
@@ -312,11 +353,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
      * @throws CommandException
      */
     protected void createMasterPasswordFile(String masterPassword) throws CommandException {
-        final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTER_PASSWORD_ALIAS);
+        final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
         try {
-            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(),
-                MASTER_PASSWORD_ALIAS.toCharArray());
-            p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, masterPassword.getBytes());
+            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray());
+            p.setPasswordForAlias(MASTERPASSWORD_FILE, masterPassword.getBytes());
             FileProtectionUtility.chmod0600(pwdFile);
         } catch (Exception ex) {
             throw new CommandException(Strings.get("masterPasswordFileNotCreated", pwdFile),
@@ -327,9 +367,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
     private boolean rendezvousWithDAS() {
         try {
-            //logger.info(Strings.get("Instance.rendezvousAttempt", DASHost, "" + DASPort));
             getUptime();
-            logger.info(Strings.get("Instance.rendezvousSuccess", DASHost, "" + DASPort));
+            if (!programOpts.isExtraTerse() || !extraTerse) {
+                logger.info(Strings.get("Instance.rendezvousSuccess", DASHost, "" + DASPort));
+            }
             return true;
         } catch (CommandException ex) {
             return false;
@@ -342,6 +383,10 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         if (clusterName != null) {
             argsList.add("--cluster");
             argsList.add(clusterName);
+        }
+        if (deploymentGroup != null) {
+            argsList.add("--deploymentgroup");
+            argsList.add(deploymentGroup);
         }
         if (lbEnabled != null) {
             argsList.add("--lbenabled");
@@ -395,7 +440,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         try {
             rc = new RemoteCLICommand("get", this.programOpts, this.env);
             String s = rc.executeAndReturnOutput("get", RENDEZVOUS_DOTTED_NAME);
-            String val = s.substring(s.indexOf("=") + 1);
+            String val = s.substring(s.indexOf('=') + 1);
             rendezvousOccurred = Boolean.parseBoolean(val);
             logger.log(Level.FINER, "rendezvousOccurred = {0} for instance {1}", new Object[]{val, instanceName});
         } catch (CommandException ce) {
@@ -468,14 +513,12 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         String canonicalInstallDir = FileUtils.safeGetCanonicalPath(new File(installDir));
         if (canonicalNodeInstallDir == null || canonicalInstallDir == null) {
             throw new CommandValidationException(
-                Strings.get("Instance.installdir.null", node,
-                           canonicalInstallDir, canonicalNodeInstallDir));
+                Strings.get("Instance.installdir.null", node, canonicalInstallDir, canonicalNodeInstallDir));
         }
 
         if ( !canonicalInstallDir.equals(canonicalNodeInstallDir) ) {
             throw new CommandValidationException(
-                Strings.get("Instance.installdir.mismatch", node,
-                           canonicalInstallDir, canonicalNodeInstallDir));
+                Strings.get("Instance.installdir.mismatch", node, canonicalInstallDir, canonicalNodeInstallDir));
         }
     }
 
@@ -523,11 +566,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
     @Override
     protected boolean setServerDirs() {
-        if (setDasDefaultsOnly) {
-            return false;
-        } else {
-            return true;
-        }
+        return !setDasDefaultsOnly;
     }
 
     private void echoCommand() {

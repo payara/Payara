@@ -37,10 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
-/* 
- * Portions Copyright [2016] [Payara Foundation] 
- */
 package com.sun.enterprise.util.io;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -48,48 +46,29 @@ import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.OS;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.io.Writer;
+import java.io.*;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.inject.Inject;
-
-import org.jvnet.hk2.config.ConfigBean;
-
-
 
 public class FileUtils  {
-    final static Logger _utillogger = CULoggerInfo.getLogger();
+
+    private final static Logger _utillogger = CULoggerInfo.getLogger();
     private final static LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
+    private static final FileDeletionThread FILE_DELETION_ON_EXIT = new FileDeletionThread();
+
+    static {
+        Runtime.getRuntime().addShutdownHook(FILE_DELETION_ON_EXIT);
+    }
 
     public static void setFileProperties()
     {
@@ -195,10 +174,7 @@ public class FileUtils  {
     ///////////////////////////////////////////////////////////////////////////
 
     public static boolean safeIsDirectory(File f) {
-        if (f == null || !f.exists() || !f.isDirectory())
-            return false;
-
-        return true;
+        return !(f == null || !f.exists() || !f.isDirectory());
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -215,15 +191,15 @@ public class FileUtils  {
 
       String canonical =null;
       String absolute=null;
-      
+
       try {
     	  canonical = safeGetCanonicalPath(f);
     	  absolute = f.getParentFile().getCanonicalPath() + File.separator + f.getName();
-    	   
-    	  _utillogger.log(Level.FINE,"Canonical path and abolute path values are " + canonical + " " + absolute);
-     
+
+    	  _utillogger.log(Level.FINE, "Canonical path and abolute path values are {0} {1}", new Object[]{canonical, absolute});
+
     	  if(canonical.equals(absolute)){
-    		  _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link false");
+    		  _utillogger.log(Level.FINE, "The directory  {0} is a symbolic link false", absolute);
 		        return true;
 		  }
       } catch (IOException ioe) {
@@ -236,11 +212,11 @@ public class FileUtils  {
            * and they won't match!!!
            **/
         if (OS.isWindows() && canonical.equalsIgnoreCase(absolute)){
-        	 _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link false");
+        	 _utillogger.log(Level.FINE, "The directory  {0} is a symbolic link false", absolute);
             return true;
         }
 
-  	   _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link true");
+  	   _utillogger.log(Level.FINE, "The directory  {0} is a symbolic link true", absolute);
         return false;
     }
 
@@ -441,7 +417,7 @@ public class FileUtils  {
         String name = revertFriendlyFilenameExtension(filename);
 
         //then, revert the rest of the string
-        return name.replaceAll("__", "/");
+        return name != null ? name.replaceAll("__", "/") : filename;
     }
 
     /////////////////////////////////////////////////////////
@@ -537,15 +513,12 @@ public class FileUtils  {
         if (safeIsRealDirectory(parent)) {
             File[] kids = listFiles(parent);
 
-            for (int i = 0; i < kids.length; i++) {
-                File f = kids[i];
-
-                if (f.isDirectory())
+            for (File f : kids) {
+                if (f.isDirectory()) {
                     whackResolvedDirectory(f, undeletedFiles);
-                else if (!deleteFile(f) && undeletedFiles != null) {
+                } else if (!deleteFile(f) && undeletedFiles != null) {
                     undeletedFiles.add(f);
                 }
-
             }
         }
 
@@ -562,8 +535,25 @@ public class FileUtils  {
      * @param f file to delete
      */
     public static void deleteFileNowOrLater(File f) {
-        if(!deleteFile(f))
-            f.deleteOnExit();
+        if(!deleteFile(f)) {
+            deleteOnExit(f);
+        }
+    }
+
+    /**
+     * Deletes the provided file by registering a shutdown hook with the
+     * Java Runtime. Non-empty directories will be deleted recursively.
+     *
+     * @param f the file to delete on JVM shutdown
+     */
+    public static void deleteOnExit(File f) {
+        if (f != null) {
+            final SecurityManager securityManager = System.getSecurityManager();
+            if (securityManager != null) {
+                securityManager.checkDelete(f.getAbsolutePath());
+            }
+            FILE_DELETION_ON_EXIT.add(f);
+        }
     }
 
     /**
@@ -655,14 +645,12 @@ public class FileUtils  {
         FileOutputStreamWork work = new FileOutputStreamWork(out);
         int retries = doWithRetry(work);
         if (retries > 0) {
-            _utillogger.log(Level.FINE, "Retrying " + retries + " times");
+            _utillogger.log(Level.FINE, "Retrying {0} times", retries);
         }
         if (work.workComplete()) {
             return work.getStream();
         } else {
-            IOException ioe = new IOException();
-            ioe.initCause(work.getLastError());
-            throw ioe;
+            throw new IOException(work.getLastError());
         }
     }
 
@@ -698,24 +686,24 @@ public class FileUtils  {
     // performed.
     private static void recursiveGetFilesUnder(File relativizingRoot, File directory, FilenameFilter filenameFilter, Set<File> set, boolean returnDirectories) {
 	File[] files = listFiles(directory, filenameFilter);
-	for (int i = 0; i < files.length; i++) {
-	    if (files[i].isDirectory()) {
-		recursiveGetFilesUnder(relativizingRoot, files[i], filenameFilter, set, returnDirectories);
-		if (returnDirectories) {
-                    if( relativizingRoot != null ) {
-                        set.add(relativize(relativizingRoot, files[i]));
+        for (File file : files) {
+            if (file.isDirectory()) {
+                recursiveGetFilesUnder(relativizingRoot, file, filenameFilter, set, returnDirectories);
+                if (returnDirectories) {
+                    if (relativizingRoot != null) {
+                        set.add(relativize(relativizingRoot, file));
                     } else {
-                        set.add(files[i]);
+                        set.add(file);
                     }
-		}
-	    } else {
-                if( relativizingRoot != null ) {
-                    set.add(relativize(relativizingRoot, files[i]));
-                } else {
-                    set.add(files[i]);
                 }
-	    }
-    	}
+            } else {
+                if (relativizingRoot != null) {
+                    set.add(relativize(relativizingRoot, file));
+                } else {
+                    set.add(file);
+                }
+            }
+        }
     }
 
     /**
@@ -814,7 +802,9 @@ public class FileUtils  {
             _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
         }
 
-        f.deleteOnExit(); // just in case
+        if (f != null) {
+            deleteOnExit(f); // just in case
+        }
         return f;
     }
 
@@ -861,13 +851,13 @@ public class FileUtils  {
 
             File[] list = listFiles(dirName);
 
-            for (int i = 0; i < list.length; i++) {
-                if (list[i].isDirectory()) {
-                    targetList.addAll(searchDir(list[i], ext));
+            for (File list1 : list) {
+                if (list1.isDirectory()) {
+                    targetList.addAll(searchDir(list1, ext));
                 } else {
-                    String name = list[i].toString();
+                    String name = list1.toString();
                     if (hasExtension(name, ext)) {
-                        targetList.add(list[i]);
+                        targetList.add(list1);
                     }
                 }
             }
@@ -907,11 +897,13 @@ public class FileUtils  {
             return;
         }
 
-        if (!fin.exists())
+        if (!fin.exists()) {
             throw new IllegalArgumentException("File source doesn't exist");
+        }
 
-            if(!mkdirsMaybe(fout.getParentFile()))
-                throw new RuntimeException("Can't create parent dir of output file: " + fout);
+        if (!mkdirsMaybe(fout.getParentFile())) {
+            throw new RuntimeException("Can't create parent dir of output file: " + fout);
+        }
 
         copyFile(fin, fout);
     }
@@ -934,10 +926,9 @@ public class FileUtils  {
         FileListerRelative flr = new FileListerRelative(din);
         String[] files = flr.getFiles();
 
-        for (int i = 0; i < files.length; i++) {
-            File fin = new File(din, files[i]);
-            File fout = new File(dout, files[i]);
-
+        for (String file : files) {
+            File fin = new File(din, file);
+            File fout = new File(dout, file);
             copy(fin, fout);
         }
     }
@@ -1009,33 +1000,33 @@ public class FileUtils  {
      * @param fout the destination file
      */
     public static void copyFile(File fin, File fout) throws IOException {
-
-        InputStream inStream = new BufferedInputStream(new FileInputStream(fin));
-        FileOutputStream fos = FileUtils.openFileOutputStream(fout);
-        copy(inStream, fos, fin.length());
+        try (InputStream inStream = new BufferedInputStream(new FileInputStream(fin));
+             FileOutputStream fos = FileUtils.openFileOutputStream(fout)) {
+            copy(inStream, fos, fin.length());
+        }
     }
 
 
     public static void copy(InputStream in, FileOutputStream out, long size) throws IOException {
-
-        try {
-            copyWithoutClose(in, out, size);
-        } finally {
-            if (in != null)
-                in.close();
-            if (out != null)
-                out.close();
+        try (InputStream inputStream = in;
+             FileOutputStream fileOutputStream = out) {
+            copyWithoutClose(inputStream, fileOutputStream, size);
         }
     }
 
     public static void copyWithoutClose(InputStream in, FileOutputStream out, long size) throws IOException {
-
         ReadableByteChannel inChannel = Channels.newChannel(in);
         FileChannel outChannel = out.getChannel();
         outChannel.transferFrom(inChannel, 0, size);
-
     }
 
+    /**
+     * Copies from InputStream to OutputStream and does not close the streams intentionally.
+     * @param in Stream to read from.
+     * @param os Stream to write to.
+     * @param size Buffersize for copying
+     * @throws IOException Problem when copying
+     */
     public static void copy(InputStream in, OutputStream os, long size) throws IOException {
         if (os instanceof FileOutputStream) {
             copy(in, (FileOutputStream) os, size);
@@ -1043,16 +1034,16 @@ public class FileUtils  {
             ReadableByteChannel inChannel = Channels.newChannel(in);
             WritableByteChannel outChannel = Channels.newChannel(os);
             if (size==0) {
-
                 ByteBuffer byteBuffer = ByteBuffer.allocate(10240);
                 int read;
                 do {
                     read = inChannel.read(byteBuffer);
                     if (read>0) {
-                        byteBuffer.limit(byteBuffer.position());
-                        byteBuffer.rewind();
+                        Buffer buffer = (Buffer) byteBuffer;
+                        buffer.limit(byteBuffer.position());
+                        buffer.rewind();
                         outChannel.write(byteBuffer);
-                        byteBuffer.clear();
+                        buffer.clear();
                     }
                 } while (read!=-1);
             } else {
@@ -1106,16 +1097,14 @@ public class FileUtils  {
                                     new Object [] {fromFilePath, toFilePath});
                         }
                     } else {
-                        _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.retryRenameSuccess,
-                                new Object [] {fromFilePath, toFilePath, Integer.valueOf(retries)});
+                        _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.retryRenameSuccess, new Object [] {fromFilePath, toFilePath, retries});
                     }
                 }
             } else {
                 /*
                  *The rename has failed.  Write a warning message.
                  */
-                _utillogger.log(Level.WARNING, CULoggerInfo.retryRenameFailure,
-                        new Object [] {fromFilePath, toFilePath, Integer.valueOf(retries) });
+                _utillogger.log(Level.WARNING, CULoggerInfo.retryRenameFailure, new Object [] {fromFilePath, toFilePath, retries});
             }
             return result;
         }
@@ -1148,14 +1137,13 @@ public class FileUtils  {
                 if (file != null)
                     file.close();
             }
-            catch(Exception e){
+            catch(IOException e){
             	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
             }
         }
     }
-    public static void appendText(String fileName, StringBuffer buffer)
-    throws IOException, FileNotFoundException
-    {
+    
+    public static void appendText(String fileName, StringBuilder buffer) throws IOException, FileNotFoundException {
         appendText(fileName, buffer.toString());
     }
     ///////////////////////////////////////////////////////////////////////////
@@ -1177,25 +1165,17 @@ public class FileUtils  {
 
     public static String readSmallFile(final File file)
             throws IOException {
-        final BufferedReader bf = new BufferedReader(new FileReader(file));
-        final StringBuilder sb = new StringBuilder(); //preferred over StringBuffer, no need to synchronize
-        String line = null;
-        try {
+        final StringBuilder sb = new StringBuilder();
+        try (final BufferedReader bf = new BufferedReader(new FileReader(file))) {
+            String line;
             while ( (line = bf.readLine()) != null ) {
                 sb.append(line);
-                sb.append(System.getProperty("line.separator"));
+                sb.append(System.lineSeparator());
             }
+        } catch (Exception e) {
+            _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
-        finally {
-            try {
-                bf.close();
-            }
-            catch (Exception e) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);}
-            finally{
-            	 bf.close();
-            }
-        }
-        return ( sb.toString() );
+        return sb.toString();
     }
 
     /**
@@ -1274,8 +1254,7 @@ public class FileUtils  {
             if(writer != null) {
                 try {
                     writer.close();
-                }
-                catch(Exception e) {
+                } catch(IOException e) {
                 	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
                 }
                 f.setReadable(true);
@@ -1343,20 +1322,18 @@ public class FileUtils  {
             }
             is.close();
             return baos.toByteArray();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            try {
+                is.close();
+            } catch (IOException ex) {
+                _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);
+            } finally {
                 try {
                     is.close();
+                } catch (IOException io) {
+                    _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, io);
                 }
-                catch (Exception ex) {
-                	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);
-                }finally{
-                	   try {
-						is.close();
-					} catch (IOException io) {
-						_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, io);
-					}
-                }
+            }
             return null;
         }
     }
@@ -1387,8 +1364,8 @@ public class FileUtils  {
      */
     private static class RenameFileWork implements RetriableWork {
 
-        private File originalFile;
-        private File newFile;
+        private final File originalFile;
+        private final File newFile;
         private boolean renameResult = false;
 
         public RenameFileWork(File originalFile, File newFile) {
@@ -1396,10 +1373,12 @@ public class FileUtils  {
             this.newFile = newFile;
         }
 
+        @Override
         public boolean workComplete() {
             return renameResult;
         }
 
+        @Override
         public void run() {
             renameResult = originalFile.renameTo(newFile);
         }
@@ -1412,16 +1391,18 @@ public class FileUtils  {
 
         private FileOutputStream fos = null;
         private Throwable lastError = null;
-        private File out;
+        private final File out;
 
         public FileOutputStreamWork(File out) {
             this.out = out;
         }
 
+        @Override
         public boolean workComplete() {
             return fos != null;
         }
 
+        @Override
         public void run() {
             try {
                 fos = new FileOutputStream(out);
@@ -1477,7 +1458,7 @@ public class FileUtils  {
     private final static char REPLACEMENT_CHAR = '_';
     private final static char BLANK = ' ';
     private final static char DOT = '.';
-    private static String TMPFILENAME = "scratch";
+    private static final String TMPFILENAME = "scratch";
     /*
     *The following property names are private, unsupported, and unpublished.
     */

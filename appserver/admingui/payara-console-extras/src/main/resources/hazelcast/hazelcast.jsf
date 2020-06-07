@@ -2,7 +2,7 @@
 
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,7 @@
     <!beforeCreate
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic","autoIncrementPort","hostAwarePartitioning","encryptDatagrid"});
         setSessionAttribute(key="hazelcastTabs" value="hazelcastConfig");
         if (#{pageSession.valueMap['enabled']}=true) {
         setPageSessionAttribute(key="enabledSelected", value="true");
@@ -83,6 +83,7 @@
                     setPageSessionAttribute(key="isMulticastPortEmpty", value="#{empty pageSession.valueMap['multicastPort']}");   
                     setPageSessionAttribute(key="isMulticastGroupEmpty", value="#{empty pageSession.valueMap['multicastGroup']}"); 
                     setPageSessionAttribute(key="isTcpipMembersEmpty", value="#{empty pageSession.valueMap['tcpipMembers']}"); 
+                    setPageSessionAttribute(key="isTcpipMembersEmpty", value="#{empty pageSession.valueMap['dnsMembers']}");
                         
                     if ('#{pageSession.isMulticastPortEmpty} = true') {
                         mapRemove(map="#{pageSession.valueMap}" key="multicastPort");
@@ -95,6 +96,10 @@
                     if ('#{pageSession.isTcpipMembersEmpty} = true') {
                         mapRemove(map="#{pageSession.valueMap}" key="tcpipMembers");
                     }
+                    
+                    if ('#{pageSession.isDnsMembersEmpty} = true') {
+                        mapRemove(map="#{pageSession.valueMap}" key="dnsMembers");
+                    }
 
                     gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
@@ -106,6 +111,12 @@
     <sun:propertySheetSection id="networking">
         <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dynamic}"  helpText="$resource{i18nhc.hazelcast.configuration.dynamicHelp}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="autoIncrementPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.autoIncrementPort}"  helpText="$resource{i18nhc.hazelcast.configuration.autoIncrementPortHelp}">
+            <sun:checkbox id="autoIncrementPort" selected="#{pageSession.valueMap['autoIncrementPort']}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="datagridEncryptionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.datagridEncryption}"  helpText="$resource{i18nhc.hazelcast.configuration.datagridEncryptionHelp}">
+            <sun:checkbox id="datagridEncryption" selected="#{pageSession.valueMap['encryptDatagrid']}" selectedValue="true" />
         </sun:property>
         <sun:property id="dasBindAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dasBindAddress}"  helpText="$resource{i18nhc.hazelcast.configuration.dasBindAddressHelp}">
             <sun:textField id="dasBindAddress" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['dasBindAddress']}" />
@@ -141,8 +152,10 @@
         </sun:property>
     </sun:propertySheetSection>
     <sun:propertySheetSection id="discovery">
-        <sun:property id="discoveryModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.discoveryMode}"  helpText="$resource{i18nhc.hazelcast.configuration.discoveryModeHelp}" visible="#{true}" >
-            <sun:dropDown id="clusterMode" value="#{pageSession.clusterMode}" labels={"domain","tcpip","multicast"} values={"domain","tcpip","multicast"} selected="#{pageSession.clusterMode}" required="#{false}"  onChange="updateClusterDiscoveryMode(this.value);">
+        <sun:property id="discoveryModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.discoveryMode}"  
+                      helpText="$resource{i18nhc.hazelcast.configuration.discoveryModeHelp}" visible="#{true}" >
+            <sun:dropDown id="clusterMode" value="#{pageSession.clusterMode}" labels={"domain","tcpip","multicast","dns","kubernetes"} values={"domain","tcpip","multicast", "dns", "kubernetes"} 
+                          selected="#{pageSession.clusterMode}" required="#{false}"  onChange="updateClusterDiscoveryMode(this.value);">
             </sun:dropDown>
         </sun:property>
         <sun:property id="multicastPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.multicastPort}"  helpText="$resource{i18nhc.hazelcast.configuration.multicastPortHelp}">
@@ -165,7 +178,29 @@
                     getClientId(component="$this{component}" clientId=>$page{tcpipMembersTextId});
                 />  
             </sun:textField>
-        </sun:property> 
+        </sun:property>
+        <sun:property id="dnsMembersProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dnsMembers}"
+                      helpText="$resource{i18nhc.hazelcast.configuration.dnsMembersHelp}">
+            <sun:textField id="dnsMembers" columns="$int{40}" maxLength="300" text="#{pageSession.valueMap['dnsMembers']}">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{dnsMembersTextId});
+                />  
+            </sun:textField>
+        </sun:property>    
+        <sun:property id="kubernetesNamespaceProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.kubernetesNamespace}"  helpText="$resource{i18nhc.hazelcast.configuration.kubernetesNamespaceHelp}">
+            <sun:textField id="kubernetesNamespace" columns="$int{40}" maxLength="100" text="#{pageSession.valueMap['kubernetesNamespace']}">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{kubernetesNamespaceTextId});
+                />  
+            </sun:textField>
+        </sun:property>
+        <sun:property id="kubernetesServiceNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.kubernetesServiceName}"  helpText="$resource{i18nhc.hazelcast.configuration.kubernetesServiceNameHelp}">
+            <sun:textField id="kubernetesServiceName" columns="$int{40}" maxLength="100" text="#{pageSession.valueMap['kubernetesServiceName']}">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{kubernetesServiceNameTextId});
+                />  
+            </sun:textField>
+        </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet> 
 <sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />

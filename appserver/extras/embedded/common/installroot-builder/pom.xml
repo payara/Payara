@@ -44,10 +44,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.glassfish.main.extras</groupId>
+    <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>glassfish-embedded-common</artifactId>
     <version>4.1-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
 
     <artifactId>installroot-builder</artifactId>
@@ -68,7 +67,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.main.distributions</groupId>
+                                    <groupId>fish.payara.server.internal.distributions</groupId>
                                     <artifactId>glassfish</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>

@@ -152,7 +152,7 @@ public class IIOPUtils implements PostConstruct {
 
     private void assertServer() {
         if ( !processType.isServer() ) {
-            throw new IllegalStateException("Only available in Server mode");
+            throw new NotServerException();
         }
     }
 

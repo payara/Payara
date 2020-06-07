@@ -1,0 +1,70 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-securitymanagerdisable" name="task-securitymanagerdisable"></a><a id="GHCOM00175" name="GHCOM00175"></a></p>
+
+<h4><a id="sthref69" name="sthref69"></a>To Disable the Security Manager</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Disabling the GlassFish Server security manager may improve performance for some types of applications. The Java platform authorization and authentication features will still work even if the security manager has been disabled. You may disable the security manager in a development environment; however, <i>do not</i> disable it in a production environment.</p>
+<ol>
+<li>
+<p>In the navigation tree, select the Configuration node.</p>
+</li>
+<li>
+<p>Select the configuration that you are changing.</p>
+</li>
+<li>
+<p>Under the Configuration node, select the JVM Settings node.</p>
+<p>The JVM General Settings page opens.</p>
+</li>
+<li>
+<p>On the JVM General Settings page, click the JVM Options tab.</p>
+<p>The JVM Options page opens.</p>
+</li>
+<li>
+<p>Select the checkbox to the left of the Value field containing the <code>-Djava.security.policy</code> option.</p>
+</li>
+<li>
+<p>Click Delete.</p>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+<li>
+<p>Restart the server.</p>
+</li>
+</ol>
+<a id="GHCOM273" name="GHCOM273"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-jvmsettings.html">To Configure the JVM General Settings</a></p>
+</li>
+<li>
+<p><a href="task-jvmpathsettings.html">To Configure the JVM Path Settings</a></p>
+</li>
+<li>
+<p><a href="task-jvmoptions.html">To Configure the JVM Options</a></p>
+</li>
+<li>
+<p><a href="task-jvmprofilersettings.html">To Configure the JVM Profiler Settings</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

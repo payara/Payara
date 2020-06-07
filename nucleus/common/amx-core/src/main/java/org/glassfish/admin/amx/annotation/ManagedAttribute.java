@@ -59,10 +59,3 @@ import org.glassfish.external.arc.Stability;
 @Taxonomy(stability = Stability.NOT_AN_INTERFACE)
 public @interface ManagedAttribute {
 }
-
-
-
-
-
-
-

@@ -41,17 +41,40 @@
 package fish.payara.security.identitystores;
 
 import com.yubico.client.v2.VerificationResponse;
+import com.yubico.client.v2.YubicoClient;
 import com.yubico.client.v2.exceptions.YubicoValidationFailure;
 import com.yubico.client.v2.exceptions.YubicoVerificationException;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Mark Wareham
  */
-public interface YubicoAPI {
-     
-    public void init(int apiClientID, String apiClientKey);
-    public VerificationResponse verify(String otp) throws YubicoVerificationException, YubicoValidationFailure;
-    public Integer getClientId();
-    public String[] getWsapiUrls();
+class YubicoAPI {
+    private static final Logger LOG = Logger.getLogger(YubicoAPI.class.getName());
+
+    private YubicoClient yubicoClient;
+
+    YubicoAPI(int apiClientID, String apiClientKey) {
+        if(apiClientID==0){
+            LOG.log(Level.WARNING, "A Yubico clientID has not been set");
+        }else{
+            LOG.log(Level.INFO, "Set up YubicoClient with clientID of {0}", apiClientID);
+        }
+        yubicoClient = YubicoClient.getClient(apiClientID, apiClientKey);
+    }
+
+    public VerificationResponse verify(String otp) throws YubicoVerificationException, YubicoValidationFailure {
+        return yubicoClient.verify(otp);
+    }
+
+    public Integer getClientId() {
+        return yubicoClient.getClientId();
+    }
+
+    public String[] getWsapiUrls() {
+        return yubicoClient.getWsapiUrls();
+    }
 }

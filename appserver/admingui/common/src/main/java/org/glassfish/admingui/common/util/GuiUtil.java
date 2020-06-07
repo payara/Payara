@@ -38,54 +38,54 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
-/*
- * GuiUtil.java
- *
- * Created on August 10, 2006, 9:19 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 package org.glassfish.admingui.common.util;
-
-import com.sun.jsftemplating.resource.ResourceBundleManager;
-
-import javax.faces.context.FacesContext;
-// FIXME: 7-31-08 -- FIX by importing woodstock api's:
-//import com.sun.webui.jsf.model.Option;
-
-import java.util.Locale;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.text.MessageFormat;
-import java.net.URLEncoder;
 
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-import java.io.File;
+import com.sun.jsftemplating.resource.ResourceBundleManager;
 
+import java.io.File;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.json.Json;
+import javax.json.JsonStructure;
+import javax.json.JsonValue.ValueType;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+
 import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
 import org.glassfish.hk2.api.ServiceLocator;
 
+
 /**
- *
- * @author anilam
+ * @author anilam - created on August 10, 2006, 9:19 PM
  */
 public class GuiUtil {
+
+    public static final String I18N_RESOURCE_BUNDLE = "__i18n_resource_bundle";
+    public static final String RESOURCE_NAME = "org.glassfish.admingui.core.Strings";
+    public static final String COMMON_RESOURCE_NAME = "org.glassfish.common.admingui.Strings";
+    public static final String LOGGER_NAME = "org.glassfish.admingui";
+    public static final Locale guiLocale = new Locale("UTF-8");
+
     /** Creates a new instance of GuiUtil */
     public GuiUtil() {
     }
@@ -198,34 +198,34 @@ public class GuiUtil {
             sessionMap.put("secureAdminEnabled", "false");
         }
 
-        Map asadminRecorderEnabled = 
-                RestUtil.restRequest(sessionMap.get("REST_URL") 
-                        + "/asadmin-recorder-enabled", null, "GET", null, 
+        Map asadminRecorderEnabled =
+                RestUtil.restRequest(sessionMap.get("REST_URL")
+                        + "/asadmin-recorder-enabled", null, "GET", null,
                         false);
-        sessionMap.put("showEnableAsadminRecorderButton", !(boolean)((Map) 
+        sessionMap.put("showEnableAsadminRecorderButton", !(boolean)((Map)
                 ((Map) asadminRecorderEnabled.get("data"))
                         .get("extraProperties")).get("asadminRecorderEnabled"));
-        sessionMap.put("showDisableAsadminRecorderButton", (boolean)((Map) 
+        sessionMap.put("showDisableAsadminRecorderButton", (boolean)((Map)
                 ((Map) asadminRecorderEnabled.get("data"))
-                        .get("extraProperties")).get("asadminRecorderEnabled"));  
+                        .get("extraProperties")).get("asadminRecorderEnabled"));
 
-        Map environmentWarningConfiguration = 
-                RestUtil.restRequest(sessionMap.get("REST_URL") 
-                        + "/get-environment-warning-configuration", null, "GET", null, 
+        Map environmentWarningConfiguration =
+                RestUtil.restRequest(sessionMap.get("REST_URL")
+                        + "/get-environment-warning-configuration", null, "GET", null,
                         false);
-        sessionMap.put("environmentWarningBarEnabled", ((Map) ((Map) 
+        sessionMap.put("environmentWarningBarEnabled", ((Map) ((Map)
                 ((Map) environmentWarningConfiguration.get("data"))
-                        .get("extraProperties")).get("environmentWarningConfiguration")).get("enabled"));   
-        sessionMap.put("environmentWarningBarMessage", ((Map) ((Map) 
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("enabled"));
+        sessionMap.put("environmentWarningBarMessage", ((Map) ((Map)
                 ((Map) environmentWarningConfiguration.get("data"))
-                        .get("extraProperties")).get("environmentWarningConfiguration")).get("message"));   
-        sessionMap.put("environmentWarningBarBackgroundColour", ((Map) ((Map) 
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("message"));
+        sessionMap.put("environmentWarningBarBackgroundColour", ((Map) ((Map)
                 ((Map) environmentWarningConfiguration.get("data"))
-                        .get("extraProperties")).get("environmentWarningConfiguration")).get("backgroundColour"));   
-        sessionMap.put("environmentWarningBarTextColour", ((Map) ((Map) 
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("backgroundColour"));
+        sessionMap.put("environmentWarningBarTextColour", ((Map) ((Map)
                 ((Map) environmentWarningConfiguration.get("data"))
-                        .get("extraProperties")).get("environmentWarningConfiguration")).get("textColour"));       
-       
+                        .get("extraProperties")).get("environmentWarningConfiguration")).get("textColour"));
+
         sessionMap.put("reqMsg", GuiUtil.getMessage("msg.JS.enterValue"));
         sessionMap.put("reqMsgSelect", GuiUtil.getMessage("msg.JS.selectValue"));
         sessionMap.put("reqInt", GuiUtil.getMessage("msg.JS.enterIntegerValue"));
@@ -252,15 +252,12 @@ public class GuiUtil {
             }
         } catch (Exception nfe) {
             ((HttpServletRequest) request).getSession().setMaxInactiveInterval(-1);
-            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.initSession") + nfe.getLocalizedMessage());
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
-                nfe.printStackTrace();
-            }
+            log("log.error.initSession", nfe);
         }
         try {
             setTimeStamp();
         } catch (Exception ex) {
-            logger.log(Level.FINE, ex.getMessage());
+            log("log.error.initSession", ex);
         }
 
     }
@@ -270,14 +267,15 @@ public class GuiUtil {
                 "/locations", null, "GET", null, false);
         String configDir = (String) ((Map)((Map)result.get("data")).get("properties")).get("Config-Dir");
 
-        if (configDir != null)
+        if (configDir != null) {
             return new File(configDir, ".consolestate");
+        }
         return null;
     }
 
     public static void setTimeStamp() throws Exception {
         File f = getTimeStampFile();
-        if (!f.createNewFile()) {
+        if (f != null && !f.createNewFile()) {
             f.setLastModified(System.currentTimeMillis());
         }
 
@@ -285,21 +283,23 @@ public class GuiUtil {
 
     public static long getTimeStamp() throws Exception {
         File f = getTimeStampFile();
-        if (f == null)
+        if (f == null) {
             throw new Exception("Could not get TimeStamp file for admin console");
-        if (!f.exists())
+        }
+        if (!f.exists()) {
             return 0L;
+        }
         return f.lastModified();
     }
 
 
     public static void setSessionValue(String key, Object value){
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+        Map<String, Object> sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
         sessionMap.put(key, value);
     }
 
     public static Object getSessionValue(String key){
-        Map sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+        Map<String, Object> sessionMap = FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
         if (sessionMap.get("_SESSION_INITIALIZED") == null){
             initSessionAttributes();
         }
@@ -436,55 +436,48 @@ public class GuiUtil {
         return locale;
     }
 
-    /* This method sets up the attributes of the <sun:alert> message box so that a
+    /**
+     * This method sets up the attributes of the <sun:alert> message box so that a
      * saved sucessfully message will be displayed during refresh.
      */
     public static void prepareSuccessful(HandlerContext handlerCtx) {
         prepareAlert("success", GuiUtil.getMessage("msg.saveSuccessful"), null);
     }
 
-    /* This method sets up the attributes of the <sun:alert> message box. It is similar
+    /**
+     * This method sets up the attributes of the <sun:alert> message box. It is similar
      * to handleException without calling renderResponse()
      */
     public static void prepareException(HandlerContext handlerCtx, Throwable ex) {
         Throwable rootException = getRootCause(ex);
         prepareAlert("error", GuiUtil.getMessage("msg.Error"), rootException.getMessage());
-        GuiUtil.getLogger().info(GuiUtil.getCommonMessage("LOG_EXCEPTION_OCCURED") + ex.getLocalizedMessage());
-        if (GuiUtil.getLogger().isLoggable(Level.FINE)){
-            ex.printStackTrace();
-        }
+        log("LOG_EXCEPTION_OCCURED", ex);
     }
 
-    /* This method sets up the attributes of the <sun:alert> message box so that any
+    /**
+     * This method sets up the attributes of the <sun:alert> message box so that any
      * alert message of any type will be displayed during refresh.
      * If type is not specified, it will be "information" by default.
      */
     public static void prepareAlert(String type, String summary, String detail) {
-
         try {
-        Map attrMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
-        if (isEmpty(type)) {
-            attrMap.put("alertType", "information");
-        } else if (!(type.equals("information") || type.equals("success") ||
-                type.equals("warning") || type.equals("error"))) {
-            throw new RuntimeException("GuiUtil:prepareMessage():  type specified is not a valid type");
-        } else {
-            attrMap.put("alertType", type);
-        }
-        if (detail != null && detail.length() > 1000) {
-            detail = detail.substring(0, 1000) + " .... " + GuiUtil.getMessage("msg.seeServerLog");
-        }
-
+            Map<String, Object> attrMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+            if (isEmpty(type)) {
+                attrMap.put("alertType", "information");
+            } else if (!(type.equals("information") || type.equals("success") || type.equals("warning")
+                || type.equals("error"))) {
+                throw new RuntimeException("GuiUtil:prepareMessage():  type specified is not a valid type");
+            } else {
+                attrMap.put("alertType", type);
+            }
+            if (detail != null && detail.length() > 1000) {
+                detail = detail.substring(0, 1000) + " .... " + GuiUtil.getMessage("msg.seeServerLog");
+            }
             attrMap.put("alertDetail", isEmpty(detail) ? "" : URLEncoder.encode(detail, "UTF-8"));
             attrMap.put("alertSummary", isEmpty(summary) ? "" : URLEncoder.encode(summary, "UTF-8"));
         } catch (Exception ex) {
-            //we'll never get here. , well except for GLASSFISH-15831
-            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.prepareAlert") + ex.getLocalizedMessage());
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
-                ex.printStackTrace();
-            }
+            log("log.error.prepareAlert", ex);
         }
-
     }
 
     public static void handleException(HandlerContext handlerCtx, Throwable ex) {
@@ -497,34 +490,31 @@ public class GuiUtil {
         handlerCtx.getFacesContext().renderResponse();
     }
 
-    /* This method ensure that there will not be a NULL String for the passed in object.
+    private static void log(final String messageKey, final Throwable e) {
+        final Logger logger = GuiUtil.getLogger();
+        if (logger.isLoggable(Level.CONFIG)) {
+            GuiUtil.getLogger().log(Level.CONFIG, GuiUtil.getCommonMessage(messageKey), e);
+        } else if (logger.isLoggable(Level.INFO)) {
+            logger.info(GuiUtil.getCommonMessage(messageKey) + e.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * This method ensure that there will not be a NULL String for the passed in object.
      */
     public static String notNull(String test) {
         return (test == null) ? "" : test;
     }
 
     public static List<String> convertListOfStrings(List l) {
-        List<String> arrList = new ArrayList<String>();
+        List<String> arrList = new ArrayList<>();
         for (Object o : l) {
             arrList.add(o.toString());
         }
         return arrList;
     }
 
-    /*
-    FIXME: 7-31-08 -- FIX by importing woodstock api's.
-    public static Option[] getSunOptions(Collection<String> c) {
-    if (c == null){
-    return new Option[0];
-    }
-    Option[] sunOptions =  new Option[c.size()];
-    int index=0;
-    for(String str:c) {
-    sunOptions[index++] = new Option(str, str);
-    }
-    return sunOptions;
-    }
-     */
+
     /**
      * Parses a string containing substrings separated from
      * each other by the specified set of separator characters and returns
@@ -543,8 +533,8 @@ public class GuiUtil {
      * @return     Returns the list containing the individual strings that
      *             the input string was split into.
      */
-    public static List parseStringList(String line, String sep) {
-         List tokens = new ArrayList();
+    public static List<String> parseStringList(String line, String sep) {
+         List<String> tokens = new ArrayList<>();
         if (line == null) {
             return tokens;
         }
@@ -623,7 +613,7 @@ public class GuiUtil {
      * in the array, and returns a single string with the concatenated string.
      */
     public static String arrayToString(String[] str, String delimiter) {
-        StringBuffer retStr = new StringBuffer();
+        StringBuilder retStr = new StringBuilder();
 
         if (str != null) {
             for (int i = 0; i < str.length; i++) {
@@ -644,8 +634,10 @@ public class GuiUtil {
     }
 
     public static String listToString(List<String> list , String delimiter) {
-        StringBuffer retStr = new StringBuffer();
-        if(list == null || list.size() <=0 ) return "";
+        StringBuilder retStr = new StringBuilder();
+        if(list == null || list.size() <=0 ) {
+            return "";
+        }
         for(String oneItem : list){
             retStr.append(oneItem);
             retStr.append(delimiter);
@@ -661,11 +653,11 @@ public class GuiUtil {
     }
 
 
-    public static boolean isSelected(String name, List<Map> selectedList) {
+    public static boolean isSelected(String name, List<Map<String, ?>> selectedList) {
         if (selectedList == null || name == null) {
             return false;
         }
-        for (Map oneRow : selectedList) {
+        for (Map<String, ?> oneRow : selectedList) {
             if (name.equals(oneRow.get("name"))) {
                 return true;
             }
@@ -680,7 +672,7 @@ public class GuiUtil {
         return test;
     }
 
-    public static Boolean getBooleanValue(Map pMap, String name) {
+    public static Boolean getBooleanValue(Map<String, ?> pMap, String name) {
         if (pMap.get(name) == null) {
             return Boolean.FALSE;
         }
@@ -700,11 +692,11 @@ public class GuiUtil {
     }
 
     public static List<Map<String, Object>> convertArrayToListOfMap(Object[] values, String key) {
-        List<Map<String, Object>> list = new ArrayList();
+        List<Map<String, Object>> list = new ArrayList<>();
         if (values != null) {
             Map<String, Object> map = null;
             for (Object val : values) {
-                map = new HashMap<String, Object>();
+                map = new HashMap<>();
                 map.put(key, val);
                 map.put("selected", false);
                 list.add(map);
@@ -714,10 +706,10 @@ public class GuiUtil {
         return list;
     }
     public static List<Map<String, String>> convertMapToListOfMap(Map<String, String> values) {
-        List<Map<String, String>> list = new ArrayList();
+        List<Map<String, String>> list = new ArrayList<>();
         if (values != null) {
             for(Map.Entry<String,String> e : values.entrySet()){
-                HashMap oneRow = new HashMap();
+                HashMap<String, String> oneRow = new HashMap<>();
                 Object value = e.getValue();
                 String valString = (value == null) ? "" : value.toString();
                 oneRow.put("name", e.getKey());
@@ -738,13 +730,14 @@ public class GuiUtil {
      *
      * return value corresponding to the last key in mapKeys
      */
-    public static Object getMapValue(Map map, String mapKeys) {
+    public static Object getMapValue(Map<String, ?> map, String mapKeys) {
         String[] keys = mapKeys.split(",");
         int i = 0;
         for (; i < keys.length - 1; i++) {
-            map = (Map)map.get(keys[i]);
-            if (map == null)
+            map = (Map<String, ?>)map.get(keys[i]);
+            if (map == null) {
                 return null;
+            }
         }
         return map.get(keys[i]);
     }
@@ -758,7 +751,7 @@ public class GuiUtil {
      */
     public static Throwable[] getCauses(final Throwable start)
     {
-        final ArrayList<Throwable> list = new ArrayList<Throwable>();
+        final ArrayList<Throwable> list = new ArrayList<>();
 
         boolean haveNonException = false;
 
@@ -787,23 +780,34 @@ public class GuiUtil {
         return (results);
     }
 
+
     /**
-    Get the original troublemaker.
-
-    @param e	the Exception to dig into
-    @return		the original Throwable that started the problem
+     * Get the original troublemaker.
+     *
+     * @param e the Exception to dig into
+     * @return the original Throwable that started the problem
      */
-    public static Throwable getRootCause(final Throwable e)
-    {
+    public static Throwable getRootCause(final Throwable e) {
         final Throwable[] causes = getCauses(e);
-
         return (causes[causes.length - 1]);
     }
 
-
-    public static final String I18N_RESOURCE_BUNDLE = "__i18n_resource_bundle";
-    public static final String RESOURCE_NAME = "org.glassfish.admingui.core.Strings";
-    public static final String COMMON_RESOURCE_NAME = "org.glassfish.common.admingui.Strings";
-    public static final String LOGGER_NAME = "org.glassfish.admingui";
-    public static final Locale guiLocale = new Locale("UTF-8");
+    public static String tryToFindOriginalErrorMessage(final Object entity) {
+        getLogger().finest(() -> String.format("tryToFindOriginalErrorMessage(entity=%s)`; entity.class=%s", entity,
+            entity == null ? null : entity.getClass().getCanonicalName()));
+        try {
+            if (entity instanceof String) {
+                final JsonStructure parsed = Json.createReader(new StringReader(entity.toString())).read();
+                if (parsed.getValueType() == ValueType.OBJECT) {
+                    return parsed.asJsonObject().getString("message");
+                }
+                getLogger().log(Level.WARNING,
+                    "Unsupported response entity, could not find an error message in the following response entity: {0}",
+                    parsed.getValueType());
+            }
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Could not parse a response entity, returning empty string as a fallback.", e);
+        }
+        return "";
+    }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -840,8 +840,12 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                     "JNDI lookup failed for the resource: Name: {0}, Lookup: {1}, Type: {2}",
                     resource.getName(), null, resource.getType()));
         }
-
         String jndiName = resource.getJndiName();
+        if (jndiName == null) {
+            // there's no mapping in this resource, but it exists in JNDI namespace, so it's validated by other ref.
+            return;
+        }
+
         JndiNameEnvironment env = resource.getEnv();
 
         if (isResourceInDomainXML(jndiName) || isDefaultResource(jndiName)) {
@@ -859,15 +863,13 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             String newName = convertModuleOrAppJNDIName(application, jndiName, resource.getEnv());
             if (namespace.find(newName, env)) {
                 return;
-            } else {
-                // try actual lookup
-                try {
-                    InitialContext ctx = new InitialContext();
-                    ctx.lookup(newName);
-                    return;
-                } catch(NamingException ne) {
-                    
-                }
+            }
+            // try actual lookup
+            try {
+                InitialContext ctx = new InitialContext();
+                ctx.lookup(newName);
+                return;
+            } catch(NamingException ne) {
                 
             }
         }

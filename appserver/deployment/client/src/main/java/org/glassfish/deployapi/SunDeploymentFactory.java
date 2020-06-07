@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployapi;
 
 import org.glassfish.deployment.client.ServerConnectionIdentifier;
-import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -53,179 +52,135 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
- *Concrete implementation of the JSR 88 DeploymentFactory interface.
- * @author  dochez
- * @author  tjquinn
+ * Concrete implementation of the JSR 88 DeploymentFactory interface.
+ *
+ * @author dochez
+ * @author tjquinn
+ * @author David Matejcek
  */
 public class SunDeploymentFactory implements DeploymentFactory {
-    
+
     private static LocalStringManagerImpl xlocalStrings =
         new LocalStringManagerImpl(SunDeploymentFactory.class);
-    
-    private static String DMGR_NOT_CONNECTED = xlocalStrings.getLocalString(
-    "enterprise.deployapi.spi.DMgrnotconnected", // NOI18N
-    "Deployment Manager is not connected to J2EE Resources"); // NOI18N
-    
-    // URI String that this factory can handle. May need to be rebuilt.
-    
+
     //The following URISTRING is what we supported in PE Beta.  Keeping it for
     //backward compatibility
     private final static String PE_BETA_URISTRING = "deployer:Sun:S1AS::"; // NOI18N
-    
+
     //The following URISTRINNG is what we use for PE FCS and in the future
     private final static String DEFAULT_URISTRING = "deployer:Sun:AppServer::"; // NOI18N
     private final static String HTTPS = "https";
     private final static String URI_SEPARATOR = ":";// NOI18N
     private final static String LOCAL_HOST = "localhost";// NOI18N
     private final static int HOST_PORT = 4848; // default DAS port
-    
-    private final static String[] supportedURIs = { PE_BETA_URISTRING,
-        DEFAULT_URISTRING };
-    
-    // All the registered mangers are shared by all instances of the Factory
-    private static Hashtable connectedDeploymentManagers;
-    private static Hashtable disconnectedDeploymentManagers;
 
-    private final static String HTTPS_PROTOCOL = "s1ashttps";
-    private final static String HTTP_PROTOCOL = "s1ashttp";
+    private final static String[] supportedURIs = {PE_BETA_URISTRING, DEFAULT_URISTRING};
 
-    public static final Logger deplLogger = org.glassfish.deployment.client.AbstractDeploymentFacility.deplLogger;
+    private static final Logger deplLogger = org.glassfish.deployment.client.AbstractDeploymentFacility.deplLogger;
 
-    @LogMessageInfo(message = "Deployment manager load failure.  Unable to find {0}",cause="A deployment manager is not available.",action="Correct the reference to the deployment manager.", level="SEVERE")
+    @LogMessageInfo( //
+        message = "Deployment manager load failure.  Unable to find {0}",
+        cause = "A deployment manager is not available.",
+        action = "Correct the reference to the deployment manager.",
+        level = "SEVERE")
     private static final String NO_DEPLOYMENT_MANAGER = "AS-DEPLOYMENT-04019";
 
-    /** Creates a new instance of SunDeploymentFactory */
-    public SunDeploymentFactory() {
-    }
-    
-    
-    /** Return a <tt>connected</tt> DeploymentManager instance.
-     *
-     * @param uri The URI that specifies the connection parameters
-     * @param username An optional username (may be <tt>null</tt> if
-     *        no authentication is required for this platform).
-     * @param password An optional password (may be <tt>null</yy> if
-     *        no authentication is required for this platform).
-     * @return A ready DeploymentManager instance.
-     * @throws DeploymentManagerCreationException  occurs when a
-     *        DeploymentManager could not be returned (server down,
-     *        unable to authenticate, etc).
-     */
-    public DeploymentManager getDeploymentManager(String uri, String username, String password) throws DeploymentManagerCreationException {
-        
-        if (handlesURI(uri)) {
-            ServerConnectionIdentifier hostInfo = null;
-            try {
-                hostInfo = parseURIForHostInfo(uri);
-            } catch(Exception ex) {
-                DeploymentManagerCreationException e = new DeploymentManagerCreationException(
-                xlocalStrings.getLocalString(
-                "enterprise.deployapi.spi.wronghostidentifier",
-                "Wrong host identifier in uri {0} ", new Object[] { uri }));
-                e.initCause(ex);
-                throw e;
-            }
-            try {
-                hostInfo.setUserName(username);
-                hostInfo.setPassword(password);
-                DeploymentManager answer = null;
+    @Override
+    public DeploymentManager getDeploymentManager(String uri, String username, String password)
+        throws DeploymentManagerCreationException {
 
-                answer = new SunDeploymentManager(hostInfo);
-                return answer;
-            } catch(Throwable t) {
-                DeploymentManagerCreationException e = new DeploymentManagerCreationException(xlocalStrings.getLocalString(
-                "enterprise.deployapi.spi.exceptionwhileconnecting", //NOI18N
-                "Exception while connecting to {0} : {1}", new Object[] { uri, t.getMessage() })); //NOI18N
-                e.initCause(t);
-                throw e;
-            }
-        } else {
+        if (!handlesURI(uri)) {
             return null;
         }
+        ServerConnectionIdentifier hostInfo = null;
+        try {
+            hostInfo = parseURIForHostInfo(uri);
+        } catch(Exception ex) {
+            DeploymentManagerCreationException e = new DeploymentManagerCreationException(
+            xlocalStrings.getLocalString(
+            "enterprise.deployapi.spi.wronghostidentifier",
+            "Wrong host identifier in uri {0} ", new Object[] { uri }));
+            e.initCause(ex);
+            throw e;
+        }
+        try {
+            hostInfo.setUserName(username);
+            hostInfo.setPassword(password);
+            DeploymentManager answer = null;
+
+            answer = new SunDeploymentManager(hostInfo);
+            return answer;
+        } catch(Throwable t) {
+            DeploymentManagerCreationException e = new DeploymentManagerCreationException(xlocalStrings.getLocalString(
+            "enterprise.deployapi.spi.exceptionwhileconnecting", //NOI18N
+            "Exception while connecting to {0} : {1}", new Object[] { uri, t.getMessage() })); //NOI18N
+            e.initCause(t);
+            throw e;
+        }
     }
-    
-    /** Return a <tt>disconnected</tt> DeploymentManager instance.
+
+
+    /**
+     * Return a <tt>disconnected</tt> DeploymentManager instance.
      *
      * @param uri the uri of the DeploymentManager to return.
-     * @return A DeploymentManager <tt>disconnected</tt> instance.
-     * @throws DeploymentManagerCreationException occurs if the
-     *         DeploymentManager could not be created.
+     * @return A DeploymentManager <tt>disconnected</tt> instance or null if uri is not supported
      */
-    public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
+    @Override
+    public DeploymentManager getDisconnectedDeploymentManager(String uri) {
         if (handlesURI(uri)) {
             return new SunDeploymentManager();
-        } else {
-            return null;
         }
+        return null;
     }
-    
-    /** Provide a string with the name of this vendor's DeploymentManager.
-     * @return the name of the vendor's DeploymentManager.
-     */
+
+    @Override
     public String getDisplayName() {
         return xlocalStrings.getLocalString(
                 "enterprise.deployapi.spi.DisplayName",
                 "Sun Java System Application Server");
     }
-    
-    /** Provide a string identifying version of this vendor's
-     * DeploymentManager.
-     * @return the name of the vendor's DeploymentManager.
-     */
+
+    @Override
     public String getProductVersion() {
-        return xlocalStrings.getLocalString(
-                "enterprise.deployapi.spi.ProductVersion", "9.0");
+        return xlocalStrings.getLocalString("enterprise.deployapi.spi.ProductVersion", "9.0");
     }
-    
-    /** Tests whether this factory can create a DeploymentManager
-     * object based on the specificed URI.  This does not indicate
-     * whether such an attempt will be successful, only whether the
-     * factory can handle the uri.
-     * @param uri The uri to check
-     * @return <tt>true</tt> if the factory can handle the uri.
-     */
+
+    @Override
     public boolean handlesURI(String uri) {
         if (deplLogger.isLoggable(Level.FINE)) {
-            deplLogger.fine("handlesURI: URI ["+uri+"]");// NOI18N
+            deplLogger.fine("handlesURI: URI [" + uri + "]");// NOI18N
         }
-        
+
         if (uri != null) {
             try {
                 parseURIForHostInfo(uri);
                 return true;
             } catch (Exception ex) {
-              deplLogger.log(Level.SEVERE,
-                             NO_DEPLOYMENT_MANAGER,
-                             uri);
+                deplLogger.log(Level.SEVERE, NO_DEPLOYMENT_MANAGER, uri);
             }
         }
         return false;
     }
-    
-    
+
     /**
+     * @param uri must not be null
      * @return the host name/port from the URI passed see JSR88 paragraph 9.2.3
+     * @throws Exception invalid uri
      */
-    
     public ServerConnectionIdentifier parseURIForHostInfo(String uri) throws Exception {
-        
-        String targetURI = null;
-        for (int i=0;i<supportedURIs.length;i++) {
-            if (uri.indexOf(supportedURIs[i])==0) {
-                targetURI = supportedURIs[i];
-            }
-        }
-        
-        //if the URI does not contain DEFAULT_URISTRINNG or PE_BETA_URISTRING,
-        //then the URI is not valid.
+        final String targetURI = toTargetURI(uri);
+
+        // if the URI does not contain DEFAULT_URISTRINNG or PE_BETA_URISTRING,
+        // then the URI is not valid.
         if (targetURI == null) {
             throw new Exception(xlocalStrings.getLocalString(
             "enterprise.deployapi.spi.invaliduri", // NOI18N
             "Invalid URI"));    // NOI18N
         }
-        
+
         ServerConnectionIdentifier sci = new ServerConnectionIdentifier();
-        
+
         if(uri.length() == targetURI.length()) {
             sci.setHostName(LOCAL_HOST);
             sci.setHostPort(HOST_PORT);
@@ -235,7 +190,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
             if (splitted.length<2) {
                 throw new Exception(xlocalStrings.getLocalString(
                     "enterprise.deployapi.spi.invaliduri", // NOI18N
-                    "Invalid URI"));    // NOI18N                
+                    "Invalid URI"));    // NOI18N
             }
             if ("".equals(splitted[0])) {
                 sci.setHostName(LOCAL_HOST);
@@ -247,7 +202,7 @@ public class SunDeploymentFactory implements DeploymentFactory {
             } else {
                 sci.setHostPort(Integer.parseInt(splitted[1]));
             }
-            
+
             if (splitted.length>2) {
                 if (HTTPS.equals(splitted[2])) {
                     sci.setSecure(true);
@@ -255,5 +210,17 @@ public class SunDeploymentFactory implements DeploymentFactory {
             }
         }
         return sci;
+    }
+
+    private String toTargetURI(final String uri) {
+        if (uri == null) {
+            return null;
+        }
+        for (String supportedURI : supportedURIs) {
+            if (uri.indexOf(supportedURI) == 0) {
+                return supportedURI;
+            }
+        }
+        return null;
     }
 }

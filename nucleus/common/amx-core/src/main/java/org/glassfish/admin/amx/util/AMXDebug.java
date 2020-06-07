@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -186,7 +187,7 @@ public final class AMXDebug
     private final char[] ILLEGAL_CHARS_ARRAY =
     {
         '\u0000',
-        '?', '*', '|', '\'', '|', '\\', '/', ':',
+        '?', '*', '|', '\'', '|', '\\', '/', ':'
     };
 
     private AMXDebug()
@@ -197,7 +198,7 @@ public final class AMXDebug
             ILLEGAL_CHARS.add(c);
         }
 
-        NEWLINE = System.getProperty("line.separator");
+        NEWLINE = System.lineSeparator();
         assert (NEWLINE != null);
 
         String value = System.getProperty(AMX_DEBUG_ENABLED_SPROP);
@@ -228,13 +229,12 @@ public final class AMXDebug
         mDebug = _getOutput(this.getClass().getName());
         mark(mDebug, getStdMarker("AMXDebug started "));
         mDebug.println("*** System Properties ***");
-        dumpSystemProps(mDebug);
+        dumpSystemProps();
 
         mark(mDebug, getStdMarker("AMXDebug initialization done"));
     }
 
-    private void dumpSystemProps(final Output output)
-    {
+    private void dumpSystemProps() {
         final java.util.Properties props = System.getProperties();
 
         Set<Object> keyset = props.keySet();
@@ -553,7 +553,7 @@ public final class AMXDebug
     debug may be dynamically enabled or disabled without any
     users of the Output having to be aware of it.
      */
-    public final static class WrapOutput implements Output
+    public static final class WrapOutput implements Output
     {
         private volatile Output mWrapped;
 
@@ -662,15 +662,3 @@ public final class AMXDebug
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-

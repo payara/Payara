@@ -39,14 +39,12 @@
  */
 
 package com.sun.enterprise.admin.monitor.stats;
-import com.sun.enterprise.admin.monitor.stats.ConnectionPoolStats;
 
 /*
  * ConnectionFactoryStats.java
  * This is used by the jms-service
  * @since 8.1
  */
-
 public interface ConnectionFactoryStats extends ConnectionPoolStats {
     
 }

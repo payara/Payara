@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -51,13 +52,12 @@ public interface DebugState
     {
         private final boolean mStatus;
 
-        public Impl(boolean status)
-        {
+        public Impl(boolean status){
             mStatus = status;
         }
 
-        public boolean getDebug()
-        {
+        @Override
+        public boolean getDebug() {
             return (mStatus);
         }
 
@@ -69,5 +69,3 @@ public interface DebugState
     public boolean getDebug();
 
 }
-
-

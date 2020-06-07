@@ -138,7 +138,7 @@ public class DBStatement extends Object {
         batchCounter++;
         if (logger.isLoggable(Logger.FINER)) {
             logger.finer("sqlstore.sql.generator.dbstatement.addbatch", // NOI18N
-                         new Integer(batchCounter));
+                         Integer.valueOf(batchCounter));
         }
         preparedStmt.addBatch();
     }
@@ -152,7 +152,7 @@ public class DBStatement extends Object {
     {
         if (logger.isLoggable(Logger.FINER)) {
             logger.finer("sqlstore.sql.generator.dbstatement.executebatch", // NOI18N
-                         new Integer(batchCounter));
+                         Integer.valueOf(batchCounter));
         }
         batchCounter = 0;
         return preparedStmt.executeBatch();
@@ -211,7 +211,7 @@ public class DBStatement extends Object {
     {
         int sqlType = getSqlType(columnElement);
         if (logger.isLoggable(Logger.FINER)) {
-            Object[] items = {new Integer(index),val,new Integer(sqlType)};
+            Object[] items = {index, val, sqlType};
             logger.finer("sqlstore.sql.generator.dbstatement.bindinputcolumn", items); // NOI18N
         }
 

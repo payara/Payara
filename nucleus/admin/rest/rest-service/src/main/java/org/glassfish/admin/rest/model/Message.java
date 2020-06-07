@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.model;
 
 import javax.json.Json;
@@ -45,7 +47,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public class Message {
-    public static enum Severity {
+    public enum Severity {
         SUCCESS,
         WARNING,
         FAILURE

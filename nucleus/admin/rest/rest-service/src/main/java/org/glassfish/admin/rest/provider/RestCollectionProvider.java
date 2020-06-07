@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foudation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foudation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
@@ -81,7 +81,7 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
         StringBuilder sb = new StringBuilder();
         final List<String> wrapObjectHeader = requestHeaders.get().getRequestHeader("X-Wrap-Object");
         final List<String> skipMetadataHeader = requestHeaders.get().getRequestHeader("X-Skip-Metadata");
-        boolean wrapObject = ((wrapObjectHeader != null) && (wrapObjectHeader.size() > 0));
+        boolean wrapObject = ((wrapObjectHeader != null) && (!wrapObjectHeader.isEmpty()));
         boolean skipMetadata = ((skipMetadataHeader != null) && (skipMetadataHeader.get(0).equalsIgnoreCase("true")));
 
         JsonArrayBuilder models = Json.createArrayBuilder();

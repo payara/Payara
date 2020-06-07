@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.client;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -51,227 +51,11 @@ import org.glassfish.deployment.common.DeploymentUtils;
  * <p>
  * Heavily inspired by the original from common-utils but copied here to
  * minimize dependencies.
- * 
+ *
  * @author tjquinn
  */
 public class DFDeploymentProperties extends Properties {
 
-//    private Properties deplProps = new Properties();
-    
-    public String getWsdlTargetHint() throws IllegalArgumentException {
-        return getProperty(WSDL_TARGET_HINT, null);
-    }
-    
-    public void setWsdlTargetHint(String target) {
-        if(target != null) {
-            setProperty(WSDL_TARGET_HINT, target);
-        }
-    }
-    
-    public String getTarget() throws IllegalArgumentException {
-        return getProperty(TARGET, null);
-    }
-    
-    public void setTarget(String target) {
-        if (target != null)
-            setProperty(TARGET, target);
-    }
-    
-    public boolean getRedeploy() {
-        return Boolean.valueOf(getProperty(REDEPLOY, DEFAULT_REDEPLOY)).booleanValue();
-    }
-
-    public void setRedeploy(boolean redeploy) {
-        setProperty(REDEPLOY, Boolean.valueOf(redeploy).toString());
-    }
-
-    public boolean getForce() {
-        return Boolean.valueOf(getProperty(FORCE,DEFAULT_FORCE)).booleanValue();
-    }
-    
-    public void setForce(boolean force) {
-        setProperty(FORCE, Boolean.valueOf(force).toString());
-    }
-
-    public boolean getReload() {
-        return Boolean.valueOf(getProperty(RELOAD,DEFAULT_RELOAD)).booleanValue();
-    }
-
-    public void setReload(boolean reload) {
-        setProperty(RELOAD, Boolean.valueOf(reload).toString());
-    }
-
-    public boolean getCascade() {
-        return Boolean.valueOf(getProperty(CASCADE,DEFAULT_CASCADE)).booleanValue();
-    }
-    
-    public void setCascade(boolean cascade) {
-        setProperty(CASCADE, Boolean.valueOf(cascade).toString());
-    }
-    
-    public boolean getPrecompileJSP() {
-        return Boolean.valueOf(getProperty(PRECOMPILE_JSP,DEFAULT_PRECOMPILE_JSP)).booleanValue();
-    }
-    
-    public void setPrecompileJSP(boolean precompileJSP) {
-        setProperty(PRECOMPILE_JSP, Boolean.valueOf(precompileJSP).toString());
-    }
-    
-    public boolean getVerify() {
-        return Boolean.valueOf(getProperty(VERIFY,DEFAULT_VERIFY)).booleanValue();
-    }
-    
-    public void setVerify(boolean verify) {
-        setProperty(VERIFY, Boolean.valueOf(verify).toString());
-    }
-    
-    public String getVirtualServers() {
-        return getProperty(VIRTUAL_SERVERS , DEFAULT_VIRTUAL_SERVERS);
-    }
-    
-    public void setVirtualServers(String virtualServers) {
-        if(virtualServers != null)
-	        setProperty(VIRTUAL_SERVERS, virtualServers);
-    }
-    
-    public boolean getEnabled() {
-        return Boolean.valueOf(getProperty(ENABLED,DEFAULT_ENABLED)).booleanValue();
-    }
-    
-    public void setEnabled(boolean enabled) {
-        setProperty(ENABLED, Boolean.valueOf(enabled).toString());
-    }
-    
-    public String getContextRoot() {
-        return getProperty(CONTEXT_ROOT, null);
-    }
-    
-    public void setContextRoot(String contextRoot) {
-        if(contextRoot != null)
-            setProperty(CONTEXT_ROOT, contextRoot);
-    }
-    
-    public String getName() {
-        return getProperty(NAME);
-    }
-    
-    public void setName(String name) {
-        if(name != null)
-            setProperty(NAME, name);
-    }
-    
-    public String getDescription() {
-        return getProperty(DESCRIPTION, "");
-    }
-
-    public void setDescription(String description) {
-        if(description != null)
-            setProperty(DESCRIPTION, description);
-    }
-
-    public boolean getGenerateRMIStubs() {
-        return Boolean.valueOf(getProperty(GENERATE_RMI_STUBS,DEFAULT_GENERATE_RMI_STUBS)).booleanValue();
-    }
-
-    public void setGenerateRMIStubs(boolean generateRMIStubs ) {
-        setProperty(GENERATE_RMI_STUBS,
-                    Boolean.valueOf(generateRMIStubs).toString());
-    }
-
-    public boolean getAvailabilityEnabled() {
-        return Boolean.valueOf(getProperty(AVAILABILITY_ENABLED,DEFAULT_AVAILABILITY_ENABLED)).booleanValue();
-    }
-
-    public void setAvailabilityEnabled(boolean availabilityEnabled ) {
-        setProperty(AVAILABILITY_ENABLED,
-                    Boolean.valueOf(availabilityEnabled).toString());
-    }
-
-    public boolean getJavaWebStartEnabled() {
-        return Boolean.valueOf(getProperty(DEPLOY_OPTION_JAVA_WEB_START_ENABLED, DEFAULT_JAVA_WEB_START_ENABLED)).booleanValue();
-    }
-    
-    public void setJavaWebStartEnabled(boolean javaWebStartEnabled) {
-        setProperty(DEPLOY_OPTION_JAVA_WEB_START_ENABLED,
-                    Boolean.valueOf(javaWebStartEnabled).toString()); 
-    }
-
-    public String getLibraries() {
-        return getProperty(DEPLOY_OPTION_LIBRARIES, null  );
-    }
-        
-    public void setLibraries(String libraries) {
-        if(libraries != null) {
-            setProperty(DEPLOY_OPTION_LIBRARIES, libraries);
-        }
-    }
-
-    public String getResourceAction() {
-        return getProperty(RESOURCE_ACTION, null );
-    }
-
-    public void setResourceAction(String resourceAction) {
-        if(resourceAction != null) {
-            setProperty(RESOURCE_ACTION, resourceAction);
-        }
-    }
-
-    public String getResourceTargetList() {
-        return getProperty(RESOURCE_TARGET_LIST, null );
-    }
-
-    public void setResourceTargetList(String resTargetList) {
-        if(resTargetList != null) {
-            setProperty(RESOURCE_TARGET_LIST, resTargetList);
-        }
-    }
-
-    public void setUpload(boolean uploadEnabled) {
-        setProperty(UPLOAD, Boolean.toString(uploadEnabled));
-    }
-    
-    public boolean getUpload() {
-        return Boolean.valueOf(getProperty(UPLOAD, DEFAULT_UPLOAD)).booleanValue();
-    }
-
-    public void setExternallyManaged(boolean isExternallyManaged) {
-        setProperty(EXTERNALLY_MANAGED, Boolean.toString(isExternallyManaged));
-    }
-              
-    public void setPath(String path) {
-        setProperty(PATH, path);
-    }
-    
-    public String getPath() {
-        return getProperty(PATH);
-    }
-    public boolean getExternallyManaged() {
-        return Boolean.valueOf(getProperty(EXTERNALLY_MANAGED, DEFAULT_EXTERNALLY_MANAGED)).booleanValue();
-    }
-
-    public void setProperties(Properties props) {
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<Object,Object> prop : props.entrySet()) {
-            if (sb.length() > 0) {
-                sb.append(PROPERTY_SEPARATOR);
-            }
-            sb.append(prop.getKey()).append("=").append(prop.getValue());
-        }
-        setProperty(PROPERTY, sb.toString());
-    }
-
-    public Properties getProperties() {
-        Properties result = new Properties();
-        String[] settings = getProperty(PROPERTY).split(PROPERTY_SEPARATOR);
-        for (String setting : settings) {
-            int equals = setting.indexOf('=');
-            if (equals != -1) {
-                result.setProperty(setting.substring(0, equals), setting.substring(equals + 1));
-            }
-        }
-        return result;
-    }
-    
     public static final String WSDL_TARGET_HINT = "wsdlTargetHint";
     public static final String TARGET = "target";
     public static final String REDEPLOY = "redeploy";
@@ -308,7 +92,7 @@ public class DFDeploymentProperties extends Properties {
 
     public static final String PROPERTY = "property";
     private static final String PROPERTY_SEPARATOR = ":";
-    
+
     public static final String DEFAULT_UPLOAD = "true";
     public static final String DEFAULT_EXTERNALLY_MANAGED = "false";
     // resource constants
@@ -322,7 +106,8 @@ public class DFDeploymentProperties extends Properties {
     public static final String RES_UNDEPLOYMENT = "resUndeployment";
     public static final String RES_REDEPLOYMENT = "resRedeployment";
     public static final String RES_NO_OP = "resNoOp";
-    public static final String DEPLOY_OPTION_JAVA_WEB_START_ENABLED = DeploymentUtils.DEPLOYMENT_PROPERTY_JAVA_WEB_START_ENABLED;
+    public static final String DEPLOY_OPTION_JAVA_WEB_START_ENABLED
+                                 = DeploymentUtils.DEPLOYMENT_PROPERTY_JAVA_WEB_START_ENABLED;
     public static final String DEPLOY_OPTION_LIBRARIES = "libraries";
 
     // possible values for module state
@@ -336,22 +121,223 @@ public class DFDeploymentProperties extends Properties {
     public static final String CLASSPATH = "classpath";
     public static final String LOAD_ORDER = "load-order";
     public static final String IS_FAILURE_FATAL = "is-failure-fatal";
-    public static final String IS_LIFECYCLE = "isLifecycle"; 
-    public static final String IS_COMPOSITE = "isComposite"; 
+    public static final String IS_LIFECYCLE = "isLifecycle";
+    public static final String IS_COMPOSITE = "isComposite";
+    public static final String MODULE_EXTENSION = "moduleExtension";
 
-    public Map<String,String> asMap() {
-        return new HashMap<String,String>();
+    public String getWsdlTargetHint() throws IllegalArgumentException {
+        return getProperty(WSDL_TARGET_HINT, null);
     }
-    
-//    private String getProperty(String propertyName, String defaultValue) {
-//        return deplProps.getProperty(propertyName, defaultValue);
-//    }
-//    
-//    private String getProperty(String propertyName) {
-//        return deplProps.getProperty(propertyName);
-//    }
-//    
-//    private void setProperty(String propertyName, String value) {
-//        deplProps.setProperty(propertyName, value);
-//    }
+
+    public void setWsdlTargetHint(String target) {
+        if(target != null) {
+            setProperty(WSDL_TARGET_HINT, target);
+        }
+    }
+
+    public String getTarget() throws IllegalArgumentException {
+        return getProperty(TARGET, null);
+    }
+
+    public void setTarget(String target) {
+        if (target != null) {
+            setProperty(TARGET, target);
+        }
+    }
+
+    public boolean getRedeploy() {
+        return Boolean.parseBoolean(getProperty(REDEPLOY, DEFAULT_REDEPLOY));
+    }
+
+    public void setRedeploy(boolean redeploy) {
+        setProperty(REDEPLOY, Boolean.valueOf(redeploy).toString());
+    }
+
+    public boolean getForce() {
+        return Boolean.parseBoolean(getProperty(FORCE,DEFAULT_FORCE));
+    }
+
+    public void setForce(boolean force) {
+        setProperty(FORCE, Boolean.valueOf(force).toString());
+    }
+
+    public boolean getReload() {
+        return Boolean.parseBoolean(getProperty(RELOAD,DEFAULT_RELOAD));
+    }
+
+    public void setReload(boolean reload) {
+        setProperty(RELOAD, Boolean.valueOf(reload).toString());
+    }
+
+    public boolean getCascade() {
+        return Boolean.parseBoolean(getProperty(CASCADE,DEFAULT_CASCADE));
+    }
+
+    public void setCascade(boolean cascade) {
+        setProperty(CASCADE, Boolean.valueOf(cascade).toString());
+    }
+
+    public boolean getPrecompileJSP() {
+        return Boolean.parseBoolean(getProperty(PRECOMPILE_JSP,DEFAULT_PRECOMPILE_JSP));
+    }
+
+    public void setPrecompileJSP(boolean precompileJSP) {
+        setProperty(PRECOMPILE_JSP, Boolean.valueOf(precompileJSP).toString());
+    }
+
+    public boolean getVerify() {
+        return Boolean.parseBoolean(getProperty(VERIFY,DEFAULT_VERIFY));
+    }
+
+    public void setVerify(boolean verify) {
+        setProperty(VERIFY, Boolean.valueOf(verify).toString());
+    }
+
+    public String getVirtualServers() {
+        return getProperty(VIRTUAL_SERVERS , DEFAULT_VIRTUAL_SERVERS);
+    }
+
+    public void setVirtualServers(String virtualServers) {
+        if(virtualServers != null) {
+            setProperty(VIRTUAL_SERVERS, virtualServers);
+        }
+    }
+
+    public boolean getEnabled() {
+        return Boolean.parseBoolean(getProperty(ENABLED,DEFAULT_ENABLED));
+    }
+
+    public void setEnabled(boolean enabled) {
+        setProperty(ENABLED, Boolean.valueOf(enabled).toString());
+    }
+
+    public String getContextRoot() {
+        return getProperty(CONTEXT_ROOT, null);
+    }
+
+    public void setContextRoot(String contextRoot) {
+        if(contextRoot != null) {
+            setProperty(CONTEXT_ROOT, contextRoot);
+        }
+    }
+
+    public String getName() {
+        return getProperty(NAME);
+    }
+
+    public void setName(String name) {
+        if(name != null) {
+            setProperty(NAME, name);
+        }
+    }
+
+    public String getDescription() {
+        return getProperty(DESCRIPTION, "");
+    }
+
+    public void setDescription(String description) {
+        if(description != null) {
+            setProperty(DESCRIPTION, description);
+        }
+    }
+
+    public boolean getGenerateRMIStubs() {
+        return Boolean.parseBoolean(getProperty(GENERATE_RMI_STUBS,DEFAULT_GENERATE_RMI_STUBS));
+    }
+
+    public void setGenerateRMIStubs(boolean generateRMIStubs) {
+        setProperty(GENERATE_RMI_STUBS, Boolean.valueOf(generateRMIStubs).toString());
+    }
+
+    public boolean getAvailabilityEnabled() {
+        return Boolean.parseBoolean(getProperty(AVAILABILITY_ENABLED,DEFAULT_AVAILABILITY_ENABLED));
+    }
+
+    public void setAvailabilityEnabled(boolean availabilityEnabled) {
+        setProperty(AVAILABILITY_ENABLED, Boolean.valueOf(availabilityEnabled).toString());
+    }
+
+    public boolean getJavaWebStartEnabled() {
+        return Boolean.parseBoolean(getProperty(DEPLOY_OPTION_JAVA_WEB_START_ENABLED, DEFAULT_JAVA_WEB_START_ENABLED));
+    }
+
+    public void setJavaWebStartEnabled(boolean javaWebStartEnabled) {
+        setProperty(DEPLOY_OPTION_JAVA_WEB_START_ENABLED, Boolean.valueOf(javaWebStartEnabled).toString());
+    }
+
+    public String getLibraries() {
+        return getProperty(DEPLOY_OPTION_LIBRARIES, null  );
+    }
+
+    public void setLibraries(String libraries) {
+        if (libraries != null) {
+            setProperty(DEPLOY_OPTION_LIBRARIES, libraries);
+        }
+    }
+
+    public String getResourceAction() {
+        return getProperty(RESOURCE_ACTION, null );
+    }
+
+    public void setResourceAction(String resourceAction) {
+        if(resourceAction != null) {
+            setProperty(RESOURCE_ACTION, resourceAction);
+        }
+    }
+
+    public String getResourceTargetList() {
+        return getProperty(RESOURCE_TARGET_LIST, null );
+    }
+
+    public void setResourceTargetList(String resTargetList) {
+        if(resTargetList != null) {
+            setProperty(RESOURCE_TARGET_LIST, resTargetList);
+        }
+    }
+
+    public void setUpload(boolean uploadEnabled) {
+        setProperty(UPLOAD, Boolean.toString(uploadEnabled));
+    }
+
+    public boolean getUpload() {
+        return Boolean.parseBoolean(getProperty(UPLOAD, DEFAULT_UPLOAD));
+    }
+
+    public void setExternallyManaged(boolean isExternallyManaged) {
+        setProperty(EXTERNALLY_MANAGED, Boolean.toString(isExternallyManaged));
+    }
+
+    public void setPath(String path) {
+        setProperty(PATH, path);
+    }
+
+    public String getPath() {
+        return getProperty(PATH);
+    }
+    public boolean getExternallyManaged() {
+        return Boolean.parseBoolean(getProperty(EXTERNALLY_MANAGED, DEFAULT_EXTERNALLY_MANAGED));
+    }
+
+    public void setProperties(Properties props) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Object,Object> prop : props.entrySet()) {
+            if (sb.length() > 0) {
+                sb.append(PROPERTY_SEPARATOR);
+            }
+            sb.append(prop.getKey()).append("=").append(prop.getValue());
+        }
+        setProperty(PROPERTY, sb.toString());
+    }
+
+    public Properties getProperties() {
+        Properties result = new Properties();
+        String[] settings = getProperty(PROPERTY).split(PROPERTY_SEPARATOR);
+        for (String setting : settings) {
+            int equals = setting.indexOf('=');
+            if (equals != -1) {
+                result.setProperty(setting.substring(0, equals), setting.substring(equals + 1));
+            }
+        }
+        return result;
+    }
 }

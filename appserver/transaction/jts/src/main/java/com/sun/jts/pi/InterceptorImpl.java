@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2018] [Payara Foundation]
 
 package com.sun.jts.pi;
 
+import java.io.IOException;
 import java.lang.Object;
 
 import org.omg.IOP.Codec;
@@ -454,47 +455,44 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
 
         SystemException exception = null;
         Any any = ri.received_exception();
-        InputStream strm = any.create_input_stream();
-        String repId = ri.received_exception_id();
-        strm.read_string(); // read repId
-        int minorCode = strm.read_long(); // read minorCode
-        CompletionStatus completionStatus = // read completionStatus
-            CompletionStatus.from_int(strm.read_long());
-        if (repId.indexOf("UNKNOWN") != -1) { // user exception ?
-	    if (minorCode == 1) { // read minorCode
-                // user exception
-	    } else { // system exception
+        try (InputStream strm = any.create_input_stream()) {
+            String repId = ri.received_exception_id();
+            strm.read_string(); // read repId
+            int minorCode = strm.read_long(); // read minorCode
+            CompletionStatus completionStatus = // read completionStatus
+                CompletionStatus.from_int(strm.read_long());
+            if (repId.contains("UNKNOWN")) { // user exception ?
+                if (minorCode != 1) { // system exception
+                    exception = SYS_EXC;
+                }
+            } else { // system exception
                 exception = SYS_EXC;
-	    }
-        } else { // system exception
-            exception = SYS_EXC;
+            }
+            env.exception(exception);
+            // check if TransactionService is available.
+            if (this.tsiImpl == null || this.sender == null) {
+                throw new TRANSACTION_ROLLEDBACK(0, completionStatus);
+            }
+            // read the propagation context
+
+            try {
+                TypeCode typeCode = PropagationContextHelper.type();
+                any = this.codec.decode_value(svc.context_data, typeCode);
+            } catch (TypeMismatch | FormatMismatch e) {
+                throw new INTERNAL(0, completionStatus);
+            }
+            PropagationContext ctx = PropagationContextHelper.extract(any);
+
+            // call the OTS proprietary hook.
+
+            try {
+                sender.received_reply(ri.request_id(), ctx, env);
+            } catch (org.omg.CORBA.WrongTransaction ex) {
+                throw new INVALID_TRANSACTION(0, completionStatus);
+            }
+        } catch (IOException e) {
+            _logger.log(Level.WARNING, "Exception closing input stream.", e);
         }
-	env.exception(exception);
-
-        // check if TransactionService is available.
-        if (this.tsiImpl == null || this.sender == null) {
-            throw new TRANSACTION_ROLLEDBACK(0, completionStatus);
-        }
-
-        // read the propagation context
-
-        try {
-            TypeCode typeCode = PropagationContextHelper.type();
-            any = this.codec.decode_value(svc.context_data, typeCode);
-        } catch (TypeMismatch e) {
-            throw new INTERNAL(0, completionStatus);
-        } catch (FormatMismatch e) {
-            throw new INTERNAL(0, completionStatus);
-        }
-        PropagationContext ctx = PropagationContextHelper.extract(any);
-
-        // call the OTS proprietary hook.
-
-        try {
-	    sender.received_reply(ri.request_id(), ctx, env);
-	} catch (org.omg.CORBA.WrongTransaction ex) {
-            throw new INVALID_TRANSACTION(0, completionStatus);
-	}
     }
 
     public void receive_other(ClientRequestInfo ri) throws ForwardRequest {
@@ -772,13 +770,16 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
 
     public void send_exception(ServerRequestInfo ri) throws ForwardRequest {
         Any any = ri.sending_exception();
-        InputStream strm = any.create_input_stream();
-        strm.read_string(); // repId
-        strm.read_long(); // minorCode
-        CompletionStatus completionStatus =
-            CompletionStatus.from_int(strm.read_long());
+        try (InputStream strm = any.create_input_stream()) {
+            strm.read_string(); // repId
+            strm.read_long(); // minorCode
+            CompletionStatus completionStatus =
+                CompletionStatus.from_int(strm.read_long());
 
-        processServerSendPoint(ri, completionStatus);
+            processServerSendPoint(ri, completionStatus);
+        } catch (IOException e) {
+            _logger.log(Level.WARNING, "Exception closing input stream.", e);
+        }
     }
 
     public void send_other(ServerRequestInfo ri) throws ForwardRequest {

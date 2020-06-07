@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 import static java.util.logging.Level.WARNING;
@@ -64,9 +64,6 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
-
-//TBD
-//import com.sun.enterprise.security.jmac.provider.ServerAuthConfig;
 
 // JAX-RPC SPI
 import com.sun.xml.rpc.spi.JaxRpcObjectFactory;

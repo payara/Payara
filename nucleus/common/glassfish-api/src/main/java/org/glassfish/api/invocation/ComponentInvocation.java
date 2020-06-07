@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.invocation;
 
@@ -53,10 +54,10 @@ import org.jvnet.hk2.annotations.Service;
 public class ComponentInvocation implements Cloneable {
 
     public enum ComponentInvocationType {
-        SERVLET_INVOCATION, 
-        EJB_INVOCATION, 
-        APP_CLIENT_INVOCATION, 
-        UN_INITIALIZED, 
+        SERVLET_INVOCATION,
+        EJB_INVOCATION,
+        APP_CLIENT_INVOCATION,
+        UN_INITIALIZED,
         SERVICE_STARTUP
     }
 
@@ -113,16 +114,19 @@ public class ComponentInvocation implements Cloneable {
 
     protected String moduleName;
 
+    protected String registrationName;
+
     public ComponentInvocation() {
 
     }
 
-    public ComponentInvocation(String componentId, ComponentInvocationType invocationType, Object container, String appName, String moduleName) {
+    public ComponentInvocation(String componentId, ComponentInvocationType invocationType, Object container, String appName, String moduleName, String registrationName) {
         this.componentId = componentId;
         this.invocationType = invocationType;
         this.container = container;
         this.appName = appName;
         this.moduleName = moduleName;
+        this.registrationName = registrationName;
     }
 
     public ComponentInvocation(String componentId, ComponentInvocationType invocationType, Object instance, Object container, Object transaction) {
@@ -136,7 +140,7 @@ public class ComponentInvocation implements Cloneable {
     public ComponentInvocationType getInvocationType() {
         return invocationType;
     }
-    
+
     public void setInvocationType(ComponentInvocationType invocationType) {
         this.invocationType = invocationType;
     }
@@ -156,7 +160,7 @@ public class ComponentInvocation implements Cloneable {
     public Boolean getAuth() {
         return auth;
     }
-    
+
     public void setAuth(Boolean auth) {
         this.auth = auth;
     }
@@ -164,7 +168,7 @@ public class ComponentInvocation implements Cloneable {
     public void setAuth(boolean value) {
         auth = value;
     }
-    
+
     public boolean isPreInvokeDoneStatus() {
         return preInvokeDoneStatus;
     }
@@ -176,7 +180,7 @@ public class ComponentInvocation implements Cloneable {
     public Object getInstance() {
         return instance;
     }
-    
+
     public void setInstance(Object instance) {
         this.instance = instance;
     }
@@ -192,11 +196,11 @@ public class ComponentInvocation implements Cloneable {
     public String getComponentId() {
         return this.componentId;
     }
-    
+
     public void setComponentId(String componentId) {
         this.componentId = componentId;
     }
-    
+
     public Object getJndiEnvironment() {
         return jndiEnvironment;
     }
@@ -216,7 +220,7 @@ public class ComponentInvocation implements Cloneable {
     public Object getContainer() {
         return container;
     }
-    
+
     public void setContainer(Object container) {
         this.container = container;
     }
@@ -232,11 +236,11 @@ public class ComponentInvocation implements Cloneable {
     public void setTransaction(Object t) {
         this.transaction = t;
     }
-    
+
     public void setTransactionCompleting(boolean transactionCompleting) {
         this.transactionCompleting = transactionCompleting;
     }
-    
+
     public Map<Class<?>, Object> getRegistry() {
         return registry;
     }
@@ -254,7 +258,7 @@ public class ComponentInvocation implements Cloneable {
     public String getAppName() {
         return appName;
     }
-    
+
     public void setAppName(String appName) {
         this.appName = appName;
     }
@@ -266,9 +270,22 @@ public class ComponentInvocation implements Cloneable {
     public String getModuleName() {
         return moduleName;
     }
-    
+
     public void setModuleName(String moduleName) {
         this.moduleName = moduleName;
+    }
+
+    /**
+     * Returns the unique registration name of application.
+     *
+     * @return
+     */
+    public String getRegistrationName() {
+        return registrationName;
+    }
+
+    public void setRegistrationName(String registrationName) {
+        this.registrationName = registrationName;
     }
 
     public void setTransactionOperationsManager(Object transactionOperationsManager) {
@@ -366,5 +383,16 @@ public class ComponentInvocation implements Cloneable {
 
         return newInv;
     }
-   
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        str.append(Integer.toHexString(System.identityHashCode(this))).append('@').append(getClass().getName()).append('\n');
+        str.append("\tcomponentId=").append(componentId).append('\n');
+        str.append("\ttype=").append(invocationType).append('\n');
+        str.append("\tinstance=").append(instanceName != null ? instanceName : String.valueOf(instance)).append('\n');
+        str.append("\tcontainer=").append(container).append('\n');
+        str.append("\tappName=").append(appName).append('\n');
+        return str.toString();
+    }
 }

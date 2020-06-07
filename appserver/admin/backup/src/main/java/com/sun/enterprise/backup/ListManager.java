@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * ListManager.java
@@ -46,18 +47,22 @@
 
 package com.sun.enterprise.backup;
 
-import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-
+import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.io.FileUtils;
-import java.io.*;
-import java.util.*;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeSet;
 
 
 /**
  *
  * This class is responsible for returning information about backups.
- * It opens each backup zip file and examines the properties file for the 
+ * It opens each backup zip file and examines the properties file for the
  * information that was stored when the backup was performed.
  * It returns all this information to CLI as a String.
  *
@@ -70,18 +75,18 @@ public class ListManager extends BackupRestoreManager
      * The superclass will call init() so it is
      * possible for Exceptions to be thrown.
      * @param req The BackupRequest instance with required information.
-     * @throws BackupException if there is a fatal error with the 
+     * @throws BackupException if there is a fatal error with the
      * BackupRequest object.
-     * @throws BackupWarningException if there is a non-fatal error with the 
+     * @throws BackupWarningException if there is a non-fatal error with the
      * BackupRequest object.
      */
-    public ListManager(BackupRequest req) 
+    public ListManager(BackupRequest req)
         throws BackupException, BackupWarningException {
 
         super(req);
     }
 
-    /** 
+    /**
      * Find all backup zip files in a domain and return a String
      * summarizing information about the backup.
      * The summary is shorter if the "terse" option is true.
@@ -89,13 +94,13 @@ public class ListManager extends BackupRestoreManager
      * @throws BackupException if there is a fatal error
      */
     public String list() throws BackupException {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String headings[] = { BACKUP, USER, DATE, FILENAME };
         List<Integer> badPropsList = null;
         ColumnFormatter cf = null;
         boolean itemInRow = false;
         TreeSet<Status>statusSet = new TreeSet<Status>(new FileNameComparator());
-        
+
         // If a backup config was not provided then look for all zips
         // including those in the backup config directories.
         // If a backup config was provided then only look for zips in
@@ -119,7 +124,7 @@ public class ListManager extends BackupRestoreManager
         }
 
         if (itemInRow) {
-            for (Status status : statusSet) { 
+            for (Status status : statusSet) {
                 if (request.verbose) {
                     File f = null;
 
@@ -153,7 +158,7 @@ public class ListManager extends BackupRestoreManager
         }
 
 
-        if (cf != null) 
+        if (cf != null)
             sb.append(cf.toString());
 
         // If no items in the row and we are not in terse mode indicate
@@ -174,40 +179,40 @@ public class ListManager extends BackupRestoreManager
         return sb.toString();
     }
 
-    
+
     /**
      * Finish initializing the BackupRequest object.
      * note: this method is called by the super class...
      * @throws BackupException for fatal errors
      * @throws BackupWarningException for non-fatal errors - these are errors
      * where we can not continue execution.
-     */    
+     */
     void init() throws BackupException, BackupWarningException {
         super.init();
-        
+
         if(!FileUtils.safeIsDirectory(request.domainDir))
             throw new BackupException("backup-res.NoDomainDir",
                                       request.domainDir);
 
         // It's a warning to not exist...
         if(!FileUtils.safeIsDirectory(getBackupDirectory(request)))
-            throw new BackupWarningException("backup-res.NoBackupDir", 
+            throw new BackupWarningException("backup-res.NoBackupDir",
                                              getBackupDirectory(request));
     }
-    
+
     /** Look through the backups directory/subdirectories and assemble
      * a list of all backup files found.
      *
      * @param  subdirs If true search the first level subdirectories too
      * @throws BackupWarningException if there are no backup zip files
-     */    
+     */
     private void findZips(boolean subdirs) throws BackupWarningException {
 
         File[] dirs;
         File[] files;
         List<File>zipList = new ArrayList<File>();
 
-        
+
         files = getBackupDirectory(request).listFiles(new ZipFilenameFilter());
 
         if (subdirs) {
@@ -227,7 +232,7 @@ public class ListManager extends BackupRestoreManager
                     }
             }
 
-            if (zipList.size() > 0) 
+            if (zipList.size() > 0)
                 zips = zipList.toArray(new File[zipList.size()]);
 
         } else
@@ -235,7 +240,7 @@ public class ListManager extends BackupRestoreManager
 
 
         if(zips == null || zips.length <= 0)
-            throw new BackupWarningException("backup-res.NoBackupFiles", 
+            throw new BackupWarningException("backup-res.NoBackupFiles",
                                              getBackupDirectory(request));
     }
 
@@ -281,7 +286,7 @@ public class ListManager extends BackupRestoreManager
             return f1Num - f2Num;
         }
     }
- 
+
 
     private static final LocalStringsImpl strings =
                 new LocalStringsImpl(ListManager.class);

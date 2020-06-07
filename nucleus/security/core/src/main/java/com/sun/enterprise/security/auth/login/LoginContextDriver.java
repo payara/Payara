@@ -155,7 +155,7 @@ public class LoginContextDriver {
             return subject;
         }
     }
-
+    
     /**
      * Perform logout on the client side.
      *

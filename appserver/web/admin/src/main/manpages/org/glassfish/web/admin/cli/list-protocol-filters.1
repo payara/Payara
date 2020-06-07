@@ -1,0 +1,63 @@
+list-protocol-filters(1)  asadmin Utility Subcommands list-protocol-filters(1)
+
+NAME
+       list-protocol-filters - lists the existing protocol filters
+
+SYNOPSIS
+           list-protocol-filters [--help]
+           [--target server]
+           protocol-name
+
+DESCRIPTION
+       The list-protocol-filters subcommand lists the existing protocol
+       filters. This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       target
+           Restricts the listing to protocol filters for a specified target.
+           Valid values are as follows:
+
+           server
+               Lists the protocol filters for the default server instance.
+               This is the default value.
+
+           configuration-name
+               Lists the protocol filters for the specified configuration.
+
+           cluster-name
+               Lists the protocol filters for all server instances in the
+               specified cluster.
+
+           instance-name
+               Lists the protocol filters for the specified server instance.
+
+OPERANDS
+       protocol-name
+           The name of the protocol for which to list protocol filters.
+
+EXAMPLES
+       Example 1, Listing Protocol Filters
+           The following command lists all the protocol filters for the server
+           instance:
+
+               asadmin> list-protocol-filters http1
+               http1-filter
+               https1-filter
+               Command list-protocol-filters executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-protocol-filter(1), delete-protocol-filter(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Oct 2010         list-protocol-filters(1)

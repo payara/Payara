@@ -37,10 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.solaris;
-
-import static java.util.logging.Level.FINE;
 
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -65,20 +63,19 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
  * </ul>
  *
  * @see com.sun.enterprise.security.auth.login.SolarisLoginModule
- *
  */
 @Service
 public final class SolarisRealm extends BaseRealm {
 
-    // Descriptive string of the authentication type of this realm.
+    /** Descriptive string of the authentication type of this realm. */
     public static final String AUTH_TYPE = "solaris";
 
-    public static final String OS_ARCH = "os.arch";
-    public static final String SOL_SPARC_OS_ARCH = "sparc";
-    public static final String SOL_X86_OS_ARCH = "x86";
+    private static final String OS_ARCH = "os.arch";
+    private static final String SOL_SPARC_OS_ARCH = "sparc";
+    private static final String SOL_X86_OS_ARCH = "x86";
 
-    private HashMap groupCache;
-    private Vector emptyVector;
+    private HashMap<String, Vector<String>> groupCache;
+    private Vector<String> emptyVector;
     private static String osArchType = null;
 
     // Library for native methods
@@ -102,7 +99,7 @@ public final class SolarisRealm extends BaseRealm {
      *
      */
     @Override
-    public synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
+    protected synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
         String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
         if (jaasCtx == null) {
@@ -112,12 +109,10 @@ public final class SolarisRealm extends BaseRealm {
 
         setProperty(JAAS_CONTEXT_PARAM, jaasCtx);
 
-        if (_logger.isLoggable(FINE)) {
-            _logger.fine("SolarisRealm : " + JAAS_CONTEXT_PARAM + "=" + jaasCtx);
-        }
+        _logger.fine(() -> "SolarisRealm : " + JAAS_CONTEXT_PARAM + "=" + jaasCtx);
 
-        groupCache = new HashMap();
-        emptyVector = new Vector();
+        groupCache = new HashMap<>();
+        emptyVector = new Vector<>();
     }
 
     /**
@@ -141,8 +136,8 @@ public final class SolarisRealm extends BaseRealm {
      * Certificate realm does not support this operation.
      */
     @Override
-    public Enumeration getGroupNames(String username) throws InvalidOperationException, NoSuchUserException {
-        Vector v = (Vector) groupCache.get(username);
+    public Enumeration<String> getGroupNames(String username) throws InvalidOperationException, NoSuchUserException {
+        Vector<String> v = groupCache.get(username);
         if (v == null) {
             v = loadGroupNames(username);
         }
@@ -152,21 +147,16 @@ public final class SolarisRealm extends BaseRealm {
 
     /**
      * Set group membership info for a user.
-     *
-     * <P>
-     * See bugs 4646133,4646270 on why this is here.
-     *
      */
     private void setGroupNames(String username, String[] groups) {
-        Vector v = null;
+        Vector<String> v = null;
 
         if (groups == null) {
             v = emptyVector;
-
         } else {
-            v = new Vector(groups.length + 1);
-            for (int i = 0; i < groups.length; i++) {
-                v.add(groups[i]);
+            v = new Vector<>(groups.length);
+            for (String group : groups) {
+                v.add(group);
             }
         }
 
@@ -180,7 +170,7 @@ public final class SolarisRealm extends BaseRealm {
      *
      * @param username User to authenticate.
      * @param password Given password.
-     * @returns true of false, indicating authentication status.
+     * @return String[] group names
      *
      */
     public String[] authenticate(String username, char[] password) {
@@ -200,7 +190,7 @@ public final class SolarisRealm extends BaseRealm {
      * membership info is needed without an authentication event.
      *
      */
-    private Vector loadGroupNames(String username) {
+    private Vector<String> loadGroupNames(String username) {
         String[] grps = nativeGetGroups(username);
         if (grps == null) {
             _logger.fine("No groups returned for user: " + username);
@@ -208,18 +198,16 @@ public final class SolarisRealm extends BaseRealm {
 
         grps = addAssignGroups(grps);
         setGroupNames(username, grps);
-        return (Vector) groupCache.get(username);
+        return groupCache.get(username);
     }
 
     /**
      * Native method. Authenticate using PAM.
-     *
      */
     private static native String[] nativeAuthenticate(String user, String password);
 
     /**
      * Native method. Retrieve Solaris groups for user.
-     *
      */
     private static native String[] nativeGetGroups(String user);
 

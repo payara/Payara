@@ -1,0 +1,66 @@
+create-http-redirect(1)   asadmin Utility Subcommands  create-http-redirect(1)
+
+NAME
+       create-http-redirect - adds a new HTTP redirect
+
+SYNOPSIS
+           create-http-redirect [--help]
+           [--redirect-port redirect-port]
+           [--secure-redirect={false|true}]
+           [--target target]
+           protocol-name
+
+DESCRIPTION
+       The create-http-redirect subcommand creates an HTTP redirect. This
+       subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --redirect-port
+           Port number for redirects. If the HTTP listener is supporting
+           non-SSL requests, and a request is received for which a matching
+           security-constraint requires SSL transport, GlassFish Server
+           automatically redirects the request to this port number.
+
+       --secure-redirect
+           If set to true, the HTTP redirect runs SSL. The default value is
+           false.
+
+       --target
+           Creates the HTTP redirect only on the specified target. Valid
+           values are as follows:
+
+           server
+               Creates the HTTP redirect on the default server instance. This
+               is the default value.
+
+           configuration-name
+               Creates the HTTP redirect in the specified configuration.
+
+           cluster-name
+               Creates the HTTP redirect on all server instances in the
+               specified cluster.
+
+           standalone-instance-name
+               Creates the HTTP redirect on the specified standalone server
+               instance.
+
+OPERANDS
+       protocol-name
+           The name of the protocol to which to apply the redirect.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       delete-http-redirect(1)
+
+       asadmin(1M)
+
+Java EE 8                         08 Oct 2010          create-http-redirect(1)

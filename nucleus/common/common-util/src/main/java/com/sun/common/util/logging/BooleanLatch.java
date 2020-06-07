@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.common.util.logging;
 
@@ -51,10 +52,12 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 public class BooleanLatch extends AbstractQueuedSynchronizer {
         public boolean isSignalled() { return getState() != 0; }
 
+        @Override
         public int tryAcquireShared(int ignore) {
             return isSignalled()? 1 : -1;
         }
 
+        @Override
         public boolean tryReleaseShared(int ignore) {
             setState(1);
             return true;

@@ -187,7 +187,7 @@ public class LoggerFactoryJDK14 extends AbstractLoggerFactory {
             boolean defaultAppend = false;
             String append = logManager.getProperty(baseName + ".append"); //NOI18N
             if(append != null) {
-                defaultAppend = Boolean.valueOf(append).booleanValue();
+                defaultAppend = Boolean.parseBoolean(append);
             }
             
             FileHandler fileHandler = null;

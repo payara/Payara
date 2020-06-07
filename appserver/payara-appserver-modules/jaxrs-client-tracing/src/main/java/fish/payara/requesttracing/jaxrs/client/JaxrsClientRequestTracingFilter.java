@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,9 @@
  */
 package fish.payara.requesttracing.jaxrs.client;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
-import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -51,16 +50,6 @@ import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 import io.opentracing.tag.Tags;
-import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
@@ -68,9 +57,16 @@ import javax.ws.rs.client.ClientResponseFilter;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.Response.StatusType;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A filter that adds Payara request tracing propagation headers to JAX-RS Client requests.
@@ -78,29 +74,13 @@ import org.glassfish.internal.api.Globals;
  * @author Andrew Pielage
  */
 public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, ClientResponseFilter {
+    public static final String REQUEST_CONTEXT_TRACING_PREDICATE = "fish.payara.requesttracing.jaxrs.client.TracingPredicate";
 
-    private ServiceLocator serviceLocator;
-    private RequestTracingService requestTracing;
-    private OpenTracingService openTracing;
-    
-    /**
-     * Initialises the service variables.
-     */
-    @PostConstruct
-    public void postConstruct() {
-        // Get the default Payara service locator - injecting a service locator will give you the one used by Jersey
-        serviceLocator = Globals.getDefaultBaseServiceLocator();
 
-        // Initialise service variables
-        if (serviceLocator != null) {
-            requestTracing = serviceLocator.getService(RequestTracingService.class);
-            openTracing = serviceLocator.getService(OpenTracingService.class);
-        }
-    }
-
-    // Before method invocation
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
+        final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
+        final RequestTracingService requestTracing = payaraTracingServices.getRequestTracingService();
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             // ***** Request Tracing Service Instrumentation *****
             // If there is a trace in progress, add the propagation headers with the relevant details
@@ -128,57 +108,63 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                     }
                 }
             }
-            
+
             // ***** OpenTracing Instrumentation *****
-            // Get or create the tracer instance for this application
-            Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
-                    Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
+            // Check if we should trace this client call
+            if (shouldTrace(requestContext)) {
+                // Get or create the tracer instance for this application
+                final Tracer tracer = payaraTracingServices.getActiveTracer();
 
-            // Build a span with the required MicroProfile Opentracing tags
-            SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
-                    .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-                    .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
-                    .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
-                    .withTag(Tags.COMPONENT.getKey(), "jaxrs");
+                // Build a span with the required MicroProfile Opentracing tags
+                SpanBuilder spanBuilder = tracer.buildSpan(requestContext.getMethod())
+                        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+                        .withTag(Tags.HTTP_METHOD.getKey(), requestContext.getMethod())
+                        .withTag(Tags.HTTP_URL.getKey(), requestContext.getUri().toURL().toString())
+                        .withTag(Tags.COMPONENT.getKey(), "jaxrs");
 
-            // Get the propagated span context from the request if present
-            // This is required to account for asynchronous client requests
-            SpanContext parentSpanContext = (SpanContext) requestContext.getProperty(
-                    PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
-            if (parentSpanContext != null) {
-                spanBuilder.asChildOf(parentSpanContext); 
+                // Get the propagated span context from the request if present
+                // This is required to account for asynchronous client requests
+                SpanContext parentSpanContext = (SpanContext) requestContext.getProperty(
+                        PropagationHeaders.OPENTRACING_PROPAGATED_SPANCONTEXT);
+                if (parentSpanContext != null) {
+                    spanBuilder.asChildOf(parentSpanContext);
+                } else {
+                    parentSpanContext = SpanPropagator.propagatedContext();
+                    if (parentSpanContext != null) {
+                        spanBuilder.asChildOf(parentSpanContext);
+                    }
+                }
+
+                // If there is a propagated span context, set it as a parent of the new span
+                parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                        new MultivaluedMapToTextMap(requestContext.getHeaders()));
+                if (parentSpanContext != null) {
+                    spanBuilder.asChildOf(parentSpanContext);
+                }
+
+                // Start the span and mark it as active
+                Span activeSpan = spanBuilder.startActive(true).span();
+
+                // Inject the active span context for propagation
+                tracer.inject(
+                        activeSpan.context(),
+                        Format.Builtin.HTTP_HEADERS,
+                        new MultivaluedMapToTextMap(requestContext.getHeaders()));
             }
-            
-            // If there is a propagated span context, set it as a parent of the new span
-            parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS, 
-                    new MultivaluedMapToTextMap(requestContext.getHeaders()));
-            if (parentSpanContext != null) {
-                spanBuilder.asChildOf(parentSpanContext);
-            }
-
-            // Start the span and mark it as active
-            Span activeSpan = spanBuilder.startActive(true).span();
-
-            // Inject the active span context for propagation
-            tracer.inject(
-                    activeSpan.context(),
-                    Format.Builtin.HTTP_HEADERS,
-                    new MultivaluedMapToTextMap(requestContext.getHeaders()));
         }
     }
 
     // After method invocation
     @Override
     public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) throws IOException {
+        final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
+        final RequestTracingService requestTracing = payaraTracingServices.getRequestTracingService();
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled() && shouldTrace(requestContext)) {
             // Get the active span from the application's tracer instance
-            try (Scope activeScope = openTracing.getTracer(openTracing.getApplicationName(
-                    serviceLocator.getService(InvocationManager.class)))
-                    .scopeManager().active()) {
-                
+            try (Scope activeScope = payaraTracingServices.getActiveTracer().scopeManager().active()) {
                 if (activeScope == null) {
-                    // This should really only occur when enabling request tracing due to the nature of the 
+                    // This should really only occur when enabling request tracing due to the nature of the
                     // service not being enabled when making the request to enable it, and then
                     // obviously being enabled on the return. Any other entrance into here is likely a bug
                     // caused by a tracing context not being propagated.
@@ -186,7 +172,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                             "activeScope in  opentracing request tracing filter was null for {0}", responseContext);
                     return;
                 }
-                
+
                 Span activeSpan = activeScope.span();
                 // Get the response status and add it to the active span
                 StatusType statusInfo = responseContext.getStatusInfo();
@@ -202,6 +188,14 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         }
     }
 
+    private boolean shouldTrace(ClientRequestContext requestContext) {
+        Object traceFilter = requestContext.getConfiguration().getProperty(REQUEST_CONTEXT_TRACING_PREDICATE);
+        if (traceFilter instanceof Predicate) {
+            return ((Predicate<ClientRequestContext>) traceFilter).test(requestContext);
+        }
+        return true;
+    }
+
     /**
      * Class used for converting a MultivaluedMap from Headers to a TextMap, to allow it to be injected into the Tracer.
      */
@@ -211,7 +205,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
 
         /**
          * Initialises this object with the MultivaluedMap to wrap.
-         * 
+         *
          * @param map The MultivaluedMap to convert to a TextMap
          */
         public MultivaluedMapToTextMap(MultivaluedMap<String, Object> map) {
@@ -221,7 +215,7 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         @Override
         public Iterator<Map.Entry<String, String>> iterator() {
             return new MultiValuedMapStringIterator(map.entrySet());
-            
+
         }
 
         @Override
@@ -230,18 +224,18 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         }
 
     }
-    
+
     private class MultiValuedMapStringIterator implements Iterator<Map.Entry<String, String>> {
 
         private final Iterator<Map.Entry<String, List<Object>>> mapIterator;
 
         private Map.Entry<String, List<Object>> mapEntry;
         private Iterator<Object> mapEntryIterator;
-        
+
         public MultiValuedMapStringIterator(Set<Map.Entry<String, List<Object>>> entrySet){
             mapIterator = entrySet.iterator();
         }
-        
+
         @Override
         public boolean hasNext() {
             // True if the MapEntry (value) is not equal to null and has another value, or if there is another key
@@ -258,12 +252,11 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
             // Return either the next map entry with toString, or an entry with no value if there isn't one
             if (mapEntryIterator.hasNext()) {
                 return new AbstractMap.SimpleImmutableEntry<>(mapEntry.getKey(), mapEntryIterator.next().toString());
-            } else {
-                return new AbstractMap.SimpleImmutableEntry<>(mapEntry.getKey(), null);
             }
+            return new AbstractMap.SimpleImmutableEntry<>(mapEntry.getKey(), null);
         }
-        
-        
+
+
     }
 
 }

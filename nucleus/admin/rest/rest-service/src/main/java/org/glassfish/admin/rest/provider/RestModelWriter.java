@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
@@ -67,9 +67,9 @@ public class RestModelWriter extends BaseProvider<RestModel> {
     public String getContent(RestModel proxy) {
         StringBuilder sb = new StringBuilder();
         final List<String> wrapObjectHeader = requestHeaders.get().getRequestHeader("X-Wrap-Object");
-        boolean wrapObject = ((wrapObjectHeader != null) && (wrapObjectHeader.size() > 0));
+        boolean wrapObject = ((wrapObjectHeader != null) && (!wrapObjectHeader.isEmpty()));
         try {
-            JsonValue object = (JsonValue)JsonUtil.getJsonValue(proxy);
+            JsonValue object = JsonUtil.getJsonValue(proxy);
             sb.append(object.toString());
         } catch (JsonException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);

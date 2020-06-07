@@ -225,8 +225,8 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         
         if (spanTags != null && !spanTags.isEmpty()) {
             result.append(",\"spanTags\":[");
-            for (String key : spanTags.keySet()) {
-                result.append("{\"").append(key).append("\": \"").append(spanTags.get(key)).append("\"},");
+            for (Entry<String, String> entry : spanTags.entrySet()) {
+                result.append("{\"").append(entry.getKey()).append("\": \"").append(entry.getValue()).append("\"},");
             }
             result.deleteCharAt(result.length() - 1);
             result.append("]");

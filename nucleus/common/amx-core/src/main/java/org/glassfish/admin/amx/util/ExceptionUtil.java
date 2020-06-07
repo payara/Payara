@@ -37,13 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2018] [Payara Foundation]
 
 package org.glassfish.admin.amx.util;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 /**
 Useful utilities for Exceptions
@@ -62,7 +60,7 @@ public final class ExceptionUtil
 
     public static String toString(final Throwable t)
     {
-        final String SEP = System.getProperty("line.separator");
+        final String SEP = System.lineSeparator();
 
         final Throwable rootCause = getRootCause(t);
 
@@ -123,7 +121,7 @@ public final class ExceptionUtil
      */
     public static Map<String, Object> toMap(final Throwable t)
     {
-        final Map<String, Object> m = new HashMap<String, Object>();
+        final Map<String, Object> m = new HashMap<>();
 
         final Throwable rootCause = getRootCause(t);
 
@@ -159,7 +157,7 @@ public final class ExceptionUtil
      */
     public static Throwable[] getCauses(final Throwable start)
     {
-        final ArrayList<Throwable> list = new ArrayList<Throwable>();
+        final List<Throwable> list = new ArrayList<>();
 
         boolean haveNonException = false;
 
@@ -204,21 +202,17 @@ public final class ExceptionUtil
     /**
     Get the stack trace as a String.
 
-    @param t	the Throwabe whose stack trace should be gotten
+    @param t	the Throwable whose stack trace should be gotten
     @return		a String containing the stack trace
      */
     public static String getStackTrace(Throwable t)
     {
-        final StringBuffer buf = new StringBuffer();
+        final StringBuilder buf = new StringBuilder();
         final StackTraceElement[] elems = t.getStackTrace();
-
-        for (int i = 0; i < elems.length; ++i)
-        {
-            buf.append(elems[i]);
+        for (StackTraceElement elem : elems) {
+            buf.append(elem);
             buf.append("\n");
         }
-
-
         return (buf.toString());
     }
 

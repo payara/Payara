@@ -37,29 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
 /**
-Directs output to the "bit bucket".
+ * Directs output to the "bit bucket".
  */
 public final class OutputIgnore implements Output
 {
-    public final static OutputIgnore INSTANCE = new OutputIgnore();
+    public static final OutputIgnore INSTANCE = new OutputIgnore();
 
     private OutputIgnore()
     {
         // no need for more than one, ever
     }
 
+    @Override
     public void print(Object o)
     {
     }
 
+    @Override
     public void println(Object o)
     {
     }
 
+    @Override
     public void printError(Object o)
     {
     }
@@ -69,14 +73,14 @@ public final class OutputIgnore implements Output
         return (false);
     }
 
+    @Override
     public void printDebug(Object o)
     {
     }
 
+    @Override
     public void close()
     {
     }
 
-};
-
-
+}

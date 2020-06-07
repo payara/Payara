@@ -1,0 +1,68 @@
+list-connector-security-maps(1)  asadmin Utility Subcommands  list-connector-security-maps(1)
+
+NAME
+       list-connector-security-maps - lists the security maps belonging to the
+       specified connector connection pool
+
+SYNOPSIS
+           list-connector-security-maps [--help] [--securitymap securitymap]
+           [--verbose={false|true}] [--target target]
+           pool-name
+
+DESCRIPTION
+       The list-connector-security-maps subcommand lists the security maps
+       belonging to the specified connector connection pool.
+
+       For this subcommand to succeed, you must have first created a connector
+       connection pool using the create-connector-connection-pool subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --securitymap
+           Specifies the name of the security map contained within the
+           connector connection pool from which the identity and principals
+           should be listed. With this option, --verbose is redundant.
+
+       --verbose
+           If set to true, returns a list including the identity, principals,
+           and security name. The default is false.
+
+       --target
+           Do not specify this option. This option is retained for
+           compatibility with earlier releases. If you specify this option, a
+           syntax error does not occur. Instead, the subcommand runs
+           successfully and displays a warning message that the option is
+           ignored.
+
+OPERANDS
+       pool-name
+           Name of the connector connection pool for which you want to list
+           security maps.
+
+EXAMPLES
+       Example 1, Listing the Connector Security Maps
+           This example lists the existing connector security maps for the
+           pool named connector-Pool1.
+
+               asadmin> list-connector-security-maps connector-Pool1
+               securityMap1
+               Command list-connector-security-maps executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-connector-security-map(1), delete-connector-security-map(1),
+       update-connector-security-map(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        list-connector-security-maps(1)

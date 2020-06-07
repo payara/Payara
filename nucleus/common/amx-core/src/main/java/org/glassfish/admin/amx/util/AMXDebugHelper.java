@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
-
-import org.glassfish.admin.amx.util.Output;
-import org.glassfish.admin.amx.util.StringUtil;
 
 /**
 Convenient wrapper around {@link AMXDebug}.
@@ -69,7 +67,7 @@ public final class AMXDebugHelper
         this("debug");
     }
 
-    public boolean getEchoToStdOut(final boolean echo)
+    public boolean getEchoToStdOut()
     {
         return mEchoToStdOut;
     }
@@ -151,7 +149,3 @@ public final class AMXDebugHelper
     }
 
 }
-
-
-
-

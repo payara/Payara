@@ -71,7 +71,6 @@ public final class AttributeComparator implements java.util.Comparator<Attribute
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        return hash;
+        return 7;
     }
 }

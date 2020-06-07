@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.security.openid.azure;
 
 import fish.payara.security.annotations.AzureAuthenticationDefinition;
 import static fish.payara.security.annotations.AzureAuthenticationDefinition.OPENID_MP_AZURE_TENANT_ID;
+import fish.payara.security.annotations.ClaimsDefinition;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import fish.payara.security.annotations.OpenIdProviderMetadata;
 import fish.payara.security.openid.OpenIdExtension;
@@ -139,6 +140,11 @@ public class AzureOpenIdExtension extends OpenIdExtension {
             }
 
             @Override
+            public ClaimsDefinition claimsDefinition() {
+                return azureDefinition.claimsDefinition();
+            }
+
+            @Override
             public String clientId() {
                 return azureDefinition.clientId();
             }
@@ -206,6 +212,16 @@ public class AzureOpenIdExtension extends OpenIdExtension {
             @Override
             public int jwksReadTimeout() {
                 return azureDefinition.jwksReadTimeout();
+            }
+
+            @Override
+            public boolean tokenAutoRefresh() {
+                return azureDefinition.tokenAutoRefresh();
+            }
+
+            @Override
+            public int tokenMinValidity() {
+                return azureDefinition.tokenMinValidity();
             }
         };
     }

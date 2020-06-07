@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,9 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
+ * Factory for building {@link NotificationEvent}
  * @author mertcaliskan
+ * @since 4.1.2.171
  */
 @Contract
 public abstract class NotificationEventFactory<E extends NotificationEvent> {
@@ -90,6 +92,13 @@ public abstract class NotificationEventFactory<E extends NotificationEvent> {
 
     protected abstract E createEventInstance();
 
+    /**
+     * Creates a {@link NotificationEvent}
+     * @param subject Subject of the message
+     * i.e. what the subject line is if the event is sent to the Javamail notifier
+     * @param message The message text of the event
+     * @return the resulting {@link NotificationEvent}
+     */
     public E buildNotificationEvent(String subject, String message) {
         E event = initializeEvent(createEventInstance());
         event.setSubject(subject);
@@ -117,6 +126,15 @@ public abstract class NotificationEventFactory<E extends NotificationEvent> {
         return event;
     }
 
+    /**
+     * Creates a {@link NotificationEvent}
+     * @param level Severity level of notification. This is unused in the base factory
+     * @param subject Subject of the message
+     * i.e. what the subject line is if the event is sent to the Javamail notifier
+     * @param message The message text of the event
+     * @param parameters An additional parameters to be formatted as part of the message
+     * @return the resulting {@link NotificationEvent}
+     */
     public E buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
         E event = initializeEvent(createEventInstance());
         event.setSubject(subject);

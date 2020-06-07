@@ -1,0 +1,60 @@
+delete-threadpool(1)      asadmin Utility Subcommands     delete-threadpool(1)
+
+NAME
+       delete-threadpool - removes a thread pool
+
+SYNOPSIS
+           delete-threadpool [--help] [--target target] threadpool-id
+
+DESCRIPTION
+       Removes the thread pool with the specified ID. This subcommand is
+       supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target from which you are removing the
+           thread pool.
+
+           Valid values are as follows:
+
+           server
+               Deletes the thread pool for the default GlassFish Server
+               instance server and is the default value.
+
+           configuration-name
+               Deletes the thread pool for the named configuration.
+
+           cluster-name
+               Deletes the thread pool for every instance in the cluster.
+
+           instance-name
+               Deletes the thread pool for a particular instance.
+
+OPERANDS
+       threadpool-id
+           An ID for the work queue, for example, thread-pool1, threadpool-2,
+           and so forth.
+
+EXAMPLES
+       Example 1, Deleting a Thread Pool
+           This example deletes threadpool-l.
+
+               asadmin> delete-threadpool threadpool-1
+               Command delete-threadpool executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-threadpool(1), list-threadpools(1)
+
+       asadmin(1M)
+
+Java EE 8                         29 Nov 2010             delete-threadpool(1)

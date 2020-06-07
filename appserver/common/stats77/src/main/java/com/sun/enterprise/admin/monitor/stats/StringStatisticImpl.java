@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.monitor.stats;
 
@@ -71,10 +72,12 @@ public final class StringStatisticImpl extends StatisticImpl implements StringSt
     /**
      * Returns the String value of the statistic.
      */
+    @Override
     public String getCurrent() {
         return strVal;
     }
     
+    @Override
     public String toString() {
         return super.toString() + NEWLINE + 
             "Current: " + getCurrent();

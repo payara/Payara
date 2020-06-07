@@ -39,24 +39,10 @@
  */
 package fish.payara.microprofile.openapi.test.app;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import fish.payara.microprofile.openapi.test.app.application.ResponseTest;
-import fish.payara.microprofile.openapi.test.app.application.RootPathTest;
-
 @ApplicationPath("/test")
 public class TestApplication extends Application {
-
-    @Override
-    public Set<Class<?>> getClasses() {
-        Set<Class<?>> classes = new HashSet<>();
-        classes.add(RootPathTest.class);
-        classes.add(ResponseTest.class);
-        return classes;
-    }
 
 }

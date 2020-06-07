@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,6 @@ import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyChangeEvent;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -58,13 +57,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-import static java.util.stream.Collectors.toSet;
 import javax.inject.Inject;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.glassfish.api.StartupRunLevel;
@@ -91,6 +87,9 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
+import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toSet;
+
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
 public class OpenApiService implements PostConstruct, PreDestroy, EventListener, ConfigListener {
@@ -104,9 +103,6 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     @Inject
     private OpenApiServiceConfiguration config;
-
-    @Inject
-    private PayaraExecutorService executor;
 
     @Inject
     private ServerEnvironment environment;
@@ -127,6 +123,14 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     public boolean isEnabled() {
         return Boolean.parseBoolean(config.getEnabled());
+    }
+    
+    public boolean isSecurityEnabled() {
+        return Boolean.parseBoolean(config.getSecurityEnabled());
+    }
+
+    public boolean withCorsHeaders() {
+        return Boolean.parseBoolean(config.getCorsHeaders());
     }
 
     /**
@@ -177,15 +181,15 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @return the document for the most recently deployed application. Creates one
-     *         if it hasn't already been created.
+     * @return the document for the most recently deployed application. Creates
+     * one if it hasn't already been created.
      * @throws OpenAPIBuildException if creating the document failed.
      */
     public OpenAPI getDocument() throws OpenAPIBuildException {
         if (mappings.isEmpty() || !isEnabled()) {
             return null;
         }
-        return (OpenAPI) mappings.peekLast().getDocument();
+        return mappings.peekLast().getDocument();
     }
 
     /**
@@ -201,9 +205,9 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      */
     private static boolean isValidApp(ApplicationInfo appInfo) {
         return appInfo.getMetaData(WebBundleDescriptorImpl.class) != null
-            && !appInfo.getSource().getURI().getPath().contains("glassfish/lib/install")
-            && !appInfo.getSource().getURI().getPath().contains("javadb/lib")
-            && !appInfo.getSource().getURI().getPath().contains("mq/lib");
+                && !appInfo.getSource().getURI().getPath().contains("glassfish/lib/install")
+                && !appInfo.getSource().getURI().getPath().contains("h2db/bin")
+                && !appInfo.getSource().getURI().getPath().contains("mq/lib");
     }
 
     /**
@@ -215,12 +219,12 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @param archive        the archive to read from.
+     * @param archive the archive to read from.
      * @param appClassLoader the classloader to use to load the classes.
      * @return a list of all loadable classes in the archive.
      */
     private static Set<Class<?>> getClassesFromArchive(ReadableArchive archive, ClassLoader appClassLoader) {
-        return Collections.list((Enumeration<String>) archive.entries()).stream()
+        return Collections.list(archive.entries()).stream()
                 // Only use the classes
                 .filter(x -> x.endsWith(".class"))
                 // Remove the WEB-INF/classes and return the proper class name format
@@ -258,12 +262,12 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         private final OpenApiConfiguration appConfig;
         private volatile OpenAPI document;
 
-        private OpenApiMapping(ApplicationInfo appInfo) {
+        OpenApiMapping(ApplicationInfo appInfo) {
             this.appInfo = appInfo;
             this.appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
         }
 
-        private ApplicationInfo getAppInfo() {
+        ApplicationInfo getAppInfo() {
             return appInfo;
         }
 
@@ -319,27 +323,27 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 .filter(networkListener -> Boolean.parseBoolean(networkListener.getEnabled()))
                 .forEach(networkListener -> {
 
-            int port;
-            try {
-                // get the dynamic config port
-                port = habitat.getService(GrizzlyService.class).getRealPort(networkListener);
-            } catch (MultiException ex) {
-                LOGGER.log(WARNING, "Failed to get running Grizzly listener.", ex);
-                // get the port in the domain xml
-                port = Integer.parseInt(networkListener.getPort());
-            }
+                    int port;
+                    try {
+                        // get the dynamic config port
+                        port = habitat.getService(GrizzlyService.class).getRealPort(networkListener);
+                    } catch (MultiException ex) {
+                        LOGGER.log(WARNING, "Failed to get running Grizzly listener.", ex);
+                        // get the port in the domain xml
+                        port = Integer.parseInt(networkListener.getPort());
+                    }
 
-            // Check if this listener is using HTTP or HTTPS
-            boolean securityEnabled = Boolean.parseBoolean(networkListener.findProtocol().getSecurityEnabled());
-            List<Integer> ports = securityEnabled ? httpPorts : httpsPorts;
+                    // Check if this listener is using HTTP or HTTPS
+                    boolean securityEnabled = Boolean.parseBoolean(networkListener.findProtocol().getSecurityEnabled());
+                    List<Integer> ports = securityEnabled ? httpsPorts : httpPorts;
 
-            // If this listener isn't the admin listener, it must be an HTTP/HTTPS listener
-            if (!networkListener.getName().equals(adminListener)) {
-                ports.add(port);
-            } else if (instanceType.equals("MICRO")) {
-                // micro instances can use the admin listener as both an admin and HTTP/HTTPS port
-                ports.add(port);
-            }
+                    // If this listener isn't the admin listener, it must be an HTTP/HTTPS listener
+                    if (!networkListener.getName().equals(adminListener)) {
+                        ports.add(port);
+                    } else if (instanceType.equals("MICRO")) {
+                        // micro instances can use the admin listener as both an admin and HTTP/HTTPS port
+                        ports.add(port);
+                    }
                 });
 
         for (Integer httpPort : httpPorts) {

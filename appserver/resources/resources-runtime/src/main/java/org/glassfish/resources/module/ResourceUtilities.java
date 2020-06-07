@@ -37,19 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.resources.module;
 
 import com.sun.enterprise.config.serverbeans.Resources;
-import org.glassfish.resources.api.Resource;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import org.glassfish.resources.api.Resource;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
@@ -153,7 +153,7 @@ public class ResourceUtilities {
      public static Set<org.glassfish.resources.api.Resource> resolveResourceDuplicatesConflictsWithinArchive(
              List<org.glassfish.resources.admin.cli.SunResourcesXML> sunResList) throws ResourceConflictException {
          boolean conflictExist = false;
-         StringBuffer conflictingResources = new StringBuffer();
+         StringBuilder conflictingResources = new StringBuilder();
          Set<org.glassfish.resources.api.Resource> resourceSet = new HashSet<org.glassfish.resources.api.Resource>();
          Iterator<org.glassfish.resources.admin.cli.SunResourcesXML> sunResourcesXMLIter = sunResList.iterator();
          while(sunResourcesXMLIter.hasNext()){
@@ -217,7 +217,7 @@ public class ResourceUtilities {
              final Resources resources) throws ResourceConflictException {
          if (resList != null) {
              Iterator<org.glassfish.resources.api.Resource> iterRes = resList.iterator();
-             StringBuffer conflictingResources = new StringBuffer();
+             StringBuilder conflictingResources = new StringBuilder();
              while (iterRes.hasNext()) {
                  org.glassfish.resources.api.Resource res = iterRes.next();
                  final String id = getIdToCompare(res);
@@ -239,7 +239,7 @@ public class ResourceUtilities {
      }
 
     private static void logAttributes(Resource res) {
-        StringBuffer message = new StringBuffer();
+        StringBuilder message = new StringBuilder();
         Set<Map.Entry> entries = res.getAttributes().entrySet();
         Iterator<Map.Entry> entriesIter = entries.iterator();
         while(entriesIter.hasNext()){

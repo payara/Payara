@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.io;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
@@ -110,9 +109,7 @@ public class SmartFile {
             Set<String> pathsSet = new HashSet<String>();
             List<String> pathsList = new LinkedList<String>();
 
-            for (int i = 0; i < paths.length; i++) {
-                String path = paths[i];
-
+            for (String path : paths) {
                 // ignore empty path elements.  E.g. "c:/foo;;;;;;;" should become "C:/foo"
                 // not "c:/foo;thisdir;thisdir;thisdir etc"
                 if (!ok(path))
@@ -188,7 +185,8 @@ public class SmartFile {
         // (because of getAbsolutePath()...)
         char[] p = oldPath.toCharArray();
 
-        int from, to;
+        int from;
+        int to;
         for (from = 0, to = 0; from < p.length; from++) {
             if (p[from] == '/' &&
                 ((from + 3 < p.length &&

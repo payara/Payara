@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import java.util.concurrent.BlockingQueue;
@@ -46,69 +46,59 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 
 /**
- * This class wraps a CommandInvocation so that it can be run via a
- * thread pool. On construction you pass it the CommandInvocation
- * to execute as well as a response queue and the ActionReport
- * that was set on the CommandInvocation. When the run() method
- * is called the CommandInvocation is executed (which sets its results
- * in the ActionReport) and then it adds itself to the response queue
- * where it can be picked up and the ActionReport inspected for the results.
+ * This class wraps a CommandInvocation so that it can be run via a thread pool. On construction you pass it the
+ * CommandInvocation to execute as well as a response queue and the ActionReport that was set on the CommandInvocation.
+ * When the run() method is called the CommandInvocation is executed (which sets its results in the ActionReport) and
+ * then it adds itself to the response queue where it can be picked up and the ActionReport inspected for the results.
  *
  * @author dipol
  */
 public class CommandRunnable implements Runnable {
 
-    BlockingQueue<CommandRunnable> responseQueue = null;
-    String name = "";
-    CommandInvocation ci = null;
-    ActionReport report = null;
-
-    private CommandRunnable() {
-    }
+    private BlockingQueue<CommandRunnable> responseQueue;
+    private String name = "";
+    private CommandInvocation commandInvocation;
+    private ActionReport report;
 
     /**
-     * Construct a CommandRunnable. This class wraps a CommandInvocation
-     * so that it can be executed via a thread pool.
+     * Construct a CommandRunnable. This class wraps a CommandInvocation so that it can be executed via a thread pool.
      *
-     * @param ci        A CommandInvocation containing the command you want
-     *                  to run.
-     * @param report    The ActionReport you used with the CommandInvocation
-     * @param q         A blocking queue that this class will add itself to
-     *                  when its run method has completed.
+     * @param commandInvocation A CommandInvocation containing the command you want to run.
+     * @param report The ActionReport you used with the CommandInvocation
+     * @param responseQueue A blocking queue that this class will add itself to when its run method has completed.
      *
-     * After dispatching this class to a thread pool the caller can block
-     * on the response queue where it will dequeue CommandRunnables and then
-     * use the getActionReport() method to retrieve the results.
+     * After dispatching this class to a thread pool the caller can block on the response queue where it will dequeue
+     * CommandRunnables and then use the getActionReport() method to retrieve the results.
      */
-    public CommandRunnable(CommandInvocation ci, ActionReport report,
-            BlockingQueue<CommandRunnable> q) {
-        this.responseQueue = q;
+    public CommandRunnable(CommandInvocation commandInvocation, ActionReport report, BlockingQueue<CommandRunnable> responseQueue) {
+        this.commandInvocation = commandInvocation;
         this.report = report;
-        this.ci = ci;
+        this.responseQueue = responseQueue;
     }
 
     @Override
     public void run() {
-        ci.execute();
+        commandInvocation.execute();
+        
         if (responseQueue != null) {
             responseQueue.add(this);
         }
     }
 
     /**
-     * Set a name on the runnable. The name is not interpreted to mean
-     * anything so the caller can use it for whatever it likes.
+     * Set a name on the runnable. The name is not interpreted to mean anything so the caller can use it for whatever it
+     * likes.
      *
-     * @param s The name
+     * @param name The name
      */
-    public void setName(String s) {
-        this.name = s;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
      * Get the name that was previously set.
      *
-     * @return  A name that was previously set or null if no name was set.
+     * @return A name that was previously set or null if no name was set.
      */
     public String getName() {
         return name;
@@ -117,16 +107,16 @@ public class CommandRunnable implements Runnable {
     /**
      * Returns the CommandInvocation that was passed on the constructor
      *
-     * @return  The CommandInvocation that was passed on the constructor
+     * @return The CommandInvocation that was passed on the constructor
      */
     public CommandInvocation getCommandInvocation() {
-        return ci;
+        return commandInvocation;
     }
 
     /**
      * Returns the ActionReport that was passed on the constructor.
      *
-     * @return  the ActionReport that was passed on the constructor.
+     * @return the ActionReport that was passed on the constructor.
      */
     public ActionReport getActionReport() {
         return report;
@@ -136,8 +126,8 @@ public class CommandRunnable implements Runnable {
     public String toString() {
         if (name == null) {
             return "null";
-        } else {
-            return name;
         }
+        
+        return name;
     }
 }

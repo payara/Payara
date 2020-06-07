@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
- Portions Copyright [2016] [Payara Foundation] 
+ Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 -->
 
 <console-config id="community-theme">
@@ -97,6 +97,12 @@
                 type="org.glassfish.admingui:upsellframeee" 
                 priority="100"
                 content="branding/upsellee.inc" 
-        />         
+        />
+        <integration-point
+                id="customtheme"
+                type="fish.payara.admingui:restarttd"
+                priority="100"
+                content="branding/restart.inc"
+        />
 </console-config>
 

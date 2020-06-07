@@ -86,7 +86,7 @@ public class PersistenceUnitNode extends DeploymentDescriptorNode {
             PersistenceUnitDescriptor persistenceUnitDescriptor = (PersistenceUnitDescriptor) getDescriptor();
             String propName = attributes.getValue(
                     PersistenceTagNames.PROPERTY_NAME);
-            String propValue = (String) TranslatedConfigView.getTranslatedValue(attributes.getValue(
+            String propValue = TranslatedConfigView.expandValue(attributes.getValue(
                     PersistenceTagNames.PROPERTY_VALUE));
             persistenceUnitDescriptor.addProperty(propName, propValue);
             return;

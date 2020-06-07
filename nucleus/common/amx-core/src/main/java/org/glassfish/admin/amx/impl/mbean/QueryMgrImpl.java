@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import org.glassfish.admin.amx.core.Util;
@@ -50,7 +52,6 @@ import org.glassfish.admin.amx.util.RegexUtil;
 import org.glassfish.admin.amx.util.CollectionUtil;
 
 import javax.management.ObjectName;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -72,8 +73,7 @@ public class QueryMgrImpl extends AMXImplBase // implements Query
         return queryPattern(Util.newObjectNamePattern(getJMXDomain(), props));
     }
 
-    public ObjectName[] queryTypes(final Set<String> types)
-            throws IOException {
+    public ObjectName[] queryTypes(final Set<String> types) {
         final Set<ObjectName> result = new HashSet<ObjectName>();
 
         for (final ObjectName objectName : queryAll()) {
@@ -131,9 +131,7 @@ public class QueryMgrImpl extends AMXImplBase // implements Query
         final String[] regexValues = convertToRegex(wildValues);
 
         final ObjectNameQueryImpl query = new ObjectNameQueryImpl();
-        final Set<ObjectName> resultSet = query.matchAll(candidates, regexNames, regexValues);
-
-        return resultSet;
+        return query.matchAll(candidates, regexNames, regexValues);
     }
 
     public ObjectName[] queryWildAll(
@@ -153,7 +151,7 @@ public class QueryMgrImpl extends AMXImplBase // implements Query
         return asArray(names);
     }
 
-    private final ObjectName[] asArray(final Set<ObjectName> items) {
+    private ObjectName[] asArray(final Set<ObjectName> items) {
         return CollectionUtil.toArray(items, ObjectName.class);
     }
 
@@ -190,16 +188,3 @@ public class QueryMgrImpl extends AMXImplBase // implements Query
         return Util.toObjectNamesArray(items);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

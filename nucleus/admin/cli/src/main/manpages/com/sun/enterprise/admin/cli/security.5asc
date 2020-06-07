@@ -1,0 +1,26 @@
+security(5ASC)             GlassFish Server Concepts            security(5ASC)
+
+NAME
+       security - secure and administer GlassFish Server applications
+
+DESCRIPTION
+       Security is about protecting data: how to prevent unauthorized access
+       or damage to it in storage or transit. GlassFish Server has a dynamic,
+       extensible security architecture based on the Java EE standard. Built
+       in security features include cryptography, authentication and
+       authorization, and public key infrastructure. GlassFish Server is built
+       on the Java security model, which uses a sandbox where applications can
+       run safely, without potential risk to systems or users.
+
+SEE ALSO
+       change-admin-password(1), change-master-password(1),
+       create-auth-realm(1), create-file-user(1),
+       create-message-security-provider(1), create-password-alias(1),
+       create-ssl(1), delete-auth-realm(1), delete-file-user(1),
+       delete-message-security-provider(1), delete-password-alias(1),
+       delete-ssl(1), list-auth-realms(1), list-connector-security-maps(1),
+       list-file-groups(1), list-file-users(1).
+
+       asadmin(1M)
+
+Java EE 8                         28 Aug 2009                   security(5ASC)

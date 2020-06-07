@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
-import static org.testng.Assert.assertEquals;
+package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertEquals;
 
 /**
  * Unit test class for {@link RadixTreeSubstitution}.
@@ -61,7 +63,7 @@ public class TestRadixTreeSubstitution {
     }
 
     /**
-     * Test algorithm instance for null tree. 
+     * Test algorithm instance for null tree.
      */
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testSubstitutionForNullTree() {
@@ -114,8 +116,8 @@ public class TestRadixTreeSubstitution {
      * <li>Maintaining the last matching node value, and using the same if no extended match found</li>
      * <li>Covering multiple scenarios for the last word (partially/fully or looking for extended match)</li>
      * <li>Run time tree modification and checking the substitution output.</li>
-     * 
-     * <p>Test-case depends on another methods as this method changes the tree reference 
+     *
+     * <p>Test-case depends on another methods as this method changes the tree reference
      *  which will cause the failure for other test cases.</p>
      */
     @Test(dependsOnMethods = {"testLastWordPartiallyMatched", "testLastWordExactlyMatched",
@@ -145,7 +147,7 @@ public class TestRadixTreeSubstitution {
      * @return substituted string.
      */
     private String callSubstitution(String input) {
-        StringBuffer outputBuffer = new StringBuffer();
+        StringBuilder outputBuffer = new StringBuilder();
         String substitution = null;
         for (char c : input.toCharArray()) {
             substitution = _substitution.substitute(c);

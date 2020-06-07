@@ -46,10 +46,10 @@ import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class ServerVariableImpl extends ExtensibleImpl implements ServerVariable {
+public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implements ServerVariable {
 
-    protected String description;
-    protected String defaultValue;
+    private String description;
+    private String defaultValue;
 
     protected List<String> enumeration = new ArrayList<>();
 
@@ -64,12 +64,6 @@ public class ServerVariableImpl extends ExtensibleImpl implements ServerVariable
     }
 
     @Override
-    public ServerVariable description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public String getDefaultValue() {
         return defaultValue;
     }
@@ -77,12 +71,6 @@ public class ServerVariableImpl extends ExtensibleImpl implements ServerVariable
     @Override
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
-    }
-
-    @Override
-    public ServerVariable defaultValue(String defaultValue) {
-        setDefaultValue(defaultValue);
-        return this;
     }
 
     @Override
@@ -96,17 +84,16 @@ public class ServerVariableImpl extends ExtensibleImpl implements ServerVariable
     }
 
     @Override
-    public ServerVariable enumeration(List<String> enumeration) {
-        setEnumeration(enumeration);
+    public ServerVariable addEnumeration(String enumeration) {
+        if (enumeration != null && !this.enumeration.contains(enumeration)) {
+            this.enumeration.add(enumeration);
+        }
         return this;
     }
 
     @Override
-    public ServerVariable addEnumeration(String enumeration) {
-        if (!this.enumeration.contains(enumeration)) {
-            this.enumeration.add(enumeration);
-        }
-        return this;
+    public void removeEnumeration(String enumeration) {
+        this.enumeration.remove(enumeration);
     }
 
 }

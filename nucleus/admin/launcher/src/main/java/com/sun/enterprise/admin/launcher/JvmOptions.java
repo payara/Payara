@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -65,10 +65,11 @@ class JvmOptions {
     private static final Pattern envP = Pattern.compile("([^\\$]*)\\$\\{ENV=([^\\}]*)\\}([^\\$]*)");
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
     
-    Map<String, String> sysProps = new HashMap<String, String>();
-    Map<String, String> xxProps = new HashMap<String, String>();
-    Map<String, String> xProps = new HashMap<String, String>();
-    Map<String, String> plainProps = new HashMap<String, String>();
+    Map<String, String> sysProps = new HashMap<>();
+    Map<String, String> xxProps = new HashMap<>();
+    Map<String, String> xProps = new HashMap<>();
+    Map<String, String> plainProps = new HashMap<>();
+    Set<String> moduleProps = new HashSet<>();
     int osgiPort = -1;
     
     JvmOptions(List<String> options) throws GFLauncherException {
@@ -108,6 +109,9 @@ class JvmOptions {
             else if (s.startsWith("-X")) {
                 addXProp(s);
             }
+            else if (s.startsWith("--add")) {
+                addModuleProp(s);
+            }
             else if (s.startsWith("-")) {
                 addPlainProp(s);
             }
@@ -131,7 +135,7 @@ class JvmOptions {
     }
 
     List<String> toStringArray() {
-        List<String> ss = new ArrayList<String>();
+        List<String> ss = new ArrayList<>(moduleProps);
 
         Set<String> keys = xxProps.keySet();
         for (String name : keys) {
@@ -212,6 +216,10 @@ class JvmOptions {
         s = s.substring(3);
         NameValue nv = new NameValue(s);
         xxProps.put(nv.name, nv.value);
+    }
+
+    private void addModuleProp(String property) {
+        moduleProps.add(property);
     }
 
     @Deprecated

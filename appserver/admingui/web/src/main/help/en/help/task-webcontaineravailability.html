@@ -1,0 +1,141 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-webcontaineravailability" name="task-webcontaineravailability"></a><a id="GHWEB00034" name="GHWEB00034"></a></p>
+
+<h4><a id="sthref16" name="sthref16"></a><a id="sthref17" name="sthref17"></a><a id="sthref18" name="sthref18"></a><a id="sthref19" name="sthref19"></a>To Configure Availability Settings for the Web Container</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the configuration that you are changing.</p>
+</li>
+<li>
+<p>Under the configuration's node, select the Availability Service node.</p>
+<p>The Availability Service page opens.</p>
+</li>
+<li>
+<p>On the Availability Service page, click the Web Container Availability tab.</p>
+<p>The Web Container Availability page opens.</p>
+</li>
+<li>
+<p>In the Availability Service field, check the Enabled box to enable availability for the web container.</p>
+<p>To disable availability, remove the check from the Availability Service Enabled box.</p>
+</li>
+<li>
+<p>From the Persistence Type drop-down list, select the persistence mechanism.</p>
+<ul>
+<li>
+<p>If Availability Service Enabled is <i>not</i> checked, select one of the following:</p>
+<ul>
+<li>
+<p><code>memory</code> for no session persistence</p>
+</li>
+<li>
+<p><code>file</code> for session persistence based on the file system that is not highly available</p>
+</li>
+</ul>
+</li>
+<li>
+<p>If Availability Service Enabled is checked, select <code>replicated</code> for session persistence based on cluster failover that is highly available.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>From the Persistence Frequency drop-down list, select the frequency at which the HTTP session is stored:</p>
+<ul>
+<li>
+<p><code>web-method</code> &mdash; The session state is stored at the end of each web request prior to sending a response back to the client. This mode provides the best guarantee that the session state is fully updated in case of failure. This is the default.</p>
+</li>
+</ul>
+<p>Persistence Frequency is only applicable if the Persistence Type is <code>replicated</code>.</p>
+</li>
+<li>
+<p>From the Persistence Scope drop-down list, select the scope of HTTP session changes required for storage to occur:</p>
+<ul>
+<li>
+<p><code>session</code> &mdash; The entire session state is stored every time. This mode provides the best guarantee that your session data is correctly stored for any distributable web application.</p>
+</li>
+<li>
+<p><code>modified-session</code> &mdash; The entire session state is stored if it has been modified. A session is considered to have been modified if <code>HttpSession.setAttribute()</code> or <code>HttpSession.removeAttribute()</code> was called. You must guarantee that <code>setAttribute()</code> is called every time an attribute is changed. This is not a Java EE specification requirement, but it is required for this mode to work properly.</p>
+</li>
+<li>
+<p><code>modified-attribute</code> &mdash; Only modified session attributes are stored. For this mode to work properly, you must follow these guidelines:</p>
+<ul>
+<li>
+<p>Call <code>setAttribute()</code> every time the session state is modified.</p>
+</li>
+<li>
+<p>Make sure there are no cross-references between attributes. The object graph under each distinct attribute key is serialized and stored separately. If there are any object cross references between the objects under each separate key, they are not serialized and deserialized correctly.</p>
+</li>
+<li>
+<p>Distribute the session state across multiple attributes, or at least between a read-only attribute and a modifiable attribute.</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>Persistence Scope is only applicable if the Persistence Type is <code>replicated</code>.</p>
+</li>
+<li>
+<p>In the Single-Sign-On State field, check the Enabled box to make the single sign-on state available for failover.</p>
+<p>To make the single sign-on state unavailable for failover, remove the check from the Single-Sign-On State Enabled box.</p>
+</li>
+<li>
+<p>To restore the default values of all the settings, click the Load Defaults button.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>The GlassFish Server does not define any additional properties for web container availability.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+</ol>
+<a id="sthref20" name="sthref20"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-webcontainergeneral.html">To Configure General Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainersessiontimeout.html">To Configure Session Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainermanagerprops.html">To Configure Manager Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainerstoreprops.html">To Configure Store Properties for the Web Container</a></p>
+</li>
+</ul>
+
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

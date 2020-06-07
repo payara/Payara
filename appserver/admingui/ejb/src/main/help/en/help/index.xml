@@ -1,0 +1,50 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<index version="2.0">
+  <indexitem text="availability">
+    <indexitem text="EJB container (reference)" target="ref-ejbcontaineravailability"></indexitem>
+    <indexitem text="EJB container (task)" target="task-ejbcontaineravailability"></indexitem>
+  </indexitem>
+  <indexitem text="EJB container">
+    <indexitem text="configuring availability settings (reference)" target="ref-ejbcontaineravailability"></indexitem>
+    <indexitem text="configuring availability settings (task)" target="task-ejbcontaineravailability"></indexitem>
+    <indexitem text="configuring EJB timer service (reference)" target="ref-ejbtimerservice"></indexitem>
+    <indexitem text="configuring EJB timer service (task)" target="task-ejbtimerservice"></indexitem>
+    <indexitem text="configuring MDB pool settings (reference)" target="ref-ejbmdbpoolsettings"></indexitem>
+    <indexitem text="configuring MDB pool settings (task)" target="task-ejbmdbpoolsettings"></indexitem>
+    <indexitem text="disabling availability (task)" target="task-ejbcontaineravailability"></indexitem>
+    <indexitem text="enabling availability (task)" target="task-ejbcontaineravailability"></indexitem>
+  </indexitem>
+  <indexitem text="EJB timer service">
+    <indexitem text="configuring (reference)" target="ref-ejbtimerservice"></indexitem>
+    <indexitem text="configuring (task)" target="task-ejbtimerservice"></indexitem>
+  </indexitem>
+  <indexitem text="JMS">
+    <indexitem text="configuring MDB pool settings (reference)" target="ref-ejbmdbpoolsettings"></indexitem>
+    <indexitem text="configuring MDB pool settings (task)" target="task-ejbmdbpoolsettings"></indexitem>
+  </indexitem>
+  <indexitem text="MDB pool settings">
+    <indexitem text="configuring (reference)" target="ref-ejbmdbpoolsettings"></indexitem>
+    <indexitem text="configuring (task)" target="task-ejbmdbpoolsettings"></indexitem>
+  </indexitem>
+  <indexitem text="timer service">
+    <indexitem text="configuring (reference)" target="ref-ejbtimerservice"></indexitem>
+    <indexitem text="configuring (task)" target="task-ejbtimerservice"></indexitem>
+  </indexitem>
+</index>

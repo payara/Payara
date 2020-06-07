@@ -38,11 +38,15 @@
  * holder.
  */
 
+//Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package client;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
@@ -55,8 +59,6 @@ import roster.RosterHome;
 import util.LeagueDetails;
 import util.PlayerDetails;
 import util.TeamDetails;
-import java.util.Iterator;
-import java.util.Set;
 
 
 
@@ -337,7 +339,6 @@ public class RosterServlet extends HttpServlet{
 
        try {
            // Leagues
-
            myRoster.createLeague(new LeagueDetails(
               "L1", "Mountain", "Soccer"));
 

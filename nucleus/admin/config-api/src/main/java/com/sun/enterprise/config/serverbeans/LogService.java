@@ -38,19 +38,17 @@
  * holder.
  */
 
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
+import java.beans.PropertyVetoException;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-
-import java.beans.PropertyVetoException;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Max;
 
 /**
  * By default, logs would be kept in $INSTANCE-ROOT/logs. The following log 
@@ -351,6 +349,21 @@ public interface LogService extends ConfigBeanProxy  {
      */
     public void setRetainErrorStatisticsForHours(String value) throws PropertyVetoException;
 
+    /**
+     * Gets the value of the logStandardStreams property.
+     *
+     */
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    public String getLogStandardStreams();
+
+    /**
+     * Sets the value of the logStandardStreams property.
+     *
+     * @param value allowed object is {@link String }
+     * @throws PropertyVetoException
+     */
+    public void setLogStandardStreams(String value) throws PropertyVetoException;
+    
     /**
      * Gets the value of the moduleLogLevels property.
      *

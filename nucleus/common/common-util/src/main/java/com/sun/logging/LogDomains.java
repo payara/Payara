@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package com.sun.logging;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -51,6 +52,8 @@ import java.util.logging.Logger;
  * Class LogDomains
  */
 public class LogDomains {
+    
+    private LogDomains() {}
 
     /**
      * DOMAIN_ROOT the prefix for the logger name. This is public only so it can
@@ -360,16 +363,13 @@ public class LogDomains {
         return logManager.getLogger(cLogger.getName());
     }
 
-    // uncomment System.x.println lines only for some voodoo testing
     private static ResourceBundle getResourceBundle(final String name, final Class clazz,
             final ClassLoader resourceBundleLoader) {
         final ResourceBundle classBundle = findResourceBundle(name, clazz, resourceBundleLoader);
         if (classBundle != null) {
-//            System.out.println("Found resource bundle by given classloader: " + name + " for " + clazz);
             return classBundle;
         }
-        Logger.getAnonymousLogger().info("Cannot find the resource bundle for the name " + name + " for " + clazz + " using "
-                + resourceBundleLoader);
+        Logger.getAnonymousLogger().log(Level.INFO, "Cannot find the resource bundle for the name {0} for {1} using {2}", new Object[]{name, clazz, resourceBundleLoader});
         return null;
     }
 
@@ -403,7 +403,6 @@ public class LogDomains {
     }
 
     private static ResourceBundle tryTofindResourceBundle(final String name, final ClassLoader classLoader) {
-//        System.out.println("name=" + name + ", classLoader=" + classLoader);
         try {
             return ResourceBundle.getBundle(name + "." + LogDomains.RESOURCE_BUNDLE, Locale.getDefault(), classLoader);
         } catch (MissingResourceException e) {

@@ -43,13 +43,14 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 
-public class PathItemImpl extends ExtensibleImpl implements PathItem {
+public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     protected String ref;
     protected String summary;
@@ -76,12 +77,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem ref(String ref) {
-        setRef(ref);
-        return this;
-    }
-
-    @Override
     public String getSummary() {
         return summary;
     }
@@ -89,12 +84,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setSummary(String summary) {
         this.summary = summary;
-    }
-
-    @Override
-    public PathItem summary(String summary) {
-        setSummary(summary);
-        return this;
     }
 
     @Override
@@ -108,12 +97,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public Operation getGET() {
         return get;
     }
@@ -121,12 +104,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setGET(Operation get) {
         this.get = get;
-    }
-
-    @Override
-    public PathItem GET(Operation get) {
-        setGET(get);
-        return this;
     }
 
     @Override
@@ -140,12 +117,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem PUT(Operation put) {
-        setPUT(put);
-        return this;
-    }
-
-    @Override
     public Operation getPOST() {
         return post;
     }
@@ -153,12 +124,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setPOST(Operation post) {
         this.post = post;
-    }
-
-    @Override
-    public PathItem POST(Operation post) {
-        setPOST(post);
-        return this;
     }
 
     @Override
@@ -172,12 +137,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem DELETE(Operation delete) {
-        setDELETE(delete);
-        return this;
-    }
-
-    @Override
     public Operation getOPTIONS() {
         return options;
     }
@@ -185,12 +144,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setOPTIONS(Operation options) {
         this.options = options;
-    }
-
-    @Override
-    public PathItem OPTIONS(Operation options) {
-        setOPTIONS(options);
-        return this;
     }
 
     @Override
@@ -204,12 +157,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem HEAD(Operation head) {
-        setHEAD(head);
-        return this;
-    }
-
-    @Override
     public Operation getPATCH() {
         return patch;
     }
@@ -217,12 +164,6 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     @Override
     public void setPATCH(Operation patch) {
         this.patch = patch;
-    }
-
-    @Override
-    public PathItem PATCH(Operation patch) {
-        setPATCH(patch);
-        return this;
     }
 
     @Override
@@ -236,9 +177,8 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem TRACE(Operation trace) {
-        setTRACE(trace);
-        return this;
+    public Map<HttpMethod, Operation> getOperations() {
+        return readOperationsMap();
     }
 
     @Override
@@ -315,15 +255,16 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem servers(List<Server> servers) {
-        setServers(servers);
+    public PathItem addServer(Server server) {
+        if (server != null) {
+            servers.add(server);
+        }
         return this;
     }
 
     @Override
-    public PathItem addServer(Server server) {
-        servers.add(server);
-        return this;
+    public void removeServer(Server server) {
+        servers.remove(server);
     }
 
     @Override
@@ -337,15 +278,89 @@ public class PathItemImpl extends ExtensibleImpl implements PathItem {
     }
 
     @Override
-    public PathItem parameters(List<Parameter> parameters) {
-        setParameters(parameters);
+    public PathItem addParameter(Parameter parameter) {
+        if (parameter != null) {
+            parameters.add(parameter);
+        }
         return this;
     }
 
     @Override
-    public PathItem addParameter(Parameter parameter) {
-        parameters.add(parameter);
-        return this;
+    public void removeParameter(Parameter parameter) {
+        parameters.remove(parameter);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PathItemImpl other = (PathItemImpl) obj;
+        if (!Objects.equals(this.ref, other.ref)) {
+            return false;
+        }
+        if (!Objects.equals(this.summary, other.summary)) {
+            return false;
+        }
+        if (!Objects.equals(this.description, other.description)) {
+            return false;
+        }
+        if (!Objects.equals(this.get, other.get)) {
+            return false;
+        }
+        if (!Objects.equals(this.put, other.put)) {
+            return false;
+        }
+        if (!Objects.equals(this.post, other.post)) {
+            return false;
+        }
+        if (!Objects.equals(this.delete, other.delete)) {
+            return false;
+        }
+        if (!Objects.equals(this.options, other.options)) {
+            return false;
+        }
+        if (!Objects.equals(this.head, other.head)) {
+            return false;
+        }
+        if (!Objects.equals(this.patch, other.patch)) {
+            return false;
+        }
+        if (!Objects.equals(this.trace, other.trace)) {
+            return false;
+        }
+        if (!Objects.equals(this.servers, other.servers)) {
+            return false;
+        }
+        if (!Objects.equals(this.parameters, other.parameters)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.ref);
+        hash = 37 * hash + Objects.hashCode(this.summary);
+        hash = 37 * hash + Objects.hashCode(this.description);
+        hash = 37 * hash + Objects.hashCode(this.get);
+        hash = 37 * hash + Objects.hashCode(this.put);
+        hash = 37 * hash + Objects.hashCode(this.post);
+        hash = 37 * hash + Objects.hashCode(this.delete);
+        hash = 37 * hash + Objects.hashCode(this.options);
+        hash = 37 * hash + Objects.hashCode(this.head);
+        hash = 37 * hash + Objects.hashCode(this.patch);
+        hash = 37 * hash + Objects.hashCode(this.trace);
+        hash = 37 * hash + Objects.hashCode(this.servers);
+        hash = 37 * hash + Objects.hashCode(this.parameters);
+        return hash;
     }
 
 }

@@ -37,26 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.web;
 
 import java.util.Set;
 
-    /** I am an interface representing the API to an object
-    ** which represents the information about a web resource collection. 
-    ** @author Danny Coward
-    */
-
+/**
+ * This interface represents the API to an object which represents the information about 
+ * a web resource collection.
+ *
+ * @author Danny Coward
+ */
 public interface WebResourceCollection extends WebDescriptor {
 
-    public Set<String> getUrlPatterns();
-    public void addUrlPattern(String urlPattern);
+    Set<String> getUrlPatterns();
+    void addUrlPattern(String urlPattern);
 
-    public Set<String> getHttpMethods();
-    public void addHttpMethod(String httpMethod);
-    public String[] getHttpMethodsAsArray();
+    Set<String> getHttpMethods();
+    void addHttpMethod(String httpMethod);
 
-    public Set<String> getHttpMethodOmissions();
-    public void addHttpMethodOmission(String httpMethodOmission);
-    public String[] getHttpMethodOmissionsAsArray();
+    String[] getHttpMethodsAsArray();
+    Set<String> getHttpMethodOmissions();
+
+    void addHttpMethodOmission(String httpMethodOmission);
+    String[] getHttpMethodOmissionsAsArray();
 }

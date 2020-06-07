@@ -473,7 +473,7 @@ public final class ConnectorMessageBeanClient
         
         String appName = descriptor_.getApplication().getName();
         String moduleID = descriptor_.getEjbBundleDescriptor().getModuleID();
-        int pound = moduleID.indexOf("#");
+        int pound = moduleID.indexOf('#');
         if(pound>=0){
             // the module ID is in the format: appName#ejbName.jar
             // remove the appName part since it is duplicated

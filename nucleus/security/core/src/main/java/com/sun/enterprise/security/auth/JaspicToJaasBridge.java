@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
@@ -68,28 +68,27 @@ import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
-
-import sun.security.x509.X500Name;
+import com.sun.enterprise.security.auth.realm.certificate.OID;
 
 /**
  * This class contains a collection of methods used by the JASPIC implementation to interact
  * with the Payara JAAS/Realm system.
- * 
+ *
  * <p>
- * For the most part JASPIC does the authentication itself, and the JASPIC runtime code sets the 
+ * For the most part JASPIC does the authentication itself, and the JASPIC runtime code sets the
  * security context based on that, but in a few cases bridging to JAAS is supported. This is especially
  * the case for JASPIC's PasswordValidationCallback, which is specified to delegate credential validation
  * from JASPIC to the contain/application server's native "identity stores" (realms, login modules, etc).
- * 
+ *
  * @author Harpreet Singh (hsingh@eng.sun.com)
  * @author Jyri Virkki
  * @author Arjan Tijms (refactoring)
  *
  */
 public class JaspicToJaasBridge {
-    
+
     private static final Logger _logger = SecurityLoggerInfo.getLogger();
-    
+
     /**
      * Performs username/password login validation against a configured JAAS context and realm for JASPIC security.
      *
@@ -108,7 +107,7 @@ public class JaspicToJaasBridge {
      * @param username
      * @param password
      * @param realm the realm to authenticate under
-     * @returns Subject on successful authentication
+     * @return Subject on successful authentication
      * @throws LoginException
      */
     public static Subject validateUsernamePasswordByJaas(Subject subject, String username, char[] password, String realm) throws LoginException {
@@ -138,10 +137,9 @@ public class JaspicToJaasBridge {
 
         String callerPrincipalName = "";
         try {
-            final X500Name x500Name = new X500Name(x500Principal.getName(X500Principal.RFC1779));
-            callerPrincipalName = x500Name.toString();
+            callerPrincipalName = x500Principal.getName(X500Principal.RFC2253, OID.getOIDMap());
 
-            privileged(() -> validSubject.getPublicCredentials().add(x500Name));
+            privileged(() -> validSubject.getPublicCredentials().add(x500Principal));
 
             CertificateRealm certRealm = (CertificateRealm) Realm.getInstance(CertificateRealm.AUTH_TYPE);
             String jaasCtx = certRealm.getJAASContext();
@@ -153,7 +151,7 @@ public class JaspicToJaasBridge {
             }
 
             // Sets security context
-            certRealm.authenticate(validSubject, x500Name);
+            certRealm.authenticate(validSubject, x500Principal);
         } catch (Exception ex) {
             _logger.log(INFO, auditAtnRefusedError, callerPrincipalName);
 
@@ -167,7 +165,7 @@ public class JaspicToJaasBridge {
         }
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("jmac cert login succeeded for: " + callerPrincipalName);
+            _logger.fine("JASPIC certificate login succeeded for: " + callerPrincipalName);
         }
 
         auditAuthenticate(callerPrincipalName, CertificateRealm.AUTH_TYPE, true);

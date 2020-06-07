@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.osgi.cli.remote;
 
 import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
@@ -288,7 +290,7 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                         session.close();
                     }
                 } else if("new".equals(sessionOp)) {
-                    CommandSession session = cp.createSession(null, null, null);
+                    CommandSession session = cp.createSession(in, out, err);
                     RemoteCommandSession remote = new RemoteCommandSession(session);
 
                     log.log(Level.FINE, "Remote session established: {0}",
@@ -331,6 +333,9 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
         } catch (Exception ex) {
             report.setMessage(ex.getMessage());
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
+        } finally {
+            out.close();
+            err.close();
         }
     }
 

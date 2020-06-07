@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/**
- * @Version $Id: JmxLruCache.java,v 1.4 2005/12/25 04:25:23 tcfujii Exp $
- * Created on May 4, 2005 1:20 PM
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache.mbeans;
 
@@ -51,11 +47,12 @@ import com.sun.appserv.util.cache.Constants;
  * This class provides implementation for JmxLruCache MBean
  *
  * @author Krishnamohan Meduri (Krishna.Meduri@Sun.com)
- *
+ * @since May 4, 2005
+ * @version 1.4
  */
 public class JmxLruCache extends JmxBaseCache implements JmxLruCacheMBean {
 
-    private LruCache lruCache;
+    private final LruCache lruCache;
 
     public JmxLruCache(LruCache lruCache, String name) {
         super(lruCache,name);
@@ -64,6 +61,7 @@ public class JmxLruCache extends JmxBaseCache implements JmxLruCacheMBean {
     /**
      * Returns the current lenght of the LRU list
      */
+    @Override
     public Integer getLruListLength() {
         return (Integer) lruCache.getStatByName(
                                         Constants.STAT_LRUCACHE_LIST_LENGTH);
@@ -72,6 +70,7 @@ public class JmxLruCache extends JmxBaseCache implements JmxLruCacheMBean {
     /**
      * Returns the number of entries that have been trimmed
      */
+    @Override
     public Integer getTrimCount() {
         return (Integer) lruCache.getStatByName(
                                         Constants.STAT_LRUCACHE_TRIM_COUNT);

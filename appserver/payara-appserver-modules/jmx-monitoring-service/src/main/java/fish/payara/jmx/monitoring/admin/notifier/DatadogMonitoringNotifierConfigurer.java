@@ -41,7 +41,7 @@ package fish.payara.jmx.monitoring.admin.notifier;
 
 
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.DatadogNotifier;;
+import fish.payara.nucleus.notification.configuration.DatadogNotifier;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;

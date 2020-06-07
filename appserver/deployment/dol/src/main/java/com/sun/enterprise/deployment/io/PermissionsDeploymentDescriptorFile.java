@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.io;
 
 import org.glassfish.deployment.common.Descriptor;
@@ -44,18 +45,15 @@ import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.node.PermissionsNode;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 
-public class PermissionsDeploymentDescriptorFile extends
-        DeploymentDescriptorFile {
+public class PermissionsDeploymentDescriptorFile extends DeploymentDescriptorFile {
 
     @Override
     public String getDeploymentDescriptorPath() {
-
         return "META-INF/permissions.xml";
     }
 
     @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-
         return new PermissionsNode();
 
     }

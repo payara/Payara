@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2018] Payara Foundation and/or affiliates
  */
 package org.glassfish.admin.rest.provider;
 
@@ -78,11 +80,12 @@ public class ProgressStatusJsonProvider extends BaseProvider<ProgressStatusBase>
     @Override
     public void writeTo(ProgressStatusBase proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-        JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8);
-        out.writeStartObject();
-        writeJson("progress-status", proxy, -1, out);
-        out.writeEndObject();
-        out.flush();
+        try (JsonGenerator out = factory.createGenerator(entityStream, JsonEncoding.UTF8)) {
+            out.writeStartObject();
+            writeJson("progress-status", proxy, -1, out);
+            out.writeEndObject();
+            out.flush();
+        }
     }
 
     public void writeJson(String name, ProgressStatusBase ps, int allocatedSteps, JsonGenerator out) throws IOException {

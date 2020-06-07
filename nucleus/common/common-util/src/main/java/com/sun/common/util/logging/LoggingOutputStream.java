@@ -37,25 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation] 
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 package com.sun.common.util.logging;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Formatter;
-import java.util.Locale;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-//import com.sun.enterprise.server.logging.GFLogRecord;
 
 /**
  * Implementation of a OutputStream that flush the records to a Logger.
@@ -68,16 +63,16 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
     private static final int MAX_RECORDS = 5000;
 
-    private String lineSeparator;
+    private final String lineSeparator;
 
     private Logger logger;
-    private Level level;
+    private final Level level;
 
-    private ThreadLocal reentrant = new ThreadLocal();
-    
-    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(MAX_RECORDS);
+    private final ThreadLocal reentrant = new ThreadLocal();
 
-    private BooleanLatch done = new BooleanLatch();
+    private final BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(MAX_RECORDS);
+
+    private final BooleanLatch done = new BooleanLatch();
     private Thread pump;
 
     /**
@@ -90,7 +85,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         super();
         this.logger = logger;
         this.level = level;
-        lineSeparator = System.getProperty("line.separator");
+        lineSeparator = System.lineSeparator();
         initializePump();
     }
 
@@ -100,6 +95,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
      *
      * @throws java.io.IOException in case of error
      */
+    @Override
     public void flush() throws IOException {
 
         String logMessage = null;
@@ -113,19 +109,20 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             return;
         }
         LogRecord logRecord = new LogRecord(level, logMessage);
-        
+
         // JUL LogRecord does not capture thread-name. Create a wrapper to
         // capture the name of the logging thread so that a formatter can
-        // output correct thread-name if done asynchronously. Note that 
+        // output correct thread-name if done asynchronously. Note that
         // this fix is limited to records published through this handler only.
         GFLogRecord logRecordWrapper = new GFLogRecord(logRecord);
         logRecordWrapper.setThreadName(Thread.currentThread().getName());
-        
+
         pendingRecords.offer(logRecordWrapper);
     }
 
     private void initializePump() {
         pump = new Thread() {
+            @Override
             public void run() {
                 while (!done.isSignalled()) {
                     try {
@@ -137,9 +134,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
                 }
             }
         };
-        pump.setName("logging output pump");
+        pump.setName("Logging output pump");
         pump.setDaemon(true);
-        pump.start();        
+        pump.start();
     }
 
     /**
@@ -148,7 +145,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
     public void log() {
 
         LogRecord record;
-        
+
         // take is blocking so we take one record off the queue
         try {
             record = pendingRecords.take();
@@ -166,7 +163,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         }
 
         // now try to read more.  we end up blocking on the above take call if nothing is in the queue
-        Vector<LogRecord> v = new Vector<LogRecord>();
+        List<LogRecord> v = new ArrayList<>();
         final int size = pendingRecords.size();
         int msgs = pendingRecords.drainTo(v, size);
         for (int j = 0; j < msgs; j++) {
@@ -174,7 +171,8 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         }
 
     }
-    
+
+    @Override
     public void close() throws IOException {
         done.tryReleaseShared(1);
         pump.interrupt();
@@ -182,16 +180,16 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         // Drain and log the remaining messages
         final int size = pendingRecords.size();
         if (size > 0) {
-            Collection<LogRecord> records = new ArrayList<LogRecord>(size);
+            Collection<LogRecord> records = new ArrayList<>(size);
             pendingRecords.drainTo(records, size);
             for (LogRecord record : records) {
                 logger.log(record);
             }
         }
-        
+
         super.close();
     }
-    
+
 /*
  * LoggingPrintStream creates a PrintStream with a
  * LoggingByteArrayOutputStream as its OutputStream. Once it is
@@ -229,53 +227,62 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             logger = l;
         }
 
+        @Override
         public void println(Object x) {
             if (!checkLocks()) return;
 
             if (!(x instanceof java.lang.Throwable)) {
                 // No special processing if it is not an exception.
                 println(String.valueOf(x));
-                return;
             } else {
                 StackTraceObjects sTO = new StackTraceObjects((Throwable) x);
                 perThreadStObjects.set(sTO);
-                super.println(sTO.toString());                
+                super.println(sTO.toString());
             }
 
         }
 
+        @Override
         public PrintStream printf(String str, Object... args) {
             StringBuilder sb = new StringBuilder();
-            Formatter formatter = new Formatter(sb, Locale.getDefault());
-            formatter.format(str,args);
+            try (Formatter formatter = new Formatter(sb, Locale.getDefault())) {
+                formatter.format(str, args);
+            }
             print(sb.toString());
             return  null;
         }
 
+        @Override
         public PrintStream printf(Locale locale, String str, Object... args) {
             StringBuilder sb = new StringBuilder();
-            Formatter formatter = new Formatter(sb, locale);
-            formatter.format(str,args);
+            try (Formatter formatter = new Formatter(sb, locale)) {
+                formatter.format(str,args);
+            }
             print(sb.toString());
             return  null;
         }
 
+        @Override
         public PrintStream format(String format, Object... args) {
             StringBuilder sb = new StringBuilder();
-            Formatter formatter = new Formatter(sb, Locale.getDefault());
-            formatter.format(Locale.getDefault(), format, args);
+            try (Formatter formatter = new Formatter(sb, Locale.getDefault())) {
+                formatter.format(Locale.getDefault(), format, args);
+            }
             print(sb.toString());
             return  null;
         }
 
+        @Override
         public PrintStream format(Locale locale,String format, Object... args) {
             StringBuilder sb = new StringBuilder();
-            Formatter formatter = new Formatter(sb, locale);
-            formatter.format(locale, format, args);
+            try (Formatter formatter = new Formatter(sb, locale)) {
+                formatter.format(locale, format, args);
+            }
             print(sb.toString());
             return  null;
         }
 
+        @Override
         public void println(String str) {
             if (!checkLocks()) return;
 
@@ -299,101 +306,119 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             }
         }
 
+        @Override
         public void print(String x) {
             if (checkLocks())
                 super.print(x);
         }
 
 
+        @Override
         public void print(Object x) {
             if (checkLocks())
                 super.print(x);
         }
 
+        @Override
         public void print(boolean x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(boolean x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(char x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(char x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(int x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(int x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(long x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(long x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(float x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(float x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(double x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(double x) {
             if (checkLocks())
                 super.println(x);
         }
 
+        @Override
         public void print(char[] x) {
             if (checkLocks()) {
                 super.print(x);
             }
         }
 
+        @Override
         public void println(char[] x) {
             if (checkLocks())
                 super.println(x);
         }
 
 
+        @Override
         public void println() {
             if (checkLocks()) {
                 super.println();
             }
         }
 
+        @Override
         public void write(byte[] buf, int off, int len) {
             try {
                 synchronized (this) {
@@ -412,6 +437,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             }
         }
 
+        @Override
         public void write(int b) {
             if (checkLocks()) {
                 super.write(b);
@@ -440,10 +466,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
         private boolean checkLocks() {
             Thread t = Thread.currentThread();
-            if (!t.holdsLock(logger) && !t.holdsLock(logManager)) {
-                return true;
-            }
-            return false;
+            return !t.holdsLock(logger) && !t.holdsLock(logManager);
         }
     }
 
@@ -456,11 +479,11 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
     private static class StackTraceObjects {
 
-        private ByteArrayOutputStream stackTraceBuf;
-        private PrintStream stStream;
-        private String stString;
-        private ByteArrayOutputStream comparisonBuf;
-        private PrintStream cbStream;
+        private final ByteArrayOutputStream stackTraceBuf;
+        private final PrintStream stStream;
+        private final String stString;
+        private final ByteArrayOutputStream comparisonBuf;
+        private final PrintStream cbStream;
         private int stackTraceBufBytes = 0;
         private int charsIgnored = 0;
 
@@ -477,6 +500,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             cbStream.println(x);
         }
 
+        @Override
         public String toString() {
             return stString;
         }
@@ -498,12 +522,8 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         }
 
         boolean checkCompletion() {
-            if (charsIgnored >= stackTraceBufBytes) {
-                return true;
-            } else {
-                return false;
-            }
+            return charsIgnored >= stackTraceBufBytes;
         }
     }
-    
+
 }

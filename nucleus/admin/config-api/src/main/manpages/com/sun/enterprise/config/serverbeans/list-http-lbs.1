@@ -1,0 +1,93 @@
+list-http-lbs(1)          asadmin Utility Subcommands         list-http-lbs(1)
+
+NAME
+       list-http-lbs - lists load balancers
+
+SYNOPSIS
+           list-http-lbs [--help]
+           [--long={false|true}]
+           [--output output]
+           [--header={false|true}]
+           [name]
+
+DESCRIPTION
+       Use the list-http-lbs subcommand to list physical load balancers.
+
+           Note
+           +----------------------------------------+
+           |           This subcommand is only      |
+           |           applicable to Oracle         |
+           |           GlassFish Server. This       |
+           |           subcommand is not applicable |
+           |           to GlassFish Server Open     |
+           |           Source Edition.              |
+           +----------------------------------------+
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --long, -l
+           Displays detailed information about each load balancer. The default
+           value is false.
+
+       --output, -o
+           Displays specific details about each load balancer. Use a
+           comma-separated list to specify the details you want to display and
+           their order. For example, list-http-lbs --output
+           name,device-host,device-port. The values are case-insensitive.
+
+           Possible values are as follows:
+
+           device-host
+               Displays the device host or the IP address of the load
+               balancing device. This host or IP is where the physical load
+               balancer resides.
+
+           name
+               Displays the name of the load balancer.
+
+           auto-apply-enabled
+               Displays whether the Auto Apply feature is enabled.
+
+           lb-config-name
+               Displays the name of the load balancer configuration.
+
+           device-port
+               Displays the port used to communicate with the load balancing
+               device.
+
+       --header, -h
+           Specifies whether column headings are displayed when the --long
+           option is used. The default value is true. To suppress the
+           headings, set the --header option to false.
+
+OPERANDS
+       name
+           The name of the load balancer for which you want to display
+           details.
+
+EXAMPLES
+       Example 1, Listing Physical Load Balancers for a Domain
+           This example lists all physical load balancers defined for a
+           domain.
+
+               asadmin> list-http-lbs
+
+               lb1
+               lb2
+               Command list-http-lbs executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-http-lb(1), delete-http-lb(1)
+
+       asadmin(1M)
+
+Java EE 8                         12 Feb 2013                 list-http-lbs(1)

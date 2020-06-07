@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.impl.config;
 
@@ -59,7 +55,6 @@ import org.jvnet.hk2.config.Dom;
  */
 @Taxonomy( stability=Stability.NOT_AN_INTERFACE )
 public final class ConfigBeanRegistry {
-    private static void debug( final String s ) { System.out.println(s); }
     
     public static final class MBeanInstance
     {
@@ -102,7 +97,6 @@ public final class ConfigBeanRegistry {
         final MBeanInstance mb = new MBeanInstance(cb, objectName, impl);
         mFromConfigBean.put(cb, mb );
         mFromObjectName.put(objectName, mb);
-        //debug( "ConfigBeanRegistry.add(): " + objectName );
     }
 
     public synchronized void  remove(final ObjectName objectName)
@@ -113,7 +107,6 @@ public final class ConfigBeanRegistry {
             mFromObjectName.remove(objectName);
             mFromConfigBean.remove(mb.mConfigBean);
         }
-        //debug( "ConfigBeanRegistry.remove(): " + objectName );
 
     }
 

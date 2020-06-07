@@ -1,0 +1,79 @@
+disable-monitoring(1)     asadmin Utility Subcommands    disable-monitoring(1)
+
+NAME
+       disable-monitoring - disables monitoring for the server or for specific
+       monitorable modules
+
+SYNOPSIS
+           disable-monitoring [--help] [--modules module-name][:module-name]*
+
+DESCRIPTION
+       The disable-monitoring subcommand is used to turn off monitoring for
+       GlassFish Server or for particular modules during runtime. Changes are
+       dynamic, that is, server restart is not required.
+
+       Running the disable-monitoring subcommand without the --module option
+       disables the monitoring service by setting the monitoring-enabled
+       attribute of the monitoring-service element to false. The individual
+       modules retain their monitoring levels, but no monitoring data is
+       generated because the entire monitoring service is disabled.
+
+       This subcommand used with the --modules option disables monitoring for
+       a module by setting the monitoring level to OFF. The status of the
+       monitoring service is not affected. For a list of monitorable modules,
+       see the --modules option in this help page.
+
+       An alternative method for disabling monitoring is to use the set
+       subcommand. In this case, the server must be restarted for changes to
+       take effect.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --modules
+           Disables the specified module or modules by setting the monitoring
+           level to OFF. Multiple modules are separated by : (colon).
+           Monitorable modules include connector-connection-pool,
+           connector-service, ejb-container, http-service,
+           jdbc-connection-pool, jersey, jpa, jms-service, jvm, security,
+           thread-pool, transaction-service, web-container, and
+           web-services-container. Additional modules can be listed by using
+           the get subcommand.
+
+OPERANDS
+EXAMPLES
+       Example 1, Disabling the Monitoring Service for GlassFish Server
+           This example disables monitoring for GlassFish Server in general by
+           setting the enable-monitoring flag to false (default is true).
+
+               asadmin> disable-monitoring
+               Command disable-monitoring executed successfully
+
+       Example 2, Disabling Monitoring for the Web and EJB Containers
+           This example disables monitoring for specific containers. Their
+           monitoring levels will be set to OFF.
+
+               asadmin> disable-monitoring --modules web-container:ejb-container
+               Command disable-monitoring executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       enable-monitoring(1), monitor(1), list(1), get(1), set(1)
+
+       monitoring(5ASC)
+
+       asadmin(1M)
+
+       "Administering the Monitoring Service" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         21 Oct 2009            disable-monitoring(1)

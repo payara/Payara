@@ -40,26 +40,21 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2017] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
-        <groupId>org.glassfish.main.distributions</groupId>
+        <groupId>fish.payara.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
-    
-    <groupId>fish.payara.distributions</groupId>
+
     <artifactId>payara</artifactId>
     <name>Payara Distribution</name>
     <packaging>glassfish-distribution</packaging>
-    
-    <description>This pom describes how to assemble the Payara Distribution</description>
 
-    <properties>
-        <deploy.skip>false</deploy.skip>
-    </properties>
+    <description>This pom describes how to assemble the Payara Distribution</description>
 
     <build>
         <plugins>
@@ -72,7 +67,6 @@
                     </execution>
                 </executions>
             </plugin>
-            
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
@@ -91,9 +85,34 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>validate-xml-files</id>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <pomElements>
+                        <dependencies>remove</dependencies>
+                    </pomElements>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <id>ips</id>
@@ -121,8 +140,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.featuresets</groupId>
-            <artifactId>payara</artifactId>
+            <groupId>fish.payara.server.internal.featuresets</groupId>
+            <artifactId>payara-featureset</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
             <optional>true</optional>

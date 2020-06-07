@@ -324,7 +324,7 @@ public final class ConfigModularityUtils {
             StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
             //something directly inside the config itself
             if (tokenizer.countTokens() == 3) {
-                String expression = location.substring(location.lastIndexOf("[") + 1, location.length() - 1);
+                String expression = location.substring(location.lastIndexOf('[') + 1, location.length() - 1);
                 String configName = resolveExpression(expression);
                 return serviceLocator.<Domain>getService(Domain.class).getConfigNamed(configName);
             }
@@ -334,7 +334,7 @@ public final class ConfigModularityUtils {
             String curLevel = tokenizer.nextToken();
             String expression;
             if (curLevel.contains("[")) {
-                expression = curLevel.substring(curLevel.lastIndexOf("[") + 1, curLevel.length() - 1);
+                expression = curLevel.substring(curLevel.lastIndexOf('[') + 1, curLevel.length() - 1);
             } else {
                 expression = curLevel;
             }
@@ -368,8 +368,8 @@ public final class ConfigModularityUtils {
         if (childElement.endsWith("]")) {
             String componentName;
             String elementName;
-            elementName = childElement.substring(childElement.lastIndexOf("/") + 1, childElement.indexOf("["));
-            componentName = childElement.substring(childElement.lastIndexOf("[") + 1, childElement.indexOf("]"));
+            elementName = childElement.substring(childElement.lastIndexOf('/') + 1, childElement.indexOf('['));
+            componentName = childElement.substring(childElement.lastIndexOf('[') + 1, childElement.indexOf(']'));
             Class childClass = getClassFor(elementName);
             Class parentClass = getClassFor(parentElement);
             Method m = findSuitableCollectionGetter(parentClass, childClass);
@@ -686,7 +686,7 @@ public final class ConfigModularityUtils {
 
     public String getServiceTypeNameIfNamedComponent(String serviceName) {
         if (serviceName.endsWith("]")) {
-            serviceName = serviceName.substring(0, serviceName.indexOf("["));
+            serviceName = serviceName.substring(0, serviceName.indexOf('['));
         }
         return serviceName;
     }

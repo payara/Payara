@@ -37,21 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.persistence.ejb.entitybean.container.cache;
 
 import com.sun.appserv.util.cache.BaseCache;
-import com.sun.appserv.util.cache.Cache;
-import com.sun.appserv.util.cache.CacheListener;
-import com.sun.appserv.util.cache.Constants;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 /**
- * An EJB(Local)Object cache that does not impose any limit on the 
+ * An EJB(Local)Object cache that does not impose any limit on the
  * number of entries
  *
  * @author Mahesh Kannan
@@ -64,48 +61,48 @@ public class UnboundedEJBObjectCache
      * default constructor
      */
     public UnboundedEJBObjectCache(String name) { super(); }
-    
+
     /**
      * constructor with specified timeout
      */
     public UnboundedEJBObjectCache(String name, long timeout) {
         super();
     }
-    
+
     public void init(int maxEntries, int numberOfVictimsToSelect,
             long timeout, float loadFactor, Properties props)
     {
         super.init(maxEntries, loadFactor, props);
     }
-    
+
     public Object get(Object key, boolean incrementRefCount) {
         return super.get(key);
     }
-    
+
     public Object put(Object key, Object value, boolean linkWithLru) {
         return super.put(key, value);
     }
-    
+
     public Object remove(Object key, boolean decrementRefCount) {
         return super.remove(key);
     }
-    
+
     public void setEJBObjectCacheListener(EJBObjectCacheListener listener) {
         //do nothing
     }
-    
+
     protected void trimItem(CacheItem item) {
-        
+
     }
-    
+
     public Map getStats() {
         Map map = new HashMap();
-        StringBuffer sbuf = new StringBuffer();
+        StringBuilder sbuf = new StringBuilder();
         sbuf.append("(listSize = 0")
         .append("; cacheSize = ").append(getEntryCount())
         .append(")");
         map.put("_UnBoundedEJBObject ==> ", sbuf.toString());
         return map;
     }
-    
+
 }

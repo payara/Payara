@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * JavaClassWriterHelper.java
@@ -46,14 +47,12 @@
 
 package com.sun.jdo.spi.persistence.utility.generator;
 
-import java.io.IOException;
+import com.sun.jdo.spi.persistence.utility.JavaTypeHelper;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
 import java.util.StringTokenizer;
-
-import com.sun.jdo.spi.persistence.utility.JavaTypeHelper;
 
 /*
  * This is the utility class for helper strings and type convertion.
@@ -112,7 +111,7 @@ public class JavaClassWriterHelper extends JavaTypeHelper {
     public final static String[] super_                   = new String[] {"super();"}; // NOI18N
 
     // This String[] is used internally to replace "\t" with the element of this array
-    // that represents the corresponding indentation in spaces. 
+    // that represents the corresponding indentation in spaces.
     private final static String[] indentation_              = new String[] {
         "    ", // NOI18N
         "        ", // NOI18N
@@ -168,7 +167,7 @@ public class JavaClassWriterHelper extends JavaTypeHelper {
      */
     public static String getWrapperExpr(Class exprType, String expr) {
 
-        StringBuffer wrapped = new StringBuffer();
+        StringBuilder wrapped = new StringBuilder();
 
         wrapped.append(new_);
         wrapped.append(space_);
@@ -232,8 +231,8 @@ public class JavaClassWriterHelper extends JavaTypeHelper {
     public static String getParameterTypesList(Method m) {
        if (m == null)
             return none_;
- 
-        StringBuffer buf = new StringBuffer();
+
+        StringBuilder buf = new StringBuilder();
         Class[] paramTypes = m.getParameterTypes();
         for (int i = 0; i < paramTypes.length; i++) {
             if (i > 0)
@@ -263,7 +262,7 @@ public class JavaClassWriterHelper extends JavaTypeHelper {
      */
     public static String getParametersListWithSeparator(Method m, String sep) {
         int count = m.getParameterTypes().length;
-        StringBuffer rc = new StringBuffer();
+        StringBuilder rc = new StringBuilder();
 
         for (int ii = 0; ii < count; ii++) {
             if (ii > 0)
@@ -288,7 +287,7 @@ public class JavaClassWriterHelper extends JavaTypeHelper {
             StringTokenizer st = new StringTokenizer(v[i], space_);
             String type = st.nextToken();
             String name = st.nextToken();
-            StringBuffer value = new StringBuffer();
+            StringBuilder value = new StringBuilder();
             while(st.hasMoreTokens())
                value.append(st.nextToken() + space_);
 
@@ -314,7 +313,7 @@ public class JavaClassWriterHelper extends JavaTypeHelper {
     }
 
 
-    /**  
+    /**
      * Adds a private void no-args method to a class with this method body.
      * @param mname method name
      * @param body the method body as String[]
@@ -341,21 +340,21 @@ public class JavaClassWriterHelper extends JavaTypeHelper {
         addGenericMethod(mname, Modifier.PRIVATE, type, body, writer);
     }
 
-    /**  
+    /**
      * Adds a private void no-args method to a class with this method body
      * and modifiers.
      * @param mname method name
      * @param modifiers the method modifiers
      * @param body the method body as String[]
      * @throws IOException if writer fails to add a field.
-     */  
+     */
     public static void addGenericMethod(String mname, int modifiers,
                                  String[] body, JavaClassWriter writer)
                                  throws IOException{
         addGenericMethod(mname, modifiers, void_, body, writer);
     }
 
-    /**  
+    /**
      * Adds a private void no-args method to a class with this method body,
      * modifiers, and return type.
      * @param mname method name
@@ -363,9 +362,9 @@ public class JavaClassWriterHelper extends JavaTypeHelper {
      * @param type return type of the method
      * @param body the method body as String[]
      * @throws IOException if writer fails to add a field.
-     */  
+     */
     public static void addGenericMethod(String mname, int modifiers,
-                                 String type, String[] body, 
+                                 String type, String[] body,
                                  JavaClassWriter writer)
                                  throws IOException{
         writer.addMethod(mname, // name
@@ -417,11 +416,11 @@ public class JavaClassWriterHelper extends JavaTypeHelper {
             getBodyAsStrings(body), // body
             null);// comments
     }
- 
+
     /**
      * Returns the String representation of the specified class instance.
      * An array is represented as the name of the element type followed by [].
-     */  
+     */
     public static String getTypeRepr(Class clazz)
     {
         return (clazz.isArray() ?

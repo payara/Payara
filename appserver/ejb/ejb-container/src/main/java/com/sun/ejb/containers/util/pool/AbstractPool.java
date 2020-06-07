@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 /**
  * <BR> <I>$Source: /cvs/glassfish/appserv-core/src/java/com/sun/ejb/containers/util/pool/AbstractPool.java,v $</I>
  * @author     $Author: cf126330 $
  * @version    $Revision: 1.5 $ $Date: 2007/03/30 19:10:26 $
  */
- 
+
 
 package com.sun.ejb.containers.util.pool;
 
@@ -58,17 +58,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * <p>Abstract pool provides the basic implementation of an object pool. 
- * The implementation uses a linked list to maintain a list of (available) 
+ * <p>Abstract pool provides the basic implementation of an object pool.
+ * The implementation uses a linked list to maintain a list of (available)
  * objects. If the pool is empty it simply creates one using the ObjectFactory
  * instance. Subclasses can change this behaviour by overriding getObject(...)
- * and returnObject(....) methods. This class provides basic support for 
- * synchronization, event notification, pool shutdown and pool object 
+ * and returnObject(....) methods. This class provides basic support for
+ * synchronization, event notification, pool shutdown and pool object
  * recycling. It also does some very basic bookkeeping like the
  * number of objects created, number of threads waiting for object.
- * <p> Subclasses can make use of these book-keeping data to provide complex 
- * pooling mechanism like LRU / MRU / Random. Also, note that AbstractPool 
- * does not have a notion of  pool limit. It is upto to the derived classes 
+ * <p> Subclasses can make use of these book-keeping data to provide complex
+ * pooling mechanism like LRU / MRU / Random. Also, note that AbstractPool
+ * does not have a notion of  pool limit. It is upto to the derived classes
  * to implement these features.
  */
 public abstract class AbstractPool
@@ -95,7 +95,7 @@ public abstract class AbstractPool
     protected int		   destroyedCount = 0;
     protected int 		   poolSuccess = 0;
     protected String		   poolName;
-    protected int                  poolReturned = 0; 
+    protected int                  poolReturned = 0;
 
     protected String		   configData;
     protected EjbPoolProbeProvider poolProbeNotifier;
@@ -105,7 +105,7 @@ public abstract class AbstractPool
     protected String ejbName;
 
     protected long beanId;
-    
+
 
     public void setContainerClassLoader(ClassLoader loader) {
         this.containerClassLoader = loader;
@@ -146,49 +146,49 @@ public abstract class AbstractPool
     }
 
 
-    
+
     protected abstract void removeIdleObjects();
     abstract public void close();
-   
+
     /* *************** For Monitoring ***********************/
     /* ******************************************************/
-    
+
     public int getCreatedCount() {
         return createdCount;
     }
-    
+
     public int getDestroyedCount() {
         return destroyedCount;
     }
-    
+
     public int getPoolSuccess() {
         return poolSuccess;
     }
-    
+
     public int getSize() {
         return list.size();
     }
-    
+
     public int getWaitCount() {
         return waitCount;
     }
-    
+
     public int getSteadyPoolSize() {
         return steadyPoolSize;
     }
-    
+
     public int getResizeQuantity() {
         return resizeQuantity;
     }
-    
+
     public int getMaxPoolSize() {
         return maxPoolSize;
     }
-    
+
     public long getMaxWaitTimeInMillis() {
         return maxWaitTimeInMillis;
     }
-    
+
     public int getIdleTimeoutInSeconds() {
         return idleTimeoutInSeconds;
     }
@@ -199,7 +199,7 @@ public abstract class AbstractPool
 
 
     //Methods on EJBPoolStatsProvider
-    public void appendStats(StringBuffer sbuf) {
+    public void appendStats(StringBuilder sbuf) {
 	sbuf.append("[Pool: ")
 	    .append("SZ=").append(list.size()).append("; ")
 	    .append("CC=").append(createdCount).append("; ")
@@ -243,7 +243,7 @@ public abstract class AbstractPool
         sbuf.append("maxPoolSize=").append(maxPoolSize).append(";");
         return sbuf.toString();
     }
-    
+
     public String getAllAttrValues() {
         StringBuilder sbuf = new StringBuilder();
         if(null != poolName)
@@ -254,14 +254,14 @@ public abstract class AbstractPool
         sbuf.append("[FP=").append(poolSuccess).append(",")
             .append("TC=").append(createdCount).append(",")
             .append("TD=").append(destroyedCount).append(",")
-			.append("PR=").append(poolReturned).append(",")    
+			.append("PR=").append(poolReturned).append(",")
             .append("TW=").append(waitCount).append(",")
             .append("CS=").append(list.size()).append(",")
             .append("MS=").append(maxPoolSize);
-    
+
         return sbuf.toString();
     }
-    
+
     protected void unregisterProbeProvider () {
         try {
             ProbeProviderFactory probeFactory = EjbContainerUtilImpl.getInstance().getProbeProviderFactory();

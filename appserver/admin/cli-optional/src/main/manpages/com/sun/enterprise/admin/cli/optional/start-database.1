@@ -1,0 +1,132 @@
+start-database(1)         asadmin Utility Subcommands        start-database(1)
+
+NAME
+       start-database - starts the Java database
+
+SYNOPSIS
+           start-database [--help] [--jvmoptions jvm-options]
+           [--dbhost host] [--dbport port-no]
+           [--dbhome db-file-path]
+
+DESCRIPTION
+       The start-database subcommand starts the Java database server that is
+       available for use with Payara Server. Java database is based upon H2. 
+       Use this subcommand only for working with applications deployed
+       to the server.
+
+       When you start Java database server by using the start-database subcommand,
+       the database server is started in Network Server mode. Clients
+       connecting to it must use the the JDBC driver class: org.h2.Driver. For 
+       details on connecting to the database, refer to the H2 documentation.
+
+       When the database server starts, or a client connects to it
+       successfully, the following files are created:
+
+       *   The h2.log file that contains the database server process log
+           along with its standard output and standard error information
+
+       *   The database files that contain your schema (for example, database
+           tables)
+
+       These files are created at the location that is specified by the
+       --dbhome option. To create the database files at a particular location,
+       you must set the --dbhome option. If the --dbhome option is not
+       specified, the start-database subcommand determines where to create
+       these files as follows:
+
+       *   If the current working directory contains a file that is named
+           h2.log, the start-database subcommand creates the files in the
+           current working directory.
+
+       *   Otherwise, the start-database subcommand creates the files in the
+           as-install/databases directory.
+
+       The start-database subcommand starts the database process, even if it
+       cannot write to the log file.
+
+       This subcommand is supported in local mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --jvmoptions
+           A space-separated list of command-line options that are passed to
+           the Java application launcher when the database is started. By
+           default, no options are passed.
+
+           The format of an option depends on whether the option has a name
+           and a value or only a name:
+
+           *   If the option has a name and a value, the format is
+               option-name=value.
+
+           *   If the option has only a name, the format is option-name. For
+               example, -Xmx512m.
+
+       --dbhost
+           The host name or IP address of the H2 server process. The
+           default is the IP address 0.0.0.0, which denotes all network
+           interfaces on the host where you run the start-database subcommand.
+
+       --dbport
+           The port number where the H2 server listens for client
+           connections. This port must be available for the listen socket,
+           otherwise the database server will not start. The default is 9092.
+
+       --dbhome
+           The absolute path to the directory where the database files and the
+           h2.log file are created. If the --dbhome option is not
+           specified, the start-database subcommand determines where to create
+           these files as follows:
+
+           *   If the current working directory contains a file that is named
+               h2.log, the start-database subcommand creates the files in
+               the current working directory.
+
+           *   Otherwise, the start-database subcommand creates the files in
+               the as-install/databases directory.
+
+           To create the database files at a particular location, you must set
+           the --dbhome option.
+
+EXAMPLES
+       Example 1, Starting H2 database
+           This example starts H2 on the host host1 and port 5001.
+
+               asadmin> start-database --dbhost host1 --dbport 5001 --terse=true
+               Starting database in the background.  Log redirected to
+               /opt/SUNWappserver/databases/h2.log.
+
+       Example 2, Starting H2 With Options for the Java Application
+       Launcher
+           This example starts H2 with the options for setting the
+           minimum heap memory size to 128 megabytes and the maximum heap
+           memory size to 512 megabytes.
+
+               asadmin> start-database --jvmoptions="-Xms128m -Xmx512m" --terse=true
+               Starting database in the background.
+               Log redirected to /export/glassfish3/glassfish/databases/h2.log.
+
+EXIT STATUS
+       The exit status applies to errors in executing the asadmin utility. For
+       information on database errors, see the h2.log file. This file is
+       located in the directory you specify by using the --dbhome option when
+       you run the start-database subcommand. If you did not specify --dbhome,
+       the value of H2_INSTALL defaults to as-install/h2db.
+
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       stop-database(1)
+
+       asadmin(1M)
+
+       "Administering Database Connectivity" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         17 Dec 2019                 start-database(1)

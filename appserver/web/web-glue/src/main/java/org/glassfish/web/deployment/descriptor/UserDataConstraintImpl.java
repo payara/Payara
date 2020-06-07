@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.web.deployment.descriptor;
 
@@ -46,11 +47,11 @@ import org.glassfish.deployment.common.Descriptor;
 
 
 /**
-    * I represent the information about how the web application's data should be protected. 
+    * I represent the information about how the web application's data should be protected.
     *
     * @author Danny Coward
     */
-    
+
 public class UserDataConstraintImpl extends Descriptor implements UserDataConstraint {
     /** The transport is unspecified.*/
     public static final String TRANSPORT_GUARANTEE_NONE = UserDataConstraint.NONE_TRANSPORT;
@@ -99,18 +100,18 @@ public class UserDataConstraintImpl extends Descriptor implements UserDataConstr
 		    && !UserDataConstraint.CONFIDENTIAL_TRANSPORT.equals(transportGuarantee)) {
 		throw new IllegalArgumentException(localStrings.getLocalString(
 									       "web.deployment.exceptiontransportguarentee",
-									       "{0} is not a valid transport guarantee", new Object[] {transportGuarantee}));  
+									       "{0} is not a valid transport guarantee", new Object[] {transportGuarantee}));
 	    }
 	}
 	this.transportGuarantee = transportGuarantee;
     }
-    
+
     /**
     * Returns a formatted String of my state.
     */
-    public void print(StringBuffer toStringBuffer) {
-	toStringBuffer.append("UserDataConstraint ");
-	toStringBuffer.append(" description ").append(super.getDescription());
-	toStringBuffer.append(" transportGuarantee ").append(getTransportGuarantee());
+    public void print(StringBuilder toStringBuilder) {
+	toStringBuilder.append("UserDataConstraint ");
+	toStringBuilder.append(" description ").append(super.getDescription());
+	toStringBuilder.append(" transportGuarantee ").append(getTransportGuarantee());
     }
 }

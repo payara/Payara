@@ -1,0 +1,97 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-ejbmdbpoolsettings" name="task-ejbmdbpoolsettings"></a><a id="GHEJB00004" name="GHEJB00004"></a></p>
+
+<h4><a id="sthref2" name="sthref2"></a><a id="sthref3" name="sthref3"></a><a id="sthref4" name="sthref4"></a>To Configure MDB Pool Settings</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The pool for message-driven beans is similar to the pool for session beans. By default, the container maintains a pool of message-driven beans.</p>
+<p>To adjust the configuration of this pool, perform these steps.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Select the EJB Container node.</p>
+<p>The Enterprise Java Beans (EJB) page opens.</p>
+</li>
+<li>
+<p>Click the MDB Settings tab.</p>
+<p>The MDB Default Pool Settings page opens.</p>
+</li>
+<li>
+<p>In the Initial and Minimum Pool Size field, type the minimum number of message beans to be maintained in the pool.</p>
+<p>The default value is 0.</p>
+</li>
+<li>
+<p>In the Maximum Pool Size field, type the maximum number of beans that the container can maintain in the pool at one time.</p>
+<p>The default value is 32.</p>
+</li>
+<li>
+<p>In the Pool Resize Quantity field, type the number of beans that are removed from the pool if they are idle for more than the time specified in the Pool Idle Timeout field.</p>
+<p>The value must be at least 0 and less than the Maximum Pool Size value. The default value is 8.</p>
+</li>
+<li>
+<p>In the Pool Idle Timeout field, type the time, in seconds, that a bean in the pool can remain idle before it is removed from the pool.</p>
+<p>After this amount of time, the bean is destroyed. A value of 0 means that a bean can remain idle indefinitely. The default value is 600.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>The GlassFish Server does not define any additional properties for the MDB pool.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+
+<hr>
+<p><b>Tip:</b></p>
+<p>To return to the default settings, click the Load Defaults button, then click Save.</p>
+
+<hr>
+
+</li>
+<li>
+<p>Restart the GlassFish Server.</p>
+</li>
+</ol>
+<a id="sthref5" name="sthref5"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="../../../ejb-lite/en/help/task-ejbgeneral.html">To Configure EJB Settings</a></p>
+</li>
+<li>
+<p><a href="task-ejbtimerservice.html">To Configure the EJB Timer Service</a></p>
+</li>
+<li>
+<p><a href="task-ejbcontaineravailability.html">To Configure Availability Settings for the EJB Container</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

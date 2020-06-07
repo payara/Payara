@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
-import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -90,9 +89,12 @@ public class MinimalBundleProvisioner extends BundleProvisioner {
                 }
                 if (file.isDirectory()) {
                     // do only one-level search as configured auto install locations are not recursive.
-                    for (File child : file.listFiles()) {
-                        if (child.lastModified() > latestFile.lastModified()) {
-                            latestFile = child;
+                    File[] files = file.listFiles();
+                    if (files != null) {
+                        for (File child : files) {
+                            if (child.lastModified() > latestFile.lastModified()) {
+                                latestFile = child;
+                            }
                         }
                     }
                 }
@@ -111,13 +113,10 @@ public class MinimalBundleProvisioner extends BundleProvisioner {
         }
 
         private List<URI> selectFragmentJars(List<URI> installLocations) {
-            List<URI> fragments = new ArrayList<URI>();
+            List<URI> fragments = new ArrayList<>();
             for (URI uri : installLocations) {
-                InputStream is = null;
-                JarInputStream jis = null;
-                try {
-                    is = uri.toURL().openStream();
-                    jis = new JarInputStream(is);
+                try (InputStream is = uri.toURL().openStream();
+                     JarInputStream jis = new JarInputStream(is)) {
                     Manifest m = jis.getManifest();
                     if (m != null && m.getMainAttributes().getValue(Constants.FRAGMENT_HOST) != null) {
                         logger.logp(Level.FINE, "MinimalBundleProvisioner$MinimalCustomizer", "selectFragmentJars",
@@ -126,17 +125,6 @@ public class MinimalBundleProvisioner extends BundleProvisioner {
                     }
                 } catch (IOException e) {
                     LogFacade.log(logger, Level.INFO, LogFacade.CANT_TELL_IF_FRAGMENT, e, uri);
-                } finally {
-                    try {
-                        if (is != null) {
-                            is.close();
-                        }
-                        if (jis != null) {
-                            jis.close();
-                        }
-                    } catch (IOException e1) {
-                        // ignore
-                    }
                 }
             }
             return fragments;
@@ -183,10 +171,12 @@ public class MinimalBundleProvisioner extends BundleProvisioner {
             }
         }
         Jar latestJar = getCustomizer().getLatestJar();
-        final boolean chnaged = latestJar.getLastModified() > latestBundle.getLastModified();
+        final boolean changed =
+                (latestBundle != null) &&
+                (latestJar.getLastModified() > latestBundle.getLastModified());
         logger.log(Level.INFO, LogFacade.LATEST_FILE_IN_INSTALL_LOCATION,
-                new Object[]{chnaged, latestJar.getURI(), latestBundle.getLocation()});
-        return chnaged;
+                new Object[]{changed, latestJar.getURI(), latestBundle != null ? latestBundle.getLocation() : "NULL"});
+        return changed;
     }
 
     @Override

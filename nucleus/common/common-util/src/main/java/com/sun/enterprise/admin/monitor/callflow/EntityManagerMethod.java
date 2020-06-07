@@ -37,16 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * EntityManagerMethod.java
- * $Id: EntityManagerMethod.java,v 1.1 2006/11/08 20:55:16 harpreet Exp $
- * $Date: 2006/11/08 20:55:16 $
- * $Revision: 1.1 $
- */
+// Portions Copyright [2019] Payara Foundation and/or affiliated
 
 package	com.sun.enterprise.admin.monitor.callflow;
 
+
+/**
+ * @since 2006/11/08 
+ * @version 1.2
+ * @deprecated Use {@link com.sun.enterprise.container.common.spi.util.EntityManagerMethod}
+ * instead
+ */
+@Deprecated
 public enum EntityManagerMethod {
 
     PERSIST {

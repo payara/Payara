@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.server.logging.logviewer.backend;
@@ -52,22 +52,23 @@ import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.trilead.ssh2.SCPClient;
 import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import com.trilead.ssh2.SFTPv3FileAttributes;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.cluster.ssh.util.DcomInfo;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
 /**
- * Created by IntelliJ IDEA.
- * User: Naman Mehta
- * Date: 6 Aug, 2010
- * Time: 11:20:48 AM
- * To change this template use File | Settings | File Templates.
+ * @author Naman Mehta, 6 Aug, 2010
  */
 public class LogFilterForInstance {
 
@@ -135,8 +136,9 @@ public class LogFilterForInstance {
                     + loggingFile.substring(loggingFile.lastIndexOf(File.separator), loggingFile.length()));
 
             // getting size of the file on DAS
-            if (instanceLogFile.exists())
+            if (instanceLogFile.exists()) {
                 instanceLogFileSize = instanceLogFile.length();
+            }
 
             SFTPv3FileAttributes sftPv3FileAttributes = sftpClient._stat(loggingFile);
 
@@ -145,25 +147,15 @@ public class LogFilterForInstance {
 
             // if differ both size then downloading
             if (instanceLogFileSize != fileSizeOnNode) {
-                BufferedInputStream in = null;
-                FileOutputStream file = null;
-                BufferedOutputStream out = null;
-                try {
-                InputStream inputStream = sftpClient.read(loggingFile);
-                in = new BufferedInputStream(inputStream);
-                file = new FileOutputStream(instanceLogFile);
-                out = new BufferedOutputStream(file);
-                int i;
-                while ((i = in.read()) != -1) {
-                    out.write(i);
-                }
-                out.flush();
-                } finally {
-                    if (out != null) try { out.close(); } catch (IOException ex) {}
-                    if (in != null) try { in.close(); } catch (IOException ex) {}
+                try (BufferedInputStream in = new BufferedInputStream(sftpClient.read(loggingFile));
+                     BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(instanceLogFile))) {
+                    int i;
+                    while ((i = in.read()) != -1) {
+                        out.write(i);
+                    }
+                    out.flush();
                 }
             }
-
             sftpClient.close();
         } else if (node.getType().equals("DCOM")) {
 
@@ -283,7 +275,7 @@ public class LogFilterForInstance {
         String sNode = targetServer.getNodeRef();
         Node node = domain.getNodes().getNode(sNode);
         List instanceLogFileNames = null;
-        List<String> instanceLogFileNamesAsString = new ArrayList();
+        List<String> instanceLogFileNamesAsString = new ArrayList<>();
 
         // this code is used when DAS and instances are running on the same machine
         if (node.isLocal()) {
@@ -311,13 +303,14 @@ public class LogFilterForInstance {
                 loggingDir = getLoggingDirectoryForNodeWhenNoFilesFound(instanceLogFileDetails, node, sNode, instanceName);
                 logsDir = new File(loggingDir);
                 allLogFileNames = logsDir.listFiles();
-
-                for (File file: allLogFileNames) {
-                    String fileName = file.getName();
-                    // code to remove . and .. file which is return
-                    if (file.isFile() && !fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
-                            && !fileName.contains(".log.")) {
-                        instanceLogFileNamesAsString.add(fileName);
+                if (allLogFileNames != null) {
+                    for (File file: allLogFileNames) {
+                        String fileName = file.getName();
+                        // code to remove . and .. file which is return
+                        if (file.isFile() && !fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
+                                && !fileName.contains(".log.")) {
+                            instanceLogFileNamesAsString.add(fileName);
+                        }
                     }
                 }
             }
@@ -376,8 +369,8 @@ public class LogFilterForInstance {
                 WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, loggingDir);
                 String[] allLogFileNames = wrf.list();
 
-                for (int i = 0; i < allLogFileNames.length; i++) {
-                    File file = new File(allLogFileNames[i]);
+                for (String allLogFileName : allLogFileNames) {
+                    File file = new File(allLogFileName);
                     String fileName = file.getName();
                     // code to remove . and .. file which is return
                     if (!fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")

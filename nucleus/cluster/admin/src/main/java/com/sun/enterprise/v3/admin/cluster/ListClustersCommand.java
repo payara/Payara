@@ -38,7 +38,7 @@
  * holder.
 
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
  */
 
@@ -66,8 +66,8 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
-import static com.sun.enterprise.v3.admin.cluster.Constants.*;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import org.glassfish.api.admin.*;
 
@@ -106,6 +106,7 @@ public final class ListClustersCommand implements AdminCommand {
     @Inject
     private Clusters allClusters;
 
+    @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -129,7 +130,7 @@ public final class ListClustersCommand implements AdminCommand {
             }
         }
         StringBuilder sb = new StringBuilder();
-        if (clusterList.size() < 1) {
+        if (clusterList.isEmpty()) {
             sb.append(NONE);
         }
 
@@ -204,8 +205,8 @@ public final class ListClustersCommand implements AdminCommand {
                 value = InstanceState.StateType.RUNNING.getDescription();
             }
             else {
-                display = PARTIALLY_RUNNING_DISPLAY;
-                value = PARTIALLY_RUNNING;
+                display = Constants.PARTIALLY_RUNNING_DISPLAY;
+                value = Constants.PARTIALLY_RUNNING;
             }
             sb.append(ci.getName()).append(display).append(EOL);
             top.addProperty(ci.getName(), value);
@@ -215,6 +216,10 @@ public final class ListClustersCommand implements AdminCommand {
         String output = sb.toString();
         //Fix for isue 12885
         report.setMessage(output.substring(0,output.length()-1 ));
+
+        Properties extraProperties = new Properties();
+        extraProperties.put("clusterNames", clusterMap.keySet());
+        report.setExtraProperties(extraProperties);
     }
 
     /*

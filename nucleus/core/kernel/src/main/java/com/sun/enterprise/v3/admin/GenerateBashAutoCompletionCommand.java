@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,9 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
+
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.util.OS;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -166,8 +166,7 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
      * @return true if written to file successfully, false otherwise
      */
     private boolean writeCommands(List<String> commands) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             //Write the opening to the list of commands
             writer.write(VARNAME);
             //Write all the commands to the list

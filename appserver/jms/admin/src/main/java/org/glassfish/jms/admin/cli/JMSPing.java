@@ -226,7 +226,7 @@ public class JMSPing implements AdminCommand {
             builder.append(prop.getKey()).append("=").append(prop.getValue()).append(":");
         }
         String propString = builder.toString();
-        int lastColonIndex = propString.lastIndexOf(":");
+        int lastColonIndex = propString.lastIndexOf(':');
         if (lastColonIndex >= 0) {
             propString = propString.substring(0, lastColonIndex);
         }

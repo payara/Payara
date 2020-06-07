@@ -37,7 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.server.logging.parser;
+
+import com.sun.enterprise.server.logging.LogFacade;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,24 +51,21 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import com.sun.enterprise.server.logging.LogFacade;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
 final class UniformLogParser implements LogParser {
 
-    final private static LocalStringManagerImpl LOCAL_STRINGS = 
+    final private static LocalStringManagerImpl LOCAL_STRINGS =
         new LocalStringManagerImpl(UniformLogParser.class);
 
     static final String FIELD_SEPARATOR = "\\|";
 
     static final String LOG_RECORD_BEGIN_MARKER = "[#|";
-    
+
     static final String LOG_RECORD_END_MARKER = "|#]";
 
     private static final int ULF_FIELD_COUNT = 6;
-    
-    private static final Map<String,String> FIELD_NAME_ALIASES = 
-        new HashMap<String,String>() 
+
+    private static final Map<String,String> FIELD_NAME_ALIASES =
+        new HashMap<String,String>()
     {
         private static final long serialVersionUID = -2041470292369513712L;
         {
@@ -80,19 +82,19 @@ final class UniformLogParser implements LogParser {
     };
 
     private String streamName;
-    
+
     public UniformLogParser(String name) {
         streamName = name;
     }
-    
+
     @Override
     public void parseLog(BufferedReader reader, LogParserListener listener)
             throws LogParserException
     {
-        
+
         try {
             String line = null;
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             long position = 0L;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith(LOG_RECORD_BEGIN_MARKER)) {
@@ -100,14 +102,14 @@ final class UniformLogParser implements LogParser {
                     String logRecord = buffer.toString();
                     parseLogRecord(position, logRecord, listener);
                     position += logRecord.length();
-                    buffer = new StringBuffer();                    
+                    buffer = new StringBuilder();
                 }
                 buffer.append(line);
                 buffer.append(LogParserFactory.NEWLINE);
             }
             // Last record
             String logRecord = buffer.toString();
-            parseLogRecord(position, logRecord, listener);            
+            parseLogRecord(position, logRecord, listener);
         } catch(IOException e){
             throw new LogParserException(e);
         } finally {
@@ -115,56 +117,56 @@ final class UniformLogParser implements LogParser {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Got exception while clsoing reader "+ streamName, e); 
+                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Got exception while clsoing reader "+ streamName, e);
                 }
             }
-        }                
+        }
     }
-    
+
     private void parseLogRecord(long position, String logRecord, LogParserListener listener) {
         ParsedLogRecord parsedLogRecord = new ParsedLogRecord();
         if (initializeUniformFormatLogRecord(parsedLogRecord, logRecord)) {
             listener.foundLogRecord(position, parsedLogRecord);
-        }        
+        }
     }
 
     private boolean initializeUniformFormatLogRecord(
-            ParsedLogRecord parsedLogRecord, 
-            String logRecord) 
+            ParsedLogRecord parsedLogRecord,
+            String logRecord)
     {
         parsedLogRecord.setFormattedLogRecord(logRecord);
-                
+
         int beginIndex = logRecord.indexOf(LOG_RECORD_BEGIN_MARKER);
         if (beginIndex < 0) {
-            return false;    
+            return false;
         }
         int endIndex = logRecord.lastIndexOf(LOG_RECORD_END_MARKER);
         if (endIndex < 0) {
             return false;
         }
-        
-        if (logRecord.length() < 
-                (LOG_RECORD_BEGIN_MARKER.length() + LOG_RECORD_END_MARKER.length())) 
+
+        if (logRecord.length() <
+                (LOG_RECORD_BEGIN_MARKER.length() + LOG_RECORD_END_MARKER.length()))
         {
             return false;
         }
-        
+
         String logData = logRecord.substring(
                 beginIndex + LOG_RECORD_BEGIN_MARKER.length(), endIndex);
-        
-        String[] fieldValues = logData.split(FIELD_SEPARATOR);        
+
+        String[] fieldValues = logData.split(FIELD_SEPARATOR);
         if (fieldValues.length < ULF_FIELD_COUNT) {
             String msg = LOCAL_STRINGS.getLocalString(
                     "parser.illegal.ulf.record", "Illegal Uniform format log record {0} found", logRecord);
             throw new IllegalArgumentException(msg);
         }
-        
+
         for (int i=0; i < ULF_FIELD_COUNT; i++) {
-           populateLogRecordFields(i, fieldValues[i], parsedLogRecord);    
+           populateLogRecordFields(i, fieldValues[i], parsedLogRecord);
         }
-        
+
         if (fieldValues.length > ULF_FIELD_COUNT) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append(parsedLogRecord.getFieldValue(ParsedLogRecord.LOG_MESSAGE));
             for (int i=ULF_FIELD_COUNT; i<fieldValues.length; i++) {
                 buf.append("|");
@@ -175,8 +177,8 @@ final class UniformLogParser implements LogParser {
         return true;
     }
 
-    private void populateLogRecordFields(int index, String fieldData, 
-            ParsedLogRecord parsedLogRecord) 
+    private void populateLogRecordFields(int index, String fieldData,
+            ParsedLogRecord parsedLogRecord)
     {
         switch(index) {
         case 0:
@@ -190,7 +192,7 @@ final class UniformLogParser implements LogParser {
             break;
         case 3:
             parsedLogRecord.setFieldValue(ParsedLogRecord.LOGGER_NAME, fieldData);
-            break;            
+            break;
         case 4:
             String[] nv_pairs = fieldData.split(";");
             for (String pair : nv_pairs) {
@@ -206,14 +208,14 @@ final class UniformLogParser implements LogParser {
                         props.put(name, value);
                     }
                 }
-            }            
+            }
             break;
         case 5:
             parsedLogRecord.setFieldValue(ParsedLogRecord.LOG_MESSAGE, fieldData);
             break;
         default:
             break;
-        }        
+        }
     }
-    
+
  }

@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affilates
  */
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -70,6 +70,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.sun.enterprise.module.*;
+import com.sun.enterprise.module.HK2Module;
 import com.sun.enterprise.module.common_impl.DirectoryBasedRepository;
 import com.sun.enterprise.module.common_impl.Tokenizer;
 
@@ -174,7 +175,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
             String importedBundles = m.getMainAttributes().getValue(ManifestConstants.BUNDLE_IMPORT_NAME);
             if (importedBundles!=null) {
                 for( String token : new Tokenizer(importedBundles,",")) {
-                    Collection<Module> modules = modulesRegistry.getModules(token);
+                    Collection<HK2Module> modules = modulesRegistry.getModules(token);
                     if (modules.size() ==1) {
                         defs.add(modules.iterator().next().getModuleDefinition());
                     } else {
@@ -209,7 +210,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
             if (requestedWiring!=null) {
                 for (String token : new Tokenizer(requestedWiring, ",")) {
                     for (Object impl : habitat.getAllServices(BuilderHelper.createContractFilter(token))) {
-                        Module wiredBundle = modulesRegistry.find(impl.getClass());
+                        HK2Module wiredBundle = modulesRegistry.find(impl.getClass());
                         if (wiredBundle!=null) {
                             defs.add(wiredBundle.getModuleDefinition());
                         }

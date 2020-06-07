@@ -1,0 +1,56 @@
+list-audit-modules(1)     asadmin Utility Subcommands    list-audit-modules(1)
+
+NAME
+       list-audit-modules - gets all audit modules and displays them
+
+SYNOPSIS
+           list-audit-modules [--help] [target]
+
+DESCRIPTION
+       The list-audit-modules subcommand lists all the audit modules. This
+       subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           Specifies the target on which you are listing the audit modules.
+           Valid values are as follows:
+
+           server
+               Lists the audit modules for the default server instance server
+               and is the default value.
+
+           configuration_name
+               Lists the audit modules for the named configuration.
+
+           cluster_name
+               Lists the audit modules for every server instance in the
+               cluster.
+
+           instance_name
+               Lists the audit modules for a particular server instance.
+
+EXAMPLES
+       Example 1, Listing Audit Modules
+
+               asadmin> list-audit-modules
+               sampleAuditModule1
+               sampleAuditModule2
+               Command list-audit-modules executed successfully
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-audit-module(1), delete-audit-module(1)
+
+       asadmin(1M)
+
+Java EE 8                         22 Dec 2010            list-audit-modules(1)

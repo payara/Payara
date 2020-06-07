@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.admin.rest.testing;
@@ -50,7 +50,7 @@ public class IntValue extends ScalarValue {
 
     IntValue() {
     }
-    
+
     public int getValue() {
         return this.value;
     }

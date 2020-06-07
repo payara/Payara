@@ -37,18 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.adapter;
 
 import java.io.IOException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.model.ResponseBody;
-import org.glassfish.admin.rest.utils.Util;
 
 /**
  * This filter reformats string entities from non-success responses
@@ -58,9 +57,6 @@ import org.glassfish.admin.rest.utils.Util;
  */
 @Provider
 public class ExceptionFilter implements ContainerResponseFilter {
-
-    public ExceptionFilter() {
-    }
 
     @Override
     public void filter(ContainerRequestContext reqCtx, ContainerResponseContext resCtx) throws IOException {

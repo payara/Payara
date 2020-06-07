@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -44,11 +45,11 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.security.common.Role;
 
 /**
- * Represents a method permission. A method permission can be associated to 
+ * Represents a method permission. A method permission can be associated to
  * a role, be unchecked or excluded.
- * 
+ *
  * @author  Jerome Dochez
- * @version 
+ * @version
  */
 public class MethodPermission extends Descriptor {
 
@@ -57,10 +58,10 @@ public class MethodPermission extends Descriptor {
     private boolean isUnchecked = false;
     private boolean isExcluded = false;
     private Role role;
-    
+
     /**
      * construct a new MethodPermission based on a security role
-     * 
+     *
      * @param role the security role associated to the method permission
      */
     public MethodPermission(Role role) {
@@ -70,52 +71,52 @@ public class MethodPermission extends Descriptor {
     // We don't want uninitialized method permissins
     private MethodPermission() {
     }
-    
+
     /**
-     * @return an unchecked method permission. Methods associated with such a 
+     * @return an unchecked method permission. Methods associated with such a
      * method permission can be invoked by anyone
      */
     public static synchronized MethodPermission getUncheckedMethodPermission() {
         if (unchecked==null) {
             unchecked = new MethodPermission();
-            unchecked.isUnchecked=true;   
+            unchecked.isUnchecked=true;
         }
         return unchecked;
     }
-    
+
     /**
-     * @return an ecluded method permission. Methods associated with such a 
+     * @return an ecluded method permission. Methods associated with such a
      * method permission cannot be invoked by anyone.
      */
     public static synchronized MethodPermission getExcludedMethodPermission() {
         if (excluded==null) {
             excluded = new MethodPermission();
-            excluded.isExcluded=true;   
+            excluded.isExcluded=true;
         }
         return excluded;
-    }    
-    
+    }
+
     /**
      * @return true if the method permission is based on a security role
      */
     public boolean isRoleBased() {
         return role!=null;
     }
-    
+
     /**
      * @return true if the method permission is unchecked
      */
     public boolean isUnchecked() {
         return isUnchecked;
     }
-    
-    /** 
+
+    /**
      * @return true if the method permission is excluded
      */
     public boolean isExcluded() {
         return isExcluded;
     }
-    
+
     /**
      * @return the security role associated with this method permission when
      * applicable (role based method permission)
@@ -123,7 +124,7 @@ public class MethodPermission extends Descriptor {
     public Role getRole() {
         return role;
     }
-    
+
     // For Map storage
     public int hashCode() {
         if (role!=null)
@@ -131,7 +132,7 @@ public class MethodPermission extends Descriptor {
         else
             return super.hashCode();
     }
-    
+
     // for Map storage
     public boolean equals(Object other) {
 	boolean ret = false;
@@ -142,19 +143,19 @@ public class MethodPermission extends Descriptor {
             } else {
                 ret = (isExcluded == o.isExcluded()) && (isUnchecked == o.isUnchecked());
             }
-	}	
+	}
 	return ret;
-    }    
-    
-    public void print(StringBuffer toStringBuffer) {
+    }
+
+    public void print(StringBuilder toStringBuilder) {
         if (isRoleBased()) {
-            toStringBuffer.append(role.toString());
+            toStringBuilder.append(role.toString());
         } else {
-            if (isExcluded) 
-                toStringBuffer.append("excluded");
-            else 
-                toStringBuffer.append("unchecked");
+            if (isExcluded)
+                toStringBuilder.append("excluded");
+            else
+                toStringBuilder.append("unchecked");
         }
     }
 }
-        
+

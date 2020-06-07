@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,10 @@
 package fish.payara.jmx.monitoring;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.admin.amx.config.AMXConfiguration;
+import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
@@ -48,39 +51,35 @@ import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
-import java.util.ArrayList;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
-import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
-import fish.payara.admin.amx.config.AMXConfiguration;
-import java.beans.PropertyVetoException;
+
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 
 /**
  * Service which monitors a set of MBeans and their attributes while logging the
@@ -116,16 +115,17 @@ public class JMXMonitoringService implements EventListener {
 
     @Inject
     private NotificationService notificationService;
+    
+    @Inject
+    PayaraExecutorService executor;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-    private ScheduledExecutorService executor;
     private JMXMonitoringFormatter formatter;
     private boolean enabled;
     private int amxBootDelay = 10;
     private long monitoringDelay = amxBootDelay + 15;
-
     private List<NotifierExecutionOptions> notifierExecutionOptionsList;
+    private ScheduledFuture<?> monitoringFuture;
 
     @PostConstruct
     public void postConstruct() throws NamingException {
@@ -145,8 +145,8 @@ public class JMXMonitoringService implements EventListener {
     }
 
     /**
-     * Bootstraps the monitoring service. Creates a thread pool for the
-     * ScheduledExecutorService. Schedules the AMXBoot class to execute if AMX
+     * Bootstraps the monitoring service. 
+     * Schedules the AMXBoot class to execute if AMX
      * is enabled. Schedules the JMXMonitoringFormatter to execute at a
      * specified fixed rate if enabled in the configuration.
      */
@@ -154,19 +154,11 @@ public class JMXMonitoringService implements EventListener {
         if (configuration != null && configuration.getEnabled().equalsIgnoreCase("true")) {
             shutdownMonitoringService();//To make sure that there aren't multiple monitoring services running
 
-            executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, PREFIX.concat(Integer.toString(threadNumber.getAndIncrement())).concat(")")
-                    );
-                }
-            });
-
             final MBeanServer server = getPlatformMBeanServer();
 
             formatter = new JMXMonitoringFormatter(server, buildJobs(), this, eventStore, notificationService);
 
-            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will startup");
+            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "JMX Monitoring Service will startup");
 
             if (Boolean.valueOf(configuration.getAmx())) {
                 AMXConfiguration amxConfig = habitat.getService(AMXConfiguration.class);
@@ -178,7 +170,7 @@ public class JMXMonitoringService implements EventListener {
                 }
             }
 
-            executor.scheduleAtFixedRate(formatter, monitoringDelay * 1000,
+            monitoringFuture = executor.scheduleAtFixedRate(formatter, monitoringDelay * 1000,
                     TimeUnit.MILLISECONDS.convert(Long.valueOf(configuration.getLogFrequency()),
                             TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
                     TimeUnit.MILLISECONDS);
@@ -224,9 +216,10 @@ public class JMXMonitoringService implements EventListener {
      * Shuts the scheduler down.
      */
     private void shutdownMonitoringService() {
-        if (executor != null) {
-            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will shutdown");
-            executor.shutdownNow();
+        if (monitoringFuture != null) {
+            Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "JMX Monitoring Service will shutdown");
+            monitoringFuture.cancel(false);
+            monitoringFuture = null;
         }
     }
 

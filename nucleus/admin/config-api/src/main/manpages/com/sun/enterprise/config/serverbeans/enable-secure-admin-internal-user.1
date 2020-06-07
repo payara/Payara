@@ -1,0 +1,95 @@
+enable-secure-admin-internal-user(1)  asadmin Utility Subcommands  enable-secure-admin-internal-user(1)
+
+NAME
+       enable-secure-admin-internal-user - Instructs the GlassFish Server DAS
+       and instances to use the specified admin user and the password
+       associated with the password alias to authenticate with each other and
+       to authorize admin operations.
+
+SYNOPSIS
+           enable-secure-admin-internal-user
+           [--help]
+           [--passwordalias pwdaliasname]
+           admin-username
+
+DESCRIPTION
+       The enable-secure-admin-internal-user subcommand instructs all servers
+       in the domain to authenticate to each other, and to authorize admin
+       operations submitted to each other, using an existing admin username
+       and password rather than SSL certificates. This generally means that
+       you must:
+
+        1. Create a valid admin user.
+
+               asadmin> create-file-user --authrealmname admin-realm --groups
+               asadmin newAdminUsername
+
+        2. Create a password alias for the just-created password.
+
+               asadmin> create-password-alias passwordAliasName
+
+        3. Use that user name and password for inter-process authentication
+           and admin authorization.
+
+               asadmin> enable-secure-admin-internal-user
+               --passwordalias passwordAliasName
+               newAdminUsername
+
+       If GlassFish Server finds at least one secure admin internal user, then
+       if secure admin is enabled GlassFish Server processes will not use SSL
+       authentication and authorization with each other and will instead use
+       username password pairs.
+
+       If secure admin is enabled, all GlassFish Server processes continue to
+       use SSL encryption to secure the content of the admin messages,
+       regardless of how they authenticate to each other.
+
+       Most users who use this subcommand will need to set up only one secure
+       admin internal user. As a general practice, you should not use the same
+       user name and password pair for internal admin communication and for
+       admin user login.
+
+       If you set up more than one secure admin internal user, you should not
+       make any assumptions about which user name and password pair GlassFish
+       Server will choose to use for any given admin request.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --passwordalias
+           The password alias for the user that GlassFish Server should use
+           for internally authenticating and authorizing the DAS to instances
+           and the instances to the DAS.
+
+OPERANDS
+       admin-username
+           The admin user name that GlassFish Server should use for internally
+           authenticating and authorizing the DAS to instances and the
+           instances to the DAS.
+
+EXAMPLES
+       Example 1, Specifying a user name and password for secure admin
+           The following example allows secure admin to use a user name and
+           password alias for authentication and authorization between the DAS
+           and instances, instead of certificates.
+
+               asadmin> enable-secure-admin-internal-user
+               --passwordalias passwordAliasName
+               newAdminUsername
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       enable-secure-admin(1)
+
+       disable-secure-admin-internal-user(1)
+
+       asadmin(1M)
+
+Java EE 8              09 Aug 2017        enable-secure-admin-internal-user(1)

@@ -1,0 +1,134 @@
+create-managed-scheduled-executor-service(1)  asadmin Utility Subcommands  create-managed-scheduled-executor-service(1)
+
+NAME
+       create-managed-scheduled-executor-service - creates a managed scheduled
+       executor service resource
+
+SYNOPSIS
+           create-managed-scheduled-executor-service [--help]
+           [--enabled={false|true}]
+           [--contextinfoenabled={false|true}]
+           [--contextinfo={Classloader|JNDI|Security|WorkArea}]
+           [--threadpriority threadpriority]
+           [--longrunningtasks={false|true}]
+           [--hungafterseconds hungafterseconds]
+           [--corepoolsize corepoolsize]
+           [--keepaliveseconds keepaliveseconds]
+           [--threadlifetimeseconds threadlifetimeseconds]
+           [--description description]
+           [--property property]
+           [--target target]
+           jndi_name
+
+DESCRIPTION
+       The create-managed-scheduled-executor-service subcommand creates a
+       managed scheduled executor service resource.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --enabled
+           Determines whether the resource is enabled at runtime. The default
+           value is true.
+
+       --contextinfoenabled
+           Determines whether container contexts are propagated to threads. If
+           set to true, the contexts specified in the --contextinfo option are
+           propagated. If set to false, no contexts are propagated and the
+           --contextinfo option is ignored. The default value is true.
+
+       --contextinfo
+           Specifies individual container contexts to propagate to threads.
+           Valid values are Classloader, JNDI, Security, and WorkArea. Values
+           are specified in a comma-separated list and are case-insensitive.
+           All contexts are propagated by default.
+
+       --threadpriority
+           Specifies the priority to assign to created threads. The default
+           value is 5.
+
+       --longrunningtasks
+           Specifies whether the resource should be used for long-running
+           tasks. The default value is false. If set to true, long-running
+           tasks are not reported as stuck.
+
+       --hungafterseconds
+           Specifies the number of seconds that a task can execute before it
+           is considered unresponsive. The default value is 0, which means
+           that tasks are never considered unresponsive.
+
+       --corepoolsize
+           Specifies the number of threads to keep in a thread pool, even if
+           they are idle. The default value is 0, which means that a thread is
+           created when the first task is scheduled.
+
+       --keepaliveseconds
+           Specifies the number of seconds that threads can remain idle when
+           the number of threads is greater than corepoolsize. The default
+           value is 60.
+
+       --threadlifetimeseconds
+           Specifies the number of seconds that threads can remain in a thread
+           pool before being purged, regardless of whether the number of
+           threads is greater than corepoolsize or whether the threads are
+           idle. The default value is 0, which means that threads are never
+           purged.
+
+       --description
+           Descriptive details about the resource.
+
+       --property
+           Optional attribute name/value pairs for configuring the resource.
+
+           GlassFish Server does not define any additional properties for this
+           resource. Moreover, this resource does not currently use any
+           additional properties.
+
+       --target
+           Specifies the target for which you are creating the resource. Valid
+           targets are:
+
+           server
+               Creates the resource for the default server instance. This is
+               the default value.
+
+           domain
+               Creates the resource for the domain.
+
+           cluster_name
+               Creates the resource for every server instance in the specified
+               cluster.
+
+           instance_name
+               Creates the resource for the specified server instance.
+
+OPERANDS
+       jndi_name
+           The JNDI name of this resource.
+
+EXAMPLES
+       Example 1, Creating a Managed Scheduled Executor Service Resource
+           This example creates a managed scheduled executor service resource
+           named concurrent/myScheduledExecutor.
+
+               asadmin> create-managed-scheduled-executor-service concurrent/myScheduledExecutor
+               Managed scheduled executor service concurrent/myScheduledExecutor created successfully.
+               Command create-managed-scheduled-executor-service executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-managed-scheduled-executor-service(1),
+       list-managed-scheduled-executor-services(1)
+
+       asadmin(1M)
+
+Java EE 8       09 Aug 2017      create-managed-scheduled-executor-service(1)

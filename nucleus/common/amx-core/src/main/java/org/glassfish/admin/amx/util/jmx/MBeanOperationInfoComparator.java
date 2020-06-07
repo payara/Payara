@@ -37,22 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
 import java.io.Serializable;
 import javax.management.MBeanOperationInfo;
-import org.glassfish.admin.amx.util.jmx.stringifier.MBeanFeatureInfoStringifierOptions;
 import org.glassfish.admin.amx.util.jmx.stringifier.MBeanOperationInfoStringifier;
 
 /**
 Caution: this Comparator may be inconsistent with equals() because it ignores the description.
  */
-public final class MBeanOperationInfoComparator
-        implements java.util.Comparator<MBeanOperationInfo>, Serializable
-{
-    private static final MBeanOperationInfoStringifier OPERATION_INFO_STRINGIFIER =
-            new MBeanOperationInfoStringifier(new MBeanFeatureInfoStringifierOptions(false, ","));
+public final class MBeanOperationInfoComparator implements java.util.Comparator<MBeanOperationInfo>, Serializable {
 
     public static final MBeanOperationInfoComparator INSTANCE = new MBeanOperationInfoComparator();
 
@@ -74,8 +70,7 @@ public final class MBeanOperationInfoComparator
             if (c == 0)
             {
                 // names the same, subsort on signature, first by number of params
-                c = MBeanOperationInfoStringifier.getSignature(info1).compareTo(
-                        MBeanOperationInfoStringifier.getSignature(info2));
+                c = MBeanOperationInfoStringifier.getSignature(info1).compareTo(MBeanOperationInfoStringifier.getSignature(info2));
             }
 
         }
@@ -84,15 +79,13 @@ public final class MBeanOperationInfoComparator
     }
 
     @Override
-    public boolean equals(Object other)
-    {
+    public boolean equals(Object other) {
         return (other instanceof MBeanOperationInfoComparator);
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        return hash;
+        return 3;
     }
 
 }

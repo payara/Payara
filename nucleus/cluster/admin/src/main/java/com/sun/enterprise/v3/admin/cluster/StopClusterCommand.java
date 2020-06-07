@@ -124,7 +124,6 @@ public class StopClusterCommand implements AdminCommand {
             logger.warning(msg);
             report.setActionExitCode(ExitCode.FAILURE);
             report.setMessage(msg);
-            return;
         }
     }
 }

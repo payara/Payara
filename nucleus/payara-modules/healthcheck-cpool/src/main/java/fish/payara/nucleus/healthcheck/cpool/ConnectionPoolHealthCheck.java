@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,18 @@
  */
 package fish.payara.nucleus.healthcheck.cpool;
 
+import com.hazelcast.util.function.BiConsumer;
+import com.hazelcast.util.function.Consumer;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.PoolStatus;
+
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.cpool.configuration.ConnectionPoolChecker;
@@ -59,17 +67,17 @@ import org.jvnet.hk2.annotations.Service;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
  * @author mertcaliskan
+ * @author Jan Bernitt (consumer based version)
  */
 @Service(name = "healthcheck-cpool")
 @RunLevel(10)
-public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions,
-        ConnectionPoolChecker> {
+public class ConnectionPoolHealthCheck
+    extends BaseThresholdHealthCheck<HealthCheckConnectionPoolExecutionOptions, ConnectionPoolChecker>
+    implements MonitoringDataSource, MonitoringWatchSource {
 
     @Inject
     private Domain domain;
@@ -85,6 +93,7 @@ public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCh
         postConstruct(this, ConnectionPoolChecker.class);
     }
 
+    @Override
     public HealthCheckConnectionPoolExecutionOptions constructOptions(ConnectionPoolChecker checker) {
         return new HealthCheckConnectionPoolExecutionOptions(Boolean.valueOf(checker.getEnabled()),
                 Long.parseLong(checker.getTime()),
@@ -101,63 +110,77 @@ public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCh
     }
 
     @Override
-    public HealthCheckResult doCheck() {
+    protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
-        Collection<JdbcResource> allJdbcResources = getAllJdbcResources();
-        for (JdbcResource resource : allJdbcResources) {
-            ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(resource);
-            JdbcConnectionPool pool = JdbcResourcesUtil.createInstance().getJdbcConnectionPoolOfResource(resourceInfo);
-            PoolInfo poolInfo = ResourceUtil.getPoolInfo(pool);
-            if (getOptions().getPoolName() != null) {
-                if (getOptions().getPoolName().equals(poolInfo.getName())) {
-                    evaluatePoolUsage(result, poolInfo);
-                }
-            }
-            else {
-                evaluatePoolUsage(result, poolInfo);
-            }
-
-        }
+        consumeAllJdbcResources(createConsumer((info, usedPercentage) -> 
+            result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
+                    info.getName() + " Usage (%): " + new DecimalFormat("#.00").format(usedPercentage)))
+        ));
         return result;
     }
 
-    private void evaluatePoolUsage(HealthCheckResult result, PoolInfo poolInfo) {
-        PoolStatus poolStatus = poolManager.getPoolStatus(poolInfo);
-        if (poolStatus != null) {
-            long usedConnection = poolStatus.getNumConnUsed();
-            long freeConnection = poolStatus.getNumConnFree();
-            long totalConnection = usedConnection + freeConnection;
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        collectUsage(collector, "ns:health @:* PoolUsage", "Connection Pool Usage", 5, false);
+    }
 
-            if (totalConnection > 0) {
-                double usedPercentage = ((double)usedConnection / totalConnection) * 100;
-
-                result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
-                        poolInfo.getName() + " Usage (%): " + new DecimalFormat("#.00").format(usedPercentage)));
-            }
+    @Override
+    @MonitoringData(ns = "health", intervalSeconds = 8)
+    public void collect(MonitoringDataCollector collector) {
+        if (options != null && options.isEnabled()) {
+            consumeAllJdbcResources(createConsumer((info, usedPercentage) -> 
+                collector.group(info.getName()).collect("PoolUsage", usedPercentage.longValue())
+            ));
         }
     }
 
-    private Collection<JdbcResource> getAllJdbcResources() {
-        Collection<JdbcResource> allResources = new ArrayList<JdbcResource>();
-        Collection<JdbcResource> jdbcResources = domain.getResources().getResources(JdbcResource.class);
-        allResources.addAll(jdbcResources);
+    private Consumer<JdbcResource> createConsumer(BiConsumer<PoolInfo, Double> poolUsageConsumer) {
+        return resource -> {
+            ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(resource);
+            JdbcConnectionPool pool = JdbcResourcesUtil.createInstance().getJdbcConnectionPoolOfResource(resourceInfo);
+            PoolInfo poolInfo = ResourceUtil.getPoolInfo(pool);
+            String name = getOptions().getPoolName();
+            if (name == null || name.equals(poolInfo.getName())) {
+                PoolStatus poolStatus = poolManager.getPoolStatus(poolInfo);
+                if (poolStatus != null) {
+                    long usedConnection = poolStatus.getNumConnUsed();
+                    long freeConnection = poolStatus.getNumConnFree();
+                    long totalConnection = usedConnection + freeConnection;
+
+                    if (totalConnection > 0) {
+                        double usedPercentage = 100d * usedConnection / totalConnection;
+                        poolUsageConsumer.accept(poolInfo, usedPercentage);
+                    }
+                }
+            }
+        };
+    }
+
+    private void consumeAllJdbcResources(Consumer<JdbcResource> consumer) {
+        consumeJdbcResources(domain.getResources(), consumer);
         for (Application app : applications.getApplications()) {
             if (ResourcesUtil.createInstance().isEnabled(app)) {
-                Resources appScopedResources = app.getResources();
-                if (appScopedResources != null && appScopedResources.getResources() != null) {
-                    allResources.addAll(appScopedResources.getResources(JdbcResource.class));
-                }
+                consumeJdbcResources(app.getResources(), consumer);
                 List<Module> modules = app.getModule();
                 if (modules != null) {
                     for (Module module : modules) {
-                        Resources msr = module.getResources();
-                        if (msr != null && msr.getResources() != null) {
-                            allResources.addAll(msr.getResources(JdbcResource.class));
-                        }
+                        consumeJdbcResources(module.getResources(), consumer);
                     }
                 }
             }
         }
-        return allResources;
+    }
+
+    private static void consumeJdbcResources(Resources resources, Consumer<JdbcResource> consumer) {
+        if (resources != null) {
+            List<Resource> list = resources.getResources();
+            if (list != null) {
+                for (Resource r : list) {
+                    if (JdbcResource.class.isInstance(r)) {
+                        consumer.accept((JdbcResource) r);
+                    }
+                }
+            }
+        }
     }
 }

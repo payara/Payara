@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
@@ -59,9 +60,9 @@ import org.glassfish.internal.api.Globals;
  * <p><b>NOT THREAD SAFE: mutable instance variables</b>
  */
 public final class WebServiceContextImpl implements WSWebServiceContext {
-    
+
     public static final ThreadLocal msgContext = new ThreadLocal();
-    
+
     public static final ThreadLocal principal = new ThreadLocal();
 
     private WSWebServiceContext jaxwsContextDelegate;
@@ -81,7 +82,7 @@ public final class WebServiceContextImpl implements WSWebServiceContext {
     public void setContextDelegate(WSWebServiceContext wsc) {
         this.jaxwsContextDelegate = wsc;
     }
-    
+
     public MessageContext getMessageContext() {
         return this.jaxwsContextDelegate.getMessageContext();
     }
@@ -101,7 +102,7 @@ public final class WebServiceContextImpl implements WSWebServiceContext {
     public void setUserPrincipal(Principal p) {
         principal.set(p);
     }
-    
+
     public Principal getUserPrincipal() {
         // This could be an EJB endpoint; check the threadlocal variable
         Principal p = (Principal) principal.get();
@@ -115,7 +116,7 @@ public final class WebServiceContextImpl implements WSWebServiceContext {
             WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
             InvocationManager mgr = wscImpl.getInvocationManager();
             boolean isWeb = ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION.
-                    equals(mgr.getCurrentInvocation().getInvocationType()) ? true : false;
+                    equals(mgr.getCurrentInvocation().getInvocationType());
             p = secServ.getUserPrincipal(isWeb);
         }
         return p;
@@ -126,33 +127,30 @@ public final class WebServiceContextImpl implements WSWebServiceContext {
         ComponentInvocation.ComponentInvocationType EJBInvocationType = ComponentInvocation.ComponentInvocationType.EJB_INVOCATION;
         InvocationManager mgr = wscImpl.getInvocationManager();
         if ((mgr!=null) && (EJBInvocationType.equals(mgr.getCurrentInvocation().getInvocationType()))) {
-           EJBInvocation inv = (EJBInvocation)mgr.getCurrentInvocation();
-           boolean res = inv.isCallerInRole(role);
-           return res;
+           EJBInvocation inv = mgr.getCurrentInvocation();
+           return inv.isCallerInRole(role);
         }
         // This is a servlet endpoint
         boolean ret = this.jaxwsContextDelegate.isUserInRole(role);
         //handling for webservice with WS-Security
-        if (!ret && secServ != null) {
-
+        if (!ret && secServ != null && mgr != null) {
             if (mgr.getCurrentInvocation().getContainer() instanceof WebModule) {
                 Principal p = getUserPrincipal();
                 ret = secServ.isUserInRole((WebModule)mgr.getCurrentInvocation().getContainer(), p, servletName, role);
             }
-
         }
         return ret;
     }
-    
+
     // TODO BM need to fix this after checking with JAXWS spec
     public EndpointReference getEndpointReference(Class clazz, org.w3c.dom.Element... params) {
         return this.jaxwsContextDelegate.getEndpointReference(clazz, params);
     }
-    
+
     public EndpointReference getEndpointReference(org.w3c.dom.Element... params) {
         return this.jaxwsContextDelegate.getEndpointReference(params);
     }
-    
+
     public Packet getRequestPacket() {
         return this.jaxwsContextDelegate.getRequestPacket();
     }

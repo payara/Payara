@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>configuration</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="application.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="domain.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="configuration-5asc"></a><a id="GSRFM00266"></a><a id="configuration"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configuration">configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>the data set that determines how \{product---name} operates</p>
+</div>
+<div id="sthref2394" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The configuration of \{product---name} is the data set that determines
+how it operates. Parts of this configuration determine the operation of
+specific parts of \{product---name}, such as the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Services, such as the transaction service</p>
+</li>
+<li>
+<p>Resources, such as databases</p>
+</li>
+<li>
+<p>Deployed applications or modules, such as web applications</p>
+</li>
+<li>
+<p>Clusters and server instances</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The term configuration is also used to describe a part of the overall
+configuration, such as the transaction service configuration or the
+configuration of a database. In clustered environments, clusters or
+server instances can share configurations.</p>
+</div>
+<div class="paragraph">
+<p>Examples of configuration data are port numbers, flags that enable or
+disable processes, application names, and so on. Most of these data
+points are name/value pairs, either hard-coded attributes or more
+flexibly defined properties.</p>
+</div>
+<div class="paragraph">
+<p>The hierarchical structure of the configuration is explained in the
+dotted names page. You can view and change most of the \{product---name}
+configuration using either the Administration Console or the <code>asadmin</code>
+utility and its subcommands. To list the structure of all or part of the
+configuration, use the <code>list</code> subcommand. To view the value of one or
+more attributes or properties, use the <code>get</code> subcommand. To change the
+value of an attribute or property, use the <code>set</code> subcommand.</p>
+</div>
+<div id="sthref2395" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="get.html#get-1"><code>get</code>(1)</a>, <a href="list.html#list-1"><code>list</code>(1)</a>,
+<a href="set.html#set-1"><code>set</code>(1)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="dotted-names.html#dotted-names-5asc"><code>dotted-names</code>(5ASC)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="application.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="domain.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

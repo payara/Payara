@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.deployment;
 
@@ -79,7 +79,25 @@ public class DeployCommandParameters extends OpsParams {
     public Boolean isForce() {
         return force;
     }
-    
+
+    @Param(name = ParameterNames.HOT_DEPLOY, alias = "hotDeploy", defaultValue = "false", optional = true)
+    public Boolean hotDeploy = false;
+    public Boolean isHotDeploy() {
+        return hotDeploy;
+    }
+
+    @Param(name = ParameterNames.SOURCES_CHANGED, alias = "sourcesChanged", separator = ',', optional = true)
+    public String[] sourcesChanged;
+    public String[] getSourcesChanged() {
+        return sourcesChanged;
+    }
+
+    @Param(name = ParameterNames.METADATA_CHANGED, alias = "metadataChanged", defaultValue = "false", optional = true)
+    public Boolean metadataChanged = false;
+    public Boolean isMetadataChanged() {
+        return metadataChanged;
+    }
+
     @Param(optional=true, defaultValue="false")
     public Boolean forceName = false;
     public Boolean isForceName() {
@@ -285,6 +303,9 @@ public class DeployCommandParameters extends OpsParams {
         public static final String DEPLOYMENT_ORDER = "deploymentorder";
         public static final String ALT_DD = "altdd";
         public static final String RUNTIME_ALT_DD = "runtimealtdd";
+        public static final String HOT_DEPLOY = "hotdeploy";
+        public static final String SOURCES_CHANGED = "sourceschanged";
+        public static final String METADATA_CHANGED = "metadatachanged";
     }
     
 }

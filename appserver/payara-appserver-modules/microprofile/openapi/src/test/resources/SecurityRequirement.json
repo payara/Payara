@@ -1,0 +1,11 @@
+[
+{
+  "api_key": []
+},
+{
+  "petstore_auth": [
+    "write:pets",
+    "read:pets"
+  ]
+}
+]

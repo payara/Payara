@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,17 +43,25 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentracing.Tracer;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.ThreadLocalScopeManager;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.interceptor.InvocationContext;
+
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
@@ -93,16 +101,27 @@ public class OpenTracingService implements EventListener {
     public synchronized Tracer getTracer(String applicationName) {
         // Get the tracer if there is one
         Tracer tracer = tracers.get(applicationName);
-       
+
         // If there isn't a tracer for the application, create one
         if (tracer == null) {
             // Check which type of Tracer to create
+
+            try {//See if an alternate implementation of Tracer is available in a library.
+                ServiceLoader<Tracer> tracerLoader = ServiceLoader.load(Tracer.class);
+                Iterator<Tracer> loadedTracer = tracerLoader.iterator();
+                if (loadedTracer.hasNext()) {
+                    tracer = loadedTracer.next();
+                }
+            } catch (NoClassDefFoundError ex){
+                Logger.getLogger("opentracing").log(Level.SEVERE, "Unable to find Tracer implementation", ex);
+            }
+
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
                 tracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
-            } else {
+            } else if (tracer == null) {
                 tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
             }
-            
+
             // Register the tracer instance to the application
             tracers.put(applicationName, tracer);
         }
@@ -127,12 +146,31 @@ public class OpenTracingService implements EventListener {
      * @return The application name
      */
     public String getApplicationName(InvocationManager invocationManager) {
-        String appName = invocationManager.getCurrentInvocation().getAppName();
+        final ComponentInvocation invocation = invocationManager.getCurrentInvocation();
+        if (invocation == null) {
+            // if the invocation context is not an application but some server component.
+            return null;
+        }
+        String appName = invocation.getAppName();
         if (appName == null) {
-            appName = invocationManager.getCurrentInvocation().getModuleName();
+            appName = invocation.getModuleName();
 
             if (appName == null) {
-                appName = invocationManager.getCurrentInvocation().getComponentId();
+                appName = invocation.getComponentId();
+
+                // If we've found a component name, check if there's an application registered with the same name
+                if (appName != null) {
+                    ApplicationRegistry applicationRegistry = Globals.getDefaultBaseServiceLocator()
+                            .getService(ApplicationRegistry.class);
+
+                    // If it's not directly in the registry, it's possible due to how the componentId is constructed
+                    if (applicationRegistry.get(appName) == null) {
+                        String[] componentIds = appName.split("_/");
+
+                        // The application name should be the first component
+                        appName = componentIds[0];
+                    }
+                }
             }
         }
 

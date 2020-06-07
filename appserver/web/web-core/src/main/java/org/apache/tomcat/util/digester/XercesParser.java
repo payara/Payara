@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -144,7 +145,7 @@ public class XercesParser{
                 versionClass.getMethod("getVersion", (Class[]) null); 
             String version = (String)method.invoke(null, (Object[]) null);
             versionNumber = version.substring( "Xerces-J".length() , 
-                                               version.lastIndexOf(".") ); 
+                                               version.lastIndexOf('.') ); 
         } catch (Exception ex){
             // Do nothing.
         }
@@ -168,7 +169,7 @@ public class XercesParser{
 
         if (versionNumber == null){
             versionNumber = getXercesVersion();
-            version = new Float( versionNumber ).floatValue();
+            version = new Float( versionNumber );
         }
 
         // Note: 2.2 is completely broken (with XML Schema). 
@@ -205,8 +206,7 @@ public class XercesParser{
             }
         } catch (SAXNotRecognizedException e){
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, parser.getClass().getName() + ": " 
-                                            + e.getMessage() + " not supported."); 
+                log.log(Level.INFO, "{0}: {1} not supported.", new Object[]{parser.getClass().getName(), e.getMessage()}); 
             }
         }
 

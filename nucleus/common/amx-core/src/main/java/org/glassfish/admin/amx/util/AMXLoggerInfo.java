@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.util;
 
 import java.util.logging.Logger;
@@ -50,6 +52,9 @@ import org.glassfish.logging.annotation.LoggerInfo;
  */
 /* Module private */
 public class AMXLoggerInfo {
+    
+    private AMXLoggerInfo () {} 
+    
     public static final String LOGMSG_PREFIX = "NCLS-COM";
     
     @LogMessagesResourceBundle

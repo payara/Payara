@@ -39,11 +39,11 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
-import com.google.common.collect.Iterables;
 import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
 import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
+import java.util.Set;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
@@ -53,9 +53,9 @@ import javax.enterprise.inject.spi.BeanManager;
  * @author lprimak
  */
 public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
+
     private final BeanManager beanManager;
     private final ThreadLocal<String> sessionKey = new ThreadLocal<>();
-
 
     public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
         super(componentId, CDI);
@@ -68,9 +68,14 @@ public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBa
     }
 
     void setClusteredSessionKey(Class<?> beanClass) {
-        Bean<?> bean = Iterables.getOnlyElement(beanManager.getBeans(beanClass), null);
-        if (bean != null) {
+        Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
+        if (managedBeans.size() > 1) {
+            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
+        }
+        if (managedBeans.size() == 1) {
+            Bean<?> bean = managedBeans.iterator().next();
             sessionKey.set(getBeanName(bean, getAnnotation(beanManager, bean)));
+            invalidateKeys();
         }
     }
 }

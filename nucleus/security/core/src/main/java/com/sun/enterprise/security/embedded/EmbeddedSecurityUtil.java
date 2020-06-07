@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2108] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.embedded;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -178,8 +178,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
     class DomainXmlSecurityParser {
 
         XMLStreamReader xmlReader;
-        XMLInputFactory xif = (XMLInputFactory.class.getClassLoader() == null) ? XMLInputFactory.newInstance()
-                : XMLInputFactory.newInstance(XMLInputFactory.class.getName(), XMLInputFactory.class.getClassLoader());
+        XMLInputFactory xif = XMLInputFactory.newInstance();
 
         private static final String AUTH_REALM = "auth-realm";
         private static final String CONFIG = "config";

@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -198,8 +199,8 @@ public class NodeCreateRule extends Rule {
          * @param length the number of characters to read from the array
          * @throws SAXException if the DOM implementation throws an exception
          */
-        public void characters(char[] ch, int start, int length)
-            throws SAXException {
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
 
             try {
                 String str = new String(ch, start, length);
@@ -221,9 +222,8 @@ public class NodeCreateRule extends Rule {
          * @param qName the qualified (prefixed) name
          * @throws SAXException if the DOM implementation throws an exception
          */
-        public void endElement(String namespaceURI, String localName,
-                               String qName)
-            throws SAXException {
+        @Override
+        public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
             
             try {
                 if (depth == 0) {
@@ -252,8 +252,8 @@ public class NodeCreateRule extends Rule {
          *   supplied
          * @throws SAXException if the DOM implementation throws an exception
          */
-        public void processingInstruction(String target, String data)
-            throws SAXException {
+        @Override
+        public void processingInstruction(String target, String data) throws SAXException {
             
             try {
                 top.appendChild(doc.createProcessingInstruction(target, data));
@@ -274,9 +274,8 @@ public class NodeCreateRule extends Rule {
          * @param atts the list of attributes
          * @throws SAXException if the DOM implementation throws an exception
          */
-        public void startElement(String namespaceURI, String localName,
-                                 String qName, Attributes atts)
-            throws SAXException {
+        @Override
+        public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 
             try {
                 Node previousTop = top;
@@ -419,8 +418,8 @@ public class NodeCreateRule extends Rule {
      * @param attributes The attribute list of this element
      * @throws Exception indicates a JAXP configuration problem
      */
-    public void begin(String namespaceURI, String name, Attributes attributes)
-        throws Exception {
+    @Override
+    public void begin(String namespaceURI, String name, Attributes attributes) throws Exception {
 
         XMLReader xmlReader = getDigester().getXMLReader();
         Document doc = documentBuilder.newDocument();
@@ -454,10 +453,9 @@ public class NodeCreateRule extends Rule {
     /**
      * Pop the Node off the top of the stack.
      */
+    @Override
     public void end() throws Exception {
-
         digester.pop();
-
     }
 
 

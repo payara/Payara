@@ -1,0 +1,65 @@
+set-log-file-format(1)    asadmin Utility Subcommands   set-log-file-format(1)
+
+NAME
+       set-log-file-format - sets the formatter to be used for the server log
+       file
+
+SYNOPSIS
+           set-log-file-format [--help]
+           [--target target]
+           [formatter]
+
+DESCRIPTION
+       The set-log-file-format subcommand sets the formatter to be used for
+       the server log file for the specified target.
+
+       GlassFish Server provides the ULF (UniformLogFormatter) and ODL (Oracle
+       Diagnostics Logging) formatters. A custom formatter can also be used by
+       specifying the fully qualified name of a class that extends the
+       java.util.logging.Formatter class.
+
+       The custom formatter class can be packaged in a JAR file and placed in
+       domain/lib/ext, or implemented as an HK2 service and the JAR containing
+       the formatter implementation installed in glassfish/modules.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target for which the formatter is being set. Specify
+           the name of the server domain, instance, or cluster. If this option
+           is omitted, logger attributes are set for the default server.
+
+OPERANDS
+       formatter
+           Specifies the fomatter to be used for the server log file. Valid
+           values are ULF, ODL, or the fully qualified name of the custom
+           formatter class to be used to render the log files. The default
+           value is ODL.
+
+EXAMPLES
+       Example 1, Setting the Log File Format
+           This example sets the server log file format to ULF for server1.
+
+               asadmin> set-log-file-format --target server1 ULF
+               Command set-log-file-format executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-loggers(1)
+
+       asadmin(1M)
+
+       "Administering the Logging Service" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         06 Feb 2013           set-log-file-format(1)

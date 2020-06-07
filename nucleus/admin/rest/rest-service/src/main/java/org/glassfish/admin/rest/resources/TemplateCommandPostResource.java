@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -58,6 +58,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.results.ActionReportResult;
@@ -68,8 +70,6 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.sse.SseFeature;
-
-import static org.glassfish.admin.rest.resources.TemplateExecCommand.localStrings;
 
 /**
  *
@@ -93,8 +93,8 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
         if (data == null) {
             data = new ParameterMap();
         }
-        if (data.containsKey("error")) {
-            String errorMessage = localStrings.getLocalString("rest.request.parsing.error", "Unable to parse the input entity. Please check the syntax.");
+        if (data.containsKey(ERROR)) {
+            String errorMessage = localStrings.getLocalString(ERROR_STRING, ERROR_DEFAULT_MESSAGE);
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
         return super.executeCommandLegacyFormat(preprocessData(data));
@@ -107,8 +107,8 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
         if (data == null) {
             data = new ParameterMap();
         }
-        if (data.containsKey("error")) {
-            String errorMessage = localStrings.getLocalString("rest.request.parsing.error", "Unable to parse the input entity. Please check the syntax.");
+        if (data.containsKey(ERROR)) {
+            String errorMessage = localStrings.getLocalString(ERROR_STRING, ERROR_DEFAULT_MESSAGE);
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
         return super.executeCommand(preprocessData(data));
@@ -144,8 +144,8 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
         if (data == null) {
             data = new ParameterMap();
         }
-        if (data.containsKey("error")) {
-            String errorMessage = localStrings.getLocalString("rest.request.parsing.error", "Unable to parse the input entity. Please check the syntax.");
+        if (data.containsKey(ERROR)) {
+            String errorMessage = localStrings.getLocalString(ERROR_STRING, ERROR_DEFAULT_MESSAGE);
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));
         }
         return super.executeCommandAsSse(preprocessData(data));
@@ -192,12 +192,9 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
         return data;
     }
 
-    private static ParameterMap createDataBasedOnForm(FormDataMultiPart formData) {
+    private static ParameterMap createDataBasedOnForm(FormDataMultiPart paramForm) {
         ParameterMap data = new ParameterMap();
-        if (formData == null) {
-            formData = new FormDataMultiPart();
-        }
-        try {
+        try (FormDataMultiPart formData = assureExistence(paramForm)) {
             /* data passed to the generic command running
              *
              * */
@@ -225,7 +222,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
                         }
 
                         File f = Util.saveFile(fileName, mimeType, fileStream);
-                        f.deleteOnExit();
+                        FileUtils.deleteOnExit(f);
                         //put only the local path of the file in the same field.
                         data.add(fieldName, f.getAbsolutePath());
                     } else {
@@ -235,12 +232,15 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
             }
         } catch (Exception ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
-        } finally {
-            if (formData != null) {
-                formData.cleanup();
-            }
         }
         return data;
 
+    }
+
+    private static FormDataMultiPart assureExistence(FormDataMultiPart formData) {
+        if (formData == null) {
+            return new FormDataMultiPart();
+        }
+        return formData;
     }
 }

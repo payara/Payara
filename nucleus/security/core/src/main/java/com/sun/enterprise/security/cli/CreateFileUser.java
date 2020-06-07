@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
@@ -96,8 +96,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "create-file-user")
 @PerLookup
 @I18n("create.file.user")
-@ExecuteOn({ RuntimeType.ALL })
-@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG })
+@ExecuteOn({ RuntimeType.INSTANCE, RuntimeType.DAS })
+@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = RestEndpoint.OpType.POST, path = "create-user", description = "Create", params = {
                 @RestParam(name = "authrealmname", value = "$parent") }) })
@@ -145,6 +145,9 @@ public class CreateFileUser implements AdminCommand, AdminCommandSecurity.Preaut
     public boolean preAuthorization(AdminCommandContext context) {
         config = CLIUtil.chooseConfig(domain, target, context.getActionReport());
         if (config == null) {
+            // command is executed on all instances and remote instances may not have the config
+            // however this is to be expected so do not show spurious error.
+            context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
             return false;
         }
         

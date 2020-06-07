@@ -37,23 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.logviewer.backend;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.logging.Level;
 
 import com.sun.enterprise.server.logging.LogFacade;
 import com.sun.enterprise.server.logging.LogFormatHelper;
@@ -61,7 +47,10 @@ import com.sun.enterprise.server.logging.parser.LogParser;
 import com.sun.enterprise.server.logging.parser.LogParserFactory;
 import com.sun.enterprise.server.logging.parser.LogParserListener;
 import com.sun.enterprise.server.logging.parser.ParsedLogRecord;
-import java.io.InputStream;
+
+import java.io.*;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 
 
@@ -80,16 +69,17 @@ import java.util.zip.GZIPInputStream;
 public class LogFile implements java.io.Serializable {
 
     private static final long serialVersionUID = -2960142541274652618L;
-    
-    private static SimpleDateFormat SIMPLE_DATE_FORMAT =
-            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+    private final long _indexSize = 10;
+    private final String _logFileName;
+    private final List<Long> _recordIdx = new ArrayList<>();
 
     /**
      * Constructor
      */
     public LogFile(String name) {
         _logFileName = name;
-        _recordIdx.add(Long.valueOf(0));
+        _recordIdx.add(0L);
     }
 
     /**
@@ -116,61 +106,52 @@ public class LogFile implements java.io.Serializable {
 
         // Open the file at the desired starting Record
         final long recordsToIgnore = (startingRecord % getIndexSize());
-        BufferedReader reader = getFilePosition(startingRecord - recordsToIgnore);
-        final List results = new ArrayList();
-        if (reader == null) {
-            return results;
-        }
-        try {
-            
-            File logFile = new File(getLogFileName());
-            LogParser logParser = LogParserFactory.getInstance().createLogParser(logFile );
-            logParser.parseLog(reader, new LogParserListener() {
+        return getFilePosition(startingRecord - recordsToIgnore).map(
+            rdr -> {
+                try (BufferedReader reader = rdr) {
+                    List<LogEntry> results = new ArrayList<>();
+                    File logFile = new File(getLogFileName());
+                    LogParser logParser = LogParserFactory.getInstance().createLogParser(logFile );
+                    logParser.parseLog(reader, new LogParserListener() {
 
-                long counter = 0;
+                        long counter = 0;
 
-                @Override
-                public void outputSummary(BufferedWriter writer, Object... objects)
-                        throws IOException {
-                }
-                
-                @Override
-                public void foundLogRecord(long position, ParsedLogRecord logRecord) {
-                    counter++;
-                    if (counter <= recordsToIgnore) {
-                        return;
-                    }
-                    if (results.size() < maxRecords) {
-                        LogEntry entry = new LogEntry(logRecord.getFormattedLogRecord(),
-                                startingRecord + results.size());                    
-                        entry.setLoggedDateTime(new Date(logRecord.getTimeMillis()));
-                        entry.setLoggedLevel(logRecord.getLevel());
-                        entry.setLoggedLoggerName(logRecord.getLogger());
-                        entry.setLoggedMessage(logRecord.getMessage());
-                        entry.setLoggedNameValuePairs(logRecord.getSupplementalAttributes().toString());
-                        entry.setLoggedProduct(logRecord.getComponentId());
-                        entry.setMessageId(logRecord.getMessageId());                        
-                        results.add(entry);
-                    }
-                }
-                
-                @Override
-                public void close() throws IOException {                    
-                }
-            });
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex) {
+                        @Override
+                        public void outputSummary(BufferedWriter writer, Object... objects)
+                                throws IOException {
+                        }
+
+                        @Override
+                        public void foundLogRecord(long position, ParsedLogRecord logRecord) {
+                            counter++;
+                            if (counter <= recordsToIgnore) {
+                                return;
+                            }
+                            if (results.size() < maxRecords) {
+                                LogEntry entry = new LogEntry(logRecord.getFormattedLogRecord(),
+                                        startingRecord + results.size());
+                                entry.setLoggedDateTime(new Date(logRecord.getTimeMillis()));
+                                entry.setLoggedLevel(logRecord.getLevel());
+                                entry.setLoggedLoggerName(logRecord.getLogger());
+                                entry.setLoggedMessage(logRecord.getMessage());
+                                entry.setLoggedNameValuePairs(logRecord.getSupplementalAttributes().toString());
+                                entry.setLoggedProduct(logRecord.getComponentId());
+                                entry.setMessageId(logRecord.getMessageId());
+                                results.add(entry);
+                            }
+                        }
+
+                        @Override
+                        public void close() throws IOException {
+                        }
+                    });
+                    // Return the results
+                    return results;
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
                 }
             }
-        }
-
-        // Return the results
-        return results;
+        ).orElse(Collections.emptyList());
     }
 
 
@@ -181,46 +162,42 @@ public class LogFile implements java.io.Serializable {
      */
     private synchronized void buildLogFileIndex() {
         // Open the file and skip to the where we left off
-        final long startPos = (Long) _recordIdx.get(_recordIdx.size() - 1);
+        final long startPos = _recordIdx.get(_recordIdx.size() - 1);
         final long localIndexSize = getIndexSize();
-        BufferedReader reader = getLogFileReader(startPos);
-        try {
-            File logFile = new File(getLogFileName());
-            LogParser logParser = LogParserFactory.getInstance().createLogParser(logFile);
-            if (logParser != null) {
-                logParser.parseLog(reader, new LogParserListener() {
-                    
-                    long recordNumber = (_recordIdx.size() - 1) * localIndexSize;
+        getLogFileReader(startPos).ifPresent(
+            rdr -> {
+                try (BufferedReader reader  = rdr) {
+                    File logFile = new File(getLogFileName());
+                    LogParser logParser = LogParserFactory.getInstance().createLogParser(logFile);
+                    if (logParser != null) {
+                        logParser.parseLog(reader, new LogParserListener() {
 
-                    @Override
-                    public void outputSummary(BufferedWriter writer, Object... objects)
-                            throws IOException {
+                            long recordNumber = (_recordIdx.size() - 1) * localIndexSize;
+
+                            @Override
+                            public void outputSummary(BufferedWriter writer, Object... objects)
+                                    throws IOException {
+                            }
+
+                            @Override
+                            public void foundLogRecord(long position, ParsedLogRecord object) {
+                                long modIndex = recordNumber % localIndexSize;
+                                if (modIndex == 0) {
+                                    _recordIdx.add((startPos+position));
+                                }
+                                recordNumber++;
+                            }
+
+                            @Override
+                            public void close() throws IOException {
+                            }
+                        });
                     }
-                    
-                    @Override
-                    public void foundLogRecord(long position, ParsedLogRecord object) {                    
-                        long modIndex = recordNumber % localIndexSize;
-                        if (modIndex == 0) {
-                            _recordIdx.add((Long)(startPos+position));
-                        }
-                        recordNumber++;
-                    }
-                    
-                    @Override
-                    public void close() throws IOException {                    
-                    }
-                });                
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ex) {
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
                 }
             }
-        }
+        );
     }
 
     /**
@@ -229,16 +206,16 @@ public class LogFile implements java.io.Serializable {
      * @return The file position.
      * @param    recordNumber    The Record Number
      */
-    private BufferedReader getFilePosition(long recordNumber) {
+    private Optional<BufferedReader> getFilePosition(long recordNumber) {
         // The index is stored from the second slot. i.e., if there
         // are 100 records and the index will be on 20, 40, 60, 80, 100
         // if the _indexSize is 20. We don't store '0' hence we subtract
         // from 1 to get the right index
         int index = (int) (recordNumber / getIndexSize());
         if (index > _recordIdx.size()-1) {
-            return null;
+            return Optional.empty();
         }
-        Long filePosition = (Long) _recordIdx.get(index);
+        Long filePosition = _recordIdx.get(index);
         return getLogFileReader(filePosition);
     }
 
@@ -246,7 +223,7 @@ public class LogFile implements java.io.Serializable {
      * This method opens the server.log file and moves the stream to
      * the specified filePosition.
      */
-    protected BufferedReader getLogFileReader(long fromFilePosition) {
+    private Optional<BufferedReader> getLogFileReader(long fromFilePosition) {
         InputStream file = null;
         try {
             if (LogFormatHelper.isCompressedFile(getLogFileName())) {
@@ -258,25 +235,23 @@ public class LogFile implements java.io.Serializable {
             if (bytesToSkip > 0) {
                 long bytesSkipped = file.skip(bytesToSkip);
                 if (bytesSkipped != fromFilePosition) {
-                    if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) { 
+                    if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
                         LogFacade.LOGGING_LOGGER.log(Level.FINE, "Did not skip exact bytes while positioning reader in " + getLogFileName());
                     }
                 }
             }
-            BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(file));
-            return reader;
+            return Optional.of(new BufferedReader(new InputStreamReader(file)));
         } catch (Exception ex) {
-            if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) { 
+            if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
                 LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error reading from file: " + getLogFileName(), ex);
             }
             if (file != null) try { file.close(); } catch (Exception ex2) {
-                if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) { 
+                if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
                     LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error closing file: " + getLogFileName(), ex2);
-                }                
-            }            
-        } 
-        return null;
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -306,12 +281,21 @@ public class LogFile implements java.io.Serializable {
      * Class to manage LogEntry information
      */
     public static class LogEntry implements java.io.Serializable {
-        
+
         /**
          * SVUID for backwards compatibility
          */
         private static final long serialVersionUID = -8597022493595023899L;
-        
+
+        private long recordNumber = -1;
+        private Date loggedDateTime = null;
+        private String loggedLevel = null;
+        private String loggedProduct = null;
+        private String loggedLoggerName = null;
+        private String loggedNameValuePairs = null;
+        private String loggedMessage = null;
+        private String messageId = "";
+
         public LogEntry(String line, long recordNumber) {
             setRecordNumber(recordNumber);
         }
@@ -441,18 +425,6 @@ public class LogFile implements java.io.Serializable {
             return getRecordNumber() + ":" + getLoggedMessage();
         }
 
-        private long recordNumber = -1;
-        private Date loggedDateTime = null;
-        private String loggedLevel = null;
-        private String loggedProduct = null;
-        private String loggedLoggerName = null;
-        private String loggedNameValuePairs = null;
-        private String loggedMessage = null;
-        private String messageId = "";
     }
-    
-    private long _indexSize = 10;
-    private String _logFileName = null;
-    private List _recordIdx   = new ArrayList();
-    
+
 }

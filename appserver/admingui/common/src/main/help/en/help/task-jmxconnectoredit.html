@@ -1,0 +1,76 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-jmxconnectoredit" name="task-jmxconnectoredit"></a><a id="GHCOM00211" name="GHCOM00211"></a></p>
+
+<h4><a id="sthref109" name="sthref109"></a>To Edit the JMX Connector</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Admin Service to configure a JSR-160 compliant remote JMX connector.</p>
+<p>The JSR-160 compliant remote JMX connector handles communication between JMX clients, such as JConsole, and the JMX service, for domain management purposes.</p>
+<ol>
+<li>
+<p>In the navigation tree, expand the Configuration node.</p>
+</li>
+<li>
+<p>Under the Configuration node, select the Admin Service node.</p>
+<p>The Edit JMX Connector page opens.</p>
+</li>
+<li>
+<p>Select the Security Enabled checkbox to cause JMX communication to be encrypted.</p>
+<p>This option is disabled by default.</p>
+</li>
+<li>
+<p>In the Address field, type the IP address of the naming service where the JMX connector server stub is registered.</p>
+<p>This is not the port of the server socket that does the actual JMX communication. This is the address of the network interface where the RMI registry is started. If your system has multiple network interfaces, modify this value so that only a particular interface is selected. The default value is <code>0.0.0.0</code>.</p>
+</li>
+<li>
+<p>In the Port field, type the port number on which the naming service (RMI registry) listens for RMI client connections.</p>
+<p>The only use of this naming service is to download the RMI stubs. If the default port is occupied, a free port is used. Legal values are 1 - 65535. On UNIX systems, creating sockets that listen on ports 1 - 1024 requires superuser privileges. The default value is 8686.</p>
+</li>
+<li>
+<p>In the Realm Name field, type the name that represents the special administrative realm.</p>
+<p>All authentication is handled by this realm. The default value is <code>admin-realm</code>.</p>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>The GlassFish Server specifies several properties by default.</p>
+<ul>
+<li>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+</li>
+<li>
+<p>To modify a property, edit that property's Value field.</p>
+</li>
+<li>
+<p>To delete a property, select the checkbox to the left of the Name field of the property that you are deleting, then click the Delete Properties button.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click Save.</p>
+</li>
+<li>
+<p>If you selected the Security Enabled checkbox, follow the steps in <a href="task-jmxconnectorssledit.html">To Edit SSL Settings for the JMX Connector</a>.</p>
+</li>
+</ol>
+<a id="GHCOM320" name="GHCOM320"></a>
+<h5>See Also</h5>
+<p><a href="task-jmxconnectorssledit.html">To Edit SSL Settings for the JMX Connector</a></p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

@@ -38,7 +38,7 @@
  * holder.
  *
  */
-// Portions Copyright [2017-2018] Payara Foundation and/or affilates
+// Portions Copyright [2017-2019] Payara Foundation and/or affilates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -46,16 +46,17 @@ import org.glassfish.embeddable.*;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-
 import static com.sun.enterprise.module.bootstrap.ArgumentManager.argsToMap;
-import java.util.logging.Level;
+import fish.payara.boot.runtime.BootCommands;
+import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,6 +65,10 @@ import java.util.regex.Pattern;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class GlassFishMain {
+
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("([^\"']\\S*|\".*?\"|'.*?')\\s*");
+    private static final String[] COMMAND_TYPE = new String[0];
+    private static final Logger LOGGER = Logger.getLogger(GlassFishMain.class.getName());
 
     // TODO(Sahoo): Move the code to ASMain once we are ready to phase out ASMain
 
@@ -110,8 +115,6 @@ public class GlassFishMain {
          */
         private volatile GlassFish gf;
         private volatile GlassFishRuntime gfr;
-        private final static Pattern p = Pattern.compile("([^\\$]*)\\$\\{([^\\}]*)\\}([^\\$]*)");
-        private final static int MAX_SUBSTITUTION_DEPTH = 100;
 
         public Launcher() {
         }
@@ -167,7 +170,7 @@ public class GlassFishMain {
                             continue;
                         }
                         Deployer deployer = gf.getService(Deployer.class, null);
-                        String name = command.substring(command.indexOf(" ")).trim();
+                        String name = command.substring(command.indexOf(' ')).trim();
                         deployer.undeploy(name);
                         System.out.println("Undeployed = " + name);
                     } else if ("quit".equalsIgnoreCase(command)) {
@@ -231,8 +234,11 @@ public class GlassFishMain {
             }
             
             System.out.println("Running command: " + line);
-            String[] tokens = line.split("\\s+");
-            CommandResult result = cmdRunner.run(tokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
+            List<String> tokens = parseCommand(line);
+            CommandResult result = cmdRunner.run(
+                    tokens.get(0),
+                    tokens.subList(1, tokens.size()).toArray(COMMAND_TYPE)
+            );
             System.out.println(result.getOutput());
             if(result.getFailureCause() != null) {
                 result.getFailureCause().printStackTrace();
@@ -249,11 +255,28 @@ public class GlassFishMain {
             }
             line = line.replaceAll("^\\s*#.*", ""); // Removes comments at the start of lines
             line = line.replaceAll("\\s#.*", ""); // Removes comments with whitespace before them. This allows for hashtags used in commands to be ignored.
-            line = line.replaceAll("\"", "");
             if (line.isEmpty() || line.replaceAll("\\s", "").isEmpty()) {
                 return null;
             }
             return line;
+        }
+        
+        /**
+         * Parse a command read from a string
+         * @param line
+         */
+        private List<String> parseCommand(String line) {
+            List<String> tokens = new ArrayList<>();
+            Matcher matcher = COMMAND_PATTERN.matcher(line);
+            while (matcher.find()) {
+                String token = matcher.group(1);
+                if ((token.startsWith("\"") && token.endsWith("\""))
+                        || token.startsWith("'") && token.endsWith("'")) {
+                    token = token.substring(1, token.length() - 1);
+                }
+                tokens.add(token);
+            }
+            return tokens;
         }
  
         /**
@@ -261,49 +284,20 @@ public class GlassFishMain {
          * @param file 
          */
         private void doBootCommands(String file) {
-            if (file == null){
+            if (file == null) {
                 return;
             }
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                
+            try {
+                BootCommands bootCommands = new BootCommands();
                 System.out.println("Reading in commandments from " + file);
-                String line = reader.readLine();
-                CommandRunner cmdRunner = gf.getCommandRunner();
-                
-                while (line != null) {
-                    line = getEnvironmentSubstitution(line);
-                    runCommand(cmdRunner, line);
-                    line = reader.readLine();
-                }
+                bootCommands.parseCommandScript(new File(file));
+                bootCommands.executeCommands(gf.getCommandRunner());
             } catch (IOException ex) {
-                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, "Error reading from file");
+                LOGGER.log(SEVERE, "Error reading from file");
             } catch (Throwable ex) {
-                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(SEVERE, null, ex);
             }
         }
-        
-        
-        private String getEnvironmentSubstitution(String value){
-             String origValue = value;
-            int i = 0;            // Perform Environment variable substitution
-            Matcher m2 = p.matcher(value);
-
-            while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String matchValue = m2.group(2).trim();
-                String newValue = System.getenv(matchValue);
-                if (newValue != null) {
-                    value = m2.replaceFirst(
-                            Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
-                    m2.reset(value);
-                } 
-                i++;     
-            }
-            if (i >= MAX_SUBSTITUTION_DEPTH) {
-                Logger.getLogger(GlassFishMain.class.getName()).log(Level.SEVERE, "System property substitution exceeded maximum of " + MAX_SUBSTITUTION_DEPTH);
-            }
-            return value;
-        }
-        
 
     }
 

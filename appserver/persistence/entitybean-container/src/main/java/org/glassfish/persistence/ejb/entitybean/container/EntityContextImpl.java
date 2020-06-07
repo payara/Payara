@@ -37,22 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
-import java.rmi.RemoteException;
 import java.lang.reflect.Method;
 import javax.ejb.*;
-
 import org.glassfish.api.invocation.ComponentInvocation;
-
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.BaseContainer;
-import com.sun.ejb.containers.EJBObjectImpl;
-import com.sun.ejb.containers.EJBLocalObjectImpl;
 import com.sun.ejb.containers.EJBTimerService;
-import com.sun.ejb.containers.EJBTimerServiceWrapper;
 import org.glassfish.persistence.ejb.entitybean.container.spi.CascadeDeleteNotifier;
 
 /**
@@ -187,8 +182,7 @@ public class EntityContextImpl
             throw new IllegalStateException("Operation not allowed");
         }
      
-        EJBTimerService timerService = EJBTimerService.getValidEJBTimerService();
-        return new EJBTimerServiceWrapper(timerService, (EntityContext) this);
+        return EJBTimerService.getEJBTimerServiceWrapper(this);
     }
     
     protected void checkAccessToCallerSecurity()

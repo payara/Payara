@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util.jmx;
 
@@ -107,17 +108,12 @@ public final class OpenMBeanUtil
     /**
     Get the SimpleType for a class which can be so-represented.
      */
-    static public SimpleType getSimpleType(final Class<?> c)
-    {
+    public static SimpleType getSimpleType(final Class<?> c) {
         final SimpleType type = getSimpleTypesMap().get(c);
 
         return (type);
 
     }
-
-    private static final String[] EMPTY_STRING_ARRAY = new String[0];
-
-    private static final OpenType[] EMPTY_OPENTYPES = new OpenType[0];
 
     /**
     Get any non-null array element from the array.
@@ -185,11 +181,8 @@ public final class OpenMBeanUtil
     /**
     Get the OpenType of an Object, which must conform to OpenType requirements.
      */
-    static public OpenType getOpenType(final Object o)
-            throws InvalidOpenTypeException, OpenDataException
-    {
-        if (o == null)
-        {
+    public static OpenType getOpenType(final Object o) throws InvalidOpenTypeException, OpenDataException {
+        if (o == null) {
             // no OpenType for a null
             throw new IllegalArgumentException();
         }
@@ -299,32 +292,23 @@ public final class OpenMBeanUtil
     @param description	the arbitrary description of the OpenType to be used
     @param map	a Map keyed by String, whose values may not be null
      */
-    public static CompositeType mapToCompositeType(
-            final String typeName,
-            final String description,
-            final Map<String, ?> map,
-            CompositeTypeFromNameCallback callback)
-            throws OpenDataException
-    {
+    public static CompositeType mapToCompositeType(final String typeName, final String description, final Map<String, ?> map, 
+            CompositeTypeFromNameCallback callback) throws OpenDataException {
         final String[] itemNames = new String[map.keySet().size()];
         map.keySet().toArray(itemNames);
 
         final String[] itemDescriptions = new String[itemNames.length];
         final OpenType[] itemTypes = new OpenType[itemNames.length];
 
-        for (int i = 0; i < itemNames.length; ++i)
-        {
+        for (int i = 0; i < itemNames.length; ++i) {
             final String name = itemNames[i];
             final Object value = map.get(name);
 
             itemDescriptions[i] = "value " + name;
-            if (value == null)
-            {
+            if (value == null) {
                 // force nulls to type String
                 itemTypes[i] = callback.getOpenTypeFromName(name);
-            }
-            else
-            {
+            } else {
                 itemTypes[i] = getOpenType(value);
             }
         }
@@ -433,9 +417,9 @@ public final class OpenMBeanUtil
 
         final OpenType[] openTypes = new OpenType[itemNames.length];
 
-        openTypes[ 0] = SimpleType.STRING;
-        openTypes[ 1] = t.getCause() == null ? SimpleType.VOID : getThrowableOpenType(t.getCause());
-        openTypes[ 2] = newArrayType(t.getStackTrace().length,
+        openTypes[0] = SimpleType.STRING;
+        openTypes[1] = t.getCause() == null ? SimpleType.VOID : getThrowableOpenType(t.getCause());
+        openTypes[2] = newArrayType(t.getStackTrace().length,
                 getStackTraceElementOpenType());
 
 
@@ -448,9 +432,3 @@ public final class OpenMBeanUtil
     }
 
 }
-
-
-
-
-
-

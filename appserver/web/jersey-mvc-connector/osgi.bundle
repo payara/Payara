@@ -38,7 +38,7 @@
 # holder.
 #
 
--exportcontents:org.glassfish.main.web.jersey.server.mvc.jsp.integration.*; version=${project.osgi.version}
+-exportcontents:fish.payara.server.internal.web.jersey.server.mvc.jsp.integration.*; version=${project.osgi.version}
 
 Import-Package: \
                 com.sun.logging.enterprise.system.container.web, \

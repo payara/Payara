@@ -136,10 +136,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
     protected boolean canShowHiddenCommands() {
 
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
-        if ((rg != null) && (rg.getShowHiddenCommands().equalsIgnoreCase("true"))) {
-            return true;
-        }
-        return false;
+        return (rg != null) && (rg.getShowHiddenCommands().equalsIgnoreCase("true"));
     }
 
     /**
@@ -149,10 +146,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
     protected boolean canShowDeprecatedItems() {
 
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
-        if ((rg != null) && (rg.getShowDeprecatedItems().equalsIgnoreCase("true"))) {
-            return true;
-        }
-        return false;
+        return (rg != null) && (rg.getShowDeprecatedItems().equalsIgnoreCase("true"));
     }
     /**
      * check for the __debug request header

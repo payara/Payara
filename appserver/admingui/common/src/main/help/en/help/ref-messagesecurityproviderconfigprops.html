@@ -1,0 +1,48 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-messagesecurityproviderconfigprops" name="ref-messagesecurityproviderconfigprops"></a><a id="GHCOM00123" name="GHCOM00123"></a></p>
+
+<h4><a id="sthref231" name="sthref231"></a><a id="sthref232" name="sthref232"></a>Properties Specific to Message Security Provider Configurations</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The following properties are available for a message security provider configuration.</p>
+<dl>
+<dt><code>server.config</code></dt>
+<dd>
+<p>The directory and file name of an XML file that contains the server configuration information. The default value is <i>domain-dir</i><code>/config/wss-server-config-1.0.xml</code>.</p>
+</dd>
+<dt><code>debug</code></dt>
+<dd>
+<p>If <code>true</code>, enables dumping of server provider debug messages to the server log. The default value is <code>false</code>.</p>
+</dd>
+<dt><code>dynamic.username.password</code></dt>
+<dd>
+<p>If <code>true</code>, signals the provider runtime to collect the user name and password from the <code>CallbackHandler</code> for each request. If false, the user name and password for <code>wsse:UsernameToken(s)</code> is collected once, during module initialization. This property is only applicable for a <code>ClientAuthModule</code>. The default value is <code>false</code>.</p>
+</dd>
+<dt><code>encryption.key.alias</code></dt>
+<dd>
+<p>Specifies the encryption key used by the provider. The key is identified by its <code>keystore</code> alias. The default value is <code>s1as</code>.</p>
+</dd>
+<dt><code>signature.key.alias</code></dt>
+<dd>
+<p>Specifies the signature key used by the provider. The key is identified by its <code>keystore</code> alias. The default value is <code>s1as</code>.</p>
+</dd>
+</dl>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

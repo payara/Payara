@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliate
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import org.glassfish.j2ee.statistics.Statistic;
-import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
+import javax.management.j2ee.statistics.Statistic;
+import javax.management.j2ee.statistics.BoundedRangeStatistic;
 
 /** An implementation of AverageRangeStatistic that provides ways to change the state externally through mutators.
  * Convenience class that is useful for components that gather the statistical data.
@@ -52,11 +53,6 @@ import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
  * @see AverageRangeStatisticImpl for an immutable implementation
  * @since S1AS8.1
  * @version 1.0
- */
-
-/**
- *
- * @author  lwhite
  */
 public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, MutableCountStatistic {
 
@@ -81,10 +77,12 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         description = initial.getDescription();        
     }
     
+    @Override
     public Statistic modifiableView() {        
         return this;
     }
     
+    @Override
     public Statistic unmodifiableView() {        
         return ( new AverageRangeStatisticImpl(
             this.getCurrent(),               // this is the actual changing statistic
@@ -102,6 +100,7 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         ));        
     }    
 
+    @Override
     public void reset() {
         mutableBoundedRangeStat.reset();
         this.resetAverageStats();
@@ -112,6 +111,7 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         runningTotal = 0L;
     }    
     
+    @Override
     public void setCount(long current) {
         mutableBoundedRangeStat.setCount(current);
         if(DEFAULT_MAX_BOUND - runningTotal < current) {
@@ -121,6 +121,7 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         runningTotal += current;
     }
     
+    @Override
     public long getAverage() {
         if(numberOfSamples == 0) {
             return -1;
@@ -129,23 +130,27 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         }
     }
     
+    @Override
     public long getCurrent() {
         return mutableBoundedRangeStat.getCurrent();
     }
     
+    @Override
     public String getDescription() {
         return description;
-        //return mutableBoundedRangeStat.getDescription();
     }
     
+    @Override
     public long getHighWaterMark() {
         return mutableBoundedRangeStat.getHighWaterMark();
     }
     
+    @Override
     public long getLastSampleTime() {
         return mutableBoundedRangeStat.getLastSampleTime();
     }
     
+    @Override
     public long getLowWaterMark() {
         long result = mutableBoundedRangeStat.getLowWaterMark();
         if(result == DEFAULT_MAX_BOUND) {
@@ -154,14 +159,17 @@ public class MutableAverageRangeStatisticImpl implements AverageRangeStatistic, 
         return result;
     }
     
+    @Override
     public String getName() {
         return mutableBoundedRangeStat.getName();
     }
     
+    @Override
     public long getStartTime() {
         return mutableBoundedRangeStat.getStartTime();
     }
     
+    @Override
     public String getUnit() {
         return mutableBoundedRangeStat.getUnit();
     }

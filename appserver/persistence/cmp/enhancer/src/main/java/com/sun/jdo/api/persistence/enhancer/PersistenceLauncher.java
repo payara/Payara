@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 /*
  * PersistenceLauncher.java
  *
@@ -192,8 +192,10 @@ public class PersistenceLauncher {
             out.println("    }");//NOI18N
             out.println("    targetClassname = " + targetClassname);//NOI18N
             out.print("    targetClassArgs = { ");//NOI18N
-            for (int i = 0; i < targetClassArgs.length; i++) {
-                out.print(targetClassArgs[i] + " ");//NOI18N
+            if (targetClassArgs != null) {
+                for (int i = 0; i < targetClassArgs.length; i++) {
+                    out.print(targetClassArgs[i] + " ");//NOI18N
+                }
             }
             out.println("}");//NOI18N
         }

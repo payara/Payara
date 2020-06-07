@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016-2017 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2018 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -79,7 +79,9 @@ public class PayaraGeneratedCacheKey implements GeneratedCacheKey, Serializable 
     public int hashCode() {
         return hashCode;
     }
-    
-    
-    
+
+    @Override
+    public String toString() {
+        return "PayaraGeneratedCacheKey{" + "values=" + Arrays.deepToString(values) + '}';
+    }
 }

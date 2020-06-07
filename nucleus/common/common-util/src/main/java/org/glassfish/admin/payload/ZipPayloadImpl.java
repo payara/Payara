@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -96,13 +97,13 @@ class ZipPayloadImpl extends PayloadImpl {
 
         @Override
         public void writePartsTo(OutputStream os) throws IOException {
-            ZipOutputStream zos = new ZipOutputStream(os);
-            for (Payload.Part part : getParts()) {
-                prepareEntry(part, zos);
-                part.copy(zos);
-                zos.closeEntry();
+            try (ZipOutputStream zos = new ZipOutputStream(os)) {
+                for (Payload.Part part : getParts()) {
+                    prepareEntry(part, zos);
+                    part.copy(zos);
+                    zos.closeEntry();
+                }
             }
-            zos.close();
         }
 
         private Outbound() {

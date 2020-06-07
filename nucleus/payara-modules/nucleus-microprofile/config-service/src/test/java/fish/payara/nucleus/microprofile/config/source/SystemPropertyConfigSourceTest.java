@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import java.util.Map;
 import java.util.Properties;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -53,39 +48,19 @@ import static org.junit.Assert.*;
  * @author steve
  */
 public class SystemPropertyConfigSourceTest {
-    
-    public SystemPropertyConfigSourceTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
+
+    private final SystemPropertyConfigSource source = new SystemPropertyConfigSource(true);
 
     /**
      * Test of getProperties method, of class SystemPropertyConfigSource.
      */
     @Test
     public void testGetProperties() {
-        System.out.println("getProperties");
-        SystemPropertyConfigSource instance = new SystemPropertyConfigSource(true);
-        Properties expResult = System.getProperties();
-        Map<String, String> result = instance.getProperties();
-        for (String stringPropertyName : expResult.stringPropertyNames()) {
-            assertEquals(expResult.getProperty(stringPropertyName), instance.getValue(stringPropertyName));
+        Properties expected = System.getProperties();
+        assertEquals(expected, source.getProperties());
+        for (String stringPropertyName : expected.stringPropertyNames()) {
+            assertEquals(expected.getProperty(stringPropertyName), source.getValue(stringPropertyName));
         }
-        
     }
 
     /**
@@ -93,11 +68,7 @@ public class SystemPropertyConfigSourceTest {
      */
     @Test
     public void testGetOrdinal() {
-        System.out.println("getOrdinal");
-        SystemPropertyConfigSource instance = new SystemPropertyConfigSource(true);
-        int expResult = 400;
-        int result = instance.getOrdinal();
-        assertEquals(expResult, result);
+        assertEquals(400, source.getOrdinal());
     }
 
     /**
@@ -105,19 +76,14 @@ public class SystemPropertyConfigSourceTest {
      */
     @Test
     public void testGetName() {
-        System.out.println("getName");
-        SystemPropertyConfigSource instance = new SystemPropertyConfigSource(true);
-        String expResult = "SystemProperty";
-        String result = instance.getName();
-        assertEquals(expResult, result);
+        assertEquals("SystemProperty", source.getName());
     }
-    
+
     @Test
     public void testAddProperty() {
-        SystemPropertyConfigSource instance = new SystemPropertyConfigSource(true);
-        assertNull(instance.getValue("NoProperty"));
+        assertNull(source.getValue("NoProperty"));
         System.setProperty("NoProperty", "test");
-        assertEquals("test", instance.getValue("NoProperty"));
+        assertEquals("test", source.getValue("NoProperty"));
     }
-    
+
 }

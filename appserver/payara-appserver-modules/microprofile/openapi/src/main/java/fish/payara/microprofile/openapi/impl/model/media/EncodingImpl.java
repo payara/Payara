@@ -52,13 +52,13 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 
-public class EncodingImpl extends ExtensibleImpl implements Encoding {
+public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
-    protected String contentType;
-    protected Map<String, Header> headers = new HashMap<>();
-    protected Style style;
-    protected Boolean explode;
-    protected Boolean allowReserved;
+    private String contentType;
+    private Map<String, Header> headers = new HashMap<>();
+    private Style style;
+    private Boolean explode;
+    private Boolean allowReserved;
 
     @Override
     public String getContentType() {
@@ -68,12 +68,6 @@ public class EncodingImpl extends ExtensibleImpl implements Encoding {
     @Override
     public void setContentType(String contentType) {
         this.contentType = contentType;
-    }
-
-    @Override
-    public Encoding contentType(String contentType) {
-        setContentType(contentType);
-        return this;
     }
 
     @Override
@@ -87,9 +81,16 @@ public class EncodingImpl extends ExtensibleImpl implements Encoding {
     }
 
     @Override
-    public Encoding headers(Map<String, Header> headers) {
-        setHeaders(headers);
+    public Encoding addHeader(String key, Header header) {
+        if (header != null) {
+            headers.put(key, header);
+        }
         return this;
+    }
+
+    @Override
+    public void removeHeader(String key) {
+        headers.remove(key);
     }
 
     @Override
@@ -103,12 +104,6 @@ public class EncodingImpl extends ExtensibleImpl implements Encoding {
     }
 
     @Override
-    public Encoding style(Style style) {
-        setStyle(style);
-        return this;
-    }
-
-    @Override
     public Boolean getExplode() {
         return explode;
     }
@@ -119,12 +114,6 @@ public class EncodingImpl extends ExtensibleImpl implements Encoding {
     }
 
     @Override
-    public Encoding explode(Boolean explode) {
-        setExplode(explode);
-        return this;
-    }
-
-    @Override
     public Boolean getAllowReserved() {
         return allowReserved;
     }
@@ -132,12 +121,6 @@ public class EncodingImpl extends ExtensibleImpl implements Encoding {
     @Override
     public void setAllowReserved(Boolean allowReserved) {
         this.allowReserved = allowReserved;
-    }
-
-    @Override
-    public Encoding allowReserved(Boolean allowReserved) {
-        setAllowReserved(allowReserved);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.media.Encoding from, Encoding to,

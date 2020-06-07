@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.store;
 
@@ -68,10 +69,10 @@ import java.util.logging.Logger;
  */
 public class AsadminTruststore {
     private static final String ASADMIN_TRUSTSTORE = "truststore";
-    private KeyStore _keyStore = null;
-    private File _keyFile = null;        
-    private char[] _password = null;
-    private static final Logger _logger = CULoggerInfo.getLogger();
+    private KeyStore keyStore = null;
+    private File keyFile = null;        
+    private char[] password = null;
+    private static final Logger LOGGER = CULoggerInfo.getLogger();
       
     public static File getAsadminTruststore()
     {
@@ -83,15 +84,13 @@ public class AsadminTruststore {
         }
     }
 
-    public static AsadminTruststore newInstance()
-            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+    public static AsadminTruststore newInstance() {
         return AsadminSecurityUtil
                 .getInstance(true /* isPromptable */)
                 .getAsadminTruststore();
     }
 
-    public static AsadminTruststore newInstance(final char[] password)
-            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+    public static AsadminTruststore newInstance(final char[] password) {
         return AsadminSecurityUtil
                 .getInstance(password, true /* isPromptable */)
                 .getAsadminTruststore();
@@ -107,16 +106,16 @@ public class AsadminTruststore {
         throws CertificateException, IOException,
         KeyStoreException, NoSuchAlgorithmException 
     {
-        _keyFile = keyfile;
-        _keyStore = KeyStore.getInstance("JKS"); 
-        _password = password;
+        this.keyFile = keyfile;
+        this.keyStore = KeyStore.getInstance("JKS"); 
+        this.password = password;
         BufferedInputStream bInput = null;        
-        if (_keyFile.exists()) {
-            bInput = new BufferedInputStream(new FileInputStream(_keyFile));
+        if (keyFile.exists()) {
+            bInput = new BufferedInputStream(new FileInputStream(keyFile));
         }
         try {            
             //load must be called with null to initialize an empty keystore
-            _keyStore.load(bInput, _password);
+            keyStore.load(bInput, password);
             if (bInput != null) {
                 bInput.close();
                 bInput = null;
@@ -134,41 +133,25 @@ public class AsadminTruststore {
     
     public boolean certificateExists(Certificate cert) throws KeyStoreException
     {
-        return (_keyStore.getCertificateAlias(cert) == null ? false : true);
+        return keyStore.getCertificateAlias(cert) != null;
     }
     
     public void addCertificate(String alias, Certificate cert) throws KeyStoreException, IOException, 
         NoSuchAlgorithmException, CertificateException
     {
-        _keyStore.setCertificateEntry(alias, cert);
+        keyStore.setCertificateEntry(alias, cert);
         
         // PAYARA-496 Check if the keystore exists, and can be written to
-        if (!_keyFile.exists() || _keyFile.canWrite()) {
+        if (!keyFile.exists() || keyFile.canWrite()) {
             writeStore();            
         } else {
-            _logger.log(Level.INFO, CULoggerInfo.exceptionWritingToAsadminTruststore, _keyFile.getAbsolutePath());
+            LOGGER.log(Level.INFO, CULoggerInfo.exceptionWritingToAsadminTruststore, keyFile.getAbsolutePath());
         }
     }
     
-    public void writeStore() throws KeyStoreException, IOException, 
-        NoSuchAlgorithmException, CertificateException
-    {
-         BufferedOutputStream boutput = null;
-
-         try {
-             boutput = new BufferedOutputStream(
-                     new FileOutputStream(_keyFile));
-             _keyStore.store(boutput, _password);
-             boutput.close();
-             boutput = null;
-         } finally {
-             if (boutput != null) {
-                 try {
-                     boutput.close();
-                 } catch(Exception ex) {
-                     //ignore we are cleaning up
-                 }
-             }
+    public void writeStore() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+        try (BufferedOutputStream boutput = new BufferedOutputStream(new FileOutputStream(keyFile))) {
+             this.keyStore.store(boutput, password);
          }
     }    
 }

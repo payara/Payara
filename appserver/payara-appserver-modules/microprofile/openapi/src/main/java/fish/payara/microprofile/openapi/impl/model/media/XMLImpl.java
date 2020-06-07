@@ -43,13 +43,13 @@ import org.eclipse.microprofile.openapi.models.media.XML;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class XMLImpl extends ExtensibleImpl implements XML {
+public class XMLImpl extends ExtensibleImpl<XML> implements XML {
 
-    protected String name;
-    protected String namespace;
-    protected String prefix;
-    protected Boolean attribute;
-    protected Boolean wrapped;
+    private String name;
+    private String namespace;
+    private String prefix;
+    private Boolean attribute;
+    private Boolean wrapped;
 
     @Override
     public String getName() {
@@ -59,12 +59,6 @@ public class XMLImpl extends ExtensibleImpl implements XML {
     @Override
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public XML name(String name) {
-        setName(name);
-        return this;
     }
 
     @Override
@@ -78,12 +72,6 @@ public class XMLImpl extends ExtensibleImpl implements XML {
     }
 
     @Override
-    public XML namespace(String namespace) {
-        setNamespace(namespace);
-        return this;
-    }
-
-    @Override
     public String getPrefix() {
         return prefix;
     }
@@ -91,12 +79,6 @@ public class XMLImpl extends ExtensibleImpl implements XML {
     @Override
     public void setPrefix(String prefix) {
         this.prefix = prefix;
-    }
-
-    @Override
-    public XML prefix(String prefix) {
-        setPrefix(prefix);
-        return this;
     }
 
     @Override
@@ -110,12 +92,6 @@ public class XMLImpl extends ExtensibleImpl implements XML {
     }
 
     @Override
-    public XML attribute(Boolean attribute) {
-        setAttribute(attribute);
-        return this;
-    }
-
-    @Override
     public Boolean getWrapped() {
         return wrapped;
     }
@@ -123,12 +99,6 @@ public class XMLImpl extends ExtensibleImpl implements XML {
     @Override
     public void setWrapped(Boolean wrapped) {
         this.wrapped = wrapped;
-    }
-
-    @Override
-    public XML wrapped(Boolean wrapped) {
-        setWrapped(wrapped);
-        return this;
     }
 
 }

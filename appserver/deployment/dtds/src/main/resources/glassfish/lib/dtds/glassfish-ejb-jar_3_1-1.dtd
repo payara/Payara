@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 -->
 
 <!--
@@ -701,11 +701,6 @@ for delivering messages to the message-driven bean.
 -->
 <!ELEMENT resource-adapter-mid ( #PCDATA ) >
 
-<!-- 
-Generic name-value pairs property
--->
-<!ELEMENT property ( name, value ) >
-
 <!--
 This text nodes holds a value string.
 -->
@@ -1221,11 +1216,9 @@ The version-identifier element contains the version information. The value is
 <!-- 
 Syntax for supplying properties as name value pairs 
 -->
-<!ELEMENT property (description?)>
-<!ATTLIST property name  CDATA  #REQUIRED
-                   value CDATA  #REQUIRED>
-
-<!ELEMENT description (#PCDATA)>
+<!ELEMENT property (description?, name?, value?)>
+<!ATTLIST property name  CDATA  #IMPLIED
+                   value CDATA  #IMPLIED>
 
 <!--
 Optional Default authentication configuration for an EJB web service endpoint.

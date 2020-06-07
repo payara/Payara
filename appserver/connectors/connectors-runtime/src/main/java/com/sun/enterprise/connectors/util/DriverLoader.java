@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
@@ -44,7 +45,6 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.logging.LogDomains;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -86,6 +86,7 @@ public class DriverLoader implements ConnectorConstants {
 
     private static final String DRIVER_INTERFACE_NAME="java.sql.Driver";
     private static final String SERVICES_DRIVER_IMPL_NAME = "META-INF/services/java.sql.Driver";
+    private static final String DATABASE_VENDOR_H2 = "H2";
     private static final String DATABASE_VENDOR_DERBY = "DERBY";
     private static final String DATABASE_VENDOR_JAVADB = "JAVADB";
     private static final String DATABASE_VENDOR_EMBEDDED_DERBY = "EMBEDDED-DERBY";
@@ -149,14 +150,8 @@ public class DriverLoader implements ConnectorConstants {
     public static Properties loadFile(File mappingFile) {
         Properties fileProperties = new Properties();
         if (mappingFile != null && mappingFile.exists()) {
-            try {
-
-                FileInputStream fis = new FileInputStream(mappingFile);
-                try {
-                    fileProperties.load(fis);
-                } finally {
-                    fis.close();
-                }
+            try (FileInputStream fis = new FileInputStream(mappingFile)) {
+                fileProperties.load(fis);
             } catch (IOException ioe) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("IO Exception during properties load : "
@@ -165,14 +160,14 @@ public class DriverLoader implements ConnectorConstants {
             }
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("File not found : " + mappingFile.getAbsolutePath());
+                logger.fine("File not found : " + (mappingFile == null ? "null" : mappingFile.getAbsolutePath()));
             }
         }
         return fileProperties;
     }
 
 
-    private String getImplClassNameFromMapping(String dbVendor, String resType) {
+    private static String getImplClassNameFromMapping(String dbVendor, String resType) {
         File mappingFile = getResourceTypeFile(resType);
         Properties fileProperties = loadFile(mappingFile);
         return fileProperties.getProperty(dbVendor.toUpperCase(Locale.getDefault()));
@@ -354,7 +349,7 @@ public class DriverLoader implements ConnectorConstants {
     private Vector getLibExtDirs() {
         String extDirStr = System.getProperty("java.ext.dirs");
         logger.log(Level.FINE, "lib/ext dirs : " + extDirStr);
-        
+
         Vector extDirs = new Vector();
         StringTokenizer st = new StringTokenizer(extDirStr, File.pathSeparator);
         while (st.hasMoreTokens()) {
@@ -364,7 +359,7 @@ public class DriverLoader implements ConnectorConstants {
             }
             extDirs.addElement(token);
         }
-       
+
         return extDirs;
     }
 
@@ -538,16 +533,10 @@ public class DriverLoader implements ConnectorConstants {
         boolean isVendorSpecific = false;
 
         if(origDbVendor != null) {
-            if(origDbVendor.equalsIgnoreCase(DATABASE_VENDOR_EMBEDDED_DERBY)) {
-                return className.toUpperCase(Locale.getDefault()).indexOf(DATABASE_VENDOR_EMBEDDED) != -1;
-            } else if(origDbVendor.equalsIgnoreCase(DATABASE_VENDOR_EMBEDDED_DERBY_30)) {
-                if(className.toUpperCase(Locale.getDefault()).indexOf(DATABASE_VENDOR_EMBEDDED) != -1) {
-                    if(origDbVendor.endsWith(DATABASE_VENDOR_30)) {
-                        return !(className.toUpperCase(Locale.getDefault()).endsWith(DATABASE_VENDOR_40));
+            if(origDbVendor.equalsIgnoreCase(DATABASE_VENDOR_H2)) {
+                return className.toUpperCase(Locale.getDefault()).indexOf(DATABASE_VENDOR_H2) != -1;
                     }
                 }
-            }
-        }
 
         String vendor = getVendorFromManifest(f);
 
@@ -566,7 +555,7 @@ public class DriverLoader implements ConnectorConstants {
             }
         }
         if(isVendorSpecific) {
-            if(origDbVendor.endsWith(DATABASE_VENDOR_30)) {
+            if(origDbVendor != null && origDbVendor.endsWith(DATABASE_VENDOR_30)) {
                 if(origDbVendor.equalsIgnoreCase(DATABASE_VENDOR_EMBEDDED_DERBY_30)) {
                     return className.toUpperCase(Locale.getDefault()).indexOf(DATABASE_VENDOR_EMBEDDED) != -1;
                 }
@@ -578,12 +567,12 @@ public class DriverLoader implements ConnectorConstants {
 
     private List<File> getJdbcDriverLocations() {
 	List<File> jarFileLocations = new ArrayList<File>();
-        jarFileLocations.add(getLocation(SystemPropertyConstants.DERBY_ROOT_PROPERTY));
+        jarFileLocations.add(getLocation(SystemPropertyConstants.H2_ROOT_PROPERTY));
         jarFileLocations.add(getLocation(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
         jarFileLocations.add(getLocation(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY));
-        Vector extLibDirs = getLibExtDirs();       
-        for(int i=0; i<extLibDirs.size(); i++) {
-            jarFileLocations.add(new File( (String) extLibDirs.elementAt(i) ));
+        Vector extLibDirs = getLibExtDirs();
+        for (int i = 0; i < extLibDirs.size(); i++) {
+            jarFileLocations.add(new File((String) extLibDirs.elementAt(i)));
         }
         return jarFileLocations;
     }

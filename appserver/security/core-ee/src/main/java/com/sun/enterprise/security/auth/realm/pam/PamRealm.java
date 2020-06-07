@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.realm.pam;
 
 import static java.util.logging.Level.SEVERE;
@@ -49,13 +49,14 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.libpam.PAM;
 import org.jvnet.libpam.PAMException;
-
 import com.sun.appserv.security.AppservRealm;
 import com.sun.enterprise.security.auth.realm.BadRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
+import static com.sun.enterprise.security.auth.realm.Realm.JAAS_CONTEXT_PARAM;
+import org.jvnet.libpam.PAM;
+import org.jvnet.libpam.UnixUser;
 
 /**
  * Realm wrapper for supporting PAM based authentication for all Unix machines. The PAM realm uses
@@ -67,25 +68,14 @@ import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 @Service
 public final class PamRealm extends AppservRealm {
 
-    // Descriptive string of the authentication type of this realm.
+    /** Descriptive string of the authentication type of this realm. */
     public static final String AUTH_TYPE = "pam";
 
-    // Default PAM stack service set to sshd - since it is present in all
-    // OSx by default
+    /** Default PAM stack service set to sshd - since it is present in all OSx by default */
     private static final String PAM_SERVICE = "sshd";
 
-    /**
-     * Initialize a realm with some properties. This can be used when instantiating realms from their
-     * descriptions. This method may only be called a single time.
-     *
-     * @param props Initialization parameters used by this realm.
-     * @exception BadRealmException If the configuration parameters identify a corrupt realm.
-     * @exception NoSuchRealmException If the configuration parameters specify a realm which doesn't
-     * exist.
-     *
-     */
     @Override
-    public synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
+    protected synchronized void init(Properties props) throws BadRealmException, NoSuchRealmException {
         super.init(props);
         String jaasCtx = props.getProperty(JAAS_CONTEXT_PARAM);
         if (jaasCtx == null) {
@@ -96,7 +86,7 @@ public final class PamRealm extends AppservRealm {
     }
 
     /**
-     * @return Description of the kind of authentication that is directly supported by this realm.
+     * @return {@value #AUTH_TYPE}.
      */
     @Override
     public String getAuthType() {
@@ -106,7 +96,7 @@ public final class PamRealm extends AppservRealm {
     @Override
     public Enumeration<String> getGroupNames(String username) throws NoSuchUserException {
         try {
-            Set<String> groupsSet = new PAM(PAM_SERVICE).getGroupsOfUser(username);
+            Set<String> groupsSet = new UnixUser(username).getGroups();
             return Collections.enumeration(groupsSet);
         } catch (PAMException ex) {
             Logger.getLogger(PamRealm.class.getName()).log(SEVERE, "pam_exception_getgroupsofuser", ex);
@@ -114,11 +104,20 @@ public final class PamRealm extends AppservRealm {
         }
     }
 
+    public UnixUser authenticate(String username, char[] password) {
+        try {
+            return new PAM(PAM_SERVICE).authenticate(username, String.valueOf(password));
+        } catch (PAMException ex) {
+            Logger.getLogger(PamRealm.class.getName()).log(SEVERE, "pam_exception_authenticate", ex);
+            return null;
+        }
+    }
+
     /**
-     * This method retreives the PAM service stack to be used by the Realm class and Login Module
+     * This method retrieves the PAM service stack to be used by the Realm class and Login Module
      * uniformly
      *
-     * @return String = Pam Service
+     * @return {@value #PAM_SERVICE}
      */
     public String getPamService() {
         return PAM_SERVICE;

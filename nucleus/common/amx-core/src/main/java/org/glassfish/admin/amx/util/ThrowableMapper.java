@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -59,8 +60,7 @@ public final class ThrowableMapper
     By default, any Throwable whose package does not start with one
     of these packages must be mapped to something standard.
      */
-    private final static Set<String> OK_PACKAGES =
-            SetUtil.newUnmodifiableStringSet("java.", "javax.");
+    private static final Set<String> OK_PACKAGES = SetUtil.newUnmodifiableStringSet("java.", "javax.");
 
     public ThrowableMapper(final Throwable t)
     {
@@ -85,72 +85,51 @@ public final class ThrowableMapper
         return (shouldMap);
     }
 
-    public static Throwable map(final Throwable t)
-    {
+    public static Throwable map(final Throwable t) {
         Throwable result = t;
 
-        if (t != null)
-        {
+        if (t != null) {
             final Throwable tCause = t.getCause();
             final Throwable tCauseMapped = map(tCause);
 
             // if either this Exception or its cause needs/was mapped,
             // then we must form a new Exception
-
-            if (shouldMap(t))
-            {
+            if (shouldMap(t)) {
+                
                 // the Throwable itself needs to be mapped
                 final String msg = t.getMessage();
 
-                if (t instanceof Error)
-                {
+                if (t instanceof Error) {
                     result = new Error(msg, tCauseMapped);
-                }
-                else if (t instanceof RuntimeException)
-                {
+                } else if (t instanceof RuntimeException) {
                     result = new RuntimeException(msg, tCauseMapped);
-                }
-                else if (t instanceof Exception)
-                {
+                } else if (t instanceof Exception) {
                     result = new Exception(msg, tCauseMapped);
-                }
-                else
-                {
+                } else {
                     result = new Throwable(msg, tCauseMapped);
                 }
 
                 result.setStackTrace(t.getStackTrace());
-            }
-            else if (tCauseMapped != tCause)
-            {
+            } else if (tCauseMapped != tCause) {
+                
                 // the Throwable doesn't need mapping, but its Cause does
                 // create a Throwable of the same class, and insert its
                 // cause and stack trace.
-                try
-                {
-                    final Constructor<? extends Throwable> c =
-                            t.getClass().getConstructor(String.class, Throwable.class);
-                    result = c.newInstance(t.getMessage(), tCauseMapped);
-                }
-                catch (final Throwable t1)
-                {
-                    try
-                    {
-                        final Constructor<? extends Throwable> c =
-                                t.getClass().getConstructor(String.class);
-                        result = c.newInstance(t.getMessage());
+                try {
+                    final Constructor<? extends Throwable> constructor = t.getClass().getConstructor(String.class, Throwable.class);
+                    result = constructor.newInstance(t.getMessage(), tCauseMapped);
+                } catch (final Throwable t1) {
+                    try {
+                        final Constructor<? extends Throwable> constructor = t.getClass().getConstructor(String.class);
+                        result = constructor.newInstance(t.getMessage());
                         result.initCause(tCauseMapped);
-                    }
-                    catch (final Throwable t2)
-                    {
+                    } catch (final Throwable t2) {
                         result = new Throwable(t.getMessage(), tCauseMapped);
                     }
                 }
 
                 result.setStackTrace(tCause.getStackTrace());
-            }
-            else
-            {
+            } else {
                 result = t;
             }
         }
@@ -172,11 +151,3 @@ public final class ThrowableMapper
     }
 
 }
-
-
-
-
-
-
-
-

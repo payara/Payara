@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,9 @@ import java.util.List;
  * Admin command to list the names of all available health check services
  *
  * @author mertcaliskan
+ * @deprecated replaced by {@link ListHealthCheckServices}
  */
+@Deprecated
 @Service(name = "healthcheck-list-services")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
@@ -94,7 +96,7 @@ public class HealthCheckServiceLister implements AdminCommand {
                     "No registered health check service found."));
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(strings.getLocalString("healthcheck.list.services.availability.info",
                     "Available Health Check Services") + ":\n");
             for (ServiceHandle<BaseHealthCheck> serviceHandle : allServiceHandles) {

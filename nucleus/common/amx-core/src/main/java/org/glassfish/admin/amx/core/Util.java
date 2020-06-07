@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.core;
 
 import java.util.regex.Pattern;
 
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
-import org.glassfish.admin.amx.util.SetUtil;
 import org.glassfish.admin.amx.util.ClassUtil;
-import org.glassfish.admin.amx.core.AMXMBeanMetadata;
 
 import static org.glassfish.external.amx.AMX.*;
 
@@ -64,12 +64,8 @@ public final class Util {
 
     private static final String QUOTE_CHAR = "\"";
 
-    private static void debug(final String s) {
-        System.out.println(s);
-    }
-
     public static String quoteIfNeeded(String name) {
-        if(name.indexOf(":") > 1) {
+        if(name.indexOf(':') > 1) {
            return ObjectName.quote(name);
         } else {
             return name;
@@ -364,13 +360,6 @@ public final class Util {
         return theClass.cast(value);
     }
 
-    public static void sleep(final long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-        }
-    }
-
     /**
     A safe way to cast to AMX.
      */
@@ -458,12 +447,12 @@ public final class Util {
     Generate the default MBean type from a String, eg from a classname.
      */
     public static String typeFromName(final String s) {
-        if (s.indexOf("-") >= 0) {
+        if (s.indexOf('-') >= 0) {
             return s;   // if it already has dashes, leave unchanged
         }
 
         String simpleName = s;
-        final int idx = s.lastIndexOf(".");
+        final int idx = s.lastIndexOf('.');
         if (idx >= 0) {
             simpleName = s.substring(idx + 1);
         }

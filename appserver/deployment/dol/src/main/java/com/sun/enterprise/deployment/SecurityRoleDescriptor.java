@@ -37,67 +37,73 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
- package com.sun.enterprise.deployment;
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.web.SecurityRole;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.security.common.Role;
 
 /**
-    * I am an abstract role..
-    *
-    *@author Danny Coward
-    */
+ * I am an abstract role..
+ *
+ * @author Danny Coward
+ */
 public class SecurityRoleDescriptor extends Descriptor implements SecurityRole {
-    
+
+    private static final long serialVersionUID = 7523991714027594391L;
+
     /**
-    * Construct a SecurityRoleDescriptor from the given role name and description.
-    */
-    public SecurityRoleDescriptor(String name, String description) {
-	super(name, description);
-    }
-    
-    /**
-    * Construct a SecurityRoleDescriptor from the given role object.
-    */
-    
-    public SecurityRoleDescriptor(Role role) {
-	super(role.getName(), role.getDescription());
-    }
-    
-    /**
-    * Default constructor.
-    */
+     * Default constructor.
+     */
     public SecurityRoleDescriptor() {
     }
-    
+
     /**
-    * Equality on rolename.
-    */
-    
+     * Construct a SecurityRoleDescriptor from the given role name.
+     */
+    public SecurityRoleDescriptor(String name) {
+        setName(name);
+    }
+
+    /**
+     * Construct a SecurityRoleDescriptor from the given role name and description.
+     */
+    public SecurityRoleDescriptor(String name, String description) {
+        super(name, description);
+    }
+
+    /**
+     * Construct a SecurityRoleDescriptor from the given role object.
+     */
+    public SecurityRoleDescriptor(Role role) {
+        super(role.getName(), role.getDescription());
+    }
+
+    /**
+     * Equality on rolename.
+     */
     public boolean equals(Object other) {
-	if (other instanceof SecurityRoleDescriptor &&
-	    this.getName().equals( ((SecurityRoleDescriptor) other).getName() )) {
-		return true;
-	}
-	return false;
+        if (other instanceof SecurityRoleDescriptor && this.getName().equals(((SecurityRoleDescriptor) other).getName())) {
+            return true;
+        }
+        return false;
     }
-    
+
     /**
-    * My hashcode.
-    */
-    
+     * My hashcode.
+     */
+
     public int hashCode() {
-	return this.getName().hashCode();
+        return getName().hashCode();
     }
-    
+
     /**
-    * Formatted string representing my state.
-    */    
-    public void print(StringBuffer toStringBuffer) {
-	toStringBuffer.append("SecurityRole ");
-	super.print(toStringBuffer);
+     * Formatted string representing my state.
+     */
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("SecurityRole ");
+        super.print(toStringBuilder);
     }
 
 }

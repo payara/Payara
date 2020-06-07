@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * UpdateStatement.java
@@ -82,7 +83,7 @@ public class UpdateStatement extends Statement implements Cloneable {
     private boolean batch = false;
 
     /** Insert values for INSERT statements. */
-    private StringBuffer values;
+    private StringBuilder values;
 
     /** */
     private boolean isConstraintAdded;
@@ -152,10 +153,10 @@ public class UpdateStatement extends Statement implements Cloneable {
      */
     protected void generateStatementText() {
 
-        statementText = new StringBuffer();
+        statementText = new StringBuilder();
 
-        StringBuffer columnList = generateColumnText();
-        StringBuffer constraint = processConstraints();
+        StringBuilder columnList = generateColumnText();
+        StringBuilder constraint = processConstraints();
         String tableName = ((QueryTable) tableList.get(0)).getTableDesc().getName();
 
         // Create the query filling in the column list, table name, etc.
@@ -183,8 +184,8 @@ public class UpdateStatement extends Statement implements Cloneable {
         calculateWhereClauseColumnRefIndexes();
     }
 
-    private StringBuffer generateColumnText() {
-        StringBuffer columnList = new StringBuffer();
+    private StringBuilder generateColumnText() {
+        StringBuilder columnList = new StringBuilder();
         int numValues = -1;
 
         for (int i = 0; i < columns.size(); i++) {
@@ -202,7 +203,7 @@ public class UpdateStatement extends Statement implements Cloneable {
                 case QueryPlan.ACT_INSERT:
                     appendQuotedText(columnList, c.getName());
                     if (i == 0) {
-                        values = new StringBuffer().append(" ?"); // NOI18N
+                        values = new StringBuilder().append(" ?"); // NOI18N
                     } else {
                         values.append(", ?"); // NOI18N
                     }
@@ -231,7 +232,7 @@ public class UpdateStatement extends Statement implements Cloneable {
      * <code> versionColumnName = versionColumnNane + 1 </code>
      * @param setClause Text for the set clause of update statement
      */
-    private void appendVersionColumnUpdateClause(StringBuffer setClause) {
+    private void appendVersionColumnUpdateClause(StringBuilder setClause) {
         if(UPDATE_VERSION_COL) {
             if (versionColumns != null)
             {
@@ -294,7 +295,7 @@ public class UpdateStatement extends Statement implements Cloneable {
      * Redefines processConstraintValue in order to skip the creation of
      * an InputValue in the case of batch.
      */
-    protected void processConstraintValue(ConstraintValue node, StringBuffer result) {
+    protected void processConstraintValue(ConstraintValue node, StringBuilder result) {
         result.append("?"); // NOI18N
         if (!batch)
             generateInputValueForConstraintValueNode(node);

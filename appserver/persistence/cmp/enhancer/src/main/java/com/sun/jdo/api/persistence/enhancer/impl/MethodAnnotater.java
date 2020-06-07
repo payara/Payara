@@ -2247,7 +2247,7 @@ class MethodAnnotater
         while (tmpDoubleRegisters.size() <= idx) {
             final CodeAttribute codeAttr = method.codeAttribute();
             final int reg = codeAttr.localsUsed();
-            tmpDoubleRegisters.addElement(new Integer(reg));
+            tmpDoubleRegisters.addElement(Integer.valueOf(reg));
             codeAttr.setLocalsUsed(reg+2);
         }
 
@@ -2268,7 +2268,7 @@ class MethodAnnotater
         while (tmpRegisters.size() <= idx) {
             final CodeAttribute codeAttr = method.codeAttribute();
             final int reg = codeAttr.localsUsed();
-            tmpRegisters.addElement(new Integer(reg));
+            tmpRegisters.addElement(Integer.valueOf(reg));
             codeAttr.setLocalsUsed(reg+1);
         }
         return ((Integer)tmpRegisters.elementAt(idx)).intValue();

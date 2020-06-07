@@ -95,13 +95,3 @@ public interface Realms extends AMXProxy, Utility, Singleton
     @ManagedAttribute
     public String getAnonymousUser();
 }
-
-
-
-
-
-
-
-
-
-

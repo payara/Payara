@@ -1,0 +1,83 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="ref-managerproptab" name="ref-managerproptab"></a><a id="GHWEB00006" name="GHWEB00006"></a></p>
+
+<h4><a id="sthref95" name="sthref95"></a><a id="sthref96" name="sthref96"></a>Manager Properties</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The session manager provides the means to configure how sessions are created and destroyed, where the session state is stored, and the maximum number of sessions that are available.</p>
+<p>Use the Manager Properties page to add or modify session manager properties for the web container.</p>
+<p>The Manager Properties page contains the following options.</p>
+<dl>
+<dt>Load Defaults</dt>
+<dd>
+<p>Button to restore settings that have default values to their default values. Settings that do not have default values are not changed.</p>
+</dd>
+<dt>Configuration Name</dt>
+<dd>
+<p>The name of the configuration to which the settings on this page apply. This field is read only.</p>
+</dd>
+<dt>Reap Interval</dt>
+<dd>
+<p>The number of seconds before inactive session data is deleted from the store. The default value is 60.</p>
+<p>Set this value lower than the frequency at which session data changes. For example, this value should be as low as possible (1 second) for a hit counter servlet on a frequently accessed web site; otherwise, you could lose the last few hits each time you restart the server.</p>
+</dd>
+<dt>Max Sessions</dt>
+<dd>
+<p>The maximum number of sessions that can be in cache. A value of -1 indicates no limit to the number of sessions. The default value is -1.</p>
+<p>After the limit is reached, an attempt to create a new session causes an <code>IllegalStateException</code> to be thrown.</p>
+</dd>
+<dt>Session File Name</dt>
+<dd>
+<p>The absolute or relative path to the directory in which the session state is preserved between application restarts, if preserving the state is possible. If this path is not set, the session state is not preserved. By default, this path is not set.</p>
+<p>A relative path is relative to the temporary directory for this web application.</p>
+</dd>
+<dt>Session ID Generator Class Name</dt>
+<dd>
+<p>The custom class for generating unique session IDs. Only one session ID generator class per server instance is permitted, and all instances in a cluster must use the same session ID generator to prevent session key collision. The class must be in the Application Server classpath. By default, a custom class is not set.</p>
+</dd>
+<dt>Additional Properties</dt>
+<dd>
+<p>Additional properties for the session manager. GlassFish Server does not define any additional properties for the session manager.</p>
+</dd>
+</dl>
+<a id="sthref97" name="sthref97"></a>
+<h5>Related Tasks</h5>
+<ul>
+<li>
+<p><a href="task-webcontainergeneral.html">To Configure General Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainersessiontimeout.html">To Configure Session Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainermanagerprops.html">To Configure Manager Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontainerstoreprops.html">To Configure Store Properties for the Web Container</a></p>
+</li>
+<li>
+<p><a href="task-webcontaineravailability.html">To Configure Availability Settings for the Web Container</a></p>
+</li>
+</ul>
+<a id="sthref98" name="sthref98"></a>
+<h5>Related asadmin Commands</h5>
+<p>None.</p>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

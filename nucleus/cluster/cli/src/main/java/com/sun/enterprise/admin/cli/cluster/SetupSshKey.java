@@ -37,23 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.cli.cluster;
 
-import java.io.*;
-import java.util.Arrays;
-import java.util.logging.Level;
-
-import javax.inject.Inject;
-
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.cluster.ssh.launcher.SSHLauncher;
+import org.glassfish.cluster.ssh.util.SSHUtil;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import org.glassfish.cluster.ssh.util.SSHUtil;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.impl.DumbTerminal;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.logging.Level;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /**
  *  This is a local command that distributes the SSH public key to remote node(s)
@@ -76,14 +83,10 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
     @Inject
     private ServiceLocator habitat;
 
-    public SetupSshKey() {
-    }
-
     /**
      */
     @Override
-    protected void validate()
-            throws CommandException {
+    protected void validate() throws CommandException {
         super.validate();
         Globals.setDefaultHabitat(habitat);
 
@@ -96,8 +99,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
                 if (promptForKeyGeneration()) {
                     generatekey = true;
                 }
-            }
-            else {
+            } else {
                 //there is a key that requires to be distributed, hence need password
                 promptPass = true;
                 sshkeyfile = existingKey;
@@ -106,8 +108,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
                     sshkeypassphrase = getSSHPassphrase(false);
                 }
             }
-        }
-        else {
+        } else {
             promptPass = SSHUtil.validateKeyFile(sshkeyfile);
             if (SSHUtil.isEncryptedKey(sshkeyfile)) {
                 sshkeypassphrase = getSSHPassphrase(false);
@@ -120,11 +121,8 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
 
     }
 
-    /**
-     */
     @Override
-    protected int executeCommand()
-            throws CommandException {
+    protected int executeCommand() throws CommandException {
 
         SSHLauncher sshL = habitat.getService(SSHLauncher.class);
 
@@ -151,9 +149,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
 
             try {
                 sshL.setupKey(node, sshpublickeyfile, generatekey, sshpassword);
-            }
-            catch (IOException ce) {
-                //logger.fine("SSH key setup failed: " + ce.getMessage());
+            } catch (IOException ce) {
                 throw new CommandException(Strings.get("KeySetupFailed", ce.getMessage()));
             }
             catch (Exception e) {
@@ -180,25 +176,29 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
         if (!programOpts.isInteractive())
             return false;
 
-        Console cons = System.console();
-
-        if (cons != null) {
-            String val = null;
-            do {
-                cons.printf("%s", Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
-                val = cons.readLine();
-                if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
-                    if (logger.isLoggable(Level.FINER)) {
-                        logger.finer("Generate key!");
+        try {
+            buildTerminal();
+            buildLineReader();
+            if (lineReader != null) {
+                String val;
+                do {
+                    val = lineReader.readLine(Strings.get("GenerateKeyPairPrompt", getRemoteUser(), Arrays.toString(hosts)));
+                    if (val != null && (val.equalsIgnoreCase("yes") || val.equalsIgnoreCase("y"))) {
+                        if (logger.isLoggable(Level.FINER)) {
+                            logger.finer("Generate key!");
+                        }
+                        return true;
+                    } else if (val != null && (val.equalsIgnoreCase("no") || val.equalsIgnoreCase("n"))) {
+                        break;
                     }
-                    return true;
-                }
-                else if (val != null && (val.equalsIgnoreCase("no") || val.equalsIgnoreCase("n"))) {
-                    break;
-                }
+                } while (val != null && !isValidAnswer(val));
             }
-            while (val != null && !isValidAnswer(val));
+        } catch (UserInterruptException | EndOfFileException e) {
+            // Ignore  
+        } finally {
+            closeTerminal();
         }
+
         return false;
     }
 

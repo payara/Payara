@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import java.util.Iterator;
@@ -63,10 +63,10 @@ import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.deployment.ServiceRefPortInfo;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
+import com.sun.enterprise.security.jaspic.WebServicesDelegate;
 import com.sun.enterprise.security.jauth.AuthParam;
-import com.sun.enterprise.security.jmac.WebServicesDelegate;
-import com.sun.enterprise.security.jmac.provider.PacketMessageInfo;
-import com.sun.enterprise.security.jmac.provider.SOAPAuthParam;
+import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
+import com.sun.enterprise.security.jauth.jaspic.provider.SOAPAuthParam;
 import com.sun.jaspic.services.AuthConfigRegistrationWrapper;
 import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Packet;
@@ -86,7 +86,7 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
     private static final String DEFAULT_WEBSERVICES_PROVIDER = "com.sun.xml.wss.provider.wsit.WSITAuthConfigProvider";
 
     @Override
-    public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties) {
+    public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map<String, ?> properties) {
         MessageSecurityBindingDescriptor binding = null;
         WSDLPort p = (WSDLPort) properties.get("WSDL_MODEL");
         QName portName = null;

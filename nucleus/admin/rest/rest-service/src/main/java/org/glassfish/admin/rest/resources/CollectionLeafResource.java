@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
-import com.google.common.collect.ImmutableMap;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 
 import javax.ws.rs.PUT;
+
+import com.sun.enterprise.util.JDK;
 import org.jvnet.hk2.config.TransactionFailure;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,8 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.ArrayList;
+import java.util.Collections;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.jvnet.hk2.config.Dom;
@@ -91,7 +94,11 @@ public abstract class CollectionLeafResource extends AbstractResource {
     protected String profiler = "false";
     protected boolean isJvmOptions = false;
 
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
+    public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
+    
+    private static final String MIN_VERSION = "minVersion";
+    private static final String MAX_VERISON = "maxVersion";
+    private static final String JVM_OPTION = "jvmOption";
 
     /** Creates a new instance of xxxResource */
     public CollectionLeafResource() {
@@ -230,9 +237,13 @@ public abstract class CollectionLeafResource extends AbstractResource {
         final String typeKey = upperCaseFirstLetter((decode(getName())));
         ar.setActionDescription(typeKey);
         if (isJvmOptions) {
-            ar.getExtraProperties().put("leafList", getEntity().stream().map(JvmOption::new)
-                    .map(option -> ImmutableMap.of("minVersion", option.minVersion.isPresent() ? option.minVersion.get().toString() : "",
-                            "maxVersion", option.maxVersion.isPresent()? option.maxVersion.get().toString(): "", "jvmOption", option.option)).toArray());
+            List<String> optionsEntity = getEntity();
+            List<Map> optionsList = new ArrayList<>(optionsEntity.size());
+            for (String option: optionsEntity) {
+                JvmOption jvmOption = new JvmOption(option);
+                optionsList.add(optionToMap(jvmOption));
+            }
+            ar.getExtraProperties().put("leafList", optionsList);
         }
         else {
             ar.getExtraProperties().put("leafList", getEntity());
@@ -245,6 +256,15 @@ public abstract class CollectionLeafResource extends AbstractResource {
 
         ResourceUtil.addMethodMetaData(ar, mmd);
         return new ActionReportResult(ar, optionsResult);
+    }
+    
+    private Map<String, String> optionToMap(JvmOption option){
+        Map<String, String> baseMap = new HashMap<>();
+        baseMap.put(MIN_VERSION, option.minVersion.map(JDK.Version::toString).orElse(""));
+        baseMap.put(MAX_VERISON, option.maxVersion.map(JDK.Version::toString).orElse(""));
+        baseMap.put(JVM_OPTION, option.option);
+        
+        return Collections.unmodifiableMap(baseMap);
     }
 
     protected Map<String, MethodMetaData> getMethodMetaData() {
@@ -310,8 +330,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
                 if (exitCode != ActionReport.ExitCode.FAILURE) {
                     String successMessage =
-                        localStrings.getLocalString(successMsgKey,
-                            successMsg, new Object[] {attributeName});
+                        localStrings.getLocalString(successMsgKey, successMsg, attributeName);
                     return Response.ok(ResourceUtil.getActionReportResult(actionReport, successMessage, requestHeaders, uriInfo)).build();
                 }
 
@@ -319,8 +338,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 return Response.status(400).entity(ResourceUtil.getActionReportResult(actionReport, errorMessage, requestHeaders, uriInfo)).build();
             }
             String message =
-                localStrings.getLocalString(operationForbiddenMsgKey,
-                    operationForbiddenMsg, new Object[] {uriInfo.getAbsolutePath()});
+                localStrings.getLocalString(operationForbiddenMsgKey, operationForbiddenMsg, uriInfo.getAbsolutePath());
             return Response.status(403).entity(ResourceUtil.getActionReportResult(ActionReport.ExitCode.FAILURE, message, requestHeaders, uriInfo)).build();
 
         } catch (Exception e) {
@@ -342,29 +360,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
         return message;
     }
 
-    // Ugly, temporary hack
-    private Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
-        Map<String, String> results = new HashMap<String, String>();
-        StringBuilder options = new StringBuilder();
-        String sep = "";
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            String key = entry.getKey();
-            if ("target".equals(key) || "profiler".equals(key)) {
-                results.put(key, entry.getValue());
-            } else {
-//                options.append(sep).append(escapeOptionPart(entry.getKey()));
-                options.append(sep).append(removeVersioning ? new JvmOption(key).option: key);
-
-                String value = entry.getValue();
-                if ((value != null) && (!value.isEmpty())) {
-//                    options.append("=").append(escapeOptionPart(entry.getValue()));
-                    options.append("=").append(entry.getValue());
-                }
-                sep = ":";
-            }
-        }
-
-        results.put("id", options.toString());
+    protected Map<String, String> processData(Map<String, String> data, boolean removeVersioning) {
+        Map<String, String> results = ResourceUtil.processJvmOptions(data, removeVersioning);
         if (results.get("target") == null) {
             results.put("target", target);
         }
@@ -381,10 +378,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
      * @return
      */
     protected String escapeOptionPart(String part) {
-        String changed = part
-                .replace("\\", "\\\\")
+        return part.replace("\\", "\\\\")
                 .replace(":", "\\:");
-        return changed;
     }
 
     // TODO: JvmOptions needs to have its own class, but the generator doesn't seem to support
@@ -397,7 +392,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         Map<String, String> existing = new HashMap<String, String>();
         existing.put("target", target);
         for (String option : getEntity()) {
-            int index = option.indexOf("=");
+            int index = option.indexOf('=');
             if (index > -1) {
                 existing.put(escapeOptionPart(option.substring(0, index)), escapeOptionPart(option.substring(index+1)));
             } else {

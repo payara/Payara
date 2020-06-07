@@ -55,15 +55,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.startup;
 
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -77,6 +79,7 @@ import java.util.Hashtable;
 public final class PasswdUserDatabase
     implements UserDatabase {
 
+    private static final Logger LOGGER = Logger.getLogger(PasswdUserDatabase.class.getName());
 
     // --------------------------------------------------------- Constructors
 
@@ -103,7 +106,7 @@ public final class PasswdUserDatabase
     /**
      * The set of home directories for all defined users, keyed by username.
      */
-    private Hashtable<String, String> homes = new Hashtable<String, String>();
+    private final Hashtable<String, String> homes = new Hashtable<String, String>();
 
 
     /**
@@ -118,10 +121,9 @@ public final class PasswdUserDatabase
     /**
      * Return the UserConfig listener with which we are associated.
      */
+    @Override
     public UserConfig getUserConfig() {
-
         return (this.userConfig);
-
     }
 
 
@@ -130,6 +132,7 @@ public final class PasswdUserDatabase
      *
      * @param userConfig The new UserConfig listener
      */
+    @Override
     public void setUserConfig(UserConfig userConfig) {
 
         this.userConfig = userConfig;
@@ -146,20 +149,18 @@ public final class PasswdUserDatabase
      *
      * @param user User for which a home directory should be retrieved
      */
+    @Override
     public String getHome(String user) {
-
         return homes.get(user);
-
     }
 
 
     /**
      * Return an enumeration of the usernames defined on this server.
      */
+    @Override
     public Enumeration<String> getUsers() {
-
         return (homes.keys());
-
     }
 
 
@@ -171,10 +172,7 @@ public final class PasswdUserDatabase
      */
     private void init() {
 
-        BufferedReader reader = null;
-        try {
-
-            reader = new BufferedReader(new FileReader(PASSWORD_FILE));
+        try (BufferedReader reader = new BufferedReader(new FileReader(PASSWORD_FILE))) {
 
             while (true) {
 
@@ -196,7 +194,7 @@ public final class PasswdUserDatabase
                 for (int i = 0; i < tokens.length; i++)
                     tokens[i] = null;
                 while (n < tokens.length) {
-                    String token = null;
+                    String token;
                     int colon = line.indexOf(':');
                     if (colon >= 0) {
                         token = line.substring(0, colon);
@@ -214,18 +212,8 @@ public final class PasswdUserDatabase
 
             }
 
-            reader.close();
-            reader = null;
-
         } catch (Exception e) {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException f) {
-                    ;
-                }
-                reader = null;
-            }
+            LOGGER.log(Level.WARNING, "Initialization of set of users and home directories failed.", e);
         }
 
     }

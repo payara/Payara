@@ -42,9 +42,14 @@ package com.sun.enterprise.iiop.security;
 
 import fish.payara.nucleus.cluster.PayaraCluster;
 import java.lang.ref.WeakReference;
+
+import org.glassfish.enterprise.iiop.api.GlassFishORBFactory;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.enterprise.iiop.impl.GlassFishORBManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+
+import com.sun.enterprise.config.serverbeans.Servers;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -61,6 +66,9 @@ public class Lookups {
 
     @Inject
     private Provider<GlassFishORBHelper> glassFishORBHelperProvider;
+    
+    @Inject
+    private Provider<GlassFishORBFactory> glassFishORBFactoryProvider;
 
     @Inject
     private Provider<SecurityContextUtil> securityContextUtilProvider;
@@ -166,5 +174,9 @@ public class Lookups {
      */
     static PayaraCluster getCluster() {
         return checkSingleton() ? singleton.payaraCluster.get() : null;
+    }
+    
+    static GlassFishORBFactory getGlassFishORBFactory() {
+    	return checkSingleton() ? singleton.glassFishORBFactoryProvider.get() : null;
     }
 }

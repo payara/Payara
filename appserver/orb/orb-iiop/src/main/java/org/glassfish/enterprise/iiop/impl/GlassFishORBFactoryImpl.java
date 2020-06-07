@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -136,5 +136,10 @@ public class GlassFishORBFactoryImpl
     @Override
     public String getIIOPEndpoints() {
         return gfORBManager.getIIOPEndpoints() ;
+    }
+    
+    @Override
+    public boolean isClusterActive() {
+    	return gfORBManager.isClusterActive();
     }
 }

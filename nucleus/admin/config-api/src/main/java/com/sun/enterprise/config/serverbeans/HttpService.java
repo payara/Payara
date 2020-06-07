@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -114,6 +114,10 @@ public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtensi
     String getAccessLoggingEnabled();
 
     void setAccessLoggingEnabled(String enabled);
+    
+    String getAccessLogPrefix();
+    
+    void setAccessLogPrefix(String name);
 
     /**
      * If true, single sign-on is enabled by default for all web applications on all virtual servers on this

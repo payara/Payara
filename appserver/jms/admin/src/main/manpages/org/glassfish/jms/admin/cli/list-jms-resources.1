@@ -1,0 +1,78 @@
+list-jms-resources(1)     asadmin Utility Subcommands    list-jms-resources(1)
+
+NAME
+       list-jms-resources - lists the JMS resources
+
+SYNOPSIS
+           list-jms-resources [--help]
+           [--restype type]
+           [target]
+
+DESCRIPTION
+       The list-jms-resources subcommand lists the existing Java Message
+       Service (JMS) resources (destination and connection factory resources).
+
+       This subcommand is supported in remote mode only. Remote asadmin
+       subcommands require a running domain administration server (DAS).
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --restype
+           The JMS resource type can be javax.jms.Topic, javax.jms.Queue,
+           javax.jms.ConnectionFactory, javax.jms.TopicConnectionFactory, or
+           javax.jms.QueueConnectionFactory.
+
+OPERANDS
+       target
+           Restricts the listing to resources for a specified target. Valid
+           values are as follows:
+
+           server
+               Lists the resources for the default server instance. This is
+               the default value.
+
+           domain
+               Lists the resources for the domain.
+
+           cluster-name
+               Lists the resources for every server instance in the specified
+               cluster.
+
+           instance-name
+               Lists the resources for the specified server instance.
+
+EXAMPLES
+       Example 1, Listing all JMS resources
+           The following subcommand lists all JMS resources.
+
+               asadmin> list-jms-resources
+               jms/Queue
+               jms/ConnectionFactory
+               jms/DurableConnectionFactory
+               jms/Topic
+               Command list-jms-resources executed successfully.
+
+       Example 2, Listing JMS resources of a specified type
+           The following subcommand lists all javax.jms.ConnectionFactory
+           resources.
+
+               asadmin> list-jms-resources --restype javax.jms.ConnectionFactory
+               jms/ConnectionFactory
+               jms/DurableConnectionFactory
+               Command list-jms-resources executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jms-resource(1), delete-jms-resource(1)
+
+       asadmin(1M)
+
+Java EE 8                         11 Feb 2011            list-jms-resources(1)

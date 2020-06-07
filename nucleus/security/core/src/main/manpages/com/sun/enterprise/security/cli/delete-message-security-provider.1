@@ -1,0 +1,85 @@
+delete-message-security-provider(1)  asadmin Utility Subcommands  delete-message-security-provider(1)
+
+NAME
+       delete-message-security-provider - enables administrators to delete a
+       message security provider
+
+SYNOPSIS
+           delete-message-security-provider [--help] [--target target]
+           --layer message_layer
+           provider_name
+
+DESCRIPTION
+       The delete-message-security-provider subcommand enables administrators
+       to delete a message security provider.
+
+       In terms of what happens when this subcommand is run, the
+       provider-config sub-element for the given message layer
+       (message-security-config element of domain.xml is deleted. The
+       domain.xmlfile specifies parameters and properties to the GlassFish
+       Server). The options specified in the list below apply to attributes
+       within the message-security-config and provider-config sub-elements of
+       the domain.xml file.
+
+       If the message-layer (message-security-config attribute) does not
+       exist, it is created, and then the provider-config is created under it.
+
+       This command is supported in remote mode only.
+
+OPTIONS
+       If an option has a short option name, then the short option precedes
+       the long option name. Short options have one dash whereas long options
+       have two dashes.
+
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target from which you are deleting the message
+           security provider. Valid values are
+
+           server
+               Deletes the message security provider from the default server
+               instance server and is the default value
+
+           domain
+               Deletes the message security provider from the domain.
+
+           cluster_name
+               Deletes the message security provider from every server
+               instance in the cluster.
+
+           instance_name
+               Deletes the message security provider from a particular sever
+               instance.
+
+       --layer
+           The message-layer from which the provider has to be deleted. The
+           default value is HttpServlet.
+
+OPERANDS
+       provider_name
+           The name of the provider used to reference the provider-config
+           element.
+
+EXAMPLES
+       Example 1, Deleting a message security provider
+           The following example shows how to delete a message security
+           provider for a client.
+
+               asadmin> delete-message-security-provider
+               --layer SOAP mySecurityProvider
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-message-security-provider(1), list-message-security-providers(1)
+
+       asadmin(1M)
+
+Java EE 8               09 Aug 2017        delete-message-security-provider(1)

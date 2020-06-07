@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.nucleus.requesttracing.store.strategy;
 
 import fish.payara.notification.requesttracing.RequestTrace;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Random;
 
 /**
@@ -51,52 +52,19 @@ import java.util.Random;
 public class ReservoirTraceStorageStrategy implements TraceStorageStrategy {
 
     private final Random random;
-    private long counter;
 
     public ReservoirTraceStorageStrategy() {
         this.random = new Random();
-        this.counter = 0;
     }
 
     /**
-     * Gets the trace that needs removing. Uses a reservoir sampling algorithm
-     * to determine this.
+     * Gets the trace that needs removing. Removes the provided trace if present, or a random trace each trace having
+     * the same probability of being kept or removed.
      *
-     * @param traces the list of traces to test.
-     * @param maxSize the maximum size of the list.
-     * @return the trace that needs removing, or null if no traces need
-     * removing.
-     */
-    @Override
-    public RequestTrace getTraceForRemoval(Collection<RequestTrace> traces, int maxSize) {
-        if (counter < Long.MAX_VALUE) {
-            counter++;
-        }
-
-        // Probability of keeping the new item
-        double probability = (double) maxSize / counter;
-        boolean keepItem = random.nextDouble() < probability;
-
-        // If the probability fails or the list isn't full, nothing should be removed
-        if (!keepItem || traces.size() <= maxSize) {
-            return null;
-        }
-
-        // Pick a random item in the list
-        int itemToReplace = random.nextInt(traces.size());
-        return traces.toArray(new RequestTrace[]{})[itemToReplace];
-    }
-
-    /**
-     * Gets the trace that needs removing. Removes the provided trace if present, or a random trace ala reservoir 
-     * style trace storage. This method assumes that the reservoir style trace storage removal probability has already
-     * been calculated and come out positive.
-     *
-     * @param traces the list of traces to test.
-     * @param maxSize the maximum size of the list.
+     * @param traces        the list of traces to test.
+     * @param maxSize       the maximum size of the list.
      * @param traceToRemove the trace to remove if present
-     * @return the trace that needs removing, or null if no traces need
-     * removing.
+     * @return the trace that needs removing, or null if no traces need removing.
      */
     @Override
     public RequestTrace getTraceForRemoval(Collection<RequestTrace> traces, int maxSize, RequestTrace traceToRemove) {
@@ -104,13 +72,22 @@ public class ReservoirTraceStorageStrategy implements TraceStorageStrategy {
         if (traces.size() <= maxSize) {
             return null;
         }
-        
-        if (traces.contains(traceToRemove)) {
-            return traceToRemove;
-        } else {
-            // Pick a random item in the list
-            int itemToReplace = random.nextInt(traces.size());
-            return traces.toArray(new RequestTrace[0])[itemToReplace];
+        return traceToRemove != null && traces.contains(traceToRemove) 
+                ? traceToRemove 
+                : findRandomTrace(traces);
+    }
+
+    /**
+     * Since this implementation is only dealing with a special case of the Reservoir sampling scenario where there is a
+     * single element more than the maximum size a selection of equal probability is simply to select any of the
+     * elements at random whereby we are left with the elements to keep.
+     */
+    private RequestTrace findRandomTrace(Collection<RequestTrace> traces) {
+        int itemToReplace = random.nextInt(traces.size());
+        Iterator<RequestTrace> iter = traces.iterator();
+        for (int i = 0; i < itemToReplace; i++) {
+            iter.next();
         }
+        return iter.next();
     }
 }

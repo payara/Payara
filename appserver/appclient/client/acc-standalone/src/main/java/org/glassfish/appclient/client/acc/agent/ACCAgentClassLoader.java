@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client.acc.agent;
 
@@ -54,6 +55,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
+import static java.util.logging.Level.FINEST;
+import java.util.logging.Logger;
 
 /**
  * Used as the system class loader during app client launch.
@@ -66,6 +69,8 @@ import java.util.ListIterator;
  * @author tjquinn
  */
 public class ACCAgentClassLoader extends URLClassLoader {
+
+    private static final Logger LOGGER = Logger.getLogger(ACCAgentClassLoader.class.getName());
 
     private boolean isActive = true;
 
@@ -106,6 +111,15 @@ public class ACCAgentClassLoader extends URLClassLoader {
         super(urls, parent, factory);
     }
 
+    /**
+     * system class loader must define the appendToClassPathForInstrumentation
+     * method to add gf-client.jar to system class path
+     *
+     * @param path
+     */
+    void appendToClassPathForInstrumentation(String path) {
+        LOGGER.log(FINEST, "Added to system class path : {0}", path);
+    }
 
     @Override
     public synchronized Class<?> loadClass(String name) throws ClassNotFoundException {
@@ -180,7 +194,7 @@ public class ACCAgentClassLoader extends URLClassLoader {
 
     private static List<URL> classPathToURLs(final String classPath) {
         if (classPath == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         final List<URL> result = new ArrayList<URL>();
         try {

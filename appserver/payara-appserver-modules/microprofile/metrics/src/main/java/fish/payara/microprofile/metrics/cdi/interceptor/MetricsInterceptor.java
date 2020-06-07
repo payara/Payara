@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -57,12 +57,16 @@ package fish.payara.microprofile.metrics.cdi.interceptor;
 
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.cdi.MetricsAnnotationBinding;
-import fish.payara.microprofile.metrics.cdi.MetricsResolver;
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 import fish.payara.microprofile.metrics.impl.GaugeImpl;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.function.BiConsumer;
+
 import javax.annotation.Priority;
 import javax.enterprise.inject.Intercepted;
 import javax.enterprise.inject.spi.Bean;
@@ -70,11 +74,11 @@ import javax.inject.Inject;
 import javax.interceptor.AroundConstruct;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.annotation.Counted;
-import org.eclipse.microprofile.metrics.annotation.Gauge;
-import org.eclipse.microprofile.metrics.annotation.Metered;
-import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.metrics.Tag;
 import org.glassfish.internal.api.Globals;
 
 @Interceptor
@@ -84,14 +88,11 @@ public class MetricsInterceptor {
 
     private MetricRegistry registry;
 
-    private MetricsResolver resolver;
-
     private Bean<?> bean;
 
     @Inject
-    public MetricsInterceptor(MetricRegistry registry, MetricsResolver resolver, @Intercepted Bean<?> bean) {
+    public MetricsInterceptor(MetricRegistry registry, @Intercepted Bean<?> bean) {
         this.registry = registry;
-        this.resolver = resolver;
         this.bean = bean;
     }
 
@@ -99,7 +100,7 @@ public class MetricsInterceptor {
     private Object constructorInvocation(InvocationContext context) throws Exception {
         Object target;
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        if (metricsService.isMetricsEnabled()) {
+        if (metricsService.isEnabled()) {
             Class<?> beanClass = bean.getBeanClass();
             registerMetrics(beanClass, context.getConstructor(), context.getTarget());
 
@@ -121,27 +122,26 @@ public class MetricsInterceptor {
     }
 
     private <E extends Member & AnnotatedElement> void registerMetrics(Class<?> bean, E element, Object target) {
-        MetricsResolver.Of<Counted> counted = resolver.counted(bean, element);
-        if (counted.isPresent()) {
-            registry.counter(counted.metadata());
-        }
+        register(bean, element, AnnotationReader.COUNTED, registry::counter);
+        register(bean, element, AnnotationReader.CONCURRENT_GAUGE, registry::concurrentGauge);
+        register(bean, element, AnnotationReader.METERED, registry::meter);
+        register(bean, element, AnnotationReader.TIMED, registry::timer);
+        register(bean, element, AnnotationReader.SIMPLY_TIMED, registry::simpleTimer);
 
-        MetricsResolver.Of<Metered> metered = resolver.metered(bean, element);
-        if (metered.isPresent()) {
-            registry.meter(metered.metadata());
-        }
-
-        MetricsResolver.Of<Timed> timed = resolver.timed(bean, element);
-        if (timed.isPresent()) {
-            registry.timer(timed.metadata());
-        }
-
-        if (element instanceof Method
-                && element.isAnnotationPresent(org.eclipse.microprofile.metrics.annotation.Gauge.class)) {
-            MetricsResolver.Of<Gauge> gauge = resolver.gauge(bean, (Method) element);
-            if (gauge.isPresent()) {
-                registry.register(gauge.metadata(), new GaugeImpl((Method) element, target));
+        if (AnnotationReader.GAUGE.isPresent(bean, element)) {
+            Gauge<?> existingGuage = registry.getGauges().get(AnnotationReader.GAUGE.metricID(bean, element));
+            if (existingGuage == null) {
+                registry.register(AnnotationReader.GAUGE.metadata(bean, element),
+                        new GaugeImpl<>((Method) element, target),
+                        AnnotationReader.GAUGE.tags(AnnotationReader.GAUGE.annotation(bean, element)));
             }
+        }
+    }
+
+    private static <E extends Member & AnnotatedElement, T extends Annotation> void register(Class<?> bean, E element,
+            AnnotationReader<T> reader, BiConsumer<Metadata, Tag[]> register) {
+        if (reader.isPresent(bean, element)) {
+            register.accept(reader.metadata(bean, element), reader.tags(reader.annotation(bean, element)));
         }
     }
 

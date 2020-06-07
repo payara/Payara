@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -103,8 +104,8 @@ public class Addressing extends Descriptor {
      /**
      * @return a string describing the values I hold
      */
-    public void print(StringBuffer toStringBuffer) {
-        toStringBuffer.append("\nAddressing enabled = ").append(enabled).append(
+    public void print(StringBuilder toStringBuilder) {
+        toStringBuilder.append("\nAddressing enabled = ").append(enabled).append(
             " required = ").append(required).append(" responses = ").append(responses);
 
     }

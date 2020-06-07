@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.glassfish;
 
-import com.sun.enterprise.universal.collections.CollectionUtils;
 import java.util.*;
 
 /**
@@ -59,7 +59,7 @@ import java.util.*;
  * @author bnevins
  */
 public final class GFSystem {
-    public final static void init() {
+    public static final void init() {
         // forces creation
         getProperty("java.lang.separator");
     }
@@ -68,7 +68,7 @@ public final class GFSystem {
      * Get the GFSystem Properties
      * @return a snapshot copy of the dcurrent Properties
      */
-    public final static Map<String,String> getProperties()
+    public static final Map<String,String> getProperties()
     {
         return gfsi.get().getProperties();
     }
@@ -88,7 +88,7 @@ public final class GFSystem {
      * @param key the name of the property
      * @param value the value of the property
      */
-    public final static void setProperty(String key, String value)
+    public static final void setProperty(String key, String value)
     {
         gfsi.get().setProperty(key, value);
     }

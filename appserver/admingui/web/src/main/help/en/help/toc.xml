@@ -1,0 +1,118 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<toc version="2.0">
+  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+    <tocitem target="task-group-configwebcontainer" text="Configuring the Web Container" expand="false">
+      <tocitem target="task-webcontainergeneral" text="To Configure General Properties for the Web Container" expand="false"></tocitem>
+      <tocitem target="task-webcontainersessiontimeout" text="To Configure Session Properties for the Web Container" expand="false"></tocitem>
+      <tocitem target="task-webcontainermanagerprops" text="To Configure Manager Properties for the Web Container" expand="false"></tocitem>
+      <tocitem target="task-webcontainerstoreprops" text="To Configure Store Properties for the Web Container" expand="false"></tocitem>
+      <tocitem target="task-webcontaineravailability" text="To Configure Availability Settings for the Web Container" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-confighttpservice" text="Configuring the HTTP Service" expand="false">
+      <tocitem target="task-accesslog" text="To Configure the HTTP Service" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-httplisteners" text="Configuring HTTP Listeners" expand="false">
+      <tocitem target="task-httplistenernew" text="To Create an HTTP Listener" expand="false"></tocitem>
+      <tocitem target="task-httplisteneredit" text="To Edit an HTTP Listener" expand="false"></tocitem>
+      <tocitem target="task-httplistenerdelete" text="To Delete an HTTP Listener" expand="false"></tocitem>
+      <tocitem target="task-httplistenerssl" text="To Edit SSL Settings for an HTTP Listener" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-virtualservers" text="Configuring Virtual Servers" expand="false">
+      <tocitem target="task-virtualservercreate" text="To Create a Virtual Server" expand="false"></tocitem>
+      <tocitem target="task-virtualserveredit" text="To Edit a Virtual Server" expand="false"></tocitem>
+      <tocitem target="task-virtualserverdelete" text="To Delete a Virtual Server" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-networkconfig" text="Network Configuration" expand="false">
+      <tocitem target="task-networklistenernew" text="To Create a Network Listener" expand="false"></tocitem>
+      <tocitem target="task-networklisteneredit" text="To Edit a Network Listener" expand="false"></tocitem>
+      <tocitem target="task-networklistenerdelete" text="To Delete a Network Listener" expand="false"></tocitem>
+      <tocitem target="task-protocolnew" text="To Create a Protocol" expand="false"></tocitem>
+      <tocitem target="task-protocoledit" text="To Edit a Protocol" expand="false"></tocitem>
+      <tocitem target="task-protocolssledit" text="To Edit SSL Settings for a Protocol" expand="false"></tocitem>
+      <tocitem target="task-protocolhttpedit" text="To Edit HTTP Settings for a Protocol" expand="false"></tocitem>
+      <tocitem target="task-protocolfilecacheedit" text="To Edit File Cache Settings for a Protocol" expand="false"></tocitem>
+      <tocitem target="task-protocoldelete" text="To Delete a Protocol" expand="false"></tocitem>
+      <tocitem target="task-transportnew" text="To Create a Transport" expand="false"></tocitem>
+      <tocitem target="task-transportedit" text="To Edit a Transport" expand="false"></tocitem>
+      <tocitem target="task-transportdelete" text="To Delete a Transport" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-threadpools" text="Configuring Thread Pools" expand="false">
+      <tocitem target="task-threadpoolnew" text="To Create a Thread Pool" expand="false"></tocitem>
+      <tocitem target="task-threadpooledit" text="To Edit a Thread Pool" expand="false"></tocitem>
+      <tocitem target="task-threadpooldelete" text="To Delete a Thread Pool" expand="false"></tocitem>
+    </tocitem>
+  </tocitem>
+  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+    <tocitem target="ref-group-configuration" text="Configurations" expand="false">
+      <tocitem target="ref-group-availabilityservice" text="Availability Service" expand="false">
+        <tocitem target="ref-webcontaineravailability" text="Web Container Availability" expand="false"></tocitem>
+      </tocitem>
+      <tocitem target="ref-group-webcontainer" text="Web Container" expand="false">
+        <tocitem target="ref-generalproptab" text="General Properties" expand="false"></tocitem>
+        <tocitem target="ref-webcontainerprops" text="Properties Specific to the Web Container" expand="false"></tocitem>
+        <tocitem target="ref-sessionproptab" text="Session Properties" expand="false"></tocitem>
+        <tocitem target="ref-websessionproperties" text="Properties Specific to Web Container Sessions" expand="false"></tocitem>
+        <tocitem target="ref-managerproptab" text="Manager Properties" expand="false"></tocitem>
+        <tocitem target="ref-storeproptab" text="Store Properties" expand="false"></tocitem>
+      </tocitem>
+      <tocitem target="ref-group-httpservice" text="HTTP Service" expand="false">
+        <tocitem target="ref-accesslog" text="HTTP Service" expand="false"></tocitem>
+        <tocitem target="ref-httpserviceprops" text="Properties Specific to the HTTP Service" expand="false"></tocitem>
+        <tocitem target="ref-group-httplisteners" text="HTTP Listeners" expand="false">
+          <tocitem target="ref-httplisteners" text="HTTP Listeners" expand="false"></tocitem>
+          <tocitem target="ref-httplistenernew" text="New HTTP Listener" expand="false"></tocitem>
+          <tocitem target="ref-httplisteneredit" text="Edit HTTP Listener" expand="false"></tocitem>
+        </tocitem>
+      </tocitem>
+      <tocitem target="ref-group-virtualservers" text="Virtual Servers" expand="false">
+        <tocitem target="ref-virtualservers" text="Virtual Servers" expand="false"></tocitem>
+        <tocitem target="ref-virtualservernew" text="New Virtual Server" expand="false"></tocitem>
+        <tocitem target="ref-virtualserverprops" text="Properties Specific to Virtual Servers" expand="false"></tocitem>
+        <tocitem target="ref-virtualserveredit" text="Edit Virtual Server" expand="false"></tocitem>
+      </tocitem>
+      <tocitem target="ref-group-networkconfig" text="Network Config" expand="false">
+        <tocitem target="ref-networkconfig" text="Network Config" expand="false"></tocitem>
+        <tocitem target="ref-group-networklisteners" text="Network Listeners" expand="false">
+          <tocitem target="ref-networklisteners" text="Network Listeners" expand="false"></tocitem>
+          <tocitem target="ref-networklistenernew" text="New Network Listener" expand="false"></tocitem>
+          <tocitem target="ref-networklisteneredit" text="Edit Network Listener" expand="false"></tocitem>
+        </tocitem>
+        <tocitem target="ref-group-protocols" text="Protocols" expand="false">
+          <tocitem target="ref-protocols" text="Protocols" expand="false"></tocitem>
+          <tocitem target="ref-protocolnew" text="New Protocol" expand="false"></tocitem>
+          <tocitem target="ref-protocoledit" text="Edit Protocol" expand="false"></tocitem>
+          <tocitem target="ref-protocolssledit" text="SSL" expand="false"></tocitem>
+          <tocitem target="ref-protocolhttpedit" text="HTTP" expand="false"></tocitem>
+          <tocitem target="ref-protocolfilecacheedit" text="File Cache" expand="false"></tocitem>
+        </tocitem>
+        <tocitem target="ref-group-transports" text="Transports" expand="false">
+          <tocitem target="ref-transports" text="Transports" expand="false"></tocitem>
+          <tocitem target="ref-transportnew" text="New Transport" expand="false"></tocitem>
+          <tocitem target="ref-transportedit" text="Edit Transport" expand="false"></tocitem>
+        </tocitem>
+      </tocitem>
+      <tocitem target="ref-group-threadpools" text="Thread Pools" expand="false">
+        <tocitem target="ref-threadpools" text="Thread Pools" expand="false"></tocitem>
+        <tocitem target="ref-threadpoolnew" text="New Thread Pool" expand="false"></tocitem>
+        <tocitem target="ref-threadpooledit" text="Edit Thread Pool" expand="false"></tocitem>
+      </tocitem>
+    </tocitem>
+  </tocitem>
+</toc>

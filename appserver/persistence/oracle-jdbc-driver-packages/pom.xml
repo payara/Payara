@@ -40,15 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.persistence</groupId>
+        <groupId>fish.payara.server.internal.persistence</groupId>
         <artifactId>persistence</artifactId>
-        <version>5.184-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-oracle-jdbc-driver-packages</artifactId>
     <name>GlassFish Oracle JDBC Packages</name>
@@ -76,22 +75,22 @@
                             <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
                             <Fragment-Host>system.bundle; extension:=framework</Fragment-Host>
                             <Export-Package>
- oracle.jdbc,
- oracle.jdbc.internal,
- oracle.jdbc.pool,
- oracle.xdb,
- oracle.xdb.dom,
- oracle.sql,
- oracle.spatial.geometry,
- oracle.dms.instrument,
- oracle.dms.spy,
- oracle.xml.jaxp,
- oracle.xml.parser.schema,
- oracle.xml.parser.v2,
- oracle.ucp.jdbc,
- oracle.jdbc.dcn,
- oracle.AQ,
- oracle.kv
+                                oracle.jdbc,
+                                oracle.jdbc.internal,
+                                oracle.jdbc.pool,
+                                oracle.xdb,
+                                oracle.xdb.dom,
+                                oracle.sql,
+                                oracle.spatial.geometry,
+                                oracle.dms.instrument,
+                                oracle.dms.spy,
+                                oracle.xml.jaxp,
+                                oracle.xml.parser.schema,
+                                oracle.xml.parser.v2,
+                                oracle.ucp.jdbc,
+                                oracle.jdbc.dcn,
+                                oracle.AQ,
+                                oracle.kv
                             </Export-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
                         </manifestEntries>

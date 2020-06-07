@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -74,6 +74,7 @@ public interface HealthCheckConstants {
     final String DEFAULT_UNIT = "MINUTES";
     final String DEFAULT_RETRY_COUNT = "3";
     final String DEFAULT_THRESHOLD_PERCENTAGE = "95";
+    final String DEFAULT_TIMEOUT = "30000";
     
     final String DEFAULT_GARBAGE_COLLECTOR_NAME = "GBGC";
     final String DEFAULT_CONNECTION_POOL_NAME = "CONP";
@@ -82,4 +83,5 @@ public interface HealthCheckConstants {
     final String DEFAULT_MACHINE_MEMORY_USAGE_NAME = "MEMM";
     final String DEFAULT_HOGGING_THREADS_NAME = "HOGT";
     final String DEFAULT_STUCK_THREAD_NAME = "STUCK";
+    final String DEFAULT_MICROPROFILE_HEALTHCHECK_NAME = "MP";
 }

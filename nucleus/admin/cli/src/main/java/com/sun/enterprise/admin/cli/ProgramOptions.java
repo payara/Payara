@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.cli;
 
@@ -88,8 +88,10 @@ public class ProgramOptions {
     public static final String HELP             = "help";
     public static final String DETACH           = "detach";
     public static final String NOTIFY           = "notify";
+    public static final String EXTRATERSE       = "extraterse";
     public static final String AUTHTOKEN        = AuthTokenManager.AUTH_TOKEN_OPTION_NAME;
     public static final String AUXINPUT         = AsadminInput.CLI_INPUT_OPTION_NAME;
+    public static final String AUTONAME         = "autoname";
 
     private static final Logger logger = Logger.getLogger(ProgramOptions.class.getPackage().getName());
 
@@ -129,6 +131,8 @@ public class ProgramOptions {
         addMetaOption(opts, AUTHTOKEN, '\0', String.class, false, null);
         addMetaOption(opts, DETACH, '\0', Boolean.class, false, "false");
         addMetaOption(opts, NOTIFY, '\0', Boolean.class, false, "false");
+        addMetaOption(opts, EXTRATERSE, 'T', Boolean.class, false, "false");
+        addMetaOption(opts, AUTONAME, 'a', Boolean.class, false, "false");
         programOptions = Collections.unmodifiableSet(opts);
         addMetaOption(hopts, HELP, '?', Boolean.class, false, "false");
         helpOption = Collections.unmodifiableSet(hopts);
@@ -258,6 +262,8 @@ public class ProgramOptions {
         putEnv(env, PASSWORDFILE);
         putEnv(env, AUTHTOKEN);
         putEnv(env, AUXINPUT);
+        putEnv(env, EXTRATERSE);
+        putEnv(env, AUTONAME);
         // XXX - HELP?
     }
 
@@ -458,17 +464,55 @@ public class ProgramOptions {
      */
     public boolean isTerse() {
         boolean terse;
-        if (options.containsKey(TERSE)) {
-            String value = options.getOne(TERSE);
-            if (ok(value)) {
-                terse = Boolean.parseBoolean(value);
+
+        if (isExtraTerse()) {
+            terse = true;
+        } else {
+            if (options.containsKey(TERSE)) {
+                String value = options.getOne(TERSE);
+                if (ok(value)) {
+                    terse = Boolean.parseBoolean(value);
+                } else {
+                    terse = true;
+                }
             } else {
-                terse = true;
+                terse = env.getBooleanOption(TERSE);
+            }
+        }
+
+        return terse;
+    }
+
+    public boolean isExtraTerse() {
+        boolean extraTerse;
+        if (options.containsKey(EXTRATERSE)) {
+            String value = options.getOne(EXTRATERSE);
+            if (ok(value)) {
+                extraTerse = Boolean.parseBoolean(value);
+            } else {
+                extraTerse = true;
             }
         } else {
-            terse = env.getBooleanOption(TERSE);
+            extraTerse = env.getBooleanOption(EXTRATERSE);
         }
-        return terse;
+
+        return extraTerse;
+    }
+
+    public boolean isAutoName() {
+        boolean autoName;
+        if (options.containsKey(AUTONAME)) {
+            String value = options.getOne(AUTONAME);
+            if (ok(value)) {
+                autoName = Boolean.parseBoolean(value);
+            } else {
+                autoName = true;
+            }
+        } else {
+            autoName = env.getBooleanOption(AUTONAME);
+        }
+
+        return autoName;
     }
     
     /**
@@ -504,6 +548,14 @@ public class ProgramOptions {
      */
     public void setTerse(boolean terse) {
         options.set(TERSE, Boolean.toString(terse));
+    }
+
+    public void setExtraTerse(boolean extraTerse) {
+        options.set(EXTRATERSE, Boolean.toString(extraTerse));
+    }
+
+    public void setAutoName(boolean autoName) {
+        options.set(AUTONAME, Boolean.toString(autoName));
     }
 
     /**
@@ -604,7 +656,7 @@ public class ProgramOptions {
      * @return 
      */
     public String[] getProgramArguments() {
-        List<String> args = new ArrayList<String>(15);
+        List<String> args = new ArrayList<>(15);
         if (ok(getHost())) {
             args.add("--host");
             args.add(getHost());
@@ -625,10 +677,12 @@ public class ProgramOptions {
             args.add("--" + AUXINPUT);
             args.add(getAuxInput());
         }
-        args.add("--secure=" + String.valueOf(isSecure()));
-        args.add("--terse=" + String.valueOf(isTerse()));
-        args.add("--echo=" + String.valueOf(isEcho()));
-        args.add("--interactive=" + String.valueOf(isInteractive()));
+        args.add("--secure=" + isSecure());
+        args.add("--terse=" + isTerse());
+        args.add("--extraterse=" + isExtraTerse());
+        args.add("--echo=" + isEcho());
+        args.add("--interactive=" + isInteractive());
+        args.add("--autoname=" + isAutoName());
         String[] a = new String[args.size()];
         args.toArray(a);
         return a;
@@ -700,16 +754,14 @@ public class ProgramOptions {
         if (ok(getUser()))
             sb.append("--user ").append(getUser()).append(' ');
         if (ok(getPasswordFile()))
-            sb.append("--passwordfile ").
-                append(getPasswordFile()).append(' ');
+            sb.append("--passwordfile ").append(getPasswordFile()).append(' ');
         if (isSecure())
             sb.append("--secure ");
-        sb.append("--interactive=").
-            append(Boolean.toString(isInteractive())).append(' ');
-        sb.append("--echo=").
-            append(Boolean.toString(isEcho())).append(' ');
-        sb.append("--terse=").
-            append(Boolean.toString(isTerse())).append(' ');
+        sb.append("--interactive=").append(isInteractive()).append(' ');
+        sb.append("--echo=").append(isEcho()).append(' ');
+        sb.append("--terse=").append(isTerse()).append(' ');
+        sb.append("--extraterse=").append(isExtraTerse()).append(' ');
+        sb.append("--autoname=").append(isAutoName()).append(' ');
         sb.setLength(sb.length() - 1);  // strip trailing space
         return sb.toString();
     }

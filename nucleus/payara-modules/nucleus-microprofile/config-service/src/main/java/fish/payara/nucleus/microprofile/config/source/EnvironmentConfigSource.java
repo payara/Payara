@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
@@ -47,10 +49,10 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
  * @author Steve Millidge (Payara Foundation)
  */
 public class EnvironmentConfigSource implements ConfigSource {
-    
+
     @Override
     public Map<String, String> getProperties() {
-        return System.getenv();
+        return getEnv();
     }
 
     @Override
@@ -60,26 +62,37 @@ public class EnvironmentConfigSource implements ConfigSource {
 
     @Override
     public String getValue(String propertyName) {
-        
+
         // search environment variables as defined in the spec
-        // https://github.com/eclipse/microprofile-config/blob/master/spec/src/main/asciidoc/configsources.asciidoc 
-        String result = System.getenv(propertyName);
-        
+        // https://github.com/eclipse/microprofile-config/blob/master/spec/src/main/asciidoc/configsources.asciidoc
+
+        //Done this way to resolve PAYARA-3064 instead of genenv(propertyname)
+        //as windows is case-insensitive but Java is not
+        String result = getEnv(propertyName);
+
         if (result == null) {
             // replace all non-alphanumeric characters
             propertyName = propertyName.replaceAll("[^A-Za-z0-9]", "_");
-            result = System.getenv(propertyName);
+            result = getEnv(propertyName);
         }
-        
+
         if (result == null) {
             propertyName = propertyName.toUpperCase();
         }
-        return System.getenv(propertyName);
+        return getEnv(propertyName);
     }
 
     @Override
     public String getName() {
         return "Environment";
     }
-    
+
+    private static Map<String, String> getEnv() {
+        final PrivilegedAction<Map<String, String>> action = System::getenv;
+        return AccessController.doPrivileged(action);
+    }
+
+    private static String getEnv(final String propertyName) {
+        return getEnv().get(propertyName);
+    }
 }

@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.admin.rest.cli;
 
 import java.util.ArrayList;
@@ -46,6 +47,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -67,19 +70,20 @@ import com.sun.enterprise.security.auth.realm.User;
  */
 public class SecurityUtil {
     private static final String DAS_CONFIG = "server-config";
-    private static String ADMIN_REALM = "admin-realm";
-    private static String FILE_REALM_CLASSNAME = "com.sun.enterprise.security.auth.realm.file.FileRealm";
+    private static final String ADMIN_REALM = "admin-realm";
+    private static final String FILE_REALM_CLASSNAME = "com.sun.enterprise.security.auth.realm.file.FileRealm";
+    
+    private static final Logger LOGGER = Logger.getLogger(SecurityUtil.class.getCanonicalName());
 
-    private Domain domain;
+    private final Domain domain;
 
     public SecurityUtil(Domain domain) {
         this.domain = domain;
         _loadRealms();
     }
 
-    public  RealmsManager getRealmsManager() {
-        RealmsManager mgr = Globals.getDefaultHabitat().getService(RealmsManager.class);
-        return mgr;
+    public RealmsManager getRealmsManager() {
+        return Globals.getDefaultHabitat().getService(RealmsManager.class);
     }
 
     private SecurityService getSecurityService() {
@@ -106,7 +110,7 @@ public class SecurityUtil {
                 Realm.instantiate(authRealm.getName(), authRealm.getClassname(), props);
                 goodRealms.add(authRealm.getName());
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, null, e);
             }
         }
 
@@ -118,7 +122,7 @@ public class SecurityUtil {
                 Realm.setDefaultRealm(defaultRealm);
             } catch (Exception e) {
                 Realm.setDefaultRealm(goodRealms.iterator().next());
-                e.printStackTrace();
+                LOGGER.log(Level.SEVERE, null, e);
 
             }
         }
@@ -128,11 +132,11 @@ public class SecurityUtil {
     private String[] _getRealmNames() {
 
         Enumeration<String> es = getRealmsManager().getRealmNames();
-        List<String> l = new ArrayList<String>();
+        List<String> realmNamesList = new ArrayList<String>();
         while (es.hasMoreElements()) {
-            l.add(es.nextElement());
+            realmNamesList.add(es.nextElement());
         }
-                return l.toArray(new String[l.size()]);
+        return realmNamesList.toArray(new String[realmNamesList.size()]);
 
     }
 
@@ -140,7 +144,7 @@ public class SecurityUtil {
         try {
             return _getRealmNames();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, null, e);
             return null;
 
         }
@@ -225,12 +229,12 @@ public class SecurityUtil {
     public String[] getUserNames(String realmName) {
         try {
 
-            Enumeration<String> es = getRealm(realmName).getUserNames();
-            List<String> l = new ArrayList<String>();
-            while (es.hasMoreElements()) {
-                l.add(es.nextElement());
+            Enumeration<String> userNamesEnumeration = getRealm(realmName).getUserNames();
+            List<String> userNamesList = new ArrayList<String>();
+            while (userNamesEnumeration.hasMoreElements()) {
+                userNamesList.add(userNamesEnumeration.nextElement());
             }
-                    return l.toArray(new String[l.size()]);
+                    return userNamesList.toArray(new String[userNamesList.size()]);
 
 
         } catch (Exception e) {
@@ -242,11 +246,11 @@ public class SecurityUtil {
         try {
 
             Enumeration<String> es = getRealm(realmName).getGroupNames();
-            List<String> l = new ArrayList<String>();
+            List<String> groupNamesList = new ArrayList<String>();
             while (es.hasMoreElements()) {
-                l.add(es.nextElement());
+                groupNamesList.add(es.nextElement());
             }
-        return l.toArray(new String[l.size()]);
+        return groupNamesList.toArray(new String[groupNamesList.size()]);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -259,11 +263,11 @@ public class SecurityUtil {
         try {
 
             Enumeration<String> es = getRealm(realmName).getGroupNames(user);
-            List<String> l = new ArrayList<String>();
+            List<String> groupNamesList = new ArrayList<String>();
             while (es.hasMoreElements()) {
-                l.add(es.nextElement());
+                groupNamesList.add(es.nextElement());
             }
-        return l.toArray(new String[l.size()]);
+        return groupNamesList.toArray(new String[groupNamesList.size()]);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -89,7 +89,7 @@ class JWSACCMaskingClassLoader extends MaskingClassLoader {
             return true;
         }
         
-        final String packageName = name.substring(0, name.lastIndexOf("."));
+        final String packageName = name.substring(0, name.lastIndexOf('.'));
         if (endorsedPackagesToMask.contains(packageName)) {
             /*
              * The requested name is one to be masked, so do not let the caller

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.integration;
 
@@ -48,6 +49,7 @@ public class AppClientSSL {
     private boolean tlsEnabled = true;
     private boolean tlsEnabled11 = true;
     private boolean tlsEnabled12 = true;
+    private boolean tlsEnabled13 = true;
     private boolean tlsRollbackEnabled = true;
     private String ssl3TlsCiphers;
     private boolean ssl3Enabled = true;
@@ -184,6 +186,10 @@ public class AppClientSSL {
         return this.tlsEnabled12;
     }
 
+    public boolean getTls13Enabled() {
+        return this.tlsEnabled13;
+    }
+
     /**
      * Sets the value of the tlsEnabled property.
      *
@@ -209,9 +215,17 @@ public class AppClientSSL {
     public void setTlsEnabled12(String value) {
         this.tlsEnabled12 = Boolean.parseBoolean(value);
     }
-    
+
     public void setTlsEnabled12(boolean value) {
         this.tlsEnabled12 = value;
+    }
+
+    public void setTlsEnabled13(String value) {
+        this.tlsEnabled13 = Boolean.parseBoolean(value);
+    }
+
+    public void setTlsEnabled13(boolean value) {
+        this.tlsEnabled13 = value;
     }
 
     /**

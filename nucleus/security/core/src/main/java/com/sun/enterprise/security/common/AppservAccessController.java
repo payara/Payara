@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.common;
 
 import java.security.AccessController;
@@ -69,9 +69,22 @@ public final class AppservAccessController {
     public static Object privileged(Runnable action) {
         if (isSecMgrOff) {
             action.run();
+            return null;
         }
 
         return AccessController.doPrivileged( (PrivilegedAction<Object>) () -> {action.run(); return null;});
+    }
+    
+    public static void privilegedException(Runnable action) throws PrivilegedActionException {
+        if (isSecMgrOff) {
+            try {
+                action.run();
+            } catch (Exception e) {
+                throw new PrivilegedActionException(e);
+            }
+        } else {
+            AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {action.run(); return null;});
+        }
     }
     
     public static Object privilegedAlways(Runnable action) {
@@ -90,9 +103,7 @@ public final class AppservAccessController {
         }
     }
 
-    public static Object doPrivileged(PrivilegedExceptionAction<Object> action)
-             throws PrivilegedActionException {
-
+    public static Object doPrivileged(PrivilegedExceptionAction<Object> action) throws PrivilegedActionException {
         if (isSecMgrOff) {
             try {
                 return action.run();

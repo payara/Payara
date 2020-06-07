@@ -96,7 +96,7 @@ public class LogViewerResource {
     /**
      * Represents the data source of this text.
      */
-    private interface Source {
+    protected interface Source {
 
         Session open() throws IOException;
 
@@ -107,7 +107,7 @@ public class LogViewerResource {
 
     private Source source;
     protected Charset charset;
-    private volatile boolean completed;
+    protected volatile boolean completed;
 
     public void setEntity(Dom p) {
         // ugly no-op hack. For now.
@@ -115,8 +115,7 @@ public class LogViewerResource {
 
     @Path("details/")
     public StructuredLogViewerResource getDomainUptimeResource() {
-        StructuredLogViewerResource resource = injector.createAndInitialize(StructuredLogViewerResource.class);
-        return resource;
+        return injector.createAndInitialize(StructuredLogViewerResource.class);
     }
 
     @GET
@@ -128,7 +127,7 @@ public class LogViewerResource {
         boolean gzipOK = true;
         MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
         String acceptEncoding = headerParams.getFirst("Accept-Encoding");
-        if (acceptEncoding == null || acceptEncoding.indexOf("gzip") == -1) {
+        if (acceptEncoding == null || !acceptEncoding.contains("gzip")) {
             gzipOK = false;
         }
 
@@ -152,7 +151,8 @@ public class LogViewerResource {
                     new StreamingOutput() {
 
                         @Override
-                        public void write(OutputStream out) throws IOException, WebApplicationException {
+                        public void write(OutputStream out) throws IOException {
+                            //noop
                         }
                     }).
                     header("X-Text-Append-Next", uriBuilder.build()).build();
@@ -178,10 +178,10 @@ public class LogViewerResource {
 
                     @Override
                     public void write(OutputStream out) throws IOException, WebApplicationException {
-                        Writer w = getWriter(out, gz);
-                        spool.writeTo(new LineEndNormalizingWriter(w));
-                        w.flush();
-                        w.close();
+                        try (Writer w = getWriter(out, gz)) {
+                            spool.writeTo(new LineEndNormalizingWriter(w));
+                            w.flush();
+                        }
                     }
                 });
         UriBuilder uriBuilder = ui.getAbsolutePathBuilder();
@@ -197,7 +197,7 @@ public class LogViewerResource {
     }
 
     private Writer getWriter(OutputStream out, boolean gzipOK) throws IOException {
-        if (gzipOK == false) {
+        if (!gzipOK) {
             return new OutputStreamWriter(out);
         } else {
             return new OutputStreamWriter(new GZIPOutputStream(out), "UTF-8");
@@ -238,7 +238,7 @@ public class LogViewerResource {
         return completed;
     }
 
-    private long writeLogTo(long start, Writer w) throws IOException {
+    protected long writeLogTo(long start, Writer w) throws IOException {
         return writeLogTo(start, new WriterOutputStream(w, charset));
     }
 
@@ -250,8 +250,7 @@ public class LogViewerResource {
      *         until the last newline character and returns the offset to start
      *         the next write operation.
      */
-    private long writeLogTo(long start, OutputStream os) throws IOException {
-        /// CountingOutputStream os = new CountingOutputStream(out);
+    protected long writeLogTo(long start, OutputStream os) throws IOException {
         long count = 0;
         Session f = source.open();
         f.skip(start);
@@ -330,7 +329,7 @@ public class LogViewerResource {
     /**
      * Points to the end of the region.
      */
-    private static final class TailMark extends Mark {
+    protected static final class TailMark extends Mark {
 
         public TailMark(ByteBuf buf) {
             super(buf);

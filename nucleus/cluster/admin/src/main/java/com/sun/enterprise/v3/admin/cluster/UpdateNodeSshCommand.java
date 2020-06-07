@@ -37,20 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
+import com.sun.enterprise.util.cluster.SshAuthType;
+
 import com.sun.enterprise.config.serverbeans.Node;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
-
-import javax.inject.Inject;
-
-
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 
 /**
  * Remote AdminCommand to update an ssh node.  This command is run only on DAS.
@@ -63,24 +62,28 @@ import org.jvnet.hk2.component.*;
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Node.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="update-node-ssh", 
+        opType=RestEndpoint.OpType.POST,
+        path="update-node-ssh",
         description="Update Node",
         params={
             @RestParam(name="id", value="$parent")
         })
 })
 public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand {
+
     @Param(name = "sshport", optional = true)
     private String sshportInSubClass;
     @Param(name = "sshuser", optional = true)
     private String sshuserInSubClass;
+    /** {@link SshAuthType} name */
+    @Param(name = "sshauthtype", optional = true, acceptableValues = "KEY,PASSWORD")
+    private String sshAuthTypeInSubClass;
     @Param(name = "sshkeyfile", optional = true)
     private String sshkeyfileInSubClass;
-    @Param(name = "sshpassword", optional = true, password = true)
-    private String sshpasswordInSubClass;
     @Param(name = "sshkeypassphrase", optional = true, password = true)
     private String sshkeypassphraseInSubClass;
+    @Param(name = "sshpassword", optional = true, password = true)
+    private String sshpasswordInSubClass;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -91,9 +94,10 @@ public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand {
     protected void populateParameters() {
         remotePort = sshportInSubClass;
         remoteUser = sshuserInSubClass;
+        sshAuthType = sshAuthTypeInSubClass;
         sshkeyfile = sshkeyfileInSubClass;
-        remotepassword = sshpasswordInSubClass;
         sshkeypassphrase = sshkeypassphraseInSubClass;
+        remotepassword = sshpasswordInSubClass;
     }
 
     @Override

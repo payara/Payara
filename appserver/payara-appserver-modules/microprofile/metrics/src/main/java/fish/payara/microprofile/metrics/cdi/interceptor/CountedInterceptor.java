@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -40,14 +40,19 @@
 
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
-import fish.payara.microprofile.metrics.cdi.MetricsResolver;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
+import java.util.function.BiFunction;
+
 import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+
 import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.annotation.Counted;
+
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 
 @Counted
 @Interceptor
@@ -57,20 +62,16 @@ public class CountedInterceptor extends AbstractInterceptor {
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)
             throws Exception {
-        MetricsResolver.Of<Counted> counted = resolver.counted(bean.getBeanClass(), element);
-        Counter counter = (Counter) registry.getMetrics().get(counted.metricName());
-        if (counter == null) {
-            throw new IllegalStateException("No counter with name [" + counted.metricName() + "] found in registry [" + registry + "]");
-        }
-
-        counter.inc();
-        try {
-            return context.proceed();
-        } finally {
-            if (!counted.metricAnnotation().monotonic()) {
-                counter.dec();
-            }
-        }
+        return proceedCounted(context, element, bean.getBeanClass(), this::getMetric);
     }
 
+    /**
+     * Make the actual logic unit testable...
+     */
+    static <E extends Member & AnnotatedElement> Object proceedCounted(InvocationContext context, E element,
+            Class<?> bean, BiFunction<MetricID, Class<Counter>, Counter> loader) throws Exception {
+        Counter counter = apply(element, bean, AnnotationReader.COUNTED, Counter.class, loader);
+        counter.inc();
+        return context.proceed();
+    }
 }

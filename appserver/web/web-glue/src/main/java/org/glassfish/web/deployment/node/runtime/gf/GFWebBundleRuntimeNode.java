@@ -37,21 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package org.glassfish.web.deployment.node.runtime.gf;
 
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import com.sun.enterprise.deployment.xml.DTDRegistry;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
+import static com.sun.enterprise.deployment.xml.DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID;
+import static com.sun.enterprise.deployment.xml.DTDRegistry.GF_WEBAPP_301_DTD_SYSTEM_ID;
+import static com.sun.enterprise.deployment.xml.RuntimeTagNames.GF_WEB_RUNTIME_TAG;
 
 import java.util.List;
 import java.util.Map;
 
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
+
+import com.sun.enterprise.deployment.node.XMLElement;
+
 /**
- * This node is responsible for handling all runtime information for 
- * web bundle.
+ * This node is responsible for handling all runtime information for web bundle.
  */
 public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
 
@@ -59,48 +60,46 @@ public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
     public GFWebBundleRuntimeNode(WebBundleDescriptorImpl descriptor) {
         super(descriptor);
     }
-    
+
     /** Creates new GFWebBundleRuntimeNode */
     public GFWebBundleRuntimeNode() {
-        super(null);    
+        super(null);
     }
-    
+
     /**
      * @return the XML tag associated with this XMLNode
      */
     @Override
     protected XMLElement getXMLRootTag() {
-        return new XMLElement(RuntimeTagNames.GF_WEB_RUNTIME_TAG);
-    }    
-    
-    /** 
+        return new XMLElement(GF_WEB_RUNTIME_TAG);
+    }
+
+    /**
      * @return the DOCTYPE that should be written to the XML file
      */
     @Override
     public String getDocType() {
-        return DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID;
+        return GF_WEBAPP_301_DTD_PUBLIC_ID;
     }
-    
+
     /**
      * @return the SystemID of the XML file
      */
     @Override
     public String getSystemID() {
-        return DTDRegistry.GF_WEBAPP_301_DTD_SYSTEM_ID;
+        return GF_WEBAPP_301_DTD_SYSTEM_ID;
     }
 
-   /**
-    * register this node as a root node capable of loading entire DD files
-    * 
-    * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
-    * @param versionUpgrades The list of upgrades from older versions
-    * to the latest schema
-    * @return the doctype tag name
-    */
-    public static String registerBundle(Map<String, String> publicIDToDTD,
-                                        Map<String, List<Class>> versionUpgrades) {
-       publicIDToDTD.put(DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID, DTDRegistry.GF_WEBAPP_301_DTD_SYSTEM_ID);
-       
-       return RuntimeTagNames.GF_WEB_RUNTIME_TAG;       
-   }    
+    /**
+     * register this node as a root node capable of loading entire DD files
+     * 
+     * @param publicIDToDTD is a mapping between xml Public-ID to DTD
+     * @param versionUpgrades The list of upgrades from older versions to the latest schema
+     * @return the doctype tag name
+     */
+    public static String registerBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
+        publicIDToDTD.put(GF_WEBAPP_301_DTD_PUBLIC_ID, GF_WEBAPP_301_DTD_SYSTEM_ID);
+
+        return GF_WEB_RUNTIME_TAG;
+    }
 }

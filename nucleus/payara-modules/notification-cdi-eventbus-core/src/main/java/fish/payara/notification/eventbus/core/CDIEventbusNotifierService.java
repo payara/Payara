@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,11 +39,11 @@
  */
 package fish.payara.notification.eventbus.core;
 
-import com.google.common.eventbus.Subscribe;
 import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.nucleus.notification.configuration.CDIEventbusNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -54,6 +54,8 @@ import java.lang.annotation.Annotation;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.logging.LogLevel;
+import org.glassfish.hk2.api.messaging.MessageReceiver;
+import org.glassfish.hk2.api.messaging.SubscribeTo;
 import org.glassfish.internal.data.ApplicationRegistry;
 
 /**
@@ -61,6 +63,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
  */
 @Service(name = "service-cdieventbus")
 @RunLevel(StartupRunLevel.VAL)
+@MessageReceiver
 public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusNotificationEvent,
         CDIEventbusNotifier,
         CDIEventbusNotifierConfiguration> {
@@ -70,10 +73,9 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
     private static final Logger log = Logger.getLogger(CDIEventbusNotifierService.class.getName());
 
     @Override
-    @Subscribe
-    public void handleNotification(CDIEventbusNotificationEvent event) {
-        if (executionOptions != null && executionOptions.isEnabled()) {
-            CDIEventbusMessageImpl message = new CDIEventbusMessageImpl(event, event.getSubject(), event.getMessage());
+    public void handleNotification(@SubscribeTo NotificationEvent event) {
+        if (event instanceof CDIEventbusNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
+            CDIEventbusMessageImpl message = new CDIEventbusMessageImpl((CDIEventbusNotificationEvent) event, event.getSubject(), event.getMessage());
             for(String appName : appRegistry.getAllApplicationNames()) {
                 ClassLoader oldCL = null;
                 try {
@@ -81,7 +83,7 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
                     if(appCl != null) {
                         oldCL = Utility.setContextClassLoader(appCl);
                         CDI.current();
-                        doHandleNotification(event, message);
+                        doHandleNotification((CDIEventbusNotificationEvent) event, message);
                     }
                 }
                 catch(IllegalStateException e) {
@@ -120,7 +122,7 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
 
     @Override
     public void bootstrap() {
-        register(NotifierType.CDIEVENTBUS, CDIEventbusNotifier.class, CDIEventbusNotifierConfiguration.class, this);
+        register(NotifierType.CDIEVENTBUS, CDIEventbusNotifier.class, CDIEventbusNotifierConfiguration.class);
 
         executionOptions = (CDIEventbusNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
     }

@@ -1,0 +1,60 @@
+list-iiop-listeners(1)    asadmin Utility Subcommands   list-iiop-listeners(1)
+
+NAME
+       list-iiop-listeners - lists the existing IIOP listeners
+
+SYNOPSIS
+           list-iiop-listeners [--help]
+           [target]
+
+DESCRIPTION
+       The list-iiop-listeners subcommand lists the existing IIOP listeners.
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           This operand specifies the target for which the IIOP listeners are
+           to be listed. Valid values are:
+
+           server
+               Lists the listeners in the default server instance server and
+               is the default value.
+
+           configuration_name
+               Lists the listeners in the specified configuration.
+
+           cluster_name
+               Lists the listeners in the specified cluster.
+
+           instance_name
+               Lists the listeners in a particular server instance.
+
+EXAMPLES
+       Example 1, Using the list-iiop-listeners subcommand
+           The following command lists all the IIOP listeners for the server
+           instance:
+
+               asadmin> list-iiop-listeners
+               orb-listener-1
+               SSL
+               SSL_MUTUALAUTH
+               sample_iiop_listener
+               Command list-iiop-listeners executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       create-iiop-listener(1), delete-iiop-listener(1)
+
+       asadmin(1M)
+
+Java EE 8                         18 Aug 2010           list-iiop-listeners(1)

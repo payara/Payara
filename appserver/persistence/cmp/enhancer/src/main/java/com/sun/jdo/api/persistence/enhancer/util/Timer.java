@@ -37,17 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.jdo.api.persistence.enhancer.util;
 
-import java.util.HashMap;
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-
-import java.text.DecimalFormat;
-
-import java.io.PrintWriter;
+import java.util.HashMap;
 
 
 /**
@@ -94,10 +93,10 @@ public final class Timer {
 
     // method call stack
     private final ArrayList calls = new ArrayList(16);
-    
+
     public Timer()
     {
-        
+
     }
 
     public Timer(PrintWriter out)
@@ -108,7 +107,7 @@ public final class Timer {
     public final synchronized void push(String name) {
         push(name, name);
     }
-    
+
     public final synchronized void push(String name, String message) {
         // get time
         final long now = System.currentTimeMillis();
@@ -161,13 +160,13 @@ public final class Timer {
 
     static private final String pad(String s, int i)
     {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         for (i -= s.length(); i > 0; i--)
             b.append((char)' ');
         b.append(s);
         return b.toString();
     }
-    
+
     public final synchronized void print()
     {
         out.println("Timer : printing accumulated times ...");
@@ -184,7 +183,7 @@ public final class Timer {
                                 return (obj != null && compare(this, obj) == 0);
                             }
                         });
-        
+
         out.println("Timer :  total s    self s  #calls  name");
         DecimalFormat nf = new DecimalFormat();
         nf.setMaximumFractionDigits(2);

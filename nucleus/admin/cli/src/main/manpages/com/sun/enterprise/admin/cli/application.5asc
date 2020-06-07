@@ -1,0 +1,19 @@
+application(5ASC)          GlassFish Server Concepts         application(5ASC)
+
+NAME
+       application - server-side Java applications and web services
+
+DESCRIPTION
+       The Java EE platform enables applications to access systems that are
+       outside of the application server. Applications connect to these
+       systems through resources. The GlassFish Server infrastructure supports
+       the deployment of many types of distributed applications and is an
+       ideal foundation for building applications based on Service Oriented
+       Architectures (SOA). SOA is a design methodology aimed at maximizing
+       the reuse of application services. These features enable you to run
+       scalable and highly available Java EE applications.
+
+SEE ALSO
+       create-application-ref(1), deploy(1), list-applications(1)
+
+Java EE 8                         2 Sep 2010                 application(5ASC)

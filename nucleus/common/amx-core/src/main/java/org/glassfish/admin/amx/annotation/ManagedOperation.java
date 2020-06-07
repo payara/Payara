@@ -61,8 +61,3 @@ import org.glassfish.external.arc.Stability;
 public @interface ManagedOperation {
     public int impact() default MBeanOperationInfo.UNKNOWN;
 }
-
-
-
-
-

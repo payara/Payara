@@ -66,6 +66,6 @@ public class PayaraNotificationFileHandler extends GFFileHandler {
                     + NOTIFICATION_FILENAME;
         }
 
-        return TranslatedConfigView.getTranslatedValue(logFileProperty).toString();
+        return TranslatedConfigView.expandValue(logFileProperty);
     }
 }

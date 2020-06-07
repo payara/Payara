@@ -1,0 +1,68 @@
+list-libraries(1)         asadmin Utility Subcommands        list-libraries(1)
+
+NAME
+       list-libraries - lists library JAR files on GlassFish Server
+
+SYNOPSIS
+           list-libraries [--help] [--type={common|ext|app}]
+
+DESCRIPTION
+       The list-libraries subcommand lists library archive files on GlassFish
+       Server.
+
+       The --type option specifies the library type and the GlassFish Server
+       directory for which libraries are to be listed.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --type
+           Specifies the library type and the GlassFish Server directory for
+           which libraries are listed. Valid values are as follows:
+
+           common
+               Lists the library files for the Common class loader directory,
+               domain-dir/lib. This is the default.
+
+           ext
+               Lists the library files for the Java optional package
+               directory, domain-dir/lib/ext.
+
+           app
+               Lists the library files for the application-specific class
+               loader directory, domain-dir/lib/applibs.
+
+           For more information about these directories, see "Class Loaders"
+           in Oracle GlassFish Server Application Development Guide.
+
+EXAMPLES
+       Example 1, Listing Libraries
+           This example lists the libraries in the application-specific class
+           loader directory on the default server instance.
+
+               asadmin> list-libraries --type app
+               mylib.jar
+               xlib.jar
+               ylib.jar
+               zlib.jar
+               Command list-libraries executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       add-library(1), remove-library(1)
+
+       asadmin(1M)
+
+       "Class Loaders" in Oracle GlassFish Server Application Development
+       Guide
+
+Java EE 8                         16 Nov 2011                list-libraries(1)

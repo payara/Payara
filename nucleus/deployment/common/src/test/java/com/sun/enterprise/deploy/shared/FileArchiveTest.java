@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deploy.shared;
 
@@ -79,7 +80,7 @@ public class FileArchiveTest {
 
     public static final Logger deplLogger = org.glassfish.deployment.common.DeploymentContextImpl.deplLogger;
 
-    private final static String LINE_SEP = System.getProperty("line.separator");
+    private final static String LINE_SEP = System.lineSeparator();
     private final static String STALE_ENTRY = "oldLower/oldFile.txt";
     private final static String SUBARCHIVE_NAME = "subarch";
 

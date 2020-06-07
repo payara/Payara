@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.util;
 
@@ -50,39 +51,36 @@ public class DebugOutImpl implements DebugOut
 
     private DebugSink mSink;
 
-    public DebugOutImpl(
-            final String id,
-            final boolean debug,
-            final DebugSink sink)
-    {
+    public DebugOutImpl(final String id, final boolean debug, final DebugSink sink) {
         mID = id;
         mDebug = debug;
 
         mSink = sink == null ? new DebugSinkImpl(System.out) : sink;
     }
 
-    public DebugOutImpl(
-            final String id,
-            final boolean debug)
-    {
+    public DebugOutImpl(final String id, final boolean debug) {
         this(id, debug, null);
     }
 
+    @Override
     public String getID()
     {
         return mID;
     }
 
+    @Override
     public boolean getDebug()
     {
         return mDebug;
     }
 
+    @Override
     public void print(final Object o)
     {
         mSink.print("" + o);
     }
 
+    @Override
     public void println(Object o)
     {
         mSink.println("" + o);
@@ -98,31 +96,25 @@ public class DebugOutImpl implements DebugOut
         mDebug = debug;
     }
 
-    public void debug(final Object... args)
-    {
+    @Override
+    public void debug(final Object... args) {
         if (getDebug())
         {
             mSink.println(toString(args));
         }
     }
 
-    public void debugMethod(
-            final String methodName,
-            final Object... args)
-    {
+    @Override
+    public void debugMethod(final String methodName, final Object... args) {
         if (getDebug())
         {
             debug(methodString(methodName, args));
         }
     }
 
-    public void debugMethod(
-            final String msg,
-            final String methodName,
-            final Object... args)
-    {
-        if (getDebug())
-        {
+    @Override
+    public void debugMethod(final String msg, final String methodName, final Object... args) {
+        if (getDebug()) {
             debug(methodString(methodName, args) + ": " + msg);
         }
     }
@@ -147,31 +139,3 @@ public class DebugOutImpl implements DebugOut
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

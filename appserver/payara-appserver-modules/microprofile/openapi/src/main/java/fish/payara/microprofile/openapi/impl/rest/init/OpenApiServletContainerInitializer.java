@@ -46,10 +46,13 @@ import static java.util.Arrays.asList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.servlet.init.JerseyServletContainerInitializer;
@@ -85,6 +88,13 @@ public class OpenApiServletContainerInitializer implements ServletContainerIniti
 
         // Start the OpenAPI application
         new JerseyServletContainerInitializer().onStartup(new HashSet<>(asList(OpenApiApplication.class)), ctx);
+
+        ServletRegistration.Dynamic reg = (ServletRegistration.Dynamic) ctx.getServletRegistrations().get(OpenApiApplication.class.getName());
+        if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
+            String[] roles = configuration.getRoles().split(",");
+            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
+            ctx.declareRoles(roles);
+        }
     }
 
 }

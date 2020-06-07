@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.resources;
 
@@ -57,9 +58,9 @@ import org.glassfish.common.util.admin.RestSessionManager;
  */
 public class SessionResource {
 
-    private String sessionId;
-    private HttpHeaders requestHeaders;
-    private UriInfo uriInfo;
+    private final String sessionId;
+    private final HttpHeaders requestHeaders;
+    private final UriInfo uriInfo;
 
     RestSessionManager sessionManager;
 

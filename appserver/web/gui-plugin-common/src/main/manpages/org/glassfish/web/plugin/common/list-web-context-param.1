@@ -1,0 +1,108 @@
+list-web-context-param(1)  asadmin Utility Subcommands  list-web-context-param(1)
+
+NAME
+       list-web-context-param - lists servlet context-initialization
+       parameters of a deployed web application or module
+
+SYNOPSIS
+           list-web-context-param [--help]
+           [--name=context-param-name] application-name[/module]
+
+DESCRIPTION
+       The list-web-context-param subcommand lists the servlet
+       context-initialization parameters of one of the following items:
+
+       *   A deployed web application
+
+       *   A web module in a deployed Java Platform, Enterprise Edition (Java
+           EE) application
+
+       The application must already be deployed. Otherwise, an error occurs.
+
+       The list-web-context-param subcommand lists only parameters that have
+       previously been set by using the set-web-context-param(1) subcommand.
+       The subcommand does not list parameters that are set only in the
+       application's deployment descriptor.
+
+       For each parameter, the following information is displayed:
+
+       *   The name of the parameter
+
+       *   The value to which the parameter is set
+
+       *   The value of the --ignoreDescriptorItem option of the
+           set-web-context-param subcommand that was specified when the
+           parameter was set
+
+       *   The description of the parameter or null if no description was
+           specified when the parameter was set
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --name
+           The name of the servlet context-initialization parameter that is to
+           be listed. If this option is omitted, all parameters of the
+           application that have previously been set are listed.
+
+OPERANDS
+       application-name
+           The name of the application. This name can be obtained from the
+           Administration Console or by using the list-applications(1)
+           subcommand.
+
+           The application must already be deployed. Otherwise, an error
+           occurs.
+
+       module
+           The relative path to the module within the application's enterprise
+           archive (EAR) file. The path to the module is specified in the
+           module element of the application's application.xml file.
+
+           module is required only if the servlet context-initialization
+           parameter applies to a web module of a Java EE application. If
+           specified, module must follow application-name, separated by a
+           slash (/).
+
+           For example, the application.xml file for the myApp application
+           might specify the following web module:
+
+               <module>
+                   <web>
+                       <web-uri>myWebModule.war</web-uri>
+                   </web>
+               </module>
+           The module would be specified as the operand of this command as
+           myApp/myWebModule.war.
+
+EXAMPLES
+       Example 1, Listing Servlet Context-Initialization Parameters for a Web
+       Application
+           This example lists all servlet context-initialization parameters of
+           the web application basic-ezcomp that have been set by using the
+           set-web-context-param subcommand. Because no description was
+           specified when the javax.faces.PROJECT_STAGE parameter was set,
+           null is displayed instead of a description for this parameter.
+
+               asadmin> list-web-context-param basic-ezcomp
+               javax.faces.STATE_SAVING_METHOD = client ignoreDescriptorItem=false
+               //The location where the application's state is preserved
+               javax.faces.PROJECT_STAGE = null ignoreDescriptorItem=true //null
+
+               Command list-web-context-param executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       list-applications(1), set-web-context-param(1),
+       unset-web-context-param(1)
+
+       asadmin(1M)
+
+Java EE 8                   09 Aug 2017            list-web-context-param(1)

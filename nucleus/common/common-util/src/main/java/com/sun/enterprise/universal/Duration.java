@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal;
 
@@ -75,16 +76,17 @@ public final class Duration {
      * Use more compact output
      * ref: https://glassfish.dev.java.net/issues/show_bug.cgi?id=12606
      */
-    final public void setTerse() {
+    public final void setTerse() {
         terse = true;
     }
 
     @Override
     public String toString() {
-        if(terse)
+        if(terse) {
             return toStringTerse();
-        else
+        } else {
             return toStringRegular();
+        }
     }
 
     private String toStringTerse() {
@@ -133,11 +135,11 @@ public final class Duration {
     public final long numMilliSeconds;
 
     // possibly useful constants
-    public final static long MSEC_PER_SECOND = 1000; 
-    public final static long MSEC_PER_MINUTE = 60 * MSEC_PER_SECOND; 
-    public final static long MSEC_PER_HOUR = MSEC_PER_MINUTE * 60; 
-    public final static long MSEC_PER_DAY = MSEC_PER_HOUR * 24;
-    public final static long MSEC_PER_WEEK = MSEC_PER_DAY * 7;
+    public static final long MSEC_PER_SECOND = 1000; 
+    public static final long MSEC_PER_MINUTE = 60 * MSEC_PER_SECOND; 
+    public static final long MSEC_PER_HOUR = MSEC_PER_MINUTE * 60; 
+    public static final long MSEC_PER_DAY = MSEC_PER_HOUR * 24;
+    public static final long MSEC_PER_WEEK = MSEC_PER_DAY * 7;
     
     private final LocalStringsImpl strings = new LocalStringsImpl(Duration.class);
     private boolean terse;

@@ -37,16 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.monitoring.stats;
+
+import com.sun.ejb.containers.EjbContainerUtilImpl;
+import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderManager;
 
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.external.probe.provider.PluginPoint;
-import com.sun.ejb.containers.EjbContainerUtilImpl;
 
 /**
  * Utility class for Ejb monitoring.
@@ -64,14 +64,14 @@ public class EjbMonitoringUtils {
     static final String METHOD_NODE = NODE + "bean-methods" + NODE;
 
 
-    static String registerComponent(String appName, String moduleName, 
+    static String registerComponent(String appName, String moduleName,
                 String beanName, Object listener, String invokerId) {
         String beanSubTreeNode = getBeanNode(appName, moduleName, beanName);
         try {
-            StatsProviderManager.register(EJB_MONITORING_NODE, 
+            StatsProviderManager.register(EJB_MONITORING_NODE,
                     PluginPoint.APPLICATIONS, beanSubTreeNode, listener, null, invokerId);
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE, "[**EjbMonitoringUtils**] Could not register listener for " 
+            _logger.log(Level.SEVERE, "[**EjbMonitoringUtils**] Could not register listener for "
                     + getDetailedLoggingName(appName, moduleName, beanName), ex);
 
             return null;
@@ -80,11 +80,11 @@ public class EjbMonitoringUtils {
         return beanSubTreeNode;
     }
 
-    static String registerSingleComponent(String nodeItemName, 
+    static String registerSingleComponent(String nodeItemName,
             Object listener) {
         String beanTreeNode = "ejb/" + nodeItemName;
         try {
-            StatsProviderManager.register(EJB_MONITORING_NODE, 
+            StatsProviderManager.register(EJB_MONITORING_NODE,
                     PluginPoint.APPLICATIONS, beanTreeNode, listener);
         } catch (Exception ex) {
             _logger.log(Level.SEVERE, "[**EjbMonitoringUtils**] Could not "
@@ -94,7 +94,7 @@ public class EjbMonitoringUtils {
         }
         return beanTreeNode;
     }
-    
+
     static String registerSubComponent(String appName, String moduleName,
             String beanName, String subNode, Object listener, String invokerId) {
         String subTreeNode = getBeanNode(appName, moduleName, beanName) + NODE + subNode;
@@ -102,7 +102,7 @@ public class EjbMonitoringUtils {
             _logger.fine("SUB-NODE NAME: " + subTreeNode);
         }
         try {
-             StatsProviderManager.register(EJB_MONITORING_NODE, 
+             StatsProviderManager.register(EJB_MONITORING_NODE,
                     PluginPoint.APPLICATIONS, subTreeNode, listener, null, invokerId);
         } catch (Exception ex) {
             _logger.log(Level.SEVERE, "[**EjbMonitoringUtils**] Could not register subnode ["
@@ -135,7 +135,7 @@ public class EjbMonitoringUtils {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("==> Converting method to String: " + m);
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(m.getName());
         Class[] args = m.getParameterTypes();
         for (Class c : args) {
@@ -149,7 +149,7 @@ public class EjbMonitoringUtils {
     }
 
     static String getBeanNode(String appName, String moduleName, String beanName) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         /** sb.append(APPLICATION_NODE); **/
 
         if (appName != null) {

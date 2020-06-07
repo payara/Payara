@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -40,60 +40,83 @@
 
 package fish.payara.microprofile.metrics.cdi.producer;
 
-import fish.payara.microprofile.metrics.cdi.MetricsHelper;
-import javax.annotation.Priority;
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
+
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
-import javax.interceptor.Interceptor;
+import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Timer;
 import org.eclipse.microprofile.metrics.annotation.Metric;
 
 @Dependent
-@Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
-public final class MetricProducer {
+public class MetricProducer {
+
+    private static final AnnotationReader<Metric> COUNTER = AnnotationReader.METRIC.asType(MetricType.COUNTER);
+    private static final AnnotationReader<Metric> CONCURRENT_GAUGE = AnnotationReader.METRIC.asType(MetricType.CONCURRENT_GAUGE);
+    private static final AnnotationReader<Metric> GAUGE = AnnotationReader.METRIC.asType(MetricType.GAUGE);
+    private static final AnnotationReader<Metric> HISTOGRAM = AnnotationReader.METRIC.asType(MetricType.HISTOGRAM);
+    private static final AnnotationReader<Metric> METER = AnnotationReader.METRIC.asType(MetricType.METERED);
+    private static final AnnotationReader<Metric> SIMPLE_TIMER = AnnotationReader.METRIC.asType(MetricType.SIMPLE_TIMER);
+    private static final AnnotationReader<Metric> TIMER = AnnotationReader.METRIC.asType(MetricType.TIMER);
 
     @Inject
     private MetricRegistry registry;
 
-    @Inject
-    private MetricsHelper helper;
-
     @Produces
     private Counter counter(InjectionPoint ip) {
-        return registry.counter(helper.metadataOf(ip, Counter.class));
+        return COUNTER.getOrRegister(ip, Counter.class, registry);
     }
 
     @Produces
+    private ConcurrentGauge concurrentGauge(InjectionPoint ip) {
+        return CONCURRENT_GAUGE.getOrRegister(ip, ConcurrentGauge.class, registry);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Produces
     private <T> Gauge<T> gauge(InjectionPoint ip) {
-        return () -> (T) registry.getGauges().get(helper.metricNameOf(ip)).getValue();
+        return GAUGE.getOrRegister(ip, Gauge.class, registry);
     }
 
     @Produces
     private Histogram histogram(InjectionPoint ip) {
-        return registry.histogram(helper.metadataOf(ip, Histogram.class));
+        return HISTOGRAM.getOrRegister(ip, Histogram.class, registry);
     }
 
     @Produces
     private Meter meter(InjectionPoint ip) {
-        return registry.meter(helper.metadataOf(ip, Meter.class));
+        return METER.getOrRegister(ip, Meter.class, registry);
+    }
+
+    @Produces
+    private SimpleTimer simpleTimer(InjectionPoint ip) {
+        return SIMPLE_TIMER.getOrRegister(ip, SimpleTimer.class, registry);
     }
 
     @Produces
     private Timer timer(InjectionPoint ip) {
-        return registry.timer(helper.metadataOf(ip, Timer.class));
+        return TIMER.getOrRegister(ip, Timer.class, registry);
     }
 
     @Produces
     @Metric
     private Counter counterMetric(InjectionPoint ip) {
         return counter(ip);
+    }
+
+    @Produces
+    @Metric
+    private ConcurrentGauge concurrentGaugeMetric(InjectionPoint ip) {
+        return concurrentGauge(ip);
     }
 
     @Produces
@@ -112,6 +135,12 @@ public final class MetricProducer {
     @Metric
     private Meter meterMetric(InjectionPoint ip) {
         return meter(ip);
+    }
+
+    @Produces
+    @Metric
+    private SimpleTimer simpleTimerMetric(InjectionPoint ip) {
+        return simpleTimer(ip);
     }
 
     @Produces

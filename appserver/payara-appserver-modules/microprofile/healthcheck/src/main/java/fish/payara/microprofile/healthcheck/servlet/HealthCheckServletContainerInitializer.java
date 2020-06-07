@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,24 +40,32 @@
 package fish.payara.microprofile.healthcheck.servlet;
 
 import fish.payara.microprofile.healthcheck.HealthCheckService;
+import fish.payara.microprofile.healthcheck.HealthCheckType;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.HEALTH;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
+import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import static java.util.Arrays.asList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
 import java.util.logging.Logger;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
-import javax.enterprise.util.AnnotationLiteral;
+import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-import org.eclipse.microprofile.health.Health;
+import javax.servlet.ServletSecurityElement;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.glassfish.api.invocation.InvocationManager;
 import static org.glassfish.common.util.StringHelper.isEmpty;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -67,7 +75,9 @@ import org.glassfish.internal.api.Globals;
  * @author Andrew Pielage
  */
 public class HealthCheckServletContainerInitializer implements ServletContainerInitializer {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(HealthCheckServletContainerInitializer.class.getName());
+
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
         // Check if this context is the root one ("/")
@@ -75,11 +85,11 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             // Check if there is already a servlet for healthcheck
             Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
             MetricsHealthCheckConfiguration configuration = Globals.getDefaultHabitat().getService(MetricsHealthCheckConfiguration.class);
-            
-            if (!Boolean.parseBoolean(configuration.getEnabled())){
+
+            if (!Boolean.parseBoolean(configuration.getEnabled())) {
                 return; //MP Healthcheck disabled
             }
-            
+
             for (ServletRegistration reg : registrations.values()) {
                 if (reg.getClass().equals(HealthCheckServlet.class) || reg.getMappings().contains("/" + configuration.getEndpoint())) {
                     return;
@@ -91,47 +101,65 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
                     && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
                 return;
             }
-            
+
             // Register servlet
             ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", HealthCheckServlet.class);
-            reg.addMapping("/" + configuration.getEndpoint());
+            reg.addMapping("/" + configuration.getEndpoint() + "/*");
+            if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
+                String[] roles = configuration.getRoles().split(",");
+                reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
+                ctx.declareRoles(roles);
+            }
         }
-        
+
         // Get the BeanManager
         BeanManager beanManager = null;
         try {
             beanManager = CDI.current().getBeanManager();
         } catch (Exception ex) {
-            Logger.getLogger(HealthCheckServletContainerInitializer.class.getName()).log(Level.FINE, 
-                    "Exception getting BeanManager; this probably isn't a CDI application. "
-                            + "No HealthChecks will be registered", ex);
+            LOGGER.log(FINE, "Exception getting BeanManager; this probably isn't a CDI application. "
+                    + "No HealthChecks will be registered", ex);
         }
-        
-        // Check for any Beans annotated with @Health
+
+        // Check for any Beans annotated with @Readiness, @Liveness or @Health
         if (beanManager != null) {
-            HealthCheckService healthCheckService = Globals.getDefaultBaseServiceLocator().getService(
-                    HealthCheckService.class);
-            InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator().getService(
-                    InvocationManager.class);
-            
-            // For each bean annotated with @Health and implementing the HealthCheck interface,
+            ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+            HealthCheckService healthCheckService = serviceLocator.getService(HealthCheckService.class);
+            InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
+            String appName = invocationManager.getCurrentInvocation().getAppName();
+
+            // For each bean annotated with @Readiness, @Liveness or @Health
+            // and implementing the HealthCheck interface,
             // register it to the HealthCheckService along with the application name
-            Set<Bean<?>> beans = beanManager.getBeans(HealthCheck.class, new AnnotationLiteral<Health>() {});
+            Set<Bean<?>> beans = new HashSet<>();
+
+            beans.addAll(beanManager.getBeans(HealthCheck.class, READINESS.getLiteral()));
+            beans.addAll(beanManager.getBeans(HealthCheck.class, LIVENESS.getLiteral()));
+            beans.addAll(beanManager.getBeans(HealthCheck.class, HEALTH.getLiteral()));
+
             for (Bean<?> bean : beans) {
-                HealthCheck healthCheck = (HealthCheck) beanManager.getReference(bean, bean.getBeanClass(), 
-                        beanManager.createCreationalContext(bean));
-                
-                healthCheckService.registerHealthCheck(invocationManager.getCurrentInvocation().getAppName(),
-                        healthCheck);
-                healthCheckService.registerClassLoader(invocationManager.getCurrentInvocation().getAppName(), 
-                        healthCheck.getClass().getClassLoader());
-                
-                Logger.getLogger(HealthCheckServletContainerInitializer.class.getName()).log(Level.INFO, 
-                        "Registered {0} as a HealthCheck for app: {1}", 
-                        new Object[]{bean.getBeanClass().getCanonicalName(), 
-                                invocationManager.getCurrentInvocation().getAppName()});
+                HealthCheck healthCheck = (HealthCheck) beanManager.getReference(
+                        bean,
+                        HealthCheck.class,
+                        beanManager.createCreationalContext(bean)
+                );
+
+                healthCheckService.registerHealthCheck(
+                        appName, 
+                        healthCheck, 
+                        HealthCheckType.fromQualifiers(bean.getQualifiers())
+                );
+                healthCheckService.registerClassLoader(
+                        appName,
+                        healthCheck.getClass().getClassLoader()
+                );
+
+                LOGGER.log(INFO,
+                        "Registered {0} as a HealthCheck for app: {1}",
+                        new Object[]{bean.getBeanClass().getCanonicalName(), appName}
+                );
             }
         }
     }
-    
+
 }

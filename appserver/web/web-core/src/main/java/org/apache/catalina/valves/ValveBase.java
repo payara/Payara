@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.apache.catalina.valves;
 
@@ -142,8 +143,8 @@ public abstract class ValveBase
     /**
      * Return the Container with which this Valve is associated, if any.
      */
+    @Override
     public Container getContainer() {
-
         return (container);
     }
 
@@ -153,8 +154,8 @@ public abstract class ValveBase
      *
      * @param container The new associated container
      */
+    @Override
     public void setContainer(Container container) {
-
         this.container = container;
     }
 
@@ -182,8 +183,8 @@ public abstract class ValveBase
     /**
      * Return descriptive information about this Valve implementation.
      */
+    @Override
     public String getInfo() {
-
         return (info);
     }
 
@@ -192,8 +193,8 @@ public abstract class ValveBase
      * Return the next Valve in this pipeline, or <code>null</code> if this
      * is the last Valve in the pipeline.
      */
+    @Override
     public Valve getNext() {
-
         return next;
     }
 
@@ -203,8 +204,8 @@ public abstract class ValveBase
      *
      * @param valve The new next valve
      */
+    @Override
     public void setNext(Valve valve) {
-
         this.next = valve;
     }
 
@@ -216,6 +217,7 @@ public abstract class ValveBase
      * invoked inside the classloading context of this container. Unexpected
      * throwables will be caught and logged.
      */
+    @Override
     public void backgroundProcess() {
         // Deliberate no-op
     }
@@ -233,6 +235,7 @@ public abstract class ValveBase
      * @exception IOException if an input/output error occurs
      * @exception ServletException if a servlet error occurs
      */
+    @Override
     public abstract int invoke(Request request, Response response)
         throws IOException, ServletException;
 
@@ -243,8 +246,8 @@ public abstract class ValveBase
      * Very few Valves override this behaviour as most Valve logic
      * is used for request processing.
      */
-    public void postInvoke(Request request, Response response)
-            throws IOException, ServletException {
+    @Override
+    public void postInvoke(Request request, Response response) throws IOException, ServletException {
         // Deliberate no-op
     }
 
@@ -252,6 +255,7 @@ public abstract class ValveBase
     /**
      * Tomcat-style invocation.
      */
+    @Override
     public void invoke(org.apache.catalina.connector.Request request,
                        org.apache.catalina.connector.Response response)
             throws IOException, ServletException {
@@ -272,6 +276,7 @@ public abstract class ValveBase
      * @exception ServletException if a servlet error occurs, or is thrown
      *  by a subsequently invoked Valve, Filter, or Servlet
      */
+    @Override
     public void event(org.apache.catalina.connector.Request request,
                       org.apache.catalina.connector.Response response,
                       CometEvent event)
@@ -311,6 +316,7 @@ public abstract class ValveBase
      * Gets the (possibly empty) list of lifecycle listeners associated
      * with this Valve.
      */
+    @Override
     public List<LifecycleListener> findLifecycleListeners() {
         return lifecycle.findLifecycleListeners();
     }
@@ -321,8 +327,8 @@ public abstract class ValveBase
      *
      * @param listener The listener to add
      */
+    @Override
     public void removeLifecycleListener(LifecycleListener listener) {
-
         lifecycle.removeLifecycleListener(listener);
     }
 
@@ -335,6 +341,7 @@ public abstract class ValveBase
      * @exception LifecycleException if this component detects a fatal error
      *  that prevents this component from being used
      */
+    @Override
     public void start() throws LifecycleException {
 
         // Validate and update our current component state
@@ -353,6 +360,7 @@ public abstract class ValveBase
      * @exception LifecycleException if this component detects a fatal error
      *  that needs to be reported
      */
+    @Override
     public void stop() throws LifecycleException {
 
         // Validate and update our current component state
@@ -435,7 +443,7 @@ public abstract class ValveBase
         }
         
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "valve parent=" + parentName + " " + parent);
+            log.log(Level.FINE, "valve parent={0} {1}", new Object[]{parentName, parent});
         }
 
         String className=this.getClass().getName();
@@ -444,16 +452,14 @@ public abstract class ValveBase
             className = className.substring(period + 1);
 
         int seq=0;
-        for( int i=0; i<valves.length; i++ ) {
+        for (GlassFishValve valve : valves) {
             // Find other valves with the same name
-            if (valves[i]==this) {
+            if (valve == this) {
                 break;
             }
-            if( valves[i]!=null &&
-                    valves[i].getClass() == this.getClass()) {
+            if (valve != null && valve.getClass() == this.getClass()) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "Duplicate " + valves[i] + " " + this + " " +
-                            container);
+                    log.log(Level.FINE, "Duplicate {0} {1} {2}", new Object[]{valve, this, container});
                 }
                 seq++;
             }
@@ -467,7 +473,7 @@ public abstract class ValveBase
             new ObjectName( domain + ":type=Valve,name=" + className + ext + parentName);
 
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "valve objectname = "+objectName);
+            log.log(Level.FINE, "valve objectname = {0}", objectName);
         }
 
         return objectName;

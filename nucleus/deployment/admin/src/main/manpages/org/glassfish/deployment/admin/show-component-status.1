@@ -1,0 +1,72 @@
+show-component-status(1)  asadmin Utility Subcommands show-component-status(1)
+
+NAME
+       show-component-status - displays the status of the deployed component
+
+SYNOPSIS
+           show-component-status [--help] [--target target] component-name
+
+DESCRIPTION
+       The show-component-status subcommand gets the status (either enabled or
+       disabled) of the deployed component.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target on which you are showing the
+           component status. Valid values are:
+
+           server
+               Shows the component status for the default server instance
+               server and is the default value.
+
+           domain
+               Shows the component status for the domain.
+
+           cluster_name
+               Shows the component status for the cluster.
+
+           instance_name
+               Shows the component status for a clustered or stand-alone
+               server instance.
+
+OPERANDS
+       component-name
+           The name of the component whose status is to be listed.
+
+           The name can include an optional version identifier, which follows
+           the name and is separated from the name by a colon (:). The version
+           identifier must begin with a letter or number. It can contain
+           alphanumeric characters plus underscore (_), dash (-), and period
+           (.) characters. To list multiple versions, you can use an asterisk
+           (*) as a wildcard character. For more information about module and
+           application versions, see "Module and Application Versions" in
+           Oracle GlassFish Server Application Deployment Guide.
+
+EXAMPLES
+       Example 1, Showing the Status of a Component
+           This example gets the status of the MEjbApp component.
+
+               asadmin> show-component-status MEjbApp
+               Status of MEjbApp is enabled
+               Command show-component-status executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-applications(1), list-sub-components(1)
+
+       asadmin(1M)
+
+       Oracle GlassFish Server Application Deployment Guide
+
+Java EE 8                         29 Nov 2010         show-component-status(1)

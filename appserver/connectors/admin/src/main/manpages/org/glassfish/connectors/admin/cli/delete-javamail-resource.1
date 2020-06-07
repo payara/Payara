@@ -1,0 +1,61 @@
+delete-javamail-resource(1)  asadmin Utility Subcommands   delete-javamail-resource(1)
+
+NAME
+       delete-javamail-resource - removes a JavaMail session resource
+
+SYNOPSIS
+           delete-javamail-resource [--help] [--target target] jndi_name
+
+DESCRIPTION
+       The delete-javamail-resource subcommand removes the specified JavaMail
+       session resource. Ensure that you remove all references to this
+       resource before running this subcommand.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           This option specifies the target from which you are deleting the
+           JavaMail session resource. Valid values are:
+
+           server
+               Deletes the resource from the default server instance. This is
+               the default value.
+
+           domain
+               Deletes the resource from the domain.
+
+           cluster_name
+               Deletes the resource from every server instance in the cluster.
+
+           instance_name
+               Deletes the resource from a particular server instance.
+
+OPERANDS
+       jndi_name
+           The JNDI name of the JavaMail session resource to be deleted.
+
+EXAMPLES
+       Example 1, Deleting a JavaMail Resource
+           This example deletes the JavaMail session resource named
+           mail/MyMailSession.
+
+               asadmin> delete-javamail-resource mail/MyMailSession
+               Command delete-javamail-resource executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-javamail-resource(1), list-javamail-resources(1)
+
+       asadmin(1M)
+
+Java EE 8                         09 Aug 2017      delete-javamail-resource(1)

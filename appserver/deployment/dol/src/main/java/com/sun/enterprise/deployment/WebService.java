@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -101,7 +102,7 @@ public class WebService extends Descriptor {
     private Boolean isJaxWSBased = null;
 
     /**
-     * Default constructor. 
+     * Default constructor.
      */
     public WebService() {
         this("");
@@ -116,7 +117,7 @@ public class WebService extends Descriptor {
     }
 
     /**
-     * This is called after verifying that all the endpoints are of the same type, either JAX-WS or JAX-RPC 
+     * This is called after verifying that all the endpoints are of the same type, either JAX-WS or JAX-RPC
      * @param isJaxWSBased
      */
     public void setJaxWSBased(boolean isJaxWSBased) {
@@ -124,7 +125,7 @@ public class WebService extends Descriptor {
     }
 
     /**
-     * copy constructor. 
+     * copy constructor.
      */
     public WebService(WebService other) {
         super(other);
@@ -266,13 +267,13 @@ public class WebService extends Descriptor {
     }
 
     /**
-     * Select one of this webservice's endpoints to use for converting 
-     * relative imports.  
+     * Select one of this webservice's endpoints to use for converting
+     * relative imports.
      */
     public WebServiceEndpoint pickEndpointForRelativeImports() {
         WebServiceEndpoint pick = null;
 
-        // First secure endpoint takes precedence.  
+        // First secure endpoint takes precedence.
         for(WebServiceEndpoint wse : endpoints.values()) {
             if( wse.isSecure() ) {
                 pick = wse;
@@ -286,13 +287,13 @@ public class WebService extends Descriptor {
     /**
      * Returns a formatted String of the attributes of this object.
      */
-    public void print(StringBuffer toStringBuffer) {
-        super.print(toStringBuffer);
-        toStringBuffer.append( "\n wsdl file : ").append( wsdlFileUri);
-        toStringBuffer.append( "\n mapping file ").append(mappingFileUri);
-        toStringBuffer.append( "\n publish url ").append(publishUrl);
-        toStringBuffer.append( "\n final wsdl ").append(wsdlFileUrl);
-        toStringBuffer.append( "\n endpoints ").append(endpoints);
+    public void print(StringBuilder toStringBuilder) {
+        super.print(toStringBuilder);
+        toStringBuilder.append( "\n wsdl file : ").append( wsdlFileUri);
+        toStringBuilder.append( "\n mapping file ").append(mappingFileUri);
+        toStringBuilder.append( "\n publish url ").append(publishUrl);
+        toStringBuilder.append( "\n final wsdl ").append(wsdlFileUrl);
+        toStringBuilder.append( "\n endpoints ").append(endpoints);
     }
 
-}    
+}

@@ -37,25 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.admin.cli.cluster;
 
-import java.util.logging.Level;
+import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
-import java.io.*;
-import java.util.*;
-import org.glassfish.api.Param;
-import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
-
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.PerLookup;
-
-import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.io.FileUtils;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+
+import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 
 /*
  * @author Byron Nevins
@@ -67,14 +71,13 @@ public final class SetupLocalDcom extends CLICommand {
     boolean verbose;
     @Param(name = "force", shortName = "f", primary = false, optional = true)
     boolean force;
-    private final static String[] DEPENDENCIES = new String[]{
+    private static final String[] DEPENDENCIES = new String[]{
         "advapi32.dll",
         "kernel32.dll", //"test32.dll",
     };
     private static final String CPP_APP_FILENAME = "DcomConfigurator.exe";
     private static final File TMPDIR = new File(System.getProperty("java.io.tmpdir"));
     private static final File CPP_APP = new File(TMPDIR, CPP_APP_FILENAME);
-    private final Console console = System.console();
 
     @Override
     protected void validate() throws CommandException {
@@ -83,8 +86,17 @@ public final class SetupLocalDcom extends CLICommand {
         if (!OS.isWindowsForSure())
             throw new CommandException(Strings.get("vld.windows.only"));
 
-        if (console == null)
-            throw new CommandException(Strings.get("vld.noconsole"));
+        try {
+            buildTerminal();
+            buildLineReader();
+
+            // Check if console is still null
+            if (lineReader == null) {
+                throw new CommandException(Strings.get("vld.noconsole"));
+            }
+        } finally {
+            closeTerminal();
+        }
 
         if(!force)
             areYouSure();
@@ -107,8 +119,9 @@ public final class SetupLocalDcom extends CLICommand {
 
             int ret = pm.getExitValue();
 
-            if (verbose || ret != 0)
-                logger.info(pm.getStdout() + pm.getStderr());
+            if (verbose || ret != 0) {
+                logger.log(Level.INFO, "{0}{1}", new Object[]{pm.getStdout(), pm.getStderr()});
+            }
 
             return ret;
         }
@@ -160,7 +173,7 @@ public final class SetupLocalDcom extends CLICommand {
         if (logger.isLoggable(Level.FINER))
             logger.finer(Strings.get("vld.app.deleted", CPP_APP));
 
-        CPP_APP.deleteOnExit();
+        FileUtils.deleteOnExit(CPP_APP);
 
         // copy it from inside this jar to the file system
         InputStream in = null;
@@ -178,16 +191,14 @@ public final class SetupLocalDcom extends CLICommand {
             if (out != null) {
                 try {
                     out.close();
-                }
-                catch (Exception e) {
+                } catch (IOException e) {
                     // ignore
                 }
             }
             if (in != null) {
                 try {
                     in.close();
-                }
-                catch (Exception e) {
+                } catch (IOException e) {
                     // ignore
                 }
             }
@@ -208,11 +219,11 @@ public final class SetupLocalDcom extends CLICommand {
             out.write(buf, 0, len);
         }
     }
+
     /*
      * note how this method will likely be inlined by the compiler since it is tiny
      * and private...
      */
-
     private CommandException exceptionMaker(String key, Object... args) {
         if (args == null || args.length == 0)
             return new CommandException(Strings.get(key));
@@ -221,13 +232,17 @@ public final class SetupLocalDcom extends CLICommand {
     }
 
     private void areYouSure() throws CommandException {
-        if (!programOpts.isInteractive())
+        if (!programOpts.isInteractive()) {
             throw new CommandException(Strings.get("vld.not.interactive"));
+        }
 
-        String msg = Strings.get("vld.areyousure");
-        String answer = console.readLine("%s:  ", msg);
-
-        if (!"yes".equalsIgnoreCase(answer))
-            throw new CommandException(Strings.get("vld.no"));
+        try {
+            String answer = lineReader.readLine(String.format("%s:  ",  Strings.get("vld.areyousure")));
+            if (!"yes".equalsIgnoreCase(answer)) {
+                throw new CommandException(Strings.get("vld.no"));
+            }
+        } catch (UserInterruptException | EndOfFileException e) {
+            // Ignore
+        }
     }
 }

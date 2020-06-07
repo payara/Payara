@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
 package org.glassfish.flashlight.impl.core;
 
 /**
@@ -47,7 +47,7 @@ package org.glassfish.flashlight.impl.core;
  */
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.flashlight.FlashlightLoggerInfo;
-import org.glassfish.hk2.external.org.objectweb.asm.*;
+import org.objectweb.asm.*;
 
 import java.security.*;
 

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import java.lang.reflect.InvocationTargetException;
@@ -56,7 +58,6 @@ import org.glassfish.admin.amx.core.AMX_SPI;
 import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.impl.AMXStartupService;
-import org.glassfish.admin.amx.impl.util.ImplUtil;
 import org.glassfish.admin.amx.impl.util.MBeanInfoSupport;
 import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
 import org.glassfish.admin.amx.util.*;
@@ -91,18 +92,13 @@ should be done before complicating the code with such optimizations.
 public class AMXImplBase extends MBeanImplBase
         implements DynamicMBean, NotificationEmitter, AMX_SPI {
 
-    /** console debug */
-    protected static void cdebug(final String s) {
-        System.out.println(s);
-    }
-
     protected static final String GET = "get";
     protected static final String SET = "set";
     private final ObjectName mParent;
     // subclasses should set this value
     protected volatile MBeanInfo mMBeanInfo;
-    /** Whether AttributeChangeNotifications aree mitted. */
-    private final boolean mEmitAttributeChangeNotifications = true;
+    /** Whether AttributeChangeNotifications are mitted. */
+    private static final boolean M_EMIT_ATTRIBUTE_CHANGE_NOTIFICATIONS = true;
 
     private static final Logger logger = AMXLoggerInfo.getLogger();
 
@@ -128,22 +124,23 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
+    @Override
     public MBeanInfo getMBeanInfo() {
         return mMBeanInfo;
     }
 
 
     protected final boolean shouldEmitNotifications() {
-        return (mEmitAttributeChangeNotifications && getListenerCount() != 0);
+        return (M_EMIT_ATTRIBUTE_CHANGE_NOTIFICATIONS && getListenerCount() != 0);
     }
     private static final MBeanNotificationInfo[] EMPTY_NOTIFICATIONS = new MBeanNotificationInfo[0];
 
+    @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
         return (EMPTY_NOTIFICATIONS);
     }
 
     protected ProxyFactory getProxyFactory() {
-        //return( ProxyFactory.getInstance( mConnectionSource, true ) );
         return (ProxyFactory.getInstance(getMBeanServer()));
     }
 
@@ -163,6 +160,7 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
+    @Override
     public final ObjectName getParent() {
         return mParent;
     }
@@ -184,10 +182,11 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
+    @Override
     public ObjectName[] getChildren() {
         final Set<ObjectName> children = getMBeanTracker().getChildrenOf(getObjectName());
         if (children == null) {
-            return null;
+            return new ObjectName[0];
         }
 
         return CollectionUtil.toArray(children, ObjectName.class);
@@ -224,7 +223,6 @@ public class AMXImplBase extends MBeanImplBase
 
 
     protected boolean supportsChildren() {
-        // return getSelf().extra().subTypes() != null;
         return true;
     }
 
@@ -247,7 +245,6 @@ public class AMXImplBase extends MBeanImplBase
 
     protected ObjectName child(final Class<?> intf) {
         final String type = Util.deduceType(intf);
-        //System.out.println( "child: deduceType = " + type );
         return child(type);
     }
 
@@ -338,6 +335,7 @@ public class AMXImplBase extends MBeanImplBase
     @param name	name of the Attribute
     @return value of the Attribute
      */
+    @Override
     public final Object getAttribute(final String name)
             throws AttributeNotFoundException {
         Object result = null;
@@ -374,15 +372,11 @@ public class AMXImplBase extends MBeanImplBase
     protected Object getAttributeInternal(final String name)
             throws AttributeNotFoundException, ReflectionException, MBeanException {
         Object result = null;
-        boolean handleManually = false;
-        //cdebug( "AMXImplBase.getAttributeInternal: " + name );
 
         // A getter always takes priority
         final Method m = findGetter(name);
         if (m != null) {
-            //cdebug( "getAttributeInternal: found getter method for: " + name );
             result = getAttributeByMethod(name, m);
-            //debug( "getAttribute: " + name + " CALLED GETTER: " + m + " = " + result);
         } else if (attributeTypeMatches(name, ObjectName.class)) {
             result = getObjectNameAttribute(name);
         } else if (attributeTypeMatches(name, ObjectName[].class)) {
@@ -403,6 +397,7 @@ public class AMXImplBase extends MBeanImplBase
     @param names	array of Attribute names
     @return AttributeList of Attributes successfully fetched
      */
+    @Override
     public AttributeList getAttributes(String[] names) {
         trace("AMXImplBase.getAttributes: " + SmartStringifier.toString(names));
 
@@ -412,10 +407,8 @@ public class AMXImplBase extends MBeanImplBase
             try {
                 trace("%%% calling getAttribute: " + names[i] + " on " + getObjectName());
                 final Object value = getAttribute(names[i]);
-                // System.out.println ( "getAttributes: " + names[i] + " = " + value  );
                 attrs.add(new Attribute(names[i], value));
             } catch (Exception e) {
-                //System.out.println( "### AttributeNotFoundException: " + names[ i ] + " for " + getObjectName() );
                 // ignore, as per spec
             }
         }
@@ -423,21 +416,13 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
-    private final void rethrowAttributeNotFound(
-            final Throwable t,
-            final String attrName)
-            throws AttributeNotFoundException {
+    private void rethrowAttributeNotFound(final Throwable t, final String attrName) throws AttributeNotFoundException {
         final Throwable rootCause = ExceptionUtil.getRootCause(t);
         if(rootCause.getMessage() != null && rootCause.getMessage().contains("Failed to retrieve RMIServer stub:")) {
             trace("Attribute could not be found at a remote server. This is most likely due to a clustered or remote instance being down");
         } else  if (rootCause instanceof AttributeNotFoundException) {
             throw (AttributeNotFoundException) rootCause;
         }
-
-        /* final String msg = "Attribute not found: " + StringUtil.quote(attrName) +
-                " of MBean " + getObjectName() + "[" + rootCause.getMessage() + "]";
-        ;
-        throw new AttributeNotFoundException(msg); */
     }
 
 
@@ -449,7 +434,6 @@ public class AMXImplBase extends MBeanImplBase
         Object result = null;
 
         try {
-            //trace( "getAttributeByMethod: " + attrName  );
             result = m.invoke(this, (Object[]) null);
         } catch (InvocationTargetException e) {
             trace("InvocationTargetException: " + attrName + " by " + m);
@@ -469,7 +453,6 @@ public class AMXImplBase extends MBeanImplBase
     protected void setAttributeByMethod(final Attribute attr, final Method m)
             throws AttributeNotFoundException, InvalidAttributeValueException {
         try {
-            // trace( "setAttributeByMethod: " + m );
             m.invoke(this, new Object[]{attr.getValue()});
         } catch (InvocationTargetException e) {
             trace("setAttributeByMethod: InvocationTargetException: " + e);
@@ -506,12 +489,12 @@ public class AMXImplBase extends MBeanImplBase
         Map<String, ObjectName> children = null;
         for (final String type : types) {
             children = getChildrenMap(type);
-            if (children.keySet().size() != 0) {
+            if (!children.keySet().isEmpty()) {
                 break;
             }
         }
 
-        if (children == null || children.keySet().size() == 0) {
+        if (children == null || children.keySet().isEmpty()) {
             result = EMPTY_OBJECT_NAMES;
         } else {
             result = new ObjectName[children.keySet().size()];
@@ -525,7 +508,6 @@ public class AMXImplBase extends MBeanImplBase
     /** get child ObjectName corresponding to the AttributeName  */
     protected ObjectName getObjectNameAttribute(final String attributeName) {
         final String[] types = attributeNameToType(attributeName);
-        //cdebug( "getObjectNameAttribute: " + attributeName + ", look for types: " + StringUtil.toString(types) );
 
         ObjectName result = null;
         for (final String type : types) {
@@ -534,7 +516,6 @@ public class AMXImplBase extends MBeanImplBase
             }
         }
 
-        //cdebug( "getObjectNameAttribute: " + attributeName + " = " + result);
         return result;
     }
 
@@ -558,6 +539,7 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
+    @Override
     public void setAttribute(final Attribute attr)
             throws AttributeNotFoundException, InvalidAttributeValueException {
         final String name = attr.getName();
@@ -566,16 +548,9 @@ public class AMXImplBase extends MBeanImplBase
             throw new IllegalArgumentException("Attribute is read-only: " + attr.getName());
         }
 
-        boolean failure = true;
-
         try {
             setAttributeInternal(attr);
-            failure = false;
-        } catch (AttributeNotFoundException e) {
-            throw e;
-        } catch (InvalidAttributeValueException e) {
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (AttributeNotFoundException | InvalidAttributeValueException | RuntimeException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -591,12 +566,9 @@ public class AMXImplBase extends MBeanImplBase
 
     @param attr	the Attribute
      */
-    protected void setAttributeInternal(final Attribute attr)
-            throws AttributeNotFoundException, InvalidAttributeValueException,
-            ReflectionException, MBeanException {
+    protected void setAttributeInternal(final Attribute attr) throws AttributeNotFoundException, InvalidAttributeValueException {
         trace("setAttribute: " + attr.getName() + " = " + attr.getValue());
 
-        boolean handleManually = false;
         final Method m = findSetter(attr);
 
         boolean shouldEmitNotifications = shouldEmitNotifications();
@@ -647,7 +619,6 @@ public class AMXImplBase extends MBeanImplBase
             final AttributeChangeNotification n =
                     builder.buildAttributeChange(msg, name, attrType, when, oldValue, newValue);
 
-            //System.out.println("AttributeChangeNotification: " + AttributeChangeNotificationStringifier.DEFAULT.stringify(n));
             logger.log(Level.INFO, AMXLoggerInfo.attributeChangeNotification, AttributeChangeNotificationStringifier.DEFAULT.stringify(n));
             sendNotification(n);
         }
@@ -657,6 +628,7 @@ public class AMXImplBase extends MBeanImplBase
     Note that the default implementation sets attributes one at a time, but that
     MBeans with transactional requirements (eg configuration) may wish to set them as a group.
      */
+    @Override
     public AttributeList setAttributes(final AttributeList attrs) {
         final AttributeList successList = new AttributeList();
 
@@ -689,7 +661,7 @@ public class AMXImplBase extends MBeanImplBase
     @param name the name to which "get" will be prepended
     @return a Method or null if not found
      */
-    static private final Class[] GETTER_SIG = new Class[0];
+    private static final Class[] GETTER_SIG = new Class[0];
 
     protected final Method findGetter(String name) {
         final String methodName = GET + name;
@@ -733,7 +705,6 @@ public class AMXImplBase extends MBeanImplBase
 
         final Class primitiveClass = ClassUtil.objectClassToPrimitiveClass(valueClass);
         if (setter == null && primitiveClass != valueClass) {
-            //trace( "findSetter: retrying for primitive class: " + primitiveClass );
             // the Attribute value is always an object.  But it may be
             // that the setter takes a primitive type.  So for example,
             // the Attribute may contain a value of type Boolean, but the setter
@@ -746,7 +717,6 @@ public class AMXImplBase extends MBeanImplBase
     }
     protected static final String GET_PREFIX = "get";
     protected static final String OBJECT_NAME_SUFFIX = "ObjectName";
-    // protected static final String OBJECT_NAME_MAP_SUFFIX    = "ObjectNameMap";
 
     protected boolean operationNameMatches(
             final String operationName,
@@ -800,26 +770,20 @@ public class AMXImplBase extends MBeanImplBase
     to locate a suitable Method.  If a suitable Method is found, it is invoked.
     If not found the subclass is expected to handle it in invokeManually();
      */
-    public final Object invoke(
-            String operationName,
-            Object[] args,
-            String[] types)
-            throws MBeanException, ReflectionException {
+    @Override
+    public final Object invoke(String operationName, Object[] args, String[] types) throws MBeanException, ReflectionException {
         Object result = null;
-        boolean unimplemented = false;
         final int numArgs = args != null ? args.length : 0;
-        //cdebug("invoke: " + operationName + ", num args = " + numArgs );
 
         try {
             final Class[] signature = ClassUtil.signatureFromClassnames(types);
-            final Method m = findMethod(operationName, signature);
-            if (m != null) {
+            final Method invokeMethod = findMethod(operationName, signature);
+            if (invokeMethod != null) {
                 debugMethod("invoking method: " + operationName, args);
-                result = m.invoke(this, args);
+                result = invokeMethod.invoke(this, args);
             } else if (operationName.equals("toString") && numArgs == 0) {
                 result = toString();
             } else {
-                //cdebug( "No method found for " + operationName );
                 result = invokeManually(operationName, args, types);
             }
         } catch (Exception e) {
@@ -851,6 +815,7 @@ public class AMXImplBase extends MBeanImplBase
     A subclass might need to override this method if its name contains characters
     that are illegal for the ObjectName.
      */
+    @Override
     public String getName() {
         String name = Util.getNameProp(getObjectName());
 
@@ -876,6 +841,7 @@ public class AMXImplBase extends MBeanImplBase
     Since it's called only once (per instance) for an MBean Registration, it has no performance
     impact on later use, but guarantees visibility of all non-final instance variables.
      */
+    @Override
     public final synchronized ObjectName preRegister(
             final MBeanServer server,
             final ObjectName nameIn)
@@ -915,15 +881,16 @@ public class AMXImplBase extends MBeanImplBase
     /** Important:  must be synchronized so that preDeregisterHook cannot be called prior to 
     existing postRegisterHook()
      */
+    @Override
     protected synchronized void postRegisterHook(final Boolean registrationSucceeded) {
-        if (registrationSucceeded.booleanValue()) {
+        if (registrationSucceeded) {
             mMBeanInfo = postRegisterModifyMBeanInfo(mMBeanInfo);
             registerChildren();
         }
     }
-
-    // hook for subclasses
+    
     protected void registerChildren() {
+        // hook for subclasses
     }
 
     /** Important:  must be synchronized so that it cannot be called prior to exiting postRegisterHook() */
@@ -960,6 +927,7 @@ public class AMXImplBase extends MBeanImplBase
         return (SmartStringifier.toString(o));
     }
 
+    @Override
     public String toString() {
         return java();
     }
@@ -982,11 +950,3 @@ public class AMXImplBase extends MBeanImplBase
         return new ObjectNameBuilder(getMBeanServer(), getObjectName());
     }
 }
-
-
-
-
-
-
-
-

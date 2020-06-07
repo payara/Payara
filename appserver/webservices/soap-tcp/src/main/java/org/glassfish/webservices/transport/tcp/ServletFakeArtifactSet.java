@@ -37,10 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.webservices.transport.tcp;
 
 import com.sun.xml.ws.api.DistributedPropertySet;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.*;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.handler.MessageContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -50,17 +59,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpUpgradeHandler;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.ws.handler.MessageContext;
 
 /**
  * @author Alexey Stashok
@@ -84,7 +82,7 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
         request = createRequest(requestURL, servletPath);
         response = createResponse();
     }
-    
+
     @com.sun.xml.ws.api.PropertySet.Property(MessageContext.SERVLET_RESPONSE)
     public HttpServletResponse getResponse() {
         return response;
@@ -345,7 +343,7 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
 
         public void login(String s1, String s2) {
         }
-        
+
         public void logout() {
         }
 

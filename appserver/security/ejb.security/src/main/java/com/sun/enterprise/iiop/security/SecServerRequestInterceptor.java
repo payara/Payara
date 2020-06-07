@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.iiop.security;
 
@@ -56,6 +56,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
+
+import com.sun.enterprise.security.auth.realm.certificate.OID;
 
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.omg.CORBA.Any;
@@ -107,7 +109,7 @@ import com.sun.logging.LogDomains;
 
 import sun.security.util.DerInputStream;
 import sun.security.util.DerValue;
-import sun.security.x509.X500Name;
+import javax.security.auth.x500.X500Principal;
 import sun.security.x509.X509CertImpl;
 
 /**
@@ -123,7 +125,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
     // The below cannot be InheritableThreadLocal because the counter inside
     // would be reused by the thread pool, thus it's a non-inheritable ThreadLocal
     // See PAYARA-2561
-    private ThreadLocal<Counter> counterForCalls = new ThreadLocal<Counter>() {
+    private final ThreadLocal<Counter> counterForCalls = new ThreadLocal<Counter>() {
         @Override
         protected Counter initialValue() {
             return new Counter();
@@ -146,12 +148,12 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
     private static final boolean NO_REPLACE = false;
 
     // Name of interceptor used for logging purposes (name + "::")
-    private String prname;
-    private String name;
-    private Codec codec;
-    private SecurityContextUtil secContextUtil;
-    private GlassFishORBHelper orbHelper;
-    private SecurityMechanismSelector smSelector;
+    private final String prname;
+    private final String name;
+    private final Codec codec;
+    private final SecurityContextUtil secContextUtil;
+    private final GlassFishORBHelper orbHelper;
+    private final SecurityMechanismSelector smSelector;
 
     public SecServerRequestInterceptor(String name, Codec codec) {
         this.name = name;
@@ -174,7 +176,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
 
         /**
          * CSIV2 SPEC NOTE:
-         * 
+         *
          * Check that CSIV2 spec does not require an error token to be sent for the GSSUP mechanism.
          */
 
@@ -186,7 +188,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
      */
     private SASContextBody createContextError(int major, int minor) {
         if (logger.isLoggable(FINE)) {
-            logger.log(FINE, "Creating ContextError message: major code = " + major + "minor code= " + minor);
+            logger.log(FINE, "Creating ContextError message: major code = {0}minor code= {1}", new Object[]{major, minor});
         }
 
         byte error_token[] = {};
@@ -208,7 +210,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
 
         /**
          * CSIV2 SPEC NOTE:
-         * 
+         *
          * Check CSIV2 spec to make sure that there is no final_context_token for GSSUP mechanism
          */
         if (logger.isLoggable(FINE)) {
@@ -231,8 +233,6 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
      */
     private ServiceContext createSvcContext(SASContextBody sasContextBody, ORB orb) {
 
-        ServiceContext serviceContext = null;
-
         Any any = orb.create_any();
         SASContextBodyHelper.insert(any, sasContextBody);
 
@@ -243,7 +243,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             logger.log(Level.SEVERE, "iiop.encode_exception", e);
         }
 
-        serviceContext = new ServiceContext();
+        ServiceContext serviceContext = new ServiceContext();
         serviceContext.context_id = SECURITY_ATTRIBUTE_SERVICE_ID;
         serviceContext.context_data = cdr_encoded_saselm;
 
@@ -253,9 +253,9 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
     /**
      * Create an identity from an Identity Token and stores it as a public credential in the JAAS
      * subject in a security context.
-     * 
+     *
      * Set the identcls field in the security context.
-     * 
+     *
      */
     private void createIdCred(SecurityContext securityContext, IdentityToken identityToken) throws Exception {
 
@@ -283,7 +283,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             break;
 
         case ITTDistinguishedName.value:
-            // Construct a X500Name
+            // Construct a X500Principal
 
             derEncoding = identityToken.dn();
 
@@ -296,18 +296,18 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
             }
 
             if (logger.isLoggable(FINE)) {
-                logger.log(FINE, "Create an X500Name object from identity token");
+                logger.log(FINE, "Create an X500Principal object from identity token");
             }
 
-            X500Name xname = new X500Name(derEncoding);
+            X500Principal xname = new X500Principal(derEncoding);
 
             if (logger.isLoggable(FINE)) {
-                logger.log(FINE, "Identity to be asserted is " + xname.toString());
-                logger.log(FINE, "Adding X500Name to subject's PublicCredentials");
+                logger.log(FINE, "Identity to be asserted is {0}", xname.toString());
+                logger.log(FINE, "Adding X500Principal to subject's PublicCredentials");
             }
 
             securityContext.subject.getPublicCredentials().add(xname);
-            securityContext.identcls = X500Name.class;
+            securityContext.identcls = X500Principal.class;
             break;
 
         case ITTX509CertChain.value:
@@ -339,24 +339,22 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
              * encodings. So use X509CertImpl extends X509Cerificate and also implements DerEncoder interface.
              */
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Contents of X509 Certificate chain:");
+                logger.log(Level.FINE, "Content of X509 Certificate chain:");
             }
             for (int i = 0; i < certchain.length; i++) {
                 certchain[i] = new X509CertImpl(derval[i]);
                 if (logger.isLoggable(FINE)) {
-                    logger.log(FINE, "    " + certchain[i].getSubjectDN().getName());
+                    logger.log(FINE, "    " + certchain[i].getSubjectX500Principal()
+                            .getName(X500Principal.RFC2253, OID.getOIDMap()));
                 }
             }
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Creating a X509CertificateCredential object from certchain");
             }
-            /**
-             * The alias field in the X509CertificateCredential is currently ignored by the RI. So it is set to
-             * "dummy".
-             * 
-             */
-            X509CertificateCredential cred = new X509CertificateCredential(certchain, certchain[0].getSubjectDN().getName(),
-                    "default");
+            // The alias field in the X509CertificateCredential is currently ignored by the RI.
+            // So it is set to "dummy".
+            X509CertificateCredential cred = new X509CertificateCredential(certchain,
+                certchain[0].getSubjectX500Principal().getName(X500Principal.RFC2253, OID.getOIDMap()), "default");
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, "Adding X509CertificateCredential to subject's PublicCredentials");
             }
@@ -401,7 +399,7 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
 
     /**
      * Check if given byte is CDR encapsulated.
-     * 
+     *
      * @param bytes an input array of byte
      * @return boolean indicates whether input is CDR
      */
@@ -539,11 +537,11 @@ public class SecServerRequestInterceptor extends org.omg.CORBA.LocalObject imple
 
         /**
          * CSIV2 SPEC NOTE:
-         * 
+         *
          * CSIV2 spec does not specify the actions for any message other than a MessageInContext and
          * EstablishContext message.So for such messages, this implementation simply drops the message on
          * the floor. No other message is sent back. Neither is an exception raised.
-         * 
+         *
          * ISSUE: Should there be some other action ?
          */
 

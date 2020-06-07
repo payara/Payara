@@ -37,22 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.node.ws;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.node.*;
-import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import static com.sun.enterprise.deployment.node.ws.WLDescriptorConstants.WL_WEBSERVICES_SCHEMA_LOCATION;
+import static com.sun.enterprise.deployment.node.ws.WLDescriptorConstants.WL_WEBSERVICES_XML_SCHEMA;
+import static com.sun.enterprise.deployment.node.ws.WLWebServicesTagNames.WEBSERVICE_SECURITY;
+import static com.sun.enterprise.deployment.node.ws.WLWebServicesTagNames.WEB_SERVICE;
+import static com.sun.enterprise.deployment.node.ws.WLWebServicesTagNames.WEB_SERVICES;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.unmodifiableList;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.sun.enterprise.deployment.WebService;
+import com.sun.enterprise.deployment.WebServicesDescriptor;
+import com.sun.enterprise.deployment.node.AbstractBundleNode;
+import com.sun.enterprise.deployment.node.SaxParserHandler;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.XMLNode;
+import com.sun.enterprise.deployment.xml.TagNames;
+import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 
 /**
  * Node representing weblogic-webservices root element in weblogic-webservices.xml
@@ -66,26 +78,24 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
         this();
         parentDescriptor = descriptor;
     }
-    
+
     public WLWebServicesDescriptorNode() {
-        registerElementHandler(new XMLElement(WLWebServicesTagNames.WEB_SERVICE),
-                WLWebServiceNode.class);
-        registerElementHandler(new XMLElement(WLWebServicesTagNames.WEBSERVICE_SECURITY),
-                WLUnSupportedNode.class);
-        SaxParserHandler.registerBundleNode(this, WLWebServicesTagNames.WEB_SERVICES);
+        registerElementHandler(new XMLElement(WEB_SERVICE), WLWebServiceNode.class);
+        registerElementHandler(new XMLElement(WEBSERVICE_SECURITY), WLUnSupportedNode.class);
+        SaxParserHandler.registerBundleNode(this, WEB_SERVICES);
     }
 
-    private final static XMLElement ROOT_ELEMENT = new XMLElement(WLWebServicesTagNames.WEB_SERVICES);
+    private final static XMLElement ROOT_ELEMENT = new XMLElement(WEB_SERVICES);
 
-    private final static String SCHEMA_ID = WLDescriptorConstants.WL_WEBSERVICES_XML_SCHEMA;
+    private final static String SCHEMA_ID = WL_WEBSERVICES_XML_SCHEMA;
     private final static String SPEC_VERSION = "1.0";
     private final static List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
         systemIDs.add(SCHEMA_ID);
-        return Collections.unmodifiableList(systemIDs);
-
+        
+        return unmodifiableList(systemIDs);
     }
 
     private WebServicesDescriptor parentDescriptor;
@@ -117,16 +127,15 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     }
 
     @Override
-    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping, final Map<String, List<Class>> versionUpgrades) {
-        return Collections.EMPTY_MAP;
+    public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
+        return emptyMap();
     }
 
-    
     /**
      * @return the complete URL for J2EE schemas
      */
     protected String getSchemaURL() {
-        return WLDescriptorConstants.WL_WEBSERVICES_SCHEMA_LOCATION;
+        return WL_WEBSERVICES_SCHEMA_LOCATION;
     }
 
     /**
@@ -136,18 +145,9 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
         return ROOT_ELEMENT;
     }
 
-    /*
-    see setAttributeValue below
-    public void setElementValue(XMLElement element, String value) {
-        if (TagNames.VERSION.equals(element.getQName())) {
-            bundleDescriptor.getWebServices().setSpecVersion(value);
-        } else super.setElementValue(element, value);
-    }
-    */
-
     @Override
     protected boolean setAttributeValue(XMLElement elementName, XMLElement attributeName, String value) {
-        // we do not support id attribute for the moment
+        // We do not support id attribute for the moment
         if (attributeName.getQName().equals(TagNames.ID)) {
             return true;
         }
@@ -161,20 +161,20 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
 
     @Override
     public XMLNode getHandlerFor(XMLElement element) {
-        if (WLWebServicesTagNames.WEBSERVICE_SECURITY.equals(element.getQName())) {
+        if (WEBSERVICE_SECURITY.equals(element.getQName())) {
             throw new UnsupportedConfigurationException(element + " configuration in weblogic-webservices.xml is not supported.");
-        } else {
-            return super.getHandlerFor(element);
         }
-
+        
+        return super.getHandlerFor(element);
     }
 
     @Override
     public void addDescriptor(Object descriptor) {
-        //None of the sub nodes should call addDescriptor() on this node.
+        // None of the sub nodes should call addDescriptor() on this node.
         // as this configuration only supplements webservices.xml configuration and
         // does not create new web services.
-        //DOLUtils.getDefaultLogger().info("Warning: WLWebServiceDescriptorNode.addDescriptor() should not have been called by" + descriptor.toString());
+        // DOLUtils.getDefaultLogger().info("Warning: WLWebServiceDescriptorNode.addDescriptor() should not have been called by"
+        // + descriptor.toString());
 
     }
 
@@ -196,16 +196,13 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
             bundleNode = appendChild(parent, getXMLRootTag().getQName());
         }
 
-        //TODO is this needed?
-        // appendTextChild(bundleNode, TagNames.MODULE_NAME, descriptor.getModuleDescriptor().getModuleName());
-
-        // description, display-name, icons...
+        // Description, display-name, icons...
         writeDisplayableComponentInfo(bundleNode, descriptor);
 
         if (descriptor instanceof WebServicesDescriptor) {
             WLWebServiceNode wsNode = new WLWebServiceNode();
-            for(WebService next : ((WebServicesDescriptor)descriptor).getWebServices()) {
-                wsNode.writeDescriptor(bundleNode, WebServicesTagNames.WEB_SERVICE,next);
+            for (WebService next : ((WebServicesDescriptor) descriptor).getWebServices()) {
+                wsNode.writeDescriptor(bundleNode, WebServicesTagNames.WEB_SERVICE, next);
             }
         }
         return bundleNode;
@@ -219,7 +216,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
         bundleNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:j2ee", TagNames.J2EE_NAMESPACE);
 
         schemaLocation = WLDescriptorConstants.WL_WEBSERVICES_XML_NS + " " + getSchemaURL();
-        schemaLocation = schemaLocation+ " "+ TagNames.J2EE_NAMESPACE + " " + "http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd";
+        schemaLocation = schemaLocation + " " + TagNames.J2EE_NAMESPACE + " " + "http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd";
         bundleNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi", W3C_XML_SCHEMA_INSTANCE);
 
         // add all custom global namespaces
@@ -230,7 +227,6 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
         }
         bundleNode.setAttributeNS(W3C_XML_SCHEMA_INSTANCE, SCHEMA_LOCATION_TAG, schemaLocation);
         bundleNode.setAttribute(TagNames.VERSION, getSpecVersion());
-
     }
 
     /**

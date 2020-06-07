@@ -37,33 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.integration;
 
-import java.security.CodeSource;
 import java.security.PermissionCollection;
-import java.security.Permission;
-
 
 public interface DDPermissionsLoader {
 
-    public static final String SET_EE_POLICY = "createPolicy.eepermissions";  
-    
+    public static final String SET_EE_POLICY = "createPolicy.eepermissions";
+
     /**
      * Pass the declared permission collection from the module handler to the classloader
-     * @param declaredPc  the declared permission collection obtained from permissions.xml file 
-     * throws AccessControlException if caller has no privilege 
+     * 
+     * @param declaredPermissionCollection the declared permission collection obtained from permissions.xml file throws AccessControlException
+     * if caller has no privilege
      */
-    void addDeclaredPermissions(PermissionCollection declaredPc 
-            ) throws SecurityException;
+    void addDeclaredPermissions(PermissionCollection declaredPermissionCollection) throws SecurityException;
 
-    
     /**
      * Pass the EE permission to the classloader
-     * @param eePc EE permissions
-     * throws AccessControlException if caller has no privilege
+     * 
+     * @param eePermissionCollection EE permissions throws AccessControlException if caller has no privilege
      */
-    void addEEPermissions(PermissionCollection eePc) throws SecurityException;
-    
-    
+    void addEEPermissions(PermissionCollection eePermissionCollection) throws SecurityException;
+
 }

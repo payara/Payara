@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>delete-admin-object</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>delete-admin-object</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="create-virtual-server.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-application-ref.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="delete-admin-object-1"></a><a id="GSRFM00063"></a><a id="delete-admin-object"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_delete_admin_object">delete-admin-object</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>removes the administered object with the specified JNDI name.</p>
+</div>
+<div id="sthref577" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] delete-admin-object [--help]
+[--target target] jndi_name</code></pre>
+</div>
+</div>
+<div id="sthref578" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>delete-admin-object</code> subcommand removes an administered object with
+the specified JNDI name.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mote only.</p>
+</div>
+<div id="sthref579" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>This is the name of the targets for which the administered object is
+to be deleted. Valid values are:<br></p>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Note:</p>
+</div>
+<div class="paragraph">
+<p>Resources are always created for a domain as a whole but are only
+active for targets for which a <code>&lt;resource-ref&gt;</code> has been created using
+the <code>--target</code> option when the resource was created. This means that
+deleting a resource only deletes the <code>&lt;resource-ref&gt;</code> element for the
+specified <code>--target</code>, and does not delete the resource from the domain
+as a whole unless <code>domain</code> is specified as the <code>--target</code> for the
+deletion.</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Deletes the administered object for the default server instance
+<code>server</code> and is the default value.</p>
+</dd>
+<dt class="hdlist1">configuration_name</dt>
+<dd>
+<p>Deletes the administered object for the specified configuration.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Deletes the administered object for the specified cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Deletes the administered object for a particular server instance.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref580" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">jndi_name</dt>
+<dd>
+<p>JNDI name of the administered object to be deleted.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref581" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM530"></a><a id="sthref582"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Deleting an Administered Object</p>
+</div>
+<div class="paragraph">
+<p>This example deletes the administered object named <code>jms/samplelqueue</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; delete-admin-object jms/samplequeue
+Command delete-admin-object executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref583" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref584" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-admin-object.html#create-admin-object-1"><code>create-admin-object</code>(1)</a>,
+<a href="list-admin-objects.html#list-admin-objects-1"><code>list-admin-objects</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="create-virtual-server.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-application-ref.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

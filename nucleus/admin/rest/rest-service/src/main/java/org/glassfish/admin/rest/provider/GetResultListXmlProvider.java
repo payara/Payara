@@ -80,7 +80,7 @@ public class GetResultListXmlProvider extends BaseProvider<GetResultList> {
                  .append(getEndXmlElement(KEY_METHODS));
 
         //do not display empty child resources array
-        if (proxy.getDomList().size() > 0) {
+        if (!proxy.getDomList().isEmpty()) {
             result.append("\n\n")
                     .append(indent)
                     .append(getStartXmlElement(KEY_CHILD_RESOURCES))

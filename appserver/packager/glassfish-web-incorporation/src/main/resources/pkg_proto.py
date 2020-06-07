@@ -39,6 +39,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 
 import imp
 
@@ -53,9 +54,7 @@ pkg = {
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : { 
-	    		"pkg:/javadb-common@10" : {"type" : "incorporate" },
-			"pkg:/javadb-core@10" : {"type" : "incorporate" },
-			"pkg:/javadb-client@10" : {"type" : "incorporate" },
+	    		"pkg:/h2db@" + conf.h2db_version : {"type" : "incorporate" },
 			"pkg:/pkg-java@1" : {"type" : "incorporate" },
 			"pkg:/felix@" + conf.felix_version : {"type" : "incorporate" },
 			"pkg:/glassfish-hk2@" + conf.glassfish_version : {"type" : "incorporate" },
@@ -66,7 +65,6 @@ pkg = {
 		 	"pkg:/shoal@" + conf.shoal_version : {"type" : "incorporate" },
 			"pkg:/glassfish-cluster@" + conf.glassfish_version : {"type" : "incorporate" },
 			"pkg:/glassfish-ha@" + conf.glassfish_version : {"type" : "incorporate" },
-			"pkg:/glassfish-registration@" + conf.glassfish_version : {"type" : "incorporate" },
 			"pkg:/jersey@2" : {"type" : "incorporate" },
 			"pkg:/glassfish-management@" + conf.glassfish_version : {"type" : "incorporate" },
                         "pkg:/glassfish-commons-web@" + conf.glassfish_version : {"type" : "incorporate" },

@@ -40,17 +40,20 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation and/or affiliates] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <groupId>fish.payara</groupId>
+        <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.184-SNAPSHOT</version>
+        <version>5.2020.2-SNAPSHOT</version>
     </parent>
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.distributions</groupId>
+
+    <groupId>fish.payara.distributions</groupId>
     <artifactId>distributions</artifactId>
+    <packaging>pom</packaging>
+
     <name>Glassfish distributions</name>
 
     <developers>
@@ -77,11 +80,12 @@
         <stage.dir.name>stage</stage.dir.name>
         <stage.dir>${project.build.directory}/${stage.dir.name}</stage.dir>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
-        <include.group.ids>org.glassfish.main.packager,org.glassfish.main.registration</include.group.ids>
+        <include.group.ids>fish.payara.server.internal.packager,fish.payara.server.internal.registration</include.group.ids>
         <template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar</template.jar>
         <production-domain.template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/production-domain.jar</production-domain.template.jar>
         <create-gf-domain.args>--user admin create-domain --template=${template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-gf-domain.args>
         <create-domain.production.args>--user admin create-domain --template=${production-domain.template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost production</create-domain.production.args>
+        <validation.xml.root>${project.build.directory}/stage</validation.xml.root>
     </properties>
 
     <build>
@@ -103,7 +107,7 @@
                         <silent>true</silent>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
@@ -117,7 +121,7 @@
                         <useProjectArtifact>false</useProjectArtifact>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
@@ -162,7 +166,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
@@ -181,12 +185,12 @@
                         </execution>
                     </executions>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                     <artifactId>maven-antrun-extended-plugin</artifactId>
                     <executions>
-                        <execution> 
+                        <execution>
                             <id>create-ips-distribution</id>
                             <phase>package</phase>
                             <configuration>
@@ -203,8 +207,36 @@
             </plugins>
         </pluginManagement>
     </build>
-    
+
     <profiles>
+
+        <!-- Default build profile -->
+        <profile>
+            <id>DefaultBuild</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>payara</module>
+                <module>payara-ml</module>
+                <module>payara-web</module>
+                <module>payara-web-ml</module>
+            </modules>
+        </profile>
+
+        <!-- Profile to just build main Payara Distribution -->
+        <profile>
+            <id>QuickBuild</id>
+            <activation>
+                <property>
+                    <name>QuickBuild</name>
+                </property>
+            </activation>
+            <modules>
+                <module>payara</module>
+            </modules>
+        </profile>
+
         <profile>
             <id>ips</id>
             <build>
@@ -230,7 +262,7 @@
                     </plugin>
                 </plugins>
             </build>
-            
+
             <dependencies>
                 <dependency>
                     <groupId>org.glassfish.mq</groupId>
@@ -240,80 +272,13 @@
                     <type>zip</type>
                 </dependency>
                 <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-common</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-core</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-client</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-demo</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-doc</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>javadb</groupId>
-                    <artifactId>javadb-javadoc</artifactId>
-                    <version>${javadb.version}</version>
-                    <type>zip</type>
-                </dependency>
-                <dependency>
-                    <groupId>org.glassfish.l10n</groupId>
-                    <artifactId>l10n-distribution</artifactId>
-                    <version>${l10n.version}</version>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                    <version>${h2db.version}</version>
                     <type>zip</type>
                 </dependency>
             </dependencies>
         </profile>
-        
-        <!-- Profile to just build main Payara Distribution -->
-        <profile>
-            <id>QuickBuild</id>
-            <activation>
-                <property>
-                    <name>QuickBuild</name>
-                </property>
-            </activation>
-            <modules>
-                <module>payara</module>
-            </modules>
-        </profile>
-        
-        <!-- Default build profile -->
-        <profile>
-            <id>DefaultBuild</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <!-- <module>minnow</module> -->
-                <!-- <module>web</module> -->
-                <!-- <module>glassfish</module> -->
-                <module>payara</module>
-                <module>payara-ml</module>
-                <module>payara-web</module>
-                <module>payara-web-ml</module>
-                <!-- disable appclient distribution build since we're not using it yet -->
-                <!--    <module>appclient</module> -->
-            </modules>
-        </profile>
-    </profiles>  
+
+    </profiles>
 </project>

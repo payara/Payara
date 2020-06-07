@@ -37,18 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
 import static com.sun.enterprise.security.auth.login.LoginContextDriver.CERT_REALMNAME;
 import static java.util.logging.Level.FINE;
 
-import java.io.IOException;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -57,6 +58,9 @@ import javax.security.auth.callback.ChoiceCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
+import javax.security.auth.x500.X500Principal;
+
+import com.sun.enterprise.security.auth.realm.certificate.OID;
 
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.PrincipalImpl;
@@ -160,7 +164,8 @@ public class ClientCertificateLoginModule implements LoginModule {
             Enumeration<String> aliases = keyStore.aliases();
             for (int i = 0; i < keyStore.size(); i++) {
                 aliasNames[i] = aliases.nextElement();
-                certificateNames[i] = ((X509Certificate) keyStore.getCertificate(aliasNames[i])).getSubjectDN().getName();
+                certificateNames[i] = ((X509Certificate) keyStore.getCertificate(aliasNames[i]))
+                    .getSubjectX500Principal().getName(X500Principal.RFC2253, OID.getOIDMap());
             }
 
             Callback[] callbacks = new Callback[] {createChoiceCallback(certificateNames)};
@@ -175,12 +180,9 @@ public class ClientCertificateLoginModule implements LoginModule {
                 throw new LoginException("Incorrect keystore password");
             }
 
-            // Print debugging information
-            if (debug && _logger.isLoggable(FINE)) {
-                _logger.log(FINE, "\t\t[ClientCertificateLoginModule] " + "user entered certificate: ");
-                for (int i = 0; i < selectedIndexes.length; i++) {
-                    _logger.log(FINE, aliasNames[selectedIndexes[i]]);
-                }
+            if (debug) {
+                _logger.fine(() -> "[ClientCertificateLoginModule] user entered certificates: "
+                    + Arrays.stream(selectedIndexes).mapToObj(i -> aliasNames[i]).collect(Collectors.toList()));
             }
 
             // The authenticate method previously picked out the wrong alias.
@@ -190,17 +192,14 @@ public class ClientCertificateLoginModule implements LoginModule {
             certificate = (X509Certificate) keyStore.getCertificate(alias);
 
             // The authenticate should always return a true.
-            if (debug && _logger.isLoggable(FINE)) {
-                _logger.log(FINE, "\t\t[ClientCertificateLoginModule] " + "authentication succeeded");
+            if (debug) {
+                _logger.fine("\t\t[ClientCertificateLoginModule] authentication succeeded");
             }
-
             succeeded = true;
             return true;
-        } catch (IOException ioe) {
-            throw new LoginException(ioe.toString());
         } catch (UnsupportedCallbackException uce) {
             throw new LoginException(
-                    "Error: " + uce.getCallback().toString() + " not available to garner authentication information " + "from the user");
+                "Error: " + uce.getCallback() + " not available to garner authentication information from the user");
         } catch (Exception e) {
             throw new LoginException(e.toString());
         }

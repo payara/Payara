@@ -50,11 +50,11 @@
  *             3. Tools->Options->Indentation Engines->Java Indentation Engine->Number of Spaces per Tab = 4.
  */
 
-/* 
+/*
  * @author byron.nevins@sun.com
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.jsp;
 
@@ -73,7 +73,6 @@ import org.glassfish.web.deployment.runtime.WebProperty;
 
 import java.io.File;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -84,13 +83,11 @@ public final class JSPCompiler {
 	public static void compile(File inWebDir, File outWebDir,
                                WebBundleDescriptor wbd, ServerContext serverContext)
             throws DeploymentException {
-            //to resolve ambiguity
-        final String amb = null;
-		compile(inWebDir, outWebDir, wbd, amb, serverContext);
+		compile(inWebDir, outWebDir, wbd, (String)null, serverContext);
 	}
 
     public static void compile(File inWebDir, File outWebDir,
-                               WebBundleDescriptor wbd, List classpathList,
+                               WebBundleDescriptor wbd, List<String> classpathList,
                                ServerContext serverContext)
         throws DeploymentException {
         String classpath = null;
@@ -99,10 +96,10 @@ public final class JSPCompiler {
 		}
         compile(inWebDir, outWebDir, wbd, classpath, serverContext);
     }
-    
+
 
 	////////////////////////////////////////////////////////////////////////////
-	
+
 	public static void compile(File inWebDir, File outWebDir,
                                WebBundleDescriptor wbd, String classpath,
                                ServerContext serverContext)
@@ -112,7 +109,7 @@ public final class JSPCompiler {
         if (classpath != null && classpath.length() >0) {
 		    jspc.setClassPath(classpath);
         }
-        
+
         // START SJSAS 6311155
         String appName = wbd.getApplication().getName();
 
@@ -133,7 +130,7 @@ public final class JSPCompiler {
 
 		try {
 			jspc.execute();
-		} 
+		}
 		catch (Exception je) {
 			throw new DeploymentException("JSP Compilation Error: " + je, je);
 		}
@@ -142,9 +139,9 @@ public final class JSPCompiler {
 			// in such a case the code above will create a useless, and possibly
 			// problematic empty directory.	 If the directory is empty -- delete
 			// the directory.
-			
+
 			String[] files = outWebDir.list();
-			
+
 
             if(files == null || files.length <= 0) {
                 if (!outWebDir.delete()) {
@@ -157,18 +154,18 @@ public final class JSPCompiler {
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	
+
 	private static void verify(File inWebDir, File outWebDir) throws DeploymentException {
 		// inWebDir must exist, outWebDir must either exist or be creatable
 		if (!FileUtils.safeIsDirectory(inWebDir)) {
 			throw new DeploymentException("inWebDir is not a directory: " + inWebDir);
 		}
-	 
+
         if (!FileUtils.safeIsDirectory(outWebDir)) {
             if (!outWebDir.mkdirs()) {
                 logger.log(Level.FINE, LogFacade.CANNOT_DELETE_FILE, outWebDir);
             }
-		
+
 			if (!FileUtils.safeIsDirectory(outWebDir)) {
 				throw new DeploymentException("outWebDir is not a directory, and it can't be created: " + outWebDir);
 			}
@@ -176,32 +173,12 @@ public final class JSPCompiler {
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	
-	private static String getClasspath(List paths) {
-		if(paths == null)
+
+	private static String getClasspath(List<String> paths) {
+		if (paths == null || paths.isEmpty())
 			return null;
-		
-		String classpath = null;
-
-		StringBuilder sb = new StringBuilder();
-		boolean first = true;
-
-		for (Iterator it = paths.iterator(); it.hasNext(); ) {
-			String path = (String)it.next();
-
-			if (first) 
-				first = false;
-			else 
-				sb.append(File.pathSeparatorChar);
-
-			sb.append(path);
-		}
-
-		if (sb.length() > 0) 
-			classpath = sb.toString();
-
-		return classpath;	
-	}	
+		return String.join(String.valueOf(File.pathSeparatorChar), paths);
+	}
 
 	////////////////////////////////////////////////////////////////////////////
 
@@ -223,17 +200,16 @@ public final class JSPCompiler {
 
             // START SJSAS 6384538
             if (sunWebApp.sizeWebProperty() > 0) {
-                WebProperty[] props = sunWebApp.getWebProperty();
-                for (int i = 0; i < props.length; i++) {
-                    String pName = props[i].getAttributeValue("name");
-                    String pValue = props[i].getAttributeValue("value");
+                WebProperty[] webProperties = sunWebApp.getWebProperty();
+                for (WebProperty prop : webProperties) {
+                    String pName = prop.getAttributeValue("name");
+                    String pValue = prop.getAttributeValue("value");
                     if (pName == null || pValue == null) {
                         throw new IllegalArgumentException(
-                            "Missing sun-web-app property name or value");
+                                "Missing sun-web-app property name or value");
                     }
                     if ("enableTldValidation".equals(pName)) {
-                        jspc.setIsValidationEnabled(
-                            Boolean.valueOf(pValue).booleanValue());
+                        jspc.setIsValidationEnabled(Boolean.valueOf(pValue));
                     }
                 }
             }
@@ -243,20 +219,18 @@ public final class JSPCompiler {
             /*
              * Configure JspC with the init params of the JspServlet
              */
-            Set<WebComponentDescriptor> set = wbd.getWebComponentDescriptors();
-            if (!set.isEmpty()) {
-                Iterator<WebComponentDescriptor> iterator = set.iterator();
-                while (iterator.hasNext()) {
-                    WebComponentDescriptor webComponentDesc = iterator.next();
+            Set<WebComponentDescriptor> webComponentDescriptors = wbd.getWebComponentDescriptors();
+            if (!webComponentDescriptors.isEmpty()) {
+                for (WebComponentDescriptor webComponentDesc : webComponentDescriptors) {
                     if ("jsp".equals(webComponentDesc.getCanonicalName())) {
                         Enumeration<InitializationParameter> en
-                            = webComponentDesc.getInitializationParameters();
+                                = webComponentDesc.getInitializationParameters();
                         if (en != null) {
                             while (en.hasMoreElements()) {
                                 InitializationParameter initP = en.nextElement();
                                 configureJspc(jspc,
-                                              initP.getName(),
-                                              initP.getValue());
+                                        initP.getName(),
+                                        initP.getValue());
                             }
                         }
                         break;
@@ -273,11 +247,14 @@ public final class JSPCompiler {
             if (jspConfig == null) {
                 return;
             }
-            WebProperty[] props = jspConfig.getWebProperty();
-            for (int i=0; props!=null && i<props.length; i++) {
-                configureJspc(jspc,
-                              props[i].getAttributeValue("name"),
-                              props[i].getAttributeValue("value"));
+            WebProperty[] webProperties = jspConfig.getWebProperty();
+            if (webProperties != null) {
+                for (WebProperty prop : webProperties) {
+                    configureJspc(jspc,
+                        prop.getAttributeValue("name"),
+                        prop.getAttributeValue("value")
+                    );
+                }
             }
         }
 
@@ -299,32 +276,25 @@ public final class JSPCompiler {
             }
 
             if ("xpoweredBy".equals(pName)) {
-                jspc.setXpoweredBy(Boolean.valueOf(pValue).booleanValue());
+                jspc.setXpoweredBy(Boolean.valueOf(pValue));
             } else if ("classdebuginfo".equals(pName)) {
-                jspc.setClassDebugInfo(Boolean.valueOf(pValue).booleanValue());
+                jspc.setClassDebugInfo(Boolean.valueOf(pValue));
             } else if ("enablePooling".equals(pName)) {
-                jspc.setPoolingEnabled(Boolean.valueOf(pValue).booleanValue());
+                jspc.setPoolingEnabled(Boolean.valueOf(pValue));
             } else if ("ieClassId".equals(pName)) {
                 jspc.setIeClassId(pValue);
             } else if ("trimSpaces".equals(pName)) {
-                jspc.setTrimSpaces(Boolean.valueOf(pValue).booleanValue());
+                jspc.setTrimSpaces(Boolean.valueOf(pValue));
             } else if ("genStrAsCharArray".equals(pName)) {
-                jspc.setGenStringAsCharArray(
-                    Boolean.valueOf(pValue).booleanValue());
+                jspc.setGenStringAsCharArray(Boolean.valueOf(pValue));
             } else if ("errorOnUseBeanInvalidClassAttribute".equals(pName)) {
-                jspc.setErrorOnUseBeanInvalidClassAttribute(
-                    Boolean.valueOf(pValue).booleanValue());
+                jspc.setErrorOnUseBeanInvalidClassAttribute(Boolean.valueOf(pValue));
             } else if ("ignoreJspFragmentErrors".equals(pName)) {
-                jspc.setIgnoreJspFragmentErrors(
-                    Boolean.valueOf(pValue).booleanValue());
+                jspc.setIgnoreJspFragmentErrors(Boolean.valueOf(pValue));
             } else if ("compilerSourceVM".equals(pName)) {
                 jspc.setCompilerSourceVM(pValue);
             } else if ("compilerTargetVM".equals(pName)) {
                 jspc.setCompilerTargetVM(pValue);
-            } else if ("ignoreJspFragmentErrors".equals(pName)) {
-                jspc.setIgnoreJspFragmentErrors(Boolean.valueOf(pValue));
-            } else if ("trimSpaces".equals(pName)) {
-                jspc.setTrimSpaces(Boolean.valueOf(pValue));
             }
         }
 

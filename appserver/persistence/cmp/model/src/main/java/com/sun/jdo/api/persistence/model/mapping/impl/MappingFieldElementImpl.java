@@ -234,7 +234,7 @@ public class MappingFieldElementImpl extends MappingMemberElementImpl
 	public void setFetchGroup (int group) throws ModelException
 	{
 		Integer old = new Integer(getFetchGroup());
-		Integer newGroup = new Integer(group);
+		Integer newGroup = Integer.valueOf(group);
 
 		try
 		{

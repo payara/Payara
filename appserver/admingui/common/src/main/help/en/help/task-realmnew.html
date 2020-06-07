@@ -1,0 +1,160 @@
+<!--
+
+    Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<p><a id="task-realmnew" name="task-realmnew"></a><a id="GHCOM00184" name="GHCOM00184"></a></p>
+
+<h4><a id="sthref81" name="sthref81"></a>To Create a Realm</h4>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The GlassFish Server comes preconfigured with three realms: <code>file</code>, <code>certificate</code>, and <code>admin-realm</code>. It is also possible to create <code>ldap</code>, <code>JDBC</code>, <code>solaris</code>, <code>PAM</code>, and custom realms. Generally, you will have one realm of each type on a server, but on the GlassFish Server there are two file realms: <code>file</code> and <code>admin-realm</code>. These are two realms of the same type used for two different purposes. It is also possible to have a different certificate database for each virtual server on your system.</p>
+<ol>
+<li>
+<p>Under the Configurations node, expand the server instance or cluster configuration for which you want to configure realms.</p>
+</li>
+<li>
+<p>Expand the Security node.</p>
+</li>
+<li>
+<p>Expand the Realms node.</p>
+<p>The Realms page opens.</p>
+</li>
+<li>
+<p>On the Realms page, click New.</p>
+<p>The New Realm page opens.</p>
+</li>
+<li>
+<p>In the Name field, type a name for the realm.</p>
+</li>
+<li>
+<p>To specify the class name for the realm, do either of the following:</p>
+<ul>
+<li>
+<p>From the Class Name drop-down list, select the class name for the realm being created.</p>
+<p>Valid choices are shown in the following table.</p>
+
+<table  summary="Add Summary attribute value here." dir="ltr" border="1" width="100%" frame="hsides" rules="rows" cellpadding="3" cellspacing="0">
+<col width="16%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t8">Realm Name</th>
+<th align="left" valign="bottom" id="r1c2-t8">Class Name</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t8" headers="r1c1-t8">
+<p><code>file</code></p>
+</td>
+<td align="left" headers="r2c1-t8 r1c2-t8">
+<p><code>com.sun.enterprise.security.auth.realm.file.FileRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t8" headers="r1c1-t8">
+<p><code>certificate</code></p>
+</td>
+<td align="left" headers="r3c1-t8 r1c2-t8">
+<p><code>com.sun.enterprise.security.auth.realm.certificate.CertificateRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t8" headers="r1c1-t8">
+<p><code>ldap</code></p>
+</td>
+<td align="left" headers="r4c1-t8 r1c2-t8">
+<p><code>com.sun.enterprise.security.auth.realm.ldap.LDAPRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t8" headers="r1c1-t8">
+<p><code>JDBC</code></p>
+</td>
+<td align="left" headers="r5c1-t8 r1c2-t8">
+<p><code>com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t8" headers="r1c1-t8">
+<p><code>solaris</code></p>
+</td>
+<td align="left" headers="r6c1-t8 r1c2-t8">
+<p><code>com.sun.enterprise.security.auth.realm.solaris.SolarisRealm</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t8" headers="r1c1-t8">
+<p><code>PAM</code></p>
+</td>
+<td align="left" headers="r7c1-t8 r1c2-t8">
+<p><code>com.sun.enterprise.security.auth.realm.solaris.PamRealm</code></p>
+</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</li>
+<li>
+<p>Select the lower radio button and type the class name for the custom realm being created.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>In the Additional Properties section, specify additional properties.</p>
+<p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
+<p>Valid properties depend on the type of realm.</p>
+<ul>
+<li>
+<p><a href="ref-editfile-adminrealm.html">Properties Specific to the <code>FileRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-editcertrealm.html">Properties Specific to the <code>CertificateRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-editjdbcrealm.html">Properties Specific to the <code>JDBCRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-ldaprealmprop.html">Properties Specific to the <code>LDAPRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-solarisrealmprop.html">Properties Specific to the <code>SolarisRealm</code> Class</a></p>
+</li>
+<li>
+<p><a href="ref-pamrealmprop.html">Properties Specific to the <code>PamRealm</code> Class</a></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Click OK.</p>
+</li>
+</ol>
+<a id="GHCOM284" name="GHCOM284"></a>
+<h5>See Also</h5>
+<ul>
+<li>
+<p><a href="task-realmedit.html">To Edit a Realm</a></p>
+</li>
+<li>
+<p><a href="task-todeleterealm.html">To Delete a Realm</a></p>
+</li>
+<li>
+<p><a href="task-createcustomrealm.html">To Create a Custom Realm</a></p>
+</li>
+</ul>
+
+
+<small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>

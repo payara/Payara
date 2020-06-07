@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 package org.glassfish.tests.kernel.deployment.container;
 
@@ -51,7 +52,7 @@ import java.util.logging.Logger;
 import java.util.Map;
 import java.io.IOException;
 
-import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.HK2Module;
 
 /**
  * Created by IntelliJ IDEA.
@@ -89,7 +90,7 @@ public class FakeSniffer implements Sniffer {
         return "fake";
     }
 
-    public Module[] setup(String containerHome, Logger logger) throws IOException {
+    public HK2Module[] setup(String containerHome, Logger logger) throws IOException {
         return null;
     }
 

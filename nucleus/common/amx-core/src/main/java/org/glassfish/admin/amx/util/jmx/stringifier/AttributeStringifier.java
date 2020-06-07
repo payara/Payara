@@ -37,13 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
-/*
- * $Header: /cvs/glassfish/appserv-api/src/java/com/sun/appserv/management/util/jmx/stringifier/AttributeStringifier.java,v 1.2 2007/05/05 05:31:04 tcfujii Exp $
- * $Revision: 1.2 $
- * $Date: 2007/05/05 05:31:04 $
- */
- 
 package org.glassfish.admin.amx.util.jmx.stringifier;
 
 import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
@@ -51,25 +46,25 @@ import org.glassfish.admin.amx.util.stringifier.Stringifier;
 
 import javax.management.Attribute;
 
+/**
+ * Creates a String representation of an {@link Attribute}
+ * @see Object#toString()
+ * @since 2007/05/05 05:31:04
+ * @version 1.2
+ * @author tcfujii
+ */
+public final class AttributeStringifier implements Stringifier {
 
+    public static final AttributeStringifier DEFAULT = new AttributeStringifier();
 
-public final class AttributeStringifier implements Stringifier
-{
-	public final static AttributeStringifier	DEFAULT	= new AttributeStringifier();
-	
-		public
-	AttributeStringifier()
-	{
-	}
-		public String
-	stringify( Object o )
-	{
-		final Attribute	attr	= (Attribute)o;
-		
-		final String	prefix	= attr.getName() + "=";
-		
-		final String	stringValue	= SmartStringifier.toString( attr.getValue() );
-		
-		return( prefix + stringValue );
-	}
+    @Override
+    public String stringify(Object o) {
+        final Attribute attr = (Attribute) o;
+
+        final String prefix = attr.getName() + "=";
+
+        final String stringValue = SmartStringifier.toString(attr.getValue());
+
+        return (prefix + stringValue);
+    }
 }

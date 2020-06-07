@@ -1,0 +1,79 @@
+list-log-attributes(1)    asadmin Utility Subcommands   list-log-attributes(1)
+
+NAME
+       list-log-attributes - lists all logging attributes defined for a
+       specified target in a domain
+
+SYNOPSIS
+           list-log-attributes [--help] [target]
+
+DESCRIPTION
+       The list-log-attributes subcommand lists all logging attributes
+       currently defined for the specified GlassFish Server domain or target
+       within a domain. The values listed correspond to the values in the
+       logging.properties file for the domain.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+OPERANDS
+       target
+           Valid values are:
+
+           *   server - The default server instance. This is the default
+               value.
+
+           *   configuration_name - The name of a specific configuration.
+
+           *   cluster_name - The name of a target cluster.
+
+           *   instance_name - The name of a target server instance.
+
+EXAMPLES
+       Example 1, Listing the Logger Attributes for a Domain
+           This example lists all loggers attributes for the default domain.
+
+               asadmin> list-log-attributes
+               com.sun.enterprise.server.logging.GFFileHandler.alarms <false>
+               com.sun.enterprise.server.logging.GFFileHandler.file \
+               <${com.sun.aas.instanceRoot}/logs/server.log>
+               com.sun.enterprise.server.logging.GFFileHandler.flushFrequency <1>
+               com.sun.enterprise.server.logging.GFFileHandler.formatter \
+               <com.sun.enterprise.server.logging.UniformLogFormatter>
+               com.sun.enterprise.server.logging.GFFileHandler.logtoConsole <false>
+               com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles <0>
+               com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours <0>
+               com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes <2000000>
+               com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes <0>
+               com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging <false>
+               handlers <java.util.logging.ConsoleHandler>
+               java.util.logging.ConsoleHandler.formatter \
+               <com.sun.enterprise.server.logging.UniformLogFormatter>
+               java.util.logging.FileHandler.count <1>
+               java.util.logging.FileHandler.formatter <java.util.logging.XMLFormatter>
+               java.util.logging.FileHandler.limit <50000>
+               java.util.logging.FileHandler.pattern <%h/java%u.log>
+               log4j.logger.org.hibernate.validator.util.Version <warn>
+
+               Command list-log-attributes executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       collect-log-files(1), list-log-levels(1), rotate-log(1),
+       set-log-attributes(1), set-log-levels(1)
+
+       asadmin(1M)
+
+       "Administering the Logging Service" in Oracle GlassFish Server
+       Administration Guide
+
+Java EE 8                         21 Jun 2011           list-log-attributes(1)

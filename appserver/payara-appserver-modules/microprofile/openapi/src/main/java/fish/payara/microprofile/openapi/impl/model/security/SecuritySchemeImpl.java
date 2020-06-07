@@ -50,18 +50,18 @@ import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
-public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme {
+public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implements SecurityScheme {
 
-    protected SecurityScheme.Type type;
-    protected String description;
-    protected String name;
-    protected String ref;
+    private SecurityScheme.Type type;
+    private String description;
+    private String name;
+    private String ref;
 
-    protected SecurityScheme.In in;
-    protected String scheme;
-    protected String bearerFormat;
-    protected OAuthFlows flows;
-    protected String openIdConnectUrl;
+    private SecurityScheme.In in;
+    private String scheme;
+    private String bearerFormat;
+    private OAuthFlows flows;
+    private String openIdConnectUrl;
 
     @Override
     public SecurityScheme.Type getType() {
@@ -71,12 +71,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     @Override
     public void setType(SecurityScheme.Type type) {
         this.type = type;
-    }
-
-    @Override
-    public SecurityScheme type(SecurityScheme.Type type) {
-        setType(type);
-        return this;
     }
 
     @Override
@@ -90,12 +84,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     }
 
     @Override
-    public SecurityScheme description(String description) {
-        setDescription(description);
-        return this;
-    }
-
-    @Override
     public String getName() {
         return name;
     }
@@ -103,12 +91,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     @Override
     public void setName(String name) {
         this.name = name;
-    }
-
-    @Override
-    public SecurityScheme name(String name) {
-        setName(name);
-        return this;
     }
 
     @Override
@@ -122,12 +104,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     }
 
     @Override
-    public SecurityScheme in(SecurityScheme.In in) {
-        setIn(in);
-        return this;
-    }
-
-    @Override
     public String getScheme() {
         return scheme;
     }
@@ -135,12 +111,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     @Override
     public void setScheme(String scheme) {
         this.scheme = scheme;
-    }
-
-    @Override
-    public SecurityScheme scheme(String scheme) {
-        setScheme(scheme);
-        return this;
     }
 
     @Override
@@ -154,12 +124,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     }
 
     @Override
-    public SecurityScheme bearerFormat(String bearerFormat) {
-        setBearerFormat(bearerFormat);
-        return this;
-    }
-
-    @Override
     public OAuthFlows getFlows() {
         return flows;
     }
@@ -167,12 +131,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     @Override
     public void setFlows(OAuthFlows flows) {
         this.flows = flows;
-    }
-
-    @Override
-    public SecurityScheme flows(OAuthFlows flows) {
-        setFlows(flows);
-        return this;
     }
 
     @Override
@@ -186,12 +144,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
     }
 
     @Override
-    public SecurityScheme openIdConnectUrl(String openIdConnectUrl) {
-        setOpenIdConnectUrl(openIdConnectUrl);
-        return this;
-    }
-
-    @Override
     public String getRef() {
         return ref;
     }
@@ -202,12 +154,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl implements SecurityScheme
             ref = "#/components/securitySchemes/" + ref;
         }
         this.ref = ref;
-    }
-
-    @Override
-    public SecurityScheme ref(String ref) {
-        setRef(ref);
-        return this;
     }
 
     public static void merge(org.eclipse.microprofile.openapi.annotations.security.SecurityScheme from,

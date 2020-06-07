@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 /*
  * WebAppHandler.java
@@ -96,7 +97,7 @@ public class WebAppHandlers {
         if (GuiUtil.isEmpty(webModule))
             return;
         String appName = webModule;
-        int index = webModule.indexOf("#");
+        int index = webModule.indexOf('#');
         if (index != -1){
             appName=webModule.substring(0, index);
         }
@@ -188,9 +189,9 @@ public class WebAppHandlers {
    public static void getProtocols(HandlerContext handlerCtx) {
        String configName = (String) handlerCtx.getInputValue("configName");
        String endpoint = GuiUtil.getSessionValue("REST_URL") + "/configs/config/" + configName + "/network-config/protocols/protocol";
-       List<Map> result = new ArrayList<Map>();
+       List<Map> result = new ArrayList<>();
        try {
-            List<Map> childElements = (List<Map>) RestUtil.buildChildEntityList(endpoint, "", null, null, "name");
+            List<Map<String, Object>> childElements = RestUtil.buildChildEntityList(endpoint, "", null, null, "name");
             for (Map m: childElements) {
                 String name = (String) m.get("name");
                 if (!(name.equals(ServerTags.PORT_UNIF_PROTOCOL_NAME) || name.equals(ServerTags.REDIRECT_PROTOCOL_NAME))) {
@@ -214,7 +215,7 @@ public class WebAppHandlers {
        String configName = (String) handlerCtx.getInputValue("configName");
        String endpoint = GuiUtil.getSessionValue("REST_URL") + "/configs/config/" + configName + "/network-config/network-listeners/network-listener";
        try {
-            List<Map> childElements = (List<Map>) RestUtil.buildChildEntityList(endpoint, "", null, null, "name");
+            List<Map<String, Object>> childElements = RestUtil.buildChildEntityList(endpoint, "", null, null, "name");
             for (Map m: childElements) {
                 String name = (String) m.get("protocol");
                 if (name.equals(ServerTags.PORT_UNIF_PROTOCOL_NAME)) {

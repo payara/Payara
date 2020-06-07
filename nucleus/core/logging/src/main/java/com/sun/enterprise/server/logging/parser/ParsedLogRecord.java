@@ -37,23 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.server.logging.parser;
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+package com.sun.enterprise.server.logging.parser;
 
 import com.sun.enterprise.server.logging.LogEvent;
 
+import java.util.*;
+
 /**
- * 
+ *
  * @author sanshriv
  *
  */
 public final class ParsedLogRecord implements LogEvent {
-        
+
     public static final String DATE_TIME = "timestamp";
     public static final String LOG_LEVEL_NAME = "level";
     public static final String PRODUCT_ID = "productId";
@@ -67,11 +65,11 @@ public final class ParsedLogRecord implements LogEvent {
     public static final String LOG_MESSAGE = "message";
     public static final String SUPP_ATTRS = "suppAttrs";
     public static final String MESSAGE_ID = "msgId";
-    
+
     public static final Set<String> FIELD_NAMES = new HashSet<String>() {
-        
+
         private static final long serialVersionUID = 1L;
-        
+
         {
            add(DATE_TIME);
            add(LOG_LEVEL_NAME);
@@ -87,19 +85,19 @@ public final class ParsedLogRecord implements LogEvent {
            add(LOG_MESSAGE);
            add(MESSAGE_ID);
         }
-        
+
     };
-    
+
     private String formattedLogRecord;
-    
+
     private boolean matchedLogQuery;
-    
+
     private Map<String, Object> fields = new HashMap<String,Object>();
-    
+
     public ParsedLogRecord() {
         fields.put(SUPP_ATTRS, new Properties());
     }
-    
+
     public ParsedLogRecord(String formattedContent) {
         formattedLogRecord = formattedContent;
         fields.put(SUPP_ATTRS, new Properties());
@@ -112,17 +110,17 @@ public final class ParsedLogRecord implements LogEvent {
     public String getMessage() {
         return (String) fields.get(LOG_MESSAGE);
     }
-    
+
     public String getLevel() {
         return (String) fields.get(LOG_LEVEL_NAME);
-    }    
+    }
 
     public String getLogger() {
         return (String) fields.get(LOGGER_NAME);
-    }    
+    }
 
     public int getLevelValue() {
-        String val = (String) fields.get(LOG_LEVEL_VALUE); 
+        String val = (String) fields.get(LOG_LEVEL_VALUE);
         return Integer.parseInt(val) ;
     }
 
@@ -138,7 +136,7 @@ public final class ParsedLogRecord implements LogEvent {
             return Long.parseLong(val) ;
         }
     }
-    
+
     public String getMessageId() {
         return (String) fields.get(MESSAGE_ID);
     }
@@ -174,16 +172,16 @@ public final class ParsedLogRecord implements LogEvent {
     public boolean isMatchedLogQuery() {
         return matchedLogQuery;
     }
-    
+
     /**
-     * 
+     *
      * @param name
      * @return
      */
     public Object getFieldValue(String name) {
         return fields.get(name);
     }
-    
+
     /**
      * @param formattedLogRecord the formattedLogRecord to set
      */
@@ -197,18 +195,18 @@ public final class ParsedLogRecord implements LogEvent {
     void setMatchedLogQuery(boolean matchedLogQuery) {
         this.matchedLogQuery = matchedLogQuery;
     }
-    
+
     /**
-     * 
+     *
      * @param name
      * @param value
      */
     void setFieldValue(String name, Object value) {
         fields.put(name, value);
-    }    
-    
+    }
+
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("Log record: <"+fields + ">" + LogParserFactory.NEWLINE);
         return buffer.toString();
     }

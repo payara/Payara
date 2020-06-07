@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  */
 package fish.payara.notification.jms;
 
-import com.google.common.base.Strings;
+import com.sun.enterprise.util.StringUtils;
 import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.Param;
@@ -89,6 +89,7 @@ public class JmsNotificationConfigurer extends BaseNotificationConfigurer<JmsNot
         super.execute(context);
     }
 
+    @Override
     protected void applyValues(JmsNotifierConfiguration configuration) throws PropertyVetoException {
         if(this.enabled != null) {
             configuration.enabled(this.enabled);
@@ -96,22 +97,22 @@ public class JmsNotificationConfigurer extends BaseNotificationConfigurer<JmsNot
         if(this.noisy != null) {
             configuration.noisy(this.noisy);
         }
-        if(!Strings.isNullOrEmpty(contextFactoryClass )) {
+        if(StringUtils.ok(contextFactoryClass )) {
             configuration.setContextFactoryClass(contextFactoryClass);
         }
-        if(!Strings.isNullOrEmpty(connectionFactoryName)) {
+        if(StringUtils.ok(connectionFactoryName)) {
             configuration.setConnectionFactoryName(connectionFactoryName);
         }
-        if(!Strings.isNullOrEmpty(queueName)) {
+        if(StringUtils.ok(queueName)) {
             configuration.setQueueName(queueName);
         }
-        if(!Strings.isNullOrEmpty(url)) {
+        if(StringUtils.ok(url)) {
             configuration.setUrl(url);
         }
-        if(!Strings.isNullOrEmpty(username)) {
+        if(StringUtils.ok(username)) {
             configuration.setUsername(username);
         }
-        if(!Strings.isNullOrEmpty(password)) {
+        if(StringUtils.ok(password)) {
             configuration.setPassword(password);
         }
     }

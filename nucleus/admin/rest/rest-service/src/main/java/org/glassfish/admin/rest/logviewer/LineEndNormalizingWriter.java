@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or affiliates]
 
 package org.glassfish.admin.rest.logviewer;
 
@@ -64,7 +65,7 @@ public /*for now, until Hudson migration completes*/ class LineEndNormalizingWri
     }
 
     @Override
-    public void write(char cbuf[]) throws IOException {
+    public void write(char[] cbuf) throws IOException {
         write(cbuf, 0, cbuf.length);
     }
 
@@ -83,7 +84,7 @@ public /*for now, until Hudson migration completes*/ class LineEndNormalizingWri
     }
 
     @Override
-    public void write(char cbuf[], int off, int len) throws IOException {
+    public void write(char[] cbuf, int off, int len) throws IOException {
         int end = off+len;
         int writeBegin = off;
 

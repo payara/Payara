@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 
 /*
  * ConnectorNode.java. This class is responsible for encapsulating all information specific to the Connector DTD
@@ -53,13 +54,16 @@ import com.sun.enterprise.deployment.xml.TagNames;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
+import static com.sun.enterprise.deployment.xml.ConnectorTagNames.CONNECTOR;
+import static com.sun.enterprise.deployment.xml.ConnectorTagNames.LICENSE;
+
 import java.util.*;
 
 
 /**
  * The top connector node class
+ * 
  * @author Sheetal Vartak
- * @version 
  */
 @Service
 public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
@@ -116,18 +120,19 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
    }
     
     @Override
-    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD, final Map<String, List<Class>> versionUpgrades) {
-        final Map<String,Class> result = new HashMap<String,Class>();
+    public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
+        Map<String, Class<?>> result = new HashMap<String, Class<?>>();
+        
         result.put(com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.registerBundle(publicIDToDTD),
                 com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.class);
+        
         return result;
     }
     
     public ConnectorNode()  {
         super();
-        registerElementHandler(new XMLElement(ConnectorTagNames.LICENSE), 
-            LicenseNode.class, "setLicenseDescriptor");
-        SaxParserHandler.registerBundleNode(this, ConnectorTagNames.CONNECTOR);
+        registerElementHandler(new XMLElement(LICENSE), LicenseNode.class, "setLicenseDescriptor");
+        SaxParserHandler.registerBundleNode(this, CONNECTOR);
     }
 
 

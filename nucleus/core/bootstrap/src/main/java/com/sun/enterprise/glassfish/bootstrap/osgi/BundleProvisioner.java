@@ -37,32 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
 import static com.sun.enterprise.glassfish.bootstrap.LogFacade.STARTING_BUNDLEPROVISIONER;
 import static java.util.logging.Level.INFO;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -620,7 +606,7 @@ public class BundleProvisioner {
                             if (startLevels.containsKey(uri)) {
                                 logger.log(Level.WARNING, LogFacade.CANT_SET_START_LEVEL,
                                         new Object[]{uri, startLevels.get(uri), startLevel});
-                                
+
                             } else {
                                 startLevels.put(uri, startLevel);
                             }
@@ -761,24 +747,23 @@ public class BundleProvisioner {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void main(String[] args) throws Exception {
         logger.log(INFO, STARTING_BUNDLEPROVISIONER);
-        
+
         Properties props = new Properties();
         props.load(new FileInputStream(args[0]));
         Util.substVars(props);
-        PrintStream out = new PrintStream(new FileOutputStream(args[1], true));
         long t0 = System.currentTimeMillis();
-        
+
         Framework framework = null;
         for (FrameworkFactory frameworkFactory : ServiceLoader.load(FrameworkFactory.class)) {
             framework = frameworkFactory.newFramework((Hashtable)props);
             System.out.println("framework = " + framework);
             break;
         }
-        
+
         if (framework == null) {
             throw new RuntimeException("no OSGi framework in classpath");
         }
-        
+
         long t1 = System.currentTimeMillis();
         logger.log(Level.INFO, LogFacade.OSGI_LOCATE_TIME, (t1-t0));
         framework.init();
@@ -810,7 +795,9 @@ public class BundleProvisioner {
         long t5 = System.currentTimeMillis();
         logger.log(Level.INFO, LogFacade.BUNDLE_STOP_TIME, (t5 - t4));
         logger.log(Level.INFO, LogFacade.TOTAL_TIME, (t5-t0));
-        out.printf("%d,%d,%d,%d,%d,%d,%d\n", t1-t0, t2-t1, t3-t2, t4-t3, t4-t0, t5-t4, t5-t0);
+        try (PrintStream out = new PrintStream(new FileOutputStream(args[1], true))) {
+            out.printf("%d,%d,%d,%d,%d,%d,%d\n", t1-t0, t2-t1, t3-t2, t4-t3, t4-t0, t5-t4, t5-t0);
+        }
     }
 
     static BundleProvisioner createBundleProvisioner(BundleContext bctx, Properties props) {

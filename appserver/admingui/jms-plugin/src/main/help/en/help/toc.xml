@@ -1,0 +1,80 @@
+<!--
+
+    Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<toc version="2.0">
+  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+    <tocitem target="task-group-jmsresources" text="Configuring JMS Resources" expand="false">
+      <tocitem target="task-jmsconnectionnew" text="To Create a JMS Connection Factory Resource" expand="false"></tocitem>
+      <tocitem target="task-jmsconnectionedit" text="To Edit a JMS Connection Factory Resource" expand="false"></tocitem>
+      <tocitem target="task-jmsconnectiondelete" text="To Delete a JMS Connection Factory Resource" expand="false"></tocitem>
+      <tocitem target="task-jmsdestinationnew" text="To Create a JMS Destination Resource" expand="false"></tocitem>
+      <tocitem target="task-jmsdestinationedit" text="To Edit a JMS Destination Resource" expand="false"></tocitem>
+      <tocitem target="task-jmsdestinationdelete" text="To Delete a JMS Destination Resource" expand="false"></tocitem>
+    </tocitem>
+    <tocitem target="task-group-jmsservice" text="Configuring the Java Message Service" expand="false">
+      <tocitem target="task-jmsservice" text="To Configure the JMS Service" expand="false"></tocitem>
+      <tocitem target="task-jmshostnew" text="To Create a JMS Host" expand="false"></tocitem>
+      <tocitem target="task-jmshostedit" text="To Edit a JMS Host" expand="false"></tocitem>
+      <tocitem target="task-jmshostdelete" text="To Delete a JMS Host" expand="false"></tocitem>
+      <tocitem target="task-jmsphysicaldestnew" text="To Create a JMS Physical Destination" expand="false"></tocitem>
+      <tocitem target="task-jmsphysicaldestedit" text="To Edit a JMS Physical Destination" expand="false"></tocitem>
+      <tocitem target="task-jmsphysicaldestdelete" text="To Delete a JMS Physical Destination" expand="false"></tocitem>
+      <tocitem target="task-jmsflushmessages" text="To Remove Messages from a JMS Physical Destination" expand="false"></tocitem>
+      <tocitem target="task-jmsphysicaldeststats" text="To View Statistics for a JMS Physical Destination" expand="false"></tocitem>
+    </tocitem>
+  </tocitem>
+  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+    <tocitem target="ref-group-resources" text="Resources" expand="false">
+      <tocitem target="ref-group-jmsresources" text="JMS Resources" expand="false">
+        <tocitem target="ref-jmsresources" text="JMS Resources" expand="false"></tocitem>
+        <tocitem target="ref-group-jmsconnectionfactories" text="Connection Factories" expand="false">
+          <tocitem target="ref-jmsconnectionfactories" text="JMS Connection Factories" expand="false"></tocitem>
+          <tocitem target="ref-jmsconnectionnew" text="New JMS Connection Factory" expand="false"></tocitem>
+          <tocitem target="ref-jmsconnectionedit" text="Edit JMS Connection Factory" expand="false"></tocitem>
+          <tocitem target="ref-jmsconnectionproperties" text="Properties Specific to JMS Connection Factories" expand="false"></tocitem>
+        </tocitem>
+        <tocitem target="ref-group-jmsdestinationresources" text="Destination Resources" expand="false">
+          <tocitem target="ref-jmsdestinationresources" text="JMS Destination Resources" expand="false"></tocitem>
+          <tocitem target="ref-jmsdestinationnew" text="New JMS Destination Resource" expand="false"></tocitem>
+          <tocitem target="ref-jmsdestinationedit" text="Edit JMS Destination Resource" expand="false"></tocitem>
+        </tocitem>
+      </tocitem>
+    </tocitem>
+    <tocitem target="ref-group-configuration" text="Configurations" expand="false">
+      <tocitem target="ref-group-availabilityservice" text="Availability Service" expand="false">
+        <tocitem target="ref-jmsavailability" text="JMS Availability" expand="false"></tocitem>
+      </tocitem>
+      <tocitem target="ref-group-jmsservice" text="Java Message Service" expand="false">
+        <tocitem target="ref-jmsservice" text="Java Message Service" expand="false"></tocitem>
+        <tocitem target="ref-mqschemeservice" text="MQ Scheme and MQ Service Address Syntax" expand="false"></tocitem>
+        <tocitem target="ref-jmsservice-additional-props" text="Properties Specific to the JMS Service" expand="false"></tocitem>
+        <tocitem target="ref-group-jmshosts" text="JMS Hosts" expand="false">
+          <tocitem target="ref-jmshosts" text="JMS Hosts" expand="false"></tocitem>
+          <tocitem target="ref-jmshostnew" text="New JMS Host" expand="false"></tocitem>
+          <tocitem target="ref-jmshostedit" text="Edit JMS Host" expand="false"></tocitem>
+        </tocitem>
+        <tocitem target="ref-group-jmsphysicaldest" text="Physical Destinations" expand="false">
+          <tocitem target="ref-jmsphysicaldest" text="JMS Physical Destinations" expand="false"></tocitem>
+          <tocitem target="ref-jmsphysicaldestnew" text="New JMS Physical Destination" expand="false"></tocitem>
+          <tocitem target="ref-jmsphysicaldestedit" text="Edit JMS Physical Destination" expand="false"></tocitem>
+          <tocitem target="ref-jmsphysicaldeststats" text="View JMS Physical Destination Statistics" expand="false"></tocitem>
+        </tocitem>
+      </tocitem>
+    </tocitem>
+  </tocitem>
+</toc>

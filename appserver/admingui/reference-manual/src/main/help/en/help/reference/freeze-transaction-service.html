@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+<!--
+
+    Copyright (c) 2017, 2019 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>freeze-transaction-service</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>freeze-transaction-service</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="flush-jmsdest.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="generate-jvm-report.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="freeze-transaction-service-1"></a><a id="GSRFM00137"></a><a id="freeze-transaction-service"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_freeze_transaction_service">freeze-transaction-service</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>freezes the transaction subsystem</p>
+</div>
+<div id="sthref1193" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] freeze-transaction-service [--help]
+[--target target]</code></pre>
+</div>
+</div>
+<div id="sthref1194" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>freeze-transaction-service</code> subcommand freezes the transaction
+subsystem, preventing the transaction manager from starting, completing,
+or changing the state of all in-flight transactions. Invoke this command
+before rolling back any in-flight transactions. Invoking this subcommand
+on an already frozen transaction subsystem has no effect. Restarting the
+server unfreezes the transaction subsystem. This subcommand is supported
+in remote mode only.</p>
+</div>
+<div id="sthref1195" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>This option specifies the target on which you are freezing the
+transaction service. Valid values are:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Freezes the transaction service for the default server instance
+<code>server</code> and is the default value.</p>
+</dd>
+<dt class="hdlist1">configuration_name</dt>
+<dd>
+<p>Freezes the transaction service for all server instances that use
+the named configuration.</p>
+</dd>
+<dt class="hdlist1">cluster_name</dt>
+<dd>
+<p>Freezes the transaction service for every server instance in the
+cluster.</p>
+</dd>
+<dt class="hdlist1">instance_name</dt>
+<dd>
+<p>Freezes the transaction service for a particular server instance.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref1196" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM616"></a><a id="sthref1197"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1   Using freeze-transaction-service</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">% asadmin freeze-transaction-service
+Command freeze-transaction-service executed successfully</code></pre>
+</div>
+</div>
+<div id="sthref1198" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>command executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the command</p>
+</dd>
+</dl>
+</div>
+<div id="sthref1199" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="recover-transactions.html#recover-transactions-1"><code>recover-transactions</code>(1)</a>,
+<a href="rollback-transaction.html#rollback-transaction-1"><code>rollback-transaction</code>(1)</a>,
+<a href="unfreeze-transaction-service.html#unfreeze-transaction-service-1"><code>unfreeze-transaction-service</code>(1)</a></p>
+</div>
+</div>
+<div class="paragraph">
+<p>"<a href="https://eclipse-ee4j.github.io/jakartaee-tutorial/transactions.html">Transactions</a>"
+in The Java EE 8 Tutorial</p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="flush-jmsdest.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="generate-jvm-report.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+<span id="copyright">
+        <img src="/resource/reference/img/eclipse_foundation_logo_tiny.png" height="20px" alt="Eclipse Foundation Logo" align="top"/>&nbsp;            
+        <span >Copyright&nbsp;&copy;&nbsp;2019,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</span>
+</span>
+
+</body>
+</html>

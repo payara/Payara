@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Coyright [2019] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.amx.impl.mbean;
 
 import javax.management.MBeanServer;
@@ -47,7 +49,9 @@ For now, only one implementation instance is allowed.
  */
 public final class SystemInfoFactory {
 
-    static SystemInfoImpl INSTANCE = null;
+    private static SystemInfoImpl INSTANCE = null;
+    
+    private SystemInfoFactory() {};
 
     /**
     Return the actual implementation class, because some method(s) are needed internal to the
@@ -68,8 +72,6 @@ public final class SystemInfoFactory {
             INSTANCE = new SystemInfoImpl(server);
 
             new SystemInfoIniter(server, INSTANCE).init();
-        } else {
-            //throw new RuntimeException("can only initialize once--bug");
         }
         return INSTANCE;
     }
@@ -80,11 +82,3 @@ public final class SystemInfoFactory {
         }
     }
 }
-
-
-
-
-
-
-
-

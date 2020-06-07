@@ -43,7 +43,6 @@ package com.sun.enterprise.universal.process;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
 import java.util.*;
-import org.glassfish.api.admin.ServerEnvironment;
 
 /**
  * Very simple -- run an Asadmin command.  

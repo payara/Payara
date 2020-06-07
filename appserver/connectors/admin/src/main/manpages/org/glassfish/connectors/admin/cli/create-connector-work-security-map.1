@@ -1,0 +1,93 @@
+create-connector-work-security-map(1)  asadmin Utility Subcommands  create-connector-work-security-map(1)
+
+NAME
+       create-connector-work-security-map - creates a work security map for
+       the specified resource adapter
+
+SYNOPSIS
+           create-connector-work-security-map [--help] --raname raname
+           [--principalsmap eis-principal1=principal_name1[, eis-principal2=principal_name2]*
+           |--groupsmap eis-group1=server-group1[, eis-group2=server-group2]*}
+           [--description description]
+           mapname
+
+DESCRIPTION
+       The create-connector-work-security-map subcommand maps the caller
+       identity of the work submitted by the resource adapter EIS principal or
+       EIS user group to a suitable principal or user group in the GlassFish
+       Server security domain. One or more work security maps may be
+       associated with a resource adapter. The connector work security map
+       configuration supports the use of the wild card asterisk (*) to
+       indicate all users or all user groups.
+
+       The enterprise information system (EIS) is any system that holds the
+       data of an organization. It can be a mainframe, a messaging system, a
+       database system, or an application.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --description
+           Text providing descriptive details about the connector work
+           security map.
+
+       --groupsmap
+           Specifies a map of the backend EIS user group to the GlassFish
+           Server user group. Use a comma-separated list to specify more than
+           one mapping. Use either the --principalsmap option or the
+           --groupsmap option, but not both.
+
+       --principalsmap
+           Specifies a map of the backend EIS principal to the GlassFish
+           Server principal. Use a comma-separated list to specify more than
+           one mapping. Use either the --principalsmap option or the
+           --groupsmap option, but not both.
+
+       --raname
+           Indicates the connector module name, which is the name of the
+           resource adapter.
+
+OPERANDS
+       mapname
+           The name of the work security map to be created.
+
+EXAMPLES
+       Example 1, Creating a Connector Work Security Map (Principal)
+           This example creates connector work security map workSecurityMap1
+           that maps the backend EIS principal to the GlassFish Server
+           principal.
+
+               asadmin create-connector-work-security-map --raname my-resource-adapter
+               --principalsmap eis-principal-1=server-principal-1,eis-principal-2
+               =server-principal-2,eis-principal-3=server-principal-1
+               workSecurityMap1
+               Command create-connector-work-security-map executed successfully.
+
+       Example 2, Creating a Connector Work Security Map (Group)
+           This example creates connector work security map workSecurityMap2
+           that maps the backend EIS user group to the GlassFish Server user
+           group.
+
+               asadmin create-connector-work-security-map --raname my-resource-adapter
+               --groupsmap eis-group-1=server-group-1,eis-group-2=server-group-2,
+               eis-group-3=server-group-1 workSecurityMap2
+               Command create-connector-work-security-map executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       delete-connector-work-security-map(1),
+       list-connector-work-security-maps(1),
+       update-connector-work-security-map(1)
+
+       asadmin(1M)
+
+Java EE 8             09 Aug 2017      create-connector-work-security-map(1)

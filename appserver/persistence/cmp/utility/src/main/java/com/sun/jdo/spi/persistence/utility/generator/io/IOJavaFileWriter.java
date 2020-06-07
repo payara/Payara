@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] Payara Foundation and/or affiliates
 
 /*
  * IOJavaFileWriter.java
@@ -46,19 +47,23 @@
 
 package com.sun.jdo.spi.persistence.utility.generator.io;
 
-import java.io.*;
-import java.util.*;
-
-import org.glassfish.persistence.common.I18NHelper;
-import com.sun.jdo.spi.persistence.utility.generator.JavaFileWriter;
 import com.sun.jdo.spi.persistence.utility.generator.JavaClassWriter;
+import com.sun.jdo.spi.persistence.utility.generator.JavaFileWriter;
+import org.glassfish.persistence.common.I18NHelper;
 
-/** 
- * This implementation of the {@link JavaFileWriter} interface is based on 
- * {@link java.io.File} and simple {@link java.lang.StringBuffer} "println" 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
+
+/**
+ * This implementation of the {@link JavaFileWriter} interface is based on
+ * {@link java.io.File} and simple {@link java.lang.StringBuilder} "println"
  * type statements.
  *<p>
- * Use this interface in conjunction with one or more {@link JavaClassWriter} 
+ * Use this interface in conjunction with one or more {@link JavaClassWriter}
  * instances to describe the class(es) in a java file.
  *
  * @author raccah
@@ -66,7 +71,7 @@ import com.sun.jdo.spi.persistence.utility.generator.JavaClassWriter;
 public class IOJavaFileWriter implements JavaFileWriter
 {
 	/** I18N message handler */
-	private static final ResourceBundle _messages = 
+	private static final ResourceBundle _messages =
 		I18NHelper.loadBundle(IOJavaFileWriter.class);
 
 	private File _file;
@@ -75,26 +80,26 @@ public class IOJavaFileWriter implements JavaFileWriter
 	private List _classes = new ArrayList();
 
 	/** Creates a new instance of IOJavaFileWriter.
-	 * @param file The file object which will be used at save time. 
+	 * @param file The file object which will be used at save time.
 	 */
 	public IOJavaFileWriter (File file)
 	{
 		_file = file;
 	}
-	
+
 	/** @return I18N message handler for this element
 	 */
 	protected static final ResourceBundle getMessages () { return _messages; }
 
-	/** Sets the package for this file.  Note that the package name format 
+	/** Sets the package for this file.  Note that the package name format
 	 * must be package style (that is - it can contain . but not / or $).
 	 * @param packageName The name of the package for this source file.
 	 * @param comments The comments shown just above the package statement.
 	 * The comments are passed as an array so the line separators can be added
 	 * by the implementation.  Note that not all implementations will choose
 	 * to make use of this comment.
-	 */	
-	public void setPackage (final String packageName, final String[] comments) 
+	 */
+	public void setPackage (final String packageName, final String[] comments)
 	{
 		final FormattedWriter writerHelper =  new FormattedWriter();
 
@@ -115,7 +120,7 @@ public class IOJavaFileWriter implements JavaFileWriter
 	 * The comments are passed as an array so the line separators can be added
 	 * by the implementation.  Note that not all implementations will choose
 	 * to make use of this comment.
-	 */	
+	 */
 	public void addImport (final String importName, final String[] comments)
 	{
 		final FormattedWriter writerHelper =  new FormattedWriter();
@@ -129,18 +134,18 @@ public class IOJavaFileWriter implements JavaFileWriter
 
 	/** Adds a class to this source file.
 	 * @param classWriter The definition of the class.
-	 */	
+	 */
 	public void addClass (final JavaClassWriter classWriter)
 	{
 		if (classWriter != null)
 			_classes.add(classWriter);
 	}
 
-	/** Saves the file by writing out the source contents to whatever 
-	 * file (or alternate representation) was specified (usually by the 
+	/** Saves the file by writing out the source contents to whatever
+	 * file (or alternate representation) was specified (usually by the
 	 * constructor of the implementation class.
 	 * @throws IOException If the file cannot be saved.
-	 */	
+	 */
 	public void save () throws IOException
 	{
 		if (_file != null)
@@ -152,12 +157,12 @@ public class IOJavaFileWriter implements JavaFileWriter
 			{
 				if (!directory.exists() && !directory.mkdirs())
 				{
-					throw new IOException(I18NHelper.getMessage(getMessages(), 
+					throw new IOException(I18NHelper.getMessage(getMessages(),
 						"utility.unable_create_destination_directory",	// NOI18N
 						directory.getPath()));
 				}
 			}
-			
+
 			fileWriter = new FileWriter(_file);
 
 			try
@@ -173,7 +178,7 @@ public class IOJavaFileWriter implements JavaFileWriter
 
 	/** Returns a string representation of this object.
 	 * @return The string representation of the generated file.
-	 */	
+	 */
 	public String toString ()
 	{
 		final FormattedWriter writerHelper =  new FormattedWriter();

@@ -39,6 +39,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 
 import imp
 
@@ -53,11 +54,10 @@ pkg = {
                         "info.classification" : conf.glassfish_info_classification,
                       },
     "depends"       : { 
-	                "pkg:/javadb-common" : {"type" : "require" },
-			"pkg:/javadb-core" : {"type" : "require" },
-			"pkg:/javadb-client" : {"type" : "require" },
+                        "pkg:/h2db" : {"type" : "require" },
 			"pkg:/pkg-java" : {"type" : "require" },
 			"pkg:/felix" : {"type" : "require" },
+                        "pkg:/appserver-core" : {"type" : "require" },
 			"pkg:/glassfish-hk2" : {"type" : "require" },
 		 	"pkg:/glassfish-grizzly" : {"type" : "require" },
 			"pkg:/glassfish-nucleus" : {"type" : "require" },
@@ -66,7 +66,6 @@ pkg = {
 			"pkg:/shoal" : {"type" : "require" },
 			"pkg:/glassfish-cluster" : {"type" : "require" },
 			"pkg:/glassfish-ha" : {"type" : "require" },
-			"pkg:/glassfish-registration" : {"type" : "require" },
 			"pkg:/jersey@1.8" : {"type" : "require" },
 			"pkg:/glassfish-management" : {"type" : "require" },
                         "pkg:/glassfish-common-web" : {"type" : "require" },

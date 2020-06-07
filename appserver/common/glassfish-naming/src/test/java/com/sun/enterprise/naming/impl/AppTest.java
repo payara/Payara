@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.naming.impl;
 
@@ -177,7 +178,7 @@ public class AppTest {
 
             inv = new ComponentInvocation("comp1",
                     ComponentInvocation.ComponentInvocationType.EJB_INVOCATION,
-                    null, null, null);
+                    null, null, null, null);
             im.preInvoke(inv);
 
             nm.bindToComponentNamespace("app1", "mod1", "comp1", false, new ArrayList<Binding>());
@@ -225,7 +226,7 @@ public class AppTest {
 
             inv = new ComponentInvocation("comp1",
                     ComponentInvocation.ComponentInvocationType.EJB_INVOCATION,
-                    null, null, null);
+                    null, null, null, null);
             im.preInvoke(inv);
            
             System.out.println("**lookup(java:comp/env/conf/area) ==> " + ic.lookup("java:comp/env/conf/area"));
@@ -255,7 +256,7 @@ public class AppTest {
 
             inv = new ComponentInvocation("comp2",
                     ComponentInvocation.ComponentInvocationType.EJB_INVOCATION,
-                    null, null, null);
+                    null, null, null, null);
             im.preInvoke(inv);
             System.out.println("**lookup(java:comp/env/conf/area) ==> " + ic.lookup("java:comp/env/conf/area"));
             System.out.println("**lookup(java:comp/env/conf/location) ==> " + ic.lookup("java:comp/env/conf/location"));
