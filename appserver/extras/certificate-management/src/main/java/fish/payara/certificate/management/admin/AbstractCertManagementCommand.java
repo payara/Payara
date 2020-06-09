@@ -43,11 +43,13 @@ import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.cluster.SynchronizeInstanceCommand;
 import com.sun.enterprise.admin.servermgmt.KeystoreManager;
+import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.certificate.management.CertificateManagementDomainConfigUtils;
+import fish.payara.certificate.management.CertificateManagementKeytoolCommands;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.config.support.TranslatedConfigView;
@@ -240,7 +242,8 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
             store.load(new FileInputStream(keystore), keystorePassword);
             addToStore(store, file, keystore, keystorePassword);
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException ex) {
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException
+                | RepositoryException ex) {
             throw new CommandException(ex);
         }
     }
@@ -256,7 +259,8 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
             store.load(new FileInputStream(truststore), truststorePassword);
             addToStore(store, file, truststore, truststorePassword);
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException ex) {
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException
+                | RepositoryException ex) {
             throw new CommandException(ex);
         }
     }
@@ -268,15 +272,30 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
      * @throws CommandException If there's an issue accessing the key store
      */
     private void addToStore(KeyStore store, File file, File keyOrTrustStore, char[] password)
-            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, RepositoryException {
         KeystoreManager manager = new KeystoreManager();
-        Collection<? extends Certificate> certs = manager.readPemCertificateChain(file);
-        for (Certificate cert : certs) {
-            store.setCertificateEntry(userArgAlias, cert);
-        }
-        try (FileOutputStream out = new FileOutputStream(keyOrTrustStore)) {
-            store.store(out, password);
-            out.flush();
+        try {
+            Collection<? extends Certificate> certs = manager.readPemCertificateChain(file);
+            for (Certificate cert : certs) {
+                store.setCertificateEntry(userArgAlias, cert);
+            }
+            try (FileOutputStream out = new FileOutputStream(keyOrTrustStore)) {
+                store.store(out, password);
+                out.flush();
+            }
+        } catch (KeyStoreException kse) {
+            // Try to add it as a store rather than as a certificate
+            if (kse.getMessage().contains("No certificate data found") || kse.getMessage().contains("signed fields invalid")) {
+                logger.fine("Couldn't add file as a certificate, attempting to add as a store");
+                KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
+                        CertificateManagementKeytoolCommands.constructImportKeystoreKeytoolCommand(
+                                file, keyOrTrustStore, password, password, userArgAlias),
+                        60);
+
+                keytoolExecutor.execute("certNotAdded", keyOrTrustStore);
+            } else {
+                throw kse;
+            }
         }
     }
 
