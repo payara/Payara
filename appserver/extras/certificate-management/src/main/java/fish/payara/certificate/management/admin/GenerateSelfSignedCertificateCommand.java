@@ -139,7 +139,7 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
     private void addToTruststore() throws CommandException {
         // Run keytool command to place self-signed cert in truststore
         KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
-                CertificateManagementKeytoolCommands.constructImportCertKeytoolCommand(keystore, truststore, keystorePassword,
+                CertificateManagementKeytoolCommands.constructImportKeystoreKeytoolCommand(keystore, truststore, keystorePassword,
                         truststorePassword, userArgAlias), 60);
 
         try {

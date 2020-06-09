@@ -110,26 +110,26 @@ public class CertificateManagementKeytoolCommands {
     }
 
     /**
-     * Constructs the command to pass to keytool for adding the self-signed cert to the trust store
+     * Constructs the command to pass to keytool for adding a key store entry to another key store
      *
-     * @param keystore           The target key store that the certificate was added to
-     * @param truststore         The target trust store to add the certificate to
-     * @param keystorePassword   The password for the key store
-     * @param truststorePassword The password for the trust store
+     * @param srcKeystore           The target key store that the certificate was added to
+     * @param destKeystore         The target trust store to add the certificate to
+     * @param srcKeystorePassword   The password for the key store
+     * @param destKeystorePassword The password for the trust store
      * @param alias              The alias of the certificate
      * @return A String array to pass to {@link com.sun.enterprise.admin.servermgmt.KeystoreManager.KeytoolExecutor}
      */
-    public static String[] constructImportCertKeytoolCommand(File keystore, File truststore, char[] keystorePassword,
-            char[] truststorePassword, String alias) {
+    public static String[] constructImportKeystoreKeytoolCommand(File srcKeystore, File destKeystore,
+            char[] srcKeystorePassword, char[] destKeystorePassword, String alias) {
         String[] keytoolCmd = new String[]{"-importkeystore",
-                "-srckeystore", keystore.getAbsolutePath(),
-                "-destkeystore", truststore.getAbsolutePath(),
+                "-srckeystore", srcKeystore.getAbsolutePath(),
+                "-destkeystore", destKeystore.getAbsolutePath(),
                 "-srcalias", alias,
                 "-destalias", alias,
-                "-srcstorepass", new String(keystorePassword),
-                "-deststorepass", new String(truststorePassword),
-                "-srckeypass", new String(keystorePassword),
-                "-destkeypass", new String(truststorePassword),
+                "-srcstorepass", new String(srcKeystorePassword),
+                "-deststorepass", new String(destKeystorePassword),
+                "-srckeypass", new String(srcKeystorePassword),
+                "-destkeypass", new String(destKeystorePassword),
                 "-noprompt"};
 
         return keytoolCmd;
