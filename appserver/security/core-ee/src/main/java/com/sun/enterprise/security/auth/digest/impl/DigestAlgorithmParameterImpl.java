@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2020 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,22 +59,9 @@ public class DigestAlgorithmParameterImpl implements DigestAlgorithmParameter {
         this.name = name;
     }
 
-    public DigestAlgorithmParameterImpl(String name, byte[] data, byte delimiter) {
-        this.data = data;
-        this.delimeter = delimeter;
-        this.name = name;
-    }
-
     public DigestAlgorithmParameterImpl(String name, String algorithm, byte[] data) {
         this.algorithm = algorithm;
         this.data = data;
-        this.name = name;
-    }
-
-    public DigestAlgorithmParameterImpl(String name, String algorithm, byte[] data, byte[] delimiter) {
-        this.algorithm = algorithm;
-        this.data = data;
-        this.delimeter = delimeter;
         this.name = name;
     }
 
