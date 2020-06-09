@@ -149,6 +149,9 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
                         truststorePassword, alias), 60);
 =======
                 CertificateManagementKeytoolCommands.constructImportCertKeytoolCommand(keystore, truststore, keystorePassword,
+=======
+                CertificateManagementKeytoolCommands.constructImportKeystoreKeytoolCommand(keystore, truststore, keystorePassword,
+>>>>>>> 45a7918a29... Merge pull request #56 from Pandrex247/APPSERV-150-Enterprise2
                         truststorePassword, userArgAlias), 60);
 >>>>>>> da337fd178... Merge pull request #52 from Pandrex247/Refactor-Jonathan
 
