@@ -42,30 +42,26 @@ package fish.payara.nucleus.microprofile.config.spi;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.eclipse.microprofile.config.spi.Converter;
+import org.eclipse.microprofile.config.Config;
 
 /**
  * <p>
  * This is an abstraction to resolve {@link Config} values using a fluent API that is used
  * when the basic {@link Config#getValue(String, Class)} does not suffice
- * or the user wants to make sure a value is returned without an exception and excluding empty {@link String} values.
+ * or the user wants to make sure a value is returned without an exception.
  * The method names are chosen for good readability when used as a fluent API.
  *
  * <p>
  * This API is designed so reliably result in a return value. This means by default it will not throw exceptions for
  * missing properties or failed conversion but instead return a default value that callers have to provide.
  * Alternatively to providing a default value a value can be resolved as {@link Optional}.
+ * If a caller wants exceptions to occur {@link Config#getValue(String, Class)} can be used instead.
  *
  * <p>
- * Arrays of values can be resolved as {@link List} or {@link Set}.
+ * Values can be resolved as {@link List} or {@link Set}.
  * By default these return empty lists or sets in case of missing property or failed conversion.
- *
- * <p>
- * Simple value properties defined as empty string by default are considered missing. This can be changed
- * using {@link #acceptEmpty()}.
  *
  * <p>
  * Should exceptions be thrown for either missing properties or failed conversion the default of not throwing exception
@@ -74,7 +70,7 @@ import org.eclipse.microprofile.config.spi.Converter;
  *
  * <p>
  * Usually conversion relies on registered {@link org.eclipse.microprofile.config.spi.Converter}s.
- * Ad-hoc conversion can be done using {@link #asConvertedBy(Converter, Object)}.
+ * Ad-hoc conversion can be done using {@link #asConvertedBy(Function, Object)}.
  * Values resolved as {@link String} are not converted.
  * Values resolved as {@code String[]} are only split but elements are not converted.
  *
@@ -106,15 +102,6 @@ public interface ConfigValueResolver {
      * @return This resolver for fluent API usage
      */
     ConfigValueResolver withDefault(String value);
-
-    /**
-     * Disables the default behaviour of considering properties defined as empty string as being not present (missing).
-     * Effectively this means {@code as}-methods might then return empty things in case the property is defined as empty
-     * in the source.
-     *
-     * @return This resolver for fluent API usage
-     */
-    ConfigValueResolver acceptEmpty();
 
     /**
      * Disables the default behaviour of not throwing exceptions and instead returning default values for case of
@@ -278,25 +265,4 @@ public interface ConfigValueResolver {
      **/
     <E> Set<E> asSet(Class<E> elementType, Set<E> defaultValue);
 
-    /**
-     * Consume successfully converted element values for multi-value properties.
-     *
-     * Resolves the property as if resolving an array of the given element type and passing each of them to the provided
-     * {@link Consumer} action. Raw value is split into elements as defined by {@link Config} for array types.
-     * <p>
-     * If the property is missing, defined empty, the required element type converter is missing the action is not called at all.
-     * If conversion fails for an element that element is skipped and not passed to the action.
-     * Other elements are still converted.
-     * <p>
-     * This method might also help avoid creation of intermediate collections to some degree.
-     * Implementations should attempt to avoid such intermediate collections where possible within reason.
-     *
-     * @param elementType type to be consumed by the provided action, not {@code null}
-     * @param action      The action to be performed for each element, not {@code null}
-     * @throws java.lang.IllegalArgumentException if the property cannot be converted to the specified type and throwing
-     *         exceptions has been requested using {@link #throwOnFailedConversion()}
-     * @throws java.util.NoSuchElementException if the property isn't present in the configuration and throwing
-     *         exceptions has been requested using {@link #throwOnMissingProperty()}
-     **/
-    <E> void forEach(Class<E> elementType, Consumer<? super E> action);
 }

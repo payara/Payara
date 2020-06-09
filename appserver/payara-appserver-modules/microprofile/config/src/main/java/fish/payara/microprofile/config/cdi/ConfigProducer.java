@@ -99,7 +99,6 @@ public class ConfigProducer {
             @SuppressWarnings("unchecked")
             Class<T> elementType = (Class<T>) ((ParameterizedType) type).getActualTypeArguments()[0];
             return config.getValue(property.name(), ConfigValueResolver.class)
-                    .acceptEmpty()
                     .throwOnFailedConversion()
                     .throwOnMissingProperty()
                     .withDefault(property.defaultValue())
@@ -125,7 +124,6 @@ public class ConfigProducer {
             @SuppressWarnings("unchecked")
             Class<T> elementType = (Class<T>) ((ParameterizedType) type).getActualTypeArguments()[0];
             return config.getValue(property.name(), ConfigValueResolver.class)
-                    .acceptEmpty()
                     .throwOnFailedConversion()
                     .throwOnMissingProperty()
                     .withDefault(property.defaultValue())
@@ -159,7 +157,6 @@ public class ConfigProducer {
                 defaultValue = null;
             }
             return config.getValue(property.name(), ConfigValueResolver.class)
-                    .acceptEmpty()
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)
                     .as(valueType);

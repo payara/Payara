@@ -44,20 +44,22 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
 
+import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.getCacheKey;
+import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
 import static java.lang.System.currentTimeMillis;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Standard implementation for MP {@link Config}.
@@ -67,9 +69,11 @@ import java.util.function.BiFunction;
  * a TTL of zero (or negative).
  *
  * @author Steve Millidge (Payara Foundation)
- * @author Jan Bernitt (caching part)
+ * @author Jan Bernitt (caching part, ConfigValueResolver)
  */
 public class PayaraConfig implements Config {
+
+    static final Logger LOGGER = Logger.getLogger(PayaraConfig.class.getName());
 
     private static final class CacheEntry {
         final Object value;
@@ -103,7 +107,7 @@ public class PayaraConfig implements Config {
         Collections.sort(sources, new ConfigSourceComparator());
     }
 
-    public long getTTL() {
+    long getTTL() {
         return ttl;
     }
 
@@ -114,15 +118,18 @@ public class PayaraConfig implements Config {
             return (T) new ConfigValueResolverImpl(this, propertyName);
         }
         T value = getValueInternal(propertyName, propertyType);
-        if (value == null) {
-            throw new NoSuchElementException("Unable to find property with name " + propertyName);
-        }
+        throwWhenNotExists(propertyName, value);
         return value;
     }
 
     @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
         return Optional.ofNullable(getValueInternal(propertyName, propertyType));
+    }
+
+    private <T> T getValueInternal(String propertyName, Class<T> propertyType) {
+        return getValue(propertyName, getCacheKey(propertyName, propertyType), ttl, null,
+                () -> getConverter(propertyType));
     }
 
     @Override
@@ -144,128 +151,54 @@ public class PayaraConfig implements Config {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getValue(String propertyName, String defaultValue, String cacheKey, Converter<T> converter, Long ttl) {
+    public <T> T getValue(String propertyName, String cacheKey, Long ttl, String defaultValue, Supplier<? extends Converter<T>> converter) {
         long entryTTL = ttl == null ? this.ttl : ttl.longValue();
         if (entryTTL <= 0) {
-            return getValueConverted(propertyName, defaultValue, converter);
+            return getValueConverted(propertyName, defaultValue, converter.get());
         }
+        final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "")  + ":" + (entryTTL / 1000) + "s";
         final long now = currentTimeMillis();
-        return (T) cachedValuesByProperty.compute(cacheKey, (key, entry) -> {
+        return (T) cachedValuesByProperty.compute(entryKey, (key, entry) -> {
             if (entry != null && now < entry.expires) {
                 return entry;
             }
-            return new CacheEntry(getValueConverted(propertyName, defaultValue, converter), now + entryTTL);
+            return new CacheEntry(getValueConverted(propertyName, defaultValue, converter.get()), now + entryTTL);
         }).value;
     }
 
     private <T> T getValueConverted(String propertyName, String defaultValue, Converter<T> converter) {
-        String stringValue = getStringValue(propertyName);
-        if (stringValue == null) {
+        String sourceValue = getSourceValue(propertyName);
+        // NOTE: when empty is considered missing by MP this condition needs to add "|| sourceValue.isEmpty()"
+        if (sourceValue == null) {
             return defaultValue == null ? null : converter.convert(defaultValue);
         }
-        return converter.convert(stringValue);
-    }
-    private <T> T getValueInternal(String propertyName, Class<T> propertyType) {
-        return getValue(propertyName, null, propertyType.getName() + ":" + propertyName, getConverter(propertyType), null);
-    }
-
-
-
-    public <T> List<T> getListValues(String propertyName, String defaultValue, Class<T> elementType) {
-        @SuppressWarnings("unchecked")
-        List<T> value = getValueCached(propertyName, List.class, elementType, (property, type) -> {
-            String stringValue = getStringValue(property);
-            if (stringValue == null) {
-                stringValue = defaultValue;
+        try {
+            return converter.convert(sourceValue);
+        } catch (IllegalArgumentException ex) {
+            if (defaultValue == null) {
+                throw ex;
             }
-            return convertToList(stringValue, elementType);
-        });
-        if (value == null) {
-            throw new NoSuchElementException("Unable to find property with name " + propertyName);
+            return converter.convert(defaultValue);
         }
-        return value;
     }
 
-    private <T> List<T> convertToList(String stringValue, Class<T> elementType) {
-        if (stringValue == null) {
-            return null;
-        }
-        String keys[] = splitValue(stringValue);
-        List<T> result = new ArrayList<>(keys.length);
-        for (String key : keys) {
-            result.add(convertString(key, elementType));
-        }
-        return result;
-    }
-
-    public <T> Set<T> getSetValues(String propertyName, String defaultValue, Class<T> elementType) {
-        @SuppressWarnings("unchecked")
-        Set<T> value = getValueCached(propertyName, Set.class, elementType, (property, type) ->  {
-            String stringValue = getStringValue(property);
-            if (stringValue == null) {
-                stringValue = defaultValue;
-            }
-            return convertToSet(stringValue, elementType);
-        });
-        if (value == null) {
-            throw new NoSuchElementException("Unable to find property with name " + propertyName);
-        }
-        return value;
-    }
-
-    private <T> Set<T> convertToSet(String stringValue, Class<T> elementType) {
-        if (stringValue == null) {
-            return null;
-        }
-        String keys[] = splitValue(stringValue);
-        Set<T> result = new HashSet<>(keys.length);
-        for (String key : keys) {
-            result.add(convertString(key, elementType));
-        }
-        return result;
-    }
-
-    public <T> T getValue(String propertyName, String defaultValue, Class<T> propertyType) {
-        return getValueCached(propertyName, propertyType, null, (property, type) -> {
-            String stringValue = getStringValue(property);
-            if (stringValue == null) {
-                stringValue = defaultValue;
-            }
-            return stringValue == null ? null : convertString(stringValue, type);
-        });
-    }
-
-    private String getStringValue(String propertyName) {
-        for (ConfigSource configSource : sources) {
-            String value = configSource.getValue(propertyName);
-            if (value != null) {
-                return value;
+    private String getSourceValue(String propertyName) {
+        for (ConfigSource source : sources) {
+            String sourceValue = source.getValue(propertyName);
+            if (sourceValue != null) {
+                return sourceValue;
             }
         }
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Converter<T> getConverter(Class<T> propertyType) {
-        Class<T> type = (Class<T>) boxedTypeOf(propertyType);
-        // if it is an array convert arrays
+    public <T> Converter<T> getConverter(Class<T> propertyType) {
         if (propertyType.isArray()) {
-            // find converter for the array type
-            Class<?> componentClazz = propertyType.getComponentType();
-            Converter<?> converter = getConverter(componentClazz);
-
-            // array convert
-            String keys[] = splitValue(value);
-            Object arrayResult = Array.newInstance(componentClazz, keys.length);
-            for (int i = 0; i < keys.length; i++) {
-                Array.set(arrayResult, i, converter.convert(keys[i]));
-            }
-            return (T) arrayResult;
+            return (Converter<T>) createArrayConverter(propertyType.getComponentType());
         }
-
-
+        Class<T> type = (Class<T>) boxedTypeOf(propertyType);
         Converter<?> converter = converters.get(type);
-
         if (converter != null) {
             return (Converter<T>) converter;
         }
@@ -280,9 +213,11 @@ public class PayaraConfig implements Config {
         throw new IllegalArgumentException("Unable to convert value to type " + type.getTypeName());
     }
 
+    private <E> Converter<Object> createArrayConverter(Class<E> elementType) {
+        return new ArrayConverter<>(elementType, getConverter(elementType));
+    }
 
-
-    private static Class<?> boxedTypeOf(Class<?> type) {
+    static Class<?> boxedTypeOf(Class<?> type) {
         if (!type.isPrimitive()) {
             return type;
         }
@@ -314,21 +249,72 @@ public class PayaraConfig implements Config {
         return Void.class;
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> T convertString(String value, Class<T> propertyType) {
-        Converter<T> converter = getConverter(propertyType);
-        if (converter == null) {
-            throw new IllegalArgumentException("No converter for class " + propertyType);
-        }
-        return converter.convert(value);
-    }
+    /**
+     * Converts reference and primitive arrays.
+     *
+     * For convenience the converter skips empty elements as well as elements for which conversion fails. If all
+     * elements fail to convert the conversion exception is forwarded (thrown). Otherwise a warning is logged and the
+     * working elements as kept.
+     *
+     * This is a grey-area in the standard but from a users point of view it most often makes sense to work with the
+     * elements that are well defined and ignore the others.
+     *
+     * Argument for {@link Converter} can only be {@link Object} as both reference and primitive arrays are created.
+     *
+     * @param <T> element type of the array, can be both a primitive or a reference type
+     */
+    private static final class ArrayConverter<T> implements Converter<Object> {
 
-    private static String[] splitValue(String value) {
-        String keys[] = value.split("(?<!\\\\),");
-        for (int i=0; i < keys.length; i++) {
-            keys[i] = keys[i].replaceAll("\\\\,", ",");
-        }
-        return keys;
-    }
+        private final Class<T> elementType;
+        private final Converter<T> elementConverter;
 
+        ArrayConverter(Class<T> elementType, Converter<T> elementConverter) {
+            this.elementType = elementType;
+            this.elementConverter = elementConverter;
+        }
+
+        @Override
+        public Object convert(String value) {
+            String[] sourceValues = splitValue(value);
+            Object array = Array.newInstance(elementType, sourceValues.length);
+            int j = 0;
+            IllegalArgumentException lastConversionException = null;
+            for (int i = 0; i < sourceValues.length; i++) {
+                String sourceValue = sourceValues[i];
+                if (sourceValue != null && !sourceValue.isEmpty()) {
+                    try {
+                        T elementValue = elementConverter.convert(sourceValue);
+                        Array.set(array, j++, elementValue);
+                    } catch (IllegalArgumentException ex) {
+                        // ignore that value but remember exception
+                        lastConversionException = ex;
+                    }
+                }
+            }
+            if (j == sourceValues.length) {
+                return array;
+            }
+            if (lastConversionException != null) {
+                if (j == 0) { // all failed, also fail
+                    throw lastConversionException;
+                }
+                LOGGER.log(Level.WARNING,
+                        "Souce value defined a list with illegal elements which are ignored: " + value,
+                        lastConversionException);
+            } else {
+                LOGGER.warning("Souce value defined a list with empty elements which are ignored: " + value);
+            }
+            Object copy = Array.newInstance(elementType, j);
+            System.arraycopy(array, 0, copy, 0, j);
+            return copy;
+        }
+
+        private static String[] splitValue(String value) {
+            String keys[] = value.split("(?<!\\\\),");
+            for (int i=0; i < keys.length; i++) {
+                keys[i] = keys[i].replaceAll("\\\\,", ",");
+            }
+            return keys;
+        }
+    }
 }

@@ -94,26 +94,27 @@ public class ConfigPropertyProducer {
         }
 
         Type type = ip.getType();
+        String defaultValue = property.defaultValue();
         if (type instanceof Class) {
             result = config.getValue(name, ConfigValueResolver.class)
-                    .acceptEmpty()
                     .throwOnMissingProperty()
-                    .withDefault(property.defaultValue())
+                    .throwOnFailedConversion()
+                    .withDefault(defaultValue)
                     .as((Class<?>)type).get();
         } else if ( type instanceof ParameterizedType) {
             ParameterizedType ptype = (ParameterizedType)type;
             Type rawType = ptype.getRawType();
             if (List.class.equals(rawType)) {
                 result = config.getValue(name, ConfigValueResolver.class)
-                    .acceptEmpty()
                     .throwOnMissingProperty()
-                    .withDefault(property.defaultValue())
+                    .throwOnFailedConversion()
+                    .withDefault(defaultValue)
                     .asList(getElementTypeFrom(ptype));
             } else if (Set.class.equals(rawType)) {
                 result = config.getValue(name, ConfigValueResolver.class)
-                    .acceptEmpty()
                     .throwOnMissingProperty()
-                    .withDefault(property.defaultValue())
+                    .throwOnFailedConversion()
+                    .withDefault(defaultValue)
                     .asSet(getElementTypeFrom(ptype));
             } else {
                 result = config.getValue(name, (Class<?>) rawType);
