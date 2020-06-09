@@ -96,9 +96,6 @@ public class StopDomainCommand extends LocalDomainCommand {
     protected void initDomain() throws CommandException {
         // only initialize local domain information if it's a local operation
 
-        // TODO Byron said in April 2013 that we should probably just check if
-        // NetUtils says that the getHost() --> isThisMe() rather than merely
-        // checking for the magic "localhost" string.  Too risky to fool with it today.
         if (NetUtils.isThisHostLocal(programOpts.getHost())) {
             super.initDomain();
         } else if (userArgDomainName != null) {  // remote case
