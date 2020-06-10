@@ -48,6 +48,7 @@ public class ConfigValueResolverTest {
                 {"int1", "13"},
                 {"brokenlong", "fourtytwo"},
                 {"brokenint", "one" },
+                {"array1", "12,one,13" },
 
         };
         Map<String, String> properties = source1.getProperties();
@@ -475,7 +476,7 @@ public class ConfigValueResolverTest {
 
 
     /*
-     * Ad-hoc conversion
+     * Ad-hoc Conversion
      */
 
     @Test
@@ -688,6 +689,42 @@ public class ConfigValueResolverTest {
     public void asSetOfLongWithDefaultThrowsOnFailedConversion() {
         assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `fourtytwo`",
                 () -> resolve("brokenlong").throwOnFailedConversion().asSet(Long.class, new HashSet<>(asList(42L))));
+    }
+
+
+    /*
+     * Array Special Cases
+     */
+
+    @Test
+    public void asArraySkipsElementsWithConversionFailure() {
+        assertArrayEquals(new int[] { 12,  13 }, resolve("array1").as(int[].class, null));
+        // is equivalent to (as long as only some elements fail):
+        assertArrayEquals(new int[] { 12,  13 }, resolve("array1").throwOnFailedConversion().as(int[].class, null));
+    }
+
+    @Test
+    public void asArrayThrowsConversionFailureWhenNoElementCanBeConverted() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Integer for value `c`",
+                () -> resolve("nosucharray").throwOnFailedConversion().withDefault("a,b,c").as(int[].class, null));
+    }
+
+
+    /*
+     * Custom TTLs
+     */
+
+    @Test
+    public void customTtlUsesSeparateCacheEntry() {
+        Map<String, String> properties = source1.getProperties();
+        properties.put("newkey", "42");
+        assertEquals(42, resolve("newkey").withTTL(1000).as(int.class, -1).intValue());
+        // update the value in source
+        properties.put("newkey", "142");
+        // resolve with different TTL
+        assertEquals(142, resolve("newkey").withTTL(50).as(int.class, -1).intValue());
+        // while when resolved with TTL 1000 (1 sec) it still is the old value (as it did not take more then a sec to get here)
+        assertEquals(42, resolve("newkey").withTTL(1000).as(int.class, -1).intValue());
     }
 
     private static void assertThrowsFailedConversion(String msg, Runnable test) {
