@@ -91,6 +91,8 @@ import org.eclipse.microprofile.config.Config;
  */
 public interface ConfigValueResolver {
 
+    ConfigValueResolver withTTL(long ttl);
+
     /**
      * Provides a raw property value default value.
      * <p>
@@ -110,7 +112,11 @@ public interface ConfigValueResolver {
      *
      * @return This resolver for fluent API usage
      */
-    ConfigValueResolver throwOnMissingProperty();
+    default ConfigValueResolver throwOnMissingProperty() {
+        return throwOnMissingProperty(true);
+    }
+
+    ConfigValueResolver throwOnMissingProperty(boolean throwOnMissingProperty);
 
     /**
      * Disables the default behaviour of not throwing exceptions and instead returning typed default values for case of
@@ -122,7 +128,11 @@ public interface ConfigValueResolver {
      *
      * @return This resolver for fluent API usage
      */
-    ConfigValueResolver throwOnFailedConversion();
+    default ConfigValueResolver throwOnFailedConversion() {
+        return throwOnFailedConversion(true);
+    }
+
+    ConfigValueResolver throwOnFailedConversion(boolean throwOnFailedConversion);
 
     /**
      * Resolves the property as a simple or array type.

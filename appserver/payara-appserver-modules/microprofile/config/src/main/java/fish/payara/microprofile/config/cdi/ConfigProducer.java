@@ -98,10 +98,11 @@ public class ConfigProducer {
          // it is an List, get the element type of the List
             @SuppressWarnings("unchecked")
             Class<T> elementType = (Class<T>) ((ParameterizedType) type).getActualTypeArguments()[0];
+            String defaultValue = property.defaultValue();
             return config.getValue(property.name(), ConfigValueResolver.class)
+                    .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
-                    .throwOnMissingProperty()
-                    .withDefault(property.defaultValue())
+                    .withDefault(defaultValue)
                     .asSet(elementType);
         }
         return new HashSet<>();
@@ -123,10 +124,11 @@ public class ConfigProducer {
             // it is an List, get the element type of the List
             @SuppressWarnings("unchecked")
             Class<T> elementType = (Class<T>) ((ParameterizedType) type).getActualTypeArguments()[0];
+            String defaultValue = property.defaultValue();
             return config.getValue(property.name(), ConfigValueResolver.class)
+                    .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
-                    .throwOnMissingProperty()
-                    .withDefault(property.defaultValue())
+                    .withDefault(defaultValue)
                     .asList(elementType);
         }
         return new ArrayList<>();
@@ -153,9 +155,6 @@ public class ConfigProducer {
             Class<T> valueType = (Class<T>) ((ParameterizedType) type).getActualTypeArguments()[0];
 
             String defaultValue = property.defaultValue();
-            if (ConfigProperty.UNCONFIGURED_VALUE.equals(defaultValue)) {
-                defaultValue = null;
-            }
             return config.getValue(property.name(), ConfigValueResolver.class)
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)

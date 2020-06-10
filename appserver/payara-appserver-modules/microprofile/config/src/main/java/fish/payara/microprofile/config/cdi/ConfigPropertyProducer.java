@@ -97,7 +97,7 @@ public class ConfigPropertyProducer {
         String defaultValue = property.defaultValue();
         if (type instanceof Class) {
             result = config.getValue(name, ConfigValueResolver.class)
-                    .throwOnMissingProperty()
+                    .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)
                     .as((Class<?>)type).get();
@@ -106,13 +106,13 @@ public class ConfigPropertyProducer {
             Type rawType = ptype.getRawType();
             if (List.class.equals(rawType)) {
                 result = config.getValue(name, ConfigValueResolver.class)
-                    .throwOnMissingProperty()
+                    .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)
                     .asList(getElementTypeFrom(ptype));
             } else if (Set.class.equals(rawType)) {
                 result = config.getValue(name, ConfigValueResolver.class)
-                    .throwOnMissingProperty()
+                    .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)
                     .asSet(getElementTypeFrom(ptype));

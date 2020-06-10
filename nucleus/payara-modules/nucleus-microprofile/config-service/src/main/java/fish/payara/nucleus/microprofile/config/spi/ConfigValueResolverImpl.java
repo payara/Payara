@@ -37,20 +37,26 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     }
 
     @Override
+    public ConfigValueResolver withTTL(long ttl) {
+        this.ttl = ttl;
+        return this;
+    }
+
+    @Override
     public ConfigValueResolver withDefault(String value) {
         rawDefault = ConfigProperty.UNCONFIGURED_VALUE.equals(value) ? null : value;
         return this;
     }
 
     @Override
-    public ConfigValueResolver throwOnMissingProperty() {
-        throwsOnMissingProperty = true;
+    public ConfigValueResolver throwOnMissingProperty(boolean throwOnMissingProperty) {
+        this.throwsOnMissingProperty = throwOnMissingProperty;
         return this;
     }
 
     @Override
-    public ConfigValueResolver throwOnFailedConversion() {
-        throwOnFailedConversion = true;
+    public ConfigValueResolver throwOnFailedConversion(boolean throwOnFailedConversion) {
+        this.throwOnFailedConversion = throwOnFailedConversion;
         return this;
     }
 
