@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import fish.payara.nucleus.microprofile.config.converters.ArrayConverter;
 import fish.payara.nucleus.microprofile.config.converters.AutomaticConverter;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -48,7 +49,6 @@ import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImp
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
 import static java.lang.System.currentTimeMillis;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,8 +58,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Standard implementation for MP {@link Config}.
@@ -72,8 +70,6 @@ import java.util.logging.Logger;
  * @author Jan Bernitt (caching part, ConfigValueResolver)
  */
 public class PayaraConfig implements Config {
-
-    static final Logger LOGGER = Logger.getLogger(PayaraConfig.class.getName());
 
     private static final class CacheEntry {
         final Object value;
@@ -214,7 +210,7 @@ public class PayaraConfig implements Config {
     }
 
     private <E> Converter<Object> createArrayConverter(Class<E> elementType) {
-        return new ArrayConverter<>(elementType, getConverter(elementType));
+        return ArrayConverter.createArrayConverter(elementType, getConverter(elementType));
     }
 
     static Class<?> boxedTypeOf(Class<?> type) {
@@ -247,74 +243,5 @@ public class PayaraConfig implements Config {
         }
         // That's really strange config variable you got there
         return Void.class;
-    }
-
-    /**
-     * Converts reference and primitive arrays.
-     *
-     * For convenience the converter skips empty elements as well as elements for which conversion fails. If all
-     * elements fail to convert the conversion exception is forwarded (thrown). Otherwise a warning is logged and the
-     * working elements as kept.
-     *
-     * This is a grey-area in the standard but from a users point of view it most often makes sense to work with the
-     * elements that are well defined and ignore the others.
-     *
-     * Argument for {@link Converter} can only be {@link Object} as both reference and primitive arrays are created.
-     *
-     * @param <T> element type of the array, can be both a primitive or a reference type
-     */
-    private static final class ArrayConverter<T> implements Converter<Object> {
-
-        private final Class<T> elementType;
-        private final Converter<T> elementConverter;
-
-        ArrayConverter(Class<T> elementType, Converter<T> elementConverter) {
-            this.elementType = elementType;
-            this.elementConverter = elementConverter;
-        }
-
-        @Override
-        public Object convert(String value) {
-            String[] sourceValues = splitValue(value);
-            Object array = Array.newInstance(elementType, sourceValues.length);
-            int j = 0;
-            IllegalArgumentException lastConversionException = null;
-            for (int i = 0; i < sourceValues.length; i++) {
-                String sourceValue = sourceValues[i];
-                if (sourceValue != null && !sourceValue.isEmpty()) {
-                    try {
-                        T elementValue = elementConverter.convert(sourceValue);
-                        Array.set(array, j++, elementValue);
-                    } catch (IllegalArgumentException ex) {
-                        // ignore that value but remember exception
-                        lastConversionException = ex;
-                    }
-                }
-            }
-            if (j == sourceValues.length) {
-                return array;
-            }
-            if (lastConversionException != null) {
-                if (j == 0) { // all failed, also fail
-                    throw lastConversionException;
-                }
-                LOGGER.log(Level.WARNING,
-                        "Souce value defined a list with illegal elements which are ignored: " + value,
-                        lastConversionException);
-            } else {
-                LOGGER.warning("Souce value defined a list with empty elements which are ignored: " + value);
-            }
-            Object copy = Array.newInstance(elementType, j);
-            System.arraycopy(array, 0, copy, 0, j);
-            return copy;
-        }
-
-        private static String[] splitValue(String value) {
-            String keys[] = value.split("(?<!\\\\),");
-            for (int i=0; i < keys.length; i++) {
-                keys[i] = keys[i].replaceAll("\\\\,", ",");
-            }
-            return keys;
-        }
     }
 }
