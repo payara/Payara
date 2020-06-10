@@ -77,7 +77,7 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
 
     @Override
     public ConfigValueResolver withTTL(long ttl) {
-        this.ttl = ttl;
+        this.ttl = ttl < 0 ? null : ttl;
         return this;
     }
 

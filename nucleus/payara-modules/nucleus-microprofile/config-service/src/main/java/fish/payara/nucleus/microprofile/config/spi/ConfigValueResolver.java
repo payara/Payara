@@ -91,6 +91,17 @@ import org.eclipse.microprofile.config.Config;
  */
 public interface ConfigValueResolver {
 
+    /**
+     * Use a custom cache TTL for resolution.
+     *
+     * A cache entry is linked to its TTL. Use a different TTL uses a different cache entry which has the effect of
+     * using the current value for the resolved value if that TTL had not been used before.
+     * This usually behaves as intended when a call site uses a relatively stable or hard coded TTL.
+     * Call sites should never use a TTL value that is naturally varying like a value based on the current time.
+     *
+     * @param ttl Cache time to live in milliseconds, 0 to not use caching, negative to use default TTL
+     * @return This resolver for fluent API usage
+     */
     ConfigValueResolver withTTL(long ttl);
 
     /**
@@ -116,6 +127,15 @@ public interface ConfigValueResolver {
         return throwOnMissingProperty(true);
     }
 
+    /**
+     * Disables or enables throwing exceptions for missing properties.
+     *
+     * @see #throwOnMissingProperty()
+     *
+     * @param throwOnMissingProperty true to have exceptions thrown when property does not exist, false to use default
+     *                               values
+     * @return This resolver for fluent API usage
+     */
     ConfigValueResolver throwOnMissingProperty(boolean throwOnMissingProperty);
 
     /**
@@ -132,6 +152,15 @@ public interface ConfigValueResolver {
         return throwOnFailedConversion(true);
     }
 
+    /**
+     * Disables or enables throwing exceptions for failed conversions.
+     *
+     * @see #throwOnFailedConversion()
+     *
+     * @param throwOnFailedConversion true to have exceptions thrown then property conversion fails, false to use
+     *                                defaults
+     * @return This resolver for fluent API usage
+     */
     ConfigValueResolver throwOnFailedConversion(boolean throwOnFailedConversion);
 
     /**
