@@ -113,8 +113,12 @@ public interface ConfigValueResolver {
     ConfigValueResolver throwOnMissingProperty();
 
     /**
-     * Disables the default behaviour of not throwing exceptions and instead returning default values for case of failed
-     * conversion or missing converter for the target type.
+     * Disables the default behaviour of not throwing exceptions and instead returning typed default values for case of
+     * failed conversion or missing converter for the target type.
+     *
+     * If a raw value default is provided using {@link #withDefault(String)} conversion of this default is tried in case
+     * conversion of source value failed. With a raw default a exception is only thrown if conversion of raw default
+     * value failed as well and {@link #throwOnFailedConversion()} was used.
      *
      * @return This resolver for fluent API usage
      */

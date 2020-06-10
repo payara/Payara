@@ -3,16 +3,22 @@ package fish.payara.nucleus.microprofile.config.spi;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.assertException;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,6 +108,12 @@ public class ConfigValueResolverTest {
     @Test
     public void asPrimitiveBooleanWithTypedDefault() {
         assertTrue(resolve("bool1").as(Boolean.class, false).booleanValue());
+    }
+
+    @Test
+    public void asStringWithUnconfiguredRawDefault() {
+        assertEquals("winner",
+                resolve("nosuchstr").withDefault(ConfigProperty.UNCONFIGURED_VALUE).as(String.class, "winner"));
     }
 
 
@@ -391,10 +403,296 @@ public class ConfigValueResolverTest {
         assertEquals(13L, resolve("brokenlong").withDefault("notalong").as(Long.class, 13L).longValue());
     }
 
+    @Test
+    public void asPredicateReturnsProvidedTypedDefaultWithMissingConverter() {
+        Predicate<Long> p = val -> true;
+        assertEquals(p, resolve("long1").as(Predicate.class, p));
+    }
+
     /*
      * Throwing exceptions on failed conversion
      */
 
+    @Test
+    public void asLongThrowsConversionFailure() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `fourtytwo`",
+                () -> resolve("brokenlong").throwOnFailedConversion().as(Long.class));
+    }
+
+    @Test
+    public void asPrimitiveIntThrowsConversionFailure() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Integer for value `one`",
+                () -> resolve("brokenint").throwOnFailedConversion().as(int.class));
+    }
+
+    @Test
+    public void asLongArrayThrowsConversionFailure() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `fourtytwo`",
+                () -> resolve("brokenlong").throwOnFailedConversion().as(Long[].class));
+    }
+
+    @Test
+    public void asPrimitiveIntArrayThrowsConversionFailure() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Integer for value `one`",
+                () -> resolve("brokenint").throwOnFailedConversion().as(int[].class));
+    }
+
+    @Test
+    public void asLongThrowsConversionFailureWithTypedDefault() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `fourtytwo`",
+                () -> resolve("brokenlong").throwOnFailedConversion().as(Long.class, 13L));
+    }
+
+    @Test
+    public void asPrimitiveIntThrowsConversionFailureWithTypedDefault() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Integer for value `one`",
+                () -> resolve("brokenint").throwOnFailedConversion().as(int.class, 567));
+    }
+
+    @Test
+    public void asLongArrayThrowsConversionFailureWithTypedDefault() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `str`",
+                () -> resolve("string1").throwOnFailedConversion().as(Long[].class, new Long[] { 13L, 14L }));
+    }
+
+    @Test
+    public void asPrimitiveIntArrayThrowsConversionFailureWithTypedDefault() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Integer for value `str`",
+                () -> resolve("string1").throwOnFailedConversion().as(int[].class, new int[] { 1,2,3 }));
+    }
+
+    @Test
+    public void asLongThrowsConversionFailureWithTypedDefaultAndRawDefault() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `notalong`",
+                () -> resolve("brokenlong").throwOnFailedConversion().withDefault("notalong").as(Long.class, 13L));
+    }
+
+    @Test
+    public void asFunctionThrowsConversionFailureDueToMissingConverter() {
+        assertThrowsFailedConversion("Unable to convert value to type java.util.function.Function",
+                () -> resolve("long1").throwOnFailedConversion().as(Function.class));
+    }
+
+
+    /*
+     * Ad-hoc conversion
+     */
+
+    @Test
+    public void asConvertedBy() {
+        assertEquals(42L, resolve("long1").asConvertedBy(Long::valueOf, -1L).longValue());
+    }
+
+    @Test
+    public void asConvertedByWithTypedDefault() {
+        assertEquals(42L, resolve("long1").asConvertedBy(Long::valueOf, 12L).longValue());
+        assertEquals(12L, resolve("nosuchlong").asConvertedBy(Long::valueOf, 12L).longValue());
+        assertEquals(14L, resolve("brokenlong").asConvertedBy(Long::valueOf, 14L).longValue());
+    }
+
+    @Test
+    public void asConvertedByWithRawDefault() {
+        assertEquals(42L, resolve("long1").withDefault("12").asConvertedBy(Long::valueOf, -1L).longValue());
+        assertEquals(12L, resolve("nosuchlong").withDefault("12").asConvertedBy(Long::valueOf, -1L).longValue());
+        assertEquals(14L, resolve("brokenlong").withDefault("14").asConvertedBy(Long::valueOf, -1L).longValue());
+    }
+
+    @Test
+    public void asConvertedByWithRawAndTypedDefault() {
+        assertEquals(42L, resolve("long1").withDefault("12").asConvertedBy(Long::valueOf, -1L).longValue());
+        assertEquals(12L, resolve("nosuchlong").withDefault("12").asConvertedBy(Long::valueOf, -1L).longValue());
+        assertEquals(15L, resolve("brokenlong").withDefault("notalong").asConvertedBy(Long::valueOf, 15L).longValue());
+    }
+
+    @Test
+    public void asConvertedByWithTypedDefaultThrowsFailedConversion() {
+        assertThrowsFailedConversion("java.lang.NumberFormatException: For input string: \"fourtytwo\"",
+                () -> resolve("brokenlong").throwOnFailedConversion().asConvertedBy(Long::valueOf, -1L));
+    }
+
+    @Test
+    public void asConvertedByWithRawDefaultThrowsFailedConversion() {
+        assertThrowsFailedConversion("java.lang.NumberFormatException: For input string: \"notalong\"",
+                () -> resolve("nosuchlong").throwOnFailedConversion().withDefault("notalong").asConvertedBy(Long::valueOf, -1L));
+        assertThrowsFailedConversion("java.lang.NumberFormatException: For input string: \"fourtytwo\"",
+                () -> resolve("brokenlong").throwOnFailedConversion().withDefault("notalong").asConvertedBy(Long::valueOf, -1L));
+    }
+
+    @Test
+    public void asConvertedByWithTypedDefaultThrowsMissingProperty() {
+        assertThrowsMissingProperty("nosuchlong",
+                () -> resolve("nosuchlong").throwOnMissingProperty().asConvertedBy(Long::valueOf, -1L));
+    }
+
+    @Test
+    public void asConvertedByWithRawDefaultThrowsMissingProperty() {
+        assertThrowsMissingProperty("nosuchlong",
+                () -> resolve("nosuchlong").throwOnMissingProperty().withDefault("notalong").asConvertedBy(Long::valueOf, -1L));
+    }
+
+
+    /*
+     * Lists
+     */
+
+    @Test
+    public void asListOfString() {
+        assertEquals(asList("str"), resolve("string1").asList(String.class));
+        assertEquals(asList("str"), resolve("string1").withDefault("ignored").asList(String.class));
+    }
+
+    @Test
+    public void asListOfLong() {
+        assertEquals(asList(42L), resolve("long1").asList(Long.class));
+        assertEquals(asList(42L), resolve("long1").withDefault("ignored").asList(Long.class));
+    }
+
+    @Test
+    public void asListOfPrimitiveInt() {
+        assertEquals(asList(13), resolve("int1").asList(int.class));
+        assertEquals(asList(13), resolve("int1").withDefault("ignored").asList(int.class));
+    }
+
+    @Test
+    public void asListOfPrimitiveBool() {
+        assertEquals(asList(true), resolve("bool1").asList(boolean.class));
+        assertEquals(asList(true), resolve("bool1").withDefault("ignored").asList(boolean.class));
+    }
+
+    @Test
+    public void asListOfStringWithRawDefault() {
+        assertEquals(asList("str1", "str2", "str3", "str4"),
+                resolve("nosuchlist").withDefault("str1,str2,str3,str4").asList(String.class));
+    }
+
+    @Test
+    public void asListOfLongWithRawDefault() {
+        assertEquals(asList(42L, 45L, 67L), resolve("nosuchlist").withDefault("42,45,67").asList(Long.class));
+    }
+
+    @Test
+    public void asListOfPrimitiveIntWithRawDefault() {
+        assertEquals(asList(13,14), resolve("nosuchlist").withDefault("13,14").asList(int.class));
+    }
+
+    @Test
+    public void asListDefaultIsEmptyForMissingProperties() {
+        assertEquals(emptyList(), resolve("nosuchlist").asList(String.class));
+    }
+
+    @Test
+    public void asListWithDefaultForMissingProperties() {
+        assertEquals(asList("default"), resolve("nosuchlist").asList(String.class, asList("default")));
+    }
+
+    @Test
+    public void asListWithEmptyDefaultThrowsOnMissingProperty() {
+        assertThrowsMissingProperty("nosuchlist",
+                () -> resolve("nosuchlist").throwOnMissingProperty().asList(String.class));
+    }
+
+    @Test
+    public void asListWithDefaultThrowsOnMissingProperty() {
+        assertThrowsMissingProperty("nosuchlist",
+                () -> resolve("nosuchlist").throwOnMissingProperty().asList(String.class, asList("default")));
+    }
+
+    @Test
+    public void asListOfLongWithEmptyDefaultThrowsOnFailedConversion() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `str`",
+                () -> resolve("string1").throwOnFailedConversion().asList(Long.class));
+    }
+
+    @Test
+    public void asListOfLongWithDefaultThrowsOnFailedConversion() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `fourtytwo`",
+                () -> resolve("brokenlong").throwOnFailedConversion().asList(Long.class, asList(42L)));
+    }
+
+
+    /*
+     * Sets
+     */
+
+    @Test
+    public void asSetOfString() {
+        assertEquals(new HashSet<>(asList("str")), resolve("string1").asSet(String.class));
+        assertEquals(new HashSet<>(asList("str")), resolve("string1").withDefault("ignored").asSet(String.class));
+    }
+
+    @Test
+    public void asSetOfLong() {
+        assertEquals(new HashSet<>(asList(42L)), resolve("long1").asSet(Long.class));
+        assertEquals(new HashSet<>(asList(42L)), resolve("long1").withDefault("ignored").asSet(Long.class));
+    }
+
+    @Test
+    public void asSetOfPrimitiveInt() {
+        assertEquals(new HashSet<>(asList(13)), resolve("int1").asSet(int.class));
+        assertEquals(new HashSet<>(asList(13)), resolve("int1").withDefault("ignored").asSet(int.class));
+    }
+
+    @Test
+    public void asSetOfPrimitiveBool() {
+        assertEquals(new HashSet<>(asList(true)), resolve("bool1").asSet(boolean.class));
+        assertEquals(new HashSet<>(asList(true)), resolve("bool1").withDefault("ignored").asSet(boolean.class));
+    }
+
+    @Test
+    public void asSetOfStringWithRawDefault() {
+        assertEquals(new HashSet<>(asList("str1", "str2", "str3", "str4")),
+                resolve("nosuchlist").withDefault("str1,str2,str3,str4").asSet(String.class));
+    }
+
+    @Test
+    public void asSetOfLongWithRawDefault() {
+        assertEquals(new HashSet<>(asList(42L, 45L, 67L)),
+                resolve("nosuchlist").withDefault("42,45,67").asSet(Long.class));
+    }
+
+    @Test
+    public void asSetOfPrimitiveIntWithRawDefault() {
+        assertEquals(new HashSet<>(asList(13,14)), resolve("nosuchlist").withDefault("13,14").asSet(int.class));
+    }
+
+    @Test
+    public void asSetDefaultIsEmptyForMissingProperties() {
+        assertEquals(emptySet(), resolve("nosuchlist").asSet(String.class));
+    }
+
+    @Test
+    public void asSetWithDefaultForMissingProperties() {
+        assertEquals(new HashSet<>(asList("default")),
+                resolve("nosuchlist").asSet(String.class, new HashSet<>(asList("default"))));
+    }
+
+    @Test
+    public void asSetWithEmptyDefaultThrowsOnMissingProperty() {
+        assertThrowsMissingProperty("nosuchlist",
+                () -> resolve("nosuchlist").throwOnMissingProperty().asSet(String.class));
+    }
+
+    @Test
+    public void asSetWithDefaultThrowsOnMissingProperty() {
+        assertThrowsMissingProperty("nosuchlist",
+                () -> resolve("nosuchlist").throwOnMissingProperty().asSet(String.class, new HashSet<>(asList("default"))));
+    }
+
+    @Test
+    public void asSetOfLongWithEmptyDefaultThrowsOnFailedConversion() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `str`",
+                () -> resolve("string1").throwOnFailedConversion().asSet(Long.class));
+    }
+
+    @Test
+    public void asSetOfLongWithDefaultThrowsOnFailedConversion() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Long for value `fourtytwo`",
+                () -> resolve("brokenlong").throwOnFailedConversion().asSet(Long.class, new HashSet<>(asList(42L))));
+    }
+
+    private static void assertThrowsFailedConversion(String msg, Runnable test) {
+        assertException(IllegalArgumentException.class, msg, test);
+    }
 
     private static void assertThrowsMissingProperty(String propertyName, Runnable test) {
         assertException(NoSuchElementException.class, "Unable to find property with name " + propertyName, test);

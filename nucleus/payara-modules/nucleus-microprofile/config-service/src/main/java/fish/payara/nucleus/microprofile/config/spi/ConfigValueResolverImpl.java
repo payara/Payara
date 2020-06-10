@@ -88,7 +88,7 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
 
     @Override
     public <T> T asConvertedBy(Function<String, T> converter, T defaultValue) {
-        String sourceValue = asValue(propertyName, getCacheKey(propertyName, String.class), ttl, getRawDefault(),
+        String sourceValue = asValue(propertyName, getCacheKey(propertyName, String.class), ttl, null,
                 () -> value -> value);
         if (sourceValue == null) {
             if (throwsOnMissingProperty) {
@@ -99,8 +99,15 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
         try {
             return converter.apply(sourceValue);
         } catch (Exception ex) {
+            if (rawDefault != null) {
+                try {
+                    return converter.apply(rawDefault);
+                } catch (Exception e) {
+                    // fall through
+                }
+            }
             if (throwOnFailedConversion) {
-                throw ex;
+                throw new IllegalArgumentException(ex);
             }
             return defaultValue;
         }
