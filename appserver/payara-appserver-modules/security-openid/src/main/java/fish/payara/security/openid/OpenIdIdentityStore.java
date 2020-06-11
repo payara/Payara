@@ -46,7 +46,6 @@ import fish.payara.security.openid.domain.AccessTokenImpl;
 import fish.payara.security.openid.domain.IdentityTokenImpl;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
-import java.security.Principal;
 import java.util.HashSet;
 import java.util.Map;
 import static java.util.Objects.isNull;

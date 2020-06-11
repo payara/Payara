@@ -168,6 +168,20 @@ public class MiniXmlParser {
         return adminAddresses;
     }
 
+    public List<Map<String, String>> getProtocolAttributes() throws MiniXmlParserException {
+        if (!valid) {
+            throw new MiniXmlParserException(strings.get(INVALID));
+        }
+        return protocolAttributes;
+    }
+
+    public List<Map<String, String>> getIiopSslAttributes() throws MiniXmlParserException {
+        if (!valid) {
+            throw new MiniXmlParserException(strings.get(INVALID));
+        }
+        return iiopSslAttributes;
+    }
+
     /**
      * @deprecated use {@link #setupConfigDir(java.io.File)} instead
      */
@@ -534,6 +548,9 @@ public class MiniXmlParser {
                     case "security-service":
                         populateAdminRealmProperties();
                         break;
+                    case "iiop-service":
+                        parseIiopService();
+                        break;
                     default:
                         skipTree(name);
                         break;
@@ -579,6 +596,52 @@ public class MiniXmlParser {
                 }
             }
         }
+    }
+
+    /**
+     * Parses the IIOP service for the SSL enabled IIOP listeners
+     * @throws XMLStreamException
+     * @throws EndDocumentException
+     */
+    private void parseIiopService() throws XMLStreamException, EndDocumentException {
+        // Cursor --> <iiop-service>
+        while (true) {
+            int event = next();
+            // Return when we get to the </iiop-service>
+            if (event == END_ELEMENT) {
+                if ("iiop-service".equals(parser.getLocalName())) {
+                    return;
+                }
+            } else if (event == START_ELEMENT) {
+                String name = parser.getLocalName();
+                if (null == name) {
+                    skipTree(name);
+                } else switch (name) {
+                    // Cursor --> START_ELEMENT of <iiop-listener>
+                    case "iiop-listener":
+                        // Get <iiop-listener> attributes
+                        Map<String, String> iiopAttributes = parseAttributes();
+
+                        // Skip to ssl config if present
+                        while (true) {
+                            skipToButNotPast("iiop-listener", "ssl");
+                            name = parser.getLocalName();
+                            if ("ssl".equals(name)) {
+                                iiopAttributes.putAll(parseAttributes());
+                                // Only store attributes of SSL enabled IIOP listeners
+                                iiopSslAttributes.add(iiopAttributes);
+                            } else if ("iiop-listener".equals(name)) {
+                                break;
+                            }
+                        }
+                        break;
+                    default:
+                        skipTree(name);
+                        break;
+                }
+            }
+        }
+
     }
 
     private void parseSysPropsFromServer() throws XMLStreamException, EndDocumentException {
@@ -927,10 +990,12 @@ public class MiniXmlParser {
     private void parseProtocols() throws XMLStreamException, EndDocumentException {
         // cursor --> START_ELEMENT of protocols
         while (true) {
-            skipToButNotPast("protocols", "protocol");
+            skipToButNotPast("protocols", "protocol", "ssl");
             final String name = parser.getLocalName();
             if ("protocol".equals(name)) {
                 protocolAttributes.add(parseAttributes());
+            } else if ("ssl".equals(name)) {
+                protocolAttributes.get(protocolAttributes.size() - 1).putAll(parseAttributes());
             } else if ("protocols".equals(name)) {
                 break;
             }
@@ -1131,20 +1196,21 @@ public class MiniXmlParser {
     private String serverName;
     private String configRef;
     private List<JvmOption> jvmOptions = new ArrayList<>();
-    private List<String> profilerJvmOptions = new ArrayList<String>();
+    private List<String> profilerJvmOptions = new ArrayList<>();
     private Map<String, String> javaConfig;
     private Map<String, String> profilerConfig = Collections.emptyMap();
-    private Map<String, String> profilerSysProps = new HashMap<String, String>();
+    private Map<String, String> profilerSysProps = new HashMap<>();
     private boolean valid = false;
-    private List<HostAndPort> adminAddresses = new ArrayList<HostAndPort>();
+    private List<HostAndPort> adminAddresses = new ArrayList<>();
     private String domainName;
     private static final LocalStringsImpl strings = new LocalStringsImpl(MiniXmlParser.class);
     private boolean monitoringEnabled = true; // Issue 12762 Absent <monitoring-service /> element means monitoring-enabled=true by default
     private String adminRealm = null;
     private Map<String,String> adminRealmProperties = null;
-    private List<Map<String, String>> vsAttributes = new ArrayList<Map<String, String>>();
-    private List<Map<String, String>> listenerAttributes = new ArrayList<Map<String, String>>();
-    private List<Map<String, String>> protocolAttributes = new ArrayList<Map<String, String>>();
+    private List<Map<String, String>> vsAttributes = new ArrayList<>();
+    private List<Map<String, String>> listenerAttributes = new ArrayList<>();
+    private List<Map<String, String>> protocolAttributes = new ArrayList<>();
+    private List<Map<String, String>> iiopSslAttributes = new ArrayList<>();
     private boolean sawNetworkConfig;
     private boolean sawDefaultConfig;
     private boolean sawConfig;

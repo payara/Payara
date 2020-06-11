@@ -36,11 +36,16 @@
     <modules>
         <module>test-utils</module>
         <module>samples</module>
-        <module>samples-programmatic</module>
         <module>classpath</module>
     </modules>
     
     <profiles>
+        <profile>
+            <id>payara-micro-managed</id>
+            <modules>
+                <module>samples-programmatic</module>
+            </modules>
+        </profile>
     	<profile>
     		<id>unstable</id>
     		<modules>

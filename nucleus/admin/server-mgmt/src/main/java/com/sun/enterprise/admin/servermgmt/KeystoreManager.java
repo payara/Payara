@@ -138,7 +138,7 @@ public class KeystoreManager {
         KEYTOOL_CMD = nonFinalKeyTool;
     }
 
-    protected static class KeytoolExecutor extends ProcessExecutor {
+    public static class KeytoolExecutor extends ProcessExecutor {
 
         public KeytoolExecutor(String[] args, long timeoutInSeconds) {
             super(args, timeoutInSeconds);

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package fish.payara.security.oidc.test;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 import fish.payara.security.oidc.client.Callback;
@@ -49,12 +48,11 @@ import fish.payara.security.oidc.server.ApplicationConfig;
 import fish.payara.security.oidc.server.OidcProvider;
 import java.io.IOException;
 import java.net.URL;
+import javax.ws.rs.core.Response.Status;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
 
 /**
  *
@@ -86,20 +84,13 @@ public class OpenIdTestUtil {
     }
 
     public static void testOpenIdConnect(WebClient webClient, URL base) throws IOException {
-        String result = ((TextPage) webClient.getPage(base + "Unsecured")).getContent();
-        assertEquals("This is an unsecured web page", result);
+        TextPage unsecuredPage = (TextPage) webClient.getPage(base + "Unsecured");
+        assertEquals(Status.OK.getStatusCode(), unsecuredPage.getWebResponse().getStatusCode());
+        assertEquals("This is an unsecured web page", unsecuredPage.getContent());
 
-        TextPage page = (TextPage) webClient.getPage(base + "Secured");
-        assertEquals("/openid-client/Callback", page.getUrl().getPath());
-        assertNotEquals("null", page.getContent());
-
-        try {
-            webClient.getPage(base + "Secured");
-            fail("Roles test failed");
-        } catch (FailingHttpStatusCodeException e) {
-            System.out.println("Successfully forbidden from accessing page because of " + e.getStatusMessage());
-        }
-
+        TextPage securedPage = (TextPage) webClient.getPage(base + "Secured");
+        assertEquals(Status.OK.getStatusCode(), securedPage.getWebResponse().getStatusCode());
+        assertEquals("/openid-client/Callback", securedPage.getUrl().getPath());
     }
 
 }
