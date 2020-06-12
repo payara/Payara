@@ -125,7 +125,6 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
 =======
                 CertificateManagementKeytoolCommands.constructGenerateCertKeytoolCommand(keystore, keystorePassword,
                         userArgAlias, dn, altnames), 60);
->>>>>>> da337fd178... Merge pull request #52 from Pandrex247/Refactor-Jonathan
 
         try {
             keytoolExecutor.execute("certNotCreated", keystore);
@@ -151,9 +150,7 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
                 CertificateManagementKeytoolCommands.constructImportCertKeytoolCommand(keystore, truststore, keystorePassword,
 =======
                 CertificateManagementKeytoolCommands.constructImportKeystoreKeytoolCommand(keystore, truststore, keystorePassword,
->>>>>>> 45a7918a29... Merge pull request #56 from Pandrex247/APPSERV-150-Enterprise2
                         truststorePassword, userArgAlias), 60);
->>>>>>> da337fd178... Merge pull request #52 from Pandrex247/Refactor-Jonathan
 
         try {
             keytoolExecutor.execute("certNotTrusted", keystore);
