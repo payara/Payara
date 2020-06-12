@@ -22,8 +22,8 @@
         <java.min.version>1.8</java.min.version>
         <maven.min.version>3.5</maven.min.version>
 
-        <arquillian.payara.micro.version>2.2</arquillian.payara.micro.version>
-        <arquillian.payara.remote.version>2.2</arquillian.payara.remote.version>
+        <arquillian.payara.micro.version>2.3</arquillian.payara.micro.version>
+        <arquillian.payara.remote.version>2.3</arquillian.payara.remote.version>
         <payara.version>${project.version}</payara.version>
         <payara.domain.name>domain1</payara.domain.name>
 
@@ -38,7 +38,7 @@
         <module>samples</module>
         <module>classpath</module>
     </modules>
-    
+
     <profiles>
         <profile>
             <id>payara-micro-managed</id>
