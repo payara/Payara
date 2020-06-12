@@ -61,7 +61,6 @@ import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
-import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ServerEnvironment.Status;
@@ -313,7 +312,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     config = new Config();
                 }
                 config.setClassLoader(clh.getCommonClassLoader());
-                config.setTenantControl(new PayaraHazelcastTenant());
                 if(ctxUtil == null) {
                     Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Application Object Serialization Not Available");
                 } else {
@@ -338,7 +336,6 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 }
             } else { // there is no config override
                 config.setClassLoader(clh.getCommonClassLoader());
-                config.setTenantControl(new PayaraHazelcastTenant());
                 if(ctxUtil != null) {
                     SerializationConfig serializationConfig = new SerializationConfig();
                     setPayaraSerializerConfig(serializationConfig);
