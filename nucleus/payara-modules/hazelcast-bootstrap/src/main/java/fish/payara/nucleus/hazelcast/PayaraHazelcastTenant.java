@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,70 +39,47 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import com.hazelcast.config.TenantControl;
+import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
+import com.hazelcast.spi.tenantcontrol.TenantControl;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
 import javax.cache.CacheManager;
-import lombok.RequiredArgsConstructor;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
-import org.glassfish.internal.api.JavaEEContextUtil.Context;
 import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
 
 /**
- * Java EE Context support for JCache with Hazelcast
+ * Java EE Context and class loading support for JCache with Hazelcast
  * 
  * @author lprimak
  */
 public class PayaraHazelcastTenant implements TenantControl {
-    public PayaraHazelcastTenant() {
-        this(null);
-    }
-
-    public PayaraHazelcastTenant(final DestroyEvent event) {
+    public PayaraHazelcastTenant(final DestroyEventContext event) {
         ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        if(event != null) {
-            destroyEventListener = new SerializableEventListenerImpl(event,
-                    Globals.getDefaultHabitat().getService(InvocationManager.class)
-                            .getCurrentInvocation().getModuleName());
-        } else {
-            destroyEventListener = null;
-        }
+        destroyEventListener = new SerializableEventListenerImpl(event,
+                Globals.getDefaultHabitat().getService(InvocationManager.class)
+                        .getCurrentInvocation().getModuleName());
         init();
     }
 
     @Override
-    public TenantControl saveCurrentTenant(DestroyEvent event) {
-        return new PayaraHazelcastTenant(event);
-    }
-
-    @Override
     public void unregister() {
-        if(destroyEventListener != null) {
-            events.unregister(destroyEventListener);
-        }
+        events.unregister(destroyEventListener);
     }
 
     @Override
-    public TenantControl.Closeable setTenant(boolean createRequestScope) {
-        final Context ctx = createRequestScope? ctxUtil.pushRequestContext() : ctxUtil.pushContext();
-        return new Closeable() {
-            @Override
-            public void close() {
-                ctx.close();
-            }
-        };
+    public Closeable setTenant(boolean createRequestScope) {
+        return (createRequestScope? ctxUtil.pushRequestContext() : ctxUtil.pushContext())::close;
     }
 
     private void init() {
         events = Globals.getDefaultHabitat().getService(Events.class);
-        if(destroyEventListener != null) {
-            events.register(destroyEventListener);
-        }
+        events.register(destroyEventListener);
     }
 
     private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
@@ -112,13 +89,17 @@ public class PayaraHazelcastTenant implements TenantControl {
 
     private interface SerializableEventListener extends EventListener, Serializable {};
 
-    @RequiredArgsConstructor
     private static class SerializableEventListenerImpl implements SerializableEventListener {
+        private SerializableEventListenerImpl(DestroyEventContext event, String moduleName) {
+            this.destroyEvent = event;
+            this.moduleName = moduleName;
+        }
+
         @Override
         public void event(EventListener.Event payaraEvent) {
             if(payaraEvent.is(Deployment.MODULE_STOPPED)) {
                 ModuleInfo moduleInfo = (ModuleInfo)payaraEvent.hook();
-                if(destroyEvent != null && moduleInfo.getName().equals(moduleName)) {
+                if(moduleInfo.getName().equals(moduleName)) {
                     HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
                     CacheManager cacheMgr = hzCore.getCachingProvider().getCacheManager();
                     if(destroyEvent.getContextType().isAssignableFrom(hzCore.getInstance().getClass())) {
@@ -131,7 +112,7 @@ public class PayaraHazelcastTenant implements TenantControl {
             }
         }
 
-        private final DestroyEvent destroyEvent;
+        private final DestroyEventContext destroyEvent;
         private final String moduleName;
         private static final long serialVersionUID = 1L;
     }
