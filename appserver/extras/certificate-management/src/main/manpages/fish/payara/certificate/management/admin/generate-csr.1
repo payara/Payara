@@ -7,6 +7,7 @@ NAME
 SYNOPSIS
            generate-csr [--help]
            [--domain_name domain-name] [--domaindir domain-dir]
+           [--node node-name] [--nodedir node-dir]
            [--target instance-name] [--listener listener-name]
            alias
 
@@ -31,6 +32,17 @@ OPTIONS
            target domain. If specified, the path must be accessible in the
            file system. The default location of the domain root directory
            is as-install/domains.
+
+       --node
+           The unique name of the node where the target instance is located.
+           This operand is optional, defaulting to localhost-$domainname
+           if not provided.
+
+       --nodedir
+           The node root directory, which contains the of the target node.
+           If specified, the path must be accessible in the
+           file system. The default location of the node root directory
+           is as-install/nodes.
 
        --target
            The name of the instance to get the certificate for the CSR
