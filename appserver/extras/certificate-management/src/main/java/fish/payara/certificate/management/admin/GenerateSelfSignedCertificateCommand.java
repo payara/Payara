@@ -137,13 +137,9 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
      * @throws CommandException If there's an issue adding the certificate to the trust store
      */
     private void addToTruststore() throws CommandException {
-        // Run keytool command to place self-signed cert in truststore
-        KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
-                CertificateManagementKeytoolCommands.constructImportKeystoreKeytoolCommand(keystore, truststore, keystorePassword,
-                        truststorePassword, userArgAlias), 60);
-
+        KeystoreManager manager = new KeystoreManager();
         try {
-            keytoolExecutor.execute("certNotTrusted", keystore);
+            manager.copyCert(keystore, truststore, alias, new String(masterPassword()));
         } catch (RepositoryException re) {
             logger.severe(re.getCause().getMessage()
                     .replace("keytool error: java.lang.Exception: ", "")
@@ -179,13 +175,10 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
                 if (defaultKeystore && defaultTruststore) {
                     // Do nothing
                 } else if (defaultKeystore) {
-                    logger.info("Please add self-signed certificate to truststore manually");
-                    // TO-DO
-                    // logger.info("Look at using asadmin command 'add-to-truststore'");
+                    logger.info("Please add self-signed certificate to truststore manually using the add-to-truststore command");
                 } else {
-                    logger.info("Please add self-signed certificate to keystore manually");
-                    // TO-DO
-                    // logger.info("Look at using asadmin command 'add-to-keystore'");
+                    logger.info("Please add self-signed certificate to keystore manually using the add-to-keystore command");
+
                 }
 
                 return CLIConstants.WARNING;

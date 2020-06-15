@@ -7,7 +7,8 @@ NAME
 
 SYNOPSIS
            generate-self-signed-certificate [--help]
-           [--domain_name domain-name] [--domaindir domain-dir]
+           [--domainname domain-name] [--domaindir domain-dir]
+           [--node node-name] [--nodedir node-dir]
            [--target instance-name] [--listener listener-name]
            [alternativenames (type:value)[;type:value]*]
            --distinguishedname
@@ -25,11 +26,15 @@ DESCRIPTION
        default key and trust store of the DAS), since any certificates added
        to the instance stores would be lost upon next synchronisation.
 
+       If the instance or listener is not configured to use the default stores
+       then the certificate must be added manually with the add-to-keystore
+       and add-to-truststore commands.
+
 OPTIONS
        --help, -?
            Displays the help text for the subcommand.
 
-       --domain_name
+       --domainname, --domain_name
            The unique name of the domain to add the certificate to. This operand
            is optional, defaulting to domain1 if not provided.
 
@@ -38,6 +43,17 @@ OPTIONS
            target domain. If specified, the path must be accessible in the
            file system. The default location of the domain root directory
            is as-install/domains.
+
+       --node
+           The unique name of the node where the target instance is located.
+           This operand is optional, defaulting to localhost-$domainname
+           if not provided.
+
+       --nodedir
+           The node root directory, which contains the target node.
+           If specified, the path must be accessible in the
+           file system. The default location of the node root directory
+           is as-install/nodes.
 
        --target
            The name of the instance to add the generated certificate to the
@@ -54,9 +70,10 @@ OPTIONS
            Takes the form of a semi-colon separated list of type:value. If no
            type is given, it is assumed to be DNS.
 
-OPERANDS
        --distinguishedname, --dn
            The distinguished name to use when generating the certificate.
+
+OPERANDS
 
        alias
            The alias to use when generating the certificate and storing it
