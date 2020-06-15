@@ -137,13 +137,9 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
      * @throws CommandException If there's an issue adding the certificate to the trust store
      */
     private void addToTruststore() throws CommandException {
-        // Run keytool command to place self-signed cert in truststore
-        KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
-                CertificateManagementKeytoolCommands.constructImportKeystoreKeytoolCommand(keystore, truststore, keystorePassword,
-                        truststorePassword, userArgAlias), 60);
-
+        KeystoreManager manager = new KeystoreManager();
         try {
-            keytoolExecutor.execute("certNotTrusted", keystore);
+            manager.copyCert(keystore, truststore, alias, new String(masterPassword()));
         } catch (RepositoryException re) {
             logger.severe(re.getCause().getMessage()
                     .replace("keytool error: java.lang.Exception: ", "")

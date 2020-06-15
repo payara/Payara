@@ -184,7 +184,7 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
      * @return The master password in a char array
      * @throws CommandException If there's an issue getting the master password
      */
-    private char[] masterPassword() throws CommandException {
+    protected char[] masterPassword() throws CommandException {
         if (masterPassword == null || masterPassword.length == 0) {
             masterPassword = getMasterPassword().toCharArray();
         }
