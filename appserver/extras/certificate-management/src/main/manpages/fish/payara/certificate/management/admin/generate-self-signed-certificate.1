@@ -8,6 +8,7 @@ NAME
 SYNOPSIS
            generate-self-signed-certificate [--help]
            [--domain_name domain-name] [--domaindir domain-dir]
+           [--node node-name] [--nodedir node-dir]
            [--target instance-name] [--listener listener-name]
            [alternativenames (type:value)[;type:value]*]
            --distinguishedname
@@ -39,6 +40,17 @@ OPTIONS
            file system. The default location of the domain root directory
            is as-install/domains.
 
+       --node
+           The unique name of the node where the target instance is located.
+           This operand is optional, defaulting to localhost-$domainname
+           if not provided.
+
+       --nodedir
+           The node root directory, which contains the target node.
+           If specified, the path must be accessible in the
+           file system. The default location of the node root directory
+           is as-install/nodes.
+
        --target
            The name of the instance to add the generated certificate to the
            key and trust store of. Defaults to server (the DAS).
@@ -54,9 +66,10 @@ OPTIONS
            Takes the form of a semi-colon separated list of type:value. If no
            type is given, it is assumed to be DNS.
 
-OPERANDS
        --distinguishedname, --dn
            The distinguished name to use when generating the certificate.
+
+OPERANDS
 
        alias
            The alias to use when generating the certificate and storing it
