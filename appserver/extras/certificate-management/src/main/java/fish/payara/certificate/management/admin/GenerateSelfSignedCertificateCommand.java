@@ -175,7 +175,7 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
                 if (defaultKeystore && defaultTruststore) {
                     // Do nothing
                 } else if (defaultKeystore) {
-                    logger.info("Please add self-signed certificate to truststore manually");
+                    logger.info("Please add self-signed certificate to truststore manually using the add-to-keystore command");
                     // TO-DO
                     // logger.info("Look at using asadmin command 'add-to-truststore'");
                 } else {
