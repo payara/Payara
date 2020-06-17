@@ -154,8 +154,7 @@
     src="${sql.file}"
     onerror="continue"
     print="yes"
-    classpathref="db.class.path">
-  </sql> 
+    classpath="${db.class.path}">
 </target>
 
 <target name="create-db" depends="initprop,delete-db"
