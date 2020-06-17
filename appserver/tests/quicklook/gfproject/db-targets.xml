@@ -147,13 +147,14 @@
   <echo message="sql.file = ${sql.file}"/>
   <echo message="db.class.path = ${db.class.path}"/>
   <sql driver="${db.driver}"
+    encoding="utf-8"
     url="${db.url}"
     userid="${db.user}"
     password=""
     src="${sql.file}"
     onerror="continue"
     print="yes"
-    classpath="${db.class.path}">
+    classpathref="db.class.path">
   </sql> 
 </target>
 
