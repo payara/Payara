@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_IDENTIFIER;
 import fish.payara.security.openid.api.OpenIdContext;
 import fish.payara.security.openid.api.RefreshToken;
 import java.util.Optional;
+import java.util.Set;
 import javax.enterprise.context.SessionScoped;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -60,7 +61,7 @@ import javax.json.JsonObject;
 public class OpenIdContextImpl implements OpenIdContext {
 
     private String callerName;
-    private String callerGroups;
+    private Set<String> callerGroups;
     private String tokenType;
     private AccessToken accessToken;
     private IdentityToken identityToken;
@@ -79,11 +80,11 @@ public class OpenIdContextImpl implements OpenIdContext {
     }
 
     @Override
-    public String getCallerGroups() {
+    public Set<String> getCallerGroups() {
         return callerGroups;
     }
 
-    public void setCallerGroups(String callerGroups) {
+    public void setCallerGroups(Set<String> callerGroups) {
         this.callerGroups = callerGroups;
     }
 
