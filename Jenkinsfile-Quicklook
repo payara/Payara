@@ -72,6 +72,7 @@ pipeline {
                 }
             }
         }
+    }
 }
 
 void setupDomain() {
@@ -91,3 +92,4 @@ void teardownDomain() {
     sh "${ASADMIN} stop-database || true"
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
 }
+
