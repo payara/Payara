@@ -54,16 +54,6 @@
     <artifactId>payara-nucleus-parent</artifactId>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
-    <url>https://github.com/payara/Payara</url>
-
-    <licenses>
-      <license>
-        <name>CDDL + GPLv2 with classpath exception</name>
-        <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
-        <distribution>repo</distribution>
-        <comments>A business-friendly OSS license</comments>
-      </license>
-    </licenses>
 
     <repositories>
         <!-- Try Maven central first, not last, which happens when omitted here -->
