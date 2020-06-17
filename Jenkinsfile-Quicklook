@@ -67,7 +67,7 @@ pipeline {
             post {
                 always {
                     zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'quicklook-log.zip'
-                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}", zipFile: '${DOMAIN_NAME}-debug.zip'
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}", zipFile: '$domain-debug.zip'
                     teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }
