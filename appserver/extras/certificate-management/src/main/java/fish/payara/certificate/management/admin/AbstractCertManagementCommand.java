@@ -61,9 +61,7 @@ import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.util.Collection;
 
 /**
  * Parent class from which other certificate management commands can extend. Contains the common methods and params.
@@ -246,11 +244,8 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
      */
     protected void addToKeyStore(File file) throws CommandException {
         try {
-            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
-            store.load(new FileInputStream(keystore), keystorePassword);
-            addToStore(store, file, keystore, keystorePassword);
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException
-                | RepositoryException ex) {
+            addToStore(file, keystore, keystorePassword);
+        } catch (RepositoryException ex) {
             throw new CommandException(ex);
         }
     }
@@ -263,45 +258,37 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
      */
     protected void addToTrustStore(File file) throws CommandException {
         try {
-            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
-            store.load(new FileInputStream(truststore), truststorePassword);
-            addToStore(store, file, truststore, truststorePassword);
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException
-                | RepositoryException ex) {
+            addToStore(file, truststore, truststorePassword);
+        } catch (RepositoryException ex) {
             throw new CommandException(ex);
         }
     }
 
     /**
-     * Helper method to add a certificate or key to the key or trust store.
+     * Helper method to add a certificate or bundle to the key or trust store.
      *
      * @param file The key or certificate to add
      * @throws CommandException If there's an issue accessing the key store
      */
-    private void addToStore(KeyStore store, File file, File keyOrTrustStore, char[] password)
-            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, RepositoryException {
-        KeystoreManager manager = new KeystoreManager();
+    private void addToStore(File file, File keyOrTrustStore, char[] password) throws RepositoryException {
         try {
-            Collection<? extends Certificate> certs = manager.readPemCertificateChain(file);
-            for (Certificate cert : certs) {
-                store.setCertificateEntry(userArgAlias, cert);
-            }
-            try (FileOutputStream out = new FileOutputStream(keyOrTrustStore)) {
-                store.store(out, password);
-                out.flush();
-            }
-        } catch (KeyStoreException kse) {
-            // Try to add it as a store rather than as a certificate
-            if (kse.getMessage().contains("No certificate data found") || kse.getMessage().contains("signed fields invalid")) {
+            KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
+                    CertificateManagementKeytoolCommands.constructImportCertKeytoolCommand(
+                            file, keyOrTrustStore, password, userArgAlias),
+                    60);
+
+            keytoolExecutor.execute("certNotAdded", keyOrTrustStore);
+        } catch (RepositoryException re) {
+            if (re.getMessage().contains("No certificate data found")
+                    || re.getMessage().contains("signed fields invalid")) {
                 logger.fine("Couldn't add file as a certificate, attempting to add as a store");
                 KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
                         CertificateManagementKeytoolCommands.constructImportKeystoreKeytoolCommand(
                                 file, keyOrTrustStore, password, password, userArgAlias),
                         60);
-
                 keytoolExecutor.execute("certNotAdded", keyOrTrustStore);
             } else {
-                throw kse;
+                throw re;
             }
         }
     }
@@ -451,6 +438,7 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
 
         /**
          * Resolves the key and trust store locations and checks if either are set to the default value
+         *
          * @return true if either the key or trust store are set to default
          */
         protected boolean checkDefaultKeyOrTrustStore() {
@@ -466,6 +454,7 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
 
         /**
          * Resolves the key store location and checks if it is set to the default value
+         *
          * @return true if the key store is set to default
          */
         protected boolean checkDefaultKeyStore() {
@@ -478,6 +467,7 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
 
         /**
          * Resolves the trust store location and checks if it is set to the default value
+         *
          * @return true if the trust store is set to default
          */
         protected boolean checkDefaultTrustStore() {
