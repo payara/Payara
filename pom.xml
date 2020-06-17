@@ -50,6 +50,7 @@
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
+    <url>https://github.com/payara/Payara</url>
 
     <modules>
         <module>nucleus</module>
@@ -83,6 +84,15 @@
             <organizationUrl>http://www.payara.fish</organizationUrl>
         </developer>
     </developers>
+
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
 
     <repositories>
         <repository>
