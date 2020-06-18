@@ -44,6 +44,7 @@ import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
+import javax.cache.Cache;
 import javax.cache.CacheManager;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
@@ -69,6 +70,7 @@ public class PayaraHazelcastTenant implements TenantControl {
 
     @Override
     public void unregister() {
+        // Hazelcast object has been destroyed
         events.unregister(destroyEventListener);
     }
 
@@ -101,12 +103,11 @@ public class PayaraHazelcastTenant implements TenantControl {
                 ModuleInfo moduleInfo = (ModuleInfo)payaraEvent.hook();
                 if(moduleInfo.getName().equals(moduleName)) {
                     HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
-                    CacheManager cacheMgr = hzCore.getCachingProvider().getCacheManager();
-                    if(destroyEvent.getContextType().isAssignableFrom(hzCore.getInstance().getClass())) {
-                        destroyEvent.destroy(hzCore.getInstance());
-                    }
-                    else if(destroyEvent.getContextType().isAssignableFrom(cacheMgr.getClass())) {
-                        destroyEvent.destroy(cacheMgr);
+                    if(destroyEvent.getContextType().equals(Cache.class)) {
+                        CacheManager cacheMgr = hzCore.getCachingProvider().getCacheManager();
+                        // destroy cache configuration, but not the cache itself
+                        // this API will probably evolve to support more object types
+                        destroyEvent.destroy(cacheMgr.getCache(destroyEvent.getDistributedObjectName()));
                     }
                 }
             }
