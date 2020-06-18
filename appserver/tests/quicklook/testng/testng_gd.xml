@@ -151,11 +151,11 @@
   <parameter name="MDB_APP_DIR" value="./dist/mdb/"/>
   <parameter name="BATCH_FILE1" value="ejb/mdb/create_resources.asadmin"/>
   <parameter name="BATCH_FILE2" value="ejb/mdb/delete_resources.asadmin"/>
-  <test name="MDB_tests">
+  <!--<test name="MDB_tests">
     <classes>
       <class name="test.mdb.MDBTests"/>
     </classes>
-  </test>
+  </test> Unstable test -->
   <!-- JRuby test is temporarily commented as we are waiting for RE to promote a new version.
   <test name="JRuby_tests">
     <classes>
