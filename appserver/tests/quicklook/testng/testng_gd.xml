@@ -131,11 +131,11 @@
         <class name="test.ejb.remoteview.RemoteViewTestNG"/>
     </classes>
   </test> Unstable test-->
-  <test name="ejb_singleton_ear_redeploy">
+  <!--<test name="ejb_singleton_ear_redeploy">
     <classes>
 	<class name="test.ejb.singleton.SingletonTestNG" />
     </classes>
-  </test>
+  </test>-->
   <test name="ejb_stateful_cmt_ni_war">
     <classes>
 	<class name="test.ejb.slsbnicmt.SlsbnicmtTestNG" />
