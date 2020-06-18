@@ -47,6 +47,7 @@ pipeline {
                 }
             }
         }
+        /* Quicklook fails on only Public Jenkins - excluded temporarily
         stage('Setup for Quicklook Tests') {
             steps {
                 sh "rm -f -v *.zip"
@@ -71,7 +72,7 @@ pipeline {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
-        }
+        }*/
         stage('Run Payara Samples Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
