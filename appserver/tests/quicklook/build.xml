@@ -170,7 +170,7 @@
 		<!--<antcall target="quicklook-summary"/> Fails -->
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
-		<antcall target="testng-summary"/>
+		<!--<antcall target="testng-summary"/>-->
 
 		<record name="${basedir}/allrun.output" action="stop"/>
 	</target>
@@ -514,14 +514,14 @@
 		</path>
 	</target>
 
-	<target name="testng-summary">
+	<!--<target name="testng-summary">
 		<loadfile srcfile="runtestng.output" property="testng_output">
 			<filterchain>
 				<tailfilter lines="6"/>
 			</filterchain>
 		</loadfile>
 		<echo message="${testng_output}"/>
-	</target>
+	</target> Testng tests are excluded -->
 
 	<target name="quicklook-summary">
 		<tstamp>
