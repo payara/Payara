@@ -167,7 +167,7 @@
 		<antcall target="undeploy"/>
 		<antcall target="undeploy-gd"/>
 		
-		<antcall target="quicklook-summary"/>
+		<!--<antcall target="quicklook-summary"/> Fails -->
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
 		<antcall target="testng-summary"/>
@@ -528,14 +528,14 @@
 			<format property="end.timestamp" pattern="EE MM/dd/yyyy HH:mm:ss zz" />
 		</tstamp>
 		<echo file="quicklook_summary.txt" message="    Test completed: ${end.timestamp} ${line.separator}" />
-		<loadfile srcfile="runtestng.output" property="testng_output">
+		<!--<loadfile srcfile="runtestng.output" property="testng_output">
 			<filterchain>
 				<tailfilter lines="4" skip="1"/>
 				<tokenfilter>
 					<replacestring from="[testng]" to=""/>
 				</tokenfilter>
 			</filterchain>
-		</loadfile>
+		</loadfile> Fails -->
 		<echo file="quicklook_summary.txt" append="true" message="${testng_output}"/>
 		<antcall target="build-version"/>
 		<available file="test-output/emailable-report.html" property="report.present"/>
