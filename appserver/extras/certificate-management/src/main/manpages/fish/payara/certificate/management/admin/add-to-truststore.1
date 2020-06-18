@@ -6,24 +6,25 @@ NAME
 SYNOPSIS
            add-to-truststore [--help]
            [--domain_name domain-name] [--domaindir domain-dir]
+           [--node node-name] [--nodedir node-dir]
            [--target instance-name] [--listener listener-name]
-           --file domain-name file
+           --file file
            alias
 
 DESCRIPTION
-       The add-to-truststore subcommand adds a security certificate to the specified truststore, or the
-       default one if none is specified.
+       The add-to-truststore subcommand adds a security certificate to the target instance or listener's truststore,
+       or that of the DAS if none is specifed.
 
 OPTIONS
        --help, -?
            Displays the help text for the subcommand.
 
        --file
-            The certificate file that is to be added to the truststore. The can be in
+            The certificate file that is to be added to the truststore. These can be in
             .cert or .pem formats.
 
-       --domainname
-           The unique name of the domain to ad the certificate for the CSR to.
+       --domainname --domain_name
+           The unique name of the domain to add the certificate to.
            This operand is optional, defaulting to domain1 if not provided.
 
        --domaindir
@@ -32,13 +33,24 @@ OPTIONS
            file system. The default location of the domain root directory
            is as-install/domains.
 
+        --node
+           The unique name of the node where the target instance is located.
+           This operand is optional, defaulting to localhost-$domainname
+           if not provided.
+           
+       --nodedir
+           The node root directory, which contains the of the target node.
+           If specified, the path must be accessible in the
+           file system. The default location of the node root directory
+           is as-install/nodes.
+
        --target
            The name of the instance to add the certificate to.
            Defaults to server (the DAS).
 
        --listener
-           The name of the HTTP or IIOP listener to add the certificate for the
-           CSR to. Only applicable if the listener has a key or trust store
+           The name of the HTTP or IIOP listener to add the certificate to.
+           Only applicable if the listener has a key or trust store
            different to that of the instance itself.
 
 OPERANDS
@@ -50,14 +62,14 @@ EXAMPLES
 
            This example adds a X509 certificate to the truststore for the DAS.
 
-               asadmin> add-to-truststore ~/example-cert.pem example
+               asadmin> add-to-truststore --file ~/example-cert.pem example
 
        Example 2, Add a certificate for a Listener
 
-           This example adds a self-signed certificate named glassfish-instance in
-           the key store of the http-listener-2 listener of an instance named Instance1
+           This example adds a X509 certificate to the truststore of the 
+           http-listener-2 listener of an instance named Instance1
 
-               asadmin> add-to-truststore --target Instance1 --listener http-listener-2 glassfish-instance
+               asadmin> add-to-truststore --target Instance1 --listener http-listener-2 --file ~/example-cert.pem example
 
 EXIT STATUS
        0

@@ -1,11 +1,12 @@
 remove-from-truststore(1)  asadmin Utility Subcommands remove-from-truststore(1)
 
 NAME
-       remove-from-truststore - removes a key or certificate from the target instance or listener's key store.
+       remove-from-truststore - removes a key or certificate from the target instance or listener's trust store.
 
 SYNOPSIS
            remove-from-truststore [--help]
-           [--domain_name domain-name] [--domaindir domain-dir]
+           [--domainname domain-name] [--domaindir domain-dir]
+           [--node node-name] [--nodedir node-dir]
            [--target instance-name] [--listener listener-name]
            --file domain-name file
            alias
@@ -18,7 +19,7 @@ OPTIONS
        --help, -?
            Displays the help text for the subcommand.
 
-       --domainname
+       --domainname, --domain_name
            The unique name of the domain to remove the certificate for the CSR from.
            This operand is optional, defaulting from domain1 if not provided.
 
@@ -28,8 +29,19 @@ OPTIONS
            file system. The default location of the domain root directory
            is as-install/domains.
 
+       --node
+           The unique name of the node where the target instance is located.
+           This operand is optional, defaulting to localhost-$domainname
+           if not provided.
+           
+       --nodedir
+           The node root directory, which contains the of the target node.
+           If specified, the path must be accessible in the
+           file system. The default location of the node root directory
+           is as-install/nodes.
+
        --target
-           The name of the instance to remove the certificate from. Defaults from server (the DAS).
+           The name of the instance to remove the certificate from. Defaults to server (the DAS).
 
        --listener
            The name of the HTTP or IIOP listener to remove the certificate from.
@@ -41,18 +53,18 @@ OPERANDS
            The alias of the certificate to remove from the truststore
 
 EXAMPLES
-       Example 1, Add a X509 Certificate from the DAS
+       Example 1, Remove a X509 Certificate from the DAS
 
-           This example removes a X509 certificate from the truststore for the DAS.
+           This example removes a X509 certificate from the truststore for the DAS which has the alias example.
 
-               asadmin> remove-from-truststore ~/example-cert.pem example
+               asadmin> remove-from-truststore example
 
-       Example 2, Add a certificate for a Listener
+       Example 2, Remove a certificate for a Listener
 
-           This example removes a self-signed certificate named glassfish-instance in
+           This example removes a self-signed certificate named payara-instance in
            the key store of the http-listener-2 listener of an instance named Instance1
 
-               asadmin> remove-from-truststore --target Instance1 --listener http-listener-2 glassfish-instance
+               asadmin> remove-from-truststore --target Instance1 --listener http-listener-2 payara-instance
 
 EXIT STATUS
        0

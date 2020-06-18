@@ -5,7 +5,8 @@ NAME
 
 SYNOPSIS
            add-to-truststore [--help]
-           [--domain_name domain-name] [--domaindir domain-dir]
+           [--domainname domain-name] [--domaindir domain-dir]
+           [--node node-name] [--nodedir node-dir]
            [--target instance-name] [--listener listener-name]
 
 DESCRIPTION
@@ -16,7 +17,7 @@ OPTIONS
        --help, -?
            Displays the help text for the subcommand.
 
-       --domainname
+       --domainname, --domaine_name
            The unique name of the domain to remove the certificates from.
            This operand is optional, defaulting to domain1 if not provided.
 
@@ -25,6 +26,17 @@ OPTIONS
            target domain. If specified, the path must be accessible in the
            file system. The default location of the domain root directory
            is as-install/domains.
+
+        --node
+           The unique name of the node where the target instance is located.
+           This operand is optional, defaulting to localhost-$domainname
+           if not provided.
+           
+       --nodedir
+           The node root directory, which contains the of the target node.
+           If specified, the path must be accessible in the
+           file system. The default location of the node root directory
+           is as-install/nodes.
 
        --target
            The name of the instance to remove the certificates from. 
@@ -43,7 +55,7 @@ EXAMPLES
 
                asadmin> remove-expired-certificates
 
-       Example 2, emove expired certificates for a Listener
+       Example 2, Remove expired certificates for a Listener
 
            This example removes all expired certificates from the keystore and
            truststore of the http-listener-2 listener of an instance named Instance1
