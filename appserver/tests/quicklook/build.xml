@@ -155,7 +155,7 @@
 
 		<antcall target="verify-xml"/>
 		<antcall target="build-deploy"/>
-		<!--<antcall target="build-deploy-gd"/> Unstable -->
+		<antcall target="build-deploy-gd"/>
 
 		<antcall target="build-cluster"/>
 		
@@ -298,7 +298,7 @@
 		<echo message="Glassfish Distribution Build Deploy"/>
 		<ant dir="ejb/remoteview" target="build-deploy"/>
 		<ant dir="ejb/singleton" target="build-deploy"/>
-		<!--<ant dir="ejb/cmp" target="build-deploy"/>-->
+		<ant dir="ejb/cmp" target="build-deploy"/>
 		<ant dir="ejb/mdb" target="build"/>
 		<ant dir="jms/injection" target="build-deploy"/>
 		<!-- Temporarily jruby test is commented, because we need to integrate a newer version
