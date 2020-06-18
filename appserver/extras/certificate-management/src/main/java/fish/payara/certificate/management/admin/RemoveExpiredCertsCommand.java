@@ -182,9 +182,9 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
                 if (defaultKeystore && defaultTruststore) {
                     // Do nothing
                 } else if (defaultKeystore) {
-                    logger.info("Please remove expired certificates from truststore manually using the remove-from-keystore command");
+                    logger.info("Please remove expired certificates from truststore manually using the remove-from-truststore command");
                 } else {
-                    logger.info("Please remove expired certificates from keystore manually using the remove-from-truststore command");
+                    logger.info("Please remove expired certificates from keystore manually using the remove-from-keystore command");
                 }
 
                 return CLIConstants.WARNING;
