@@ -143,7 +143,7 @@
         tofile="${glassfish.home}/domains/${domain.name}/config/server.policy"/>
 </target>
 
-<target name="sql-common" depends="initprop">
+<!--<target name="sql-common" depends="initprop">
   <echo message="sql.file = ${sql.file}"/>
   <echo message="db.class.path = ${db.class.path}"/>
   <sql driver="${db.driver}"
@@ -156,7 +156,7 @@
     print="yes"
     classpath="${db.class.path}">
     </sql>
-</target>
+</target>-->
 
 <target name="create-db" depends="initprop,delete-db"
         description="Create database tables and populate database." >
