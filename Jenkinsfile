@@ -69,7 +69,7 @@ pipeline {
                 always {
                     zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'quicklook-log.zip'
                     teardownDomain()
-                    junit '**/target/surefire-reports/*.xml'
+                    junit '**\/target/surefire-reports/*.xml' - Line escaped 
                 }
             }
         }*/
