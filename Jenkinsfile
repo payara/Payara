@@ -103,6 +103,7 @@ pipeline {
         }
         stage('Setup for EE8 Tests') {
             steps {
+                sh "rm -f -v *.zip"
                 setupDomain()
             }
         }
@@ -161,6 +162,7 @@ pipeline {
         }
         stage('Setup for EE7 Tests') {
             steps {
+                sh "rm -f -v *.zip"
                 setupDomain()
             }
         }
