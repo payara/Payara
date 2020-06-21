@@ -39,11 +39,15 @@
  */
 package fish.payara.nucleus.hazelcast;
 
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.Serializable;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import org.glassfish.api.event.EventListener;
@@ -59,13 +63,48 @@ import org.glassfish.internal.deployment.Deployment;
  * 
  * @author lprimak
  */
-public class PayaraHazelcastTenant implements TenantControl {
+public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
+    private JavaEEContextUtil ctxUtil;
+    private EventListenerImpl destroyEventListener;
+    private Events events;
+    private final static ConcurrentHashMap<EventListenerImpl, EventListenerImpl> previousListeners = new ConcurrentHashMap<>();
+
+
     public PayaraHazelcastTenant(final DestroyEventContext event) {
+        init(event);
+    }
+
+    public PayaraHazelcastTenant() { } // de-serialization requirement
+
+    private void init() {
         ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        destroyEventListener = new SerializableEventListenerImpl(event,
+        events = Globals.getDefaultHabitat().getService(Events.class);
+    }
+
+    private void init(DestroyEventContext event) {
+        init();
+        destroyEventListener = new EventListenerImpl(event,
                 Globals.getDefaultHabitat().getService(InvocationManager.class)
                         .getCurrentInvocation().getModuleName());
+        register();
+    }
+
+    private void init(String componentId, DestroyEventContext destroyEvent, String moduleName) {
         init();
+        ctxUtil.setInstanceComponentId(componentId);
+        destroyEventListener = new EventListenerImpl(destroyEvent, moduleName);
+        register();
+    }
+
+    private void register() {
+        // unregister previous listener for the same app and cache
+        previousListeners.compute(destroyEventListener, (EventListenerImpl key, EventListenerImpl value) -> {
+            if(value != null) {
+                events.unregister(value);
+            }
+            events.register(destroyEventListener);
+            return destroyEventListener;
+        });
     }
 
     @Override
@@ -79,20 +118,27 @@ public class PayaraHazelcastTenant implements TenantControl {
         return (createRequestScope? ctxUtil.pushRequestContext() : ctxUtil.pushContext())::close;
     }
 
-    private void init() {
-        events = Globals.getDefaultHabitat().getService(Events.class);
-        events.register(destroyEventListener);
+    @Override
+    public void writeData(ObjectDataOutput out) throws IOException {
+        out.writeUTF(ctxUtil.getInstanceComponentId());
+        out.writeObject(destroyEventListener.destroyEvent);
+        out.writeUTF(destroyEventListener.moduleName);
     }
 
-    private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
-        stream.defaultReadObject();
-        init();
+    @Override
+    public void readData(ObjectDataInput in) throws IOException {
+        String componentId = in.readUTF();
+        DestroyEventContext destroyEvent = in.readObject();
+        String moduleName = in.readUTF();
+        init(componentId, destroyEvent, moduleName);
     }
 
-    private interface SerializableEventListener extends EventListener, Serializable {};
+    private static class EventListenerImpl implements EventListener {
+        private final DestroyEventContext destroyEvent;
+        private final String moduleName;
 
-    private static class SerializableEventListenerImpl implements SerializableEventListener {
-        private SerializableEventListenerImpl(DestroyEventContext event, String moduleName) {
+
+        private EventListenerImpl(DestroyEventContext event, String moduleName) {
             this.destroyEvent = event;
             this.moduleName = moduleName;
         }
@@ -113,14 +159,30 @@ public class PayaraHazelcastTenant implements TenantControl {
             }
         }
 
-        private final DestroyEventContext destroyEvent;
-        private final String moduleName;
-        private static final long serialVersionUID = 1L;
+        @Override
+        public int hashCode() {
+            return Objects.hash(moduleName, destroyEvent.getDistributedObjectName());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final EventListenerImpl other = (EventListenerImpl) obj;
+            if (!Objects.equals(this.moduleName, other.moduleName)) {
+                return false;
+            }
+            if (!Objects.equals(this.destroyEvent.getDistributedObjectName(), other.destroyEvent.getDistributedObjectName())) {
+                return false;
+            }
+            return true;
+        }
     }
-
-
-    private final JavaEEContextUtil ctxUtil;
-    private final EventListener destroyEventListener;
-    private transient Events events;
-    private static final long serialVersionUID = 1L;
 }
