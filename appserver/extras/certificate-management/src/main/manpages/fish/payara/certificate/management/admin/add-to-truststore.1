@@ -8,7 +8,7 @@ SYNOPSIS
            [--domain_name domain-name] [--domaindir domain-dir]
            [--node node-name] [--nodedir node-dir]
            [--target instance-name] [--listener listener-name]
-           --file file
+           [--reload={true|false}] --file file
            alias
 
 DESCRIPTION
@@ -53,6 +53,10 @@ OPTIONS
            Only applicable if the listener has a key or trust store
            different to that of the instance itself.
 
+       --reload
+           If true then the HTTP listeners are restarted after the certificates
+           are removed.
+
 OPERANDS
        alias
            The alias of the certificate to enter into the truststore
@@ -67,9 +71,10 @@ EXAMPLES
        Example 2, Add a certificate for a Listener
 
            This example adds a X509 certificate to the truststore of the 
-           http-listener-2 listener of an instance named Instance1
+           http-listener-2 listener of an instance named Instance1, then
+           restarts the listener.
 
-               asadmin> add-to-truststore --target Instance1 --listener http-listener-2 --file ~/example-cert.pem example
+               asadmin> add-to-truststore --target Instance1 --listener http-listener-2 --reload true --file ~/example-cert.pem example
 
 EXIT STATUS
        0
