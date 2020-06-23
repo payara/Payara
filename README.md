@@ -1,42 +1,44 @@
 ![#badassfish](payara-logo-blue.png)
 
-# Payara Server 5 Community Edition
+# Payara Platform Community Edition
 
-Payara Server 5 Community Edition is a patched, enhanced, and supported application server derived from GlassFish Server Open Source Edition 5.x.
+**Create. Innovate. Elevate.**
 
-Payara Server 5 development is coordinated by the Payara Foundation, a UK not-for-profit organisation.
+Payara Platform Community Edition features open source server runtimes for development projects and containerized Jakarta EE and MicroProfile applications.
 
-Visit [www.payara.fish](http://www.payara.fish) for lots of free resources, information about the Payara Enterprise Edition and 24x7 software support, and more.
+**Payara Server Community** is a cloud-native, innovative open source middleware platform for development projects that supports Jakarta EE (Java EE) applications in any environment: on premise, in the cloud or hybrid.
 
-**Full Payara Server and Payara Micro documentation:** https://docs.payara.fish
+**Payara Micro Community** is the open source, lightweight middleware platform of choice for containerized Jakarta EE (Java EE) microservices deployments in development. Less than 70MB, Payara Micro requires no installation, configuration or code rewrites.
 
-# Payara Platform 5 Community Edition
+Visit [www.payara.fish](http://www.payara.fish/ "http://www.payara.fish/") for free resources and information about the stable and fully supported [Payara Enterprise Edition](https://www.payara.fish/enterprise/ "https://www.payara.fish/enterprise/"), designed for mission critical systems in production including 24x7, 10x5, and Migration & Project Support options.
 
-Payara Platform 5 Community Edition is an open source, cloud-native middleware platform supporting reliable and secure deployments of Java EE (Jakarta EE) applications on premise, in the cloud, or hybrid environments.
+Access the complete Payara Server and Payara Micro documentation:
 
-Payara Server is a modern Jakarta EE application server and a drop in replacement for GlassFish Server Open Source Edition. Compared to GlassFish, we have added a lot of new features like full MicroProfile and JCache support, enhanced JBatch functionality, replaced Shoal with Hazelcast for session clustering and a lot more. 
+[https://docs.payara.fish](https://docs.payara.fish/ "https://docs.payara.fish/")
 
-Payara Micro, a completely new way of running WAR applications on top of an embedded GlassFish core, is ideally suited to cloud and microservice architectures with elastic clustering and no installation. Payara Micro can run WAR applications simply, using:
+## Payara Platform Community
 
-```Shell
-java -jar payara-micro.jar --deploy test.war
-```
+**Helps you Innovate:**
 
-In summary Payara Platform provides:
+-   Rapid access to new features
 
-* Fully Supported Payara Server derived from GlassFish 5.x Open Source Edition
-* Payara Micro for cloud and microservice deployments
-* Microprofile API support
-* Supports deployment of JavaEE 8 and Jakarta EE applications
-* Production Enhancements including JCache, JBatch, and Hazelcast session clustering
-* Always Open Source dual licensed CDDL/GPL
-* Frequent Patch Releases / Bug Fixes
-* Payara Platform Enterprise Edition for mission critical or production environments
+-   Regular & frequent releases
 
-We take GlassFish, support it, add fixes, add customer-requested enhancements and we release it as open source Payara Server Community Edition and Payara Server Enterprise Edition.
+-   Software experimentation
 
+-   Suitable for development projects
+
+**Offers Community-based Support:**
+
+-   Get assistance on Payara Forum
+
+-   Raise bugs on GitHub
+
+-   Tech Blog
+
+-   User guides & datasheets
 
 -----------------------
 
-GlassFish is a trademark of the Eclipse Foundation.
-Payara is a trademark of the Payara Foundation.
+Payara<sup>&reg;</sup> is a trademark of the Payara Foundation.
+GlassFish<sup>&reg;</sup> is a trademark of the Eclipse Foundation.
