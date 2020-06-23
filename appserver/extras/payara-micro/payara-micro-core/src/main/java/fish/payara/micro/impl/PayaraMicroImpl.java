@@ -994,7 +994,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         } catch (IOException | URISyntaxException ex) {
             throw new BootstrapException("Problem unpacking the Runtime", ex);
         }
-        resetLogging();
+        final String loggingProperty = System.getProperty("java.util.logging.config.file");
+        resetLogging(loggingProperty);
+        // If it's been enabled, watch the log file for changes
+        if (enableDynamicLogging) {
+            PayaraFileWatcher.watch(new File(loggingProperty).toPath(), () -> {
+                LOGGER.info("Logging file modified, resetting logging");
+                resetLogging(loggingProperty);
+            });
+        }
         runtimeDir.processDirectoryInformation();
 
         // build the runtime
@@ -1698,9 +1706,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         });
     }
 
-    private void resetLogging() {
-
-        String loggingProperty = System.getProperty("java.util.logging.config.file");
+    /**
+     * Reset the logging properties from the given file.
+     * @param loggingProperty the location of the file to read from.
+     */
+    private void resetLogging(String loggingProperty) {
         if (loggingProperty != null) {
             // we need to copy into the unpacked domain the specified logging.properties file
             File file = new File(loggingProperty);
@@ -1782,7 +1792,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
             }
         }
-
     }
 
     private void configureCommandFiles() throws IOException {
