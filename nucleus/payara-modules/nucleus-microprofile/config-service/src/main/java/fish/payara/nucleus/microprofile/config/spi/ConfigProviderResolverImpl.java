@@ -217,7 +217,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             appInfo = applicationRegistry.get(appName);
         }
 
-        if (appInfo != null && appInfo.getAppClassLoader().equals(loader)) {
+        if (appInfo != null && loader.equals(appInfo.getAppClassLoader())) {
             return appInfo;
         }
 
