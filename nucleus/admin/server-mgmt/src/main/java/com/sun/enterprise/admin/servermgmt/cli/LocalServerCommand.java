@@ -68,6 +68,8 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.ServerDirs;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
@@ -96,6 +98,7 @@ public abstract class LocalServerCommand extends CLICommand {
     ////////////////////////////////////////////////////////////////
     private ServerDirs serverDirs;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(LocalDomainCommand.class);
+    private final static int IS_RUNNING_DEFAULT_TIMEOUT = 2000;
     
     ////////////////////////////////////////////////////////////////
     /// Section:  protected variables
@@ -356,23 +359,17 @@ public abstract class LocalServerCommand extends CLICommand {
      * @return boolean indicating whether the server is running
      */
     protected final boolean isRunning(String host, int port) {
-        Socket server = null;
-        try {
-            server = new Socket(host, port);
+        
+        try(Socket server = new Socket()) {
+            if (host == null) {
+                host = InetAddress.getByName(null).getHostName();
+            }
+            
+            server.connect( new InetSocketAddress(host, port), IS_RUNNING_DEFAULT_TIMEOUT);
             return true;
-        }
-        catch (Exception ex) {
+        }catch  (Exception ex) {
             logger.log(Level.FINER, "\nisRunning got exception: {0}", ex);
             return false;
-        }
-        finally {
-            if (server != null) {
-                try {
-                    server.close();
-                }
-                catch (IOException ex) {
-                }
-            }
         }
     }
 
