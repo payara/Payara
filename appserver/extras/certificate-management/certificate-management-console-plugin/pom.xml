@@ -44,20 +44,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.extras</groupId>
-        <artifactId>extras</artifactId>
-        <version>5.2020.3-SNAPSHOT</version>
+        <groupId>fish.payara.extras.certificate-management</groupId>
+        <artifactId>certificate-management-parent</artifactId>
+        <version>5.21.0-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.extras.certificate-management</groupId>
-    <artifactId>certificate-management-parent</artifactId>
-    <packaging>pom</packaging>
-    <name>Payara Certificate Management Parent</name>
-    <description>Aggregator parent for Integrated Certificate Management</description>
+    <artifactId>certificate-management-console-plugin</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>Admin Console Plugin for Certificate Management</name>
 
-    <modules>
-        <module>certificate-management-cli</module>
-        <module>certificate-management-admin</module>
-        <module>certificate-management-common</module>
-        <module>certificate-management-console-plugin</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>console-plugin-service</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

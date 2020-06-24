@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>fish.payara.extras.certificate-management</groupId>
+        <artifactId>certificate-management-parent</artifactId>
+        <version>5.21.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>certificate-management-common</artifactId>
+    <name>Payara Certificate Management Common</name>
+    <description>Common classes and methods for managing SSL/TLS certificates</description>
+    <packaging>glassfish-jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.admin</groupId>
+            <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.security</groupId>
+            <artifactId>security</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+    </dependencies>
+</project>

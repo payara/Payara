@@ -1,25 +1,24 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/master/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at glassfish/legal/LICENSE.txt.
 
     GPL Classpath Exception:
-    Oracle designates this particular file as subject to the "Classpath"
-    exception as provided by Oracle in the GPL Version 2 section of the License
+    The Payara Foundation designates this particular file as subject to the "Classpath"
+    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
     file that accompanied this code.
 
     Modifications:
@@ -38,26 +37,14 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>fish.payara.extras</groupId>
-        <artifactId>extras</artifactId>
-        <version>5.2020.3-SNAPSHOT</version>
-    </parent>
-    <groupId>fish.payara.extras.certificate-management</groupId>
-    <artifactId>certificate-management-parent</artifactId>
-    <packaging>pom</packaging>
-    <name>Payara Certificate Management Parent</name>
-    <description>Aggregator parent for Integrated Certificate Management</description>
+<sun:property>
+    <sun:hyperlink toolTip="$resource{i18ncm.tree.certificateManagement}" url="/certificateManagement/certificateManagement/certificateManagement.jsf?configName=#{configName}">
+        <sun:image url="/resource/images/certificateManagement.png" />
+        <sun:staticText text="$resource{i18ncm.tree.certificateManagement}" />
+    </sun:hyperlink>
+    <!beforeCreate
+        setResourceBundle(key="i18ncm" bundle="fish.payara.admingui.certificate.management.Strings");
+    />
+</sun:property>
 
-    <modules>
-        <module>certificate-management-cli</module>
-        <module>certificate-management-admin</module>
-        <module>certificate-management-common</module>
-        <module>certificate-management-console-plugin</module>
-    </modules>
-</project>
