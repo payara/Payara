@@ -438,13 +438,11 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
     private boolean isTargetDeploymentGroup() {
         List<DeploymentGroup> deploymentGroups = server.getDeploymentGroup();
-        if (!deploymentGroups.isEmpty()) {
             for (DeploymentGroup deploymentGroup : deploymentGroups) {
                 if (deploymentGroup.getName().equals(target)) {
                     return true;
                 }
             }
-        }
         
         return false;
     }
