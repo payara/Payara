@@ -39,23 +39,30 @@
  */
 package fish.payara.certificate.management.admin;
 
+import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
-import com.sun.enterprise.admin.servermgmt.KeystoreManager;
-import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.certificate.management.CertificateManagementKeytoolCommands;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import java.io.File;
+import java.util.logging.Logger;
 
-@Service(name = "generate-csr")
+/**
+ * Command to remove a key or certificate from the target instance or listener's key store.
+ *
+ * @author Jonathan Coustick
+ * @author Andrew Pielage
+ */
+@Service(name = "remove-from-keystore")
 @PerLookup
-public class GenerateCsrCommand extends AbstractCertManagementCommand {
+public class RemoveFromKeyStoreCommand extends AbstractCertManagementCommand {
+
+
+    private static final Logger logger = Logger.getLogger(CLICommand.class.getPackage().getName());
 
     @Param(name = "alias", primary = true)
     private String alias;
@@ -70,77 +77,44 @@ public class GenerateCsrCommand extends AbstractCertManagementCommand {
     protected int executeCommand() throws CommandException {
         // If we're targetting an instance that isn't the DAS, use a different command
         if (target != null && !target.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
-            GenerateCsrLocalInstanceCommand localInstanceCommand =
-                    new GenerateCsrLocalInstanceCommand(programOpts, env);
+            RemoveFromKeyStoreLocalInstanceCommand localInstanceCommand =
+                    new RemoveFromKeyStoreLocalInstanceCommand(programOpts, env);
             localInstanceCommand.validate();
             return localInstanceCommand.executeCommand();
         }
 
-        // Parse the location of the key store, and the password required to access it
         parseKeyStore();
-
-        // Run keytool command to generate CSR and place in csrLocation
-        try {
-            generateCsr();
-        } catch (CommandException ce) {
-            return CLIConstants.ERROR;
-        }
+        removeFromKeyStore();
 
         return CLIConstants.SUCCESS;
     }
 
-    /**
-     * Generates a CSR
-     *
-     * @throws CommandException If there's an issue adding the certificate to the key store
-     */
-    private void generateCsr() throws CommandException {
-        // Get CSR install dir and ensure it actually exists
-        File csrLocation = new File(getInstallRootPath() + File.separator + "tls");
-        if (!csrLocation.exists()) {
-            csrLocation.mkdir();
-        }
+    private class RemoveFromKeyStoreLocalInstanceCommand extends AbstractLocalInstanceCertManagementCommand {
 
-        // Run keytool command to generate self-signed cert
-        KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
-                CertificateManagementKeytoolCommands.constructGenerateCertRequestKeytoolCommand(
-                        keystore, keystorePassword,
-                        new File(csrLocation.getAbsolutePath() + File.separator + userArgAlias + ".csr"),
-                        userArgAlias),
-                60);
-
-        try {
-            keytoolExecutor.execute("csrNotCreated", keystore);
-        } catch (RepositoryException re) {
-            logger.severe(re.getCause().getMessage()
-                    .replace("keytool error: java.lang.Exception: ", "")
-                    .replace("keytool error: java.io.IOException: ", ""));
-            throw new CommandException(re);
-        }
-    }
-
-    /**
-     * Local instance (non-DAS) version of the parent command. Not intended for use as a standalone CLI command.
-     */
-    private class GenerateCsrLocalInstanceCommand extends AbstractLocalInstanceCertManagementCommand {
-
-        public GenerateCsrLocalInstanceCommand(ProgramOptions programOpts, Environment env) {
+        public RemoveFromKeyStoreLocalInstanceCommand(ProgramOptions programOpts, Environment env) {
             super(programOpts, env);
         }
 
-        @Override
         protected int executeCommand() throws CommandException {
             parseKeyStore();
 
-            // Run keytool command to generate CSR and place in csrLocation
-            try {
-                generateCsr();
-            } catch (CommandException ce) {
-                return CLIConstants.ERROR;
+            // If the target is not the DAS and is configured to use the default key store, sync with the
+            // DAS instead
+            if (checkDefaultKeyStore()) {
+                logger.warning("The target instance is using the default key store, any new certificates"
+                        + " removed directly from instance stores would be lost upon next sync.");
+
+                if (!alreadySynced) {
+                    logger.warning("Syncing with the DAS instead of generating a new certificate");
+                    synchronizeInstance();
+                }
+
+                return CLIConstants.WARNING;
             }
+
+            removeFromKeyStore();
 
             return CLIConstants.SUCCESS;
         }
-
     }
 }
