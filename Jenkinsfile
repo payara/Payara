@@ -11,6 +11,8 @@ pipeline {
     environment {
         Dibbles = "\${Dabbles}"
         Bibbly = "Bibbles"
+        MP_METRICS_TAGS='tier=integration'
+        MP_CONFIG_CACHE_DURATION=0
     }
     tools {
         jdk "zulu-8"
@@ -89,6 +91,38 @@ pipeline {
                always {
                    junit '**/target/surefire-reports/*.xml'
                }
+            }
+        }
+        stage('Checkout MP TCK Runners') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/master"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Setup for MP TCK Runners') {
+            steps {
+                setupDomain()
+            }
+        }
+        stage('Run MP TCK Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean verify \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
+                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,payara5"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'mp-tck-log.zip'
+                    teardownDomain()
+                    junit '**/target/surefire-reports/*.xml'
+                }
             }
         }
         stage('Checkout EE8 Tests') {
@@ -176,38 +210,6 @@ pipeline {
             post {
                 always {
                     zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee7-samples-log.zip'
-                    teardownDomain()
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
-        }
-        stage('Checkout MP TCK Runners') {
-            steps{
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/master"]],
-                    userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-        }
-        stage('Setup for MP TCK Runners') {
-            steps {
-                setupDomain()
-            }
-        }
-        stage('Run MP TCK Tests') {
-            steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean verify \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
-                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,payara5"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-            post {
-                always {
-                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'mp-tck-log.zip'
                     teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }
