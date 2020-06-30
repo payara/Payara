@@ -68,7 +68,7 @@ import java.security.cert.CertificateException;
  */
 public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
 
-    @Param(name = "domain_name", optional = true)
+    @Param(name = "domain_name", optional = true, alias = "domainname")
     protected String domainName0;
 
     @Param(name = "listener", optional = true)
