@@ -27,7 +27,7 @@ pipeline {
                     echo "Domain name is ${DOMAIN_NAME}"
 
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Certificates Expiring Next Month  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    sh 'keytool -list -v -keystore $certfile -storepass "changeit" | grep -E "Valid from:.*`date +'%b' --date='+1 month'`.*`date +'%Y'`"'
+                    sh 'keytool -list -v -keystore $certfile -storepass "changeit" | grep -E "Valid from:.*`date +'%b' --date='+1 month'`.*`date +'%Y'`|`date +'%b'`.*`date +'%Y'`"
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#    Done   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
             }
