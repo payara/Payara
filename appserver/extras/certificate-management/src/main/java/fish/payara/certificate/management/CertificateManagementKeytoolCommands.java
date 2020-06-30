@@ -43,7 +43,7 @@ import java.io.File;
 
 /**
  * Class that contains the methods that construct the keytool commands.
- * 
+ *
  * @author Andrew Pielage
  */
 public class CertificateManagementKeytoolCommands {
@@ -112,11 +112,11 @@ public class CertificateManagementKeytoolCommands {
     /**
      * Constructs the command to pass to keytool for adding a key store entry to another key store
      *
-     * @param srcKeystore           The target key store that the certificate was added to
+     * @param srcKeystore          The target key store that the certificate was added to
      * @param destKeystore         The target trust store to add the certificate to
-     * @param srcKeystorePassword   The password for the key store
-     * @param destKeystorePassword The password for the trust store
-     * @param alias              The alias of the certificate
+     * @param srcKeystorePassword  The password for the source store
+     * @param destKeystorePassword The password for the destination store
+     * @param alias                The alias of the certificate
      * @return A String array to pass to {@link com.sun.enterprise.admin.servermgmt.KeystoreManager.KeytoolExecutor}
      */
     public static String[] constructImportKeystoreKeytoolCommand(File srcKeystore, File destKeystore,
@@ -136,12 +136,35 @@ public class CertificateManagementKeytoolCommands {
     }
 
     /**
+     * Constructs the command to pass to keytool for adding a certificate to a store
+     *
+     * @param certificate The certificate to add to the store
+     * @param keystore    The target store to add the certificate to
+     * @param password    The password for the key store and certificate
+     * @param alias       The alias of the certificate
+     * @return A String array to pass to {@link com.sun.enterprise.admin.servermgmt.KeystoreManager.KeytoolExecutor}
+     */
+    public static String[] constructImportCertKeytoolCommand(File certificate, File keystore,
+            char[] password, String alias) {
+        String[] keytoolCmd = new String[]{"-importcert",
+                "-file", certificate.getAbsolutePath(),
+                "-keypass", new String(password),
+                "-keystore", keystore.getAbsolutePath(),
+                "-storepass", new String(password),
+                "-alias", alias,
+                "-trustcacerts",
+                "-noprompt"};
+
+        return keytoolCmd;
+    }
+
+    /**
      * Constructs the command to pass to keytool for creating a CSR
      *
-     * @param keystore The target key store to get the certificate to ask to be signed from
-     * @param password The password for the key store
+     * @param keystore   The target key store to get the certificate to ask to be signed from
+     * @param password   The password for the key store
      * @param outputFile The ${@link File} representing the generated CSR
-     * @param alias The alias of the certificate to create the CSR for
+     * @param alias      The alias of the certificate to create the CSR for
      * @return A String array to pass to {@link com.sun.enterprise.admin.servermgmt.KeystoreManager.KeytoolExecutor}
      */
     public static String[] constructGenerateCertRequestKeytoolCommand(File keystore, char[] password,
