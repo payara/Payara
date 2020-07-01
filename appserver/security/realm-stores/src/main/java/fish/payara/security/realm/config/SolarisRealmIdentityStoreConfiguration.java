@@ -39,6 +39,7 @@
  */
 package fish.payara.security.realm.config;
 
+import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
 import fish.payara.security.annotations.SolarisIdentityStoreDefinition;
 import static fish.payara.security.annotations.SolarisIdentityStoreDefinition.STORE_MP_SOLARIS_GROUPS;
 import static fish.payara.security.annotations.SolarisIdentityStoreDefinition.STORE_MP_SOLARIS_JAAS_CONTEXT;
@@ -63,8 +64,8 @@ public class SolarisRealmIdentityStoreConfiguration implements RealmConfiguratio
     private SolarisRealmIdentityStoreConfiguration(SolarisIdentityStoreDefinition definition) {
         Config config = ConfigProvider.getConfig();
         this.name = definition.value();
-        this.assignGroups = asList(config.getOptionalValue(STORE_MP_SOLARIS_GROUPS, String[].class)
-                .orElse(definition.assignGroups()));
+        this.assignGroups = config.getValue(STORE_MP_SOLARIS_GROUPS, ConfigValueResolver.class)
+                .asList(String.class, asList(definition.assignGroups()));
         this.jaasContext = getConfiguredValue(String.class, definition.jaasContext(), config, STORE_MP_SOLARIS_JAAS_CONTEXT);
     }
 

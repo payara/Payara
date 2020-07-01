@@ -210,7 +210,7 @@ public class PayaraConfig implements Config {
     }
 
     private <E> Converter<Object> createArrayConverter(Class<E> elementType) {
-        return ArrayConverter.createArrayConverter(elementType, getConverter(elementType));
+        return new ArrayConverter<>(elementType, getConverter(elementType));
     }
 
     static Class<?> boxedTypeOf(Class<?> type) {

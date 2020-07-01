@@ -45,15 +45,10 @@ import java.util.logging.Logger;
 
 import org.eclipse.microprofile.config.spi.Converter;
 
+import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
+
 /**
  * Converts reference and primitive arrays.
- *
- * For convenience the converter skips empty elements as well as elements for which conversion fails. If all
- * elements fail to convert the conversion exception is forwarded (thrown). Otherwise a warning is logged and the
- * working elements as kept.
- *
- * This is a grey-area in the standard but from a users point of view it most often makes sense to work with the
- * elements that are well defined and ignore the others.
  *
  * Argument for {@link Converter} can only be {@link Object} as both reference and primitive arrays are created.
  *
@@ -63,16 +58,18 @@ public final class ArrayConverter<T> implements Converter<Object> {
 
     private static final Logger LOGGER = Logger.getLogger(ArrayConverter.class.getName());
 
-    public static <E> Converter<Object> createArrayConverter(Class<E> elementType, Converter<E> elementConverter) {
-        return new ArrayConverter<>(elementType, elementConverter);
-    }
-
     private final Class<T> elementType;
     private final Converter<T> elementConverter;
+    private final ConfigValueResolver.ElementPolicy elementPolicy;
 
-    private ArrayConverter(Class<T> elementType, Converter<T> elementConverter) {
+    public ArrayConverter(Class<T> elementType, Converter<T> elementConverter) {
+        this(elementType, elementConverter, ConfigValueResolver.ElementPolicy.FAIL);
+    }
+
+    public ArrayConverter(Class<T> elementType, Converter<T> elementConverter, ConfigValueResolver.ElementPolicy elementPolicy) {
         this.elementType = elementType;
         this.elementConverter = elementConverter;
+        this.elementPolicy = elementPolicy;
     }
 
     @Override
@@ -88,8 +85,17 @@ public final class ArrayConverter<T> implements Converter<Object> {
                     T elementValue = elementConverter.convert(sourceValue);
                     Array.set(array, j++, elementValue);
                 } catch (IllegalArgumentException ex) {
-                    // ignore that value but remember exception
-                    lastConversionException = ex;
+                    if (elementPolicy == ConfigValueResolver.ElementPolicy.FAIL)
+                        throw ex;
+                    if (elementPolicy == ConfigValueResolver.ElementPolicy.NULL) {
+                        if (elementType.isPrimitive()) {
+                            throw ex; // null is not allowed => fail
+                        }
+                        Array.set(array, j++, null);
+                    } else {
+                        // ignore that value but remember exception
+                        lastConversionException = ex;
+                    }
                 }
             }
         }

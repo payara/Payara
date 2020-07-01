@@ -39,6 +39,7 @@
  */
 package fish.payara.security.realm.config;
 
+import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
 import fish.payara.security.annotations.CertificateIdentityStoreDefinition;
 import static fish.payara.security.annotations.CertificateIdentityStoreDefinition.STORE_MP_CERTIFICATE_GROUPS;
 import java.util.List;
@@ -61,8 +62,8 @@ public class CertificateRealmIdentityStoreConfiguration implements RealmConfigur
     private CertificateRealmIdentityStoreConfiguration(CertificateIdentityStoreDefinition definition) {
         Config config = ConfigProvider.getConfig();
         this.name = definition.value();
-        this.assignGroups = asList(config.getOptionalValue(STORE_MP_CERTIFICATE_GROUPS, String[].class)
-                .orElse(definition.assignGroups()));
+        this.assignGroups = config.getValue(STORE_MP_CERTIFICATE_GROUPS, ConfigValueResolver.class)
+                .asList(String.class, asList(definition.assignGroups()));
     }
 
     public static CertificateRealmIdentityStoreConfiguration from(CertificateIdentityStoreDefinition definition) {

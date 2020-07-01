@@ -40,6 +40,8 @@
 package fish.payara.security.realm.config;
 
 import com.sun.enterprise.util.StringUtils;
+
+import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
 import fish.payara.security.annotations.FileIdentityStoreDefinition;
 import static fish.payara.security.annotations.FileIdentityStoreDefinition.STORE_MP_FILE;
 import static fish.payara.security.annotations.FileIdentityStoreDefinition.STORE_MP_FILE_GROUPS;
@@ -67,8 +69,8 @@ public class FileRealmIdentityStoreConfiguration implements RealmConfiguration {
         Config config = ConfigProvider.getConfig();
         this.name = definition.value();
         this.file = getConfiguredValue(String.class, definition.file(), config, STORE_MP_FILE);
-        this.assignGroups = asList(config.getOptionalValue(STORE_MP_FILE_GROUPS, String[].class)
-                .orElse(definition.assignGroups()));
+        this.assignGroups = config.getValue(STORE_MP_FILE_GROUPS, ConfigValueResolver.class)
+                .asList(String.class, asList(definition.assignGroups()));
         this.jaasContext = getConfiguredValue(String.class, definition.jaasContext(), config, STORE_MP_FILE_JAAS_CONTEXT);
     }
 

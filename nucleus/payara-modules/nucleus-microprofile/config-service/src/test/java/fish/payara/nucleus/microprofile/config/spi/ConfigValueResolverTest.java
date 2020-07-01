@@ -41,6 +41,8 @@ package fish.payara.nucleus.microprofile.config.spi;
 
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.assertException;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
+import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver.ElementPolicy.FAIL;
+import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver.ElementPolicy.NULL;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -82,12 +84,15 @@ public class ConfigValueResolverTest {
     public void setUp() {
         String[][] source =  {
                 {"string1", "str"},
+                {"string2", " str "},
                 {"long1", "42"},
+                {"long2", " 42 "},
                 {"bool1", "true" },
                 {"int1", "13"},
                 {"brokenlong", "fourtytwo"},
                 {"brokenint", "one" },
                 {"array1", "12,one,13" },
+                {"array2", "a, b, c" },
 
         };
         Map<String, String> properties = source1.getProperties();
@@ -748,6 +753,77 @@ public class ConfigValueResolverTest {
                 () -> resolve("nosucharray").throwOnFailedConversion().withDefault("a,b,c").as(int[].class, null));
     }
 
+    @Test
+    public void asArrayFailsWithConversionFailureAndFailElementPolicy() {
+        assertThrowsFailedConversion("Unable to convert value to type java.lang.Integer for value `one`",
+                () -> resolve("array1").withPolicy(FAIL).throwOnFailedConversion().as(int[].class, null));
+    }
+
+    @Test
+    public void asArrayUsesNullWithConversionFailureAndNullElementPolicy() {
+        assertArrayEquals(new Integer[] { 12, null, 13 },
+                resolve("array1").withPolicy(NULL).throwOnFailedConversion().as(Integer[].class, null));
+    }
+
+    @Test
+    public void asArrayFailsWithConversionFailureAndNullElementPolicyForPrimitiveArrays() {
+        assertArrayEquals(new int[] { 1 },
+                resolve("array1").withPolicy(NULL).as(int[].class, new int[] { 1 }));
+    }
+
+    @Test
+    public void asListSkipsElementsWithConversionFailure() {
+        assertEquals(asList(12,  13), resolve("array1").asList(Integer.class));
+    }
+
+    @Test
+    public void asListTrimsElements() {
+        assertEquals(asList("a", "b", "c"), resolve("array2").asList(String.class));
+    }
+
+    @Test
+    public void asListDoesNotTrimElementsWhenDisabled() {
+        assertEquals(asList("a", " b", " c"), resolve("array2").withTrimming(false).asList(String.class));
+    }
+
+    /*
+     * Trimming
+     */
+
+    @Test
+    public void asStringByDefaultAppliesTrimming() {
+        assertEquals("str", resolve("string2").as(String.class, null));
+    }
+
+    @Test
+    public void asStringOptionalByDefaultAppliesTrimming() {
+        assertEquals("str", resolve("string2").as(String.class).get());
+    }
+
+    @Test
+    public void asLongByDefaultAppliesTrimming() {
+        assertEquals(42L, resolve("long2").as(Long.class, null).longValue());
+    }
+
+    @Test
+    public void asLongOptionalByDefaultAppliesTrimming() {
+        assertEquals(42L, resolve("long2").as(Long.class).get().longValue());
+    }
+
+    @Test
+    public void asLongPrimitiveByDefaultAppliesTrimming() {
+        assertEquals(42L, resolve("long2").as(long.class, null).longValue());
+    }
+
+    @Test
+    public void asLongPrimitiveOptionalByDefaultAppliesTrimming() {
+        assertEquals(42L, resolve("long2").as(long.class).get().longValue());
+    }
+
+    @Test
+    public void asStringDoesNoTrimmingWhenDisabled() {
+        assertEquals(" str ", resolve("string2").withTrimming(false).as(String.class, null));
+    }
 
     /*
      * Custom TTLs

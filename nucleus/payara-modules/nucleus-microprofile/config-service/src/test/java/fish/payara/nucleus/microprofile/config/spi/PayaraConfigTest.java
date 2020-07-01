@@ -80,6 +80,7 @@ public class PayaraConfigTest {
         source1.getProperties().put("int1", "1");
         source2.getProperties().put("int2", "2");
         source2.getProperties().put("bool2", "true,false,true");
+        source2.getProperties().put("brokenarr", "1,a,2");
     }
 
     @Test
@@ -154,7 +155,7 @@ public class PayaraConfigTest {
     public void getPropertyNamesContainsPeopertiesOfAllSources() {
         HashSet<String> actual = new HashSet<>();
         config.getPropertyNames().forEach(e -> actual.add(e));
-        assertEquals(new HashSet<>(asList("key1", "key2", "bool2", "int1", "int2")), actual);
+        assertEquals(new HashSet<>(asList("key1", "key2", "bool2", "int1", "int2", "brokenarr")), actual);
     }
 
     @Test
@@ -221,6 +222,12 @@ public class PayaraConfigTest {
     @Test
     public void undefinedPropertyReturnsEmptyOptional() {
         assertEquals(Optional.empty(), config.getOptionalValue("nonExisting", String.class));
+    }
+
+    @Test
+    public void illegalArrayElementFailsOverallArrayConversion() {
+        assertException(IllegalArgumentException.class, "Unable to convert value to type java.lang.Integer for value `a`",
+                () -> config.getValue("brokenarr", Integer[].class));
     }
 
     @Test

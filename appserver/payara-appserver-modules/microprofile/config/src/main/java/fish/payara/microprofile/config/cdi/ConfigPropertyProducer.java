@@ -40,6 +40,10 @@
 package fish.payara.microprofile.config.cdi;
 
 import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
+import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver.ElementPolicy;
+
+import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver.ElementPolicy.FAIL;
+
 import java.lang.reflect.Member;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -100,6 +104,7 @@ public class ConfigPropertyProducer {
                     .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)
+                    .withPolicy(FAIL)
                     .as((Class<?>)type).get();
         } else if ( type instanceof ParameterizedType) {
             ParameterizedType ptype = (ParameterizedType)type;
@@ -109,12 +114,14 @@ public class ConfigPropertyProducer {
                     .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)
+                    .withPolicy(FAIL)
                     .asList(getElementTypeFrom(ptype));
             } else if (Set.class.equals(rawType)) {
                 result = config.getValue(name, ConfigValueResolver.class)
                     .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)
+                    .withPolicy(FAIL)
                     .asSet(getElementTypeFrom(ptype));
             } else {
                 result = config.getValue(name, (Class<?>) rawType);

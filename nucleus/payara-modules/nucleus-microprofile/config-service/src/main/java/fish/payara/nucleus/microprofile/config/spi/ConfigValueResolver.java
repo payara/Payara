@@ -92,6 +92,32 @@ import org.eclipse.microprofile.config.Config;
 public interface ConfigValueResolver {
 
     /**
+     * What to do when collection element conversion fails.
+     */
+    enum ElementPolicy {
+        /**
+         * Element conversion failure immediately fails overall array conversion.
+         *
+         * Note that this causes the use of provided defaults unless
+         * {@link ConfigValueResolver#throwOnFailedConversion()} is used as well.
+         */
+        FAIL,
+
+        /**
+         * Element conversion failure skips the failing element in the result array unless all elements fail which also
+         * fails overall conversion.
+         */
+        SKIP,
+
+        /**
+         * Element conversion failure sets null for failing elements in the result array.
+         *
+         * Note that this  fails conversion for primitive arrays as null is not allowed.
+         */
+        NULL
+    }
+
+    /**
      * Use a custom cache TTL for resolution.
      *
      * A cache entry is linked to its TTL. Use a different TTL uses a different cache entry which has the effect of
@@ -115,6 +141,25 @@ public interface ConfigValueResolver {
      * @return This resolver for fluent API usage
      */
     ConfigValueResolver withDefault(String value);
+
+    /**
+     * Change the source level value trimming setting.
+     *
+     * @param trim true to apply trim on source level values (default) or false to disabling applying
+     *             {@link String#trim()} to the source level value
+     * @return This resolver for fluent API usage
+     */
+    ConfigValueResolver withTrimming(boolean trim);
+
+    /**
+     * Change the {@link ElementPolicy} setting.
+     *
+     * This affects array types as well as {@link List} and {@link Set} results.
+     *
+     * @param policy the policy to use when conversion of collection elements fails
+     * @return This resolver for fluent API usage
+     */
+    ConfigValueResolver withPolicy(ElementPolicy policy);
 
     /**
      * Disables the default behaviour of not throwing exceptions and instead returning default values for case of

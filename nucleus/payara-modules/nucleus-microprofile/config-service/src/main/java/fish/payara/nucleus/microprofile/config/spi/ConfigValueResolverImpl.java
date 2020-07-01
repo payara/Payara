@@ -39,10 +39,10 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import static fish.payara.nucleus.microprofile.config.spi.PayaraConfig.boxedTypeOf;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +54,8 @@ import java.util.function.Supplier;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
+
+import fish.payara.nucleus.microprofile.config.converters.ArrayConverter;
 
 /**
  * Implementation for the {@link ConfigValueResolver} which uses the non public API of
@@ -67,6 +69,8 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     private final String propertyName;
     private boolean throwsOnMissingProperty;
     private boolean throwOnFailedConversion;
+    private boolean trim = true;
+    private ElementPolicy policy = ElementPolicy.SKIP;
     private Long ttl;
     private String rawDefault;
 
@@ -88,6 +92,18 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     }
 
     @Override
+    public ConfigValueResolver withTrimming(boolean trim) {
+        this.trim = trim;
+        return this;
+    }
+
+    @Override
+    public ConfigValueResolver withPolicy(ElementPolicy policy) {
+        this.policy = policy;
+        return this;
+    }
+
+    @Override
     public ConfigValueResolver throwOnMissingProperty(boolean throwOnMissingProperty) {
         this.throwsOnMissingProperty = throwOnMissingProperty;
         return this;
@@ -99,9 +115,13 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T as(Class<T> type, T defaultValue) {
-        return asValue(propertyName, getCacheKey(propertyName, type), ttl, defaultValue, () -> config.getConverter(type));
+        return asValue(propertyName, getCacheKey(propertyName, type), ttl, defaultValue,
+                () -> type.isArray()
+                    ? (Converter<T>) getArrayConverter(type.getComponentType(), false)
+                    : getConverter(type));
     }
 
     @Override
@@ -117,7 +137,7 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     @Override
     public <E> List<E> asList(Class<E> elementType, List<E> defaultValue) {
         return asValue(propertyName, getCacheKey(propertyName, List.class, elementType), ttl, defaultValue,
-                () -> createListConverter(getArrayConverter(elementType)));
+                () -> createListConverter(getArrayConverter(elementType, true)));
     }
 
     @Override
@@ -128,7 +148,7 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     @Override
     public <E> Set<E> asSet(Class<E> elementType, Set<E> defaultValue) {
         return asValue(propertyName, getCacheKey(propertyName, Set.class, elementType), ttl, defaultValue,
-                () -> createSetConverter(getArrayConverter(elementType)));
+                () -> createSetConverter(getArrayConverter(elementType, true)));
     }
 
     @Override
@@ -180,8 +200,18 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
         return throwsOnMissingProperty ? null : rawDefault;
     }
 
-    private <E> Converter<E[]> getArrayConverter(Class<E> elementType) {
-        return config.getConverter(arrayTypeOf(elementType));
+    private <T> Converter<T> getConverter(Class<T> type) {
+        Converter<T> converter = config.getConverter(type);
+        return trim ? new TrimConverter<>(converter) : converter;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <E> Converter<E[]> getArrayConverter(Class<E> elementType, boolean box) {
+        Converter<E> elementConverter = getConverter(elementType);
+        if (box)
+            elementType = (Class<E>) boxedTypeOf(elementType);
+        Converter<?> arrayConverter = new ArrayConverter<>(elementType, elementConverter, policy);
+        return (Converter<E[]>) arrayConverter;
     }
 
     static void throwWhenNotExists(String propertyName, Object value) {
@@ -207,11 +237,17 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
         return sourceValue ->  new HashSet<>(Arrays.asList(arrayConverter.convert(sourceValue)));
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static <E> Class<E[]> arrayTypeOf(Class<E> elementType) {
-        if (elementType.isPrimitive()) {
-            return (Class) arrayTypeOf(PayaraConfig.boxedTypeOf(elementType));
+    private static final class TrimConverter<T> implements Converter<T> {
+
+        private final Converter<T> wrapped;
+
+        TrimConverter(Converter<T> wrapped) {
+            this.wrapped = wrapped;
         }
-        return (Class<E[]>) Array.newInstance(elementType, 0).getClass();
+
+        @Override
+        public T convert(String value) {
+            return wrapped.convert(value.trim());
+        }
     }
 }

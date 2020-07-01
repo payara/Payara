@@ -39,6 +39,7 @@
  */
 package fish.payara.security.realm.config;
 
+import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
 import fish.payara.security.annotations.PamIdentityStoreDefinition;
 import static fish.payara.security.annotations.PamIdentityStoreDefinition.STORE_MP_PAM_GROUPS;
 import static fish.payara.security.annotations.PamIdentityStoreDefinition.STORE_MP_PAM_JAAS_CONTEXT;
@@ -63,8 +64,8 @@ public class PamRealmIdentityStoreConfiguration implements RealmConfiguration {
     private PamRealmIdentityStoreConfiguration(PamIdentityStoreDefinition definition) {
         Config config = ConfigProvider.getConfig();
         this.name = definition.value();
-        this.assignGroups = asList(config.getOptionalValue(STORE_MP_PAM_GROUPS, String[].class)
-                .orElse(definition.assignGroups()));
+        this.assignGroups = config.getValue(STORE_MP_PAM_GROUPS, ConfigValueResolver.class)
+                .asList(String.class, asList(definition.assignGroups()));
         this.jaasContext = getConfiguredValue(String.class, definition.jaasContext(), config, STORE_MP_PAM_JAAS_CONTEXT);
     }
 
