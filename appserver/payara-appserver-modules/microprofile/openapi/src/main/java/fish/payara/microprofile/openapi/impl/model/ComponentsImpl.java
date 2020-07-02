@@ -49,7 +49,6 @@ import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
 import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -80,7 +79,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
     public static Components createInstance(AnnotationModel annotation, ApiContext context) {
         Components from = new ComponentsImpl();
 
-        List<AnnotationModel> schemas = getValue("schemas", List.class, annotation);
+        List<AnnotationModel> schemas = annotation.getValue("schemas", List.class);
         if (schemas != null) {
             for (AnnotationModel schema : schemas) {
                 from.getSchemas().put(
@@ -89,7 +88,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                 );
             }
         }
-        List<AnnotationModel> responses = getValue("responses", List.class, annotation);
+        List<AnnotationModel> responses = annotation.getValue("responses", List.class);
         if (responses != null) {
             for (AnnotationModel response : responses) {
                 from.getResponses().put(
@@ -98,7 +97,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                 );
             }
         }
-        List<AnnotationModel> parameters = getValue("parameters", List.class, annotation);
+        List<AnnotationModel> parameters = annotation.getValue("parameters", List.class);
         if (parameters != null) {
             for (AnnotationModel parameter : parameters) {
                 from.getParameters().put(
@@ -107,7 +106,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                 );
             }
         }
-        List<AnnotationModel> examples = getValue("examples", List.class, annotation);
+        List<AnnotationModel> examples = annotation.getValue("examples", List.class);
         if (examples != null) {
             for (AnnotationModel example : examples) {
                 from.getExamples().put(
@@ -116,7 +115,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                 );
             }
         }
-        List<AnnotationModel> requestBodies = getValue("requestBodies", List.class, annotation);
+        List<AnnotationModel> requestBodies = annotation.getValue("requestBodies", List.class);
         if (requestBodies != null) {
             for (AnnotationModel requestBody : requestBodies) {
                 from.getRequestBodies().put(
@@ -125,7 +124,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                 );
             }
         }
-        List<AnnotationModel> headers = getValue("headers", List.class, annotation);
+        List<AnnotationModel> headers = annotation.getValue("headers", List.class);
         if (headers != null) {
             for (AnnotationModel header : headers) {
                 String headerName = header.getValue("name", String.class);
@@ -138,7 +137,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                 );
             }
         }
-        List<AnnotationModel> securitySchemes = getValue("securitySchemes", List.class, annotation);
+        List<AnnotationModel> securitySchemes = annotation.getValue("securitySchemes", List.class);
         if (securitySchemes != null) {
             for (AnnotationModel securityScheme : securitySchemes) {
                 from.getSecuritySchemes().put(
@@ -147,7 +146,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                 );
             }
         }
-        List<AnnotationModel> links = getValue("links", List.class, annotation);
+        List<AnnotationModel> links = annotation.getValue("links", List.class);
         if (links != null) {
             for (AnnotationModel link : links) {
                 from.getLinks().put(
@@ -156,7 +155,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                 );
             }
         }
-        List<AnnotationModel> callbacks = getValue("callbacks", List.class, annotation);
+        List<AnnotationModel> callbacks = annotation.getValue("callbacks", List.class);
         if (callbacks != null) {
             for (AnnotationModel callback : callbacks) {
                 from.getCallbacks().put(

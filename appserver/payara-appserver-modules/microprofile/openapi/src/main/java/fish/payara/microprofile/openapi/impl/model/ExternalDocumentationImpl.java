@@ -40,7 +40,6 @@
 package fish.payara.microprofile.openapi.impl.model;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
@@ -51,8 +50,8 @@ public class ExternalDocumentationImpl extends ExtensibleImpl<ExternalDocumentat
 
     public static ExternalDocumentation createInstance(AnnotationModel annotation) {
         org.eclipse.microprofile.openapi.models.ExternalDocumentation from = new ExternalDocumentationImpl();
-        from.setDescription(getValue("description", String.class, annotation));
-        from.setUrl(getValue("url", String.class, annotation));
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setUrl(annotation.getValue("url", String.class));
         return from;
     }
 

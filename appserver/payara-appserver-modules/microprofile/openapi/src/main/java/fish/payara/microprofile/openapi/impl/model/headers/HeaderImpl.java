@@ -47,7 +47,6 @@ import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,24 +75,24 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
     public static Header createInstance(AnnotationModel annotation, ApiContext context) {
         HeaderImpl from = new HeaderImpl();
-        String ref = getValue("ref", String.class, annotation);
+        String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
-        from.setDescription(getValue("description", String.class, annotation));
-        from.setRequired(getValue("required", Boolean.class, annotation));
-        from.setDeprecated(getValue("deprecated", Boolean.class, annotation));
-        from.setAllowEmptyValue(getValue("allowEmptyValue", Boolean.class, annotation));
-        EnumModel styleEnum = getValue("style", EnumModel.class, annotation);
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setRequired(annotation.getValue("required", Boolean.class));
+        from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
+        from.setAllowEmptyValue(annotation.getValue("allowEmptyValue", Boolean.class));
+        EnumModel styleEnum = annotation.getValue("style", EnumModel.class);
         if (styleEnum != null) {
             from.setStyle(Header.Style.valueOf(styleEnum.getValue()));
         }
-        from.setExplode(getValue("explode", Boolean.class, annotation));
-        AnnotationModel schemaAnnotation = getValue("schema", AnnotationModel.class, annotation);
+        from.setExplode(annotation.getValue("explode", Boolean.class));
+        AnnotationModel schemaAnnotation = annotation.getValue("schema", AnnotationModel.class);
         if (schemaAnnotation != null) {
             from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        List<AnnotationModel> examples = getValue("examples", List.class, annotation);
+        List<AnnotationModel> examples = annotation.getValue("examples", List.class);
         if (examples != null) {
             for (AnnotationModel example : examples) {
                 from.getExamples().put(
@@ -102,8 +101,8 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
                 );
             }
         }
-        from.setExample(getValue("example", Object.class, annotation));
-        List<AnnotationModel> contentAnnotations = getValue("content", List.class, annotation);
+        from.setExample(annotation.getValue("example", Object.class));
+        List<AnnotationModel> contentAnnotations = annotation.getValue("content", List.class);
         if (contentAnnotations != null && !contentAnnotations.isEmpty()) {
             from.setContent(new ContentImpl());
             for (AnnotationModel contentAnnotation : contentAnnotations) {

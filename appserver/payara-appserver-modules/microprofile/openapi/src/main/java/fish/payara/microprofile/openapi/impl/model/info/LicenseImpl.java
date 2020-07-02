@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.impl.model.info;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import org.eclipse.microprofile.openapi.models.info.License;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
@@ -52,8 +51,8 @@ public class LicenseImpl extends ExtensibleImpl<License> implements License {
 
     public static License createInstance(AnnotationModel annotation) {
         License from = new LicenseImpl();
-        from.setName(getValue("name", String.class, annotation));
-        from.setUrl(getValue("url", String.class, annotation));
+        from.setName(annotation.getValue("name", String.class));
+        from.setUrl(annotation.getValue("url", String.class));
         return from;
     }
 

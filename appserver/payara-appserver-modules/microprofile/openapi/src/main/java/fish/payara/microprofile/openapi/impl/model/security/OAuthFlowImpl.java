@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.impl.model.security;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
 import org.eclipse.microprofile.openapi.models.security.Scopes;
@@ -56,16 +55,16 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
 
     public static OAuthFlow createInstance(AnnotationModel annotation) {
         OAuthFlow from = new OAuthFlowImpl();
-        from.setAuthorizationUrl(getValue("authorizationUrl", String.class, annotation));
-        from.setTokenUrl(getValue("tokenUrl", String.class, annotation));
-        from.setRefreshUrl(getValue("refreshUrl", String.class, annotation));
-        List<AnnotationModel> scopesAnnotation = getValue("scopes", List.class, annotation);
+        from.setAuthorizationUrl(annotation.getValue("authorizationUrl", String.class));
+        from.setTokenUrl(annotation.getValue("tokenUrl", String.class));
+        from.setRefreshUrl(annotation.getValue("refreshUrl", String.class));
+        List<AnnotationModel> scopesAnnotation = annotation.getValue("scopes", List.class);
         if (scopesAnnotation != null) {
             Scopes scopes = new ScopesImpl();
             for (AnnotationModel scopeAnnotation : scopesAnnotation) {
                 scopes.addScope(
-                        getValue("name", String.class, scopeAnnotation),
-                        getValue("description", String.class, scopeAnnotation)
+                        scopeAnnotation.getValue("name", String.class),
+                        scopeAnnotation.getValue("description", String.class)
                 );
             }
             from.setScopes(scopes);

@@ -42,7 +42,6 @@ package fish.payara.microprofile.openapi.impl.model.tags;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -58,13 +57,13 @@ public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
 
     public static Tag createInstance(AnnotationModel annotation) {
         TagImpl from = new TagImpl();
-        from.setName(getValue("name", String.class, annotation));
-        from.setDescription(getValue("description", String.class, annotation));
-        AnnotationModel externalDocs = getValue("externalDocs", AnnotationModel.class, annotation);
+        from.setName(annotation.getValue("name", String.class));
+        from.setDescription(annotation.getValue("description", String.class));
+        AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
-        String ref = getValue("ref", String.class, annotation);
+        String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }

@@ -44,7 +44,6 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.media.Content;
@@ -61,14 +60,14 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
 
     public static RequestBody createInstance(AnnotationModel annotation, ApiContext context) {
         RequestBodyImpl from = new RequestBodyImpl();
-        from.setDescription(getValue("description", String.class, annotation));
-        from.setRequired(getValue("required", Boolean.class, annotation));
-        String ref  =getValue("ref", String.class, annotation);
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setRequired(annotation.getValue("required", Boolean.class));
+        String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
 
-        List<AnnotationModel> contentAnnotations = getValue("content", List.class, annotation);
+        List<AnnotationModel> contentAnnotations = annotation.getValue("content", List.class);
         if (contentAnnotations != null && !contentAnnotations.isEmpty()) {
             from.setContent(new ContentImpl());
             for (AnnotationModel contentAnnotation : contentAnnotations) {

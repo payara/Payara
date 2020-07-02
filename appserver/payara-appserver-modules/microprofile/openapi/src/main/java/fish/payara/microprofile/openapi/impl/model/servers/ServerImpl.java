@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.impl.model.servers;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,15 +57,15 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
     public static Server createInstance(AnnotationModel annotation) {
         Server from = new ServerImpl();
-        from.setDescription(getValue("description", String.class, annotation));
-        from.setUrl(getValue("url", String.class, annotation));
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setUrl(annotation.getValue("url", String.class));
 
-        List<AnnotationModel> variablesAnnotations = getValue("variables", List.class, annotation);
+        List<AnnotationModel> variablesAnnotations = annotation.getValue("variables", List.class);
         if (variablesAnnotations != null) {
             Map<String, ServerVariable> variables = new HashMap<>();
             for (AnnotationModel variableAnnotation : variablesAnnotations) {
                 variables.put(
-                        getValue("name", String.class, variableAnnotation),
+                        variableAnnotation.getValue("name", String.class),
                         ServerVariableImpl.createInstance(variableAnnotation)
                 );
             }

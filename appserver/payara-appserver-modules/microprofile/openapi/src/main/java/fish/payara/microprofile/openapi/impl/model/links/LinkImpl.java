@@ -44,7 +44,6 @@ import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,24 +63,24 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
     public static Link createInstance(AnnotationModel annotation) {
         Link from = new LinkImpl();
-        from.setOperationRef(getValue("operationRef", String.class, annotation));
-        from.setOperationId(getValue("operationId", String.class, annotation));
-        List<AnnotationModel> parametersAnnotation = getValue("parameters", List.class, annotation);
+        from.setOperationRef(annotation.getValue("operationRef", String.class));
+        from.setOperationId(annotation.getValue("operationId", String.class));
+        List<AnnotationModel> parametersAnnotation = annotation.getValue("parameters", List.class);
         if (parametersAnnotation != null) {
             for (AnnotationModel parameterAnnotation : parametersAnnotation) {
                 from.getParameters().put(
-                        getValue("name", String.class, parameterAnnotation),
-                        getValue("expression", String.class, parameterAnnotation)
+                        parameterAnnotation.getValue("name", String.class),
+                        parameterAnnotation.getValue("expression", String.class)
                 );
             }
         }
-        from.setRequestBody(getValue("requestBody", String.class, annotation));
-        from.setDescription(getValue("description", String.class, annotation));
-        String ref = getValue("ref", String.class, annotation);
+        from.setRequestBody(annotation.getValue("requestBody", String.class));
+        from.setDescription(annotation.getValue("description", String.class));
+        String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
-        AnnotationModel serverAnnotation = getValue("server", AnnotationModel.class, annotation);
+        AnnotationModel serverAnnotation = annotation.getValue("server", AnnotationModel.class);
         if(serverAnnotation != null) {
             from.setServer(ServerImpl.createInstance(serverAnnotation));
         }

@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.impl.model.info;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import org.eclipse.microprofile.openapi.models.info.Contact;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
@@ -54,9 +53,9 @@ public class ContactImpl extends ExtensibleImpl<Contact> implements Contact {
 
     public static Contact createInstance(AnnotationModel annotation) {
         Contact from = new ContactImpl();
-        from.setName(getValue("name", String.class, annotation));
-        from.setUrl(getValue("url", String.class, annotation));
-        from.setEmail(getValue("email", String.class, annotation));
+        from.setName(annotation.getValue("name", String.class));
+        from.setUrl(annotation.getValue("url", String.class));
+        from.setEmail(annotation.getValue("email", String.class));
         return from;
     }
 

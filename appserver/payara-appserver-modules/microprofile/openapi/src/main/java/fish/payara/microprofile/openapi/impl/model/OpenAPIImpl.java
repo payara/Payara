@@ -45,7 +45,6 @@ import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementI
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.Components;
@@ -72,33 +71,33 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     public static OpenAPI createInstance(AnnotationModel annotation, ApiContext context) {
         OpenAPI from = new OpenAPIImpl();
-        AnnotationModel info = getValue("info", AnnotationModel.class, annotation);
+        AnnotationModel info = annotation.getValue("info", AnnotationModel.class);
         if (info != null) {
             from.setInfo(InfoImpl.createInstance(info));
         }
-        AnnotationModel externalDocs = getValue("externalDocs", AnnotationModel.class, annotation);
+        AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
-        List<AnnotationModel> servers = getValue("servers", List.class, annotation);
+        List<AnnotationModel> servers = annotation.getValue("servers", List.class);
         if (servers != null) {
             for (AnnotationModel server : servers) {
                 from.getServers().add(ServerImpl.createInstance(server));
             }
         }
-        List<AnnotationModel> securityElements = getValue("security", List.class, annotation);
+        List<AnnotationModel> securityElements = annotation.getValue("security", List.class);
         if (securityElements != null) {
             for (AnnotationModel security : securityElements) {
                 from.getSecurity().add(SecurityRequirementImpl.createInstance(security));
             }
         }
-        List<AnnotationModel> tags = getValue("tags", List.class, annotation);
+        List<AnnotationModel> tags = annotation.getValue("tags", List.class);
         if (tags != null) {
             for (AnnotationModel tag : tags) {
                 from.getTags().add(TagImpl.createInstance(tag));
             }
         }
-        AnnotationModel components = getValue("components", AnnotationModel.class, annotation);
+        AnnotationModel components = annotation.getValue("components", AnnotationModel.class);
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));
         }

@@ -40,7 +40,6 @@
 package fish.payara.microprofile.openapi.impl.model.servers;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
@@ -55,9 +54,9 @@ public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implement
 
     public static ServerVariable createInstance(AnnotationModel annotation) {
         ServerVariable from = new ServerVariableImpl();
-        from.setDescription(getValue("description", String.class, annotation));
-        from.setDefaultValue(getValue("defaultValue", String.class, annotation));
-        List<String> enumeration = getValue("enumeration", List.class, annotation);
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setDefaultValue(annotation.getValue("defaultValue", String.class));
+        List<String> enumeration = annotation.getValue("enumeration", List.class);
         if (enumeration != null) {
             from.setEnumeration(enumeration);
         }

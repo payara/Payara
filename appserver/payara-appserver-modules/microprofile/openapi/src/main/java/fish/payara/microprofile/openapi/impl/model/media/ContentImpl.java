@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.impl.model.media;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,14 +63,14 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
 
     public static Content createInstance(AnnotationModel annotation, ApiContext context) {
         ContentImpl from = new ContentImpl();
-        String typeName = getValue("mediaType", String.class, annotation);
+        String typeName = annotation.getValue("mediaType", String.class);
         if (typeName == null || typeName.isEmpty()) {
             typeName = javax.ws.rs.core.MediaType.WILDCARD;
         }
         MediaType mediaType = new MediaTypeImpl();
         from.addMediaType(typeName, mediaType);
 
-        List<AnnotationModel> examples = getValue("examples", List.class, annotation);
+        List<AnnotationModel> examples = annotation.getValue("examples", List.class);
         if (examples != null) {
             for (AnnotationModel example : examples) {
                 mediaType.getExamples().put(
@@ -80,12 +79,12 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
                 );
             }
         }
-        mediaType.setExample(getValue("example", String.class, annotation));
-        AnnotationModel schemaAnnotation = getValue("schema", AnnotationModel.class, annotation);
+        mediaType.setExample(annotation.getValue("example", String.class));
+        AnnotationModel schemaAnnotation = annotation.getValue("schema", AnnotationModel.class);
         if (schemaAnnotation != null) {
             mediaType.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        List<AnnotationModel> encodings = getValue("encoding", List.class, annotation);
+        List<AnnotationModel> encodings = annotation.getValue("encoding", List.class);
         if (encodings != null) {
             for (AnnotationModel encoding : encodings) {
                 mediaType.getEncoding().put(

@@ -46,7 +46,6 @@ import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getHttpMethod;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOrCreateOperation;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -68,14 +67,14 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
 
     public static Callback createInstance(AnnotationModel annotation, ApiContext context) {
         CallbackImpl from = new CallbackImpl();
-        String ref = getValue("ref", String.class, annotation);
+        String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
-        String urlExpression = getValue("callbackUrlExpression", String.class, annotation);
+        String urlExpression = annotation.getValue("callbackUrlExpression", String.class);
         if (urlExpression != null && !urlExpression.isEmpty()) {
             List<Operation> operations = new ArrayList<>();
-            List<AnnotationModel> operationAnnotations = getValue("operations", List.class, annotation);
+            List<AnnotationModel> operationAnnotations = annotation.getValue("operations", List.class);
             if (operationAnnotations != null) {
                 for (AnnotationModel operation : operationAnnotations) {
                     operations.add(OperationImpl.createInstance(operation, context));

@@ -43,7 +43,6 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +61,8 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
     public static Encoding createInstance(AnnotationModel annotation, ApiContext context) {
         Encoding from = new EncodingImpl();
 
-        from.setContentType(getValue("contentType", String.class, annotation));
-        List<AnnotationModel> headers = getValue("headers", List.class, annotation);
+        from.setContentType(annotation.getValue("contentType", String.class));
+        List<AnnotationModel> headers = annotation.getValue("headers", List.class);
         if (headers != null) {
             for (AnnotationModel header : headers) {
                 String headerName = header.getValue("name", String.class);
@@ -76,12 +75,12 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
                 );
             }
         }
-        String styleEnum = getValue("style", String.class, annotation);
+        String styleEnum = annotation.getValue("style", String.class);
         if (styleEnum != null) {
             from.setStyle(Style.valueOf(styleEnum.toUpperCase()));
         }
-        from.setExplode(getValue("explode", Boolean.class, annotation));
-        from.setAllowReserved(getValue("allowReserved", Boolean.class, annotation));
+        from.setExplode(annotation.getValue("explode", Boolean.class));
+        from.setAllowReserved(annotation.getValue("allowReserved", Boolean.class));
 
         return from;
     }

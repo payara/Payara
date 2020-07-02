@@ -48,7 +48,6 @@ import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -83,33 +82,33 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     public static Operation createInstance(AnnotationModel annotation, ApiContext context) {
         OperationImpl from = new OperationImpl();
-        from.setSummary(getValue("summary", String.class, annotation));
-        from.setDescription(getValue("description", String.class, annotation));
-        AnnotationModel externalDocs = getValue("externalDocs", AnnotationModel.class, annotation);
+        from.setSummary(annotation.getValue("summary", String.class));
+        from.setDescription(annotation.getValue("description", String.class));
+        AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
-        from.setOperationId(getValue("operationId", String.class, annotation));
-        List<AnnotationModel> parameters = getValue("parameters", List.class, annotation);
+        from.setOperationId(annotation.getValue("operationId", String.class));
+        List<AnnotationModel> parameters = annotation.getValue("parameters", List.class);
         if (parameters != null) {
             for (AnnotationModel parameter : parameters) {
                 from.getParameters().add(ParameterImpl.createInstance(parameter, context));
             }
         }
-        AnnotationModel requestBody = getValue("requestBody", AnnotationModel.class, annotation);
+        AnnotationModel requestBody = annotation.getValue("requestBody", AnnotationModel.class);
         if (requestBody != null) {
             from.setRequestBody(RequestBodyImpl.createInstance(requestBody, context));
         }
-        List<AnnotationModel> responses = getValue("responses", List.class, annotation);
+        List<AnnotationModel> responses = annotation.getValue("responses", List.class);
         if (responses != null) {
             for (AnnotationModel response : responses) {
                 from.getResponses().addAPIResponse(
-                        getValue("responseCode", String.class, response),
+                        response.getValue("responseCode", String.class),
                         APIResponseImpl.createInstance(response, context)
                 );
             }
         }
-        List<AnnotationModel> callbacks = getValue("callbacks", List.class, annotation);
+        List<AnnotationModel> callbacks = annotation.getValue("callbacks", List.class);
         if (callbacks != null) {
             for (AnnotationModel callback : callbacks) {
                 from.getCallbacks().put(
@@ -118,20 +117,20 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
                 );
             }
         }
-        from.setDeprecated(getValue("deprecated", Boolean.class, annotation));
-        List<AnnotationModel> securityElements = getValue("security", List.class, annotation);
+        from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
+        List<AnnotationModel> securityElements = annotation.getValue("security", List.class);
         if (securityElements != null) {
             for (AnnotationModel security : securityElements) {
                 from.getSecurity().add(SecurityRequirementImpl.createInstance(security));
             }
         }
-        List<AnnotationModel> servers = getValue("servers", List.class, annotation);
+        List<AnnotationModel> servers = annotation.getValue("servers", List.class);
         if (servers != null) {
             for (AnnotationModel server : servers) {
                 from.getServers().add(ServerImpl.createInstance(server));
             }
         }
-        from.setMethod(getValue("method", String.class, annotation));
+        from.setMethod(annotation.getValue("method", String.class));
         return from;
     }
 

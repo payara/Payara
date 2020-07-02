@@ -48,7 +48,6 @@ import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -115,86 +114,86 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     public static Schema createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
-        from.setDefaultValue(getValue("defaultValue", Object.class, annotation));
-        from.setTitle(getValue("title", String.class, annotation));
-        Double multipleOf = getValue("multipleOf", Double.class, annotation);
+        from.setDefaultValue(annotation.getValue("defaultValue", Object.class));
+        from.setTitle(annotation.getValue("title", String.class));
+        Double multipleOf = annotation.getValue("multipleOf", Double.class);
         if (multipleOf != null) {
             from.setMultipleOf(BigDecimal.valueOf(multipleOf));
         }
-        String maximum = getValue("maximum", String.class, annotation);
+        String maximum = annotation.getValue("maximum", String.class);
         if (maximum != null && !maximum.isEmpty()) {
             from.setMaximum(new BigDecimal(maximum));
         }
-        from.setExclusiveMaximum(getValue("exclusiveMaximum", Boolean.class, annotation));
-        String minimum = getValue("minimum", String.class, annotation);
+        from.setExclusiveMaximum(annotation.getValue("exclusiveMaximum", Boolean.class));
+        String minimum = annotation.getValue("minimum", String.class);
         if (minimum != null && !minimum.isEmpty()) {
             from.setMinimum(new BigDecimal(minimum));
         }
-        from.setExclusiveMinimum(getValue("exclusiveMinimum", Boolean.class, annotation));
-        from.setMaxLength(getValue("maxLength", Integer.class, annotation));
-        from.setMinLength(getValue("minLength", Integer.class, annotation));
-        from.setPattern(getValue("pattern", String.class, annotation));
-        from.setMaxItems(getValue("maxItems", Integer.class, annotation));
-        from.setMinItems(getValue("minItems", Integer.class, annotation));
-        from.setUniqueItems(getValue("uniqueItems", Boolean.class, annotation));
-        from.setMaxProperties(getValue("maxProperties", Integer.class, annotation));
-        from.setMinProperties(getValue("minProperties", Integer.class, annotation));
-        from.setRequired(getValue("requiredProperties", List.class, annotation));
-        EnumModel typeEnum = getValue("type", EnumModel.class, annotation);
+        from.setExclusiveMinimum(annotation.getValue("exclusiveMinimum", Boolean.class));
+        from.setMaxLength(annotation.getValue("maxLength", Integer.class));
+        from.setMinLength(annotation.getValue("minLength", Integer.class));
+        from.setPattern(annotation.getValue("pattern", String.class));
+        from.setMaxItems(annotation.getValue("maxItems", Integer.class));
+        from.setMinItems(annotation.getValue("minItems", Integer.class));
+        from.setUniqueItems(annotation.getValue("uniqueItems", Boolean.class));
+        from.setMaxProperties(annotation.getValue("maxProperties", Integer.class));
+        from.setMinProperties(annotation.getValue("minProperties", Integer.class));
+        from.setRequired(annotation.getValue("requiredProperties", List.class));
+        EnumModel typeEnum = annotation.getValue("type", EnumModel.class);
         if (typeEnum != null) {
             from.setType(SchemaType.valueOf(typeEnum.getValue()));
         }
-        from.setDescription(getValue("description", String.class, annotation));
-        from.setFormat(getValue("format", String.class, annotation));
-        String ref = getValue("ref", String.class, annotation);
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setFormat(annotation.getValue("format", String.class));
+        String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
-        from.setNullable(getValue("nullable", Boolean.class, annotation));
-        from.setReadOnly(getValue("readOnly", Boolean.class, annotation));
-        from.setWriteOnly(getValue("writeOnly", Boolean.class, annotation));
-        from.setExample(getValue("example", Object.class, annotation));
-        AnnotationModel externalDocs = getValue("externalDocs", AnnotationModel.class, annotation);
+        from.setNullable(annotation.getValue("nullable", Boolean.class));
+        from.setReadOnly(annotation.getValue("readOnly", Boolean.class));
+        from.setWriteOnly(annotation.getValue("writeOnly", Boolean.class));
+        from.setExample(annotation.getValue("example", Object.class));
+        AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
-        from.setDeprecated(getValue("deprecated", Boolean.class, annotation));
-        from.setEnumeration(getValue("enumeration", List.class, annotation));
-        String discriminatorProperty = getValue("discriminatorProperty", String.class, annotation);
-        List<AnnotationModel> discriminatorMapping = getValue("discriminatorMapping", List.class, annotation);
+        from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
+        from.setEnumeration(annotation.getValue("enumeration", List.class));
+        String discriminatorProperty = annotation.getValue("discriminatorProperty", String.class);
+        List<AnnotationModel> discriminatorMapping = annotation.getValue("discriminatorMapping", List.class);
         if (discriminatorMapping != null && !discriminatorProperty.isEmpty()) {
             DiscriminatorImpl discriminator = new DiscriminatorImpl();
             discriminator.setPropertyName(discriminatorProperty);
             for (AnnotationModel mapping : discriminatorMapping) {
-                String value = getValue("value", String.class, mapping);
-                String schema = getValue("schema", String.class, mapping);
+                String value = mapping.getValue("value", String.class);
+                String schema = mapping.getValue("schema", String.class);
                 discriminator.addMapping(value, ModelUtils.getSimpleName(schema));
             }
             from.setDiscriminator(discriminator);
         }
 
-        String not = getValue("not", String.class, annotation);
+        String not = annotation.getValue("not", String.class);
         if (not != null) {
             Schema schema = from.getSchemaInstance(not, context);
             if (schema != null) {
                 from.setNot(schema);
             }
         }
-        List<String> anyOf = getValue("anyOf", List.class, annotation);
+        List<String> anyOf = annotation.getValue("anyOf", List.class);
         if (anyOf != null) {
             if (from.getAnyOf() == null) {
                 from.setAnyOf(new ArrayList<>());
             }
             from.getAnyOf().addAll(from.getSchemaInstances(anyOf, context));
         }
-        List<String> allOf = getValue("allOf", List.class, annotation);
+        List<String> allOf = annotation.getValue("allOf", List.class);
         if (allOf != null) {
             if (from.getAllOf() == null) {
                 from.setAllOf(new ArrayList<>());
             }
             from.getAllOf().addAll(from.getSchemaInstances(allOf, context));
         }
-        List<String> oneOf = getValue("oneOf", List.class, annotation);
+        List<String> oneOf = annotation.getValue("oneOf", List.class);
         if (oneOf != null) {
             if (from.getOneOf() == null) {
                 from.setOneOf(new ArrayList<>());
@@ -202,7 +201,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             from.getOneOf().addAll(from.getSchemaInstances(oneOf, context));
         }
 
-        from.setImplementation(getValue("implementation", String.class, annotation));
+        from.setImplementation(annotation.getValue("implementation", String.class));
         return from;
     }
 
@@ -747,7 +746,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                     AnnotationModel annotation = annotationInfo.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
                     // Get the schema name
                     if (annotation != null) {
-                        schemaName = getValue("name", String.class, annotation);
+                        schemaName = annotation.getValue("name", String.class);
                     }
                 }
                 if (schemaName == null || schemaName.isEmpty()) {

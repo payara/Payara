@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.impl.model.security;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
@@ -55,19 +54,19 @@ public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthF
 
     public static OAuthFlows createInstance(AnnotationModel annotation) {
         OAuthFlows from = new OAuthFlowsImpl();
-        AnnotationModel implicitAnnotation = getValue("implicit", AnnotationModel.class, annotation);
+        AnnotationModel implicitAnnotation = annotation.getValue("implicit", AnnotationModel.class);
         if (implicitAnnotation != null) {
             from.setImplicit(OAuthFlowImpl.createInstance(implicitAnnotation));
         }
-        AnnotationModel passwordAnnotation = getValue("password", AnnotationModel.class, annotation);
+        AnnotationModel passwordAnnotation = annotation.getValue("password", AnnotationModel.class);
         if (passwordAnnotation != null) {
             from.setPassword(OAuthFlowImpl.createInstance(passwordAnnotation));
         }
-        AnnotationModel clientCredentialsAnnotation = getValue("clientCredentials", AnnotationModel.class, annotation);
+        AnnotationModel clientCredentialsAnnotation = annotation.getValue("clientCredentials", AnnotationModel.class);
         if (clientCredentialsAnnotation != null) {
             from.setClientCredentials(OAuthFlowImpl.createInstance(clientCredentialsAnnotation));
         }
-        AnnotationModel authorizationCodeAnnotation = getValue("authorizationCode", AnnotationModel.class, annotation);
+        AnnotationModel authorizationCodeAnnotation = annotation.getValue("authorizationCode", AnnotationModel.class);
         if (authorizationCodeAnnotation != null) {
             from.setAuthorizationCode(OAuthFlowImpl.createInstance(authorizationCodeAnnotation));
         }

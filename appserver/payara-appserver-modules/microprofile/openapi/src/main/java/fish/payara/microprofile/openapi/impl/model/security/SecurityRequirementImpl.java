@@ -39,7 +39,6 @@
  */
 package fish.payara.microprofile.openapi.impl.model.security;
 
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,8 +54,8 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
 
     public static SecurityRequirement createInstance(AnnotationModel annotation) {
         SecurityRequirement from = new SecurityRequirementImpl();
-        String name = getValue("name", String.class, annotation);
-        List<String> scopes = getValue("scopes", List.class, annotation);
+        String name = annotation.getValue("name", String.class);
+        List<String> scopes = annotation.getValue("scopes", List.class);
         from.addScheme(name, scopes != null ? scopes : Collections.emptyList());
         return from;
     }

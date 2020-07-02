@@ -344,7 +344,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     MediaType wildcardMedia = requestBody.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
 
                     // Copy the wildcard return type to the valid request body types
-                    List<String> mediaTypes = getValue("value", List.class, consumes);
+                    List<String> mediaTypes = consumes.getValue("value", List.class);
                     for (String mediaType : mediaTypes) {
                         requestBody.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
                     }
@@ -357,12 +357,12 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitQueryParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
-        addParameter(element, context, getValue("value", String.class, param), In.QUERY, null);
+        addParameter(element, context, param.getValue("value", String.class), In.QUERY, null);
     }
 
     @Override
     public void visitPathParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
-        addParameter(element, context, getValue("value", String.class, param), In.PATH, true);
+        addParameter(element, context, param.getValue("value", String.class), In.PATH, true);
     }
 
     @Override
@@ -398,12 +398,12 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitHeaderParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
-        addParameter(element, context, getValue("value", String.class, param), In.HEADER, null);
+        addParameter(element, context, param.getValue("value", String.class), In.HEADER, null);
     }
 
     @Override
     public void visitCookieParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
-        addParameter(element, context, getValue("value", String.class, param), In.COOKIE, null);
+        addParameter(element, context, param.getValue("value", String.class), In.COOKIE, null);
     }
 
     private static void addParameter(AnnotatedElement element, ApiContext context, String name, In in, Boolean required) {
@@ -495,7 +495,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     private void vistEnumClass(AnnotationModel schemaAnnotation, EnumType enumType, ApiContext context) {
         // Get the schema object name
-        String schemaName = (schemaAnnotation == null) ? null : getValue("name", String.class, schemaAnnotation);
+        String schemaName = (schemaAnnotation == null) ? null : schemaAnnotation.getValue("name", String.class);
         if (schemaName == null || schemaName.isEmpty()) {
             schemaName = enumType.getSimpleName();
         }
@@ -517,7 +517,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     private void visitSchemaClass(AnnotationModel schemaAnnotation, ClassModel clazz, ApiContext context) {
         // Get the schema object name
-        String schemaName = (schemaAnnotation == null) ? null : getValue("name", String.class, schemaAnnotation);
+        String schemaName = (schemaAnnotation == null) ? null : schemaAnnotation.getValue("name", String.class);
         if (schemaName == null || schemaName.isEmpty()) {
             schemaName = clazz.getSimpleName();
         }
@@ -556,7 +556,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     visitSchema(parentSchemAnnotation, superClass, context);
 
                     // Get the superclass schema name
-                    String parentSchemaName = getValue("name", String.class, parentSchemAnnotation);
+                    String parentSchemaName = parentSchemAnnotation.getValue("name", String.class);
                     if (parentSchemaName == null || parentSchemaName.isEmpty()) {
                         parentSchemaName = superClass.getSimpleName();
                     }
@@ -570,7 +570,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     private static void visitSchemaField(AnnotationModel schemaAnnotation, FieldModel field, ApiContext context) {
         // Get the schema object name
-        String schemaName = (schemaAnnotation == null) ? null : getValue("name", String.class, schemaAnnotation);
+        String schemaName = (schemaAnnotation == null) ? null : schemaAnnotation.getValue("name", String.class);
         if (schemaName == null || schemaName.isEmpty()) {
             schemaName = field.getName();
         }
@@ -580,7 +580,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         String parentName = null;
         AnnotationModel classSchemaAnnotation = field.getDeclaringType().getAnnotation(Schema.class.getName());
         if (classSchemaAnnotation != null) {
-            parentName = getValue("name", String.class, classSchemaAnnotation);
+            parentName = classSchemaAnnotation.getValue("name", String.class);
         }
         if (parentName == null || parentName.isEmpty()) {
             parentName = field.getDeclaringType().getSimpleName();
@@ -631,9 +631,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitExtension(AnnotationModel extension, AnnotatedElement element, ApiContext context) {
-        String value = getValue("value", String.class, extension);
-        String name = getValue("name", String.class, extension);
-        Boolean parseValue = getValue("parseValue", Boolean.class, extension);
+        String value = extension.getValue("value", String.class);
+        String name = extension.getValue("name", String.class);
+        Boolean parseValue = extension.getValue("parseValue", Boolean.class);
         if (name != null && !name.isEmpty()
                 && value != null && !value.isEmpty()) {
             Object parsedValue = ExtensibleImpl.convertExtensionValue(value, parseValue);
@@ -647,7 +647,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitExtensions(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        List<AnnotationModel> extensions = getValue("value", List.class, annotation);
+        List<AnnotationModel> extensions = annotation.getValue("value", List.class);
         if (extensions != null) {
             extensions.forEach(extension -> visitExtension(extension, element, context));
         }
@@ -657,20 +657,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitOperation(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         OperationImpl.merge(OperationImpl.createInstance(annotation, context), context.getWorkingOperation(), true);
         // If the operation should be hidden, remove it
-        if (getValue("hidden", Boolean.class, annotation)) {
+        if (annotation.getValue("hidden", Boolean.class)) {
             ModelUtils.removeOperation(context.getApi().getPaths().getPathItem(context.getPath()),
                     context.getWorkingOperation());
         }
     }
 
-    public static <T> T getValue(String key, Class<T> type, AnnotationModel annotation) {
-        return annotation.getValue(key, type, annotation.getType().getDefaultValue(key));
-    }
-
     @Override
     public void visitCallback(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         if (element instanceof MethodModel) {
-            String name = getValue("name", String.class, annotation);
+            String name = annotation.getValue("name", String.class);
             org.eclipse.microprofile.openapi.models.callbacks.Callback callbackModel = context.getWorkingOperation()
                     .getCallbacks().getOrDefault(name, new CallbackImpl());
             context.getWorkingOperation().getCallbacks().put(name, callbackModel);
@@ -680,7 +676,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitCallbacks(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        List<AnnotationModel> callbacks = getValue("value", List.class, annotation);
+        List<AnnotationModel> callbacks = annotation.getValue("value", List.class);
         if (callbacks != null) {
             callbacks.forEach(callback -> visitCallback(callback, element, context));
         }
@@ -709,9 +705,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             // If the element doesn't also contain a response mapping to the default
             AnnotationModel apiResponsesParent = element.getAnnotation(APIResponses.class.getName());
             if (apiResponsesParent != null) {
-                List<AnnotationModel> apiResponses = getValue("value", List.class, apiResponsesParent);
+                List<AnnotationModel> apiResponses = apiResponsesParent.getValue("value", List.class);
                 if (apiResponses.stream()
-                        .map(a -> getValue("responseCode", String.class, a))
+                        .map(a -> a.getValue("responseCode", String.class))
                         .noneMatch(code -> code == null || code.isEmpty() || code.equals(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT))) {
                     // Then remove the default response
                     context.getWorkingOperation().getResponses()
@@ -726,7 +722,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitAPIResponses(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        List<AnnotationModel> responses = getValue("value", List.class, annotation);
+        List<AnnotationModel> responses = annotation.getValue("value", List.class);
         if (responses != null) {
             responses.forEach(response -> visitAPIResponse(response, element, context));
         }
@@ -734,7 +730,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitParameters(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        List<AnnotationModel> parameters = getValue("value", List.class, annotation);
+        List<AnnotationModel> parameters = annotation.getValue("value", List.class);
         if (parameters != null) {
             parameters.forEach(parameter -> visitParameter(parameter, element, context));
         }
@@ -849,7 +845,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitServers(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        List<AnnotationModel> servers = getValue("value", List.class, annotation);
+        List<AnnotationModel> servers = annotation.getValue("value", List.class);
         if (servers != null) {
             servers.forEach(server -> visitServer(server, element, context));
         }
@@ -872,13 +868,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public void visitTags(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         if (element instanceof MethodModel) {
-            List<AnnotationModel> tags = getValue("value", List.class, annotation);
+            List<AnnotationModel> tags = annotation.getValue("value", List.class);
             if (tags != null) {
                 for (AnnotationModel tag : tags) {
                     visitTag(tag, element, context);
                 }
             }
-            List<String> refs = getValue("refs", List.class, annotation);
+            List<String> refs = annotation.getValue("refs", List.class);
             if (refs != null) {
                 for (String ref : refs) {
                     if (ref != null && !ref.isEmpty()) {
@@ -891,7 +887,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitSecurityScheme(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        String securitySchemeName = getValue("securitySchemeName", String.class, annotation);
+        String securitySchemeName = annotation.getValue("securitySchemeName", String.class);
         org.eclipse.microprofile.openapi.models.security.SecurityScheme securityScheme = SecuritySchemeImpl.createInstance(annotation);
         if (securitySchemeName != null && !securitySchemeName.isEmpty()) {
             org.eclipse.microprofile.openapi.models.security.SecurityScheme newScheme = context.getApi().getComponents()
@@ -903,7 +899,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitSecuritySchemes(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        List<AnnotationModel> securitySchemes = getValue("value", List.class, annotation);
+        List<AnnotationModel> securitySchemes = annotation.getValue("value", List.class);
         if (securitySchemes != null) {
             securitySchemes.forEach(securityScheme -> visitSecurityScheme(securityScheme, element, context));
         }
@@ -912,7 +908,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public void visitSecurityRequirement(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         if (element instanceof MethodModel) {
-            String securityRequirementName = getValue("name", String.class, annotation);
+            String securityRequirementName = annotation.getValue("name", String.class);
             org.eclipse.microprofile.openapi.models.security.SecurityRequirement securityRequirement = SecurityRequirementImpl.createInstance(annotation);
             if (securityRequirementName != null && !securityRequirementName.isEmpty()) {
                 org.eclipse.microprofile.openapi.models.security.SecurityRequirement model = new SecurityRequirementImpl();
@@ -924,7 +920,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitSecurityRequirements(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        List<AnnotationModel> securityRequirements = getValue("value", List.class, annotation);
+        List<AnnotationModel> securityRequirements = annotation.getValue("value", List.class);
         if (securityRequirements != null) {
             securityRequirements.forEach(securityRequirement -> visitSecurityRequirement(securityRequirement, element, context));
         }
@@ -1078,7 +1074,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     = AnnotationInfo.valueOf((ExtensibleType) referenceClass)
                             .getAnnotation(Schema.class);
             if (schemaAnnotation != null) {
-                String schemaName = getValue("name", String.class, schemaAnnotation);
+                String schemaName = schemaAnnotation.getValue("name", String.class);
 
                 // Set the reference name
                 referee.setRef(schemaName == null || schemaName.isEmpty() ? ModelUtils.getSimpleName(referenceClassName) : schemaName);

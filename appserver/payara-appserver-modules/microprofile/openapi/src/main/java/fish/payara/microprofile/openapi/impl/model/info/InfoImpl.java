@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.impl.model.info;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import org.eclipse.microprofile.openapi.models.info.Contact;
 import org.eclipse.microprofile.openapi.models.info.Info;
 import org.eclipse.microprofile.openapi.models.info.License;
@@ -58,18 +57,18 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
 
     public static Info createInstance(AnnotationModel annotation) {
         Info from = new InfoImpl();
-        from.setTitle(getValue("title", String.class, annotation));
-        from.setDescription(getValue("description", String.class, annotation));
-        from.setTermsOfService(getValue("termsOfService", String.class, annotation));
-        AnnotationModel contact = getValue("contact", AnnotationModel.class, annotation);
+        from.setTitle(annotation.getValue("title", String.class));
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setTermsOfService(annotation.getValue("termsOfService", String.class));
+        AnnotationModel contact = annotation.getValue("contact", AnnotationModel.class);
         if (contact != null) {
             from.setContact(ContactImpl.createInstance(contact));
         }
-        AnnotationModel license = getValue("license", AnnotationModel.class, annotation);
+        AnnotationModel license = annotation.getValue("license", AnnotationModel.class);
         if (license != null) {
             from.setLicense(LicenseImpl.createInstance(license));
         }
-        from.setVersion(getValue("version", String.class, annotation));
+        from.setVersion(annotation.getValue("version", String.class));
         return from;
     }
 

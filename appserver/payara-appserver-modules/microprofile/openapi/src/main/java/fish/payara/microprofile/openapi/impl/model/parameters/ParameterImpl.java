@@ -42,12 +42,10 @@ package fish.payara.microprofile.openapi.impl.model.parameters;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
-import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -80,30 +78,30 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
 
     public static Parameter createInstance(AnnotationModel annotation, ApiContext context) {
         ParameterImpl from = new ParameterImpl();
-        from.setName(getValue("name", String.class, annotation));
-        EnumModel inEnum = getValue("in", EnumModel.class, annotation);
+        from.setName(annotation.getValue("name", String.class));
+        EnumModel inEnum = annotation.getValue("in", EnumModel.class);
         if (inEnum != null) {
             from.setIn(In.valueOf(inEnum.getValue()));
         }
-        from.setDescription(getValue("description", String.class, annotation));
-        from.setRequired(getValue("required", Boolean.class, annotation));
-        from.setDeprecated(getValue("deprecated", Boolean.class, annotation));
-        from.setAllowEmptyValue(getValue("allowEmptyValue", Boolean.class, annotation));
-        String ref = getValue("ref", String.class, annotation);
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setRequired(annotation.getValue("required", Boolean.class));
+        from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
+        from.setAllowEmptyValue(annotation.getValue("allowEmptyValue", Boolean.class));
+        String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
-        EnumModel styleEnum = getValue("style", EnumModel.class, annotation);
+        EnumModel styleEnum = annotation.getValue("style", EnumModel.class);
         if (styleEnum != null) {
             from.setStyle(Style.valueOf(styleEnum.getValue()));
         }
-        from.setExplode(getValue("explode", Boolean.class, annotation));
-        from.setAllowReserved(getValue("allowReserved", Boolean.class, annotation));
-        AnnotationModel schemaAnnotation = getValue("schema", AnnotationModel.class, annotation);
+        from.setExplode(annotation.getValue("explode", Boolean.class));
+        from.setAllowReserved(annotation.getValue("allowReserved", Boolean.class));
+        AnnotationModel schemaAnnotation = annotation.getValue("schema", AnnotationModel.class);
         if (schemaAnnotation != null) {
             from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        List<AnnotationModel> examples = getValue("examples", List.class, annotation);
+        List<AnnotationModel> examples = annotation.getValue("examples", List.class);
         if (examples != null) {
             for (AnnotationModel example : examples) {
                 from.getExamples().put(
@@ -112,8 +110,8 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
                 );
             }
         }
-        from.setExample(getValue("example", Object.class, annotation));
-        List<AnnotationModel> contentAnnotations = getValue("content", List.class, annotation);
+        from.setExample(annotation.getValue("example", Object.class));
+        List<AnnotationModel> contentAnnotations = annotation.getValue("content", List.class);
         if (contentAnnotations != null && !contentAnnotations.isEmpty()) {
             from.setContent(new ContentImpl());
             for (AnnotationModel contentAnnotation : contentAnnotations) {

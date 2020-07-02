@@ -42,7 +42,6 @@ package fish.payara.microprofile.openapi.impl.model.security;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
@@ -65,28 +64,28 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
 
     public static SecurityScheme createInstance(AnnotationModel annotation) {
         SecuritySchemeImpl from = new SecuritySchemeImpl();
-        EnumModel type = getValue("type", EnumModel.class, annotation);
+        EnumModel type = annotation.getValue("type", EnumModel.class);
         if (type != null) {
             from.setType(SecurityScheme.Type.valueOf(type.getValue()));
         }
-        from.setDescription(getValue("description", String.class, annotation));
-        from.setName(getValue("securitySchemeName", String.class, annotation));
-        String ref = getValue("ref", String.class, annotation);
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setName(annotation.getValue("securitySchemeName", String.class));
+        String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
-        EnumModel in = getValue("in", EnumModel.class, annotation);
+        EnumModel in = annotation.getValue("in", EnumModel.class);
         if (in != null) {
             from.setIn(SecurityScheme.In.valueOf(in.getValue()));
         }
-        from.setScheme(getValue("scheme", String.class, annotation));
-        from.setBearerFormat(getValue("bearerFormat", String.class, annotation));
-        AnnotationModel flowsAnnotation = getValue("flows", AnnotationModel.class, annotation);
+        from.setScheme(annotation.getValue("scheme", String.class));
+        from.setBearerFormat(annotation.getValue("bearerFormat", String.class));
+        AnnotationModel flowsAnnotation = annotation.getValue("flows", AnnotationModel.class);
         if (flowsAnnotation != null) {
             from.setFlows(OAuthFlowsImpl.createInstance(flowsAnnotation));
         }
-        from.setOpenIdConnectUrl(getValue("openIdConnectUrl", String.class, annotation));
-        from.setApiKeyName(getValue("apiKeyName", String.class, annotation));
+        from.setOpenIdConnectUrl(annotation.getValue("openIdConnectUrl", String.class));
+        from.setApiKeyName(annotation.getValue("apiKeyName", String.class));
         return from;
     }
 
