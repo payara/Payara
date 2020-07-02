@@ -202,7 +202,8 @@ public abstract class AbstractStatefulRealm extends AbstractRealm implements Com
      * @return default digest algorithm, for example: {@value #DEFAULT_DIG_ALGORITHM}
      */
     protected String getDefaultDigestAlgorithm() {
-        return contextProperties.getProperty(PARAM_DEFAULT_DIGEST_ALGORITHM);
+        String defaultDigestAlgorithm = contextProperties.getProperty(PARAM_DEFAULT_DIGEST_ALGORITHM);
+        return defaultDigestAlgorithm == null || defaultDigestAlgorithm.trim().isEmpty() ? DEFAULT_DIG_ALGORITHM : defaultDigestAlgorithm;
     }
 
     /**

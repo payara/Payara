@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>common</artifactId>
-        <version>5.2020.2-SNAPSHOT</version>
+        <version>5.2020.3-SNAPSHOT</version>
         <relativePath>../../common/pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.server.internal.flashlight</groupId>

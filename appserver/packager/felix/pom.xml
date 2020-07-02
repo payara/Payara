@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.2020.2-SNAPSHOT</version>
+        <version>5.2020.3-SNAPSHOT</version>
     </parent>
     <artifactId>felix</artifactId>
     <name>Felix Package</name>
