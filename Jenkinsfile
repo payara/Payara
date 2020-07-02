@@ -13,6 +13,7 @@ pipeline {
         Bibbly = "Bibbles"
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
+        MY_STRING_PROPERTY='woohoo'
     }
     tools {
         jdk "zulu-8"
