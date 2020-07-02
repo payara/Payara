@@ -475,9 +475,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Schema addProperty(String key, Schema propertiesItem) {
-        if (this.properties == null) {
-            this.properties = new HashMap<>();
-        }
         if (propertiesItem != null) {
             this.properties.put(key, propertiesItem);
         }
@@ -486,9 +483,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void removeProperty(String key) {
-        if (this.properties == null) {
-            this.properties = new HashMap<>();
-        }
         this.properties.remove(key);
     }
 

@@ -346,9 +346,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         to.setSummary(mergeProperty(to.getSummary(), from.getSummary(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
         if (from.getExtensions() != null) {
-            for (String extensionName : from.getExtensions().keySet()) {
-                ExtensibleImpl.merge(extensionName, from.getExtensions().get(extensionName), to, override);
-            }
+            ExtensibleImpl.merge(from, to, override);
         }
         if (from.getExternalDocs() != null) {
             if (to.getExternalDocs() == null) {

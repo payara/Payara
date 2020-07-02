@@ -124,9 +124,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     private final ClassLoader appClassLoader;
 
     public ApplicationProcessor(ApplicationInfo appInfo) {
-        this.types = new HashSet<>(appInfo.getTypes().getAllTypes());
-        this.allowedTypes = filterTypes(appInfo);
-        this.appClassLoader = appInfo.getAppClassLoader();
+        this(new HashSet<>(appInfo.getTypes().getAllTypes()), filterTypes(appInfo), appInfo.getAppClassLoader());
     }
 
     /**
@@ -142,7 +140,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     /**
      * @return a list of all classes in the archive.
      */
-    private Set<Type> filterTypes(ApplicationInfo appInfo) {
+    private static Set<Type> filterTypes(ApplicationInfo appInfo) {
         ReadableArchive archive = appInfo.getSource();
         return Collections.list(archive.entries()).stream()
                 // Only use the classes

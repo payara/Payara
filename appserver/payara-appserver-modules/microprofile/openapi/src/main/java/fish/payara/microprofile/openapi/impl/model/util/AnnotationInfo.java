@@ -61,7 +61,7 @@ import org.glassfish.hk2.classmodel.reflect.Parameter;
  */
 public final class AnnotationInfo {
 
-    private static final Map<ExtensibleType, AnnotationInfo> TYPES = new ConcurrentHashMap<>();
+    private static final Map<ExtensibleType<? extends ExtensibleType>, AnnotationInfo> TYPES = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
     public static AnnotationInfo valueOf(ExtensibleType<? extends ExtensibleType> type) {

@@ -95,17 +95,22 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
         return name;
     }
 
-    public static void merge(String extensionName, Object from, Extensible<?> to, boolean override) {
+    public static void merge(Extensible<?> from, Extensible<?> to, boolean override) {
         if (from == null) {
             return;
         }
         if (to.getExtensions() == null) {
             to.setExtensions(new LinkedHashMap<>());
         }
-        if (extensionName != null && !extensionName.isEmpty()) {
-            Object value = mergeProperty(to.getExtensions().get(extensionName), 
-                    convertExtensionValue((String)from, true), override);//gg from.parseValue(
-            to.getExtensions().put(extensionName, value);
+        if (!from.getExtensions().isEmpty()) {
+            for (String extensionName : from.getExtensions().keySet()) {
+                Object value = mergeProperty(
+                        to.getExtensions().get(extensionName),
+                        from.getExtensions().get(extensionName),
+                        override
+                );
+                to.getExtensions().put(extensionName, value);
+            }
         }
     }
 
