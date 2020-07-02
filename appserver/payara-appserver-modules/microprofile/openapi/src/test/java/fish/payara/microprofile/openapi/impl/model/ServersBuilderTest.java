@@ -39,18 +39,16 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static java.util.Collections.singletonMap;
 import static org.eclipse.microprofile.openapi.OASFactory.createServer;
 import static org.eclipse.microprofile.openapi.OASFactory.createServerVariable;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.servers.*}.

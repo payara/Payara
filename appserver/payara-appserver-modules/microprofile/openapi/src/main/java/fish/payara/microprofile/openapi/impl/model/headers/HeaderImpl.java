@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,21 +39,25 @@
  */
 package fish.payara.microprofile.openapi.impl.model.headers;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
+import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
+import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
+import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
 import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.eclipse.microprofile.openapi.models.media.Content;
 import org.eclipse.microprofile.openapi.models.media.Schema;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
-import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.EnumModel;
 
 public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
@@ -68,6 +72,48 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
     private Map<String, Example> examples = new HashMap<>();
     private Object example;
     private Content content;
+    private List<Content> contents = new ArrayList<>();
+
+    public static Header createInstance(AnnotationModel annotation, ApiContext context) {
+        HeaderImpl from = new HeaderImpl();
+        String ref = getValue("ref", String.class, annotation);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        from.setDescription(getValue("description", String.class, annotation));
+        from.setRequired(getValue("required", Boolean.class, annotation));
+        from.setDeprecated(getValue("deprecated", Boolean.class, annotation));
+        from.setAllowEmptyValue(getValue("allowEmptyValue", Boolean.class, annotation));
+        EnumModel styleEnum = getValue("style", EnumModel.class, annotation);
+        if (styleEnum != null) {
+            from.setStyle(Header.Style.valueOf(styleEnum.getValue()));
+        }
+        from.setExplode(getValue("explode", Boolean.class, annotation));
+        AnnotationModel schemaAnnotation = getValue("schema", AnnotationModel.class, annotation);
+        if (schemaAnnotation != null) {
+            from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
+        }
+        List<AnnotationModel> examples = getValue("examples", List.class, annotation);
+        if (examples != null) {
+            for (AnnotationModel example : examples) {
+                from.getExamples().put(
+                        example.getValue("name", String.class),
+                        ExampleImpl.createInstance(example)
+                );
+            }
+        }
+        from.setExample(getValue("example", Object.class, annotation));
+        List<AnnotationModel> contentAnnotations = getValue("content", List.class, annotation);
+        if (contentAnnotations != null && !contentAnnotations.isEmpty()) {
+            from.setContent(new ContentImpl());
+            for (AnnotationModel contentAnnotation : contentAnnotations) {
+                from.getContents().add(
+                        ContentImpl.createInstance(contentAnnotation, context)
+                );
+            }
+        }
+        return from;
+    }
 
     @Override
     public String getRef() {
@@ -195,37 +241,77 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
         this.content = content;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.headers.Header from, Header to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
+    public List<Content> getContents() {
+        return contents;
+    }
+
+    public void setContents(List<Content> contents) {
+        this.contents = contents;
+    }
+
+    public static void merge(Header from, Header to,
+            boolean override, ApiContext context) {
+        if (from == null) {
             return;
         }
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            applyReference(to, from.ref());
+        if (from.getRef() != null && !from.getRef().isEmpty()) {
+            applyReference(to, from.getRef());
             return;
         }
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setRequired(mergeProperty(to.getRequired(), from.required(), override));
-        to.setAllowEmptyValue(mergeProperty(to.getAllowEmptyValue(), from.allowEmptyValue(), override));
-        to.setDeprecated(mergeProperty(to.getDeprecated(), from.deprecated(), override));
-        if (!isAnnotationNull(from.schema())) {
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setRequired(mergeProperty(to.getRequired(), from.getRequired(), override));
+        to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
+        to.setAllowEmptyValue(mergeProperty(to.getAllowEmptyValue(), from.getAllowEmptyValue(), override));
+        to.setStyle(Style.SIMPLE);
+        to.setExplode(mergeProperty(to.getExplode(), from.getExplode(), override));
+        if (from.getSchema() != null) {
             if (to.getSchema() == null) {
                 to.setSchema(new SchemaImpl());
             }
-            SchemaImpl.merge(from.schema(), to.getSchema(), override, currentSchemas);
+            SchemaImpl.merge(from.getSchema(), to.getSchema(), override, context);
         }
-        to.setStyle(Style.SIMPLE);
+        to.setExample(mergeProperty(to.getExample(), from.getExample(), override));
+        if (from.getExamples() != null) {
+            for (String exampleName : from.getExamples().keySet()) {
+                if (exampleName != null) {
+                    Example example = new ExampleImpl();
+                    ExampleImpl.merge(from.getExamples().get(exampleName), example, override);
+                    to.addExample(exampleName, example);
+                }
+            }
+        }
+        if (from instanceof HeaderImpl) {
+            HeaderImpl fromImpl = (HeaderImpl)from;
+            if (fromImpl.getContents() != null) {
+                if (to.getContent() == null) {
+                    to.setContent(new ContentImpl());
+                }
+                for (Content content : fromImpl.getContents()) {
+                    ContentImpl.merge(content, to.getContent(), override, context);
+                }
+            }
+        }
+        if (from.getContent() != null) {
+            if (to.getContent() == null) {
+                to.setContent(new ContentImpl());
+            }
+            ContentImpl.merge(from.getContent(), to.getContent(), override, context);
+        }
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.headers.Header header,
-            Map<String, Header> headers, boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(header)) {
+    public static void merge(
+            String headerName,
+            Header header,
+            Map<String, Header> headers,
+            boolean override,
+            ApiContext context) {
+
+        if (header == null) {
             return;
         }
 
         // Get the header name
-        String headerName = header.name();
-        if (header.name() == null || header.name().isEmpty()) {
+        if (headerName == null || headerName.isEmpty()) {
             headerName = UNKNOWN_ELEMENT_NAME;
         }
 
@@ -234,7 +320,7 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
         headers.put(headerName, model);
 
         // Merge the annotation
-        merge(header, model, override, currentSchemas);
+        merge(header, model, override, context);
 
         // If the merged annotation has a reference, set the name to the reference
         if (model.getRef() != null) {

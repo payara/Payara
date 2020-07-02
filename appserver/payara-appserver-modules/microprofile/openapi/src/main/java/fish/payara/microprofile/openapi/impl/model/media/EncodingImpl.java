@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,17 @@
  */
 package fish.payara.microprofile.openapi.impl.model.media;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.microprofile.openapi.models.headers.Header;
-import org.eclipse.microprofile.openapi.models.media.Encoding;
-import org.eclipse.microprofile.openapi.models.media.Schema;
-
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.eclipse.microprofile.openapi.models.headers.Header;
+import org.eclipse.microprofile.openapi.models.media.Encoding;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
@@ -59,6 +58,33 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
     private Style style;
     private Boolean explode;
     private Boolean allowReserved;
+
+    public static Encoding createInstance(AnnotationModel annotation, ApiContext context) {
+        Encoding from = new EncodingImpl();
+
+        from.setContentType(getValue("contentType", String.class, annotation));
+        List<AnnotationModel> headers = getValue("headers", List.class, annotation);
+        if (headers != null) {
+            for (AnnotationModel header : headers) {
+                String headerName = header.getValue("name", String.class);
+                if (headerName == null) {
+                    headerName = header.getValue("ref", String.class);
+                }
+                from.getHeaders().put(
+                        headerName,
+                        HeaderImpl.createInstance(header, context)
+                );
+            }
+        }
+        String styleEnum = getValue("style", String.class, annotation);
+        if (styleEnum != null) {
+            from.setStyle(Style.valueOf(styleEnum.toUpperCase()));
+        }
+        from.setExplode(getValue("explode", Boolean.class, annotation));
+        from.setAllowReserved(getValue("allowReserved", Boolean.class, annotation));
+
+        return from;
+    }
 
     @Override
     public String getContentType() {
@@ -123,33 +149,37 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
         this.allowReserved = allowReserved;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.media.Encoding from, Encoding to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
+    public static void merge(Encoding from, Encoding to,
+            boolean override, ApiContext context) {
+        if (from == null) {
             return;
         }
-        to.setContentType(mergeProperty(to.getContentType(), from.contentType(), override));
-        to.setStyle(mergeProperty(to.getStyle(), Style.valueOf(from.style().toUpperCase()), override));
-        to.setExplode(mergeProperty(to.getExplode(), from.explode(), override));
-        to.setAllowReserved(mergeProperty(to.getAllowReserved(), from.allowReserved(), override));
-        for (org.eclipse.microprofile.openapi.annotations.headers.Header header : from.headers()) {
-            HeaderImpl.merge(header, to.getHeaders(), override, currentSchemas);
+        to.setContentType(mergeProperty(to.getContentType(), from.getContentType(), override));
+        to.setStyle(mergeProperty(to.getStyle(), from.getStyle(), override));
+        to.setExplode(mergeProperty(to.getExplode(), from.getExplode(), override));
+        to.setAllowReserved(mergeProperty(to.getAllowReserved(), from.getAllowReserved(), override));
+        if (from.getHeaders() != null) {
+            for (String headerName : from.getHeaders().keySet()) {
+                if (headerName != null) {
+                    HeaderImpl.merge(headerName, from.getHeaders().get(headerName), to.getHeaders(), override, context);
+                }
+            }
         }
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.media.Encoding encoding,
-            Map<String, Encoding> encodings, boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(encoding)) {
+    public static void merge(String encodingName, Encoding encoding,
+            Map<String, Encoding> encodings, boolean override, ApiContext context) {
+        if (encoding == null) {
             return;
         }
 
-        if (encoding.name() != null && !encoding.name().isEmpty()) {
+        if (encodingName != null && !encodingName.isEmpty()) {
             // Get or create the encoding
-            Encoding model = encodings.getOrDefault(encoding.name(), new EncodingImpl());
-            encodings.put(encoding.name(), model);
+            Encoding model = encodings.getOrDefault(encodingName, new EncodingImpl());
+            encodings.put(encodingName, model);
 
             // Merge the annotation
-            merge(encoding, model, override, currentSchemas);
+            merge(encoding, model, override, context);
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,22 +39,41 @@
  */
 package fish.payara.microprofile.openapi.impl.model.servers;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
+import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
     private String url;
     private String description;
     private Map<String, ServerVariable> variables;
+
+    public static Server createInstance(AnnotationModel annotation) {
+        Server from = new ServerImpl();
+        from.setDescription(getValue("description", String.class, annotation));
+        from.setUrl(getValue("url", String.class, annotation));
+
+        List<AnnotationModel> variablesAnnotations = getValue("variables", List.class, annotation);
+        if (variablesAnnotations != null) {
+            Map<String, ServerVariable> variables = new HashMap<>();
+            for (AnnotationModel variableAnnotation : variablesAnnotations) {
+                variables.put(
+                        getValue("name", String.class, variableAnnotation),
+                        ServerVariableImpl.createInstance(variableAnnotation)
+                );
+            }
+            from.setVariables(variables);
+        }
+        return from;
+    }
 
     @Override
     public String getUrl() {
@@ -93,19 +112,24 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         this.variables = variables;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.servers.Server from, Server to,
+    public static void merge(Server from, Server to,
             boolean override) {
-        if (isAnnotationNull(from)) {
+        if (from == null) {
             return;
         }
-        to.setUrl(mergeProperty(to.getUrl(), from.url(), override));
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        if (from.variables() != null) {
+        to.setUrl(mergeProperty(to.getUrl(), from.getUrl(), override));
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        if (from.getVariables() != null) {
             if (to.getVariables() == null) {
                 to.setVariables(new ServerVariablesImpl());
             }
-            for (org.eclipse.microprofile.openapi.annotations.servers.ServerVariable variable : from.variables()) {
-                ServerVariablesImpl.merge(variable, to.getVariables(), override);
+            for (String serverVariableName : from.getVariables().keySet()) {
+                ServerVariablesImpl.merge(
+                        serverVariableName,
+                        from.getVariables().get(serverVariableName),
+                        to.getVariables(),
+                        override
+                );
             }
         }
     }

@@ -39,23 +39,23 @@
  */
 package fish.payara.microprofile.openapi.impl.config;
 
-import static java.util.logging.Level.WARNING;
-import static java.util.stream.Collectors.toSet;
-
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-
+import static java.util.stream.Collectors.toSet;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.OASModelReader;
+import org.glassfish.hk2.classmodel.reflect.Type;
 
 public class OpenApiConfiguration {
 
@@ -72,13 +72,13 @@ public class OpenApiConfiguration {
     private static final String PATH_PREFIX_KEY = "mp.openapi.servers.path.";
     private static final String OPERATION_PREFIX_KEY = "mp.openapi.servers.operation.";
 
-    private Class<? extends OASModelReader> modelReader;
-    private Class<? extends OASFilter> filter;
-    private boolean scanDisable;
+    private final Class<? extends OASModelReader> modelReader;
+    private final Class<? extends OASFilter> filter;
+    private final boolean scanDisable;
     private List<String> scanPackages = new ArrayList<>();
-    private List<Class<?>> scanClasses = new ArrayList<>();
+    private List<String> scanClasses = new ArrayList<>();
     private List<String> excludePackages = new ArrayList<>();
-    private List<Class<?>> excludeClasses = new ArrayList<>();
+    private List<String> excludeClasses = new ArrayList<>();
     private List<String> servers = new ArrayList<>();
     private Map<String, Set<String>> pathServerMap = new HashMap<>();
     private Map<String, Set<String>> operationServerMap = new HashMap<>();
@@ -95,9 +95,9 @@ public class OpenApiConfiguration {
         this.filter = findFilterFromConfig(config, applicationClassLoader);
         this.scanDisable = findScanDisableFromConfig(config);
         this.scanPackages = findScanPackagesFromConfig(config);
-        this.scanClasses = findScanClassesFromConfig(config, applicationClassLoader);
+        this.scanClasses = findScanClassesFromConfig(config);
         this.excludePackages = findExcludePackages(config);
-        this.excludeClasses = findExcludeClasses(config, applicationClassLoader);
+        this.excludeClasses = findExcludeClasses(config);
         this.servers = findServers(config);
         this.pathServerMap = findPathServerMap(config);
         this.operationServerMap = findOperationServerMap(config);
@@ -134,7 +134,7 @@ public class OpenApiConfiguration {
     /**
      * @return a whitelist of classes to scan in the application.
      */
-    public List<Class<?>> getScanClasses() {
+    public List<String> getScanClasses() {
         return scanClasses;
     }
 
@@ -148,7 +148,7 @@ public class OpenApiConfiguration {
     /**
      * @return a blacklist of classes to not scan in the application.
      */
-    public List<Class<?>> getExcludeClasses() {
+    public List<String> getExcludeClasses() {
         return excludeClasses;
     }
 
@@ -174,25 +174,25 @@ public class OpenApiConfiguration {
     }
 
     /**
-     * @param classes the list of classes to filter.
+     * @param types the list of classes to filter.
      * @return a filtered list of classes, using {@link #getScanClasses()},
      *         {@link #getExcludeClasses()}, {@link #getScanPackages()} and
      *         {@link #getExcludePackages()}.
      */
-    public Set<Class<?>> getValidClasses(Set<Class<?>> classes) {
-        return classes.stream()
+    public Set<Type> getValidClasses(Collection<Type> types) {
+        return types.stream()
                 // If scan classes are specified, check that the class is in the list
-                .filter(clazz -> scanClasses.isEmpty() || scanClasses.contains(clazz))
+                .filter(type -> scanClasses.isEmpty() || scanClasses.contains(type.getName()))
                 // If exclude classes are specified, check that the class is not the list
-                .filter(clazz -> excludeClasses.isEmpty() || !excludeClasses.contains(clazz))
+                .filter(type -> excludeClasses.isEmpty() || !excludeClasses.contains(type.getName()))
                 // If scan packages are specified, check that the class package starts with one
                 // in the list
-                .filter(clazz -> scanPackages.isEmpty()
-                        || scanPackages.stream().anyMatch(pkg -> clazz.getPackage().getName().startsWith(pkg)))
+                .filter(type -> scanPackages.isEmpty()
+                        || scanPackages.stream().anyMatch(pkg -> type.getName().startsWith(pkg)))
                 // If exclude packages are specified, check that the class package doesn't start
                 // with any in the list
                 .filter(clazz -> excludePackages.isEmpty()
-                        || excludePackages.stream().noneMatch(pkg -> clazz.getPackage().getName().startsWith(pkg)))
+                        || excludePackages.stream().noneMatch(pkg -> clazz.getName().startsWith(pkg)))
                 .collect(toSet());
     }
 
@@ -243,15 +243,12 @@ public class OpenApiConfiguration {
         return packages;
     }
 
-    private List<Class<?>> findScanClassesFromConfig(Config config, ClassLoader classLoader) {
-        List<Class<?>> classes = new ArrayList<>();
+    private List<String> findScanClassesFromConfig(Config config) {
+        List<String> classes = new ArrayList<>();
         try {
             List<String> classNames = Arrays.asList(config.getValue(SCAN_CLASSES_KEY, String[].class));
             for (String className : classNames) {
-                Class<?> clazz = getClassFromName(className, classLoader);
-                if (clazz != null) {
-                    classes.add(clazz);
-                }
+                classes.add(className);
             }
         } catch (NoSuchElementException ex) {
             // Ignore
@@ -269,15 +266,12 @@ public class OpenApiConfiguration {
         return packages;
     }
 
-    private List<Class<?>> findExcludeClasses(Config config, ClassLoader classLoader) {
-        List<Class<?>> classes = new ArrayList<>();
+    private List<String> findExcludeClasses(Config config) {
+        List<String> classes = new ArrayList<>();
         try {
             List<String> classNames = Arrays.asList(config.getValue(SCAN_EXCLUDE_CLASSES_KEY, String[].class));
             for (String className : classNames) {
-                Class<?> clazz = getClassFromName(className, classLoader);
-                if (clazz != null) {
-                    classes.add(clazz);
-                }
+                    classes.add(className);
             }
         } catch (NoSuchElementException ex) {
             // Ignore

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,25 +39,46 @@
  */
 package fish.payara.microprofile.openapi.impl.model.parameters;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
-import java.util.Map;
-
-import org.eclipse.microprofile.openapi.models.media.Content;
-import org.eclipse.microprofile.openapi.models.media.Schema;
-import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
-
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
+import java.util.ArrayList;
+import java.util.List;
+import org.eclipse.microprofile.openapi.models.media.Content;
+import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements RequestBody {
 
     private String description;
     private Content content = new ContentImpl();
+    private List<Content> contents = new ArrayList<>();
     private Boolean required;
     private String ref;
+
+    public static RequestBody createInstance(AnnotationModel annotation, ApiContext context) {
+        RequestBodyImpl from = new RequestBodyImpl();
+        from.setDescription(getValue("description", String.class, annotation));
+        from.setRequired(getValue("required", Boolean.class, annotation));
+        String ref  =getValue("ref", String.class, annotation);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+
+        List<AnnotationModel> contentAnnotations = getValue("content", List.class, annotation);
+        if (contentAnnotations != null && !contentAnnotations.isEmpty()) {
+            from.setContent(new ContentImpl());
+            for (AnnotationModel contentAnnotation : contentAnnotations) {
+                from.getContents().add(
+                        ContentImpl.createInstance(contentAnnotation, context)
+                );
+            }
+        }
+        return from;
+    }
 
     @Override
     public String getDescription() {
@@ -102,24 +123,42 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
         this.ref = ref;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.parameters.RequestBody from, RequestBody to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
+    public List<Content> getContents() {
+        return contents;
+    }
+
+    public void setContents(List<Content> contents) {
+        this.contents = contents;
+    }
+
+    public static void merge(RequestBody from, RequestBody to,
+            boolean override, ApiContext context) {
+        if (from == null) {
             return;
         }
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            applyReference(to, from.ref());
+        if (from.getRef() != null && !from.getRef().isEmpty()) {
+            applyReference(to, from.getRef());
             return;
         }
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setRequired(mergeProperty(to.getRequired(), from.required(), override));
-        if (from.content() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.media.Content content : from.content()) {
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setRequired(mergeProperty(to.getRequired(), from.getRequired(), override));
+        if (from instanceof RequestBodyImpl) {
+            RequestBodyImpl fromImpl = (RequestBodyImpl) from;
+            if (fromImpl.getContents() != null) {
                 if (to.getContent() == null) {
                     to.setContent(new ContentImpl());
                 }
-                ContentImpl.merge(content, to.getContent(), override, currentSchemas);
+                for (Content content : fromImpl.getContents()) {
+                    ContentImpl.merge(content, to.getContent(), override, context);
+                }
             }
+
+        }
+        if (from.getContent() != null) {
+            if (to.getContent() == null) {
+                to.setContent(new ContentImpl());
+            }
+            ContentImpl.merge(from.getContent(), to.getContent(), override, context);
         }
 
     }

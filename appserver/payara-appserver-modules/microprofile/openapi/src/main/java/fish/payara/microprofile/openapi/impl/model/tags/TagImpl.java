@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,23 +39,37 @@
  */
 package fish.payara.microprofile.openapi.impl.model.tags;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
+import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.List;
-
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.tags.Tag;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
-import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
 
     private String name;
     private String description;
     private ExternalDocumentation externalDocs;
+    private String ref;
+
+    public static Tag createInstance(AnnotationModel annotation) {
+        TagImpl from = new TagImpl();
+        from.setName(getValue("name", String.class, annotation));
+        from.setDescription(getValue("description", String.class, annotation));
+        AnnotationModel externalDocs = getValue("externalDocs", AnnotationModel.class, annotation);
+        if (externalDocs != null) {
+            from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
+        }
+        String ref = getValue("ref", String.class, annotation);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        return from;
+    }
 
     @Override
     public String getName() {
@@ -87,33 +101,44 @@ public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
         this.externalDocs = externalDocs;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.tags.Tag from, Tag to, boolean override) {
-        if (isAnnotationNull(from)) {
+    public String getRef() {
+        return ref;
+    }
+
+    public void setRef(String ref) {
+        this.ref = ref;
+    }
+
+    public static void merge(Tag from, Tag to, boolean override) {
+        if (from == null) {
             return;
         }
-        to.setName(mergeProperty(to.getName(), from.name(), override));
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        if (!isAnnotationNull(from.externalDocs())) {
+        to.setName(mergeProperty(to.getName(), from.getName(), override));
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        if(from.getExternalDocs() != null) {
             if (to.getExternalDocs() == null) {
                 to.setExternalDocs(new ExternalDocumentationImpl());
             }
-            ExternalDocumentationImpl.merge(from.externalDocs(), to.getExternalDocs(), override);
+            ExternalDocumentationImpl.merge(from.getExternalDocs(), to.getExternalDocs(), override);
         }
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.tags.Tag from, Operation to, boolean override,
+    public static void merge(Tag from, Operation to, boolean override,
             List<Tag> apiTags) {
-        if (isAnnotationNull(from)) {
+        if (from == null) {
             return;
         }
 
         // If there is a reference, add the reference and return
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            to.addTag(from.ref());
-            return;
+        if (from instanceof TagImpl) {
+            TagImpl fromImpl = (TagImpl) from;
+            if (fromImpl.getRef() != null && !fromImpl.getRef().isEmpty()) {
+                to.addTag(fromImpl.getRef());
+                return;
+            }
         }
 
-        if (from.name() != null && !from.name().isEmpty()) {
+        if (from.getName()!= null && !from.getName().isEmpty()) {
             // Create the new tag
             Tag newTag = new TagImpl();
             merge(from, newTag, true);

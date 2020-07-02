@@ -39,18 +39,14 @@
  */
 package fish.payara.microprofile.openapi.test.app.application;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
-import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 /**
  * Test for scenario given in PAYARA-3162 (Annotations from interfaces were not recognised).

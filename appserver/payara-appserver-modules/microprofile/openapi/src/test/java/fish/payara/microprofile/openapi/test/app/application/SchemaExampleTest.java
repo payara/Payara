@@ -39,22 +39,18 @@
  */
 package fish.payara.microprofile.openapi.test.app.application;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.JsonNode;
-
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import fish.payara.microprofile.openapi.test.util.JsonUtils;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 /**
  * This is a minimal example extracted from a failing TCK test where the {@link Schema} details of a bean field were

@@ -218,44 +218,6 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         return appInfo.getMetaData(WebBundleDescriptorImpl.class).getContextRoot();
     }
 
-    /**
-     * @param archive the archive to read from.
-     * @param appClassLoader the classloader to use to load the classes.
-     * @return a list of all loadable classes in the archive.
-     */
-    private static Set<Class<?>> getClassesFromArchive(ReadableArchive archive, ClassLoader appClassLoader) {
-        return Collections.list(archive.entries()).stream()
-                // Only use the classes
-                .filter(x -> x.endsWith(".class"))
-                // Remove the WEB-INF/classes and return the proper class name format
-                .map(x -> x.replaceAll("WEB-INF/classes/", "").replace("/", ".").replace(".class", ""))
-                // Attempt to load the classes
-                .map(x -> {
-                    Class<?> loadedClass = null;
-                    // Attempt to load the class, ignoring any errors
-                    try {
-                        loadedClass = appClassLoader.loadClass(x);
-                    } catch (Throwable t) {
-                    }
-                    try {
-                        loadedClass = Class.forName(x);
-                    } catch (Throwable t) {
-                    }
-                    // If the class can be loaded, check that everything in the class also can
-                    if (loadedClass != null) {
-                        try {
-                            loadedClass.getDeclaredFields();
-                            loadedClass.getDeclaredMethods();
-                        } catch (Throwable t) {
-                            return null;
-                        }
-                    }
-                    return loadedClass;
-                })
-                // Don't return null classes
-                .filter(x -> x != null).collect(toSet());
-    }
-
     private class OpenApiMapping {
 
         private final ApplicationInfo appInfo;
@@ -284,12 +246,10 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             try {
                 String contextRoot = getContextRoot(appInfo);
                 List<URL> baseURLs = getServerURL(contextRoot);
-                ReadableArchive archive = appInfo.getSource();
-                Set<Class<?>> classes = getClassesFromArchive(archive, appInfo.getAppClassLoader());
 
                 openapi = new ModelReaderProcessor().process(openapi, appConfig);
                 openapi = new FileProcessor(appInfo.getAppClassLoader()).process(openapi, appConfig);
-                openapi = new ApplicationProcessor(classes).process(openapi, appConfig);
+                openapi = new ApplicationProcessor(appInfo).process(openapi, appConfig);
                 openapi = new BaseProcessor(baseURLs).process(openapi, appConfig);
                 openapi = new FilterProcessor().process(openapi, appConfig);
             } catch (Throwable t) {

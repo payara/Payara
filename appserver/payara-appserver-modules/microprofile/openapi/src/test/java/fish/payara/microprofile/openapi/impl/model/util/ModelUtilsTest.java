@@ -41,18 +41,16 @@ package fish.payara.microprofile.openapi.impl.model.util;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 
 public class ModelUtilsTest {

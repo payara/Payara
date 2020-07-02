@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,15 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
+import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
+import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
+import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -54,12 +57,7 @@ import org.eclipse.microprofile.openapi.models.info.Info;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.tags.Tag;
-
-import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
-import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
-import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
-import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
@@ -71,6 +69,41 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
     protected List<Tag> tags = new ArrayList<>();
     protected Paths paths = new PathsImpl();
     protected Components components = new ComponentsImpl();
+
+    public static OpenAPI createInstance(AnnotationModel annotation, ApiContext context) {
+        OpenAPI from = new OpenAPIImpl();
+        AnnotationModel info = getValue("info", AnnotationModel.class, annotation);
+        if (info != null) {
+            from.setInfo(InfoImpl.createInstance(info));
+        }
+        AnnotationModel externalDocs = getValue("externalDocs", AnnotationModel.class, annotation);
+        if (externalDocs != null) {
+            from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
+        }
+        List<AnnotationModel> servers = getValue("servers", List.class, annotation);
+        if (servers != null) {
+            for (AnnotationModel server : servers) {
+                from.getServers().add(ServerImpl.createInstance(server));
+            }
+        }
+        List<AnnotationModel> securityElements = getValue("security", List.class, annotation);
+        if (securityElements != null) {
+            for (AnnotationModel security : securityElements) {
+                from.getSecurity().add(SecurityRequirementImpl.createInstance(security));
+            }
+        }
+        List<AnnotationModel> tags = getValue("tags", List.class, annotation);
+        if (tags != null) {
+            for (AnnotationModel tag : tags) {
+                from.getTags().add(TagImpl.createInstance(tag));
+            }
+        }
+        AnnotationModel components = getValue("components", AnnotationModel.class, annotation);
+        if (components != null) {
+            from.setComponents(ComponentsImpl.createInstance(components, context));
+        }
+        return from;
+    }
 
     @Override
     public String getOpenapi() {
@@ -202,21 +235,21 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
         this.components = components;
     }
 
-    public static void merge(OpenAPIDefinition from, OpenAPI to, boolean override) {
-        if (isAnnotationNull(from)) {
+    public static void merge(OpenAPI from, OpenAPI to, boolean override, ApiContext context) {
+        if (from == null) {
             return;
         }
         // Handle @Info
-        if (!isAnnotationNull(from.info())) {
+        if (from.getInfo() != null) {
             if (to.getInfo() == null) {
                 to.setInfo(new InfoImpl());
             }
-            InfoImpl.merge(from.info(), to.getInfo(), override);
+            InfoImpl.merge(from.getInfo(), to.getInfo(), override);
         }
         // Handle @Servers
-        if (from.servers() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.servers.Server server : from.servers()) {
-                if (!isAnnotationNull(server)) {
+        if (from.getServers()!= null) {
+            for (Server server : from.getServers()) {
+                if (server != null) {
                     Server newServer = new ServerImpl();
                     ServerImpl.merge(server, newServer, true);
                     if (!to.getServers().contains(newServer)) {
@@ -226,17 +259,16 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
             }
         }
         // Handle @ExternalDocumentation
-        if (!isAnnotationNull(from.externalDocs())) {
+        if (from.getExternalDocs() != null) {
             if (to.getExternalDocs() == null) {
                 to.setExternalDocs(new ExternalDocumentationImpl());
             }
-            ExternalDocumentationImpl.merge(from.externalDocs(), to.getExternalDocs(), override);
+            ExternalDocumentationImpl.merge(from.getExternalDocs(), to.getExternalDocs(), override);
         }
         // Handle @SecurityRequirement
-        if (from.security() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement requirement : from
-                    .security()) {
-                if (!isAnnotationNull(requirement)) {
+        if (from.getSecurity() != null) {
+            for (SecurityRequirement requirement : from.getSecurity()) {
+                if (requirement != null) {
                     SecurityRequirement newRequirement = new SecurityRequirementImpl();
                     SecurityRequirementImpl.merge(requirement, newRequirement);
                     if (!to.getSecurity().contains(newRequirement)) {
@@ -246,9 +278,9 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
             }
         }
         // Handle @Tags
-        if (from.tags() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.tags.Tag tag : from.tags()) {
-                if (!isAnnotationNull(tag)) {
+        if (from.getTags()!= null) {
+            for (Tag tag : from.getTags()) {
+                if (tag != null) {
                     if (to.getTags() == null) {
                         to.setTags(new ArrayList<>());
                     }
@@ -259,7 +291,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
             }
         }
         // Handle @Components
-        ComponentsImpl.merge(from.components(), to.getComponents(), override, null);
+        ComponentsImpl.merge(from.getComponents(), to.getComponents(), override, context);
     }
 
 }

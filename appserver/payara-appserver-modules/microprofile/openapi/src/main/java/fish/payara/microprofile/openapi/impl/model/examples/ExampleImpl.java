@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,14 @@
  */
 package fish.payara.microprofile.openapi.impl.model.examples;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
-import java.util.Map;
-
-import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
-import org.eclipse.microprofile.openapi.models.examples.Example;
-
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
+import static fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor.getValue;
+import java.util.Map;
+import org.eclipse.microprofile.openapi.models.examples.Example;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class ExampleImpl extends ExtensibleImpl<Example> implements Example {
 
@@ -57,6 +55,19 @@ public class ExampleImpl extends ExtensibleImpl<Example> implements Example {
     private Object value;
     private String externalValue;
     private String ref;
+
+    public static Example createInstance(AnnotationModel annotation) {
+        Example from = new ExampleImpl();
+        from.setSummary(ApplicationProcessor.getValue("summary", String.class, annotation));
+        from.setDescription(ApplicationProcessor.getValue("description", String.class, annotation));
+        from.setValue(ApplicationProcessor.getValue("value", Object.class, annotation));
+        from.setExternalValue(ApplicationProcessor.getValue("externalValue", String.class, annotation));
+        String ref = ApplicationProcessor.getValue("ref", String.class, annotation);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        return from;
+    }
 
     @Override
     public String getSummary() {
@@ -111,24 +122,22 @@ public class ExampleImpl extends ExtensibleImpl<Example> implements Example {
         this.ref = ref;
     }
 
-    public static void merge(ExampleObject from, Example to, boolean override) {
-        if (isAnnotationNull(from)) {
+    public static void merge(Example from, Example to, boolean override) {
+        if (from == null) {
             return;
         }
-        to.setSummary(mergeProperty(to.getSummary(), from.summary(), override));
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setValue(mergeProperty(to.getValue(), from.value(), override));
-        to.setExternalValue(mergeProperty(to.getExternalValue(), from.externalValue(), override));
+        to.setSummary(mergeProperty(to.getSummary(), from.getSummary(), override));
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setValue(mergeProperty(to.getValue(), from.getValue(), override));
+        to.setExternalValue(mergeProperty(to.getExternalValue(), from.getExternalValue(), override));
     }
 
-    public static void merge(ExampleObject example, Map<String, Example> examples, boolean override) {
-        if (isAnnotationNull(example)) {
+    public static void merge(String exampleName, Example example, Map<String, Example> examples, boolean override) {
+        if (example == null) {
             return;
         }
 
-        // Get the example name
-        String exampleName = example.name();
-        if (example.name() == null || example.name().isEmpty()) {
+        if (exampleName == null || exampleName.isEmpty()) {
             exampleName = UNKNOWN_ELEMENT_NAME;
         }
 
