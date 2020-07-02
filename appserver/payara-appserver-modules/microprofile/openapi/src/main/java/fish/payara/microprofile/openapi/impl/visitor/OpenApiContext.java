@@ -61,6 +61,7 @@ public class OpenApiContext implements ApiContext {
         this.api = api;
         this.path = path;
         this.operation = operation;
+        this.appClassLoader = appClassLoader;
     }
 
     public OpenApiContext(Set<Type> applicationClasses, ClassLoader appClassLoader, OpenAPI api, String path) {

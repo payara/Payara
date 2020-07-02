@@ -39,7 +39,9 @@
  */
 package fish.payara.microprofile.openapi.impl.model.util;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
+import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -267,11 +269,11 @@ public final class ModelUtils {
         }
     }
 
-    public static SchemaType getSchemaType(org.glassfish.hk2.classmodel.reflect.ParameterizedType type) {
+    public static SchemaType getSchemaType(org.glassfish.hk2.classmodel.reflect.ParameterizedType type, ApiContext context) {
         if(type.isArray()) {
             return SchemaType.ARRAY;
         } else {
-            return getSchemaType(type.getTypeName());
+            return getSchemaType(type.getTypeName(), context);
         }
     }
 
@@ -281,39 +283,36 @@ public final class ModelUtils {
      * @param typeName the class to map.
      * @return the schema type the class corresponds to.
      */
-    public static SchemaType getSchemaType(String typeName) {
-        if ("boolean".equals(typeName)) {
-            return SchemaType.BOOLEAN;
-        }
-        if ("int".equals(typeName)) {
-            return SchemaType.INTEGER;
-        }
-        if ("short".equals(typeName) || "long".equals(typeName)
-                || "float".equals(typeName) || "double".equals(typeName)) {
-            return SchemaType.NUMBER;
-        }
+    public static SchemaType getSchemaType(String typeName, ApiContext context) {
         if (String.class.getName().equals(typeName)) {
             return SchemaType.STRING;
         }
-        if (Boolean.class.getName().equals(typeName)) {
+        if ("boolean".equals(typeName) || Boolean.class.getName().equals(typeName)) {
             return SchemaType.BOOLEAN;
         }
-        if (Integer.class.getName().equals(typeName)) {
+        if ("int".equals(typeName) || Integer.class.getName().equals(typeName)) {
             return SchemaType.INTEGER;
         }
-        if (Short.class.getName().equals(typeName)
+        if ("short".equals(typeName)
+                || "long".equals(typeName)
+                || "float".equals(typeName)
+                || "double".equals(typeName)
+                || Short.class.getName().equals(typeName)
                 || Long.class.getName().equals(typeName)
                 || Float.class.getName().equals(typeName)
                 || Double.class.getName().equals(typeName)) {
             return SchemaType.NUMBER;
         }
-        Class type;
+        Class clazz = null;
         try {
-            type = Class.forName(typeName);
-        } catch (ClassNotFoundException ex) {
-            return SchemaType.OBJECT;
+            clazz = context.getApplicationClassLoader().loadClass(typeName);
+        } catch (Throwable app) {
+            try {
+                clazz = Class.forName(typeName);
+            } catch (Throwable t) {
+            }
         }
-        if (type.isArray() || Iterable.class.isAssignableFrom(type)) {
+        if (clazz != null && (clazz.isArray() || Iterable.class.isAssignableFrom(clazz))) {
             return SchemaType.ARRAY;
         }
         return SchemaType.OBJECT;

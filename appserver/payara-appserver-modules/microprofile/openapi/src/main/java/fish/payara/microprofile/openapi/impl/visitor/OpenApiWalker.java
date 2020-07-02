@@ -48,6 +48,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOpe
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getResourcePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,15 +114,17 @@ public class OpenApiWalker implements ApiWalker {
 
     private final OpenAPI api;
     private final Set<Type> types;
+    private final Set<Type> allowedTypes;
     private final Map<String, Set<String>> resourceMapping;
     private final ClassLoader appClassLoader;
 
-    public OpenApiWalker(OpenAPI api, Set<Type> types, ClassLoader appClassLoader) {
+    public OpenApiWalker(OpenAPI api, Set<Type> types, Set<Type> allowedTypes,  ClassLoader appClassLoader) {
         this.api = api;
         this.types = new TreeSet<>(Comparator.comparing(Type::getName, String::compareTo));
         this.types.addAll(types);
+        this.allowedTypes = allowedTypes;
         this.appClassLoader = appClassLoader;
-        this.resourceMapping = generateResourceMapping(types);
+        this.resourceMapping = generateResourceMapping();
     }
 
     @Override
@@ -181,7 +184,7 @@ public class OpenApiWalker implements ApiWalker {
             Class<A> annotationClass, VisitorFunction<AnnotationModel, E> annotationFunction, 
             Class<? extends Annotation>... alternatives) {
 
-        for (Type type : types) {
+        for (Type type : allowedTypes) {
             if(type instanceof ClassModel) {
                 processAnnotation((ClassModel)type, annotationClass, annotationFunction, alternatives);
             }
@@ -258,10 +261,10 @@ public class OpenApiWalker implements ApiWalker {
     /**
      * Generates a map listing the location each resource class is mapped to.
      */
-    private Map<String, Set<String>> generateResourceMapping(Set<Type> types) {
+    private Map<String, Set<String>> generateResourceMapping() {
         Set<String> classList = new HashSet<>();
         Map<String, Set<String>> mapping = new HashMap<>();
-        for (Type type : types) {
+        for (Type type : allowedTypes) {
             if(type instanceof ClassModel) {
                 ClassModel classModel = (ClassModel) type;
                 if(classModel.getAnnotation(ApplicationPath.class.getName()) != null) {

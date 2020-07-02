@@ -114,12 +114,18 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     /**
      * A list of all classes in the given application.
      */
-    private final Collection<Type> types;
+    private final Set<Type> types;
+
+    /**
+     * A list of allowed classes for scanning
+     */
+    private final Set<Type> allowedTypes;
 
     private final ClassLoader appClassLoader;
 
     public ApplicationProcessor(ApplicationInfo appInfo) {
-        this.types = filterTypes(appInfo);
+        this.types = new HashSet<>(appInfo.getTypes().getAllTypes());
+        this.allowedTypes = filterTypes(appInfo);
         this.appClassLoader = appInfo.getAppClassLoader();
     }
 
@@ -127,15 +133,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * @param types parsed application classes
      * @param appClassLoader the class loader for the application.
      */
-    public ApplicationProcessor(Collection<Type> types, ClassLoader appClassLoader) {
+    public ApplicationProcessor(Set<Type> types, Set<Type> allowedTypes, ClassLoader appClassLoader) {
         this.types = types;
+        this.allowedTypes = allowedTypes;
         this.appClassLoader = appClassLoader;
     }
 
     /**
      * @return a list of all classes in the archive.
      */
-    private Collection<Type> filterTypes(ApplicationInfo appInfo) {
+    private Set<Type> filterTypes(ApplicationInfo appInfo) {
         ReadableArchive archive = appInfo.getSource();
         return Collections.list(archive.entries()).stream()
                 // Only use the classes
@@ -152,7 +159,12 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public OpenAPI process(OpenAPI api, OpenApiConfiguration config) {
         if (config == null || !config.getScanDisable()) {
-            ApiWalker apiWalker = new OpenApiWalker(api, config == null ? new HashSet<>(types) : config.getValidClasses(types), appClassLoader);
+            ApiWalker apiWalker = new OpenApiWalker(
+                    api,
+                    types,
+                    config == null ? allowedTypes : config.getValidClasses(allowedTypes),
+                    appClassLoader
+            );
             apiWalker.accept(this);
         }
         return api;
@@ -375,8 +387,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     .getMethod().getParameters();
             for (org.glassfish.hk2.classmodel.reflect.Parameter methodParam : parameters) {
                 if (methodParam.getAnnotation(FormParam.class.getName()) != null) {
-                    formSchemaType = ModelUtils.getParentSchemaType(formSchemaType,
-                            ModelUtils.getSchemaType(methodParam));
+                    formSchemaType = ModelUtils.getParentSchemaType(
+                            formSchemaType,
+                            ModelUtils.getSchemaType(methodParam, context)
+                    );
                 }
             }
         }
@@ -417,14 +431,14 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
             org.glassfish.hk2.classmodel.reflect.Parameter parameter = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
-            schema.setType(ModelUtils.getSchemaType(parameter.getTypeName()));
+            schema.setType(ModelUtils.getSchemaType(parameter.getTypeName(), context));
         } else {
             FieldModel field = (FieldModel) element;
-            schema.setType(ModelUtils.getSchemaType(field.getTypeName()));
+            schema.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
         }
 
         if (schema.getType() == SchemaType.ARRAY) {
-            schema.setItems(getArraySchema(element));
+            schema.setItems(getArraySchema(element, context));
             if (defaultValue != null) {
                 schema.getItems().setDefaultValue(defaultValue);
             }
@@ -445,7 +459,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
     }
 
-    private static SchemaImpl getArraySchema(AnnotatedElement element) {
+    private static SchemaImpl getArraySchema(AnnotatedElement element, ApiContext context) {
         SchemaImpl arraySchema = new SchemaImpl();
         List<org.glassfish.hk2.classmodel.reflect.ParameterizedType> parameterizedType;
 
@@ -457,7 +471,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             parameterizedType = field.getGenericTypes();
         }
 
-        arraySchema.setType(ModelUtils.getSchemaType(parameterizedType.get(0).getTypeName()));
+        arraySchema.setType(ModelUtils.getSchemaType(parameterizedType.get(0).getTypeName(), context));
         return arraySchema;
     }
 
@@ -593,7 +607,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         org.eclipse.microprofile.openapi.models.media.Schema property = new SchemaImpl();
         parent.addProperty(schemaName, property);
-        property.setType(ModelUtils.getSchemaType(field.getTypeName()));
+        property.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
         SchemaImpl.merge(schema, property, true, context);
     }
 
@@ -1002,16 +1016,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         List<org.glassfish.hk2.classmodel.reflect.ParameterizedType> genericType = type.getGenericTypes();
 
         org.eclipse.microprofile.openapi.models.media.Schema schema = new SchemaImpl();
-        SchemaType schemaType = ModelUtils.getSchemaType(type);
+        SchemaType schemaType = ModelUtils.getSchemaType(type, context);
         schema.setType(schemaType);
 
         // Set the subtype if it's an array (for example an array of ints)
         if (schemaType == SchemaType.ARRAY) {
             if (type.isArray()) {
-                schemaType = ModelUtils.getSchemaType(type.getTypeName());
+                schemaType = ModelUtils.getSchemaType(type.getTypeName(), context);
                 schema.setType(schemaType);
-            } else { // should be something Iterable
-                schema.setItems(createSchema(context, genericType.get(0)));
+            } else if (!genericType.isEmpty()) { // should be something Iterable
+                    schema.setItems(createSchema(context, genericType.get(0)));
             }
         }
 
@@ -1031,7 +1045,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             AnnotatedElement annotatedElement,
             org.glassfish.hk2.classmodel.reflect.ParameterizedType type) {
 
-        SchemaType schemaType = ModelUtils.getSchemaType(type);
+        SchemaType schemaType = ModelUtils.getSchemaType(type, context);
 
         // If the annotated element is the same type as the reference class, return a null schema
         if (schemaType == SchemaType.OBJECT && type.getType().equals(annotatedElement)) {

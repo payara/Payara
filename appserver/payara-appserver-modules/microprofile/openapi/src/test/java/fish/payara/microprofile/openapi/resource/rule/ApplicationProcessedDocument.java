@@ -82,7 +82,7 @@ public class ApplicationProcessedDocument {
             new BaseProcessor(asList(new URL("http://localhost:8080/testlocation_123"))).process(document, null);
 
             // Apply application processor
-            new ApplicationProcessor(getApplicationTypes(extraClasses), appClassLoader).process(document, null);
+            new ApplicationProcessor(getApplicationTypes(extraClasses), getApplicationTypes(extraClasses), appClassLoader).process(document, null);
             if (filter != null) {
                 new FilterProcessor(filter.newInstance()).process(document, null);
             }

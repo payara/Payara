@@ -755,7 +755,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 // Get the schema reference, and copy it's values over to the new schema model
                 Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
                 if (copyFrom == null) {
-                    SchemaType schemaType = ModelUtils.getSchemaType(implementationClass);
+                    SchemaType schemaType = ModelUtils.getSchemaType(implementationClass, context);
                     copyFrom = new SchemaImpl().type(schemaType);
                 }
                 if (to.getType() == SchemaType.ARRAY) {

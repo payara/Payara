@@ -42,10 +42,7 @@ package fish.payara.microprofile.openapi.impl.visitor;
 
 import fish.payara.microprofile.openapi.resource.classloader.ApplicationClassLoader;
 import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
-import fish.payara.microprofile.openapi.spec.Field;
-import fish.payara.microprofile.openapi.spec.OpenApiValidator;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
-import fish.payara.microprofile.openapi.test.util.JsonUtils;
 import java.io.IOException;
 import org.junit.Test;
 
@@ -93,6 +90,7 @@ public class OpenApiWalkerTest extends OpenApiApplicationTest {
         ApplicationClassLoader appClassLoader = new ApplicationClassLoader(testedClasssses);
 
         final OpenApiWalker openApiWalker = new OpenApiWalker(getDocument(),
+                ApplicationProcessedDocument.getApplicationTypes(testedClasssses.toArray(new Class<?>[0])),
                 ApplicationProcessedDocument.getApplicationTypes(testedClasssses.toArray(new Class<?>[0])),
                 appClassLoader);
         final java.lang.reflect.Field sortedClassesField = OpenApiWalker.class.getDeclaredField("types");
