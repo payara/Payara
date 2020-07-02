@@ -92,10 +92,12 @@ public abstract class AbstractRemoteCertificateManagementCommand implements Admi
             for (Protocol protocol : protocols) {
                 if (protocol.getName().equals(listener)) {
                     Ssl sslConfig = protocol.getSsl();
-                    if (StringUtils.ok(sslConfig.getKeyStore())) {
-                        keystore = new File(TranslatedConfigView.expandConfigValue(sslConfig.getKeyStore()));
-                        keystorePassword = TranslatedConfigView.expandConfigValue(sslConfig.getKeyStorePassword())
-                                .toCharArray();
+                    if (sslConfig != null) {
+                        if (StringUtils.ok(sslConfig.getKeyStore())) {
+                            keystore = new File(TranslatedConfigView.expandConfigValue(sslConfig.getKeyStore()));
+                            keystorePassword = TranslatedConfigView.expandConfigValue(sslConfig.getKeyStorePassword())
+                                    .toCharArray();
+                        }
                     }
                 }
             }
@@ -149,10 +151,12 @@ public abstract class AbstractRemoteCertificateManagementCommand implements Admi
             for (Protocol protocol : protocols) {
                 if (protocol.getName().equals(listener)) {
                     Ssl sslConfig = protocol.getSsl();
-                    if (StringUtils.ok(sslConfig.getTrustStore())) {
-                        truststore = new File(TranslatedConfigView.expandConfigValue(sslConfig.getTrustStore()));
-                        truststorePassword = TranslatedConfigView.expandConfigValue(sslConfig.getTrustStorePassword())
-                                .toCharArray();
+                    if (sslConfig != null) {
+                        if (StringUtils.ok(sslConfig.getTrustStore())) {
+                            truststore = new File(TranslatedConfigView.expandConfigValue(sslConfig.getTrustStore()));
+                            truststorePassword = TranslatedConfigView.expandConfigValue(sslConfig.getTrustStorePassword())
+                                    .toCharArray();
+                        }
                     }
                 }
             }

@@ -48,23 +48,35 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 @Service(name = "list-certificates")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value = {RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
-@RestEndpoint(configBean = Server.class,
-        opType = RestEndpoint.OpType.GET,
-        path = "list-instances",
-        description = "List Instances")
+@RestEndpoints({
+        @RestEndpoint(configBean = Server.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "list-certificates",
+                description = "List Keys and Certificates in key or trust store",
+                params = {
+                        @RestParam(name = "target", value = "$parent")
+                }
+        )
+})
 public class ListCertificatesCommand extends AbstractRemoteCertificateManagementCommand {
 
     @Param(name = "listkeys", optional = true)
@@ -88,20 +100,44 @@ public class ListCertificatesCommand extends AbstractRemoteCertificateManagement
 
         initStoresAndPasswords();
 
+        Properties extraProps = new Properties();
         try {
+            List<Map<String, String>> entriesList = new ArrayList<>();
             if (listKeys) {
+                Map<String, String> keyEntries = CertificateManagementCommon.getEntries(
+                        keystore, keystorePassword, alias, verbose);
                 context.getActionReport().appendMessage("Key Store Entries: \n");
-                appendMessage(context, CertificateManagementCommon.getEntries(
-                        keystore, keystorePassword, alias, verbose));
+                appendMessage(context, keyEntries);
+
+                for (Map.Entry<String, String> keyEntry : keyEntries.entrySet()) {
+                    Map<String, String> keyEntryMap = new HashMap<>();
+                    keyEntryMap.put("alias", keyEntry.getKey());
+                    keyEntryMap.put("entry", keyEntry.getValue());
+                    keyEntryMap.put("store", keystore.getAbsolutePath());
+                    entriesList.add(keyEntryMap);
+                }
             }
             if (listTrusted) {
+                Map<String, String> trustEntries = CertificateManagementCommon.getEntries(
+                        truststore, truststorePassword, alias, verbose);
                 context.getActionReport().appendMessage("Trust Store Entries: \n");
-                appendMessage(context, CertificateManagementCommon.getEntries(
-                        truststore, truststorePassword, alias, verbose));
+                appendMessage(context, trustEntries);
+
+                for (Map.Entry<String, String> trustEntry : trustEntries.entrySet()) {
+                    Map<String, String> trustEntryMap = new HashMap<>();
+                    trustEntryMap.put("alias", trustEntry.getKey());
+                    trustEntryMap.put("entry", trustEntry.getValue());
+                    trustEntryMap.put("store", truststore.getAbsolutePath());
+                    entriesList.add(trustEntryMap);
+                }
             }
+            extraProps.put("entries", entriesList);
         } catch (CommandException e) {
-            e.printStackTrace();
+            context.getActionReport().failure(context.getLogger(), "Error getting store entries", e);
+            return;
         }
+
+        context.getActionReport().setExtraProperties(extraProps);
     }
 
     private void initStoresAndPasswords() {

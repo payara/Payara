@@ -38,7 +38,7 @@
  * holder.
  */
 
-package fish.payara.admingui.microprofile;
+package fish.payara.admingui.certificate.management;
 
 import java.net.URL;
 import org.glassfish.api.admingui.ConsoleProvider;
@@ -47,10 +47,23 @@ import org.jvnet.hk2.annotations.Service;
 /**
  *  @author Andrew Pielage
  */
+/**
+ *  <p> This class serves as a marker to indicate this OSGi bundle provides GUI
+ *      content which is to be displayed in the GlassFish admin console.  The
+ *      {@link #getConfiguration()} method should either return
+ *      <code>(null)</code>, or a <code>URL</code> to the
+ *      <code>console-config.xml</code> file.</p>
+ *
+ *  @author Ken Paulsen (ken.paulsen@sun.com)
+ */
 @Service
-public class MicroProfilePlugin implements ConsoleProvider {
+public class CertificateManagementConsolePlugin implements ConsoleProvider {
 
-    @Override
+    /**
+     * <p> Returns a <code>URL</code> to the <code>console-config.xml</code>
+     *     file, or <code>null</code>.  If <code>null</code> is returned, the
+     *     default ("META-INF/admingui/console-config.xml") will be used.</p>
+     */
     public URL getConfiguration() {
         return null;
     }

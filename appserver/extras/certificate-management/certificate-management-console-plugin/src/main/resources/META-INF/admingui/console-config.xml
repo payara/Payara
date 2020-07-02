@@ -40,19 +40,19 @@
 -->
 
 <console-config id="certificateManagement">
+
     <integration-point
-        id="certificateManagement"
-        type="org.glassfish.admingui:navNode"
-        priority="500"
-        parentId="#{configNameId}"
-        content="pluginTreeNodeMicroprofile.jsf"
-    />
-    
+            id="certificateManagement"
+            type="org.glassfish.admingui:standaloneInstTab"
+            priority="500"
+            parentId="standaloneInstanceTabs"
+            content="certificateManagementInstanceTabs.jsf" />
+
     <integration-point
-        id="certificateManagementLink"
-        type="org.glassfish.admingui:configuration"
-        priority="500"
-        parentId="propSheetSection"
-        content="certificateManagement/certificateManagementLink.jsf"
-    />
+            id="certificateManagement"
+            type="org.glassfish.admingui:serverInstTab"
+            priority="500"
+            parentId="serverInstTabs"
+            content="certificateManagementServerTabs.jsf" />
+
 </console-config>

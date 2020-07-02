@@ -59,5 +59,21 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>console-common</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jsftemplating</groupId>
+            <artifactId>jsftemplating</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.orb</groupId>
+            <artifactId>orb-enabler</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
