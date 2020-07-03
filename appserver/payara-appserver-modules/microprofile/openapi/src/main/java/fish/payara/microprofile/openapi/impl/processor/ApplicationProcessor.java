@@ -851,7 +851,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (element instanceof MethodModel) {
             org.eclipse.microprofile.openapi.models.servers.Server newServer = new ServerImpl();
             context.getWorkingOperation().addServer(newServer);
-            ServerImpl.merge(ServerImpl.createInstance(server), newServer, true);
+            ServerImpl.merge(ServerImpl.createInstance(server, context), newServer, true);
         }
     }
 
@@ -865,7 +865,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     @Override
     public void visitTag(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
-        org.eclipse.microprofile.openapi.models.tags.Tag from = TagImpl.createInstance(annotation);
+        org.eclipse.microprofile.openapi.models.tags.Tag from = TagImpl.createInstance(annotation, context);
         if (element instanceof MethodModel) {
             TagImpl.merge(from, context.getWorkingOperation(), true, context.getApi().getTags());
         } else {
@@ -900,7 +900,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public void visitSecurityScheme(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         String securitySchemeName = annotation.getValue("securitySchemeName", String.class);
-        org.eclipse.microprofile.openapi.models.security.SecurityScheme securityScheme = SecuritySchemeImpl.createInstance(annotation);
+        org.eclipse.microprofile.openapi.models.security.SecurityScheme securityScheme = SecuritySchemeImpl.createInstance(annotation, context);
         if (securitySchemeName != null && !securitySchemeName.isEmpty()) {
             org.eclipse.microprofile.openapi.models.security.SecurityScheme newScheme = context.getApi().getComponents()
                     .getSecuritySchemes().getOrDefault(securitySchemeName, new SecuritySchemeImpl());
@@ -921,7 +921,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitSecurityRequirement(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         if (element instanceof MethodModel) {
             String securityRequirementName = annotation.getValue("name", String.class);
-            org.eclipse.microprofile.openapi.models.security.SecurityRequirement securityRequirement = SecurityRequirementImpl.createInstance(annotation);
+            org.eclipse.microprofile.openapi.models.security.SecurityRequirement securityRequirement = SecurityRequirementImpl.createInstance(annotation, context);
             if (securityRequirementName != null && !securityRequirementName.isEmpty()) {
                 org.eclipse.microprofile.openapi.models.security.SecurityRequirement model = new SecurityRequirementImpl();
                 SecurityRequirementImpl.merge(securityRequirement, model);

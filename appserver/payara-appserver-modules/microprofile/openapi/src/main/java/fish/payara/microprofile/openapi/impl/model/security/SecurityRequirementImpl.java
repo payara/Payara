@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model.security;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,7 +53,7 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
 
     private static final long serialVersionUID = -677783376083861245L;
 
-    public static SecurityRequirement createInstance(AnnotationModel annotation) {
+    public static SecurityRequirement createInstance(AnnotationModel annotation, ApiContext context) {
         SecurityRequirement from = new SecurityRequirementImpl();
         String name = annotation.getValue("name", String.class);
         List<String> scopes = annotation.getValue("scopes", List.class);

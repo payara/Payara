@@ -39,7 +39,9 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -67,15 +69,9 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
     protected List<Server> servers = new ArrayList<>();
     protected List<Parameter> parameters = new ArrayList<>();
 
-    public static PathItem createInstance(AnnotationModel annotation) {
+    public static PathItem createInstance(AnnotationModel annotation, ApiContext context) {
         PathItem from = new PathItemImpl();
-
-        List<AnnotationModel> servers = annotation.getValue("servers", List.class);
-        if (servers != null) {
-            for (AnnotationModel server : servers) {
-                from.getServers().add(ServerImpl.createInstance(server));
-            }
-        }
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers());
         return from;
     }
 

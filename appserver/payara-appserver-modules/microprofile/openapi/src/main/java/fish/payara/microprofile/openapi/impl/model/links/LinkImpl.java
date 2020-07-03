@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model.links;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
@@ -61,7 +62,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
     private String ref;
     private Server server;
 
-    public static Link createInstance(AnnotationModel annotation) {
+    public static Link createInstance(AnnotationModel annotation, ApiContext context) {
         Link from = new LinkImpl();
         from.setOperationRef(annotation.getValue("operationRef", String.class));
         from.setOperationId(annotation.getValue("operationId", String.class));
@@ -82,7 +83,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
         }
         AnnotationModel serverAnnotation = annotation.getValue("server", AnnotationModel.class);
         if(serverAnnotation != null) {
-            from.setServer(ServerImpl.createInstance(serverAnnotation));
+            from.setServer(ServerImpl.createInstance(serverAnnotation, context));
         }
         return from;
     }

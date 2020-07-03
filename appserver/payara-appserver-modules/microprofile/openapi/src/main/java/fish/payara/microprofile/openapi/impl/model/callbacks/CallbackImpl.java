@@ -44,6 +44,7 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
 import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getHttpMethod;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOrCreateOperation;
 import java.util.ArrayList;
@@ -74,14 +75,9 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
         String urlExpression = annotation.getValue("callbackUrlExpression", String.class);
         if (urlExpression != null && !urlExpression.isEmpty()) {
             List<Operation> operations = new ArrayList<>();
-            List<AnnotationModel> operationAnnotations = annotation.getValue("operations", List.class);
-            if (operationAnnotations != null) {
-                for (AnnotationModel operation : operationAnnotations) {
-                    operations.add(OperationImpl.createInstance(operation, context));
-                }
-            }
-            from.setUrlExpression(urlExpression);
             from.setOperations(operations);
+            extractAnnotations(annotation, context, "operations", OperationImpl::createInstance, from.getOperations());
+            from.setUrlExpression(urlExpression);
         }
         return from;
     }

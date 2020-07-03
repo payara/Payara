@@ -219,7 +219,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     private Schema getSchemaInstance(String schemaClassName, ApiContext context) {
-        Schema to = null;
         if (schemaClassName != null
                 && !schemaClassName.equals("java.lang.Void")) {
             Type schemaType = context.getType(schemaClassName);
@@ -228,14 +227,14 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 if (schemaClassModel.isInstanceOf(Schema.class.getName())) {
                     try {
                         Class<?> oneOfClass = context.getApplicationClassLoader().loadClass(schemaClassName);
-                        to = (Schema) oneOfClass.newInstance();
+                        return (Schema) oneOfClass.newInstance();
                     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                         LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
                     }
                 }
             }
         }
-        return to;
+        return null;
     }
 
     @Override

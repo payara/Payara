@@ -49,9 +49,12 @@ import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -79,6 +82,7 @@ import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.ClassModel;
 import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.Type;
@@ -423,6 +427,48 @@ public final class ModelUtils {
         return true;
     }
 
+    public static <T> void extractAnnotations(
+            AnnotationModel annotationModel,
+            ApiContext context,
+            String type,
+            String key,
+            BiFunction<AnnotationModel, ApiContext, T> factory,
+            Map<String, T> wrapper) {
+
+        if (wrapper == null) {
+            throw new IllegalArgumentException();
+        }
+        List<AnnotationModel> annotations = annotationModel.getValue(type, List.class);
+        if (annotations != null) {
+            for (AnnotationModel annotation : annotations) {
+                wrapper.put(
+                        annotation.getValue(key, String.class),
+                        factory.apply(annotation, context)
+                );
+            }
+        }
+    }
+
+    public static <T> void extractAnnotations(
+            AnnotationModel annotationModel,
+            ApiContext context,
+            String type,
+            BiFunction<AnnotationModel, ApiContext, T> factory,
+            List<T> wrapper) {
+
+        if (wrapper == null) {
+            throw new IllegalArgumentException();
+        }
+        List<AnnotationModel> annotations = annotationModel.getValue(type, List.class);
+        if (annotations != null) {
+            for (AnnotationModel annotation : annotations) {
+                wrapper.add(
+                        factory.apply(annotation, context)
+                );
+            }
+        }
+    }
+
     public static Boolean mergeProperty(Boolean current, boolean offer, boolean override) {
         return mergeProperty(current, Boolean.valueOf(offer), override);
     }
@@ -563,16 +609,6 @@ public final class ModelUtils {
                 PathItem.HttpMethod httpMethod = getHttpMethod(method);
                 return pathItem.getOperations().get(httpMethod);
             }
-        }
-        return null;
-    }
-
-    public static String getResourcePath(GenericDeclaration declaration, Map<String, Set<String>> resourceMapping) {
-        if (declaration instanceof Method) {
-            return getResourcePath((Method) declaration, resourceMapping);
-        }
-        if (declaration instanceof Class) {
-            return getResourcePath((Class<?>) declaration, resourceMapping);
         }
         return null;
     }

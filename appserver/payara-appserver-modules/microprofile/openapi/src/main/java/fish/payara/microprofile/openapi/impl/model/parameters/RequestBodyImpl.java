@@ -43,6 +43,7 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
 
     private String description;
     private Content content = new ContentImpl();
-    private List<Content> contents = new ArrayList<>();
+    private List<ContentImpl> contents = new ArrayList<>();
     private Boolean required;
     private String ref;
 
@@ -66,16 +67,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
-
-        List<AnnotationModel> contentAnnotations = annotation.getValue("content", List.class);
-        if (contentAnnotations != null && !contentAnnotations.isEmpty()) {
-            from.setContent(new ContentImpl());
-            for (AnnotationModel contentAnnotation : contentAnnotations) {
-                from.getContents().add(
-                        ContentImpl.createInstance(contentAnnotation, context)
-                );
-            }
-        }
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
         return from;
     }
 
@@ -122,11 +114,11 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
         this.ref = ref;
     }
 
-    public List<Content> getContents() {
+    public List<ContentImpl> getContents() {
         return contents;
     }
 
-    public void setContents(List<Content> contents) {
+    public void setContents(List<ContentImpl> contents) {
         this.contents = contents;
     }
 
@@ -147,7 +139,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
                 if (to.getContent() == null) {
                     to.setContent(new ContentImpl());
                 }
-                for (Content content : fromImpl.getContents()) {
+                for (ContentImpl content : fromImpl.getContents()) {
                     ContentImpl.merge(content, to.getContent(), override, context);
                 }
             }
@@ -157,7 +149,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
             if (to.getContent() == null) {
                 to.setContent(new ContentImpl());
             }
-            ContentImpl.merge(from.getContent(), to.getContent(), override, context);
+            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
         }
 
     }

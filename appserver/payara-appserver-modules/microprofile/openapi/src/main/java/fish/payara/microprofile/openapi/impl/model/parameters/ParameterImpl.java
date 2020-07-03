@@ -45,6 +45,7 @@ import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,8 +74,8 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
     private Schema schema;
     private Map<String, Example> examples = new HashMap<>();
     private Object example;
-    private Content content;
-    private List<Content> contents = new ArrayList<>();
+    private Content content = new ContentImpl();
+    private List<ContentImpl> contents = new ArrayList<>();
 
     public static Parameter createInstance(AnnotationModel annotation, ApiContext context) {
         ParameterImpl from = new ParameterImpl();
@@ -101,25 +102,9 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
         if (schemaAnnotation != null) {
             from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        List<AnnotationModel> examples = annotation.getValue("examples", List.class);
-        if (examples != null) {
-            for (AnnotationModel example : examples) {
-                from.getExamples().put(
-                        example.getValue("name", String.class),
-                        ExampleImpl.createInstance(example)
-                );
-            }
-        }
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples());
         from.setExample(annotation.getValue("example", Object.class));
-        List<AnnotationModel> contentAnnotations = annotation.getValue("content", List.class);
-        if (contentAnnotations != null && !contentAnnotations.isEmpty()) {
-            from.setContent(new ContentImpl());
-            for (AnnotationModel contentAnnotation : contentAnnotations) {
-                from.getContents().add(
-                        ContentImpl.createInstance(contentAnnotation, context)
-                );
-            }
-        }
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
         return from;
     }
 
@@ -266,11 +251,11 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
         this.content = content;
     }
 
-    public List<Content> getContents() {
+    public List<ContentImpl> getContents() {
         return contents;
     }
 
-    public void setContents(List<Content> contents) {
+    public void setContents(List<ContentImpl> contents) {
         this.contents = contents;
     }
 
@@ -333,7 +318,7 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
                 if (to.getContent() == null) {
                     to.setContent(new ContentImpl());
                 }
-                for (Content content : fromImpl.getContents()) {
+                for (ContentImpl content : fromImpl.getContents()) {
                     ContentImpl.merge(content, to.getContent(), override, context);
                 }
             }
@@ -343,7 +328,7 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
             if (to.getContent() == null) {
                 to.setContent(new ContentImpl());
             }
-            ContentImpl.merge(from.getContent(), to.getContent(), override, context);
+            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
         }
     }
 

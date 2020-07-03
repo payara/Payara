@@ -39,10 +39,10 @@
  */
 package fish.payara.microprofile.openapi.impl.model.examples;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
@@ -55,7 +55,7 @@ public class ExampleImpl extends ExtensibleImpl<Example> implements Example {
     private String externalValue;
     private String ref;
 
-    public static Example createInstance(AnnotationModel annotation) {
+    public static Example createInstance(AnnotationModel annotation, ApiContext context) {
         Example from = new ExampleImpl();
         from.setSummary(annotation.getValue("summary", String.class));
         from.setDescription(annotation.getValue("description", String.class));

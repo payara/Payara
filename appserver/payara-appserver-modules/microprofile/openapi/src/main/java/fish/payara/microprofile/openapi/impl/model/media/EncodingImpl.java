@@ -60,21 +60,8 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
     public static Encoding createInstance(AnnotationModel annotation, ApiContext context) {
         Encoding from = new EncodingImpl();
-
         from.setContentType(annotation.getValue("contentType", String.class));
-        List<AnnotationModel> headers = annotation.getValue("headers", List.class);
-        if (headers != null) {
-            for (AnnotationModel header : headers) {
-                String headerName = header.getValue("name", String.class);
-                if (headerName == null) {
-                    headerName = header.getValue("ref", String.class);
-                }
-                from.getHeaders().put(
-                        headerName,
-                        HeaderImpl.createInstance(header, context)
-                );
-            }
-        }
+        from.getHeaders().putAll(HeaderImpl.createInstances(annotation, context));
         String styleEnum = annotation.getValue("style", String.class);
         if (styleEnum != null) {
             from.setStyle(Style.valueOf(styleEnum.toUpperCase()));

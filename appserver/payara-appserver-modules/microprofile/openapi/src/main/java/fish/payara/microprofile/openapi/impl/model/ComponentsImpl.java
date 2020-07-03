@@ -49,6 +49,7 @@ import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
 import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -78,92 +79,15 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     public static Components createInstance(AnnotationModel annotation, ApiContext context) {
         Components from = new ComponentsImpl();
-
-        List<AnnotationModel> schemas = annotation.getValue("schemas", List.class);
-        if (schemas != null) {
-            for (AnnotationModel schema : schemas) {
-                from.getSchemas().put(
-                        schema.getValue("name", String.class),
-                        SchemaImpl.createInstance(schema, context)
-                );
-            }
-        }
-        List<AnnotationModel> responses = annotation.getValue("responses", List.class);
-        if (responses != null) {
-            for (AnnotationModel response : responses) {
-                from.getResponses().put(
-                        response.getValue("name", String.class),
-                        APIResponseImpl.createInstance(response, context)
-                );
-            }
-        }
-        List<AnnotationModel> parameters = annotation.getValue("parameters", List.class);
-        if (parameters != null) {
-            for (AnnotationModel parameter : parameters) {
-                from.getParameters().put(
-                        parameter.getValue("name", String.class),
-                        ParameterImpl.createInstance(parameter, context)
-                );
-            }
-        }
-        List<AnnotationModel> examples = annotation.getValue("examples", List.class);
-        if (examples != null) {
-            for (AnnotationModel example : examples) {
-                from.getExamples().put(
-                        example.getValue("name", String.class),
-                        ExampleImpl.createInstance(example)
-                );
-            }
-        }
-        List<AnnotationModel> requestBodies = annotation.getValue("requestBodies", List.class);
-        if (requestBodies != null) {
-            for (AnnotationModel requestBody : requestBodies) {
-                from.getRequestBodies().put(
-                        requestBody.getValue("name", String.class),
-                        RequestBodyImpl.createInstance(requestBody, context)
-                );
-            }
-        }
-        List<AnnotationModel> headers = annotation.getValue("headers", List.class);
-        if (headers != null) {
-            for (AnnotationModel header : headers) {
-                String headerName = header.getValue("name", String.class);
-                if(headerName == null) {
-                    headerName = header.getValue("ref", String.class);
-                }
-                from.getHeaders().put(
-                        headerName,
-                        HeaderImpl.createInstance(header, context)
-                );
-            }
-        }
-        List<AnnotationModel> securitySchemes = annotation.getValue("securitySchemes", List.class);
-        if (securitySchemes != null) {
-            for (AnnotationModel securityScheme : securitySchemes) {
-                from.getSecuritySchemes().put(
-                        securityScheme.getValue("securitySchemeName", String.class),
-                        SecuritySchemeImpl.createInstance(securityScheme)
-                );
-            }
-        }
-        List<AnnotationModel> links = annotation.getValue("links", List.class);
-        if (links != null) {
-            for (AnnotationModel link : links) {
-                from.getLinks().put(
-                        link.getValue("name", String.class),
-                        LinkImpl.createInstance(link)
-                );
-            }
-        }
-        List<AnnotationModel> callbacks = annotation.getValue("callbacks", List.class);
-        if (callbacks != null) {
-            for (AnnotationModel callback : callbacks) {
-                from.getCallbacks().put(
-                        callback.getValue("name", String.class),
-                        CallbackImpl.createInstance(callback, context)
-                );
-            }
-        }
+        extractAnnotations(annotation, context, "schemas", "name", SchemaImpl::createInstance, from.getSchemas());
+        extractAnnotations(annotation, context, "responses", "name", APIResponseImpl::createInstance, from.getResponses());
+        extractAnnotations(annotation, context, "parameters", "name", ParameterImpl::createInstance, from.getParameters());
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples());
+        extractAnnotations(annotation, context, "requestBodies", "name", RequestBodyImpl::createInstance, from.getRequestBodies());
+        extractAnnotations(annotation, context, "securitySchemes", "securitySchemeName", SecuritySchemeImpl::createInstance, from.getSecuritySchemes());
+        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks());
+        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks());
+        from.getHeaders().putAll(HeaderImpl.createInstances(annotation, context));
         return from;
     }
 

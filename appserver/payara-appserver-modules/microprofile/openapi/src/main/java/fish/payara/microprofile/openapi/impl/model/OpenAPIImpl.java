@@ -45,6 +45,7 @@ import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementI
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.Components;
@@ -79,24 +80,9 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
-        List<AnnotationModel> servers = annotation.getValue("servers", List.class);
-        if (servers != null) {
-            for (AnnotationModel server : servers) {
-                from.getServers().add(ServerImpl.createInstance(server));
-            }
-        }
-        List<AnnotationModel> securityElements = annotation.getValue("security", List.class);
-        if (securityElements != null) {
-            for (AnnotationModel security : securityElements) {
-                from.getSecurity().add(SecurityRequirementImpl.createInstance(security));
-            }
-        }
-        List<AnnotationModel> tags = annotation.getValue("tags", List.class);
-        if (tags != null) {
-            for (AnnotationModel tag : tags) {
-                from.getTags().add(TagImpl.createInstance(tag));
-            }
-        }
+        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from.getSecurity());
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers());
+        extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from.getTags());
         AnnotationModel components = annotation.getValue("components", AnnotationModel.class);
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));

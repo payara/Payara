@@ -44,7 +44,9 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
+import fish.payara.microprofile.openapi.impl.model.media.EncodingImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,37 +71,9 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
     public static APIResponseImpl createInstance(AnnotationModel annotation, ApiContext context) {
         APIResponseImpl from = new APIResponseImpl();
         from.setDescription(annotation.getValue("description", String.class));
-        List<AnnotationModel> headers = annotation.getValue("headers", List.class);
-        if (headers != null) {
-            for (AnnotationModel header : headers) {
-                String headerName = header.getValue("name", String.class);
-                if(headerName == null) {
-                    headerName = header.getValue("ref", String.class);
-                }
-                from.getHeaders().put(
-                        headerName,
-                        HeaderImpl.createInstance(header, context)
-                );
-            }
-        }
-        List<AnnotationModel> contentAnnotations = annotation.getValue("content", List.class);
-        if (contentAnnotations != null && !contentAnnotations.isEmpty()) {
-            from.setContent(new ContentImpl());
-            for (AnnotationModel contentAnnotation : contentAnnotations) {
-                from.getContents().add(
-                        ContentImpl.createInstance(contentAnnotation, context)
-                );
-            }
-        }
-        List<AnnotationModel> links = annotation.getValue("links", List.class);
-        if (links != null) {
-            for (AnnotationModel link : links) {
-                from.getLinks().put(
-                        link.getValue("name", String.class),
-                        LinkImpl.createInstance(link)
-                );
-            }
-        }
+        from.getHeaders().putAll(HeaderImpl.createInstances(annotation, context));
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
+        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks());
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
@@ -217,7 +191,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
             if (to.getContent() == null) {
                 to.setContent(new ContentImpl());
             }
-            ContentImpl.merge(from.getContent(), to.getContent(), override, context);
+            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
         }
         if (from instanceof APIResponseImpl) {
             APIResponseImpl fromImpl = (APIResponseImpl) from;
@@ -226,7 +200,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
                     to.setContent(new ContentImpl());
                 }
                 for (Content content : fromImpl.getContents()) {
-                    ContentImpl.merge(content, to.getContent(), override, context);
+                    ContentImpl.merge((ContentImpl)content, to.getContent(), override, context);
                 }
             }
         }
@@ -234,7 +208,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
             if (to.getContent() == null) {
                 to.setContent(new ContentImpl());
             }
-            ContentImpl.merge(from.getContent(), to.getContent(), override, context);
+            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
         }
         if (from.getHeaders()!= null) {
             for (String headerName : from.getHeaders().keySet()) {

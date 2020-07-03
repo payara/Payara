@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model.servers;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +53,7 @@ public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implement
 
     protected List<String> enumeration = new ArrayList<>();
 
-    public static ServerVariable createInstance(AnnotationModel annotation) {
+    public static ServerVariable createInstance(AnnotationModel annotation, ApiContext context) {
         ServerVariable from = new ServerVariableImpl();
         from.setDescription(annotation.getValue("description", String.class));
         from.setDefaultValue(annotation.getValue("defaultValue", String.class));

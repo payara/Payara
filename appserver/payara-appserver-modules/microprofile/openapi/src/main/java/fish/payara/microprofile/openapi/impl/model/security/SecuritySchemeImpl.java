@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model.security;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
@@ -62,7 +63,7 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
 
     private String apiKeyName;
 
-    public static SecurityScheme createInstance(AnnotationModel annotation) {
+    public static SecurityScheme createInstance(AnnotationModel annotation, ApiContext context) {
         SecuritySchemeImpl from = new SecuritySchemeImpl();
         EnumModel type = annotation.getValue("type", EnumModel.class);
         if (type != null) {
