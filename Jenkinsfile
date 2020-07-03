@@ -110,6 +110,10 @@ pipeline {
         }
         stage('Run MP TCK Tests') {
             steps {
+                sh "export MY_STRING_PROPERTY=woohoo"
+                sh "export my_string_property=haha"
+                sh "export MY_BOOLEAN_PROPERTY=true"
+                sh "export my_int_property=45"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean verify \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
