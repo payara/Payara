@@ -600,8 +600,10 @@ public final class ModelUtils {
         }
     }
 
-    public static org.eclipse.microprofile.openapi.models.Operation getOperation(MethodModel method,
-            OpenAPI api, Map<String, Set<String>> resourceMapping) {
+    public static org.eclipse.microprofile.openapi.models.Operation getOperation(
+            MethodModel method,
+            OpenAPI api,
+            Map<String, Set<Type>> resourceMapping) {
         String path = getResourcePath(method, resourceMapping);
         if (path != null) {
             PathItem pathItem = api.getPaths().getPathItem(path);
@@ -613,7 +615,7 @@ public final class ModelUtils {
         return null;
     }
 
-    public static String getResourcePath(Type declaration, Map<String, Set<String>> resourceMapping) {
+    public static String getResourcePath(Type declaration, Map<String, Set<Type>> resourceMapping) {
         if (declaration instanceof MethodModel) {
             return getResourcePath((MethodModel) declaration, resourceMapping);
         } else if (declaration instanceof ClassModel) {
@@ -622,12 +624,12 @@ public final class ModelUtils {
         return null;
     }
 
-    public static String getResourcePath(ClassModel clazz, Map<String, Set<String>> resourceMapping) {
+    public static String getResourcePath(ClassModel clazz, Map<String, Set<Type>> resourceMapping) {
         // If the class is a resource and contains a mapping
         AnnotationInfo annotations = AnnotationInfo.valueOf(clazz);
         if (annotations.isAnnotationPresent(Path.class)) {
-            for (Map.Entry<String, Set<String>> entry : resourceMapping.entrySet()) {
-                if (entry.getValue() != null && entry.getValue().contains(clazz.getName())) {
+            for (Map.Entry<String, Set<Type>> entry : resourceMapping.entrySet()) {
+                if (entry.getValue() != null && entry.getValue().contains(clazz)) {
                     return normaliseUrl(entry.getKey() + "/" + annotations.getAnnotationValue(Path.class));
                 }
             }
@@ -635,7 +637,7 @@ public final class ModelUtils {
         return null;
     }
 
-    public static String getResourcePath(MethodModel method, Map<String, Set<String>> resourceMapping) {
+    public static String getResourcePath(MethodModel method, Map<String, Set<Type>> resourceMapping) {
         AnnotationInfo annotations = AnnotationInfo.valueOf(method.getDeclaringType());
         if (annotations.isAnyAnnotationPresent(method,
                 GET.class, POST.class, PUT.class, DELETE.class, HEAD.class, OPTIONS.class, PATCH.class)) {

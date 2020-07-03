@@ -40,32 +40,29 @@
 package fish.payara.microprofile.openapi.impl.visitor;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
-import java.util.Map;
-import java.util.Set;
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
 
 public class OpenApiContext implements ApiContext {
 
-    private final Map<String, Type> applicationClasses;
+    private final Types allTypes;
     private ClassLoader appClassLoader;
     private final OpenAPI api;
     private final String path;
     private final Operation operation;
 
-    public OpenApiContext(Set<Type> applicationClasses, ClassLoader appClassLoader, OpenAPI api, String path, Operation operation) {
-        this.applicationClasses = applicationClasses.stream().collect(toMap(Type::getName, identity()));
+    public OpenApiContext(Types allTypes, ClassLoader appClassLoader, OpenAPI api, String path, Operation operation) {
+        this.allTypes = allTypes;
         this.api = api;
         this.path = path;
         this.operation = operation;
         this.appClassLoader = appClassLoader;
     }
 
-    public OpenApiContext(Set<Type> applicationClasses, ClassLoader appClassLoader, OpenAPI api, String path) {
-        this(applicationClasses, appClassLoader, api, path, null);
+    public OpenApiContext(Types allTypes, ClassLoader appClassLoader, OpenAPI api, String path) {
+        this(allTypes, appClassLoader, api, path, null);
     }
 
     @Override
@@ -85,12 +82,12 @@ public class OpenApiContext implements ApiContext {
 
     @Override
     public boolean isApplicationType(String type) {
-        return applicationClasses.get(type) != null;
+        return allTypes.getBy(type) != null;
     }
 
     @Override
     public Type getType(String type) {
-        return applicationClasses.get(type);
+        return allTypes.getBy(type);
     }
 
     @Override

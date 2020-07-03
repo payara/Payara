@@ -101,6 +101,7 @@ import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
 import org.glassfish.hk2.classmodel.reflect.FieldModel;
 import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.data.ApplicationInfo;
 
 /**
@@ -114,7 +115,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     /**
      * A list of all classes in the given application.
      */
-    private final Set<Type> types;
+    private final Types allTypes;
 
     /**
      * A list of allowed classes for scanning
@@ -124,15 +125,15 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     private final ClassLoader appClassLoader;
 
     public ApplicationProcessor(ApplicationInfo appInfo) {
-        this(new HashSet<>(appInfo.getTypes().getAllTypes()), filterTypes(appInfo), appInfo.getAppClassLoader());
+        this(appInfo.getTypes(), filterTypes(appInfo), appInfo.getAppClassLoader());
     }
 
     /**
      * @param types parsed application classes
      * @param appClassLoader the class loader for the application.
      */
-    public ApplicationProcessor(Set<Type> types, Set<Type> allowedTypes, ClassLoader appClassLoader) {
-        this.types = types;
+    public ApplicationProcessor(Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
+        this.allTypes = allTypes;
         this.allowedTypes = allowedTypes;
         this.appClassLoader = appClassLoader;
     }
@@ -159,7 +160,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (config == null || !config.getScanDisable()) {
             ApiWalker apiWalker = new OpenApiWalker(
                     api,
-                    types,
+                    allTypes,
                     config == null ? allowedTypes : config.getValidClasses(allowedTypes),
                     appClassLoader
             );

@@ -90,10 +90,10 @@ public class OpenApiWalkerTest extends OpenApiApplicationTest {
         ApplicationClassLoader appClassLoader = new ApplicationClassLoader(testedClasssses);
 
         final OpenApiWalker openApiWalker = new OpenApiWalker(getDocument(),
-                ApplicationProcessedDocument.getApplicationTypes(testedClasssses.toArray(new Class<?>[0])),
+                ApplicationProcessedDocument.getTypes(),
                 ApplicationProcessedDocument.getApplicationTypes(testedClasssses.toArray(new Class<?>[0])),
                 appClassLoader);
-        final java.lang.reflect.Field sortedClassesField = OpenApiWalker.class.getDeclaredField("types");
+        final java.lang.reflect.Field sortedClassesField = OpenApiWalker.class.getDeclaredField("allowedTypes");
         assertEquals(Set.class, sortedClassesField.getType()); // Ensure fast lookup is possible with at least any Set
         try {
             sortedClassesField.setAccessible(true);
