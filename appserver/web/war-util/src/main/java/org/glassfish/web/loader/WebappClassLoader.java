@@ -405,13 +405,13 @@ public class WebappClassLoader
     
     private static Class[] CONSTRUCTOR_ARGS_TYPES;
     private static Object CONSTRUCTOR_ARGUMENTS;
-    private static final boolean IS_JDK_VERSION_HIGHER_THAN_9 = JDK.getMajor() > 8;
+    private static final boolean IS_JDK_VERSION_HIGHER_THAN_8 = JDK.getMajor() > 8;
     private static Boolean isMultiReleaseJar;
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
 
     static {
 
-        if (!IS_JDK_VERSION_HIGHER_THAN_9) {
+        if (!IS_JDK_VERSION_HIGHER_THAN_8) {
             isMultiReleaseJar = false;
         } else {
             isMultiReleaseJar = true;
@@ -3551,7 +3551,7 @@ public class WebappClassLoader
     private static JarFile newJarFile(final File file) throws IOException {
 
         JarFile jarFile = new JarFile(file);
-        if (!IS_JDK_VERSION_HIGHER_THAN_9 || !isMultiReleaseJar) {
+        if (!IS_JDK_VERSION_HIGHER_THAN_8 || !isMultiReleaseJar) {
             return jarFile;
         }
 
