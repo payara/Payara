@@ -54,7 +54,8 @@ public class GenerateSelfSignedCertificateCommandTest {
                 "DNS:wibbles.payara.fish,IP:127.0.0.1,EMAIL:anon@payara.fish",
                 "EMAIL:anon@ee.mouse,DNS:wobbles.payara.fish"};
 
-        String[] expandedKeytoolCommand = CertificateManagementUtils.addSubjectAlternativeNames(keytoolCmd, alternativeNames);
+        String[] expandedKeytoolCommand = CertificateManagementKeytoolCommands.addSubjectAlternativeNames(keytoolCmd,
+                alternativeNames);
 
         Assert.assertArrayEquals(new String[]{"-genkeypair", "-keyalg", "RSA", "-keystore", "/dev/null", "-alias",
                 "my_test_cert", "-dname", "CN=test.payara.fish", "-validity", "365", "-ext",
