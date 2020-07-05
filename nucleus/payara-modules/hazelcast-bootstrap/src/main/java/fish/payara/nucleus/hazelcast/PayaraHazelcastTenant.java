@@ -46,10 +46,6 @@ import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.cache.Cache;
-import javax.cache.CacheManager;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
@@ -59,7 +55,7 @@ import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
 
 /**
- * Java EE Context and class loading support for JCache with Hazelcast
+ * Java EE Context and class loading support for Hazelcast objects and thread-callbacks
  * 
  * @author lprimak
  */
@@ -67,7 +63,6 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     private JavaEEContextUtil ctxUtil;
     private EventListenerImpl destroyEventListener;
     private Events events;
-    private final static ConcurrentHashMap<EventListenerImpl, EventListenerImpl> previousListeners = new ConcurrentHashMap<>();
 
 
     public PayaraHazelcastTenant(final DestroyEventContext event) {
@@ -86,25 +81,17 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         destroyEventListener = new EventListenerImpl(event,
                 Globals.getDefaultHabitat().getService(InvocationManager.class)
                         .getCurrentInvocation().getModuleName());
-        register();
     }
 
     private void init(String componentId, DestroyEventContext destroyEvent, String moduleName) {
         init();
         ctxUtil.setInstanceComponentId(componentId);
         destroyEventListener = new EventListenerImpl(destroyEvent, moduleName);
-        register();
     }
 
-    private void register() {
-        // unregister previous listener for the same app and cache
-        previousListeners.compute(destroyEventListener, (EventListenerImpl key, EventListenerImpl value) -> {
-            if(value != null) {
-                events.unregister(value);
-            }
-            events.register(destroyEventListener);
-            return destroyEventListener;
-        });
+    @Override
+    public void register() {
+        events.register(destroyEventListener);
     }
 
     @Override
@@ -133,6 +120,16 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         init(componentId, destroyEvent, moduleName);
     }
 
+    @Override
+    public void tenantUnavailable() {
+        ctxUtil.clearInstanceInvocation();
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return ctxUtil.isLoaded();
+    }
+
     private static class EventListenerImpl implements EventListener {
         private final DestroyEventContext destroyEvent;
         private final String moduleName;
@@ -146,43 +143,11 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         @Override
         public void event(EventListener.Event payaraEvent) {
             if(payaraEvent.is(Deployment.MODULE_STOPPED)) {
-                ModuleInfo moduleInfo = (ModuleInfo)payaraEvent.hook();
-                if(moduleInfo.getName().equals(moduleName)) {
-                    HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
-                    if(destroyEvent.getContextType().equals(Cache.class)) {
-                        CacheManager cacheMgr = hzCore.getCachingProvider().getCacheManager();
-                        // destroy cache configuration, but not the cache itself
-                        // this API will probably evolve to support more object types
-                        destroyEvent.destroy(cacheMgr.getCache(destroyEvent.getDistributedObjectName()));
-                    }
+                if(((ModuleInfo)payaraEvent.hook()).getName().equals(moduleName)) {
+                    // decouple the tenant classes from the event
+                    destroyEvent.tenantUnavailable(Globals.getDefaultHabitat().getService(HazelcastCore.class).getInstance());
                 }
             }
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(moduleName, destroyEvent.getDistributedObjectName());
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final EventListenerImpl other = (EventListenerImpl) obj;
-            if (!Objects.equals(this.moduleName, other.moduleName)) {
-                return false;
-            }
-            if (!Objects.equals(this.destroyEvent.getDistributedObjectName(), other.destroyEvent.getDistributedObjectName())) {
-                return false;
-            }
-            return true;
         }
     }
 }

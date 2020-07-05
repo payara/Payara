@@ -101,10 +101,21 @@ public interface JavaEEContextUtil {
     String getInstanceComponentId();
 
     /**
+     * @return true if component is loaded / available
+     */
+    boolean isLoaded();
+
+    /**
      * Set a valid component invocation that's empty,
      * i.e. doesn't belong to any module
      */
     void setEmptyInvocation();
+
+    /**
+     * remove associated invocation from this instance, in case the underlying app unloaded
+     * but component ID remains, just in case the app is reloaded
+     */
+    void clearInstanceInvocation();
 
     interface Context extends Closeable {};
     interface Closeable extends AutoCloseable {

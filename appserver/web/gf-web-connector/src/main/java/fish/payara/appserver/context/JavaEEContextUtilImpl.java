@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -104,12 +104,13 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     @Override
     public Context pushContext() {
         InvocationManager invMgr = serverContext.getInvocationManager();
-        boolean invocationCreated = false;
-        if (invMgr.getCurrentInvocation() == null && capturedInvocation != null) {
-            ComponentInvocation newInvocation = capturedInvocation.clone();
-            newInvocation.clearRegistry();
-            invMgr.preInvoke(newInvocation);
-            invocationCreated = true;
+        boolean invocationCreated = pushContextToInvocationManager(invMgr);
+        if(invocationCreated == false && capturedInvocation == null && instanceComponentId != null) {
+            // invocation was not set because it didn't exist when the object got de-serialized
+            doSetInstanceContext();
+            if(capturedInvocation != null) {
+                invocationCreated = pushContextToInvocationManager(invMgr);
+            }
         }
         ClassLoader oldClassLoader = null;
         if (invocationCreated) {
@@ -178,9 +179,19 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     }
 
     @Override
+    public void clearInstanceInvocation() {
+        capturedInvocation = null;
+    }
+
+    @Override
     public String getInvocationComponentId() {
         ComponentInvocation inv = serverContext.getInvocationManager().getCurrentInvocation();
         return inv != null? inv.getComponentId() : null;
+    }
+
+    @Override
+    public boolean isLoaded() {
+        return compEnvMgr.getJndiNameEnvironment(instanceComponentId) != null;
     }
 
     @Override
@@ -205,6 +216,16 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
             // deserialized version
             createInvocationContext();
         }
+    }
+
+    private boolean pushContextToInvocationManager(InvocationManager invMgr) {
+        if (invMgr.getCurrentInvocation() == null && capturedInvocation != null) {
+            ComponentInvocation newInvocation = capturedInvocation.clone();
+            newInvocation.clearRegistry();
+            invMgr.preInvoke(newInvocation);
+            return true;
+        }
+        return false;
     }
 
     private ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {

@@ -42,15 +42,27 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import com.hazelcast.spi.tenantcontrol.TenantControlFactory;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.JavaEEContextUtil;
 
 /**
- * Java EE Context and class loading support for JCache with Hazelcast
+ * Java EE Context and class loading support for Hazelcast objects and thread-based callbacks
  * 
  * @author lprimak
  */
 public class PayaraHazelcastTenantFactory implements TenantControlFactory {
     @Override
     public TenantControl saveCurrentTenant(DestroyEventContext event) {
-        return new PayaraHazelcastTenant(event);
+        JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+        if(ctxUtil.getInvocationComponentId() != null) {
+            return new PayaraHazelcastTenant(event);
+        } else {
+            return TenantControl.NOOP_TENANT_CONTROL;
+        }
+    }
+
+    @Override
+    public boolean isClassesAlwaysAvailable() {
+        return false;
     }
 }

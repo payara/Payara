@@ -45,6 +45,7 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import java.io.IOException;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 /**
@@ -70,8 +71,10 @@ public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
     @Override
     public Object read(ObjectDataInput in) throws IOException {
         String componentId = (String)delegate.read(in);
-        ctxUtil.setInstanceComponentId(componentId);
-        try (Context ctx = ctxUtil.setApplicationClassLoader()) {
+        // cannot reuse common ctxUtil because this is a singleton and would cause threading issues
+        JavaEEContextUtil readerCtxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+        readerCtxUtil.setInstanceComponentId(componentId);
+        try (Context ctx = readerCtxUtil.setApplicationClassLoader()) {
             return delegate.read(in);
         }
     }
