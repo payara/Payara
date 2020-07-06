@@ -71,6 +71,7 @@ public class SystemPropertyTest extends RestManagementTest {
      * posted are added.
      */
     @Test
+    @Ignore("FISH-156")
     @InSequence(1)
     public void when_POST_system_properties_expect_success() {
         Map<String, Object> properties = new HashMap<>();
