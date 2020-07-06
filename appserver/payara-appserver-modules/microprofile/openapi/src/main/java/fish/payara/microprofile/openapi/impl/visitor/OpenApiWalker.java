@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,25 +39,24 @@
  */
 package fish.payara.microprofile.openapi.impl.visitor;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
+import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
+import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
+import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOperation;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getResourcePath;
-import static java.util.logging.Level.WARNING;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Comparator;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-
+import static java.util.stream.Collectors.toSet;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -74,7 +73,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Application;
-
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -97,12 +95,13 @@ import org.eclipse.microprofile.openapi.annotations.servers.Servers;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.openapi.annotations.tags.Tags;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-
-import fish.payara.microprofile.openapi.api.visitor.ApiContext;
-import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
-import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
-import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
-import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
+import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.ClassModel;
+import org.glassfish.hk2.classmodel.reflect.FieldModel;
+import org.glassfish.hk2.classmodel.reflect.MethodModel;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
 
 /**
  * A walker that visits each annotation and passes it to the visitor.
@@ -112,31 +111,18 @@ public class OpenApiWalker implements ApiWalker {
     private static final Logger LOGGER = Logger.getLogger(OpenApiWalker.class.getName());
 
     private final OpenAPI api;
-    private final Set<Class<?>> classes;
-    private final Map<String, Set<Class<?>>> resourceMapping;
+    private final Types allTypes;
+    private final Set<Type> allowedTypes;
+    private final Map<String, Set<Type>> resourceMapping;
+    private final ClassLoader appClassLoader;
 
-    public OpenApiWalker(OpenAPI api, Set<Class<?>> allowedClasses) {
+    public OpenApiWalker(OpenAPI api, Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
         this.api = api;
-        this.classes = new TreeSet<>(Comparator.comparing(Class::getName, String::compareTo));
-        this.classes.addAll(allowedClasses);
-        addInnerClasses(); // must happen before generating the resource mapping
-        this.resourceMapping = generateResourceMapping(classes);
-    }
-
-    private void addInnerClasses() {
-        List<Class<?>> topLevelClasses = new ArrayList<>(classes);
-        for (Class<?> topLevelClass : topLevelClasses) {
-            addInnerClasses(topLevelClass);
-        }
-    }
-
-    private void addInnerClasses(Class<?> topLevelClass) {
-        if (topLevelClass != null) {
-            classes.addAll(Arrays.asList(topLevelClass.getDeclaredClasses()));
-            if (topLevelClass.getSuperclass() != Object.class) {
-                addInnerClasses(topLevelClass.getSuperclass());
-            }
-        }
+        this.allTypes = allTypes;
+        this.allowedTypes = new TreeSet<>(Comparator.comparing(Type::getName, String::compareTo));
+        this.allowedTypes.addAll(allowedTypes);
+        this.appClassLoader = appClassLoader;
+        this.resourceMapping = generateResourceMapping();
     }
 
     @Override
@@ -193,30 +179,34 @@ public class OpenApiWalker implements ApiWalker {
 
     @SafeVarargs
     private final <A extends Annotation, E extends AnnotatedElement> void processAnnotations(
-            Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, 
+            Class<A> annotationClass, VisitorFunction<AnnotationModel, E> annotationFunction, 
             Class<? extends Annotation>... alternatives) {
-        for (Class<?> clazz : classes) {
-            processAnnotation(clazz, annotationClass, annotationFunction, alternatives);
+
+        for (Type type : allowedTypes) {
+            if(type instanceof ClassModel) {
+                processAnnotation((ClassModel)type, annotationClass, annotationFunction, alternatives);
+            }
         }
+
     }
 
     @SafeVarargs
-    private final <T, A extends Annotation, E extends AnnotatedElement> void processAnnotation(
-            Class<T> annotatedClass, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction,
+    private final <A extends Annotation, E extends AnnotatedElement> void processAnnotation(
+            ClassModel annotatedClass, Class<A> annotationClass, VisitorFunction<AnnotationModel, E> annotationFunction,
             Class<? extends Annotation>... alternatives) {
-        AnnotationInfo<T> annotations = AnnotationInfo.valueOf(annotatedClass);
+        AnnotationInfo annotations = AnnotationInfo.valueOf(annotatedClass);
         processAnnotation(annotatedClass, annotationClass, annotationFunction, annotations,
-                new OpenApiContext(classes, api, getResourcePath(annotatedClass, resourceMapping)), alternatives);
+                new OpenApiContext(allTypes, appClassLoader, api, getResourcePath(annotatedClass, resourceMapping)), alternatives);
 
-        for (Field field : annotatedClass.getDeclaredFields()) {
+        for (final FieldModel field : annotatedClass.getFields()) {
             if (annotations.isAnnotationPresent(annotationClass, field)) {
-                if (   annotationClass == HeaderParam.class
-                    || annotationClass == CookieParam.class
-                    || annotationClass == PathParam.class
-                    || annotationClass == QueryParam.class) {
+                if (annotationClass == HeaderParam.class
+                        || annotationClass == CookieParam.class
+                        || annotationClass == PathParam.class
+                        || annotationClass == QueryParam.class) {
                     // NB. if fields are annotated as Param all methods have it
-                    for (Method method : annotatedClass.getDeclaredMethods()) {
-                        OpenApiContext context = new OpenApiContext(classes, api,
+                    for (MethodModel method : annotatedClass.getMethods()) {
+                        OpenApiContext context = new OpenApiContext(allTypes, appClassLoader, api,
                                 getResourcePath(method, resourceMapping),
                                 getOperation(method, api, resourceMapping));
                         if (context.getWorkingOperation() != null) {
@@ -226,18 +216,18 @@ public class OpenApiWalker implements ApiWalker {
                     }
                 } else {
                     processAnnotation(field, annotationClass, annotationFunction, annotations,
-                            new OpenApiContext(classes, api, null), alternatives);
+                            new OpenApiContext(allTypes, appClassLoader, api, null), alternatives);
                 }
             }
         }
 
-        for (final Method method : annotatedClass.getDeclaredMethods()) {
-            OpenApiContext context = new OpenApiContext(classes, api,
+        for (final MethodModel method : annotatedClass.getMethods()) {
+            OpenApiContext context = new OpenApiContext(allTypes, appClassLoader, api,
                     getResourcePath(method, resourceMapping),
                     getOperation(method, api, resourceMapping));
             processAnnotation(method, annotationClass, annotationFunction, annotations, context, alternatives);
 
-            for (java.lang.reflect.Parameter parameter : method.getParameters()) {
+            for (org.glassfish.hk2.classmodel.reflect.Parameter parameter : method.getParameters()) {
                 processAnnotation(parameter, annotationClass, annotationFunction, annotations, context, alternatives);
             }
         }
@@ -246,13 +236,18 @@ public class OpenApiWalker implements ApiWalker {
     @SuppressWarnings("unchecked")
     @SafeVarargs
     private static <A extends Annotation, E extends AnnotatedElement> void processAnnotation(
-            AnnotatedElement element, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, 
-            AnnotationInfo<?> annotations, ApiContext context, Class<? extends Annotation>... alternatives) {
+            AnnotatedElement element,
+            Class<A> annotationClass,
+            VisitorFunction<AnnotationModel, E> annotationFunction,
+            AnnotationInfo annotations,
+            ApiContext context,
+            Class<? extends Annotation>... alternatives
+    ) {
         // If it's just the one annotation class
         // Check the element
         if (annotations.isAnnotationPresent(annotationClass, element)) {
             annotationFunction.apply(annotations.getAnnotation(annotationClass, element), (E) element, context);
-        } else if (element instanceof Method && annotations.isAnnotationPresent(annotationClass)
+        } else if (element instanceof MethodModel && annotations.isAnnotationPresent(annotationClass)
                 && !annotations.isAnyAnnotationPresent(element, alternatives)) {
             // If the method isn't annotated, inherit the class annotation
             if (context.getPath() != null) {
@@ -264,40 +259,51 @@ public class OpenApiWalker implements ApiWalker {
     /**
      * Generates a map listing the location each resource class is mapped to.
      */
-    private static Map<String, Set<Class<?>>> generateResourceMapping(Set<Class<?>> classList) {
-        Map<String, Set<Class<?>>> resourceMapping = new HashMap<>();
-        for (Class<?> clazz : classList) {
-            if (clazz.isAnnotationPresent(ApplicationPath.class) && Application.class.isAssignableFrom(clazz)) {
-                // Produce the mapping
-                String key = clazz.getDeclaredAnnotation(ApplicationPath.class).value();
-                Set<Class<?>> resourceClasses = new HashSet<>();
-                resourceMapping.put(key, resourceClasses);
-
-                try {
-                    Application app = (Application) clazz.newInstance();
-                    // Add all classes contained in the application
-                    resourceClasses.addAll(app.getClasses());
-                    // Remove all Jersey providers
-                    resourceClasses.removeIf(resource -> resource.getPackage().getName().contains("org.glassfish.jersey"));
-                } catch (InstantiationException | IllegalAccessException ex) {
-                    LOGGER.log(WARNING, "Unable to initialise application class.", ex);
+    private Map<String, Set<Type>> generateResourceMapping() {
+        Set<Type> classList = new HashSet<>();
+        Map<String, Set<Type>> mapping = new HashMap<>();
+        for (Type type : allowedTypes) {
+            if(type instanceof ClassModel) {
+                ClassModel classModel = (ClassModel) type;
+                if(classModel.getAnnotation(ApplicationPath.class.getName()) != null) {
+                    // Produce the mapping
+                    AnnotationModel annotation = classModel.getAnnotation(ApplicationPath.class.getName());
+                    String key = annotation.getValue("value", String.class);
+                    Set<Type> resourceClasses = new HashSet<>();
+                    mapping.put(key, resourceClasses);
+                    try {
+                        Class<?> clazz = appClassLoader.loadClass(classModel.getName());
+                        Application app = (Application) clazz.newInstance();
+                        // Add all classes contained in the application
+                        resourceClasses.addAll(app.getClasses()
+                                .stream()
+                                .map(Class::getName)
+                                .filter(name -> !name.startsWith("org.glassfish.jersey")) // Remove all Jersey providers
+                                .map(allTypes::getBy)
+                                .filter(Objects::nonNull)
+                                .collect(toSet()));
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                        LOGGER.log(WARNING, "Unable to initialise application class.", ex);
+                    }
+                } else {
+                    classList.add(classModel);
                 }
             }
         }
 
         // If there is one application and it's empty, add all classes
-        if (resourceMapping.keySet().size() == 1) {
-            Set<Class<?>> classes = resourceMapping.values().iterator().next();
+        if (mapping.keySet().size() == 1) {
+            Set<Type> classes = mapping.values().iterator().next();
             if (classes.isEmpty()) {
                 classes.addAll(classList);
             }
         }
 
         // If there is no application, add all classes to the context root.
-        if (resourceMapping.isEmpty()) {
-            resourceMapping.put("/", classList);
+        if (mapping.isEmpty()) {
+            mapping.put("/", classList);
         }
 
-        return resourceMapping;
+        return mapping;
     }
 }

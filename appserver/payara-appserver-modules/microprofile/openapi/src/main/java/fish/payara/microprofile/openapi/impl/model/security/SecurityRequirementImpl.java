@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,19 +39,27 @@
  */
 package fish.payara.microprofile.openapi.impl.model.security;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>> implements SecurityRequirement {
 
     private static final long serialVersionUID = -677783376083861245L;
+
+    public static SecurityRequirement createInstance(AnnotationModel annotation, ApiContext context) {
+        SecurityRequirement from = new SecurityRequirementImpl();
+        String name = annotation.getValue("name", String.class);
+        List<String> scopes = annotation.getValue("scopes", List.class);
+        from.addScheme(name, scopes != null ? scopes : Collections.emptyList());
+        return from;
+    }
 
     public SecurityRequirementImpl() {
         super();
@@ -95,13 +103,14 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
         putAll(items);
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement from,
-            SecurityRequirement to) {
-        if (isAnnotationNull(from)) {
+    public static void merge(SecurityRequirement from, SecurityRequirement to) {
+        if (from == null) {
             return;
         }
-        if (from.name() != null && !from.name().isEmpty()) {
-            to.addScheme(from.name(), Arrays.asList(from.scopes()));
+        for (String name : from.getSchemes().keySet()) {
+            if (name != null && !name.isEmpty()) {
+                to.addScheme(name, from.getSchemes().get(name));
+            }
         }
     }
 

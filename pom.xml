@@ -143,7 +143,7 @@
         <javax.cache-api.version>1.1.1</javax.cache-api.version>
         <mail.version>1.6.4.payara-p1</mail.version>
         <jakarta.annotation-api.version>1.3.5</jakarta.annotation-api.version>
-        <hk2.version>2.6.1.payara-p1</hk2.version>
+        <hk2.version>2.6.1.payara-p2</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.10.2</jackson.version>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,30 +39,30 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.callbacks.CallbackImpl;
+import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
+import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
+import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
+import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
+import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
+import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.eclipse.microprofile.openapi.annotations.callbacks.CallbackOperation;
-import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
-import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.servers.Server;
-
-import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
-import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
-import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class OperationImpl extends ExtensibleImpl<Operation> implements Operation {
 
@@ -78,6 +78,30 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
     protected Boolean deprecated;
     protected List<SecurityRequirement> security = new ArrayList<>();
     protected List<Server> servers = new ArrayList<>();
+    protected String method;
+
+    public static Operation createInstance(AnnotationModel annotation, ApiContext context) {
+        OperationImpl from = new OperationImpl();
+        from.setSummary(annotation.getValue("summary", String.class));
+        from.setDescription(annotation.getValue("description", String.class));
+        AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
+        if (externalDocs != null) {
+            from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
+        }
+        from.setOperationId(annotation.getValue("operationId", String.class));
+        extractAnnotations(annotation, context, "parameters", ParameterImpl::createInstance, from.getParameters());
+        AnnotationModel requestBody = annotation.getValue("requestBody", AnnotationModel.class);
+        if (requestBody != null) {
+            from.setRequestBody(RequestBodyImpl.createInstance(requestBody, context));
+        }
+        extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from.getResponses());
+        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks());
+        from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
+        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from.getSecurity());
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers());
+        from.setMethod(annotation.getValue("method", String.class));
+        return from;
+    }
 
     @Override
     public List<String> getTags() {
@@ -264,50 +288,56 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         servers.remove(server);
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.Operation from, Operation to,
-            boolean override) {
-        if (isAnnotationNull(from)) {
-            return;
-        }
-        to.setOperationId(mergeProperty(to.getOperationId(), from.operationId(), override));
-        to.setSummary(mergeProperty(to.getSummary(), from.summary(), override));
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setDeprecated(mergeProperty(to.getDeprecated(), from.deprecated(), override));
+    public String getMethod() {
+        return method;
     }
 
-    public static void merge(CallbackOperation from, Operation to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public static void merge(Operation from, Operation to,
+            boolean override) {
+        if (from == null) {
             return;
         }
-        to.setSummary(mergeProperty(to.getSummary(), from.summary(), override));
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        if (from.extensions() != null) {
-            for (Extension extension : from.extensions()) {
-                ExtensibleImpl.merge(extension, to, override);
-            }
+        to.setOperationId(mergeProperty(to.getOperationId(), from.getOperationId(), override));
+        to.setSummary(mergeProperty(to.getSummary(), from.getSummary(), override));
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
+    }
+
+    public static void merge(Operation from, Operation to,
+            boolean override, ApiContext context) {
+        if (from == null) {
+            return;
         }
-        if (!isAnnotationNull(from.externalDocs())) {
+        to.setSummary(mergeProperty(to.getSummary(), from.getSummary(), override));
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        if (from.getExtensions() != null) {
+            ExtensibleImpl.merge(from, to, override);
+        }
+        if (from.getExternalDocs() != null) {
             if (to.getExternalDocs() == null) {
                 to.setExternalDocs(new ExternalDocumentationImpl());
             }
-            ExternalDocumentationImpl.merge(from.externalDocs(), to.getExternalDocs(), override);
+            ExternalDocumentationImpl.merge(from.getExternalDocs(), to.getExternalDocs(), override);
         }
-        if (from.parameters() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.parameters.Parameter parameter : from.parameters()) {
+        if (from.getParameters() != null) {
+            for (Parameter parameter : from.getParameters()) {
                 Parameter newParameter = new ParameterImpl();
-                ParameterImpl.merge(parameter, newParameter, override, currentSchemas);
+                ParameterImpl.merge(parameter, newParameter, override, context);
             }
         }
-        if (!isAnnotationNull(from.requestBody())) {
+        if (from.getRequestBody() != null) {
             if (to.getRequestBody() == null) {
                 to.setRequestBody(new RequestBodyImpl());
             }
-            RequestBodyImpl.merge(from.requestBody(), to.getRequestBody(), override, currentSchemas);
+            RequestBodyImpl.merge(from.getRequestBody(), to.getRequestBody(), override, context);
         }
-        if (from.responses() != null) {
-            for (APIResponse response : from.responses()) {
-                APIResponsesImpl.merge(response, to.getResponses(), override, currentSchemas);
+        if (from.getResponses() != null) {
+            for (APIResponse response : from.getResponses().values()) {
+                APIResponsesImpl.merge(response, to.getResponses(), override, context);
             }
         }
     }

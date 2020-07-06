@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,12 @@
  */
 package fish.payara.microprofile.openapi.impl.model.servers;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
 import java.util.ArrayList;
 import java.util.Map;
-
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 
 public class ServerVariablesImpl extends ExtensibleTreeMap<ServerVariable, ServerVariables> implements ServerVariables {
 
@@ -86,24 +82,24 @@ public class ServerVariablesImpl extends ExtensibleTreeMap<ServerVariable, Serve
         putAll(items);
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.servers.ServerVariable from,
+    public static void merge(String serverVariableName, ServerVariable from,
             ServerVariables to, boolean override) {
-        if (isAnnotationNull(from)) {
+        if (from == null) {
             return;
         }
         org.eclipse.microprofile.openapi.models.servers.ServerVariable variable = new ServerVariableImpl();
-        variable.setDefaultValue(mergeProperty(variable.getDefaultValue(), from.defaultValue(), override));
-        variable.setDescription(mergeProperty(variable.getDefaultValue(), from.description(), override));
-        if (from.enumeration() != null && from.enumeration().length != 0) {
+        variable.setDefaultValue(mergeProperty(variable.getDefaultValue(), from.getDefaultValue(), override));
+        variable.setDescription(mergeProperty(variable.getDescription(), from.getDescription(), override));
+        if (from.getEnumeration()!= null && !from.getEnumeration().isEmpty()) {
             if (variable.getEnumeration() == null) {
                 variable.setEnumeration(new ArrayList<>());
             }
-            for (String value : from.enumeration()) {
+            for (String value : from.getEnumeration()) {
                 variable.addEnumeration(value);
             }
         }
-        if ((to.hasServerVariable(from.name()) && override) || !to.hasServerVariable(from.name())) {
-            to.addServerVariable(from.name(), variable);
+        if ((to.hasServerVariable(serverVariableName) && override) || !to.hasServerVariable(serverVariableName)) {
+            to.addServerVariable(serverVariableName, variable);
         }
     }
 

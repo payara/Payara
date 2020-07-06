@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,66 +39,6 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.WARNING;
-import static java.util.logging.Level.SEVERE;
-
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-
-import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
-import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
-import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.callbacks.Callback;
-import org.eclipse.microprofile.openapi.annotations.callbacks.Callbacks;
-import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
-import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
-import org.eclipse.microprofile.openapi.annotations.extensions.Extensions;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirements;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
-import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
-import org.eclipse.microprofile.openapi.annotations.servers.Server;
-import org.eclipse.microprofile.openapi.annotations.servers.Servers;
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.eclipse.microprofile.openapi.annotations.tags.Tags;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.PathItem;
-import org.eclipse.microprofile.openapi.models.Reference;
-import org.eclipse.microprofile.openapi.models.media.MediaType;
-import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
-import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
-
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
@@ -124,11 +64,45 @@ import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toSet;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.PathItem;
+import org.eclipse.microprofile.openapi.models.Reference;
+import org.eclipse.microprofile.openapi.models.media.MediaType;
+import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.ClassModel;
+import org.glassfish.hk2.classmodel.reflect.EnumType;
+import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
+import org.glassfish.hk2.classmodel.reflect.FieldModel;
+import org.glassfish.hk2.classmodel.reflect.MethodModel;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.data.ApplicationInfo;
 
 /**
  * A processor to parse the application for annotations, to add to the OpenAPI
@@ -141,29 +115,63 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     /**
      * A list of all classes in the given application.
      */
-    private final Set<Class<?>> classes;
+    private final Types allTypes;
 
     /**
+     * A list of allowed classes for scanning
+     */
+    private final Set<Type> allowedTypes;
+
+    private final ClassLoader appClassLoader;
+
+    public ApplicationProcessor(ApplicationInfo appInfo) {
+        this(appInfo.getTypes(), filterTypes(appInfo), appInfo.getAppClassLoader());
+    }
+
+    /**
+     * @param types parsed application classes
      * @param appClassLoader the class loader for the application.
      */
-    public ApplicationProcessor(Set<Class<?>> appClasses) {
-        this.classes = appClasses;
-        this.classes.removeIf(cls -> cls.isInterface() || Modifier.isAbstract(cls.getModifiers()));
+    public ApplicationProcessor(Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
+        this.allTypes = allTypes;
+        this.allowedTypes = allowedTypes;
+        this.appClassLoader = appClassLoader;
+    }
+
+    /**
+     * @return a list of all classes in the archive.
+     */
+    private static Set<Type> filterTypes(ApplicationInfo appInfo) {
+        ReadableArchive archive = appInfo.getSource();
+        return Collections.list(archive.entries()).stream()
+                // Only use the classes
+                .filter(clazz -> clazz.endsWith(".class"))
+                // Remove the WEB-INF/classes and return the proper class name format
+                .map(clazz -> clazz.replaceAll("WEB-INF/classes/", "").replace("/", ".").replace(".class", ""))
+                // Fetch class type
+                .map(clazz -> appInfo.getTypes().getBy(clazz))
+                // Don't return null classes
+                .filter(Objects::nonNull)
+                .collect(toSet());
     }
 
     @Override
     public OpenAPI process(OpenAPI api, OpenApiConfiguration config) {
         if (config == null || !config.getScanDisable()) {
-            ApiWalker apiWalker = new OpenApiWalker(api, config == null ? classes : config.getValidClasses(classes));
+            ApiWalker apiWalker = new OpenApiWalker(
+                    api,
+                    allTypes,
+                    config == null ? allowedTypes : config.getValidClasses(allowedTypes),
+                    appClassLoader
+            );
             apiWalker.accept(this);
         }
         return api;
     }
 
     // JAX-RS method handlers
-
     @Override
-    public void visitGET(GET get, Method element, ApiContext context) {
+    public void visitGET(AnnotationModel get, MethodModel element, ApiContext context) {
         if (context.getPath() == null) {
             return;
         }
@@ -184,7 +192,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitPOST(POST post, Method element, ApiContext context) {
+    public void visitPOST(AnnotationModel post, MethodModel element, ApiContext context) {
         if (context.getPath() == null) {
             return;
         }
@@ -205,7 +213,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitPUT(PUT put, Method element, ApiContext context) {
+    public void visitPUT(AnnotationModel put, MethodModel element, ApiContext context) {
         if (context.getPath() == null) {
             return;
         }
@@ -226,7 +234,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitDELETE(DELETE delete, Method element, ApiContext context) {
+    public void visitDELETE(AnnotationModel delete, MethodModel element, ApiContext context) {
         if (context.getPath() == null) {
             return;
         }
@@ -247,7 +255,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitHEAD(HEAD head, Method element, ApiContext context) {
+    public void visitHEAD(AnnotationModel head, MethodModel element, ApiContext context) {
         if (context.getPath() == null) {
             return;
         }
@@ -268,7 +276,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitOPTIONS(OPTIONS options, Method element, ApiContext context) {
+    public void visitOPTIONS(AnnotationModel options, MethodModel element, ApiContext context) {
         if (context.getPath() == null) {
             return;
         }
@@ -289,7 +297,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitPATCH(PATCH patch, Method element, ApiContext context) {
+    public void visitPATCH(AnnotationModel patch, MethodModel element, ApiContext context) {
         if (context.getPath() == null) {
             return;
         }
@@ -310,8 +318,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitProduces(Produces produces, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method && context.getWorkingOperation() != null) {
+    public void visitProduces(AnnotationModel produces, AnnotatedElement element, ApiContext context) {
+        if (element instanceof MethodModel && context.getWorkingOperation() != null) {
             for (org.eclipse.microprofile.openapi.models.responses.APIResponse response : context.getWorkingOperation()
                     .getResponses().values()) {
 
@@ -322,7 +330,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         MediaType wildcardMedia = response.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
 
                         // Copy the wildcard return type to the valid response types
-                        for (String mediaType : produces.value()) {
+                        List<String> mediaTypes = produces.getValue("value", List.class);
+                        for (String mediaType : mediaTypes) {
                             response.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
                         }
                         // If there is an @Produces, remove the wildcard
@@ -334,8 +343,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitConsumes(Consumes consumes, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method && context.getWorkingOperation() != null) {
+    public void visitConsumes(AnnotationModel consumes, AnnotatedElement element, ApiContext context) {
+        if (element instanceof MethodModel && context.getWorkingOperation() != null) {
             org.eclipse.microprofile.openapi.models.parameters.RequestBody requestBody = context.getWorkingOperation()
                     .getRequestBody();
 
@@ -346,7 +355,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     MediaType wildcardMedia = requestBody.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
 
                     // Copy the wildcard return type to the valid request body types
-                    for (String mediaType : consumes.value()) {
+                    List<String> mediaTypes = consumes.getValue("value", List.class);
+                    for (String mediaType : mediaTypes) {
                         requestBody.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
                     }
                     // If there is an @Consumes, remove the wildcard
@@ -357,30 +367,32 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitQueryParam(QueryParam param, AnnotatedElement element, ApiContext context) {
-        addParameter(element, context, param.value(), In.QUERY, null);
+    public void visitQueryParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        addParameter(element, context, param.getValue("value", String.class), In.QUERY, null);
     }
 
     @Override
-    public void visitPathParam(PathParam param, AnnotatedElement element, ApiContext context) {
-        addParameter(element, context, param.value(), In.PATH, true);
+    public void visitPathParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        addParameter(element, context, param.getValue("value", String.class), In.PATH, true);
     }
 
     @Override
-    public void visitFormParam(FormParam param, AnnotatedElement element, ApiContext context) {
+    public void visitFormParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
         // Find the aggregate schema type of all the parameters
         SchemaType formSchemaType = null;
 
-        if (element instanceof java.lang.reflect.Parameter) {
-            java.lang.reflect.Parameter[] parameters = ((java.lang.reflect.Parameter) element)
-                    .getDeclaringExecutable().getParameters();
-            for (java.lang.reflect.Parameter methodParam : parameters) {
-                if (methodParam.isAnnotationPresent(FormParam.class)) {
-                    formSchemaType = ModelUtils.getParentSchemaType(formSchemaType,
-                            ModelUtils.getSchemaType(methodParam.getType()));
+        if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+            List<org.glassfish.hk2.classmodel.reflect.Parameter> parameters = ((org.glassfish.hk2.classmodel.reflect.Parameter) element)
+                    .getMethod().getParameters();
+            for (org.glassfish.hk2.classmodel.reflect.Parameter methodParam : parameters) {
+                if (methodParam.getAnnotation(FormParam.class.getName()) != null) {
+                    formSchemaType = ModelUtils.getParentSchemaType(
+                            formSchemaType,
+                            ModelUtils.getSchemaType(methodParam, context)
+                    );
                 }
             }
-        } 
+        }
 
         if (context.getWorkingOperation() != null) {
             // If there's no request body, fill out a new one right down to the schema
@@ -392,19 +404,19 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
             // Set the request body type accordingly.
             context.getWorkingOperation().getRequestBody().getContent()
-                .getMediaType(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
-                .setType(formSchemaType);
+                    .getMediaType(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
+                    .setType(formSchemaType);
         }
     }
 
     @Override
-    public void visitHeaderParam(HeaderParam param, AnnotatedElement element, ApiContext context) {
-        addParameter(element, context, param.value(), In.HEADER, null);
+    public void visitHeaderParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        addParameter(element, context, param.getValue("value", String.class), In.HEADER, null);
     }
 
     @Override
-    public void visitCookieParam(CookieParam param, AnnotatedElement element, ApiContext context) {
-        addParameter(element, context, param.value(), In.COOKIE, null);
+    public void visitCookieParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        addParameter(element, context, param.getValue("value", String.class), In.COOKIE, null);
     }
 
     private static void addParameter(AnnotatedElement element, ApiContext context, String name, In in, Boolean required) {
@@ -416,16 +428,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         SchemaImpl schema = new SchemaImpl();
         String defaultValue = getDefaultValueIfPresent(element);
 
-        if (element instanceof java.lang.reflect.Parameter) {
-            java.lang.reflect.Parameter parameter = (java.lang.reflect.Parameter) element;
-            schema.setType(ModelUtils.getSchemaType(parameter.getType()));
+        if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+            org.glassfish.hk2.classmodel.reflect.Parameter parameter = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
+            schema.setType(ModelUtils.getSchemaType(parameter.getTypeName(), context));
         } else {
-            Field field = (Field) element;
-            schema.setType(ModelUtils.getSchemaType(field.getType()));
+            FieldModel field = (FieldModel) element;
+            schema.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
         }
 
         if (schema.getType() == SchemaType.ARRAY) {
-            schema.setItems(getArraySchema(element));
+            schema.setItems(getArraySchema(element, context));
             if (defaultValue != null) {
                 schema.getItems().setDefaultValue(defaultValue);
             }
@@ -438,34 +450,36 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (context.getWorkingOperation() != null) {
             context.getWorkingOperation().addParameter(newParameter);
         } else {
-            LOGGER.log(SEVERE, "Couldn't add " + newParameter.getIn() + " parameter, \"" + newParameter.getName()
-            + "\" to the OpenAPI Document. This is usually caused by declaring parameter under a method with "
-            + "an unsupported annotation.");
+            LOGGER.log(
+                    SEVERE,
+                    "Couldn''t add {0} parameter, \"{1}\" to the OpenAPI Document. This is usually caused by declaring parameter under a method with an unsupported annotation.",
+                    new Object[]{newParameter.getIn(), newParameter.getName()}
+            );
         }
     }
 
-    private static SchemaImpl getArraySchema(AnnotatedElement element) {
+    private static SchemaImpl getArraySchema(AnnotatedElement element, ApiContext context) {
         SchemaImpl arraySchema = new SchemaImpl();
-        ParameterizedType parameterizedType;
+        List<org.glassfish.hk2.classmodel.reflect.ParameterizedType> parameterizedType;
 
-        if (element instanceof java.lang.reflect.Parameter) {
-            java.lang.reflect.Parameter parameter = (java.lang.reflect.Parameter) element;
-            parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+        if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+            org.glassfish.hk2.classmodel.reflect.Parameter parameter = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
+            parameterizedType = parameter.getGenericTypes();
         } else {
-            Field field = (Field) element;
-            parameterizedType = (ParameterizedType) field.getAnnotatedType().getType();
+            FieldModel field = (FieldModel) element;
+            parameterizedType = field.getGenericTypes();
         }
 
-        arraySchema.setType(ModelUtils.getSchemaType((Class<?>) parameterizedType.getActualTypeArguments()[0]));
+        arraySchema.setType(ModelUtils.getSchemaType(parameterizedType.get(0).getTypeName(), context));
         return arraySchema;
     }
 
     private static String getDefaultValueIfPresent(AnnotatedElement element) {
-        Annotation[] annotations = element.getDeclaredAnnotations();
-        for (Annotation annotation : annotations) {
-            if ("javax.ws.rs.DefaultValue".equals(annotation.annotationType().getName())) {
+        Collection<AnnotationModel> annotations = element.getAnnotations();
+        for (AnnotationModel annotation : annotations) {
+            if (DefaultValue.class.getName().equals(annotation.getType().getName())) {
                 try {
-                    return (String) annotation.annotationType().getMethod("value").invoke(annotation);
+                    return annotation.getValue("value", String.class);
                 } catch (Exception ex) {
                     LOGGER.log(WARNING, "Couldn't get the default value", ex);
                 }
@@ -475,112 +489,114 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitOpenAPI(OpenAPIDefinition definition, AnnotatedElement element, ApiContext context) {
-        OpenAPIImpl.merge(definition, context.getApi(), true);
+    public void visitOpenAPI(AnnotationModel definition, AnnotatedElement element, ApiContext context) {
+        OpenAPIImpl.merge(OpenAPIImpl.createInstance(definition, context), context.getApi(), true, context);
     }
 
     @Override
-    public void visitSchema(Schema schema, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Class) {
-            if (((Class) element).isEnum()) {
-                vistEnumClass(schema, (Class<?>) element, context);
-            } else {
-                visitSchemaClass(schema, (Class<?>) element, context);
-            }
-        }
-        if (element instanceof Field) {
-            visitSchemaField(schema, (Field) element, context);
-        }
-        if (element instanceof java.lang.reflect.Parameter) {
-            visitSchemaParameter(schema, (java.lang.reflect.Parameter) element, context);
+    public void visitSchema(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        if (element instanceof ClassModel) {
+            visitSchemaClass(annotation, (ClassModel) element, context);
+        } else if (element instanceof EnumType) {
+            vistEnumClass(annotation, (EnumType) element, context);
+        } else if (element instanceof FieldModel) {
+            visitSchemaField(annotation, (FieldModel) element, context);
+        } else if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+            visitSchemaParameter(annotation, (org.glassfish.hk2.classmodel.reflect.Parameter) element, context);
         }
     }
-    
-    private void vistEnumClass(Schema schema, Class<?> clazz, ApiContext context) {
+
+    private void vistEnumClass(AnnotationModel schemaAnnotation, EnumType enumType, ApiContext context) {
         // Get the schema object name
-        String schemaName = (schema == null) ? null : schema.name();
+        String schemaName = (schemaAnnotation == null) ? null : schemaAnnotation.getValue("name", String.class);
         if (schemaName == null || schemaName.isEmpty()) {
-            schemaName = clazz.getSimpleName();
+            schemaName = enumType.getSimpleName();
         }
-        
+        org.eclipse.microprofile.openapi.models.media.Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
+
         org.eclipse.microprofile.openapi.models.media.Schema newSchema = new SchemaImpl();
         context.getApi().getComponents().addSchema(schemaName, newSchema);
-         if (schema != null) {
-            SchemaImpl.merge(schema, newSchema, true, context.getApi().getComponents().getSchemas());
+        if (schema != null) {
+            SchemaImpl.merge(schema, newSchema, true, context);
         }
-        if (schema == null || schema.enumeration().length == 0) {
+        if (schema == null || schema.getEnumeration().isEmpty()) {
             //if the schema annotation does not specify enums, then all enum fields will be added
-            for (Object enumField : clazz.getEnumConstants()) {
+            for (FieldModel enumField : enumType.getStaticFields()) {
                 newSchema.addEnumeration(enumField);
             }
         }
-        
+
     }
 
-    private void visitSchemaClass(Schema schema, Class<?> clazz, ApiContext context) {
+    private void visitSchemaClass(AnnotationModel schemaAnnotation, ClassModel clazz, ApiContext context) {
         // Get the schema object name
-        String schemaName = (schema == null) ? null : schema.name();
+        String schemaName = (schemaAnnotation == null) ? null : schemaAnnotation.getValue("name", String.class);
         if (schemaName == null || schemaName.isEmpty()) {
             schemaName = clazz.getSimpleName();
         }
-        
+        org.eclipse.microprofile.openapi.models.media.Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
+
         // Add a new schema
         org.eclipse.microprofile.openapi.models.media.Schema newSchema = new SchemaImpl();
         context.getApi().getComponents().addSchema(schemaName, newSchema);
 
         // If there is an annotation
         if (schema != null) {
-            SchemaImpl.merge(schema, newSchema, true, context.getApi().getComponents().getSchemas());
+            SchemaImpl.merge(schema, newSchema, true, context);
         } else {
             newSchema.setType(SchemaType.OBJECT);
             Map<String, org.eclipse.microprofile.openapi.models.media.Schema> fields = new LinkedHashMap<>();
-            for (Field field : clazz.getDeclaredFields()) {
-                if (!Modifier.isTransient(field.getModifiers())) {
-                    fields.put(field.getName(), createSchema(context, clazz, field.getType(), field.getGenericType()));
+            for (FieldModel field : clazz.getFields()) {
+                if (!field.isTransient()) {
+                    fields.put(field.getName(), createSchema(context, clazz, field));
                 }
             }
             newSchema.setProperties(fields);
         }
 
         // If there is an extending class, add the data
-        if (clazz.getSuperclass() != null) {
-            Class<?> superClass = clazz.getSuperclass();
+        if (clazz.getParent() != null) {
+            ClassModel superClass = clazz.getParent();
 
             // If the super class is legitimate
-            if (!superClass.equals(Object.class) && !superClass.equals(Enum.class)) {
+            if (superClass != null) {
 
                 // Get the parent schema annotation
-                Schema parentSchema = superClass.getDeclaredAnnotation(Schema.class);
+                AnnotationModel parentSchemAnnotation = superClass.getAnnotation(Schema.class.getName());
 
-                // Create a schema for the parent
-                visitSchema(parentSchema, superClass, context);
+                if (parentSchemAnnotation != null) {
+                    // Create a schema for the parent
+                    visitSchema(parentSchemAnnotation, superClass, context);
 
-                // Get the superclass schema name
-                String parentSchemaName = (parentSchema == null) ? null : parentSchema.name();
-                if (parentSchemaName == null || parentSchemaName.isEmpty()) {
-                    parentSchemaName = superClass.getSimpleName();
+                    // Get the superclass schema name
+                    String parentSchemaName = parentSchemAnnotation.getValue("name", String.class);
+                    if (parentSchemaName == null || parentSchemaName.isEmpty()) {
+                        parentSchemaName = superClass.getSimpleName();
+                    }
+
+                    // Link the schemas
+                    newSchema.addAllOf(new SchemaImpl().ref(parentSchemaName));
                 }
-
-                // Link the schemas
-                newSchema.addAllOf(new SchemaImpl().ref(parentSchemaName));
             }
         }
     }
 
-    private static void visitSchemaField(Schema schema, Field field, ApiContext context) {
+    private static void visitSchemaField(AnnotationModel schemaAnnotation, FieldModel field, ApiContext context) {
         // Get the schema object name
-        String schemaName = schema.name();
+        String schemaName = (schemaAnnotation == null) ? null : schemaAnnotation.getValue("name", String.class);
         if (schemaName == null || schemaName.isEmpty()) {
             schemaName = field.getName();
         }
+        org.eclipse.microprofile.openapi.models.media.Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
 
         // Get the parent schema object name
         String parentName = null;
-        if (field.getDeclaringClass().isAnnotationPresent(Schema.class)) {
-            parentName = field.getDeclaringClass().getDeclaredAnnotation(Schema.class).name();
+        AnnotationModel classSchemaAnnotation = field.getDeclaringType().getAnnotation(Schema.class.getName());
+        if (classSchemaAnnotation != null) {
+            parentName = classSchemaAnnotation.getValue("name", String.class);
         }
         if (parentName == null || parentName.isEmpty()) {
-            parentName = field.getDeclaringClass().getSimpleName();
+            parentName = field.getDeclaringType().getSimpleName();
         }
 
         // Get or create the parent schema object
@@ -590,11 +606,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         org.eclipse.microprofile.openapi.models.media.Schema property = new SchemaImpl();
         parent.addProperty(schemaName, property);
-        property.setType(ModelUtils.getSchemaType(field.getType()));
-        SchemaImpl.merge(schema, property, true, context.getApi().getComponents().getSchemas());
+        property.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
+        SchemaImpl.merge(schema, property, true, context);
     }
 
-    private static void visitSchemaParameter(Schema schema, java.lang.reflect.Parameter parameter, ApiContext context) {
+    private static void visitSchemaParameter(AnnotationModel schemaAnnotation, org.glassfish.hk2.classmodel.reflect.Parameter parameter, ApiContext context) {
         // If this is being parsed at the start, ignore it as the path doesn't exist
         if (context.getWorkingOperation() == null) {
             return;
@@ -607,18 +623,19 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             // Insert the schema to the request body media type
             MediaType mediaType = context.getWorkingOperation().getRequestBody().getContent()
                     .getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
-            SchemaImpl.merge(schema, mediaType.getSchema(), true, context.getApi().getComponents().getSchemas());
-            if (schema.ref() != null && !schema.ref().isEmpty()) {
-                mediaType.setSchema(new SchemaImpl().ref(schema.ref()));
+            org.eclipse.microprofile.openapi.models.media.Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
+            SchemaImpl.merge(schema, mediaType.getSchema(), true, context);
+            if (schema.getRef() != null && !schema.getRef().isEmpty()) {
+                mediaType.setSchema(new SchemaImpl().ref(schema.getRef()));
             }
         } else if (ModelUtils.getParameterType(parameter) != null) {
             for (org.eclipse.microprofile.openapi.models.parameters.Parameter param : context.getWorkingOperation()
                     .getParameters()) {
                 if (param.getName().equals(ModelUtils.getParameterName(parameter))) {
-                    SchemaImpl.merge(schema, param.getSchema(), true,
-                            context.getApi().getComponents().getSchemas());
-                    if (schema.ref() != null && !schema.ref().isEmpty()) {
-                        param.setSchema(new SchemaImpl().ref(schema.ref()));
+                    org.eclipse.microprofile.openapi.models.media.Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
+                    SchemaImpl.merge(schema, param.getSchema(), true, context);
+                    if (schema.getRef() != null && !schema.getRef().isEmpty()) {
+                        param.setSchema(new SchemaImpl().ref(schema.getRef()));
                     }
                 }
             }
@@ -626,13 +643,14 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitExtension(Extension extension, AnnotatedElement element, ApiContext context) {
-        String value = extension.value();
-        String name = extension.name();
-        if (name != null && !name.isEmpty() && value != null
-                && !value.isEmpty()) {
-            Object parsedValue = ExtensibleImpl.convertExtensionValue(value, extension.parseValue());
-            if (element instanceof Method) {
+    public void visitExtension(AnnotationModel extension, AnnotatedElement element, ApiContext context) {
+        String value = extension.getValue("value", String.class);
+        String name = extension.getValue("name", String.class);
+        Boolean parseValue = extension.getValue("parseValue", Boolean.class);
+        if (name != null && !name.isEmpty()
+                && value != null && !value.isEmpty()) {
+            Object parsedValue = ExtensibleImpl.convertExtensionValue(value, parseValue);
+            if (element instanceof MethodModel) {
                 context.getWorkingOperation().addExtension(name, parsedValue);
             } else {
                 context.getApi().addExtension(name, parsedValue);
@@ -641,99 +659,114 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitExtensions(Extensions extensions, AnnotatedElement element, ApiContext context) {
-        for (Extension extension : extensions.value()) {
-            visitExtension(extension, element, context);
+    public void visitExtensions(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> extensions = annotation.getValue("value", List.class);
+        if (extensions != null) {
+            extensions.forEach(extension -> visitExtension(extension, element, context));
         }
     }
 
     @Override
-    public void visitOperation(Operation operation, AnnotatedElement element, ApiContext context) {
-        OperationImpl.merge(operation, context.getWorkingOperation(), true);
+    public void visitOperation(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        OperationImpl.merge(OperationImpl.createInstance(annotation, context), context.getWorkingOperation(), true);
         // If the operation should be hidden, remove it
-        if (operation.hidden()) {
+        if (annotation.getValue("hidden", Boolean.class)) {
             ModelUtils.removeOperation(context.getApi().getPaths().getPathItem(context.getPath()),
                     context.getWorkingOperation());
         }
     }
 
     @Override
-    public void visitCallback(Callback callback, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method) {
+    public void visitCallback(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        if (element instanceof MethodModel) {
+            String name = annotation.getValue("name", String.class);
             org.eclipse.microprofile.openapi.models.callbacks.Callback callbackModel = context.getWorkingOperation()
-                    .getCallbacks().getOrDefault(callback.name(), new CallbackImpl());
-            context.getWorkingOperation().getCallbacks().put(callback.name(), callbackModel);
-            CallbackImpl.merge(callback, callbackModel, true, context.getApi().getComponents().getSchemas());
+                    .getCallbacks().getOrDefault(name, new CallbackImpl());
+            context.getWorkingOperation().getCallbacks().put(name, callbackModel);
+            CallbackImpl.merge(CallbackImpl.createInstance(annotation, context), callbackModel, true, context);
         }
     }
 
     @Override
-    public void visitCallbacks(Callbacks callbacks, AnnotatedElement element, ApiContext context) {
-        for (Callback callback : callbacks.value()) {
-            visitCallback(callback, element, context);
+    public void visitCallbacks(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> callbacks = annotation.getValue("value", List.class);
+        if (callbacks != null) {
+            callbacks.forEach(callback -> visitCallback(callback, element, context));
         }
     }
 
     @Override
-    public void visitRequestBody(RequestBody requestBody, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method || element instanceof java.lang.reflect.Parameter) {
+    public void visitRequestBody(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        if (element instanceof MethodModel || element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
             org.eclipse.microprofile.openapi.models.parameters.RequestBody currentRequestBody = context
                     .getWorkingOperation().getRequestBody();
-            if (currentRequestBody != null || element instanceof java.lang.reflect.Parameter) {
-                RequestBodyImpl.merge(requestBody, currentRequestBody, true,
-                        context.getApi().getComponents().getSchemas());
+            if (currentRequestBody != null || element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+                RequestBodyImpl.merge(RequestBodyImpl.createInstance(annotation, context), currentRequestBody, true, context);
             }
         }
     }
 
     @Override
-    public void visitAPIResponse(APIResponse apiResponse, AnnotatedElement element, ApiContext context) {
-        APIResponsesImpl.merge(apiResponse, context.getWorkingOperation().getResponses(), true,
-                context.getApi().getComponents().getSchemas());
+    public void visitAPIResponse(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        APIResponseImpl apiResponse = APIResponseImpl.createInstance(annotation, context);
+        APIResponsesImpl.merge(apiResponse, context.getWorkingOperation().getResponses(), true, context);
 
         // If an APIResponse has been processed that isn't the default
-        if (apiResponse.responseCode() != null && !apiResponse.responseCode().isEmpty() && !apiResponse.responseCode()
+        String responseCode = apiResponse.getResponseCode();
+        if (responseCode != null && !responseCode.isEmpty() && !responseCode
                 .equals(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT)) {
             // If the element doesn't also contain a response mapping to the default
-            if (Arrays.asList(element.getDeclaredAnnotationsByType(APIResponse.class)).stream()
-                    .noneMatch(a -> a.responseCode() == null || a.responseCode().isEmpty() || a.responseCode()
-                    .equals(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT))) {
-                // Then remove the default response
+            AnnotationModel apiResponsesParent = element.getAnnotation(APIResponses.class.getName());
+            if (apiResponsesParent != null) {
+                List<AnnotationModel> apiResponses = apiResponsesParent.getValue("value", List.class);
+                if (apiResponses.stream()
+                        .map(a -> a.getValue("responseCode", String.class))
+                        .noneMatch(code -> code == null || code.isEmpty() || code.equals(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT))) {
+                    // Then remove the default response
+                    context.getWorkingOperation().getResponses()
+                            .removeAPIResponse(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT);
+                }
+            } else {
                 context.getWorkingOperation().getResponses()
-                .removeAPIResponse(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT);
+                        .removeAPIResponse(org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT);
             }
         }
     }
 
     @Override
-    public void visitAPIResponses(APIResponses apiResponses, AnnotatedElement element, ApiContext context) {
-        for (APIResponse response : apiResponses.value()) {
-            visitAPIResponse(response, element, context);
+    public void visitAPIResponses(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> responses = annotation.getValue("value", List.class);
+        if (responses != null) {
+            responses.forEach(response -> visitAPIResponse(response, element, context));
         }
     }
 
     @Override
-    public void visitParameters(Parameters parameters, AnnotatedElement element, ApiContext context) {
-        for (Parameter parameter : parameters.value()) {
-            visitParameter(parameter, element, context);
+    public void visitParameters(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> parameters = annotation.getValue("value", List.class);
+        if (parameters != null) {
+            parameters.forEach(parameter -> visitParameter(parameter, element, context));
         }
     }
 
     @Override
-    public void visitParameter(Parameter parameter, AnnotatedElement element, ApiContext context) {
+    public void visitParameter(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         org.eclipse.microprofile.openapi.models.parameters.Parameter matchedParam = null;
+        org.eclipse.microprofile.openapi.models.parameters.Parameter parameter = ParameterImpl.createInstance(annotation, context);
 
-        if (element instanceof java.lang.reflect.Parameter) {
-            matchedParam = findOperationParameterFor((java.lang.reflect.Parameter) element, context);
+        if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+            matchedParam = findOperationParameterFor((org.glassfish.hk2.classmodel.reflect.Parameter) element, context);
         }
-        if (element instanceof Method) {
-            matchedParam = findOperationParameterFor(parameter, (Method) element, context);
+        if (element instanceof MethodModel) {
+            matchedParam = findOperationParameterFor(parameter, (MethodModel) element, context);
         }
         if (matchedParam != null) {
-            ParameterImpl.merge(parameter, matchedParam, true, context.getApi().getComponents().getSchemas());
+            ParameterImpl.merge(parameter, matchedParam, true, context);
 
             // If a content was added, and a schema type exists, reconfigure the schema type
-            if (matchedParam.getContent() != null && matchedParam.getSchema() != null
+            if (matchedParam.getContent() != null
+                    && !matchedParam.getContent().values().isEmpty()
+                    && matchedParam.getSchema() != null
                     && matchedParam.getSchema().getType() != null) {
                 SchemaType type = matchedParam.getSchema().getType();
                 matchedParam.setSchema(null);
@@ -743,28 +776,30 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         mediaType.setSchema(new SchemaImpl());
                     }
                     mediaType.getSchema()
-                    .setType(ModelUtils.mergeProperty(mediaType.getSchema().getType(), type, false));
+                            .setType(ModelUtils.mergeProperty(mediaType.getSchema().getType(), type, false));
                 }
             }
         }
     }
 
-    private static org.eclipse.microprofile.openapi.models.parameters.Parameter findOperationParameterFor(Parameter parameter,
-            Method annotated, ApiContext context) {
-        String name = parameter.name();
+    private static org.eclipse.microprofile.openapi.models.parameters.Parameter findOperationParameterFor(
+            org.eclipse.microprofile.openapi.models.parameters.Parameter parameter,
+            MethodModel annotated,
+            ApiContext context) {
+        String name = parameter.getName();
         // If the parameter reference is valid
         if (name != null && !name.isEmpty()) {
             // Get all parameters with the same name
-            List<java.lang.reflect.Parameter> matchingMethodParameters = Arrays
-                    .asList(annotated.getParameters()).stream()
+            List<org.glassfish.hk2.classmodel.reflect.Parameter> matchingMethodParameters = annotated.getParameters()
+                    .stream()
                     .filter(x -> name.equals(ModelUtils.getParameterName(x)))
                     .collect(Collectors.toList());
             // If there is more than one match, filter it further
-            ParameterIn in = parameter.in();
-            if (matchingMethodParameters.size() > 1 && in != null && in != ParameterIn.DEFAULT) {
+            In in = parameter.getIn();
+            if (matchingMethodParameters.size() > 1 && in != null) {
                 // Remove all parameters of the wrong input type
                 matchingMethodParameters
-                .removeIf(x -> ModelUtils.getParameterType(x) != In.valueOf(in.name()));
+                        .removeIf(x -> ModelUtils.getParameterType(x) != In.valueOf(in.name()));
             }
             if (matchingMethodParameters.isEmpty()) {
                 return null;
@@ -786,7 +821,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * Find the matching parameter, and match it
      */
     private static org.eclipse.microprofile.openapi.models.parameters.Parameter findOperationParameterFor(
-            java.lang.reflect.Parameter annotated, ApiContext context) {
+            org.glassfish.hk2.classmodel.reflect.Parameter annotated, ApiContext context) {
         String actualName = ModelUtils.getParameterName(annotated);
         if (actualName == null) {
             return null;
@@ -801,11 +836,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitExternalDocumentation(ExternalDocumentation externalDocs, AnnotatedElement element,
+    public void visitExternalDocumentation(AnnotationModel externalDocs, AnnotatedElement element,
             ApiContext context) {
-        if (element instanceof Method) {
+        if (element instanceof MethodModel) {
             org.eclipse.microprofile.openapi.models.ExternalDocumentation newExternalDocs = new ExternalDocumentationImpl();
-            ExternalDocumentationImpl.merge(externalDocs, newExternalDocs, true);
+            ExternalDocumentationImpl.merge(ExternalDocumentationImpl.createInstance(externalDocs), newExternalDocs, true);
             if (newExternalDocs.getUrl() != null && !newExternalDocs.getUrl().isEmpty()) {
                 context.getWorkingOperation().setExternalDocs(newExternalDocs);
             }
@@ -813,28 +848,30 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitServer(Server server, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method) {
+    public void visitServer(AnnotationModel server, AnnotatedElement element, ApiContext context) {
+        if (element instanceof MethodModel) {
             org.eclipse.microprofile.openapi.models.servers.Server newServer = new ServerImpl();
             context.getWorkingOperation().addServer(newServer);
-            ServerImpl.merge(server, newServer, true);
+            ServerImpl.merge(ServerImpl.createInstance(server, context), newServer, true);
         }
     }
 
     @Override
-    public void visitServers(Servers servers, AnnotatedElement element, ApiContext context) {
-        for (Server server : servers.value()) {
-            visitServer(server, element, context);
+    public void visitServers(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> servers = annotation.getValue("value", List.class);
+        if (servers != null) {
+            servers.forEach(server -> visitServer(server, element, context));
         }
     }
 
     @Override
-    public void visitTag(Tag tag, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method) {
-            TagImpl.merge(tag, context.getWorkingOperation(), true, context.getApi().getTags());
+    public void visitTag(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        org.eclipse.microprofile.openapi.models.tags.Tag from = TagImpl.createInstance(annotation, context);
+        if (element instanceof MethodModel) {
+            TagImpl.merge(from, context.getWorkingOperation(), true, context.getApi().getTags());
         } else {
             org.eclipse.microprofile.openapi.models.tags.Tag newTag = new TagImpl();
-            TagImpl.merge(tag, newTag, true);
+            TagImpl.merge(from, newTag, true);
             if (newTag.getName() != null && !newTag.getName().isEmpty()) {
                 context.getApi().getTags().add(newTag);
             }
@@ -842,41 +879,51 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitTags(Tags tags, AnnotatedElement element, ApiContext context) {
-        if (element instanceof Method) {
-            for (Tag tag : tags.value()) {
-                visitTag(tag, element, context);
+    public void visitTags(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        if (element instanceof MethodModel) {
+            List<AnnotationModel> tags = annotation.getValue("value", List.class);
+            if (tags != null) {
+                for (AnnotationModel tag : tags) {
+                    visitTag(tag, element, context);
+                }
             }
-            for (String ref : tags.refs()) {
-                if (ref != null && !ref.isEmpty()) {
-                    context.getWorkingOperation().addTag(ref);
+            List<String> refs = annotation.getValue("refs", List.class);
+            if (refs != null) {
+                for (String ref : refs) {
+                    if (ref != null && !ref.isEmpty()) {
+                        context.getWorkingOperation().addTag(ref);
+                    }
                 }
             }
         }
     }
 
     @Override
-    public void visitSecurityScheme(SecurityScheme securityScheme, AnnotatedElement element, ApiContext context) {
-        if (securityScheme.securitySchemeName() != null && !securityScheme.securitySchemeName().isEmpty()) {
+    public void visitSecurityScheme(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        String securitySchemeName = annotation.getValue("securitySchemeName", String.class);
+        org.eclipse.microprofile.openapi.models.security.SecurityScheme securityScheme = SecuritySchemeImpl.createInstance(annotation, context);
+        if (securitySchemeName != null && !securitySchemeName.isEmpty()) {
             org.eclipse.microprofile.openapi.models.security.SecurityScheme newScheme = context.getApi().getComponents()
-                    .getSecuritySchemes().getOrDefault(securityScheme.securitySchemeName(), new SecuritySchemeImpl());
-            context.getApi().getComponents().addSecurityScheme(securityScheme.securitySchemeName(), newScheme);
+                    .getSecuritySchemes().getOrDefault(securitySchemeName, new SecuritySchemeImpl());
+            context.getApi().getComponents().addSecurityScheme(securitySchemeName, newScheme);
             SecuritySchemeImpl.merge(securityScheme, newScheme, true);
         }
     }
 
     @Override
-    public void visitSecuritySchemes(SecuritySchemes securitySchemes, AnnotatedElement element, ApiContext context) {
-        for (SecurityScheme securityScheme : securitySchemes.value()) {
-            visitSecurityScheme(securityScheme, element, context);
+    public void visitSecuritySchemes(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> securitySchemes = annotation.getValue("value", List.class);
+        if (securitySchemes != null) {
+            securitySchemes.forEach(securityScheme -> visitSecurityScheme(securityScheme, element, context));
         }
     }
 
     @Override
-    public void visitSecurityRequirement(SecurityRequirement securityRequirement, AnnotatedElement element,
-            ApiContext context) {
-        if (element instanceof Method) {
-            if (securityRequirement.name() != null && !securityRequirement.name().isEmpty()) {
+    public void visitSecurityRequirement(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        if (element instanceof MethodModel) {
+            String securityRequirementName = annotation.getValue("name", String.class);
+            org.eclipse.microprofile.openapi.models.security.SecurityRequirement securityRequirement = SecurityRequirementImpl.createInstance(annotation, context);
+            if (securityRequirementName != null && !securityRequirementName.isEmpty()) {
                 org.eclipse.microprofile.openapi.models.security.SecurityRequirement model = new SecurityRequirementImpl();
                 SecurityRequirementImpl.merge(securityRequirement, model);
                 context.getWorkingOperation().addSecurityRequirement(model);
@@ -885,26 +932,23 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
-    public void visitSecurityRequirements(SecurityRequirements securityRequirements, AnnotatedElement element,
-            ApiContext context) {
-        for (SecurityRequirement requirement : securityRequirements.value()) {
-            visitSecurityRequirement(requirement, element, context);
+    public void visitSecurityRequirements(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
+        List<AnnotationModel> securityRequirements = annotation.getValue("value", List.class);
+        if (securityRequirements != null) {
+            securityRequirements.forEach(securityRequirement -> visitSecurityRequirement(securityRequirement, element, context));
         }
     }
 
     // PRIVATE METHODS
-
     private org.eclipse.microprofile.openapi.models.parameters.RequestBody insertDefaultRequestBody(ApiContext context,
-            org.eclipse.microprofile.openapi.models.Operation operation, Method method) {
+            org.eclipse.microprofile.openapi.models.Operation operation, MethodModel method) {
         org.eclipse.microprofile.openapi.models.parameters.RequestBody requestBody = new RequestBodyImpl();
 
         // Get the request body type of the method
-        Class<?> bodyType = null;
-        Type genericBodyType = null;
-        for (java.lang.reflect.Parameter methodParam : method.getParameters()) {
+        org.glassfish.hk2.classmodel.reflect.ParameterizedType bodyType = null;
+        for (org.glassfish.hk2.classmodel.reflect.Parameter methodParam : method.getParameters()) {
             if (ModelUtils.isRequestBody(methodParam)) {
-                bodyType = methodParam.getType();
-                genericBodyType = methodParam.getParameterizedType();
+                bodyType = methodParam;
                 break;
             }
         }
@@ -913,7 +957,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Create the default request body with a wildcard mediatype
-        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, bodyType, genericBodyType));
+        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, bodyType));
         requestBody.getContent().addMediaType(javax.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         operation.setRequestBody(requestBody);
@@ -923,19 +967,21 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     /**
      * Creates a new {@link APIResponse} to model the default response of a
      * {@link Method}, and inserts it into the {@link Operation} responses.
-     * 
-     * @param context   the API context.
+     *
+     * @param context the API context.
      * @param operation the {@link Operation} to add the default response to.
-     * @param method    the {@link Method} to model the default response on.
+     * @param method the {@link Method} to model the default response on.
      * @return the newly created {@link APIResponse}.
      */
     private org.eclipse.microprofile.openapi.models.responses.APIResponse insertDefaultResponse(ApiContext context,
-            org.eclipse.microprofile.openapi.models.Operation operation, Method method) {
+            org.eclipse.microprofile.openapi.models.Operation operation, MethodModel method) {
         org.eclipse.microprofile.openapi.models.responses.APIResponse defaultResponse = new APIResponseImpl();
         defaultResponse.setDescription("Default Response.");
 
         // Create the default response with a wildcard mediatype
-        MediaType mediaType = new MediaTypeImpl().schema(createSchema(context, method.getReturnType(), method.getGenericReturnType()));
+        MediaType mediaType = new MediaTypeImpl().schema(
+                createSchema(context, method.getReturnType())
+        );
         defaultResponse.getContent().addMediaType(javax.ws.rs.core.MediaType.WILDCARD, mediaType);
 
         // Add the default response
@@ -945,8 +991,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     /**
-     * @return the {@link javax.ws.rs.core.MediaType} with the given name. Defaults
-     *         to <code>WILDCARD</code>.
+     * @return the {@link javax.ws.rs.core.MediaType} with the given name.
+     * Defaults to <code>WILDCARD</code>.
      */
     private static String getContentType(String name) {
         String contentType = javax.ws.rs.core.MediaType.WILDCARD;
@@ -961,28 +1007,30 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         return contentType;
     }
 
-    private org.eclipse.microprofile.openapi.models.media.Schema createSchema(ApiContext context, Class<?> type, Type genericType) {
+    private org.eclipse.microprofile.openapi.models.media.Schema createSchema(
+            ApiContext context,
+            org.glassfish.hk2.classmodel.reflect.ParameterizedType type) {
+
+        String typeName = type.getTypeName();
+        List<org.glassfish.hk2.classmodel.reflect.ParameterizedType> genericType = type.getGenericTypes();
+
         org.eclipse.microprofile.openapi.models.media.Schema schema = new SchemaImpl();
-        SchemaType schemaType = ModelUtils.getSchemaType(type);
+        SchemaType schemaType = ModelUtils.getSchemaType(type, context);
         schema.setType(schemaType);
 
         // Set the subtype if it's an array (for example an array of ints)
         if (schemaType == SchemaType.ARRAY) {
             if (type.isArray()) {
-                schema.setItems(createSchema(context, type.getComponentType(), type.getComponentType()));
-            } else { // should be something Iterable
-                ParameterizedType fullType = (ParameterizedType) genericType;
-                Type genericElementType = fullType.getActualTypeArguments()[0];
-                Class<?> rawElementType = (Class<?>) (genericElementType.getClass() == Class.class 
-                        ? genericElementType 
-                        : ((ParameterizedType)genericElementType).getRawType());
-                schema.setItems(createSchema(context, rawElementType, genericElementType));
+                schemaType = ModelUtils.getSchemaType(type.getTypeName(), context);
+                schema.setType(schemaType);
+            } else if (!genericType.isEmpty()) { // should be something Iterable
+                    schema.setItems(createSchema(context, genericType.get(0)));
             }
         }
 
         // If the schema is an object, insert the reference
         if (schemaType == SchemaType.OBJECT) {
-            if (insertObjectReference(context, schema, type)) {
+            if (insertObjectReference(context, schema, type.getType(), typeName)) {
                 schema.setType(null);
                 schema.setItems(null);
             }
@@ -991,54 +1039,66 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         return schema;
     }
 
-    private org.eclipse.microprofile.openapi.models.media.Schema createSchema(ApiContext context, 
-            AnnotatedElement annotatedElement, Class<?> type, Type genericType) {
-        SchemaType schemaType = ModelUtils.getSchemaType(type);
+    private org.eclipse.microprofile.openapi.models.media.Schema createSchema(
+            ApiContext context,
+            AnnotatedElement annotatedElement,
+            org.glassfish.hk2.classmodel.reflect.ParameterizedType type) {
+
+        SchemaType schemaType = ModelUtils.getSchemaType(type, context);
 
         // If the annotated element is the same type as the reference class, return a null schema
-        if (schemaType == SchemaType.OBJECT && type.equals(annotatedElement)) {
+        if (schemaType == SchemaType.OBJECT && type.getType().equals(annotatedElement)) {
             org.eclipse.microprofile.openapi.models.media.Schema schema = new SchemaImpl();
             schema.setType(null);
             schema.setItems(null);
             return schema;
         }
-        return createSchema(context, type, genericType);
+        return createSchema(context, type);
     }
 
     /**
-     * Replace the object in the referee with a reference, and create the reference
-     * in the API.
-     * 
-     * @param context        the API context.
-     * @param referee        the object containing the reference.
+     * Replace the object in the referee with a reference, and create the
+     * reference in the API.
+     *
+     * @param context the API context.
+     * @param referee the object containing the reference.
      * @param referenceClass the class of the object being referenced.
      * @return if the reference has been created.
      */
-    private boolean insertObjectReference(ApiContext context, Reference<?> referee, Class<?> referenceClass) {
+    private boolean insertObjectReference(ApiContext context, Reference<?> referee, AnnotatedElement referenceClass, String referenceClassName) {
 
         // If the object is a java core class
-        if (referenceClass == null || referenceClass.getName().startsWith("java.") || referenceClass.isPrimitive()) {
+        if (referenceClassName == null || referenceClassName.startsWith("java.")) {
             return false;
         }
 
         // If the object is a Java EE object type
-        if (referenceClass.getName().startsWith("javax.")) {
+        if (referenceClassName.startsWith("javax.")) {
             return false;
         }
 
         // Check the class exists in the application
-        if (!context.isApplicationType(referenceClass)) {
+        if (!context.isApplicationType(referenceClassName)) {
             return false;
         }
 
-        final Schema schema = AnnotationInfo.valueOf(referenceClass).getAnnotation(Schema.class);
-        // Set the reference name
-        referee.setRef(schema == null || schema.name().isEmpty() ? referenceClass.getSimpleName() : schema.name());
+        if (referenceClass != null && referenceClass instanceof ExtensibleType) {
+            final AnnotationModel schemaAnnotation
+                    = AnnotationInfo.valueOf((ExtensibleType) referenceClass)
+                            .getAnnotation(Schema.class);
+            if (schemaAnnotation != null) {
+                String schemaName = schemaAnnotation.getValue("name", String.class);
 
-        // Create the schema
-        visitSchema(schema, referenceClass, context);
+                // Set the reference name
+                referee.setRef(schemaName == null || schemaName.isEmpty() ? ModelUtils.getSimpleName(referenceClassName) : schemaName);
 
-        return true;
+                // Create the schema
+                visitSchema(schemaAnnotation, referenceClass, context);
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }
