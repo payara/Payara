@@ -50,6 +50,7 @@ import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -57,7 +58,11 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Logger;
@@ -89,6 +94,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toSet;
+import org.glassfish.hk2.classmodel.reflect.Type;
 
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -249,7 +255,11 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
                 openapi = new ModelReaderProcessor().process(openapi, appConfig);
                 openapi = new FileProcessor(appInfo.getAppClassLoader()).process(openapi, appConfig);
-                openapi = new ApplicationProcessor(appInfo).process(openapi, appConfig);
+                openapi = new ApplicationProcessor(
+                        appInfo.getTypes(),
+                        filterTypes(appInfo, appConfig),
+                        appInfo.getAppClassLoader()
+                ).process(openapi, appConfig);
                 openapi = new BaseProcessor(baseURLs).process(openapi, appConfig);
                 openapi = new FilterProcessor().process(openapi, appConfig);
             } catch (Throwable t) {
@@ -260,6 +270,58 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             return openapi;
         }
 
+    }
+
+    /**
+     * @return a list of all classes in the archive.
+     */
+    private Set<Type> filterTypes(ApplicationInfo appInfo, OpenApiConfiguration config) {
+        ReadableArchive archive = appInfo.getSource();
+        Set<Type> types = new HashSet<>(filterLibTypes(appInfo, config, archive));
+        types.addAll(
+                Collections.list(archive.entries()).stream()
+                        // Only use the classes
+                        .filter(clazz -> clazz.endsWith(".class"))
+                        // Remove the WEB-INF/classes and return the proper class name format
+                        .map(clazz -> clazz.replaceAll("WEB-INF/classes/", "").replace("/", ".").replace(".class", ""))
+                        // Fetch class type
+                        .map(clazz -> appInfo.getTypes().getBy(clazz))
+                        // Don't return null classes
+                        .filter(Objects::nonNull)
+                        .collect(toSet())
+        );
+        return config == null ? types : config.getValidClasses(types);
+    }
+
+    private Set<Type> filterLibTypes(ApplicationInfo appInfo, OpenApiConfiguration config, ReadableArchive archive) {
+        Set<Type> types = new HashSet<>();
+        if (config != null && config.getScanLib()) {
+            Enumeration<String> subArchiveItr = archive.entries();
+            while (subArchiveItr.hasMoreElements()) {
+                String subArchiveName = subArchiveItr.nextElement();
+                if (subArchiveName.startsWith("WEB-INF/lib/") && subArchiveName.endsWith(".jar")) {
+                    try {
+                        ReadableArchive subArchive = archive.getSubArchive(subArchiveName);
+                        types.addAll(
+                                Collections.list(subArchive.entries())
+                                        .stream()
+                                        // Only use the classes
+                                        .filter(clazz -> clazz.endsWith(".class"))
+                                        // return the proper class name format
+                                        .map(clazz -> clazz.replace("/", ".").replace(".class", ""))
+                                        // Fetch class type
+                                        .map(clazz -> appInfo.getTypes().getBy(clazz))
+                                        // Don't return null classes
+                                        .filter(Objects::nonNull)
+                                        .collect(toSet())
+                        );
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                }
+            }
+        }
+        return types;
     }
 
     private List<URL> getServerURL(String contextRoot) {
