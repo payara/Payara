@@ -44,6 +44,7 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.util.List;
+import java.util.Objects;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.tags.Tag;
@@ -139,14 +140,43 @@ public class TagImpl extends ExtensibleImpl<Tag> implements Tag {
         }
 
         if (from.getName()!= null && !from.getName().isEmpty()) {
-            // Create the new tag
-            Tag newTag = new TagImpl();
-            merge(from, newTag, true);
-            apiTags.add(newTag);
+            if (!apiTags.contains(from)) {
+                // Create the new tag
+                Tag newTag = new TagImpl();
+                merge(from, newTag, true);
+                apiTags.add(newTag);
+            }
 
             // Reference the new tag
-            to.addTag(newTag.getName());
+            to.addTag(from.getName());
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 83 * hash + Objects.hashCode(this.name);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TagImpl other = (TagImpl) obj;
+        return Objects.equals(this.name, other.name);
+    }
+
+    @Override
+    public String toString() {
+        return "TagImpl{" + "name=" + name + ", description=" + description + ", externalDocs=" + externalDocs + ", ref=" + ref + '}';
     }
 
 }
