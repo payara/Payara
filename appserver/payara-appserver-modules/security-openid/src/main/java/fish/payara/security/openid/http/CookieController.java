@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,9 @@ package fish.payara.security.openid.http;
 
 import static java.util.Objects.nonNull;
 import java.util.Optional;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**
@@ -51,10 +52,12 @@ import static org.glassfish.common.util.StringHelper.isEmpty;
  */
 public class CookieController implements HttpStorageController {
 
-    private final HttpMessageContext httpContext;
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
 
-    public CookieController(HttpMessageContext httpContext) {
-        this.httpContext = httpContext;
+    public CookieController(HttpServletRequest request, HttpServletResponse response) {
+        this.request = request;
+        this.response = response;
     }
 
     @Override
@@ -65,16 +68,16 @@ public class CookieController implements HttpStorageController {
         }
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
-        String contextPath = httpContext.getRequest().getContextPath();
+        String contextPath = request.getContextPath();
         cookie.setPath(isEmpty(contextPath) ? "/" : contextPath);
 
-        httpContext.getResponse().addCookie(cookie);
+        response.addCookie(cookie);
     }
 
     @Override
     public Optional<Cookie> get(String name) {
-        if (httpContext.getRequest().getCookies() != null) {
-            for (Cookie cookie : httpContext.getRequest().getCookies()) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
                 if (name.equals(cookie.getName())
                         && nonNull(cookie.getValue())
                         && !cookie.getValue().trim().isEmpty()) {

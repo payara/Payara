@@ -39,24 +39,6 @@
  */
 package fish.payara.micro.impl;
 
-import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.glassfish.bootstrap.Constants;
-import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
-import com.sun.enterprise.server.logging.ODLLogFormatter;
-import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
-import fish.payara.boot.runtime.BootCommand;
-import fish.payara.boot.runtime.BootCommands;
-import fish.payara.deployment.util.GAVConvertor;
-import fish.payara.micro.BootstrapException;
-import fish.payara.micro.PayaraMicroRuntime;
-import fish.payara.micro.boot.AdminCommandRunner;
-import fish.payara.micro.boot.PayaraMicroBoot;
-import fish.payara.micro.boot.loader.OpenURLClassLoader;
-import fish.payara.micro.cmd.options.RUNTIME_OPTION;
-import fish.payara.micro.cmd.options.RuntimeOptions;
-import fish.payara.micro.cmd.options.ValidationException;
-import fish.payara.micro.data.InstanceDescriptor;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -71,6 +53,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -89,6 +72,12 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.glassfish.bootstrap.Constants;
+import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
+import com.sun.enterprise.server.logging.ODLLogFormatter;
+
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
@@ -97,6 +86,21 @@ import org.glassfish.embeddable.GlassFish.Status;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
+
+import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
+import fish.payara.boot.runtime.BootCommand;
+import fish.payara.boot.runtime.BootCommands;
+import fish.payara.deployment.util.GAVConvertor;
+import fish.payara.micro.BootstrapException;
+import fish.payara.micro.PayaraMicroRuntime;
+import fish.payara.micro.boot.AdminCommandRunner;
+import fish.payara.micro.boot.PayaraMicroBoot;
+import fish.payara.micro.boot.loader.OpenURLClassLoader;
+import fish.payara.micro.cmd.options.RUNTIME_OPTION;
+import fish.payara.micro.cmd.options.RuntimeOptions;
+import fish.payara.micro.cmd.options.ValidationException;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.nucleus.executorservice.PayaraFileWatcher;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -146,6 +150,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private boolean enableAccessLog = false;
     private boolean enableAccessLogFormat = false;
     private boolean logPropertiesFile = false;
+    private boolean enableDynamicLogging;
     private String userLogPropertiesFile = "";
     private int autoBindRange = 50;
     private String bootImage = "MICRO-INF/domain/boot.txt";
@@ -989,7 +994,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         } catch (IOException | URISyntaxException ex) {
             throw new BootstrapException("Problem unpacking the Runtime", ex);
         }
-        resetLogging();
+        final String loggingProperty = System.getProperty("java.util.logging.config.file");
+        resetLogging(loggingProperty);
+        // If it's been enabled, watch the log file for changes
+        if (enableDynamicLogging) {
+            PayaraFileWatcher.watch(new File(loggingProperty).toPath(), () -> {
+                LOGGER.info("Logging file modified, resetting logging");
+                resetLogging(loggingProperty);
+            });
+        }
         runtimeDir.processDirectoryInformation();
 
         // build the runtime
@@ -1337,6 +1350,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         break;
                     case logproperties:
                         setLogPropertiesFile(new File(value));
+                        break;
+                    case enabledynamiclogging:
+                        enableDynamicLogging = true;
                         break;
                     case logo:
                         generateLogo = true;
@@ -1690,9 +1706,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         });
     }
 
-    private void resetLogging() {
-
-        String loggingProperty = System.getProperty("java.util.logging.config.file");
+    /**
+     * Reset the logging properties from the given file.
+     * @param loggingProperty the location of the file to read from.
+     */
+    private void resetLogging(String loggingProperty) {
         if (loggingProperty != null) {
             // we need to copy into the unpacked domain the specified logging.properties file
             File file = new File(loggingProperty);
@@ -1774,7 +1792,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
             }
         }
-
     }
 
     private void configureCommandFiles() throws IOException {
@@ -2195,6 +2212,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         userLogFile = getProperty("payaramicro.userLogFile");
         enableAccessLog = getBooleanProperty("payaramicro.enableAccessLog");
         enableAccessLogFormat = getBooleanProperty("payaramicro.logPropertiesFile");
+        enableDynamicLogging = getBooleanProperty("payaramicro.enableDynamicLogging");
         enableHealthCheck = getBooleanProperty("payaramicro.enableHealthCheck");
         httpPort = getIntegerProperty("payaramicro.port", Integer.MIN_VALUE);
         sslPort = getIntegerProperty("payaramicro.sslPort", Integer.MIN_VALUE);
@@ -2380,6 +2398,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         props.setProperty("payaramicro.enableAccessLog", Boolean.toString(enableAccessLog));
         props.setProperty("payaramicro.enableAccessLogFormat", Boolean.toString(enableAccessLogFormat));
         props.setProperty("payaramicro.logPropertiesFile", Boolean.toString(logPropertiesFile));
+        props.setProperty("payaramicro.enableDynamicLogging", Boolean.toString(enableDynamicLogging));
         props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
         props.setProperty("payaramicro.hostAware", Boolean.toString(hostAware));
         props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));

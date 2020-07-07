@@ -39,17 +39,14 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.app.provider.writer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 
 public abstract class AbstractWriter implements MessageBodyWriter<OpenAPI> {

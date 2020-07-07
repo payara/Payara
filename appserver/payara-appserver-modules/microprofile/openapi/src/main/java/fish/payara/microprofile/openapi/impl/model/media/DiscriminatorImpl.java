@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.impl.model.media;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 
 public class DiscriminatorImpl implements Discriminator {

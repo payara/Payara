@@ -39,28 +39,24 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.app.service;
 
+import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
+import fish.payara.microprofile.openapi.impl.OpenApiService;
+import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.APPLICATION_YAML;
-import static java.util.logging.Level.WARNING;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-
 import java.io.IOException;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-
-import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
-import fish.payara.microprofile.openapi.impl.OpenApiService;
-import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
-import javax.servlet.http.HttpServletRequest;
 
 @Path("/")
 public class OpenApiResource {

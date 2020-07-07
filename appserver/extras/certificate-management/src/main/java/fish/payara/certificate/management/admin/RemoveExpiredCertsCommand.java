@@ -102,7 +102,6 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
             filterExpiredKeys(store);
             save(store);
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
-            ex.printStackTrace();
             throw new CommandException(ex);
         }
 
@@ -183,13 +182,9 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
                 if (defaultKeystore && defaultTruststore) {
                     // Do nothing
                 } else if (defaultKeystore) {
-                    logger.info("Please remove expired certificates from truststore manually");
-                    // TO-DO
-                    // logger.info("Look at using asadmin command 'add-to-truststore'");
+                    logger.info("Please remove expired certificates from truststore manually using the remove-from-truststore command");
                 } else {
-                    logger.info("Please remove expired certificates from keystore manually");
-                    // TO-DO
-                    // logger.info("Look at using asadmin command 'add-to-keystore'");
+                    logger.info("Please remove expired certificates from keystore manually using the remove-from-keystore command");
                 }
 
                 return CLIConstants.WARNING;
@@ -208,7 +203,6 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
                 filterExpiredKeys(store);
                 save(store);
             } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
-                ex.printStackTrace();
                 throw new CommandException(ex);
             }
 

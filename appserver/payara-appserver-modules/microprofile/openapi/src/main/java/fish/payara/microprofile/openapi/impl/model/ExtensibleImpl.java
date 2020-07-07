@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,23 +39,19 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
 import org.eclipse.microprofile.openapi.models.Extensible;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensible<T> {
 
@@ -94,22 +90,27 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
     public static String extensionName(String name) {
         if (name != null && !name.startsWith("x-")) {
             //NB. MP group decided that extension names should not be corrected
-            LOGGER.warning("extension name not starting with `x-` cause invalid Open API documents: " + name);
+            LOGGER.log(Level.WARNING, "extension name not starting with `x-` cause invalid Open API documents: {0}", name);
         }
         return name;
     }
 
-    public static void merge(Extension from, Extensible<?> to, boolean override) {
-        if (isAnnotationNull(from)) {
+    public static void merge(Extensible<?> from, Extensible<?> to, boolean override) {
+        if (from == null) {
             return;
         }
         if (to.getExtensions() == null) {
             to.setExtensions(new LinkedHashMap<>());
         }
-        if (from.name() != null && !from.name().isEmpty()) {
-            Object value = mergeProperty(to.getExtensions().get(from.name()), 
-                    convertExtensionValue(from.value(), from.parseValue()), override);
-            to.getExtensions().put(from.name(), value);
+        if (!from.getExtensions().isEmpty()) {
+            for (String extensionName : from.getExtensions().keySet()) {
+                Object value = mergeProperty(
+                        to.getExtensions().get(extensionName),
+                        from.getExtensions().get(extensionName),
+                        override
+                );
+                to.getExtensions().put(extensionName, value);
+            }
         }
     }
 

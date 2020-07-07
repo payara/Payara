@@ -39,19 +39,16 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
+import fish.payara.microprofile.openapi.spec.OpenApiValidator;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.toJson;
 import static org.eclipse.microprofile.openapi.OASFactory.createObject;
-
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.info.Info;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
-import fish.payara.microprofile.openapi.spec.OpenApiValidator;
 
 public abstract class OpenApiBuilderTest {
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,14 @@
  */
 package fish.payara.microprofile.openapi.impl.model.security;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.EnumModel;
 
 public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implements SecurityScheme {
 
@@ -62,6 +60,35 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
     private String bearerFormat;
     private OAuthFlows flows;
     private String openIdConnectUrl;
+
+    private String apiKeyName;
+
+    public static SecurityScheme createInstance(AnnotationModel annotation, ApiContext context) {
+        SecuritySchemeImpl from = new SecuritySchemeImpl();
+        EnumModel type = annotation.getValue("type", EnumModel.class);
+        if (type != null) {
+            from.setType(SecurityScheme.Type.valueOf(type.getValue()));
+        }
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setName(annotation.getValue("securitySchemeName", String.class));
+        String ref = annotation.getValue("ref", String.class);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        EnumModel in = annotation.getValue("in", EnumModel.class);
+        if (in != null) {
+            from.setIn(SecurityScheme.In.valueOf(in.getValue()));
+        }
+        from.setScheme(annotation.getValue("scheme", String.class));
+        from.setBearerFormat(annotation.getValue("bearerFormat", String.class));
+        AnnotationModel flowsAnnotation = annotation.getValue("flows", AnnotationModel.class);
+        if (flowsAnnotation != null) {
+            from.setFlows(OAuthFlowsImpl.createInstance(flowsAnnotation));
+        }
+        from.setOpenIdConnectUrl(annotation.getValue("openIdConnectUrl", String.class));
+        from.setApiKeyName(annotation.getValue("apiKeyName", String.class));
+        return from;
+    }
 
     @Override
     public SecurityScheme.Type getType() {
@@ -156,31 +183,41 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
         this.ref = ref;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.security.SecurityScheme from,
-            SecurityScheme to, boolean override) {
-        if (isAnnotationNull(from)) {
+    public String getApiKeyName() {
+        return apiKeyName;
+    }
+
+    public void setApiKeyName(String apiKeyName) {
+        this.apiKeyName = apiKeyName;
+    }
+
+    public static void merge(SecurityScheme from, SecurityScheme to, boolean override) {
+        if (from == null) {
             return;
         }
 
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            applyReference(to, from.ref());
+        if (from.getRef() != null && !from.getRef().isEmpty()) {
+            applyReference(to, from.getRef());
             return;
         }
 
-        to.setName(mergeProperty(to.getName(), from.apiKeyName(), override));
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setScheme(mergeProperty(to.getScheme(), from.scheme(), override));
-        to.setBearerFormat(mergeProperty(to.getBearerFormat(), from.bearerFormat(), override));
-        to.setOpenIdConnectUrl(mergeProperty(to.getOpenIdConnectUrl(), from.openIdConnectUrl(), override));
-        if (from.in() != null && from.in() != SecuritySchemeIn.DEFAULT) {
-            to.setIn(mergeProperty(to.getIn(), In.valueOf(from.in().name()), override));
+        if (from instanceof SecuritySchemeImpl) {
+            to.setName(mergeProperty(to.getName(), ((SecuritySchemeImpl) from).getApiKeyName(), override));
         }
-        if (from.type() != null && from.type() != SecuritySchemeType.DEFAULT) {
-            to.setType(mergeProperty(to.getType(), Type.valueOf(from.type().name()), override));
+
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setScheme(mergeProperty(to.getScheme(), from.getScheme(), override));
+        to.setBearerFormat(mergeProperty(to.getBearerFormat(), from.getBearerFormat(), override));
+        to.setOpenIdConnectUrl(mergeProperty(to.getOpenIdConnectUrl(), from.getOpenIdConnectUrl(), override));
+        if (from.getIn() != null) {
+            to.setIn(mergeProperty(to.getIn(), from.getIn(), override));
         }
-        if (from.flows() != null) {
+        if (from.getType() != null) {
+            to.setType(mergeProperty(to.getType(), from.getType(), override));
+        }
+        if (from.getFlows() != null) {
             OAuthFlows flows = new OAuthFlowsImpl();
-            OAuthFlowsImpl.merge(from.flows(), flows, override);
+            OAuthFlowsImpl.merge(from.getFlows(), flows, override);
             to.setFlows(mergeProperty(to.getFlows(), flows, override));
         }
     }

@@ -48,6 +48,8 @@ import javax.security.enterprise.authentication.mechanism.http.HttpMessageContex
 import org.glassfish.common.util.StringHelper;
 
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Controller to manage OpenId state parameter value
@@ -62,17 +64,19 @@ public class StateController {
     public void store(
             OpenIdState state,
             OpenIdConfiguration configuration,
-            HttpMessageContext context) {
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
-        getInstance(configuration, context)
+        getInstance(configuration, request, response)
                 .store(STATE_KEY, state.getValue(), null);
     }
 
     public Optional<OpenIdState> get(
             OpenIdConfiguration configuration,
-            HttpMessageContext context) {
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
-        return getInstance(configuration, context)
+        return getInstance(configuration, request, response)
                 .getAsString(STATE_KEY)
                 .filter(not(StringHelper::isEmpty))
                 .map(OpenIdState::new);
@@ -80,9 +84,10 @@ public class StateController {
 
     public void remove(
             OpenIdConfiguration configuration,
-            HttpMessageContext context) {
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
-        getInstance(configuration, context)
+        getInstance(configuration, request, response)
                 .remove(STATE_KEY);
     }
 }

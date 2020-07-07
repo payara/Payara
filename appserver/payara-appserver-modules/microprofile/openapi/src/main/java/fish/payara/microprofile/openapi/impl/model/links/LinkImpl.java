@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,19 +39,18 @@
  */
 package fish.payara.microprofile.openapi.impl.model.links;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import org.eclipse.microprofile.openapi.annotations.links.LinkParameter;
 import org.eclipse.microprofile.openapi.models.links.Link;
 import org.eclipse.microprofile.openapi.models.servers.Server;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
@@ -62,6 +61,32 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
     private String description;
     private String ref;
     private Server server;
+
+    public static Link createInstance(AnnotationModel annotation, ApiContext context) {
+        Link from = new LinkImpl();
+        from.setOperationRef(annotation.getValue("operationRef", String.class));
+        from.setOperationId(annotation.getValue("operationId", String.class));
+        List<AnnotationModel> parametersAnnotation = annotation.getValue("parameters", List.class);
+        if (parametersAnnotation != null) {
+            for (AnnotationModel parameterAnnotation : parametersAnnotation) {
+                from.getParameters().put(
+                        parameterAnnotation.getValue("name", String.class),
+                        parameterAnnotation.getValue("expression", String.class)
+                );
+            }
+        }
+        from.setRequestBody(annotation.getValue("requestBody", String.class));
+        from.setDescription(annotation.getValue("description", String.class));
+        String ref = annotation.getValue("ref", String.class);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        AnnotationModel serverAnnotation = annotation.getValue("server", AnnotationModel.class);
+        if(serverAnnotation != null) {
+            from.setServer(ServerImpl.createInstance(serverAnnotation, context));
+        }
+        return from;
+    }
 
     @Override
     public Server getServer() {
@@ -149,32 +174,31 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
         this.ref = ref;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.links.Link from, Link to, boolean override) {
-        if (isAnnotationNull(from)) {
+    public static void merge(Link from, Link to, boolean override) {
+        if (from == null) {
             return;
         }
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            applyReference(to, from.ref());
+        if (from.getRef() != null && !from.getRef().isEmpty()) {
+            applyReference(to, from.getRef());
             return;
         }
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setOperationId(mergeProperty(to.getOperationId(), from.operationId(), override));
-        to.setOperationRef(mergeProperty(to.getOperationRef(), from.operationRef(), override));
-        to.setRequestBody(mergeProperty(to.getRequestBody(), from.requestBody(), override));
-        for (LinkParameter parameter : from.parameters()) {
-            applyLinkParameter(parameter, to.getParameters());
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setOperationId(mergeProperty(to.getOperationId(), from.getOperationId(), override));
+        to.setOperationRef(mergeProperty(to.getOperationRef(), from.getOperationRef(), override));
+        to.setRequestBody(mergeProperty(to.getRequestBody(), from.getRequestBody(), override));
+        for (String parameterName : from.getParameters().keySet()) {
+            applyLinkParameter(parameterName, from.getParameters().get(parameterName), to.getParameters());
         }
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.links.Link link, Map<String, Link> links,
+    public static void merge(String linkName, Link link, Map<String, Link> links,
             boolean override) {
-        if (isAnnotationNull(link)) {
+        if (link == null) {
             return;
         }
 
         // Get the link name
-        String linkName = link.name();
-        if (link.name() == null || link.name().isEmpty()) {
+        if (linkName == null || linkName.isEmpty()) {
             linkName = UNKNOWN_ELEMENT_NAME;
         }
 
@@ -192,17 +216,16 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
         }
     }
 
-    private static void applyLinkParameter(LinkParameter parameter, Map<String, Object> linkParameters) {
+    private static void applyLinkParameter(String parameterName, Object parameter, Map<String, Object> linkParameters) {
 
         // Get the parameter name
-        String parameterName = parameter.name();
         if (parameterName == null || parameterName.isEmpty()) {
             parameterName = UNKNOWN_ELEMENT_NAME;
         }
 
         // Create the object
         Object model = linkParameters.get(parameterName);
-        model = mergeProperty(model, parameter.expression(), true);
+        model = mergeProperty(model, parameter, true);
         linkParameters.put(parameterName, model);
     }
 

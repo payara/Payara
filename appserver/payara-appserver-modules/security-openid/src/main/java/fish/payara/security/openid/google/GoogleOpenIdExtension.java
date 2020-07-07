@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.security.openid.google;
 
 import fish.payara.security.annotations.ClaimsDefinition;
 import fish.payara.security.annotations.GoogleAuthenticationDefinition;
+import fish.payara.security.annotations.LogoutDefinition;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import fish.payara.security.annotations.OpenIdProviderMetadata;
 import fish.payara.security.openid.OpenIdExtension;
@@ -131,6 +132,11 @@ public class GoogleOpenIdExtension extends OpenIdExtension {
             @Override
             public ClaimsDefinition claimsDefinition() {
                 return googleDefinition.claimsDefinition();
+            }
+
+            @Override
+            public LogoutDefinition logout() {
+                return googleDefinition.logout();
             }
 
             @Override

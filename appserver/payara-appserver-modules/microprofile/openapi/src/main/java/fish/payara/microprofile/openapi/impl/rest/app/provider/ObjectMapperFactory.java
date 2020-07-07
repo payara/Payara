@@ -39,10 +39,6 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.app.provider;
 
-import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -54,11 +50,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-
-import org.eclipse.microprofile.openapi.models.Constructible;
-
 import fish.payara.microprofile.openapi.impl.model.OASFactoryResolverImpl;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.mixin.ExtensionsMixin;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.eclipse.microprofile.openapi.models.Constructible;
 
 public final class ObjectMapperFactory {
 

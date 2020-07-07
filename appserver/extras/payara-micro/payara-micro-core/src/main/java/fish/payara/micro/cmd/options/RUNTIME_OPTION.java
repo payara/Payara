@@ -85,6 +85,7 @@ public enum RUNTIME_OPTION {
     version(false),
     logtofile(true, new FileValidator(false, false, false)),
     logproperties(true, new FileValidator(true, true, false)),
+    enabledynamiclogging(false),
     accesslog(true, new DirectoryValidator(true, true, true)),
     accesslogformat(true),
     accessloginterval(true),

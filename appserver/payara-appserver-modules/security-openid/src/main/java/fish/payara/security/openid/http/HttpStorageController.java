@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,8 @@ package fish.payara.security.openid.http;
 
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import java.util.Optional;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -49,13 +50,16 @@ import javax.security.enterprise.authentication.mechanism.http.HttpMessageContex
  */
 public interface HttpStorageController {
 
-    static HttpStorageController getInstance(OpenIdConfiguration configuration, HttpMessageContext httpContext) {
+    static HttpStorageController getInstance(
+            OpenIdConfiguration configuration,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         HttpStorageController controller;
 
         if (configuration.isUseSession()) {
-            controller = new SessionController(httpContext);
+            controller = new SessionController(request, response);
         } else {
-            controller = new CookieController(httpContext);
+            controller = new CookieController(request, response);
         }
 
         return controller;

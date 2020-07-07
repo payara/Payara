@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,15 +39,13 @@
  */
 package fish.payara.microprofile.openapi.impl.model.responses;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 import java.util.Map;
-
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 
 public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponses>
         implements APIResponses {
@@ -96,13 +94,16 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
         put(DEFAULT, defaultValue); // this is not the same as addAPIResponse as null is set but not added
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.responses.APIResponse from, APIResponses to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
+    public static void merge(APIResponse from, APIResponses to,
+            boolean override, ApiContext context) {
+        if (from == null) {
             return;
         }
         // Get the response name
-        String responseName = from.responseCode();
+        String responseName = null;
+        if (from instanceof APIResponseImpl) {
+            responseName = ((APIResponseImpl) from).getResponseCode();
+        }
         if (responseName == null || responseName.isEmpty()) {
             responseName = org.eclipse.microprofile.openapi.models.responses.APIResponses.DEFAULT;
         }
@@ -111,7 +112,7 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
                 .getOrDefault(responseName, new APIResponseImpl());
         to.addAPIResponse(responseName, response);
 
-        APIResponseImpl.merge(from, response, override, currentSchemas);
+        APIResponseImpl.merge(from, response, override, context);
     }
 
 }
