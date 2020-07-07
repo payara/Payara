@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -88,6 +88,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -156,6 +157,8 @@ public class TokenController {
      */
     public Map<String, Object> validateIdToken(IdentityTokenImpl idToken, HttpMessageContext httpContext, OpenIdConfiguration configuration) {
         JWTClaimsSet claimsSet;
+        HttpServletRequest request = httpContext.getRequest();
+        HttpServletResponse response = httpContext.getResponse();
 
         /**
          * The nonce in the returned ID Token is compared to the hash of the
@@ -163,7 +166,7 @@ public class TokenController {
          */
         String expectedNonceHash = null;
         if (configuration.isUseNonce()) {
-            OpenIdNonce expectedNonce = nonceController.get(configuration, httpContext);
+            OpenIdNonce expectedNonce = nonceController.get(configuration, request, response);
             expectedNonceHash = nonceController.getNonceHash(expectedNonce);
         }
 
@@ -171,7 +174,7 @@ public class TokenController {
             JWTClaimsSetVerifier jwtVerifier = new IdTokenClaimsSetVerifier(expectedNonceHash, configuration);
             claimsSet = validateBearerToken(idToken.getTokenJWT(), jwtVerifier, configuration);
         } finally {
-            nonceController.remove(configuration, httpContext);
+            nonceController.remove(configuration, request, response);
         }
 
         return claimsSet.getClaims();

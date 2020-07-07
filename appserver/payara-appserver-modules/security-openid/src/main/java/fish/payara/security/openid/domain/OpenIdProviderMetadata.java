@@ -69,6 +69,7 @@ public class OpenIdProviderMetadata {
     private String authorizationEndpoint;
     private String tokenEndpoint;
     private String userinfoEndpoint;
+    private String endSessionEndpoint;
     private URL jwksURL;
     private final Set<String> scopesSupported;
     private final Set<String> claimsSupported;
@@ -118,6 +119,15 @@ public class OpenIdProviderMetadata {
 
     public OpenIdProviderMetadata setUserinfoEndpoint(String userinfoEndpoint) {
         this.userinfoEndpoint = userinfoEndpoint;
+        return this;
+    }
+
+    public String getEndSessionEndpoint() {
+        return endSessionEndpoint;
+    }
+
+    public OpenIdProviderMetadata setEndSessionEndpoint(String endSessionEndpoint) {
+        this.endSessionEndpoint = endSessionEndpoint;
         return this;
     }
 

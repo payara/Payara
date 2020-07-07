@@ -42,14 +42,27 @@ package fish.payara.security.openid.domain;
 import fish.payara.security.openid.api.AccessToken;
 import fish.payara.security.openid.api.IdentityToken;
 import fish.payara.security.openid.api.OpenIdClaims;
+import static fish.payara.security.openid.api.OpenIdConstant.ID_TOKEN_HINT;
+import static fish.payara.security.openid.api.OpenIdConstant.POST_LOGOUT_REDIRECT_URI;
 import static fish.payara.security.openid.api.OpenIdConstant.SUBJECT_IDENTIFIER;
 import fish.payara.security.openid.api.OpenIdContext;
 import fish.payara.security.openid.api.RefreshToken;
+import fish.payara.security.openid.controller.AuthenticationController;
+import java.io.IOException;
 import java.util.Optional;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
 import java.util.Set;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.UriBuilder;
+import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**
  * An injectable interface that provides access to access token, identity token,
@@ -66,9 +79,14 @@ public class OpenIdContextImpl implements OpenIdContext {
     private AccessToken accessToken;
     private IdentityToken identityToken;
     private RefreshToken refreshToken;
-    private Integer expiresIn;
+    private Long expiresIn;
     private JsonObject claims;
-    private JsonObject providerMetadata;
+    private OpenIdConfiguration configuration;
+
+    @Inject
+    private AuthenticationController authenticationController;
+
+    private static final Logger LOGGER = Logger.getLogger(OpenIdContextImpl.class.getName());
 
     @Override
     public String getCallerName() {
@@ -130,11 +148,11 @@ public class OpenIdContextImpl implements OpenIdContext {
     }
 
     @Override
-    public Optional<Integer> getExpiresIn() {
+    public Optional<Long> getExpiresIn() {
         return Optional.ofNullable(expiresIn);
     }
 
-    public void setExpiresIn(Integer expiresIn) {
+    public void setExpiresIn(Long expiresIn) {
         this.expiresIn = expiresIn;
     }
 
@@ -157,11 +175,52 @@ public class OpenIdContextImpl implements OpenIdContext {
 
     @Override
     public JsonObject getProviderMetadata() {
-        return providerMetadata;
+        return configuration.getProviderMetadata().getDocument();
     }
 
-    public void setProviderMetadata(JsonObject providerMetadata) {
-        this.providerMetadata = providerMetadata;
+    public void setOpenIdConfiguration(OpenIdConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        LogoutConfiguration logout = configuration.getLogoutConfiguration();
+        try {
+            request.logout();
+        } catch (ServletException ex) {
+            LOGGER.log(WARNING, "Failed to logout the user.", ex);
+        }
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+
+        /**
+         * See section 5. RP-Initiated Logout
+         * https://openid.net/specs/openid-connect-session-1_0.html#RPLogout
+         */
+        if (logout.isNotifyProvider()
+                && !isEmpty(configuration.getProviderMetadata().getEndSessionEndpoint())) {
+            UriBuilder logoutURI = UriBuilder.fromUri(configuration.getProviderMetadata().getEndSessionEndpoint())
+                    .queryParam(ID_TOKEN_HINT, getIdentityToken().getToken());
+            if (!isEmpty(logout.getRedirectURI())) {
+                // User Agent redirected to POST_LOGOUT_REDIRECT_URI after a logout operation performed in OP.
+                logoutURI.queryParam(POST_LOGOUT_REDIRECT_URI, logout.buildRedirectURI(request));
+            }
+            try {
+                response.sendRedirect(logoutURI.toString());
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        } else if (!isEmpty(logout.getRedirectURI())) {
+            try {
+                response.sendRedirect(logout.buildRedirectURI(request));
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        } else {
+            // Redirect user to OpenID connect provider for re-authentication
+            authenticationController.authenticateUser(configuration, request, response);
+        }
     }
 
 }

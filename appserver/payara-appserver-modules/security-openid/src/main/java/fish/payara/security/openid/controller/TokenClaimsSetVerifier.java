@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -129,7 +129,7 @@ public abstract class TokenClaimsSetVerifier implements JWTClaimsSetVerifier {
             throw new IllegalStateException("Missing expiration time (exp) claim");
         }
         if ((exp.getTime() + clockSkewInMillis) < currentTime) {
-            throw new IllegalStateException("ID token is expired " + exp);
+            throw new IllegalStateException("Token is expired " + exp);
         }
 
         /**

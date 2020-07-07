@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -50,7 +50,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import static java.util.Objects.requireNonNull;
 import javax.enterprise.context.ApplicationScoped;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.glassfish.common.util.StringHelper;
 
 /**
@@ -63,25 +64,35 @@ public class NonceController {
 
     private static final String NONCE_KEY = "oidc.nonce";
 
-    public void store(OpenIdNonce nonce, OpenIdConfiguration configuration, HttpMessageContext context) {
+    public void store(
+            OpenIdNonce nonce,
+            OpenIdConfiguration configuration,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         if (configuration.isUseNonce()) {
-            getInstance(configuration, context)
+            getInstance(configuration, request, response)
                     .store(NONCE_KEY, nonce.getValue(), null);
         }
     }
 
-    public OpenIdNonce get(OpenIdConfiguration configuration, HttpMessageContext context) {
+    public OpenIdNonce get(
+            OpenIdConfiguration configuration,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
-        return getInstance(configuration, context)
+        return getInstance(configuration, request, response)
                 .getAsString(NONCE_KEY)
                 .filter(not(StringHelper::isEmpty))
                 .map(OpenIdNonce::new)
                 .orElse(null);
     }
 
-    public void remove(OpenIdConfiguration configuration, HttpMessageContext context) {
+    public void remove(
+            OpenIdConfiguration configuration,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
-        getInstance(configuration, context)
+        getInstance(configuration, request, response)
                 .remove(NONCE_KEY);
     }
 
