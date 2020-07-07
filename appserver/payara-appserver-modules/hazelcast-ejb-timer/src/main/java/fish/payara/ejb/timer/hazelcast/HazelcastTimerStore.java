@@ -39,7 +39,7 @@
  */
 package fish.payara.ejb.timer.hazelcast;
 
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.EJBTimerSchedule;
 import com.sun.ejb.containers.EJBTimerService;
@@ -104,9 +104,9 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService {
         pkCache = core.getInstance().getMap(EJB_TIMER_CACHE_NAME);
         containerCache = core.getInstance().getMap(EJB_TIMER_CONTAINER_CACHE_NAME);
         applicationCache = core.getInstance().getMap(EJB_TIMER_APPLICAION_CACHE_NAME);
-        serverName = core.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        serverName = core.getInstance().getCluster().getLocalMember().getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
         this.ownerIdOfThisServer_ = serverName;
-        this.domainName_ = core.getInstance().getConfig().getGroupConfig().getName();
+        this.domainName_ = core.getInstance().getConfig().getClusterName();
     }
 
     private void removeTimers(Set<TimerPrimaryKey> timerIdsToRemove) {

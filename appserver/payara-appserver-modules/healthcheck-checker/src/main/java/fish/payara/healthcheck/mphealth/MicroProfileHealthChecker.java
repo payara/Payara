@@ -74,6 +74,7 @@ import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.net.URL;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -221,7 +222,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
      */
     private Map<String, Future<Integer>> pingAllInstances(long timeoutMillis) {
         Map<String, Future<Integer>> tasks = new ConcurrentHashMap<>();
-        Map<String, Future<ClusterCommandResult>> configs = payaraMicro.executeClusteredASAdmin(GET_MP_CONFIG_STRING);
+        Map<UUID, Future<ClusterCommandResult>> configs = payaraMicro.executeClusteredASAdmin(GET_MP_CONFIG_STRING);
 
         for (Server server : domain.getServers().getServer()) {
 

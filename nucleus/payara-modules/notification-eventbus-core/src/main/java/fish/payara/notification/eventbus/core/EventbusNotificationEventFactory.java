@@ -90,7 +90,7 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
         event.setMessage(requestTrace.toString());
 
         event.setNotificationData(new RequestTracingNotificationData(requestTrace));
-        event.setInstanceName(hazelcast.getUUID());
+        event.setInstanceName(hazelcast.getUUID().toString());
 
         return event;
     }
@@ -104,7 +104,7 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
             notificationEvent.setMessage(messageFormatted);
         }
         notificationEvent.setNotificationData(new HealthCheckNotificationData(entries));
-        notificationEvent.setInstanceName(hazelcast.getUUID());
+        notificationEvent.setInstanceName(hazelcast.getUUID().toString());
 
         return notificationEvent;
     }

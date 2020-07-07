@@ -47,6 +47,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.jvnet.hk2.annotations.Contract;
@@ -65,9 +66,9 @@ public interface PayaraInstance {
 
     void addCDIListener(CDIEventListener listener);
 
-    Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters);
+    Map<UUID, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters);
 
-    Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters);
+    Map<UUID, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<UUID> memberGUIDs, String command, String... parameters);
 
     ClusterCommandResult executeLocalAsAdmin(String command, String... parameters);
 
@@ -91,9 +92,9 @@ public interface PayaraInstance {
 
     void removeCDIListener(CDIEventListener listener);
 
-    <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable);
+    <T extends Serializable> Map<UUID, Future<T>> runCallable(Collection<UUID> memberUUIDS, Callable<T> callable);
 
-    <T extends Serializable> Map<String, Future<T>> runCallable(Callable<T> callable);
+    <T extends Serializable> Map<UUID, Future<T>> runCallable(Callable<T> callable);
 
     void setInstanceName(String instanceName);
     

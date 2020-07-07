@@ -41,9 +41,9 @@
 package com.sun.enterprise.container.common.impl.util;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IAtomicLong;
-import com.hazelcast.core.ILock;
-import com.hazelcast.core.IMap;
+import com.hazelcast.cp.IAtomicLong;
+import com.hazelcast.cp.lock.FencedLock;
+import com.hazelcast.map.IMap;
 import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 
@@ -99,8 +99,8 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     }
 
     @Override
-    public ILock getDistributedLock() {
-        return getHazelcastInstance().getLock(getLockKey());
+    public FencedLock getDistributedLock() {
+        return getHazelcastInstance().getCPSubsystem().getLock(getLockKey());
     }
 
     @Override
@@ -110,7 +110,7 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public  IAtomicLong getClusteredUsageCount() {
-        return getHazelcastInstance().getAtomicLong(getSessionHzKey()+ "/count");
+        return getHazelcastInstance().getCPSubsystem().getAtomicLong(getSessionHzKey()+ "/count");
     }
 
     private HazelcastInstance getHazelcastInstance() {
