@@ -40,9 +40,66 @@
 
 -->
 <sun:table id="keystoreEntriesTable" title="$resource{i18ncm.certificateManagement.keystoreEntriesTable.title}"
-           style="padding: 10pt">
+           style="padding: 10pt"
+           deselectMultipleButton="$boolean{true}"
+           deselectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.keyEntriesTopActionGroup}\\\\\', \\\\\'#{pageSession.keyEntriesTableId}\\\\\');', 0)"
+           selectMultipleButton="$boolean{true}"
+           selectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.keyEntriesTopActionGroup}\\\\\', \\\\\'#{pageSession.keyEntriesTableId}\\\\\');', 0)">
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{keyEntriesTableId});
+    />
+
+    <!facet actionsTop>
+        <sun:panelGroup id="topActionsGroup1">
+            <!afterCreate
+                getClientId(component="$this{component}" clientId=>$page{keyEntriesTopActionGroup});
+            />
+            <sun:button id="addButton" text="$resource{i18ncm.certificateManagement.keystoreEntriesTable.addButton}" >
+                <!command gf.redirect(page="#{request.contextPath}/certificateManagement/addKeystoreEntry.jsf?instanceName=#{pageSession.encodedInstanceName}") />
+            </sun:button>
+
+
+            <!insert name="listTableDeleteButton">
+                <sun:button id="button1" text="$resource{i18n.button.Delete}" disabled="#{true}" primary="#{false}"
+                            onClick="if (getConfirm(this,'$pageSession{confirmDeleteMsg}')) {
+                                return submitAndDisable(this, '$resource{i18n.button.Processing}');
+                            } else {
+                                return false;
+                            }">
+                    <!command
+                        getUIComponent(clientId="$pageSession{keyEntriesTableRowGroupId}", component=>$attribute{keyEntriesTableRowGroup});
+                        getAllSingleMapRows(TableRowGroup="${keyEntriesTableRowGroup}" Rows=>$attribute{keyEntriesSelectedRows});
+
+                        foreach(var="row" list="${keyEntriesSelectedRows}"){
+                            py.removeEntries(endpoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.encodedInstanceName}/remove-keystore-entry"
+                            entry="#{requestScope.row}" response="#{pageSession.commandResponse}");
+
+                            if("#{pageSession.commandResponse.data['exit_code']} = FAILURE") {
+                                prepareAlertMsg(type="error", detail="#{pageSession.commandResponse.data.message}",
+                                summary="An error has occurred");
+                                gf.redirect(page="#{request.selfUrl}?&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                            }
+                        }
+
+                        py.prepareSuccessfulCommandMsg();
+                        gf.redirect(page="#{pageSession.selfUrl}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                    />
+                </sun:button>
+            </insert>
+
+        </sun:panelGroup>
+    </facet>
     <sun:tableRowGroup id="keystoreEntriesRowGroup" data={"$attribute{keyEntries}"} sourceVar="td"
                        emptyDataMsg="$resource{i18ncm.certificateManagement.keystoreEntriesTable.emptyDataMsg}">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{keyEntriesTableRowGroupId});
+        />
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.keystoreEntriesTable.select}"
+                         selectId="select" rowHeader="$boolean{false}" id="col0">
+            <sun:checkbox id="select" selectedValue="$boolean{true}"
+                          selected="#{td.value.selected}"
+                          onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.keyEntriesTopActionGroup}\\\\\', \\\\\'#{pageSession.keyEntriesTableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.keyEntriesTableId}\\\\\');', 0);"/>
+        </sun:tableColumn>
         <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.keystoreEntriesTable.alias}" sort="alias"
                          rowHeader="$boolean{true}" id="col1">
             <staticText id="alias" value="#{td.value.alias}" />

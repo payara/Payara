@@ -40,9 +40,63 @@
 
 -->
 <sun:table id="truststoreEntriesTable" title="$resource{i18ncm.certificateManagement.truststoreEntriesTable.title}"
-           style="padding: 10pt">
+           style="padding: 10pt"
+           deselectMultipleButton="$boolean{true}"
+           deselectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.trustEntriesTopActionGroup}\\\\\', \\\\\'#{pageSession.trustEntriesTableId}\\\\\');', 0)"
+           selectMultipleButton="$boolean{true}"
+           selectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.trustEntriesTopActionGroup}\\\\\', \\\\\'#{pageSession.trustEntriesTableId}\\\\\');', 0)">
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{trustEntriesTableId});
+    />
+
+    <!facet actionsTop>
+        <sun:panelGroup id="topActionsGroup1">
+            <!afterCreate
+                getClientId(component="$this{component}" clientId=>$page{trustEntriesTopActionGroup});
+            />
+            <sun:button id="addButton" text="$resource{i18ncm.certificateManagement.truststoreEntriesTable.addButton}" >
+                <!command gf.redirect(page="#{request.contextPath}/certificateManagement/addKeystoreEntry.jsf?instanceName=#{pageSession.encodedInstanceName}") />
+            </sun:button>
+            <!insert name="listTableDeleteButton">
+                <sun:button id="button1" text="$resource{i18n.button.Delete}" disabled="#{true}" primary="#{false}"
+                            onClick="if (getConfirm(this,'$pageSession{confirmDeleteMsg}')) {
+                                        return submitAndDisable(this, '$resource{i18n.button.Processing}');
+                                    } else {
+                                        return false;
+                                    }">
+                    <!command
+                        getUIComponent(clientId="$pageSession{trustEntriesTableRowGroupId}", component=>$attribute{trustEntriesTableRowGroup});
+                        getAllSingleMapRows(TableRowGroup="${trustEntriesTableRowGroup}" Rows=>$attribute{trustEntriesSelectedRows});
+
+                        foreach(var="row" list="${trustEntriesSelectedRows}"){
+                            py.removeEntries(endpoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.encodedInstanceName}/remove-truststore-entry"
+                                    entry="#{requestScope.row}" response="#{pageSession.commandResponse}");
+
+                            if("#{pageSession.commandResponse.data['exit_code']} = FAILURE") {
+                                prepareAlertMsg(type="error", detail="#{pageSession.commandResponse.data.message}",
+                                        summary="An error has occurred");
+                                gf.redirect(page="#{request.selfUrl}?&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                            }
+                        }
+
+                        py.prepareSuccessfulCommandMsg();
+                        gf.redirect(page="#{pageSession.selfUrl}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                    />
+                </sun:button>
+            </insert>
+        </sun:panelGroup>
+    </facet>
     <sun:tableRowGroup id="truststoreEntriesRowGroup" data={"$attribute{trustEntries}"} sourceVar="td"
                        emptyDataMsg="$resource{i18ncm.certificateManagement.truststoreEntriesTable.emptyDataMsg}">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{trustEntriesTableRowGroupId});
+        />
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.truststoreEntriesTable.select}"
+                         selectId="select" rowHeader="$boolean{false}" id="col0">
+            <sun:checkbox id="select" selectedValue="$boolean{true}"
+                          selected="#{td.value.selected}"
+                          onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.trustEntriesTopActionGroup}\\\\\', \\\\\'#{pageSession.trustEntriesTableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.trustEntriesTableId}\\\\\');', 0);"/>
+        </sun:tableColumn>
         <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.truststoreEntriesTable.alias}" sort="alias"
                          rowHeader="$boolean{true}" id="col1">
             <staticText id="alias" value="#{td.value.alias}" />

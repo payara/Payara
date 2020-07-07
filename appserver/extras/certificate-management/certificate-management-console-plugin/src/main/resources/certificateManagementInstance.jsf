@@ -52,6 +52,7 @@ setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
                 urlencode(value="#{pageSession.instanceName}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
                 gf.getConfigName(target="#{pageSession.instanceName}" configName=>$pageSession{configName});
                 setSessionAttribute(key="standaloneInstanceTabs" value="certificateManagementInstanceTab");
+                setPageSessionAttribute(key="selfUrl" value="#{request.contextPath}/certificateManagement/certificateManagementInstance.jsf?instanceName=#{pageSession.encodedInstanceName}");
 
                 <!-- List Keys -->
                 py.getListCertificatesOutput(endpoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.encodedInstanceName}/list-certificates?listkeys=true&verbose=true"

@@ -129,7 +129,6 @@ public class CertificateManagementRestApiHandlers {
             for (Map<String, String> instanceStoreEntry : instanceStoreEntries) {
                 instanceStoreEntry.put("usedBy", "Instance JVM");
                 usedByLinks.put("Instance JVM", instanceConfigUrl);
-
             }
         }
 
@@ -157,6 +156,14 @@ public class CertificateManagementRestApiHandlers {
                     // Return an empty list if no entries found
                     if (storeEntries == null) {
                         return new ArrayList<>();
+                    } else {
+                        for (Map storeEntry : storeEntries) {
+                            storeEntry.put("selected", false);
+                        }
+                    }
+                } else {
+                    for (Map storeEntry : storeEntries) {
+                        storeEntry.put("selected", false);
                     }
                 }
             }
@@ -264,5 +271,31 @@ public class CertificateManagementRestApiHandlers {
         Map<String, String> usedByLinks = (Map) handlerCtx.getInputValue("usedByLinks");
 
         handlerCtx.setOutputValue("usedByLink", usedByLinks.get(usedBy));
+    }
+
+    @Handler(id = "py.removeEntries",
+            input = {
+                    @HandlerInput(name = "endpoint", type = String.class, required = true),
+                    @HandlerInput(name = "entry", type = Map.class, required = true)
+            },
+            output = {
+                    @HandlerOutput(name = "response", type = Map.class)
+            })
+    public static void removeEntries(HandlerContext handlerCtx) {
+        String endpoint = (String) handlerCtx.getInputValue("endpoint");
+        Map selectedRow = (Map) handlerCtx.getInputValue("entry");
+
+        try {
+            boolean selected = (boolean) selectedRow.get("selected");
+            if (selected) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("id", selectedRow.get("alias"));
+                Map response = RestUtil.restRequest(endpoint, params, "DELETE", handlerCtx, false, true);
+
+                handlerCtx.setOutputValue("response", response);
+            }
+        } catch (Exception ex) {
+            GuiUtil.handleException(handlerCtx, ex);
+        }
     }
 }

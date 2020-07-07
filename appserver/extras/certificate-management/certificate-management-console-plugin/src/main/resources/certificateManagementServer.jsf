@@ -52,6 +52,7 @@ holder.
                 urlencode(value="#{pageSession.instanceName}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
                 gf.getConfigName(target="#{pageSession.instanceName}" configName=>$pageSession{configName});
                 setSessionAttribute(key="serverInstTabs" value="certificateManagementServerTab");
+                setPageSessionAttribute(key="selfUrl" value="#{request.contextPath}/certificateManagement/certificateManagementServer.jsf?instanceName=#{pageSession.encodedInstanceName}");
 
                 <!-- List Keys -->
                 py.getListCertificatesOutput(endpoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.encodedInstanceName}/list-certificates?listkeys=true&verbose=true"

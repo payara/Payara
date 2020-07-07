@@ -153,7 +153,7 @@ public class CertificateManagementCommon {
         throw new IllegalStateException("The certificate was found but it is not supported X509 certificate.");
     }
 
-    private static String getKeystoreType(File keyOrTrustStore) {
+    public static String getKeystoreType(File keyOrTrustStore) {
         String ksFilename = keyOrTrustStore.getName().toLowerCase();
         if (ksFilename.endsWith("jks")) {
             return "JKS";
