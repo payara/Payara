@@ -50,7 +50,6 @@ pipeline {
         stage('Setup for Quicklook Tests') {
             steps {
                 sh "rm -f -v *.zip"
-                sh "rm -f '$HOME/test|sa.mv.db'"
                 setupDomain()
             }
         }
