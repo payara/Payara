@@ -63,6 +63,7 @@ public class OpenApiConfiguration {
 
     private static final String MODEL_READER_KEY = "mp.openapi.model.reader";
     private static final String FILTER_KEY = "mp.openapi.filter";
+    private static final String SCAN_LIB_KEY = "mp.openapi.scan.lib";
     private static final String SCAN_DISABLE_KEY = "mp.openapi.scan.disable";
     private static final String SCAN_PACKAGES_KEY = "mp.openapi.scan.packages";
     private static final String SCAN_CLASSES_KEY = "mp.openapi.scan.classes";
@@ -75,6 +76,7 @@ public class OpenApiConfiguration {
     private final Class<? extends OASModelReader> modelReader;
     private final Class<? extends OASFilter> filter;
     private final boolean scanDisable;
+    private final boolean scanLib;
     private List<String> scanPackages = new ArrayList<>();
     private List<String> scanClasses = new ArrayList<>();
     private List<String> excludePackages = new ArrayList<>();
@@ -94,6 +96,7 @@ public class OpenApiConfiguration {
         this.modelReader = findModelReaderFromConfig(config, applicationClassLoader);
         this.filter = findFilterFromConfig(config, applicationClassLoader);
         this.scanDisable = findScanDisableFromConfig(config);
+        this.scanLib = findScanLibFromConfig(config);
         this.scanPackages = findScanPackagesFromConfig(config);
         this.scanClasses = findScanClassesFromConfig(config);
         this.excludePackages = findExcludePackages(config);
@@ -122,6 +125,13 @@ public class OpenApiConfiguration {
      */
     public boolean getScanDisable() {
         return scanDisable;
+    }
+
+    /**
+     * @return whether to disable packaged libraries scanning.
+     */
+    public boolean getScanLib() {
+        return scanLib;
     }
 
     /**
@@ -227,6 +237,15 @@ public class OpenApiConfiguration {
     private static boolean findScanDisableFromConfig(Config config) {
         try {
             return config.getValue(SCAN_DISABLE_KEY, Boolean.class);
+        } catch (NoSuchElementException ex) {
+            // Ignore
+        }
+        return false;
+    }
+
+    private static boolean findScanLibFromConfig(Config config) {
+        try {
+            return config.getValue(SCAN_LIB_KEY, Boolean.class);
         } catch (NoSuchElementException ex) {
             // Ignore
         }

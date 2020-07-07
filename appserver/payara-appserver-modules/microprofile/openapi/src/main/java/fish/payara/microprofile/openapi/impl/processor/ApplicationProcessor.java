@@ -64,15 +64,18 @@ import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -124,10 +127,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     private final ClassLoader appClassLoader;
 
-    public ApplicationProcessor(ApplicationInfo appInfo) {
-        this(appInfo.getTypes(), filterTypes(appInfo), appInfo.getAppClassLoader());
-    }
-
     /**
      * @param types parsed application classes
      * @param appClassLoader the class loader for the application.
@@ -136,23 +135,6 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         this.allTypes = allTypes;
         this.allowedTypes = allowedTypes;
         this.appClassLoader = appClassLoader;
-    }
-
-    /**
-     * @return a list of all classes in the archive.
-     */
-    private static Set<Type> filterTypes(ApplicationInfo appInfo) {
-        ReadableArchive archive = appInfo.getSource();
-        return Collections.list(archive.entries()).stream()
-                // Only use the classes
-                .filter(clazz -> clazz.endsWith(".class"))
-                // Remove the WEB-INF/classes and return the proper class name format
-                .map(clazz -> clazz.replaceAll("WEB-INF/classes/", "").replace("/", ".").replace(".class", ""))
-                // Fetch class type
-                .map(clazz -> appInfo.getTypes().getBy(clazz))
-                // Don't return null classes
-                .filter(Objects::nonNull)
-                .collect(toSet());
     }
 
     @Override
