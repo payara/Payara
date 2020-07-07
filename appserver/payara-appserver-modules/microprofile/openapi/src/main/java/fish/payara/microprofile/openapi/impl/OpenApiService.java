@@ -296,9 +296,9 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     private Set<Type> filterLibTypes(ApplicationInfo appInfo, OpenApiConfiguration config, ReadableArchive archive) {
         Set<Type> types = new HashSet<>();
         if (config != null && config.getScanLib()) {
-            Iterator<String> subArchiveItr = archive.entries().asIterator();
-            while (subArchiveItr.hasNext()) {
-                String subArchiveName = subArchiveItr.next();
+            Enumeration<String> subArchiveItr = archive.entries();
+            while (subArchiveItr.hasMoreElements()) {
+                String subArchiveName = subArchiveItr.nextElement();
                 if (subArchiveName.startsWith("WEB-INF/lib/") && subArchiveName.endsWith(".jar")) {
                     try {
                         ReadableArchive subArchive = archive.getSubArchive(subArchiveName);
