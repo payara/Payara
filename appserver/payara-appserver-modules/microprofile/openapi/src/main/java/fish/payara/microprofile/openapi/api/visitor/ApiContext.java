@@ -75,6 +75,13 @@ public interface ApiContext {
 
     /**
      * @param type any class, not null
+     * @return true, if the give type is a filtered class for OpenAPI metadata processing
+     * otherwise false
+     */
+    boolean isAllowedType(Type type);
+
+    /**
+     * @param type any class, not null
      * @return type, if the give type is a known type in this context, else null
      */
     Type getType(String type);

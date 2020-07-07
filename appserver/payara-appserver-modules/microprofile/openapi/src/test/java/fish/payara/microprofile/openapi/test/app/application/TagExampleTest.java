@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,55 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.spi;
+package fish.payara.microprofile.openapi.test.app.application;
 
-import java.io.Serializable;
-import java.util.Optional;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
-import org.eclipse.microprofile.config.spi.ConfigSource;
+import com.fasterxml.jackson.databind.JsonNode;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
+import fish.payara.microprofile.openapi.test.util.JsonUtils;
+import javax.json.Json;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 /**
  *
- * @author Steve Millidge <Payara Services Limited>
+ * @author gaurav.gupta@payara.fish
  */
-public class InjectedPayaraConfig implements Config, Serializable {
+@Path("/weather")
+@Tag(name = "Weather API", description = "A simple Weather API")
+public class TagExampleTest extends OpenApiApplicationTest {
 
-    private transient Config delegate;
-    private String appName;
-
-    public InjectedPayaraConfig(Config delegate, String appName) {
-        this.delegate = delegate;
-        this.appName = appName;
-    }
-    @Override
-    public <T> T getValue(String propertyName, Class<T> propertyType) {
-        ensureDelegate();
-        return delegate.getValue(propertyName, propertyType);
-    }
-
-    @Override
-    public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        ensureDelegate();
-        return delegate.getOptionalValue(propertyName, propertyType);
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getWeather() {
+        return Json.createObjectBuilder()
+                .add("city", "Budapest")
+                .add("temperature", 11)
+                .build()
+                .toString();
     }
 
-    @Override
-    public Iterable<String> getPropertyNames() {
-        ensureDelegate();
-        return delegate.getPropertyNames();
+    @Test
+    public void fieldSchemaExampleIsRendered() {
+        JsonNode tags = JsonUtils.path(getOpenAPIJson(), "tags");
+        assertNotNull(tags);
+        assertEquals(1, tags.size());
+        assertEquals("Weather API", tags.get(0).get("name").textValue());
+        assertEquals("A simple Weather API", tags.get(0).get("description").textValue());
     }
-
-    @Override
-    public Iterable<ConfigSource> getConfigSources() {
-        ensureDelegate();
-        return delegate.getConfigSources();
-    }
-
-    private void ensureDelegate() {
-        if (delegate == null) {
-            delegate = ((ConfigProviderResolverImpl) ConfigProviderResolver.instance()).getNamedConfig(appName);
-        }
-    }
-
 }

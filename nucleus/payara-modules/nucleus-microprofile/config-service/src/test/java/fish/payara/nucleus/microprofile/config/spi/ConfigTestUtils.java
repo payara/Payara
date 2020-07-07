@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,53 +39,35 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
-import java.io.Serializable;
-import java.util.Optional;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Map;
+
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
-/**
- *
- * @author Steve Millidge <Payara Services Limited>
- */
-public class InjectedPayaraConfig implements Config, Serializable {
+public final class ConfigTestUtils {
 
-    private transient Config delegate;
-    private String appName;
-
-    public InjectedPayaraConfig(Config delegate, String appName) {
-        this.delegate = delegate;
-        this.appName = appName;
-    }
-    @Override
-    public <T> T getValue(String propertyName, Class<T> propertyType) {
-        ensureDelegate();
-        return delegate.getValue(propertyName, propertyType);
+    static ConfigSource createSource(String name, int ordinal, Map<String, String> properties) {
+        ConfigSource source = mock(ConfigSource.class);
+        when(source.getProperties()).thenReturn(properties);
+        when(source.getOrdinal()).thenReturn(ordinal);
+        when(source.getName()).thenReturn(name);
+        when(source.getPropertyNames()).thenReturn(properties.keySet());
+        when(source.getValue(anyString())).thenAnswer(invocation -> properties.get(invocation.getArgument(0)));
+        return source;
     }
 
-    @Override
-    public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        ensureDelegate();
-        return delegate.getOptionalValue(propertyName, propertyType);
-    }
-
-    @Override
-    public Iterable<String> getPropertyNames() {
-        ensureDelegate();
-        return delegate.getPropertyNames();
-    }
-
-    @Override
-    public Iterable<ConfigSource> getConfigSources() {
-        ensureDelegate();
-        return delegate.getConfigSources();
-    }
-
-    private void ensureDelegate() {
-        if (delegate == null) {
-            delegate = ((ConfigProviderResolverImpl) ConfigProviderResolver.instance()).getNamedConfig(appName);
+    static void assertException(Class<? extends Exception> expectedException, String expectedMsg, Runnable test) {
+        try {
+            test.run();
+            fail("Expected " + expectedException.getName());
+        } catch (Exception ex) {
+            assertEquals(expectedException, ex.getClass());
+            assertEquals(expectedMsg, ex.getMessage());
         }
     }
-
 }
