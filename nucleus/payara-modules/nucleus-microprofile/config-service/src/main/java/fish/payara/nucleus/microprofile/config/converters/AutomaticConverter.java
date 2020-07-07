@@ -92,7 +92,8 @@ public class AutomaticConverter {
             try {
                 return (T) conversionMethod.invoke(null, value);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                throw new IllegalArgumentException("Unable to convert value to type  for value " + value, ex);
+                throw new IllegalArgumentException("Unable to convert value to type "
+                        + conversionMethod.getReturnType().getName() + " for value `" + value + "`", ex);
             }
         }
     }
@@ -111,7 +112,8 @@ public class AutomaticConverter {
             try {
                 return constructor.newInstance(value);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                throw new IllegalArgumentException("Unable to convert value to type  for value " + value, ex);
+                throw new IllegalArgumentException("Unable to convert value to type "
+                        + constructor.getDeclaringClass().getName() + " for value `" + value + "`", ex);
             }
         }
     }

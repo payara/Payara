@@ -66,6 +66,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
+import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
@@ -89,6 +90,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -109,6 +111,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipFile;
 import org.glassfish.api.deployment.GeneratedResourceEntry;
 import org.glassfish.api.deployment.ResourceEntry;
 import org.glassfish.api.deployment.ResourceClassLoader;
@@ -399,6 +402,30 @@ public class WebappClassLoader
     private final Application application;
     private final Date creationTime = new Date();
     private boolean hotDeploy = false;
+    
+    private static Class[] CONSTRUCTOR_ARGS_TYPES;
+    private static Object CONSTRUCTOR_ARGUMENTS;
+    private static final boolean IS_JDK_VERSION_HIGHER_THAN_8 = JDK.getMajor() > 8;
+    private static Boolean isMultiReleaseJar;
+    private static final Name MULTI_RELEASE = new Name("Multi-Release");
+
+    static {
+
+        if (!IS_JDK_VERSION_HIGHER_THAN_8) {
+            isMultiReleaseJar = false;
+        } else {
+            isMultiReleaseJar = true;
+            try {
+                final Class<?> runtimeVersionClass = Class.forName("java.lang.Runtime$Version");
+                CONSTRUCTOR_ARGS_TYPES = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
+                CONSTRUCTOR_ARGUMENTS = Runtime.class.getDeclaredMethod("version").invoke(null);
+            } catch (Exception e) {
+                isMultiReleaseJar = false;
+            }
+        }
+
+    }
+      
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -2620,7 +2647,7 @@ public class WebappClassLoader
                 if (jarFiles[0] == null) {
                     for (int i = 0; i < jarFiles.length; i++) {
                         try {
-                            jarFiles[i] = new JarFile(jarRealFiles[i]);
+                            jarFiles[i] = newJarFile(jarRealFiles[i]);
                         } catch (IOException e) {
                             if (logger.isLoggable(Level.FINE)) {
                                 logger.log(Level.FINE, "Failed to open JAR", e);
@@ -3519,5 +3546,42 @@ public class WebappClassLoader
     private static String getString(String key, Object ... arguments) {
         String msg = rb.getString(key);
         return MessageFormat.format(msg, arguments);
+    }
+
+    private static JarFile newJarFile(final File file) throws IOException {
+
+        JarFile jarFile = new JarFile(file);
+        if (!IS_JDK_VERSION_HIGHER_THAN_8 || !isMultiReleaseJar) {
+            return jarFile;
+        }
+
+        if (isMultiReleaseJar(jarFile)) {
+            return newInstance(JarFile.class, CONSTRUCTOR_ARGS_TYPES,
+                    new Object[]{file, true, ZipFile.OPEN_READ, CONSTRUCTOR_ARGUMENTS});
+        }
+
+        return jarFile;
+    }
+    
+    public static <T> T newInstance(Class<T> ofClass, Class<?>[] constructorArgTypes, Object[] args) {
+        try {
+            Constructor<T> constructor = ofClass.getConstructor(constructorArgTypes);
+            return constructor.newInstance(args);
+        } catch (Exception ex) {
+            return null; 
+        }
+    }
+
+    private static boolean isMultiReleaseJar(JarFile jarFile) {
+        try {
+            Manifest manifest = jarFile.getManifest();
+            if (manifest == null) {
+                return false;
+            } else {
+                return manifest.getMainAttributes().containsKey(MULTI_RELEASE);
+            }
+        } catch (IOException ex) {
+            return false;
+        }
     }
 }

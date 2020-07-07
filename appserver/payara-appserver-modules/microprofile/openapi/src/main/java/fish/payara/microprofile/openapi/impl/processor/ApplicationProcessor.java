@@ -66,8 +66,10 @@ import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import static java.util.Collections.singleton;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -127,8 +129,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     private final ClassLoader appClassLoader;
 
+    private OpenApiWalker apiWalker;
+
     /**
      * @param types parsed application classes
+     * @param allowedTypes filtered application classes for OpenAPI metadata processing
      * @param appClassLoader the class loader for the application.
      */
     public ApplicationProcessor(Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
@@ -140,7 +145,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public OpenAPI process(OpenAPI api, OpenApiConfiguration config) {
         if (config == null || !config.getScanDisable()) {
-            ApiWalker apiWalker = new OpenApiWalker(
+            this.apiWalker = new OpenApiWalker(
                     api,
                     allTypes,
                     config == null ? allowedTypes : config.getValidClasses(allowedTypes),
@@ -1065,17 +1070,28 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         if (referenceClass != null && referenceClass instanceof ExtensibleType) {
-            final AnnotationModel schemaAnnotation
-                    = AnnotationInfo.valueOf((ExtensibleType) referenceClass)
-                            .getAnnotation(Schema.class);
+            ExtensibleType referenceClassType = (ExtensibleType) referenceClass;
+            final AnnotationModel schemaAnnotation = AnnotationInfo.valueOf(referenceClassType)
+                    .getAnnotation(Schema.class);
             if (schemaAnnotation != null) {
                 String schemaName = schemaAnnotation.getValue("name", String.class);
 
+                if (schemaName == null || schemaName.isEmpty()) {
+                    schemaName = ModelUtils.getSimpleName(referenceClassName);
+                }
                 // Set the reference name
-                referee.setRef(schemaName == null || schemaName.isEmpty() ? ModelUtils.getSimpleName(referenceClassName) : schemaName);
+                referee.setRef(schemaName);
 
-                // Create the schema
-                visitSchema(schemaAnnotation, referenceClass, context);
+                org.eclipse.microprofile.openapi.models.media.Schema schema = context.getApi().getComponents().getSchemas().get(schemaName);
+                if (schema == null) {
+                    // Create the schema
+                    if (context.isAllowedType(referenceClassType)) {
+                        visitSchema(schemaAnnotation, referenceClass, context);
+                    } else {
+                        apiWalker.processAnnotations(singleton(referenceClassType), Schema.class, this::visitSchema);
+                    }
+                }
+
                 return true;
             }
         }

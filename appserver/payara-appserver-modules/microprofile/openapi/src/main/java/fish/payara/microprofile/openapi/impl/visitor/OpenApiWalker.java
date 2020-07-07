@@ -127,67 +127,72 @@ public class OpenApiWalker implements ApiWalker {
 
     @Override
     public void accept(ApiVisitor visitor) {
+        processAnnotations(allowedTypes, visitor);
+    }
+
+    public void processAnnotations(Set<Type> types, ApiVisitor visitor) {
         // OpenAPI necessary annotations
-        processAnnotations(OpenAPIDefinition.class, visitor::visitOpenAPI);
+        processAnnotations(types, OpenAPIDefinition.class, visitor::visitOpenAPI);
 
         // JAX-RS methods
-        processAnnotations(GET.class, visitor::visitGET);
-        processAnnotations(POST.class, visitor::visitPOST);
-        processAnnotations(PUT.class, visitor::visitPUT);
-        processAnnotations(DELETE.class, visitor::visitDELETE);
-        processAnnotations(HEAD.class, visitor::visitHEAD);
-        processAnnotations(OPTIONS.class, visitor::visitOPTIONS);
-        processAnnotations(PATCH.class, visitor::visitPATCH);
+        processAnnotations(types, GET.class, visitor::visitGET);
+        processAnnotations(types, POST.class, visitor::visitPOST);
+        processAnnotations(types, PUT.class, visitor::visitPUT);
+        processAnnotations(types, DELETE.class, visitor::visitDELETE);
+        processAnnotations(types, HEAD.class, visitor::visitHEAD);
+        processAnnotations(types, OPTIONS.class, visitor::visitOPTIONS);
+        processAnnotations(types, PATCH.class, visitor::visitPATCH);
 
         // JAX-RS parameters
-        processAnnotations(QueryParam.class, visitor::visitQueryParam);
-        processAnnotations(PathParam.class, visitor::visitPathParam);
-        processAnnotations(HeaderParam.class, visitor::visitHeaderParam);
-        processAnnotations(CookieParam.class, visitor::visitCookieParam);
-        processAnnotations(FormParam.class, visitor::visitFormParam);
+        processAnnotations(types, QueryParam.class, visitor::visitQueryParam);
+        processAnnotations(types, PathParam.class, visitor::visitPathParam);
+        processAnnotations(types, HeaderParam.class, visitor::visitHeaderParam);
+        processAnnotations(types, CookieParam.class, visitor::visitCookieParam);
+        processAnnotations(types, FormParam.class, visitor::visitFormParam);
 
         // All other OpenAPI annotations
-        processAnnotations(Schema.class, visitor::visitSchema);
-        processAnnotations(Server.class, visitor::visitServer, Servers.class);
-        processAnnotations(Servers.class, visitor::visitServers, Server.class);
-        processAnnotations(Extensions.class, visitor::visitExtensions, Extension.class);
-        processAnnotations(Extension.class, visitor::visitExtension, Extensions.class);
-        processAnnotations(Operation.class, visitor::visitOperation);
-        processAnnotations(Callback.class, visitor::visitCallback, Callbacks.class);
-        processAnnotations(Callbacks.class, visitor::visitCallbacks, Callback.class);
-        processAnnotations(APIResponse.class, visitor::visitAPIResponse, APIResponses.class);
-        processAnnotations(APIResponses.class, visitor::visitAPIResponses, APIResponse.class);
-        processAnnotations(Parameters.class, visitor::visitParameters, Parameter.class);
-        processAnnotations(Parameter.class, visitor::visitParameter, Parameters.class);
-        processAnnotations(ExternalDocumentation.class, visitor::visitExternalDocumentation);
-        processAnnotations(Tag.class, visitor::visitTag, Tags.class);
-        processAnnotations(Tags.class, visitor::visitTags, Tag.class);
-        processAnnotations(SecurityScheme.class, visitor::visitSecurityScheme, SecuritySchemes.class);
-        processAnnotations(SecuritySchemes.class, visitor::visitSecuritySchemes, SecurityScheme.class);
-        processAnnotations(SecurityRequirement.class, visitor::visitSecurityRequirement, SecurityRequirements.class);
-        processAnnotations(SecurityRequirements.class, visitor::visitSecurityRequirements, SecurityRequirement.class);
+        processAnnotations(types, Schema.class, visitor::visitSchema);
+        processAnnotations(types, Server.class, visitor::visitServer, Servers.class);
+        processAnnotations(types, Servers.class, visitor::visitServers, Server.class);
+        processAnnotations(types, Extensions.class, visitor::visitExtensions, Extension.class);
+        processAnnotations(types, Extension.class, visitor::visitExtension, Extensions.class);
+        processAnnotations(types, Operation.class, visitor::visitOperation);
+        processAnnotations(types, Callback.class, visitor::visitCallback, Callbacks.class);
+        processAnnotations(types, Callbacks.class, visitor::visitCallbacks, Callback.class);
+        processAnnotations(types, APIResponse.class, visitor::visitAPIResponse, APIResponses.class);
+        processAnnotations(types, APIResponses.class, visitor::visitAPIResponses, APIResponse.class);
+        processAnnotations(types, Parameters.class, visitor::visitParameters, Parameter.class);
+        processAnnotations(types, Parameter.class, visitor::visitParameter, Parameters.class);
+        processAnnotations(types, ExternalDocumentation.class, visitor::visitExternalDocumentation);
+        processAnnotations(types, Tag.class, visitor::visitTag, Tags.class);
+        processAnnotations(types, Tags.class, visitor::visitTags, Tag.class);
+        processAnnotations(types, SecurityScheme.class, visitor::visitSecurityScheme, SecuritySchemes.class);
+        processAnnotations(types, SecuritySchemes.class, visitor::visitSecuritySchemes, SecurityScheme.class);
+        processAnnotations(types, SecurityRequirement.class, visitor::visitSecurityRequirement, SecurityRequirements.class);
+        processAnnotations(types, SecurityRequirements.class, visitor::visitSecurityRequirements, SecurityRequirement.class);
 
         // JAX-RS response types
-        processAnnotations(Produces.class, visitor::visitProduces);
-        processAnnotations(Consumes.class, visitor::visitConsumes);
+        processAnnotations(types, Produces.class, visitor::visitProduces);
+        processAnnotations(types, Consumes.class, visitor::visitConsumes);
 
         // OpenAPI response types
-        processAnnotations(RequestBody.class, visitor::visitRequestBody);
+        processAnnotations(types, RequestBody.class, visitor::visitRequestBody);
         //redo schema, now all others have been to ensure sub-schemas work
-        processAnnotations(Schema.class, visitor::visitSchema);
+        processAnnotations(types, Schema.class, visitor::visitSchema);
     }
 
     @SafeVarargs
-    private final <A extends Annotation, E extends AnnotatedElement> void processAnnotations(
-            Class<A> annotationClass, VisitorFunction<AnnotationModel, E> annotationFunction, 
+    public final <A extends Annotation, E extends AnnotatedElement> void processAnnotations(
+            Set<Type> types,
+            Class<A> annotationClass,
+            VisitorFunction<AnnotationModel, E> annotationFunction,
             Class<? extends Annotation>... alternatives) {
 
-        for (Type type : allowedTypes) {
-            if(type instanceof ClassModel) {
-                processAnnotation((ClassModel)type, annotationClass, annotationFunction, alternatives);
+        for (Type type : types) {
+            if (type instanceof ClassModel) {
+                processAnnotation((ClassModel) type, annotationClass, annotationFunction, alternatives);
             }
         }
-
     }
 
     @SafeVarargs
@@ -196,7 +201,7 @@ public class OpenApiWalker implements ApiWalker {
             Class<? extends Annotation>... alternatives) {
         AnnotationInfo annotations = AnnotationInfo.valueOf(annotatedClass);
         processAnnotation(annotatedClass, annotationClass, annotationFunction, annotations,
-                new OpenApiContext(allTypes, appClassLoader, api, getResourcePath(annotatedClass, resourceMapping)), alternatives);
+                new OpenApiContext(allTypes, allowedTypes, appClassLoader, api, getResourcePath(annotatedClass, resourceMapping)), alternatives);
 
         for (final FieldModel field : annotatedClass.getFields()) {
             if (annotations.isAnnotationPresent(annotationClass, field)) {
@@ -206,7 +211,7 @@ public class OpenApiWalker implements ApiWalker {
                         || annotationClass == QueryParam.class) {
                     // NB. if fields are annotated as Param all methods have it
                     for (MethodModel method : annotatedClass.getMethods()) {
-                        OpenApiContext context = new OpenApiContext(allTypes, appClassLoader, api,
+                        OpenApiContext context = new OpenApiContext(allTypes, allowedTypes, appClassLoader, api,
                                 getResourcePath(method, resourceMapping),
                                 getOperation(method, api, resourceMapping));
                         if (context.getWorkingOperation() != null) {
@@ -216,13 +221,13 @@ public class OpenApiWalker implements ApiWalker {
                     }
                 } else {
                     processAnnotation(field, annotationClass, annotationFunction, annotations,
-                            new OpenApiContext(allTypes, appClassLoader, api, null), alternatives);
+                            new OpenApiContext(allTypes, allowedTypes, appClassLoader, api, null), alternatives);
                 }
             }
         }
 
         for (final MethodModel method : annotatedClass.getMethods()) {
-            OpenApiContext context = new OpenApiContext(allTypes, appClassLoader, api,
+            OpenApiContext context = new OpenApiContext(allTypes, allowedTypes, appClassLoader, api,
                     getResourcePath(method, resourceMapping),
                     getOperation(method, api, resourceMapping));
             processAnnotation(method, annotationClass, annotationFunction, annotations, context, alternatives);

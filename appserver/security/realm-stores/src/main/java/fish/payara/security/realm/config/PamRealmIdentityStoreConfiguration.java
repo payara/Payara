@@ -1,8 +1,8 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *  Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *  https://github.com/payara/Payara/blob/master/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -39,14 +39,14 @@
  */
 package fish.payara.security.realm.config;
 
-import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
+import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
 import fish.payara.security.annotations.PamIdentityStoreDefinition;
 import static fish.payara.security.annotations.PamIdentityStoreDefinition.STORE_MP_PAM_GROUPS;
 import static fish.payara.security.annotations.PamIdentityStoreDefinition.STORE_MP_PAM_JAAS_CONTEXT;
 import static fish.payara.security.realm.RealmUtil.getConfiguredValue;
 import java.util.List;
-import static java.util.stream.Collectors.toList;
+
+import static java.util.Arrays.asList;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -62,24 +62,23 @@ public class PamRealmIdentityStoreConfiguration implements RealmConfiguration {
     private final String jaasContext;
 
     private PamRealmIdentityStoreConfiguration(PamIdentityStoreDefinition definition) {
-        Config provider = ConfigProvider.getConfig();
-        PayaraConfig payaraConfig = (PayaraConfig) provider;
+        Config config = ConfigProvider.getConfig();
         this.name = definition.value();
-        this.assignGroups = payaraConfig.getListValues(STORE_MP_PAM_GROUPS, String.join(",", definition.assignGroups()), String.class)
-                .stream()
-                .filter(StringUtils::ok)
-                .collect(toList());
-        this.jaasContext = getConfiguredValue(String.class, definition.jaasContext(), provider, STORE_MP_PAM_JAAS_CONTEXT);
+        this.assignGroups = config.getValue(STORE_MP_PAM_GROUPS, ConfigValueResolver.class)
+                .asList(String.class, asList(definition.assignGroups()));
+        this.jaasContext = getConfiguredValue(String.class, definition.jaasContext(), config, STORE_MP_PAM_JAAS_CONTEXT);
     }
 
     public static PamRealmIdentityStoreConfiguration from(PamIdentityStoreDefinition definition) {
         return new PamRealmIdentityStoreConfiguration(definition);
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public List<String> getAssignGroups() {
         return assignGroups;
     }
