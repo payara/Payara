@@ -140,6 +140,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         targetLevel.put("clusters", 3);
         targetLevel.put("servers", 3);
         targetLevel.put("nodes", 3);
+        targetLevel.put("deployment-groups", 3);
     }
 
     @Override

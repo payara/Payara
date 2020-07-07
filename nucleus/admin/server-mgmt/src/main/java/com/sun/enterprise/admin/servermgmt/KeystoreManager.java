@@ -377,7 +377,7 @@ public class KeystoreManager {
      * @param alias the name of the certificate to copy.
      * @param masterPassword the password for the trust stores.
      */
-    private void copyCert(final File keyStore, final File trustStore, final String alias, final String masterPassword)
+    public void copyCert(final File keyStore, final File trustStore, final String alias, final String masterPassword)
             throws RepositoryException {
 
         File certFile = null;

@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.2020.2-SNAPSHOT</version>
+        <version>5.2020.3-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.extras</groupId>
     <artifactId>payara-micro-parent</artifactId>

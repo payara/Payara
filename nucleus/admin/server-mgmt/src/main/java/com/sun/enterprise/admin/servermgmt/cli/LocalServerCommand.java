@@ -64,8 +64,12 @@ import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.HostAndPort;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.ServerDirs;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
@@ -94,6 +98,7 @@ public abstract class LocalServerCommand extends CLICommand {
     ////////////////////////////////////////////////////////////////
     private ServerDirs serverDirs;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(LocalDomainCommand.class);
+    private final static int IS_RUNNING_DEFAULT_TIMEOUT = 2000;
     
     ////////////////////////////////////////////////////////////////
     /// Section:  protected variables
@@ -354,23 +359,17 @@ public abstract class LocalServerCommand extends CLICommand {
      * @return boolean indicating whether the server is running
      */
     protected final boolean isRunning(String host, int port) {
-        Socket server = null;
-        try {
-            server = new Socket(host, port);
+        
+        try(Socket server = new Socket()) {
+            if (host == null) {
+                host = InetAddress.getByName(null).getHostName();
+            }
+            
+            server.connect( new InetSocketAddress(host, port), IS_RUNNING_DEFAULT_TIMEOUT);
             return true;
-        }
-        catch (Exception ex) {
+        }catch  (Exception ex) {
             logger.log(Level.FINER, "\nisRunning got exception: {0}", ex);
             return false;
-        }
-        finally {
-            if (server != null) {
-                try {
-                    server.close();
-                }
-                catch (IOException ex) {
-                }
-            }
         }
     }
 
@@ -639,5 +638,25 @@ public abstract class LocalServerCommand extends CLICommand {
         logger.warning("Could not determine if data grid encryption is enabled - " +
                 "you will need to regenerate the encryption key if it is");
         return false;
+    }
+
+    /**
+     * Gets the GlassFish installation root (using property com.sun.aas.installRoot),
+     * first from asenv.conf.  If that's not available, then from java.lang.System.
+     *
+     * @return path of GlassFish install root
+     * @throws CommandException if the GlassFish install root is not found
+     */
+    protected String getInstallRootPath() throws CommandException {
+        String installRootPath = getSystemProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
+
+        if (!StringUtils.ok(installRootPath)) {
+            installRootPath = System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
+        }
+
+        if (!StringUtils.ok(installRootPath)) {
+            throw new CommandException("noInstallDirPath");
+        }
+        return installRootPath;
     }
 }
