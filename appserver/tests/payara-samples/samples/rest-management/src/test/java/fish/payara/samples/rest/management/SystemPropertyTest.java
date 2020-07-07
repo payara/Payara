@@ -55,6 +55,7 @@ import javax.json.JsonString;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import fish.payara.samples.rest.management.extension.TemporaryInstance;
 
