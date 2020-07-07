@@ -58,6 +58,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -276,32 +277,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      */
     private Set<Type> filterTypes(ApplicationInfo appInfo, OpenApiConfiguration config) {
         ReadableArchive archive = appInfo.getSource();
-
-        Set<Type> types = new HashSet<>();
-        if (config != null && config.getScanLib()) {
-            Iterator<String> subArchiveItr = archive.entries().asIterator();
-            while (subArchiveItr.hasNext()) {
-                String subArchive = subArchiveItr.next();
-                if (subArchive.startsWith("WEB-INF/lib/") && subArchive.endsWith(".jar")) {
-                    try {
-                        Iterator<String> classItr = archive.getSubArchive(subArchive).entries().asIterator();
-                        while (classItr.hasNext()) {
-                            String clazz = classItr.next();
-                            if (clazz.endsWith(".class")) {
-                                clazz = clazz.replace("/", ".").replace(".class", "");
-                                Type type = appInfo.getTypes().getBy(clazz);
-                                if (type != null) {
-                                    types.add(type);
-                                }
-                            }
-                        }
-                    } catch (IOException ex) {
-                        throw new IllegalStateException(ex);
-                    }
-                }
-            }
-        }
-
+        Set<Type> types = new HashSet<>(filterLibTypes(appInfo, config, archive));
         types.addAll(
                 Collections.list(archive.entries()).stream()
                         // Only use the classes
@@ -315,6 +291,37 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                         .collect(toSet())
         );
         return config == null ? types : config.getValidClasses(types);
+    }
+
+    private Set<Type> filterLibTypes(ApplicationInfo appInfo, OpenApiConfiguration config, ReadableArchive archive) {
+        Set<Type> types = new HashSet<>();
+        if (config != null && config.getScanLib()) {
+            Iterator<String> subArchiveItr = archive.entries().asIterator();
+            while (subArchiveItr.hasNext()) {
+                String subArchiveName = subArchiveItr.next();
+                if (subArchiveName.startsWith("WEB-INF/lib/") && subArchiveName.endsWith(".jar")) {
+                    try {
+                        ReadableArchive subArchive = archive.getSubArchive(subArchiveName);
+                        types.addAll(
+                                Collections.list(subArchive.entries())
+                                        .stream()
+                                        // Only use the classes
+                                        .filter(clazz -> clazz.endsWith(".class"))
+                                        // return the proper class name format
+                                        .map(clazz -> clazz.replace("/", ".").replace(".class", ""))
+                                        // Fetch class type
+                                        .map(clazz -> appInfo.getTypes().getBy(clazz))
+                                        // Don't return null classes
+                                        .filter(Objects::nonNull)
+                                        .collect(toSet())
+                        );
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                }
+            }
+        }
+        return types;
     }
 
     private List<URL> getServerURL(String contextRoot) {
