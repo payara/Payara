@@ -39,8 +39,9 @@
  */
 package fish.payara.nucleus.cluster;
 
-import com.hazelcast.core.Member;
+import com.hazelcast.cluster.Member;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.UUID;
 
 /**
  *
@@ -52,18 +53,17 @@ public class MemberEvent {
         this.member = member;
     }
     
-    public String getUuid() {
+    public UUID getUuid() {
         return member.getUuid();
     }
     
     public String getServer() {
-        return member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        return member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
     }
     
     public String getServerGroup() {
-        return member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+        return member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
     }
     
-    private Member member;
-    
+    private final Member member;
 }

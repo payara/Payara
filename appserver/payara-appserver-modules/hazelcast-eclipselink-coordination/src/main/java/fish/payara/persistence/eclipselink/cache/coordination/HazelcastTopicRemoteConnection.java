@@ -39,7 +39,6 @@
  */
 package fish.payara.persistence.eclipselink.cache.coordination;
 
-import com.hazelcast.core.MessageListener;
 import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.eventbus.MessageReceiver;
 import org.eclipse.persistence.internal.sessions.coordination.broadcast.BroadcastRemoteConnection;

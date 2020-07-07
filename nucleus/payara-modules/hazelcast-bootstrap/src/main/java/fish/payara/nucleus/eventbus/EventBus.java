@@ -56,8 +56,9 @@ import org.jvnet.hk2.annotations.Service;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.monitor.LocalTopicStats;
+import com.hazelcast.topic.LocalTopicStats;
 import com.hazelcast.topic.impl.TopicService;
+import java.util.UUID;
 
 /**
  * A Hazelcast based Event Bus for Payara
@@ -130,7 +131,7 @@ public class EventBus implements EventListener, MonitoringDataSource {
             if (tl == null) {
                 // create a topic listener on the specified topic
                 TopicListener newTL = new TopicListener(topic);
-                String regId = hzCore.getInstance().getTopic(topic).addMessageListener(newTL);
+                UUID regId = hzCore.getInstance().getTopic(topic).addMessageListener(newTL);
                 messageReceivers.put(topic, newTL);
                 tl = newTL;
                 tl.setRegistrationID(regId);

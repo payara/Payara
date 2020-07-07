@@ -44,6 +44,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Class describing an instance of Payara
@@ -107,7 +108,7 @@ public interface InstanceDescriptor extends Serializable {
     /**
      * @return the memberUUID
      */
-    String getMemberUUID();
+    UUID getMemberUUID();
 
     /**
      * Checks whether or not this instance is described as a Lite Hazelcast

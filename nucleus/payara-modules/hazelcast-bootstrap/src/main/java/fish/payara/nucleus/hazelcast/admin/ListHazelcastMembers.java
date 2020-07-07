@@ -38,8 +38,8 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
+import com.hazelcast.cluster.Member;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.Member;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.Properties;
@@ -99,11 +99,11 @@ public class ListHazelcastMembers implements AdminCommand {
                 StringBuilder builder = new StringBuilder();
                 builder.append("{ ");
                 for (Member member : instance.getCluster().getMembers()) {
-                    String memberName = member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+                    String memberName = member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
                     if (memberName != null) {
                         builder.append(memberName).append("-");
                     }
-                    String groupName = member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+                    String groupName = member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
                     if (groupName != null) {
                         builder.append(groupName).append("-");                        
                     }

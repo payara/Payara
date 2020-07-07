@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import com.hazelcast.nio.Address;
+import com.hazelcast.cluster.Address;
 import com.hazelcast.spi.discovery.DiscoveryNode;
 import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
 import com.hazelcast.spi.discovery.integration.DiscoveryService;
@@ -186,7 +186,7 @@ public class DomainDiscoveryService implements DiscoveryService {
     }
 
     @Override
-    public Map<String, Object> discoverLocalMetadata() {
+    public Map<String, String> discoverLocalMetadata() {
         return Collections.emptyMap();
     }
 

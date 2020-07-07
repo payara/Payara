@@ -41,7 +41,7 @@ package fish.payara.nucleus.hazelcast.admin;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import javax.cache.Cache;

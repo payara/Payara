@@ -42,11 +42,10 @@ package fish.payara.nucleus.hazelcast;
 import static java.lang.String.valueOf;
 
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
+import com.hazelcast.cluster.impl.MemberImpl;
 import com.hazelcast.config.Config;
-import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
-import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MemberAddressProviderConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.NetworkConfig;
@@ -56,6 +55,7 @@ import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.internal.config.ConfigLoader;
 import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
@@ -202,11 +202,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
      * @return a 128-bit immutable universally unique identifier
      * @since 4.1.1.171
      */
-    public String getUUID() {
+    public UUID getUUID() {
         bootstrapHazelcast();
         if (!enabled) {
-            return UUID.randomUUID().toString();
-        }
+            return UUID.randomUUID();
+        }        
         return theInstance.getCluster().getLocalMember().getUuid();
     }
 
@@ -348,10 +348,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 config.setLiteMember(Boolean.parseBoolean(nodeConfig.getLite()));
 
 
-                // set group config
-                GroupConfig gc = config.getGroupConfig();
-                gc.setName(configuration.getClusterGroupName());
-                gc.setPassword(configuration.getClusterGroupPassword());
+                config.setClusterName(configuration.getClusterGroupName());
 
                 // build the configuration
                 if ("true".equals(configuration.getHostAwarePartitioning())) {
@@ -481,16 +478,16 @@ public class HazelcastCore implements EventListener, ConfigListener {
             if (env.isMicro()) {
                 if (Boolean.valueOf(configuration.getGenerateNames()) || memberName == null) {
                     memberName = PayaraMicroNameGenerator.generateName();
-                    Set<com.hazelcast.core.Member> clusterMembers = theInstance.getCluster().getMembers();
+                    Set<com.hazelcast.cluster.Member> clusterMembers = theInstance.getCluster().getMembers();
 
                     // If the instance name was generated, we need to compile a list of all the instance names in use within
                     // the instance group, excluding this local instance
                     List<String> takenNames = new ArrayList<>();
-                    for (com.hazelcast.core.Member member : clusterMembers) {
+                    for (com.hazelcast.cluster.Member member : clusterMembers) {
                         if (member != theInstance.getCluster().getLocalMember()
-                                && member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE) != null
-                                && member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(memberGroup)) {
-                            takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
+                                && member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE) != null 
+                                && member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(memberGroup)) {
+                            takenNames.add(member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
                         }
                     }
 
@@ -499,15 +496,15 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     if (takenNames.contains(memberName)) {
                         memberName = PayaraMicroNameGenerator.generateUniqueName(takenNames,
                                 theInstance.getCluster().getLocalMember().getUuid());
-                        theInstance.getCluster().getLocalMember().setStringAttribute(
+                        ((MemberImpl)theInstance.getCluster().getLocalMember()).setAttribute(
                                 HazelcastCore.INSTANCE_ATTRIBUTE, memberName);
                     }
                 }
             }
-            theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
-            theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
-            hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
-            events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
+            MemberImpl localMember = (MemberImpl)theInstance.getCluster().getLocalMember();
+            localMember.setAttribute(INSTANCE_ATTRIBUTE, memberName);
+            localMember.setAttribute(INSTANCE_GROUP_ATTRIBUTE, memberGroup);
+            hazelcastCachingProvider = new HazelcastServerCachingProvider(theInstance);
             bindToJNDI();
             if(env.getStatus() == Status.started) {
                 // only issue this event if the server is already running,
