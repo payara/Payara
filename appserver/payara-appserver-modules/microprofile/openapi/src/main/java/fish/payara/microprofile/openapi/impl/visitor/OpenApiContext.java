@@ -40,6 +40,7 @@
 package fish.payara.microprofile.openapi.impl.visitor;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import java.util.Set;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.glassfish.hk2.classmodel.reflect.Type;
@@ -52,17 +53,19 @@ public class OpenApiContext implements ApiContext {
     private final OpenAPI api;
     private final String path;
     private final Operation operation;
+    private final Set<Type> allowedTypes;
 
-    public OpenApiContext(Types allTypes, ClassLoader appClassLoader, OpenAPI api, String path, Operation operation) {
+    public OpenApiContext(Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader, OpenAPI api, String path, Operation operation) {
         this.allTypes = allTypes;
+        this.allowedTypes = allowedTypes;
         this.api = api;
         this.path = path;
         this.operation = operation;
         this.appClassLoader = appClassLoader;
     }
 
-    public OpenApiContext(Types allTypes, ClassLoader appClassLoader, OpenAPI api, String path) {
-        this(allTypes, appClassLoader, api, path, null);
+    public OpenApiContext(Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader, OpenAPI api, String path) {
+        this(allTypes, allowedTypes, appClassLoader, api, path, null);
     }
 
     @Override
@@ -78,6 +81,10 @@ public class OpenApiContext implements ApiContext {
     @Override
     public Operation getWorkingOperation() {
         return operation;
+    }
+
+    public boolean isAllowedType(Type type) {
+        return allowedTypes.contains(type);
     }
 
     @Override
