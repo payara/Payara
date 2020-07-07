@@ -121,7 +121,8 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.version>1.8</grizzly.npn.version>
+        <grizzly.npn.version>1.9.payara-p1</grizzly.npn.version>
+        <grizzly.npn.osgi.version>1.9</grizzly.npn.osgi.version>
 
         <!-- Microprofile -->
         <!-- JAX-RS -->
