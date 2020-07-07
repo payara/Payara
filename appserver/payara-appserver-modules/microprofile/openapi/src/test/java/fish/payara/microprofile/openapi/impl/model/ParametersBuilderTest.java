@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static java.util.Collections.singletonMap;
 import static org.eclipse.microprofile.openapi.OASFactory.createContent;
@@ -49,16 +50,13 @@ import static org.eclipse.microprofile.openapi.OASFactory.createPathItem;
 import static org.eclipse.microprofile.openapi.OASFactory.createPaths;
 import static org.eclipse.microprofile.openapi.OASFactory.createRequestBody;
 import static org.eclipse.microprofile.openapi.OASFactory.createSchema;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.parameters.*}.

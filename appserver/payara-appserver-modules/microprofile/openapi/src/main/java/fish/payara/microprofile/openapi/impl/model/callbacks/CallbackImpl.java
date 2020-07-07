@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,29 +39,48 @@
  */
 package fish.payara.microprofile.openapi.impl.model.callbacks;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
+import fish.payara.microprofile.openapi.impl.model.OperationImpl;
+import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getHttpMethod;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOrCreateOperation;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-
-import org.eclipse.microprofile.openapi.annotations.callbacks.CallbackOperation;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
-import org.eclipse.microprofile.openapi.models.media.Schema;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
-import fish.payara.microprofile.openapi.impl.model.OperationImpl;
-import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implements Callback {
 
     private static final long serialVersionUID = 5549098533131353142L;
 
     private String ref;
+    
+    private String urlExpression;
+
+    private List<Operation> operations;
+
+    public static Callback createInstance(AnnotationModel annotation, ApiContext context) {
+        CallbackImpl from = new CallbackImpl();
+        String ref = annotation.getValue("ref", String.class);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        String urlExpression = annotation.getValue("callbackUrlExpression", String.class);
+        if (urlExpression != null && !urlExpression.isEmpty()) {
+            List<Operation> operations = new ArrayList<>();
+            from.setOperations(operations);
+            extractAnnotations(annotation, context, "operations", OperationImpl::createInstance, from.getOperations());
+            from.setUrlExpression(urlExpression);
+        }
+        return from;
+    }
 
     public CallbackImpl() {
         super();
@@ -108,33 +127,58 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
         this.ref = ref;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.callbacks.Callback from, Callback to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
+    public String getUrlExpression() {
+        return urlExpression;
+    }
+
+    public void setUrlExpression(String urlExpression) {
+        this.urlExpression = urlExpression;
+    }
+
+    public List<Operation> getOperations() {
+        return operations;
+    }
+
+    public void setOperations(List<Operation> operations) {
+        this.operations = operations;
+    }
+
+    public static void merge(Callback from, Callback to,
+            boolean override, ApiContext context) {
+        if (from == null) {
             return;
         }
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            applyReference(to, from.ref());
+        if (from.getRef()!= null && !from.getRef().isEmpty()) {
+            applyReference(to, from.getRef());
             return;
         }
-        String urlExpression = from.callbackUrlExpression();
-        if (!urlExpression.isEmpty()) {
-            PathItem pathItem = to.getOrDefault(urlExpression, new PathItemImpl());
-            to.addPathItem(urlExpression, pathItem);
-            if (from.operations() != null) {
-                for (CallbackOperation callbackOperation : from.operations()) {
-                    applyCallbackOperationAnnotation(pathItem, callbackOperation, override, currentSchemas);
+        if (from instanceof CallbackImpl) {
+            CallbackImpl fromImpl = (CallbackImpl) from;
+            String urlExpression = fromImpl.getUrlExpression();
+            if (urlExpression != null && !urlExpression.isEmpty()) {
+                PathItem pathItem = to.getOrDefault(urlExpression, new PathItemImpl());
+                to.addPathItem(urlExpression, pathItem);
+                if (fromImpl.getOperations() != null) {
+                    for (Operation callbackOperation : fromImpl.getOperations()) {
+                        applyCallbackOperationAnnotation(pathItem, callbackOperation,
+                                override, context);
+                    }
                 }
             }
         }
     }
 
-    private static void applyCallbackOperationAnnotation(PathItem pathItem, CallbackOperation annotation,
-            boolean override, Map<String, Schema> currentSchemas) {
-        HttpMethod method = getHttpMethod(annotation.method());
-        if (method != null) {
-            Operation operation = getOrCreateOperation(pathItem, method);
-            OperationImpl.merge(annotation, operation, override, currentSchemas);
+    private static void applyCallbackOperationAnnotation(PathItem pathItem, Operation callbackOperation,
+            boolean override, ApiContext context) {
+        if (callbackOperation instanceof OperationImpl) {
+            OperationImpl callbackOperationImpl = (OperationImpl) callbackOperation;
+            if (callbackOperationImpl.getMethod() != null) {
+                HttpMethod method = getHttpMethod(callbackOperationImpl.getMethod());
+                if (method != null) {
+                    Operation operation = getOrCreateOperation(pathItem, method);
+                    OperationImpl.merge(callbackOperation, operation, override, context);
+                }
+            }
         }
     }
 

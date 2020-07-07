@@ -55,6 +55,7 @@ import javax.json.JsonString;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import fish.payara.samples.rest.management.extension.TemporaryInstance;
 
@@ -71,6 +72,7 @@ public class SystemPropertyTest extends RestManagementTest {
      * posted are added.
      */
     @Test
+    @Ignore("FISH-156")
     @InSequence(1)
     public void when_POST_system_properties_expect_success() {
         Map<String, Object> properties = new HashMap<>();

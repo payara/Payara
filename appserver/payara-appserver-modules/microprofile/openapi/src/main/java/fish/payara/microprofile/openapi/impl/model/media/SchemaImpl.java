@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,31 +39,33 @@
  */
 package fish.payara.microprofile.openapi.impl.model.media;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
+import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import static java.util.logging.Level.WARNING;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-
-import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.XML;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
-import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.ClassModel;
+import org.glassfish.hk2.classmodel.reflect.EnumModel;
+import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
+import org.glassfish.hk2.classmodel.reflect.Type;
 
 public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
@@ -108,6 +110,132 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private Object additionalProperties;
     private Schema items;
+    private String implementation;
+
+    public static Schema createInstance(AnnotationModel annotation, ApiContext context) {
+        SchemaImpl from = new SchemaImpl();
+        from.setDefaultValue(annotation.getValue("defaultValue", Object.class));
+        from.setTitle(annotation.getValue("title", String.class));
+        Double multipleOf = annotation.getValue("multipleOf", Double.class);
+        if (multipleOf != null) {
+            from.setMultipleOf(BigDecimal.valueOf(multipleOf));
+        }
+        String maximum = annotation.getValue("maximum", String.class);
+        if (maximum != null && !maximum.isEmpty()) {
+            from.setMaximum(new BigDecimal(maximum));
+        }
+        from.setExclusiveMaximum(annotation.getValue("exclusiveMaximum", Boolean.class));
+        String minimum = annotation.getValue("minimum", String.class);
+        if (minimum != null && !minimum.isEmpty()) {
+            from.setMinimum(new BigDecimal(minimum));
+        }
+        from.setExclusiveMinimum(annotation.getValue("exclusiveMinimum", Boolean.class));
+        from.setMaxLength(annotation.getValue("maxLength", Integer.class));
+        from.setMinLength(annotation.getValue("minLength", Integer.class));
+        from.setPattern(annotation.getValue("pattern", String.class));
+        from.setMaxItems(annotation.getValue("maxItems", Integer.class));
+        from.setMinItems(annotation.getValue("minItems", Integer.class));
+        from.setUniqueItems(annotation.getValue("uniqueItems", Boolean.class));
+        from.setMaxProperties(annotation.getValue("maxProperties", Integer.class));
+        from.setMinProperties(annotation.getValue("minProperties", Integer.class));
+        from.setRequired(annotation.getValue("requiredProperties", List.class));
+        EnumModel typeEnum = annotation.getValue("type", EnumModel.class);
+        if (typeEnum != null) {
+            from.setType(SchemaType.valueOf(typeEnum.getValue()));
+        }
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setFormat(annotation.getValue("format", String.class));
+        String ref = annotation.getValue("ref", String.class);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        from.setNullable(annotation.getValue("nullable", Boolean.class));
+        from.setReadOnly(annotation.getValue("readOnly", Boolean.class));
+        from.setWriteOnly(annotation.getValue("writeOnly", Boolean.class));
+        from.setExample(annotation.getValue("example", Object.class));
+        AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
+        if (externalDocs != null) {
+            from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
+        }
+        from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
+        from.setEnumeration(annotation.getValue("enumeration", List.class));
+        String discriminatorProperty = annotation.getValue("discriminatorProperty", String.class);
+        List<AnnotationModel> discriminatorMapping = annotation.getValue("discriminatorMapping", List.class);
+        if (discriminatorMapping != null && !discriminatorProperty.isEmpty()) {
+            DiscriminatorImpl discriminator = new DiscriminatorImpl();
+            discriminator.setPropertyName(discriminatorProperty);
+            for (AnnotationModel mapping : discriminatorMapping) {
+                String value = mapping.getValue("value", String.class);
+                String schema = mapping.getValue("schema", String.class);
+                discriminator.addMapping(value, ModelUtils.getSimpleName(schema));
+            }
+            from.setDiscriminator(discriminator);
+        }
+
+        String not = annotation.getValue("not", String.class);
+        if (not != null) {
+            Schema schema = from.getSchemaInstance(not, context);
+            if (schema != null) {
+                from.setNot(schema);
+            }
+        }
+        List<String> anyOf = annotation.getValue("anyOf", List.class);
+        if (anyOf != null) {
+            if (from.getAnyOf() == null) {
+                from.setAnyOf(new ArrayList<>());
+            }
+            from.getAnyOf().addAll(from.getSchemaInstances(anyOf, context));
+        }
+        List<String> allOf = annotation.getValue("allOf", List.class);
+        if (allOf != null) {
+            if (from.getAllOf() == null) {
+                from.setAllOf(new ArrayList<>());
+            }
+            from.getAllOf().addAll(from.getSchemaInstances(allOf, context));
+        }
+        List<String> oneOf = annotation.getValue("oneOf", List.class);
+        if (oneOf != null) {
+            if (from.getOneOf() == null) {
+                from.setOneOf(new ArrayList<>());
+            }
+            from.getOneOf().addAll(from.getSchemaInstances(oneOf, context));
+        }
+
+        from.setImplementation(annotation.getValue("implementation", String.class));
+        return from;
+    }
+
+    private List<Schema> getSchemaInstances(List<String> fromList, ApiContext context) {
+        List<Schema> to = new ArrayList<>();
+        if (fromList != null) {
+            for (String from : fromList) {
+                Schema schema = getSchemaInstance(from, context);
+                if (schema != null) {
+                    to.add(schema);
+                }
+            }
+        }
+        return to;
+    }
+
+    private Schema getSchemaInstance(String schemaClassName, ApiContext context) {
+        if (schemaClassName != null
+                && !schemaClassName.equals("java.lang.Void")) {
+            Type schemaType = context.getType(schemaClassName);
+            if (schemaType instanceof ClassModel) {
+                ClassModel schemaClassModel = (ClassModel) schemaType;
+                if (schemaClassModel.isInstanceOf(Schema.class.getName())) {
+                    try {
+                        Class<?> oneOfClass = context.getApplicationClassLoader().loadClass(schemaClassName);
+                        return (Schema) oneOfClass.newInstance();
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                        LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     public Discriminator getDiscriminator() {
@@ -377,7 +505,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     @JsonIgnore
     @Override
     public Boolean getAdditionalPropertiesBoolean() {
-        return additionalProperties instanceof Boolean ? (Boolean)additionalProperties : null;
+        return additionalProperties instanceof Boolean ? (Boolean) additionalProperties : null;
     }
 
     @Override
@@ -577,36 +705,51 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         this.additionalProperties = additionalProperties;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.media.Schema from, Schema to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
-            return;
-        }
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            applyReference(to, from.ref());
-            return;
-        }
-        if (from.type() != null
-                && from.type() != org.eclipse.microprofile.openapi.annotations.enums.SchemaType.DEFAULT) {
-            to.setType(mergeProperty(to.getType(), SchemaType.valueOf(from.type().name()), override));
-        }
-        if (from.implementation() != null && currentSchemas != null) {
-            Class<?> implementationClass = from.implementation();
-            if (!implementationClass.getTypeName().equals("java.lang.Void")) {
-                org.eclipse.microprofile.openapi.annotations.media.Schema annotation = implementationClass
-                        .getDeclaredAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
-                // Get the schema name
-                String schemaName = null;
-                if (annotation == null || annotation.name() == null || annotation.name().isEmpty()) {
-                    schemaName = implementationClass.getSimpleName();
-                } else {
-                    schemaName = annotation.name();
-                }
+    public String getImplementation() {
+        return implementation;
+    }
 
+    public void setImplementation(String implementation) {
+        this.implementation = implementation;
+    }
+
+    public static void merge(Schema from, Schema to,
+            boolean override, ApiContext context) {
+
+        if (from == null) {
+            return;
+        }
+        if (from.getRef() != null && !from.getRef().isEmpty()) {
+            applyReference(to, from.getRef());
+            return;
+        }
+        if (from.getType() != null) {
+            to.setType(mergeProperty(to.getType(), from.getType(), override));
+        }
+        if (from instanceof SchemaImpl
+                && ((SchemaImpl) from).getImplementation() != null
+                && context.getApi().getComponents().getSchemas() != null) {
+            String implementationClass = ((SchemaImpl) from).getImplementation();
+            if (!implementationClass.equals("java.lang.Void")) {
+                Type type = context.getType(implementationClass);
+                String schemaName = null;
+                if (type instanceof ExtensibleType) {
+                    ExtensibleType implementationType = (ExtensibleType) type;
+                    AnnotationInfo annotationInfo = AnnotationInfo.valueOf(implementationType);
+                    AnnotationModel annotation = annotationInfo.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
+                    // Get the schema name
+                    if (annotation != null) {
+                        schemaName = annotation.getValue("name", String.class);
+                    }
+                }
+                if (schemaName == null || schemaName.isEmpty()) {
+                    schemaName = ModelUtils.getSimpleName(implementationClass);
+                }
                 // Get the schema reference, and copy it's values over to the new schema model
-                Schema copyFrom = currentSchemas.get(schemaName);
-                if (implementationClass.equals(String.class)) {
-                    copyFrom = new SchemaImpl().type(SchemaType.STRING);
+                Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
+                if (copyFrom == null) {
+                    SchemaType schemaType = ModelUtils.getSchemaType(implementationClass, context);
+                    copyFrom = new SchemaImpl().type(schemaType);
                 }
                 if (to.getType() == SchemaType.ARRAY) {
                     to.setItems(new SchemaImpl());
@@ -617,122 +760,93 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 to.setRef(null);
             }
         }
-        if (from.discriminatorMapping() != null && !from.discriminatorProperty().isEmpty()) {
+        if (from.getDiscriminator() != null) {
             if (to.getDiscriminator() == null) {
                 to.setDiscriminator(new DiscriminatorImpl());
             }
             Discriminator discriminator = to.getDiscriminator();
             discriminator.setPropertyName(
-                    mergeProperty(discriminator.getPropertyName(), from.discriminatorProperty(), override));
-            for (DiscriminatorMapping mapping : from.discriminatorMapping()) {
-                discriminator.addMapping(mapping.value(), mapping.schema().getSimpleName());
+                    mergeProperty(discriminator.getPropertyName(), from.getDiscriminator().getPropertyName(), override)
+            );
+            for (Entry<String, String> mapping : from.getDiscriminator().getMapping().entrySet()) {
+                discriminator.addMapping(mapping.getKey(), mapping.getValue());
             }
         }
-        to.setTitle(mergeProperty(to.getTitle(), from.title(), override));
-        to.setDefaultValue(mergeProperty(to.getDefaultValue(), from.defaultValue(), override));
-        if (from.enumeration() != null && from.enumeration().length > 0) {
+        to.setTitle(mergeProperty(to.getTitle(), from.getTitle(), override));
+        to.setDefaultValue(mergeProperty(to.getDefaultValue(), from.getDefaultValue(), override));
+        if (from.getEnumeration() != null && from.getEnumeration().size() > 0) {
             if (to.getEnumeration() == null) {
                 to.setEnumeration(new ArrayList<>());
             }
-            for (String value : from.enumeration()) {
+            for (Object value : from.getEnumeration()) {
                 if (!to.getEnumeration().contains(value)) {
                     to.addEnumeration(value);
                 }
             }
         }
-        if (from.multipleOf() > 0) {
+        if (from.getMultipleOf() != null && from.getMultipleOf().compareTo(BigDecimal.ZERO) > 0) {
             to.setMultipleOf(mergeProperty(to.getMultipleOf(),
-                    BigDecimal.valueOf(from.multipleOf()).stripTrailingZeros(), override));
+                    from.getMultipleOf().stripTrailingZeros(), override));
         }
-        if (!from.maximum().isEmpty()) {
-            to.setMaximum(mergeProperty(to.getMaximum(), new BigDecimal(from.maximum()), override));
+        if (from.getMaximum() != null) {
+            to.setMaximum(mergeProperty(to.getMaximum(), from.getMaximum(), override));
         }
-        if (!from.minimum().isEmpty()) {
-            to.setMinimum(mergeProperty(to.getMinimum(), new BigDecimal(from.minimum()), override));
+        if (from.getMinimum() != null) {
+            to.setMinimum(mergeProperty(to.getMinimum(), from.getMinimum(), override));
         }
-        to.setExclusiveMaximum(mergeProperty(to.getExclusiveMaximum(), from.exclusiveMaximum(), override));
-        to.setExclusiveMinimum(mergeProperty(to.getExclusiveMinimum(), from.exclusiveMinimum(), override));
-        to.setMaxLength(mergeProperty(to.getMaxLength(), from.maxLength(), override));
-        to.setMinLength(mergeProperty(to.getMinLength(), from.minLength(), override));
-        to.setMaxItems(mergeProperty(to.getMaxItems(), from.maxItems(), override));
-        to.setMinItems(mergeProperty(to.getMinItems(), from.minItems(), override));
-        to.setMaxProperties(mergeProperty(to.getMaxProperties(), from.maxProperties(), override));
-        to.setMinProperties(mergeProperty(to.getMinProperties(), from.minProperties(), override));
-        to.setUniqueItems(mergeProperty(to.getUniqueItems(), from.uniqueItems(), override));
-        to.setPattern(mergeProperty(to.getPattern(), from.pattern(), override));
-        if (from.requiredProperties() != null && from.requiredProperties().length > 0) {
+        to.setExclusiveMaximum(mergeProperty(to.getExclusiveMaximum(), from.getExclusiveMaximum(), override));
+        to.setExclusiveMinimum(mergeProperty(to.getExclusiveMinimum(), from.getExclusiveMinimum(), override));
+        to.setMaxLength(mergeProperty(to.getMaxLength(), from.getMaxLength(), override));
+        to.setMinLength(mergeProperty(to.getMinLength(), from.getMinLength(), override));
+        to.setMaxItems(mergeProperty(to.getMaxItems(), from.getMaxItems(), override));
+        to.setMinItems(mergeProperty(to.getMinItems(), from.getMinItems(), override));
+        to.setMaxProperties(mergeProperty(to.getMaxProperties(), from.getMaxProperties(), override));
+        to.setMinProperties(mergeProperty(to.getMinProperties(), from.getMinProperties(), override));
+        to.setUniqueItems(mergeProperty(to.getUniqueItems(), from.getUniqueItems(), override));
+        to.setPattern(mergeProperty(to.getPattern(), from.getPattern(), override));
+        if (from.getRequired() != null && !from.getRequired().isEmpty()) {
             if (to.getRequired() == null) {
                 to.setRequired(new ArrayList<>());
             }
-            for (String value : from.requiredProperties()) {
+            for (String value : from.getRequired()) {
                 if (!to.getRequired().contains(value)) {
                     to.addRequired(value);
                 }
             }
         }
-        if (from.not() != null) {
-            if (Schema.class.isAssignableFrom(from.not())) {
-                try {
-                    to.setNot((Schema) from.not().newInstance());
-                } catch (InstantiationException | IllegalAccessException ex) {
-                    LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
-                }
-            }
-        }
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setFormat(mergeProperty(to.getFormat(), from.format(), override));
-        to.setNullable(mergeProperty(to.getNullable(), from.nullable(), override));
-        to.setReadOnly(mergeProperty(to.getReadOnly(), from.readOnly(), override));
-        to.setWriteOnly(mergeProperty(to.getWriteOnly(), from.writeOnly(), override));
-        to.setExample(mergeProperty(to.getExample(), from.example(), override));
-        if (!isAnnotationNull(from.externalDocs())) {
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setFormat(mergeProperty(to.getFormat(), from.getFormat(), override));
+        to.setNullable(mergeProperty(to.getNullable(), from.getNullable(), override));
+        to.setReadOnly(mergeProperty(to.getReadOnly(), from.getReadOnly(), override));
+        to.setWriteOnly(mergeProperty(to.getWriteOnly(), from.getWriteOnly(), override));
+        to.setExample(mergeProperty(to.getExample(), from.getExample(), override));
+        if (from.getExternalDocs() != null) {
             if (to.getExternalDocs() == null) {
                 to.setExternalDocs(new ExternalDocumentationImpl());
             }
-            ExternalDocumentationImpl.merge(from.externalDocs(), to.getExternalDocs(), override);
+            ExternalDocumentationImpl.merge(from.getExternalDocs(), to.getExternalDocs(), override);
         }
-        to.setDeprecated(mergeProperty(to.getDeprecated(), from.deprecated(), override));
-        if (from.allOf() != null) {
-            for (Class<?> allOfClass : from.allOf()) {
-                if (Schema.class.isAssignableFrom(allOfClass)) {
-                    if (to.getAllOf() == null) {
-                        to.setAllOf(new ArrayList<>());
-                    }
-                    try {
-                        to.addAllOf((Schema) allOfClass.newInstance());
-                    } catch (InstantiationException | IllegalAccessException ex) {
-                        LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
-                    }
-                }
-            }
+        to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
+        if (from.getNot() != null) {
+            to.setNot(from.getNot());
         }
-        if (from.anyOf() != null) {
-            for (Class<?> anyOfClass : from.anyOf()) {
-                if (Schema.class.isAssignableFrom(anyOfClass)) {
-                    if (to.getAnyOf() == null) {
-                        to.setAnyOf(new ArrayList<>());
-                    }
-                    try {
-                        to.addAnyOf((Schema) anyOfClass.newInstance());
-                    } catch (InstantiationException | IllegalAccessException ex) {
-                        LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
-                    }
-                }
+        if (from.getAllOf() != null) {
+            if (to.getAllOf() == null) {
+                to.setAllOf(new ArrayList<>());
             }
+            to.getAllOf().addAll(from.getAllOf());
         }
-        if (from.oneOf() != null) {
-            for (Class<?> oneOfClass : from.oneOf()) {
-                if (Schema.class.isAssignableFrom(oneOfClass)) {
-                    if (to.getOneOf() == null) {
-                        to.setOneOf(new ArrayList<>());
-                    }
-                    try {
-                        to.addOneOf((Schema) oneOfClass.newInstance());
-                    } catch (InstantiationException | IllegalAccessException ex) {
-                        LOGGER.log(WARNING, "Unable to create Schema class instance.", ex);
-                    }
-                }
+        if (from.getAnyOf() != null) {
+            if (to.getAnyOf() == null) {
+                to.setAnyOf(new ArrayList<>());
             }
+            to.getAnyOf().addAll(from.getAnyOf());
+        }
+        if (from.getOneOf() != null) {
+            if (to.getOneOf() == null) {
+                to.setOneOf(new ArrayList<>());
+            }
+            to.getOneOf().addAll(from.getOneOf());
         }
     }
 

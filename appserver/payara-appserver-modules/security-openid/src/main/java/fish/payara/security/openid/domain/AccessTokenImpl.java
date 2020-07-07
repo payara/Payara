@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -59,17 +59,17 @@ public class AccessTokenImpl implements AccessToken {
 
     private final String token;
 
-    private AccessToken.Type type;
+    private final AccessToken.Type type;
 
     private JWT tokenJWT;
 
     private Map<String, Object> claims;
 
-    private Long expiresIn;
+    private final Long expiresIn;
 
-    private Scope scope;
+    private final Scope scope;
 
-    private long createdAt;
+    private final long createdAt;
 
     private OpenIdConfiguration configuration;
 
@@ -99,6 +99,8 @@ public class AccessTokenImpl implements AccessToken {
             expired = System.currentTimeMillis() + configuration.getTokenMinValidity() > createdAt + (expiresIn * 1000);
         } else if(nonNull(exp = (Date) this.getClaim(EXPIRATION_IDENTIFIER))) {
             expired = System.currentTimeMillis() + configuration.getTokenMinValidity() > exp.getTime();
+        } else {
+            throw new IllegalStateException("Missing expiration time (exp) claim in access token");
         }
         return expired;
     }

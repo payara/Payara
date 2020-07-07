@@ -39,18 +39,15 @@
  */
 package fish.payara.microprofile.openapi.test.app;
 
-import static fish.payara.microprofile.openapi.test.util.JsonUtils.toJson;
-import static org.junit.Assert.assertNotNull;
-
-import org.eclipse.microprofile.openapi.OASFilter;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
 import fish.payara.microprofile.openapi.spec.OpenApiValidator;
+import static fish.payara.microprofile.openapi.test.util.JsonUtils.toJson;
+import org.eclipse.microprofile.openapi.OASFilter;
+import org.eclipse.microprofile.openapi.models.OpenAPI;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Before;
+import org.junit.Test;
 
 public abstract class OpenApiApplicationTest {
 
@@ -61,8 +58,8 @@ public abstract class OpenApiApplicationTest {
     public void createDocument() {
         Class<?> filter = filterClass();
         document = filter == null 
-                ? ApplicationProcessedDocument.createDocument(getClass())
-                : ApplicationProcessedDocument.createDocument(filterClass(), getClass(), filterClass());
+                ? ApplicationProcessedDocument.createDocument(getClass(), TestApplication.class)
+                : ApplicationProcessedDocument.createDocument(filterClass(), getClass(), TestApplication.class, filterClass());
         jsonDocument = toJson(document);
     }
 

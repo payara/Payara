@@ -39,25 +39,22 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
+import java.util.Arrays;
 import static org.eclipse.microprofile.openapi.OASFactory.createOAuthFlow;
 import static org.eclipse.microprofile.openapi.OASFactory.createOAuthFlows;
 import static org.eclipse.microprofile.openapi.OASFactory.createScopes;
 import static org.eclipse.microprofile.openapi.OASFactory.createSecurityRequirement;
 import static org.eclipse.microprofile.openapi.OASFactory.createSecurityScheme;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme.In;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme.Type;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.security.*}.

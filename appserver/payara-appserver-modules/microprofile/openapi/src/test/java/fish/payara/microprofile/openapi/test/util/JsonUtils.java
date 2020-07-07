@@ -39,18 +39,14 @@
  */
 package fish.payara.microprofile.openapi.test.util;
 
-import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-
-import org.eclipse.microprofile.openapi.models.Constructible;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import fish.payara.microprofile.openapi.impl.model.OpenApiBuilderTest;
+import java.util.Arrays;
+import org.eclipse.microprofile.openapi.models.Constructible;
+import static org.junit.Assert.fail;
 
 public class JsonUtils {
 

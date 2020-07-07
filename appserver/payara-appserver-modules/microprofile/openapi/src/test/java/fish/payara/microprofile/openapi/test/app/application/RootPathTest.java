@@ -39,15 +39,12 @@
  */
 package fish.payara.microprofile.openapi.test.app.application;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-
-import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 /**
  * A resource to test that a resource at the context root is mapped correctly.
