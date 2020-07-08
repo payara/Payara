@@ -280,7 +280,8 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
             keytoolExecutor.execute("certNotAdded", keyOrTrustStore);
         } catch (RepositoryException re) {
             if (re.getMessage().contains("No certificate data found")
-                    || re.getMessage().contains("signed fields invalid")) {
+                    || re.getMessage().contains("signed fields invalid")
+                    || re.getMessage().contains("Input not an X.509 certificate")) {
                 logger.fine("Couldn't add file as a certificate, attempting to add as a store");
                 KeystoreManager.KeytoolExecutor keytoolExecutor = new KeystoreManager.KeytoolExecutor(
                         CertificateManagementKeytoolCommands.constructImportKeystoreKeytoolCommand(

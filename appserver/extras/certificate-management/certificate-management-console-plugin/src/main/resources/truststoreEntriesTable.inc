@@ -54,8 +54,8 @@
             <!afterCreate
                 getClientId(component="$this{component}" clientId=>$page{trustEntriesTopActionGroup});
             />
-            <sun:button id="addButton" text="$resource{i18ncm.certificateManagement.truststoreEntriesTable.addButton}" >
-                <!command gf.redirect(page="#{request.contextPath}/certificateManagement/addKeystoreEntry.jsf?instanceName=#{pageSession.encodedInstanceName}") />
+            <sun:button id="addButton" text="$resource{i18ncm.certificateManagement.button.add}" >
+                <!command gf.redirect(page="#{pageSession.addTruststoreEntryUrl}") />
             </sun:button>
             <!insert name="listTableDeleteButton">
                 <sun:button id="button1" text="$resource{i18n.button.Delete}" disabled="#{true}" primary="#{false}"
@@ -91,21 +91,21 @@
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{trustEntriesTableRowGroupId});
         />
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.truststoreEntriesTable.select}"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.select}"
                          selectId="select" rowHeader="$boolean{false}" id="col0">
             <sun:checkbox id="select" selectedValue="$boolean{true}"
                           selected="#{td.value.selected}"
                           onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.trustEntriesTopActionGroup}\\\\\', \\\\\'#{pageSession.trustEntriesTableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.trustEntriesTableId}\\\\\');', 0);"/>
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.truststoreEntriesTable.alias}" sort="alias"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.alias}" sort="alias"
                          rowHeader="$boolean{true}" id="col1">
             <staticText id="alias" value="#{td.value.alias}" />
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.truststoreEntriesTable.truststore}"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.truststore}"
                          rowHeader="$boolean{true}" id="col2">
             <staticText id="truststore" value="#{td.value.store}" />
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.truststoreEntriesTable.usedBy}"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.usedBy}"
                          rowHeader="$boolean{true}" id="col3">
             <event>
                 <!beforeEncode
@@ -126,7 +126,7 @@
                 </foreach>
                 "</table>
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.truststoreEntriesTable.entry}"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.entry}"
                          rowHeader="$boolean{true}" id="col4">
             <staticText id="entry" value="#{td.value.entry}" />
         </sun:tableColumn>

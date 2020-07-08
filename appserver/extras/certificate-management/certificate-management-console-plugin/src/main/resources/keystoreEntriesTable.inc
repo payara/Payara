@@ -54,8 +54,8 @@
             <!afterCreate
                 getClientId(component="$this{component}" clientId=>$page{keyEntriesTopActionGroup});
             />
-            <sun:button id="addButton" text="$resource{i18ncm.certificateManagement.keystoreEntriesTable.addButton}" >
-                <!command gf.redirect(page="#{request.contextPath}/certificateManagement/addKeystoreEntry.jsf?instanceName=#{pageSession.encodedInstanceName}") />
+            <sun:button id="addButton" text="$resource{i18ncm.certificateManagement.button.add}" >
+                <!command gf.redirect(page="#{pageSession.addKeystoreEntryUrl}") />
             </sun:button>
 
 
@@ -94,21 +94,21 @@
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{keyEntriesTableRowGroupId});
         />
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.keystoreEntriesTable.select}"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.select}"
                          selectId="select" rowHeader="$boolean{false}" id="col0">
             <sun:checkbox id="select" selectedValue="$boolean{true}"
                           selected="#{td.value.selected}"
                           onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.keyEntriesTopActionGroup}\\\\\', \\\\\'#{pageSession.keyEntriesTableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.keyEntriesTableId}\\\\\');', 0);"/>
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.keystoreEntriesTable.alias}" sort="alias"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.alias}" sort="alias"
                          rowHeader="$boolean{true}" id="col1">
             <staticText id="alias" value="#{td.value.alias}" />
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.keystoreEntriesTable.keystore}"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.keystore}"
                          rowHeader="$boolean{true}" id="col2">
             <staticText id="keystore" value="#{td.value.store}" />
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.keystoreEntriesTable.usedBy}"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.usedBy}"
                          rowHeader="$boolean{true}" id="col3">
             <event>
                 <!beforeEncode
@@ -129,7 +129,7 @@
                 </foreach>
                 "</table>
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.keystoreEntriesTable.entry}"
+        <sun:tableColumn headerText="$resource{i18ncm.certificateManagement.entry}"
                          rowHeader="$boolean{true}" id="col4">
             <staticText id="entry" value="#{td.value.entry}" />
         </sun:tableColumn>

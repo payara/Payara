@@ -39,7 +39,10 @@
  */
 package fish.payara.certificate.management.admin;
 
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.universal.process.ProcessManagerException;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -50,10 +53,15 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.SSHCommandExecutionException;
+import org.glassfish.cluster.ssh.connect.NodeRunner;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import java.io.File;
 
 @Service(name = "_add-keystore-entry")
 @PerLookup
@@ -72,8 +80,14 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class AddKeystoreEntryCommand extends AbstractRemoteCertificateManagementCommand {
 
+    @Param(name = "file")
+    private File file;
+
     @Param(name = "alias", primary = true)
     private String alias;
+
+    @Inject
+    private Nodes nodes;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -85,14 +99,32 @@ public class AddKeystoreEntryCommand extends AbstractRemoteCertificateManagement
         resolveKeyStore();
 
         try {
-            addToKeyStore();
+            addToKeyStore(context);
         } catch (CommandException e) {
             context.getActionReport().failure(context.getLogger(), "Error adding keystore entry", e);
-            return;
         }
     }
 
-    private void addToKeyStore() throws CommandException {
+    private void addToKeyStore(AdminCommandContext context) throws CommandException {
+        NodeRunner nodeRunner = new NodeRunner(serviceLocator, context.getLogger());
+        Node node = nodes.getNode(servers.getServer(serverEnvironment.getInstanceName()).getNodeRef());
 
+        // The DAS doesn't have a node-ref
+        if (node == null && serverEnvironment.isDas()) {
+            node = nodes.getDefaultLocalNode();
+        }
+
+        try {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            nodeRunner.runAdminCommandOnNode(node, stringBuilder,
+                    createAddToStoreCommand("add-to-keystore", node, file, alias), context);
+
+            if (stringBuilder.toString().contains("Command add-to-keystore failed")) {
+                throw new CommandException();
+            }
+        } catch (SSHCommandExecutionException | ProcessManagerException e) {
+            throw new CommandException(e);
+        }
     }
 }

@@ -40,6 +40,8 @@
 package fish.payara.certificate.management.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.security.ssl.impl.MasterPasswordImpl;
 import com.sun.enterprise.util.StringUtils;
@@ -56,6 +58,7 @@ import org.glassfish.orb.admin.config.IiopService;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractRemoteCertificateManagementCommand implements AdminCommand {
@@ -71,6 +74,9 @@ public abstract class AbstractRemoteCertificateManagementCommand implements Admi
 
     @Inject
     protected Servers servers;
+
+    @Inject
+    protected Domain domain;
 
     @Inject
     protected IiopService iiopService;
@@ -199,5 +205,50 @@ public abstract class AbstractRemoteCertificateManagementCommand implements Admi
             MasterPasswordImpl masterPassword = serviceLocator.getService(MasterPasswordImpl.class);
             truststorePassword = masterPassword.getMasterPassword();
         }
+    }
+
+    protected List<String> createAddToStoreCommand(String commandName, Node node, File file, String alias) {
+        List<String> command = new ArrayList<>();
+
+        command.add(commandName);
+
+        if (StringUtils.ok(listener)) {
+            command.add("--listener");
+            command.add(listener);
+        }
+
+        command.add("--domainname");
+        // serverEnvironment.getDomainName() is not always 100% accurate
+        command.add(domain.getName());
+
+        command.add("--domaindir");
+        command.add(System.getProperty("com.sun.aas.domainsRoot"));
+
+        // Not relevant to the DAS
+        if (!serverEnvironment.isDas()) {
+            command.add("--node");
+            command.add(node.getName());
+
+            // Nodes in the default directory don't necessarily have a nodedir set
+            String nodedir = node.getNodeDirAbsolute();
+            if (nodedir == null) {
+                nodedir = System.getProperty("com.sun.aas.agentRoot");
+            }
+
+            command.add("--nodedir");
+            command.add(nodedir);
+        }
+
+        command.add("--target");
+        command.add(target);
+
+        command.add("--file");
+        command.add(file.getAbsolutePath());
+
+        if (alias != null) {
+            command.add(alias);
+        }
+
+        return command;
     }
 }
