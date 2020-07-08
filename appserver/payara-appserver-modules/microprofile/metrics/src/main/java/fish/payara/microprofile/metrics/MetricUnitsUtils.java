@@ -47,7 +47,11 @@ import org.eclipse.microprofile.metrics.MetricUnits;
  *
  * @author Jan Bernitt
  */
-public class MetricUnitsUtils {
+public final class MetricUnitsUtils {
+
+    private MetricUnitsUtils() {
+        throw new UnsupportedOperationException("util");
+    }
 
     public static String baseUnit(String unit) {
         switch (unit) {
