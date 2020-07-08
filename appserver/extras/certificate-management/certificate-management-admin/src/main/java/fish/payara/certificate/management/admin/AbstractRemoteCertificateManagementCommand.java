@@ -61,6 +61,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Parent class that contains various shared variables and methods for the remote certificate management commands.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 public abstract class AbstractRemoteCertificateManagementCommand implements AdminCommand {
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
@@ -89,6 +93,9 @@ public abstract class AbstractRemoteCertificateManagementCommand implements Admi
     protected char[] keystorePassword;
     protected char[] truststorePassword;
 
+    /**
+     * Resolves the keystore location and the password required to access it.
+     */
     protected void resolveKeyStore() {
         Config config = servers.getServer(target).getConfig();
 
@@ -148,6 +155,9 @@ public abstract class AbstractRemoteCertificateManagementCommand implements Admi
         }
     }
 
+    /**
+     * Resolves the truststore location and the password required to access it.
+     */
     protected void resolveTrustStore() {
         Config config = servers.getServer(target).getConfig();
 
@@ -207,6 +217,14 @@ public abstract class AbstractRemoteCertificateManagementCommand implements Admi
         }
     }
 
+    /**
+     * Creates the `add-to-keystore` or `add-to-truststore` CLI command to run on the local instance.
+     * @param commandName The command name to run. Should be `add-to-keystore` or `add-to-truststore`
+     * @param node The node of the target local instance
+     * @param file The file to add to the target store
+     * @param alias The alias to store the entry under
+     * @return A list representing the CLI command to run on the local instance
+     */
     protected List<String> createAddToStoreCommand(String commandName, Node node, File file, String alias) {
         List<String> command = new ArrayList<>();
 
@@ -217,10 +235,10 @@ public abstract class AbstractRemoteCertificateManagementCommand implements Admi
             command.add(listener);
         }
 
+        // serverEnvironment.getDomainName() is not always 100% accurate, and neither is getting the domaindir from
+        // the config beans
         command.add("--domainname");
-        // serverEnvironment.getDomainName() is not always 100% accurate
         command.add(domain.getName());
-
         command.add("--domaindir");
         command.add(System.getProperty("com.sun.aas.domainsRoot"));
 

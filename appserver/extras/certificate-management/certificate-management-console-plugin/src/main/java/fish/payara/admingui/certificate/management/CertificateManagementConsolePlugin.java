@@ -45,15 +45,13 @@ import org.glassfish.api.admingui.ConsoleProvider;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *  @author Andrew Pielage
- */
-/**
  *  <p> This class serves as a marker to indicate this OSGi bundle provides GUI
  *      content which is to be displayed in the GlassFish admin console.  The
  *      {@link #getConfiguration()} method should either return
  *      <code>(null)</code>, or a <code>URL</code> to the
  *      <code>console-config.xml</code> file.</p>
  *
+ *  @author Andrew Pielage <andrew.pielage@payara.fish>
  *  @author Ken Paulsen (ken.paulsen@sun.com)
  */
 @Service

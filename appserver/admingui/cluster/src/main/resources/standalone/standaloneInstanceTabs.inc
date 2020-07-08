@@ -88,7 +88,7 @@
 	    <!command
                 setSessionAttribute(key="standaloneInstanceTabs" value="microProfileProps");
                 gf.redirect(page="#{request.contextPath}/cluster/standalone/standaloneMicroProfileProperties.jsf?instanceName=#{pageSession.encodedInstanceName}");
-	    />d
+	    />
 	</sun:tab>
     </sun:tab>
 </sun:tabSet>

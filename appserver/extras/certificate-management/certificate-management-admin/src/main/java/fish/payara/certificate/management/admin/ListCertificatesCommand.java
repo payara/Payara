@@ -62,6 +62,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Remote Admin Command that lists the entries in the key and/or trust store.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 @Service(name = "list-certificates")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
@@ -93,7 +97,7 @@ public class ListCertificatesCommand extends AbstractRemoteCertificateManagement
 
     @Override
     public void execute(AdminCommandContext context) {
-        // Check if this instance is the target
+        // Check if this instance is the target - we only want to run on the local instance
         if (StringUtils.ok(target) && !target.equals(serverEnvironment.getInstanceName())) {
             return;
         }
@@ -140,6 +144,9 @@ public class ListCertificatesCommand extends AbstractRemoteCertificateManagement
         context.getActionReport().setExtraProperties(extraProps);
     }
 
+    /**
+     * Initialises the key and/or trust store location and the password requried to access it.
+     */
     private void initStoresAndPasswords() {
         if (!listKeys && !listTrusted) {
             listKeys = true;
@@ -155,6 +162,11 @@ public class ListCertificatesCommand extends AbstractRemoteCertificateManagement
         }
     }
 
+    /**
+     * Appends the output of the keystore or truststore entries to the action report.
+     * @param context The admin command context to get the action report from
+     * @param entries The entries from the key or trust store.
+     */
     private void appendMessage(AdminCommandContext context, Map<String, String> entries) {
         for (Map.Entry<String, String> entry : entries.entrySet()) {
             context.getActionReport().appendMessage("Alias: " + entry.getKey());

@@ -64,6 +64,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+/**
+ * Remote Admin Command that remove a certificate or bundle from the truststore.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 @Service(name = "_remove-truststore-entry")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
@@ -101,6 +105,10 @@ public class RemoveTruststoreEntryCommand extends AbstractRemoteCertificateManag
         }
     }
 
+    /**
+     * Removes the entry that matches the provided alias from the target truststore.
+     * @throws CommandException If there's an issue removing the entry from the truststore.
+     */
     private void removeFromTrustStore() throws CommandException {
         try {
             KeyStore store = KeyStore.getInstance(CertificateManagementCommon.getKeystoreType(truststore));

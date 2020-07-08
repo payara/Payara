@@ -47,6 +47,10 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+/**
+ * CLI command that lists out all or a specific key store entry for a given target instance or listener.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 @Service(name = "list-keystore-entries")
 @PerLookup
 public class ListKeystoreEntriesCommand extends AbstractListStoreEntriesCommand {
@@ -68,8 +72,9 @@ public class ListKeystoreEntriesCommand extends AbstractListStoreEntriesCommand 
         return CLIConstants.SUCCESS;
     }
 
-
-
+    /**
+     * LocalInstance version of ListKeystoreEntriesCommand.
+     */
     private class ListKeystoreEntriesLocalInstanceCommand extends AbstractLocalInstanceListStoreEntriesCommand {
 
         public ListKeystoreEntriesLocalInstanceCommand(ProgramOptions programOpts, Environment env) {

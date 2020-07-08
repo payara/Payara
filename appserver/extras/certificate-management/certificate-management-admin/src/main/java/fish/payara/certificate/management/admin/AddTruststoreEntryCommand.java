@@ -63,6 +63,10 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import java.io.File;
 
+/**
+ * Remote Admin Command that adds a certificate or bundle to the truststore.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 @Service(name = "_add-truststore-entry")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
@@ -80,8 +84,8 @@ import java.io.File;
 })
 public class AddTruststoreEntryCommand extends AbstractRemoteCertificateManagementCommand {
 
-    @Param(name = "file")
-    private File file;
+    @Param(name = "fileToAdd", alias="filetoadd")
+    private String fileToAdd;
 
     @Param(name = "alias", primary = true)
     private String alias;
@@ -91,7 +95,7 @@ public class AddTruststoreEntryCommand extends AbstractRemoteCertificateManageme
 
     @Override
     public void execute(AdminCommandContext context) {
-        // Check if this instance is the target
+        // Check if this instance is the target - we only want to run on the local instance
         if (StringUtils.ok(target) && !target.equals(serverEnvironment.getInstanceName())) {
             return;
         }
@@ -106,6 +110,11 @@ public class AddTruststoreEntryCommand extends AbstractRemoteCertificateManageme
         }
     }
 
+    /**
+     * Runs the 'add-to-truststore' command on the local instance.
+     * @param context The admin command context.
+     * @throws CommandException If there's an issue running the command.
+     */
     private void addToTrustStore(AdminCommandContext context) throws CommandException {
         NodeRunner nodeRunner = new NodeRunner(serviceLocator, context.getLogger());
         Node node = nodes.getNode(servers.getServer(serverEnvironment.getInstanceName()).getNodeRef());
@@ -119,7 +128,7 @@ public class AddTruststoreEntryCommand extends AbstractRemoteCertificateManageme
             StringBuilder stringBuilder = new StringBuilder();
 
             nodeRunner.runAdminCommandOnNode(node, stringBuilder,
-                    createAddToStoreCommand("add-to-truststore", node, file, alias), context);
+                    createAddToStoreCommand("add-to-truststore", node, new File(fileToAdd), alias), context);
 
             if (stringBuilder.toString().contains("Command add-to-truststore failed")) {
                 throw new CommandException();

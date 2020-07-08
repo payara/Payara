@@ -62,8 +62,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+/**
+ * Common methods shared across the certificate management commands.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 public class CertificateManagementCommon {
 
+    /**
+     * Gets all or a specific entry from a specified key or trust store.
+     * @param keyOrTrustStore The key or trust store to get the entries from
+     * @param password The password to the key or trust store.
+     * @param alias The alias of the specific entry to get. If null all entries will be retrieved.
+     * @param verbose Whether or not to get the verbose entry output or not.
+     * @return
+     * @throws CommandException If there's an issue reading from the key or trust store
+     */
     public static Map<String, String> getEntries(File keyOrTrustStore, char[] password, String alias, boolean verbose)
             throws CommandException {
         Map<String, String> entries = new HashMap<>();
@@ -89,6 +102,12 @@ public class CertificateManagementCommon {
         return entries;
     }
 
+    /**
+     * Formats the entry details into human readable output, also making sure it's presented in the correct RFC format.
+     * @param certificate The certificate to format
+     * @param verbose Whether to get and format the full certificate details or just a subset
+     * @return The certificate details formatted into a string
+     */
     private static String formatEntry(final X509Certificate certificate, boolean verbose) {
         if (verbose) {
             StringBuilder output = new StringBuilder(1024);
@@ -107,10 +126,20 @@ public class CertificateManagementCommon {
         }
     }
 
+    /**
+     * Helper method that gets the principal in the correct RFC format
+     * @param principal The principal to format
+     * @return The principal formatted into RFC2253
+     */
     private static String formatPrincipal(final X500Principal principal) {
         return principal.getName(X500Principal.RFC2253, OID.getOIDMap());
     }
 
+    /**
+     * Helper method that formats the PublicKey.
+     * @param key The key to format
+     * @return The formatted key
+     */
     private static String formatKey(final PublicKey key) {
         if (key instanceof RSAKey) {
             final RSAKey rsaKey = (RSAKey) key;
@@ -125,6 +154,14 @@ public class CertificateManagementCommon {
         return key.getAlgorithm() + ", unresolved bit length.";
     }
 
+    /**
+     * Gets the certificate matching the provided alias from the key or trust store.
+     * @param keyOrTrustStore The key or trust store to get the certificate from
+     * @param password The password to the key or trust store
+     * @param entryAlias The alias of the certificate to get
+     * @return The certificate that matches the provided alias in the specified store.
+     * @throws CommandException If there's an issue reading from the key or trust store
+     */
     private static X509Certificate getCertificateFromStore(File keyOrTrustStore, char[] password, String entryAlias)
             throws CommandException {
         try {
@@ -144,7 +181,12 @@ public class CertificateManagementCommon {
         }
     }
 
-
+    /**
+     * Helper method that gets the X509 certificate.
+     * @param supplier A callable that loads and returns a Certificate object.
+     * @return An X509 certificate.
+     * @throws Exception If the certificate was not an X509 certificate.
+     */
     private static X509Certificate getX509Certificate(final Callable<Certificate> supplier) throws Exception {
         Certificate certificate  = supplier.call();
         if (certificate instanceof X509Certificate) {
@@ -153,6 +195,11 @@ public class CertificateManagementCommon {
         throw new IllegalStateException("The certificate was found but it is not supported X509 certificate.");
     }
 
+    /**
+     * Gets the type of the key or trust store
+     * @param keyOrTrustStore The key or trust store to get the type of
+     * @return A string representing the type of the store
+     */
     public static String getKeystoreType(File keyOrTrustStore) {
         String ksFilename = keyOrTrustStore.getName().toLowerCase();
         if (ksFilename.endsWith("jks")) {

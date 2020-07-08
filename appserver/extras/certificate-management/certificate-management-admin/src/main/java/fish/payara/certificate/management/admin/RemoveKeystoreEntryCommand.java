@@ -64,6 +64,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+/**
+ * Remote Admin Command that removes a certificate or bundle from the keystore.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 @Service(name = "_remove-keystore-entry")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
@@ -86,7 +90,7 @@ public class RemoveKeystoreEntryCommand extends AbstractRemoteCertificateManagem
 
     @Override
     public void execute(AdminCommandContext context) {
-        // Check if this instance is the target
+        // Check if this instance is the target - we only want to run on the local instance
         if (StringUtils.ok(target) && !target.equals(serverEnvironment.getInstanceName())) {
             return;
         }
@@ -101,6 +105,10 @@ public class RemoveKeystoreEntryCommand extends AbstractRemoteCertificateManagem
         }
     }
 
+    /**
+     * Removes the entry that matches the provided alias from the target keystore.
+     * @throws CommandException If there's an issue removing the entry from the keystore.
+     */
     private void removeFromKeyStore() throws CommandException {
         try {
             KeyStore store = KeyStore.getInstance(CertificateManagementCommon.getKeystoreType(keystore));

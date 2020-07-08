@@ -59,7 +59,7 @@
             </sun:button>
             <!insert name="listTableDeleteButton">
                 <sun:button id="button1" text="$resource{i18n.button.Delete}" disabled="#{true}" primary="#{false}"
-                            onClick="if (getConfirm(this,'$pageSession{confirmDeleteMsg}')) {
+                            onClick="if (getConfirm(this,'$resource{i18ncm.certificateManagement.truststoreEntriesTable.deleteMsg}')) {
                                         return submitAndDisable(this, '$resource{i18n.button.Processing}');
                                     } else {
                                         return false;

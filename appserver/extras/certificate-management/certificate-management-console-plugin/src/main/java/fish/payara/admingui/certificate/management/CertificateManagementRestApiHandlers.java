@@ -60,8 +60,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The Handler method and associated helper methods for the Certificate Management pages.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 public class CertificateManagementRestApiHandlers {
 
+    /**
+     * Runs the list-certificates remote command and returns the output along with the links of where the entries are
+     * used.
+     * @param handlerCtx
+     */
     @Handler(id = "py.getListCertificatesOutput",
             input = {
                     @HandlerInput(name = "endpoint", type = String.class, required = true),
@@ -117,6 +126,14 @@ public class CertificateManagementRestApiHandlers {
         }
     }
 
+    /**
+     * Get the entries from the Instance JVM set key and/or trust store.
+     * @param data The data retrieved from the REST request.
+     * @param contextPath The root context path
+     * @param config The config of the target instance
+     * @param usedByLinks The Map to store the usedBy links in.
+     * @return A List of Maps, containing the entry details, or an empty list if no entries found.
+     */
     private static List<Map<String, String>> getInstanceEntries(Map data, String contextPath,
             Config config, Map<String, String> usedByLinks) {
         List<Map<String, String>> instanceStoreEntries = getEntries(data);
@@ -135,6 +152,11 @@ public class CertificateManagementRestApiHandlers {
         return instanceStoreEntries;
     }
 
+    /**
+     * Helper method that retrieves store entries from the REST request data.
+     * @param data The REST request data to get the store entries from.
+     * @return A List of Maps, containing the entry details, or an empty list if no entries found.
+     */
     private static List<Map<String, String>> getEntries(Map data) {
         List<Map<String, String>> storeEntries = new ArrayList<>();
         if (data != null) {
@@ -171,6 +193,14 @@ public class CertificateManagementRestApiHandlers {
         return storeEntries;
     }
 
+    /**
+     * Gets the names of all HTTP and IIOP listeners for the target instance and the links to them.
+     * @param contextPath The root context path
+     * @param config The config of the target instance
+     * @param serviceLocator The ServiceLocator to get additional HK2 services from
+     * @param listeners The list of listeners to populate
+     * @param usedByLinks The map of usedBy links to populate
+     */
     private static void getAllListenerNamesAndUrls(String contextPath, Config config,
             ServiceLocator serviceLocator, List<String> listeners, Map<String, String> usedByLinks) {
 
@@ -192,6 +222,13 @@ public class CertificateManagementRestApiHandlers {
         }
     }
 
+    /**
+     * Gets the store entries for a list of listeners
+     * @param endpoint The REST request endpoint.
+     * @param handlerCtx The handler context
+     * @param listenerNames The list of listener names to get the store entries for
+     * @return A List of Maps containing the entry details, or an empty list if no entries found.
+     */
     private static List<Map<String, String>> getListenerStoreEntries(String endpoint, HandlerContext handlerCtx,
             List<String> listenerNames) {
         List<Map<String, String>> allListenerStoreEntries = new ArrayList<>();
@@ -223,6 +260,11 @@ public class CertificateManagementRestApiHandlers {
         return allListenerStoreEntries;
     }
 
+    /**
+     * Helper method that merges the listener store entries with the instance store entries
+     * @param storeEntries The instance store entries to be merged into
+     * @param listenerStoreEntries The listener store entries to merge
+     */
     private static void addListenerStoreEntries(List<Map<String, String>> storeEntries,
             List<Map<String, String>> listenerStoreEntries) {
         String instanceStore = storeEntries.get(0).get("store");
@@ -242,6 +284,10 @@ public class CertificateManagementRestApiHandlers {
         }
     }
 
+    /**
+     * Handler that converts the comma separated usedBy string into a list to iterate over.
+     * @param handlerCtx The handler context
+     */
     @Handler(id = "py.convertUsedByCsvToList",
             input = {
                     @HandlerInput(name = "usedByString", type = String.class, required = true)
@@ -258,6 +304,10 @@ public class CertificateManagementRestApiHandlers {
         handlerCtx.setOutputValue("result", usedByList);
     }
 
+    /**
+     * Handler to get the link from the map of usedByLinks, since this cannot be done on the JSF page itself.
+     * @param handlerCtx The handler context
+     */
     @Handler(id = "py.getUsedByLink",
             input = {
                     @HandlerInput(name = "usedBy", type = String.class, required = true),
@@ -273,6 +323,10 @@ public class CertificateManagementRestApiHandlers {
         handlerCtx.setOutputValue("usedByLink", usedByLinks.get(usedBy));
     }
 
+    /**
+     * Handler that runs the remove-keystore-entry or remove-truststore-entry remote command against a given alias.
+     * @param handlerCtx The handler context
+     */
     @Handler(id = "py.removeEntries",
             input = {
                     @HandlerInput(name = "endpoint", type = String.class, required = true),
@@ -289,7 +343,12 @@ public class CertificateManagementRestApiHandlers {
             boolean selected = (boolean) selectedRow.get("selected");
             if (selected) {
                 Map<String, Object> params = new HashMap<>();
+                // Primary params are called 'id' in the REST API regardless of their actual name
                 params.put("id", selectedRow.get("alias"));
+                String usedBy = (String) selectedRow.get("usedBy");
+                if (!usedBy.contains("Instance JVM")) {
+                    params.put("listener", usedBy.split(",")[0]);
+                }
                 Map response = RestUtil.restRequest(endpoint, params, "DELETE", handlerCtx, false, true);
 
                 handlerCtx.setOutputValue("response", response);

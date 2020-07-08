@@ -47,6 +47,10 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+/**
+ * CLI command that lists out all or a specific trust store entry for a given target instance or listener.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 @Service(name = "list-truststore-entries")
 @PerLookup
 public class ListTrustStoreEntriesCommand extends AbstractListStoreEntriesCommand {
@@ -69,7 +73,9 @@ public class ListTrustStoreEntriesCommand extends AbstractListStoreEntriesComman
     }
 
 
-
+    /**
+     * LocalInstance version of ListTrustStoreEntriesCommand.
+     */
     private class ListTrustStoreEntriesLocalInstanceCommand extends AbstractLocalInstanceListStoreEntriesCommand {
 
         public ListTrustStoreEntriesLocalInstanceCommand(ProgramOptions programOpts, Environment env) {

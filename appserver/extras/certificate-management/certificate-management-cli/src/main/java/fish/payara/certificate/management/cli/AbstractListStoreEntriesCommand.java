@@ -48,6 +48,10 @@ import org.glassfish.api.admin.CommandException;
 import java.io.File;
 import java.util.Map;
 
+/**
+ * Parent class for the shared logic between the list-x-entries commands.
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 public abstract class AbstractListStoreEntriesCommand extends AbstractCertManagementCommand {
 
     @Param(name = "verbose", optional = true, shortName = "v")
@@ -62,7 +66,13 @@ public abstract class AbstractListStoreEntriesCommand extends AbstractCertManage
         super.validate();
     }
 
-    public void listEntries(File keyOrTrustStore, char[] password) throws CommandException {
+    /**
+     * Lists the entries from the key or trust store, or a specific entry matching the alias, logging them out.
+     * @param keyOrTrustStore The key or trust store to get the entries from
+     * @param password The password for the key or trust store
+     * @throws CommandException If there's an issue reading from the key or trust store
+     */
+    protected void listEntries(File keyOrTrustStore, char[] password) throws CommandException {
         Map<String, String> entries = CertificateManagementCommon.getEntries(
                 keyOrTrustStore, password, userArgAlias, verbose);
         for (Map.Entry<String, String> entry : entries.entrySet()) {
@@ -72,6 +82,9 @@ public abstract class AbstractListStoreEntriesCommand extends AbstractCertManage
         }
     }
 
+    /**
+     * LocalInstance version of AbstractListStoreEntriesCommand.
+     */
     protected abstract class AbstractLocalInstanceListStoreEntriesCommand extends AbstractLocalInstanceCertManagementCommand {
 
         public AbstractLocalInstanceListStoreEntriesCommand(ProgramOptions programOpts, Environment env) {
