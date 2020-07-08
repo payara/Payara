@@ -115,7 +115,7 @@ public class PayaraCluster implements MembershipListener, EventListener {
     @Override
     public void memberAdded(MembershipEvent me) {
             for (ClusterListener myListener : myListeners) {
-                myListener.memberAdded(new MemberEvent(me.getMember()));
+                myListener.memberAdded(new MemberEvent(hzCore, me.getMember()));
             }
             logger.log(Level.INFO, "Data Grid Instance Added {0} at Address {1}", new String[]{me.getMember().getUuid().toString(), me.getMember().getSocketAddress().toString()});
             logClusterStatus();
@@ -124,7 +124,7 @@ public class PayaraCluster implements MembershipListener, EventListener {
     @Override
     public void memberRemoved(MembershipEvent me) {
         for (ClusterListener myListener : myListeners) {
-            myListener.memberRemoved(new MemberEvent(me.getMember()));
+            myListener.memberRemoved(new MemberEvent(hzCore, me.getMember()));
         }
         logger.log(Level.INFO, "Data Grid Instance Removed {0} from Address {1}", new String []{me.getMember().getUuid().toString(), me.getMember().getSocketAddress().toString()});
         logClusterStatus();
@@ -160,7 +160,7 @@ public class PayaraCluster implements MembershipListener, EventListener {
             Set<Member> members = hzCore.getInstance().getCluster().getMembers();
             for (Member member : members) {
                 if (member.getUuid().equals(memberUUID)) {
-                    result = member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+                    result = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
                 }
             }                        
         }
@@ -186,7 +186,7 @@ public class PayaraCluster implements MembershipListener, EventListener {
         if (hzCore.isEnabled()) {
             Set<Member> members = hzCore.getInstance().getCluster().getMembers();
             for (Member member : members) {
-                String memberName = member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+                String memberName = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
                 if (memberName != null) {
                     result.add(memberName);
                 }
@@ -200,7 +200,7 @@ public class PayaraCluster implements MembershipListener, EventListener {
         if (hzCore.isEnabled()) {
             Set<Member> members = hzCore.getInstance().getCluster().getMembers();
             for (Member member : members) {
-                String memberName = member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+                String memberName = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
                 String memberGroupName = member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
                 if (memberName != null && memberGroupName != null && groupName.equals(memberGroupName)) {
                     result.add(memberName);
@@ -243,8 +243,8 @@ public class PayaraCluster implements MembershipListener, EventListener {
             message.append(NL);
             message.append("Instances: {").append(NL);
             for (Member member : members) {
-                String name = member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
-                String group = member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+                String name = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
+                String group = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
                 message.append(" DataGrid: ").append(dataGridName);
                 if (group != null) {
                     message.append(" Instance Group: ").append(group);

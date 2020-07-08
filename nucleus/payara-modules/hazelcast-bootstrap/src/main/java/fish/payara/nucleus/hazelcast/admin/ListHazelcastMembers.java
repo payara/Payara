@@ -99,7 +99,7 @@ public class ListHazelcastMembers implements AdminCommand {
                 StringBuilder builder = new StringBuilder();
                 builder.append("{ ");
                 for (Member member : instance.getCluster().getMembers()) {
-                    String memberName = member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+                    String memberName = hazelcast.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
                     if (memberName != null) {
                         builder.append(memberName).append("-");
                     }

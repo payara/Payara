@@ -112,7 +112,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
         pkCache = core.getInstance().getMap(EJB_TIMER_CACHE_NAME);
         containerCache = core.getInstance().getMap(EJB_TIMER_CONTAINER_CACHE_NAME);
         applicationCache = core.getInstance().getMap(EJB_TIMER_APPLICAION_CACHE_NAME);
-        serverName = core.getInstance().getCluster().getLocalMember().getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        serverName = core.getAttribute(core.getInstance().getCluster().getLocalMember().getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
         this.ownerIdOfThisServer_ = serverName;
         this.domainName_ = core.getInstance().getConfig().getClusterName();
         super.enableRescheduleTimers();
