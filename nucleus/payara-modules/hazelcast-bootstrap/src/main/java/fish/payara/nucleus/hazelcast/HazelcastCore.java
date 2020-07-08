@@ -494,7 +494,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     for (com.hazelcast.cluster.Member member : clusterMembers) {
                         Map<String, String> attributes = getAttributes(member.getUuid());
                         if (member != theInstance.getCluster().getLocalMember()
-                                && attributes.get(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE) != null 
+                                && attributes.get(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE) != null
                                 && attributes.get(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(memberGroup)) {
                             takenNames.add(attributes.get(HazelcastCore.INSTANCE_ATTRIBUTE));
                         }
@@ -521,11 +521,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
             booted = true;
         }
     }
-    
+
     public String getAttribute(UUID memberUUID, String key) {
         return getAttributes(memberUUID).get(key);
     }
-    
+
     public void setAttribute(UUID memberUUID, String key, String value) {
         IMap<UUID, Map<String, String>> instanceAttributeMap = theInstance.getMap(INSTANCE_ATTRIBUTE_MAP);
         instanceAttributeMap.compute(memberUUID,
@@ -537,7 +537,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     return map;
                 });
     }
-    
+
     public Map<String, String> getAttributes(UUID memberUUID) {
         IMap<UUID, Map<String, String>> instanceAttributeMap = theInstance.getMap(INSTANCE_ATTRIBUTE_MAP);
         return instanceAttributeMap.getOrDefault(memberUUID, Collections.unmodifiableMap(new TreeMap<>()));
