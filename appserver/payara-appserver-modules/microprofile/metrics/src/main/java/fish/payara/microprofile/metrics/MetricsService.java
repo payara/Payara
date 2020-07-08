@@ -242,13 +242,16 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
     }
 
     private static String[] metadataToAnnotations(Metadata metadata, String property) {
+        String unit = metadata.getUnit().orElse(MetricUnits.NONE);
         return new String[] {
                 "Name", metadata.getName(), //
                 "Type", metadata.getType(), //
-                "Unit", metadata.getUnit().orElse(MetricUnits.NONE), //
+                "Unit", unit, //
                 "DisplayName", metadata.getDisplayName(), //
                 "Description", metadata.getDescription().orElse(""),
-                "Property", property
+                "Property", property,
+                "BaseUnit", MetricUnitsUtils.baseUnit(unit),
+                "ScaleToBaseUnit", MetricUnitsUtils.scaleToBaseUnit(1L, unit).toString()
         };
     }
 
@@ -296,7 +299,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         return collector.group(tag);
     }
 
-    private void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {
+    private static void checkSystemCpuLoadIssue(MBeanMetadataConfig metadataConfig) {
         // Could be constant but placed it in method as it is a workaround until fixed in JVM.
         // TODO Make this check dependent on the JDK version (as it hopefully will get solved in the future) -> Azul fix request made.
         String mbeanSystemCPULoad = "java.lang:type=OperatingSystem/SystemCpuLoad";
