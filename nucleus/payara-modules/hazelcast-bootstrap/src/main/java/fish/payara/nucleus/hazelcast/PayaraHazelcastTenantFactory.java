@@ -47,7 +47,7 @@ import org.glassfish.internal.api.JavaEEContextUtil;
 
 /**
  * Java EE Context and class loading support for Hazelcast objects and thread-based callbacks
- * 
+ *
  * @author lprimak
  */
 public class PayaraHazelcastTenantFactory implements TenantControlFactory {
