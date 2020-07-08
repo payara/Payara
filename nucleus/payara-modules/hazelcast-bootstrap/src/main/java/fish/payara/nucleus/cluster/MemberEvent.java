@@ -49,7 +49,8 @@ import java.util.UUID;
  */
 public class MemberEvent {
     
-    public MemberEvent(Member member) {
+    public MemberEvent(HazelcastCore hzCore, Member member) {
+        this.hzCore = hzCore;
         this.member = member;
     }
     
@@ -58,12 +59,13 @@ public class MemberEvent {
     }
     
     public String getServer() {
-        return member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        return hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
     }
     
     public String getServerGroup() {
         return member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
     }
     
+    private final HazelcastCore hzCore;
     private final Member member;
 }

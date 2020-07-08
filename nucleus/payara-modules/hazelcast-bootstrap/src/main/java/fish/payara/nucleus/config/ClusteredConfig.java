@@ -168,7 +168,7 @@ public class ClusteredConfig extends MembershipAdapter {
         }
     }
 
-    private static String instanceName(Member member) {
-        return member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+    private String instanceName(Member member) {
+        return hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
     }
 }
