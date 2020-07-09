@@ -84,8 +84,8 @@ import java.io.File;
 })
 public class AddKeystoreEntryCommand extends AbstractRemoteCertificateManagementCommand {
 
-    @Param(name = "fileToAdd", alias = "filetoadd")
-    private String fileToAdd;
+    @Param(name = "filePath", alias = "filepath")
+    private String filePath;
 
     @Param(name = "alias", primary = true)
     private String alias;
@@ -127,7 +127,7 @@ public class AddKeystoreEntryCommand extends AbstractRemoteCertificateManagement
             StringBuilder stringBuilder = new StringBuilder();
 
             nodeRunner.runAdminCommandOnNode(node, stringBuilder,
-                    createAddToStoreCommand("add-to-keystore", node, new File(fileToAdd), alias), context);
+                    createAddToStoreCommand("add-to-keystore", node, new File(filePath), alias), context);
 
             if (stringBuilder.toString().contains("Command add-to-keystore failed")) {
                 throw new CommandException();
