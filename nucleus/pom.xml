@@ -902,6 +902,12 @@ Parent is ${project.parent}</echo>
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>4.0.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
