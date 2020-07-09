@@ -13,7 +13,6 @@ pipeline {
         Bibbly = "Bibbles"
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
-        MY_STRING_PROPERTY='woohoo'
     }
     tools {
         jdk "zulu-8"
@@ -105,27 +104,22 @@ pipeline {
         }
         stage('Setup for MP TCK Runners') {
             steps {
-                setupDomain()
+                makeDomain()
             }
         }
         stage('Run MP TCK Tests') {
             steps {
-                sh "export MY_STRING_PROPERTY=woohoo"
-                sh "export my_string_property=haha"
-                sh "export MY_BOOLEAN_PROPERTY=true"
-                sh "export my_int_property=45"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh """mvn -B -V -ff -e clean verify \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
-                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,payara5"""
+                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara5"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 always {
                     zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'mp-tck-log.zip'
-                    teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -223,13 +217,17 @@ pipeline {
     }
 }
 
-void setupDomain() {
-    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+void makeDomain() {
     script{
         ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
         DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+}
+
+void setupDomain() {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    makeDomain()
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} start-database || true"
 }
