@@ -89,7 +89,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Integer minProperties;
     private List<String> required = new ArrayList<>();
     private SchemaType type;
-    private Schema not;
     private Map<String, Schema> properties = new HashMap<>();
     private String description;
     private String format;
@@ -104,6 +103,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private List<Object> enumeration = new ArrayList<>();
     private Discriminator discriminator;
 
+    private Schema not;
     private List<Schema> anyOf = new ArrayList<>();
     private List<Schema> allOf = new ArrayList<>();
     private List<Schema> oneOf = new ArrayList<>();
@@ -723,8 +723,106 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             applyReference(to, from.getRef());
             return;
         }
+        to.setDefaultValue(mergeProperty(to.getDefaultValue(), from.getDefaultValue(), override));
+        to.setTitle(mergeProperty(to.getTitle(), from.getTitle(), override));
+        if (from.getMultipleOf() != null && from.getMultipleOf().compareTo(BigDecimal.ZERO) > 0) {
+            to.setMultipleOf(mergeProperty(to.getMultipleOf(),
+                    from.getMultipleOf().stripTrailingZeros(), override));
+        }
+        if (from.getMaximum() != null) {
+            to.setMaximum(mergeProperty(to.getMaximum(), from.getMaximum(), override));
+        }
+        to.setExclusiveMaximum(mergeProperty(to.getExclusiveMaximum(), from.getExclusiveMaximum(), override));
+        if (from.getMinimum() != null) {
+            to.setMinimum(mergeProperty(to.getMinimum(), from.getMinimum(), override));
+        }
+        to.setExclusiveMinimum(mergeProperty(to.getExclusiveMinimum(), from.getExclusiveMinimum(), override));
+        to.setMaxLength(mergeProperty(to.getMaxLength(), from.getMaxLength(), override));
+        to.setMinLength(mergeProperty(to.getMinLength(), from.getMinLength(), override));
+        to.setPattern(mergeProperty(to.getPattern(), from.getPattern(), override));
+        to.setMaxItems(mergeProperty(to.getMaxItems(), from.getMaxItems(), override));
+        to.setMinItems(mergeProperty(to.getMinItems(), from.getMinItems(), override));
+        to.setUniqueItems(mergeProperty(to.getUniqueItems(), from.getUniqueItems(), override));
+        to.setMaxProperties(mergeProperty(to.getMaxProperties(), from.getMaxProperties(), override));
+        to.setMinProperties(mergeProperty(to.getMinProperties(), from.getMinProperties(), override));
+        if (from.getRequired() != null && !from.getRequired().isEmpty()) {
+            if (to.getRequired() == null) {
+                to.setRequired(new ArrayList<>());
+            }
+            for (String value : from.getRequired()) {
+                if (!to.getRequired().contains(value)) {
+                    to.addRequired(value);
+                }
+            }
+        }
         if (from.getType() != null) {
             to.setType(mergeProperty(to.getType(), from.getType(), override));
+        }
+        if (from.getProperties() != null && !from.getProperties().isEmpty()) {
+            if (to.getProperties() == null) {
+                to.setProperties(new HashMap<>());
+            }
+            for (String key : from.getProperties().keySet()) {
+                if (!to.getProperties().containsKey(key)) {
+                    to.addProperty(key, from.getProperties().get(key));
+                }
+            }
+        }
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setFormat(mergeProperty(to.getFormat(), from.getFormat(), override));
+        to.setNullable(mergeProperty(to.getNullable(), from.getNullable(), override));
+        to.setReadOnly(mergeProperty(to.getReadOnly(), from.getReadOnly(), override));
+        to.setWriteOnly(mergeProperty(to.getWriteOnly(), from.getWriteOnly(), override));
+        to.setExample(mergeProperty(to.getExample(), from.getExample(), override));
+        if (from.getExternalDocs() != null) {
+            if (to.getExternalDocs() == null) {
+                to.setExternalDocs(new ExternalDocumentationImpl());
+            }
+            ExternalDocumentationImpl.merge(from.getExternalDocs(), to.getExternalDocs(), override);
+        }
+        to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
+        if (from.getEnumeration() != null && from.getEnumeration().size() > 0) {
+            if (to.getEnumeration() == null) {
+                to.setEnumeration(new ArrayList<>());
+            }
+            for (Object value : from.getEnumeration()) {
+                if (!to.getEnumeration().contains(value)) {
+                    to.addEnumeration(value);
+                }
+            }
+        }
+        if (from.getDiscriminator() != null) {
+            if (to.getDiscriminator() == null) {
+                to.setDiscriminator(new DiscriminatorImpl());
+            }
+            Discriminator discriminator = to.getDiscriminator();
+            discriminator.setPropertyName(
+                    mergeProperty(discriminator.getPropertyName(), from.getDiscriminator().getPropertyName(), override)
+            );
+            for (Entry<String, String> mapping : from.getDiscriminator().getMapping().entrySet()) {
+                discriminator.addMapping(mapping.getKey(), mapping.getValue());
+            }
+        }
+        if (from.getNot() != null) {
+            to.setNot(from.getNot());
+        }
+        if (from.getAllOf() != null) {
+            if (to.getAllOf() == null) {
+                to.setAllOf(new ArrayList<>());
+            }
+            to.getAllOf().addAll(from.getAllOf());
+        }
+        if (from.getAnyOf() != null) {
+            if (to.getAnyOf() == null) {
+                to.setAnyOf(new ArrayList<>());
+            }
+            to.getAnyOf().addAll(from.getAnyOf());
+        }
+        if (from.getOneOf() != null) {
+            if (to.getOneOf() == null) {
+                to.setOneOf(new ArrayList<>());
+            }
+            to.getOneOf().addAll(from.getOneOf());
         }
         if (from instanceof SchemaImpl
                 && ((SchemaImpl) from).getImplementation() != null
@@ -760,94 +858,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 to.setRef(null);
             }
         }
-        if (from.getDiscriminator() != null) {
-            if (to.getDiscriminator() == null) {
-                to.setDiscriminator(new DiscriminatorImpl());
-            }
-            Discriminator discriminator = to.getDiscriminator();
-            discriminator.setPropertyName(
-                    mergeProperty(discriminator.getPropertyName(), from.getDiscriminator().getPropertyName(), override)
-            );
-            for (Entry<String, String> mapping : from.getDiscriminator().getMapping().entrySet()) {
-                discriminator.addMapping(mapping.getKey(), mapping.getValue());
-            }
-        }
-        to.setTitle(mergeProperty(to.getTitle(), from.getTitle(), override));
-        to.setDefaultValue(mergeProperty(to.getDefaultValue(), from.getDefaultValue(), override));
-        if (from.getEnumeration() != null && from.getEnumeration().size() > 0) {
-            if (to.getEnumeration() == null) {
-                to.setEnumeration(new ArrayList<>());
-            }
-            for (Object value : from.getEnumeration()) {
-                if (!to.getEnumeration().contains(value)) {
-                    to.addEnumeration(value);
-                }
-            }
-        }
-        if (from.getMultipleOf() != null && from.getMultipleOf().compareTo(BigDecimal.ZERO) > 0) {
-            to.setMultipleOf(mergeProperty(to.getMultipleOf(),
-                    from.getMultipleOf().stripTrailingZeros(), override));
-        }
-        if (from.getMaximum() != null) {
-            to.setMaximum(mergeProperty(to.getMaximum(), from.getMaximum(), override));
-        }
-        if (from.getMinimum() != null) {
-            to.setMinimum(mergeProperty(to.getMinimum(), from.getMinimum(), override));
-        }
-        to.setExclusiveMaximum(mergeProperty(to.getExclusiveMaximum(), from.getExclusiveMaximum(), override));
-        to.setExclusiveMinimum(mergeProperty(to.getExclusiveMinimum(), from.getExclusiveMinimum(), override));
-        to.setMaxLength(mergeProperty(to.getMaxLength(), from.getMaxLength(), override));
-        to.setMinLength(mergeProperty(to.getMinLength(), from.getMinLength(), override));
-        to.setMaxItems(mergeProperty(to.getMaxItems(), from.getMaxItems(), override));
-        to.setMinItems(mergeProperty(to.getMinItems(), from.getMinItems(), override));
-        to.setMaxProperties(mergeProperty(to.getMaxProperties(), from.getMaxProperties(), override));
-        to.setMinProperties(mergeProperty(to.getMinProperties(), from.getMinProperties(), override));
-        to.setUniqueItems(mergeProperty(to.getUniqueItems(), from.getUniqueItems(), override));
-        to.setPattern(mergeProperty(to.getPattern(), from.getPattern(), override));
-        if (from.getRequired() != null && !from.getRequired().isEmpty()) {
-            if (to.getRequired() == null) {
-                to.setRequired(new ArrayList<>());
-            }
-            for (String value : from.getRequired()) {
-                if (!to.getRequired().contains(value)) {
-                    to.addRequired(value);
-                }
-            }
-        }
-        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
-        to.setFormat(mergeProperty(to.getFormat(), from.getFormat(), override));
-        to.setNullable(mergeProperty(to.getNullable(), from.getNullable(), override));
-        to.setReadOnly(mergeProperty(to.getReadOnly(), from.getReadOnly(), override));
-        to.setWriteOnly(mergeProperty(to.getWriteOnly(), from.getWriteOnly(), override));
-        to.setExample(mergeProperty(to.getExample(), from.getExample(), override));
-        if (from.getExternalDocs() != null) {
-            if (to.getExternalDocs() == null) {
-                to.setExternalDocs(new ExternalDocumentationImpl());
-            }
-            ExternalDocumentationImpl.merge(from.getExternalDocs(), to.getExternalDocs(), override);
-        }
-        to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
-        if (from.getNot() != null) {
-            to.setNot(from.getNot());
-        }
-        if (from.getAllOf() != null) {
-            if (to.getAllOf() == null) {
-                to.setAllOf(new ArrayList<>());
-            }
-            to.getAllOf().addAll(from.getAllOf());
-        }
-        if (from.getAnyOf() != null) {
-            if (to.getAnyOf() == null) {
-                to.setAnyOf(new ArrayList<>());
-            }
-            to.getAnyOf().addAll(from.getAnyOf());
-        }
-        if (from.getOneOf() != null) {
-            if (to.getOneOf() == null) {
-                to.setOneOf(new ArrayList<>());
-            }
-            to.getOneOf().addAll(from.getOneOf());
-        }
+
     }
 
 }
