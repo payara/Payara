@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.impl;
 
+import fish.payara.micro.boot.PayaraMicroLauncher;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -262,6 +263,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public static PayaraMicroImpl getInstance(boolean create) {
         if (instance == null && create) {
             instance = new PayaraMicroImpl();
+            PayaraMicroLauncher.registerLaunchedInstance(instance);
         }
         return instance;
     }
