@@ -1077,6 +1077,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         visitSchema(schemaAnnotation, referenceClass, context);
                     } else if(referenceClassType instanceof ClassModel) {
                         apiWalker.processAnnotation((ClassModel)referenceClassType, this);
+                    } else {
+                        LOGGER.log(FINE, "Unrecognised schema {0} class found.", new Object[]{referenceClassName});
                     }
                 }
 

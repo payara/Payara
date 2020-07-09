@@ -196,27 +196,27 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     public OpenAPI getDocument() throws OpenAPIBuildException {
         if (mappings.isEmpty() || !isEnabled()) {
             return null;
-        } else if (mappings.size() == 1) {
+        }
+        if (mappings.size() == 1) {
             OpenAPI document = mappings.peekLast().getDocument();
-            if(document == null) {
-               document = mappings.peekLast().buildDocument();
+            if (document == null) {
+                document = mappings.peekLast().buildDocument();
             }
             return document;
-        } else {
-            List<OpenAPI> docs = new ArrayList<>();
-            for (OpenApiMapping mapping : mappings) {
-                if(mapping.getDocument() == null) {
-                    allDocuments = null;
-                    mapping.buildDocument();
-                }
-                docs.add(mapping.getDocument());
-            }
-            if(allDocuments == null) {
-                allDocuments = new OpenAPIImpl();
-                OpenAPIImpl.merge(allDocuments, docs, true);
-            }
-            return allDocuments;
         }
+        List<OpenAPI> docs = new ArrayList<>();
+        for (OpenApiMapping mapping : mappings) {
+            if (mapping.getDocument() == null) {
+                allDocuments = null;
+                mapping.buildDocument();
+            }
+            docs.add(mapping.getDocument());
+        }
+        if (allDocuments == null) {
+            allDocuments = new OpenAPIImpl();
+            OpenAPIImpl.merge(allDocuments, docs, true);
+        }
+        return allDocuments;
     }
 
     /**
