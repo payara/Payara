@@ -170,7 +170,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
     protected String getProductId() {
 
         String version = Version.getAbbreviatedVersion() + Version.getVersionPrefix() +
-                Version.getMajorVersion() + "." + Version.getMinorVersion();
+                Version.getMajorVersion() + "." + Version.getMinorVersion() + "." + Version.getUpdateVersion();
         return (version);
     }
 

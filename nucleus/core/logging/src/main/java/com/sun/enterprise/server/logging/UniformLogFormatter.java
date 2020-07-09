@@ -193,6 +193,8 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
                 sb.append(versionInfo.getMajorVersion());
                 sb.append('.');
                 sb.append(versionInfo.getMinorVersion());
+                sb.append('.');
+                sb.append(versionInfo.getUpdateVersion());
                 productId = sb.toString();
             }
         }
