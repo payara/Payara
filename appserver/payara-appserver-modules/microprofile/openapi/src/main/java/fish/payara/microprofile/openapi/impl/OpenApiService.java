@@ -60,7 +60,6 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -70,7 +69,6 @@ import javax.inject.Inject;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -91,9 +89,9 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toSet;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.classmodel.reflect.Type;
 
 @Service(name = "microprofile-openapi-service")
@@ -101,6 +99,8 @@ import org.glassfish.hk2.classmodel.reflect.Type;
 public class OpenApiService implements PostConstruct, PreDestroy, EventListener, ConfigListener {
 
     private static final Logger LOGGER = Logger.getLogger(OpenApiService.class.getName());
+
+    private OpenAPI allDocuments;
 
     private Deque<OpenApiMapping> mappings;
 
@@ -174,12 +174,14 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             if (isValidApp(appInfo)) {
                 // Store the application mapping in the list
                 mappings.add(new OpenApiMapping(appInfo));
+                allDocuments = null;
             }
         } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
             for (OpenApiMapping mapping : mappings) {
                 if (mapping.getAppInfo().equals(appInfo)) {
                     mappings.remove(mapping);
+                    allDocuments = null;
                     break;
                 }
             }
@@ -187,15 +189,34 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @return the document for the most recently deployed application. Creates
-     * one if it hasn't already been created.
+     * @return the document If multiple application deployed then merge all the
+     * documents. Creates one if it hasn't already been created.
      * @throws OpenAPIBuildException if creating the document failed.
      */
     public OpenAPI getDocument() throws OpenAPIBuildException {
         if (mappings.isEmpty() || !isEnabled()) {
             return null;
         }
-        return mappings.peekLast().getDocument();
+        if (mappings.size() == 1) {
+            OpenAPI document = mappings.peekLast().getDocument();
+            if (document == null) {
+                document = mappings.peekLast().buildDocument();
+            }
+            return document;
+        }
+        List<OpenAPI> docs = new ArrayList<>();
+        for (OpenApiMapping mapping : mappings) {
+            if (mapping.getDocument() == null) {
+                allDocuments = null;
+                mapping.buildDocument();
+            }
+            docs.add(mapping.getDocument());
+        }
+        if (allDocuments == null) {
+            allDocuments = new OpenAPIImpl();
+            OpenAPIImpl.merge(allDocuments, docs, true);
+        }
+        return allDocuments;
     }
 
     /**
@@ -240,34 +261,31 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         }
 
         private synchronized OpenAPI getDocument() throws OpenAPIBuildException {
-            if (document == null) {
-                document = buildDocument();
-            }
             return document;
         }
 
         private OpenAPI buildDocument() throws OpenAPIBuildException {
-            OpenAPI openapi = new OpenAPIImpl();
+            document = new OpenAPIImpl();
 
             try {
                 String contextRoot = getContextRoot(appInfo);
                 List<URL> baseURLs = getServerURL(contextRoot);
 
-                openapi = new ModelReaderProcessor().process(openapi, appConfig);
-                openapi = new FileProcessor(appInfo.getAppClassLoader()).process(openapi, appConfig);
-                openapi = new ApplicationProcessor(
+                document = new ModelReaderProcessor().process(document, appConfig);
+                document = new FileProcessor(appInfo.getAppClassLoader()).process(document, appConfig);
+                document = new ApplicationProcessor(
                         appInfo.getTypes(),
                         filterTypes(appInfo, appConfig),
                         appInfo.getAppClassLoader()
-                ).process(openapi, appConfig);
-                openapi = new BaseProcessor(baseURLs).process(openapi, appConfig);
-                openapi = new FilterProcessor().process(openapi, appConfig);
+                ).process(document, appConfig);
+                document = new BaseProcessor(baseURLs).process(document, appConfig);
+                document = new FilterProcessor().process(document, appConfig);
             } catch (Throwable t) {
                 throw new OpenAPIBuildException(t);
             }
 
             LOGGER.info("OpenAPI document created.");
-            return openapi;
+            return document;
         }
 
     }
