@@ -17,10 +17,10 @@
 -->
 
 <toc version="2.0">
-  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
-    <tocitem target="task-group-registration" text="Viewing the GlassFish Server Registration Page, Subscription Page, and Blog" expand="false">
-      <tocitem target="task-register" text="To View the Registration Page for GlassFish Server" expand="false"></tocitem>
-      <tocitem target="task-support" text="To View the GlassFish Server Blog" expand="false"></tocitem>
+  <tocitem target="tasks-topic-group" text="Payara Server Administration Console Tasks" expand="false">
+    <tocitem target="task-group-registration" text="Viewing the Payara Server Registration Page, Subscription Page, and Blog" expand="false">
+      <tocitem target="task-register" text="To View the Registration Page for Payara Server" expand="false"></tocitem>
+      <tocitem target="task-support" text="To View the Payara Server Blog" expand="false"></tocitem>
     </tocitem>
     <tocitem target="task-group-domain" text="Configuring and Managing the Domain" expand="false">
       <tocitem target="task-setadvancedomainattributes" text="To Set the Domain Attributes" expand="false"></tocitem>
@@ -96,7 +96,7 @@
       <tocitem target="task-adminusersedit" text="To Edit Admin Realm User Information" expand="false"></tocitem>
       <tocitem target="task-adminusersdelete" text="To Delete a User from the Admin Realm" expand="false"></tocitem>
     </tocitem>
-    <tocitem target="task-group-auditevents" text="Auditing GlassFish Server Events" expand="false">
+    <tocitem target="task-group-auditevents" text="Auditing Payara Server Events" expand="false">
       <tocitem target="task-auditmodulenew" text="To Create an Audit Module" expand="false"></tocitem>
       <tocitem target="task-auditmoduleedit" text="To Edit an Audit Module" expand="false"></tocitem>
       <tocitem target="task-auditmoduledelete" text="To Delete an Audit Module" expand="false"></tocitem>
@@ -110,7 +110,7 @@
       <tocitem target="task-jaccproviderdelete" text="To Delete a JACC Provider" expand="false"></tocitem>
     </tocitem>
     <tocitem target="task-group-messagesecurity" text="Configuring Message Security" expand="false">
-      <tocitem target="task-configmsgsecproviders" text="To Configure GlassFish Server Facilities for Use by Message Security Providers" expand="false"></tocitem>
+      <tocitem target="task-configmsgsecproviders" text="To Configure Payara Server Facilities for Use by Message Security Providers" expand="false"></tocitem>
       <tocitem target="task-messagesecurityconfignew" text="To Create a Message Security Configuration" expand="false"></tocitem>
       <tocitem target="task-messagesecurityconfigedit" text="To Edit a Message Security Configuration" expand="false"></tocitem>
       <tocitem target="task-messagesecurityconfigdelete" text="To Delete a Message Security Configuration" expand="false"></tocitem>
@@ -123,14 +123,14 @@
       <tocitem target="task-jmxconnectoredit" text="To Edit the JMX Connector" expand="false"></tocitem>
       <tocitem target="task-jmxconnectorssledit" text="To Edit SSL Settings for the JMX Connector" expand="false"></tocitem>
     </tocitem>
-    <tocitem target="task-group-monitor" text="Configuring GlassFish Server Monitoring" expand="false">
+    <tocitem target="task-group-monitor" text="Configuring Payara Server Monitoring" expand="false">
       <tocitem target="task-confmonitor" text="To Configure the Monitoring Service" expand="false"></tocitem>
     </tocitem>
     <tocitem target="task-group-resources" text="Configuring Resources" expand="false">
       <tocitem target="task-addresources" text="To Add Resources Configured in an XML File" expand="false"></tocitem>
     </tocitem>
   </tocitem>
-  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+  <tocitem target="ref-topic-group" text="Payara Server Administration Console Reference" expand="false">
     <tocitem target="ref-group-commontask-all" text="Common Tasks" expand="false">
       <tocitem target="ref-developercommontasks" text="Common Tasks" expand="false"></tocitem>
     </tocitem>

@@ -17,14 +17,14 @@
 -->
 
 <toc version="2.0">
-  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+  <tocitem target="tasks-topic-group" text="Payara Server Administration Console Tasks" expand="false">
     <tocitem target="task-group-configejbcontainer" text="Configuring the EJB Container" expand="false">
       <tocitem target="task-ejbmdbpoolsettings" text="To Configure MDB Pool Settings" expand="false"></tocitem>
       <tocitem target="task-ejbtimerservice" text="To Configure the EJB Timer Service" expand="false"></tocitem>
       <tocitem target="task-ejbcontaineravailability" text="To Configure Availability Settings for the EJB Container" expand="false"></tocitem>
     </tocitem>
   </tocitem>
-  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+  <tocitem target="ref-topic-group" text="Payara Server Administration Console Reference" expand="false">
     <tocitem target="ref-group-configuration" text="Configurations" expand="false">
       <tocitem target="ref-group-availabilityservice" text="Availability Service" expand="false">
         <tocitem target="ref-ejbcontaineravailability" text="EJB Container Availability" expand="false"></tocitem>

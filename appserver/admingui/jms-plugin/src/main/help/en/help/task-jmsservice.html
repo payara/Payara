@@ -46,20 +46,20 @@
 <ul>
 <li>
 <p>Select EMBEDDED to access the JMS service on the local host.</p>
-<p>The JMS service is started in the same JVM machine as GlassFish Server. Lazy initialization starts the default embedded broker on the first access of JMS services rather than at GlassFish Server startup. This is the default type of JMS Service.</p>
+<p>The JMS service is started in the same JVM machine as Payara Server. Lazy initialization starts the default embedded broker on the first access of JMS services rather than at Payara Server startup. This is the default type of JMS Service.</p>
 </li>
 <li>
 <p>Select LOCAL to access the JMS service on the local host.</p>
-<p>The JMS service is started along with GlassFish Server.</p>
+<p>The JMS service is started along with Payara Server.</p>
 </li>
 <li>
 <p>Select REMOTE to access the JMS service on another system or on a cluster.</p>
-<p>If you choose REMOTE, the JMS service is not started by GlassFish Server the next time the server starts. Instead, the JMS service is started and managed by Message Queue, so you must start the Message Queue broker separately. If you choose this value and are using a remote host, follow the instructions in <a href="task-jmshostedit.html">To Edit a JMS Host</a> to specify the name of the remote host.</p>
+<p>If you choose REMOTE, the JMS service is not started by Payara Server the next time the server starts. Instead, the JMS service is started and managed by Message Queue, so you must start the Message Queue broker separately. If you choose this value and are using a remote host, follow the instructions in <a href="task-jmshostedit.html">To Edit a JMS Host</a> to specify the name of the remote host.</p>
 </li>
 </ul>
 </li>
 <li>
-<p>In the Startup Timeout field, type the number of seconds GlassFish Server waits for the JMS service to start before aborting the startup.</p>
+<p>In the Startup Timeout field, type the number of seconds Payara Server waits for the JMS service to start before aborting the startup.</p>
 <p>On a slow or overloaded system, increase the value from the default. The default value is 60.</p>
 </li>
 <li>

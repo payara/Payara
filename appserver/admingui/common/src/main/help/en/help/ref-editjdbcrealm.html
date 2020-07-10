@@ -20,7 +20,7 @@
 
 <h4><a id="sthref204" name="sthref204"></a><a id="sthref205" name="sthref205"></a>Properties Specific to the <code>JDBCRealm</code> Class</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>To protect your web pages or web applications, you can set the security so that only registered users can access them. This is known as the authentication facility. This type of realm involves storing the credentials of your users inside a database. The GlassFish Server uses the database information and the enabled JDBC realm option inside the configuration file.</p>
+<p>To protect your web pages or web applications, you can set the security so that only registered users can access them. This is known as the authentication facility. This type of realm involves storing the credentials of your users inside a database. The Payara Server uses the database information and the enabled JDBC realm option inside the configuration file.</p>
 <p>The following properties are required for a JDBC realm.</p>
 <dl>
 <dt>JAAS Context</dt>
@@ -72,7 +72,7 @@
 
 <hr>
 <p><b>Note:</b></p>
-<p>In versions of GlassFish Server prior to 4.0, the default algorithm was <code>MD5</code>. If you have applications that depend on the <code>MD5</code> algorithm, you can override the default <code>SHA-25</code> algorithm by using the <code>asadmin set</code> subcommand:</p>
+<p>In versions of Payara Server prior to 4.0, the default algorithm was <code>MD5</code>. If you have applications that depend on the <code>MD5</code> algorithm, you can override the default <code>SHA-25</code> algorithm by using the <code>asadmin set</code> subcommand:</p>
 <pre>
 asadmin&gt; <b>set server.security-service.property.default-digest-algorithm=MD5</b>
 </pre>
@@ -80,7 +80,7 @@ asadmin&gt; <b>set server.security-service.property.default-digest-algorithm=MD5
 <pre>
 asadmin&gt; <b>get server.security-service.property.default-digest-algorithm</b>
 </pre>
-<p>Also note that, to maintain backward compatibility, if an upgrade is performed from GlassFish Server v2.<i>x</i> or v3.0.<i>x</i> to GlassFish Server 4.0, the default algorithm is automatically set to <code>MD5</code> in cases where the digest algorithm had not been explicitly set in the older GlassFish Server version.</p>
+<p>Also note that, to maintain backward compatibility, if an upgrade is performed from Payara Server v2.<i>x</i> or v3.0.<i>x</i> to Payara Server 4.0, the default algorithm is automatically set to <code>MD5</code> in cases where the digest algorithm had not been explicitly set in the older Payara Server version.</p>
 
 <hr>
 
