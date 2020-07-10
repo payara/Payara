@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -124,13 +124,14 @@ public class AddKeystoreEntryCommand extends AbstractRemoteCertificateManagement
         }
 
         try {
-            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder output = new StringBuilder();
 
-            nodeRunner.runAdminCommandOnNode(node, stringBuilder,
+            nodeRunner.runAdminCommandOnNode(node, output,
                     createAddToStoreCommand("add-to-keystore", node, new File(filePath), alias), context);
 
-            if (stringBuilder.toString().contains("Command add-to-keystore failed")) {
-                throw new CommandException();
+            String outputStr = output.toString();
+            if (outputStr.contains("Command add-to-keystore failed")) {
+                throw new CommandException(outputStr);
             }
         } catch (SSHCommandExecutionException | ProcessManagerException e) {
             throw new CommandException(e);
