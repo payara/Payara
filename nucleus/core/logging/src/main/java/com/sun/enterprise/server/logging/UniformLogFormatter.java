@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation]
 
 package com.sun.enterprise.server.logging;
 
@@ -193,6 +193,8 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
                 sb.append(versionInfo.getMajorVersion());
                 sb.append('.');
                 sb.append(versionInfo.getMinorVersion());
+                sb.append('.');
+                sb.append(versionInfo.getUpdateVersion());
                 productId = sb.toString();
             }
         }
