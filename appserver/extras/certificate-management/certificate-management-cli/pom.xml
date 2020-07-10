@@ -44,20 +44,64 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.extras</groupId>
-        <artifactId>extras</artifactId>
+        <groupId>fish.payara.extras.certificate-management</groupId>
+        <artifactId>certificate-management-parent</artifactId>
         <version>5.2020.3-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.extras.certificate-management</groupId>
-    <artifactId>certificate-management-parent</artifactId>
-    <packaging>pom</packaging>
-    <name>Payara Certificate Management Parent</name>
-    <description>Aggregator parent for Integrated Certificate Management</description>
+    <artifactId>certificate-management-cli</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>Payara Certificate Management CLI Commands</name>
+    <description>CLI Commands for generating and managing SSL/TLS certificates</description>
 
-    <modules>
-        <module>certificate-management-cli</module>
-        <module>certificate-management-admin</module>
-        <module>certificate-management-common</module>
-        <module>certificate-management-console-plugin</module>
-    </modules>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.1</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Class-Path>../../modules/certificate-management-common.jar</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.server.internal.admin</groupId>
+            <artifactId>admin-cli</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.admin</groupId>
+            <artifactId>server-mgmt</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.cluster</groupId>
+            <artifactId>cluster-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.cluster</groupId>
+            <artifactId>cluster-cli</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.extras.certificate-management</groupId>
+            <artifactId>certificate-management-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
