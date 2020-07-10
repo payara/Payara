@@ -44,12 +44,10 @@ import static org.junit.Assert.assertFalse;
 import java.util.Scanner;
 
 import org.junit.Test;
-import org.junit.Ignore;
 
 /**
  * Tests to run against the server log
  */
-@Ignore
 public class ServerLogTest extends RestManagementTest {
 
     /**
