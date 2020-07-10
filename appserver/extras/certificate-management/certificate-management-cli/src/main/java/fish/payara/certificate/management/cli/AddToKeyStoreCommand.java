@@ -66,6 +66,9 @@ public class AddToKeyStoreCommand extends AbstractCertManagementCommand {
 
     @Param(name = "file")
     private File file;
+    
+    @Param(name="reload", optional=true)
+    private boolean reload;
 
     @Param(name = "alias", primary = true)
     private String alias;
@@ -89,6 +92,10 @@ public class AddToKeyStoreCommand extends AbstractCertManagementCommand {
         parseKeyStore();
         addToKeyStore(file);
 
+        if (reload) {
+            restartHttpListeners();
+        }
+
         return CLIConstants.SUCCESS;
     }
 
@@ -98,6 +105,7 @@ public class AddToKeyStoreCommand extends AbstractCertManagementCommand {
             super(programOpts, env);
         }
 
+        @Override
         protected int executeCommand() throws CommandException {
             parseKeyStore();
 
@@ -116,7 +124,9 @@ public class AddToKeyStoreCommand extends AbstractCertManagementCommand {
             }
 
             addToKeyStore(file);
-
+            if (reload) {
+                restartHttpListeners();
+            }
             return CLIConstants.SUCCESS;
         }
     }

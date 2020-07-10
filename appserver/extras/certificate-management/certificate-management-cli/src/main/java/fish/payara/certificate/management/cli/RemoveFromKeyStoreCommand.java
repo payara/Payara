@@ -61,12 +61,14 @@ import java.util.logging.Logger;
 @PerLookup
 public class RemoveFromKeyStoreCommand extends AbstractCertManagementCommand {
 
-
     private static final Logger logger = Logger.getLogger(CLICommand.class.getPackage().getName());
 
+    @Param(name="reload", optional=true)
+    private boolean reload;
+    
     @Param(name = "alias", primary = true)
     private String alias;
-
+    
     @Override
     protected void validate() throws CommandException {
         userArgAlias = alias;
@@ -85,7 +87,11 @@ public class RemoveFromKeyStoreCommand extends AbstractCertManagementCommand {
 
         parseKeyStore();
         removeFromKeyStore();
-
+            
+        if (reload) {
+            restartHttpListeners();
+        }
+        
         return CLIConstants.SUCCESS;
     }
 
@@ -95,6 +101,7 @@ public class RemoveFromKeyStoreCommand extends AbstractCertManagementCommand {
             super(programOpts, env);
         }
 
+        @Override
         protected int executeCommand() throws CommandException {
             parseKeyStore();
 
@@ -113,6 +120,9 @@ public class RemoveFromKeyStoreCommand extends AbstractCertManagementCommand {
             }
 
             removeFromKeyStore();
+            if (reload) {
+                restartHttpListeners();
+            }
 
             return CLIConstants.SUCCESS;
         }

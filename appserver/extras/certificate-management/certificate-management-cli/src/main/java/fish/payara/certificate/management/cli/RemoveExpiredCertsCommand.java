@@ -63,6 +63,7 @@ import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.Param;
 
 /**
  * Command to remove all expired certificates from the target instance or listener's key and trust stores.
@@ -75,6 +76,9 @@ import java.util.logging.Logger;
 public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
 
     private static final Logger logger = Logger.getLogger(CLICommand.class.getPackage().getName());
+    
+    @Param(name="reload", optional=true)
+    private boolean reload;
 
     @Override
     protected int executeCommand() throws CommandException {
@@ -101,6 +105,10 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
             store.load(new FileInputStream(truststore), truststorePassword);
             filterExpiredKeys(store);
             save(store);
+            
+            if (reload) {
+                restartHttpListeners();
+            }
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
             throw new CommandException(ex);
         }
@@ -202,6 +210,9 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
                 store.load(new FileInputStream(truststore), truststorePassword);
                 filterExpiredKeys(store);
                 save(store);
+                if (reload) {
+                    restartHttpListeners();
+                }
             } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
                 throw new CommandException(ex);
             }

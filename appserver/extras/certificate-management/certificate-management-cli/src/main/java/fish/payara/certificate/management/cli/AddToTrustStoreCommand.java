@@ -66,6 +66,9 @@ public class AddToTrustStoreCommand extends AbstractCertManagementCommand {
 
     @Param(name = "file")
     private File file;
+    
+    @Param(name="reload", optional=true)
+    private boolean reload;
 
     @Param(name = "alias", primary = true)
     private String alias;
@@ -89,6 +92,10 @@ public class AddToTrustStoreCommand extends AbstractCertManagementCommand {
         parseTrustStore();
         addToTrustStore(file);
 
+        if (reload) {
+            restartHttpListeners();
+        }
+        
         return CLIConstants.SUCCESS;
     }
 
@@ -98,6 +105,7 @@ public class AddToTrustStoreCommand extends AbstractCertManagementCommand {
             super(programOpts, env);
         }
 
+        @Override
         protected int executeCommand() throws CommandException {
             parseTrustStore();
 
@@ -116,6 +124,9 @@ public class AddToTrustStoreCommand extends AbstractCertManagementCommand {
             }
 
             addToTrustStore(file);
+            if (reload) {
+                restartHttpListeners();
+            }
 
             return CLIConstants.SUCCESS;
         }

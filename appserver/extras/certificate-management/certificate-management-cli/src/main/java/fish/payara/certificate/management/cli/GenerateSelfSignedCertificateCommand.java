@@ -71,6 +71,9 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
 
     @Param(name = "alternativenames", optional = true, alias = "altnames", separator = ';')
     private String[] altnames;
+    
+    @Param(name="reload", optional=true)
+    private boolean reload;
 
     @Param(name = "alias", primary = true)
     private String alias;
@@ -105,6 +108,9 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
             addToTruststore();
         } catch (CommandException ce) {
             return CLIConstants.WARNING;
+        }
+        if (reload) {
+            restartHttpListeners();
         }
 
         return CLIConstants.SUCCESS;
@@ -196,7 +202,9 @@ public class GenerateSelfSignedCertificateCommand extends AbstractCertManagement
             } catch (CommandException ce) {
                 return CLIConstants.WARNING;
             }
-
+            if (reload) {
+                restartHttpListeners();
+            }
             return CLIConstants.SUCCESS;
         }
     }
