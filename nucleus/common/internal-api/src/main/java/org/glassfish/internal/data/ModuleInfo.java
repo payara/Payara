@@ -163,6 +163,10 @@ public class ModuleInfo {
         return name;
     }
 
+    public boolean isRunning() {
+        return started;
+    }
+
     public Properties getModuleProps() {
         Properties props =  new Properties();
         if (moduleProps != null) {

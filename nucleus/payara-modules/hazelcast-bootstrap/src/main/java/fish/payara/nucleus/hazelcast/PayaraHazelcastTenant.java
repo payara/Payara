@@ -44,13 +44,19 @@ import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
-import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
 
@@ -60,10 +66,16 @@ import org.glassfish.internal.deployment.Deployment;
  * @author lprimak
  */
 public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
-    private JavaEEContextUtil ctxUtil;
-    private EventListenerImpl destroyEventListener;
-    private Events events;
+    private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+    private final Events events = Globals.getDefaultHabitat().getService(Events.class);
+    private final InvocationManager invMgr = Globals.getDefaultHabitat().getService(InvocationManager.class);
+    private final Lock lock = new ReentrantLock();
+    private final Condition condition = lock.newCondition();
+    private static final Logger log = Logger.getLogger(PayaraHazelcastTenant.class.getName());
 
+    // serialized fields
+    private String moduleName;
+    private EventListenerImpl destroyEventListener;
 
     public PayaraHazelcastTenant(final DestroyEventContext event) {
         init(event);
@@ -71,22 +83,14 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     public PayaraHazelcastTenant() { } // de-serialization requirement
 
-    private void init() {
-        ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        events = Globals.getDefaultHabitat().getService(Events.class);
-    }
-
     private void init(DestroyEventContext event) {
-        init();
-        destroyEventListener = new EventListenerImpl(event,
-                Globals.getDefaultHabitat().getService(InvocationManager.class)
-                        .getCurrentInvocation().getModuleName());
+        moduleName = VersioningUtils.getUntaggedName(invMgr.getCurrentInvocation().getModuleName());
+        destroyEventListener = new EventListenerImpl(event);
     }
 
-    private void init(String componentId, DestroyEventContext destroyEvent, String moduleName) {
-        init();
+    private void init(String componentId, DestroyEventContext destroyEvent) {
         ctxUtil.setInstanceComponentId(componentId);
-        destroyEventListener = new EventListenerImpl(destroyEvent, moduleName);
+        destroyEventListener = new EventListenerImpl(destroyEvent);
     }
 
     @Override
@@ -108,16 +112,16 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
         out.writeUTF(ctxUtil.getInstanceComponentId());
+        out.writeUTF(moduleName);
         out.writeObject(destroyEventListener.destroyEvent);
-        out.writeUTF(destroyEventListener.moduleName);
     }
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
         String componentId = in.readUTF();
+        moduleName = in.readUTF();
         DestroyEventContext destroyEvent = in.readObject();
-        String moduleName = in.readUTF();
-        init(componentId, destroyEvent, moduleName);
+        init(componentId, destroyEvent);
     }
 
     @Override
@@ -127,24 +131,48 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public boolean isAvailable() {
-        return ctxUtil.isLoaded();
+        if (!ctxUtil.isRunning()) {
+            lock.lock();
+            try {
+                log.finest(String.format("WAITING: tenant not available: %s", ctxUtil.getInstanceComponentId()));
+                condition.await(50, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ex) {
+            } finally {
+                lock.unlock();
+            }
+            return false;
+        }
+        return true;
     }
 
-    private static class EventListenerImpl implements EventListener {
+    private class EventListenerImpl implements EventListener {
         private final DestroyEventContext destroyEvent;
-        private final String moduleName;
 
 
-        private EventListenerImpl(DestroyEventContext event, String moduleName) {
+        private EventListenerImpl(DestroyEventContext event) {
             this.destroyEvent = event;
-            this.moduleName = moduleName;
         }
 
         @Override
         public void event(EventListener.Event payaraEvent) {
-            if(payaraEvent.is(Deployment.MODULE_STOPPED)) {
-                if(((ModuleInfo)payaraEvent.hook()).getName().equals(moduleName)) {
+            log.warning(String.format("Event: %s, isLoaded = %b", payaraEvent.name(), ctxUtil.isLoaded())); // +++ REMOVE ME
+            if (payaraEvent.is(Deployment.MODULE_STARTED)) {
+                ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
+                if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
+                    log.warning(String.format("Running Event Module %s", ((ModuleInfo) payaraEvent.hook()).getName())); // +++ REMOVE ME
+                    log.warning(String.format("Event: %s, isLoaded = %b", payaraEvent.name(), ctxUtil.isLoaded())); // +++ REMOVE ME
+                    lock.lock();
+                    try {
+                        condition.signalAll();
+                    } finally {
+                        lock.unlock();
+                    }
+                }
+            } else if (payaraEvent.is(Deployment.MODULE_STOPPED)) {
+                ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
+                if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
                     // decouple the tenant classes from the event
+                    log.warning(String.format("Event: %s, isLoaded = %b", payaraEvent.name(), ctxUtil.isLoaded())); // +++ REMOVE ME
                     destroyEvent.tenantUnavailable(Globals.getDefaultHabitat().getService(HazelcastCore.class).getInstance());
                 }
             }

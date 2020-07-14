@@ -43,10 +43,12 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.Collection;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import java.util.HashMap;
 import javax.annotation.PostConstruct;
@@ -56,6 +58,9 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.data.ModuleInfo;
 import org.jboss.weld.context.bound.BoundRequestContext;
 import org.jvnet.hk2.annotations.Service;
 
@@ -69,6 +74,7 @@ import org.jvnet.hk2.annotations.Service;
 public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     private transient ServerContext serverContext;
     private transient ComponentEnvManager compEnvMgr;
+    private transient ApplicationRegistry appRegistry;
     private transient ComponentInvocation capturedInvocation;
     private String instanceComponentId;
     private static final String EMPTY_COMPONENT = "___EMPTY___";
@@ -78,7 +84,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     void init() {
         serverContext = Globals.getDefaultHabitat().getService(ServerContext.class);
         compEnvMgr = Globals.getDefaultHabitat().getService(ComponentEnvManager.class);
-
+        appRegistry = Globals.getDefaultHabitat().getService(ApplicationRegistry.class);
         doSetInstanceContext();
     }
 
@@ -190,8 +196,18 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     }
 
     @Override
-    public boolean isLoaded() {
-        return compEnvMgr.getJndiNameEnvironment(instanceComponentId) != null;
+    public boolean isRunning() {
+        JndiNameEnvironment env = compEnvMgr.getJndiNameEnvironment(instanceComponentId);
+        if (env != null) {
+            ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
+            Collection<ModuleInfo> modules = appInfo.getModuleInfos();
+            String moduleName = DOLUtils.getModuleName(env);
+            if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
+                    .anyMatch(moduleInfo -> !moduleInfo.isRunning())) {
+                return false;
+            }
+        }
+        return env != null;
     }
 
     @Override
