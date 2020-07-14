@@ -149,7 +149,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public void clearThreadContext() {
-        invMgr.popAllInvocations();
+        invMgr.putAllInvocations(null);
     }
 
     private void tenantUnavailable() {
