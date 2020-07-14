@@ -42,7 +42,7 @@ pipeline {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
-                    sh "mvn -B -V -ff -e clean install -PQuickBuild -DskipTests=true"
+                    sh "mvn -B -V -ff -e clean install -PQuickBuild -DskipTests=true,checkstyle.skip=true,cpd.skip=true,findbugs.skip=true,spotbugs.skip=true,pmd.skip=true,maven.javadoc.skip=true,maven.test.skip=true"
                 }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
