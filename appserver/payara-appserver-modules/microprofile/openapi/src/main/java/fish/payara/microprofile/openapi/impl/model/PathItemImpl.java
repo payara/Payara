@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,19 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.servers.Server;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
@@ -65,6 +68,12 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
     protected Operation trace;
     protected List<Server> servers = new ArrayList<>();
     protected List<Parameter> parameters = new ArrayList<>();
+
+    public static PathItem createInstance(AnnotationModel annotation, ApiContext context) {
+        PathItem from = new PathItemImpl();
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers());
+        return from;
+    }
 
     @Override
     public String getRef() {

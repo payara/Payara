@@ -3,6 +3,7 @@
 def pom
 def DOMAIN_NAME
 def payaraBuildNumber
+def rc
 pipeline {
     agent any
     options {
@@ -27,6 +28,13 @@ pipeline {
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
+
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Certificates Expiring Soon  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    rc = sh(returnStatus: true, script: "keytool -list -v -keystore \'${pwd()}/nucleus/admin/template/src/main/resources/config/cacerts.jks\' -storepass \'changeit\' | grep -E \"Valid from:.*`date +'%b' --date='+1 month'`.*`date +'%Y'`|`date +'%b'`.*`date +'%Y'`\"")
+                    if(rc != 1) {
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Certificates Expiring Soon  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
             }
         }
@@ -135,6 +143,7 @@ pipeline {
         }
         stage('Setup for EE8 Tests') {
             steps {
+                sh "rm -f -v *.zip"
                 setupDomain()
             }
         }
@@ -193,6 +202,7 @@ pipeline {
         }
         stage('Setup for EE7 Tests') {
             steps {
+                sh "rm -f -v *.zip"
                 setupDomain()
             }
         }

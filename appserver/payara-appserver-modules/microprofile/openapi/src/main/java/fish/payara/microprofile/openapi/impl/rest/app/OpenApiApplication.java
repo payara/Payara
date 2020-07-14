@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018--2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,17 +40,14 @@
 package fish.payara.microprofile.openapi.impl.rest.app;
 
 import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.OPEN_API_APPLICATION_PATH;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-
-import javax.ws.rs.ApplicationPath;
-
-import org.glassfish.jersey.server.ResourceConfig;
-
 import fish.payara.microprofile.openapi.impl.rest.app.provider.CorsHeadersFilter;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.QueryFormatFilter;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.writer.JsonWriter;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.writer.YamlWriter;
 import fish.payara.microprofile.openapi.impl.rest.app.service.OpenApiResource;
+import javax.ws.rs.ApplicationPath;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import org.glassfish.jersey.server.ResourceConfig;
 
 @ApplicationPath(OPEN_API_APPLICATION_PATH)
 public class OpenApiApplication extends ResourceConfig {

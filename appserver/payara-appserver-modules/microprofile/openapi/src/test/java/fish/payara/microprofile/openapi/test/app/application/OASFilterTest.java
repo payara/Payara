@@ -39,21 +39,18 @@
  */
 package fish.payara.microprofile.openapi.test.app.application;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
+import fish.payara.microprofile.openapi.test.util.JsonUtils;
 import static org.eclipse.microprofile.openapi.OASFactory.createObject;
-import static org.junit.Assert.assertEquals;
-
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
-import fish.payara.microprofile.openapi.test.util.JsonUtils;
 
 /**
  * In response to {@link https://github.com/payara/Payara/issues/3724} this tests checks that using a {@link OASFilter}

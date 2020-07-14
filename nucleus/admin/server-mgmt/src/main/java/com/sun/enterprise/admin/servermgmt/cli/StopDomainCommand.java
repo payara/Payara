@@ -46,6 +46,7 @@ import com.sun.enterprise.admin.cli.remote.DASUtils;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -95,10 +96,7 @@ public class StopDomainCommand extends LocalDomainCommand {
     protected void initDomain() throws CommandException {
         // only initialize local domain information if it's a local operation
 
-        // TODO Byron said in April 2013 that we should probably just check if
-        // NetUtils says that the getHost() --> isThisMe() rather than merely
-        // checking for the magic "localhost" string.  Too risky to fool with it today.
-        if (programOpts.getHost().equals(CLIConstants.DEFAULT_HOSTNAME)) {
+        if (NetUtils.isThisHostLocal(programOpts.getHost())) {
             super.initDomain();
         } else if (userArgDomainName != null) {  // remote case
             throw new CommandException(Strings.get("StopDomain.noDomainNameAllowed"));

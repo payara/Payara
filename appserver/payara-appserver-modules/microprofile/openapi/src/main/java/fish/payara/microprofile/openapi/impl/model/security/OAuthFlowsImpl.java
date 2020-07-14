@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,11 @@
  */
 package fish.payara.microprofile.openapi.impl.model.security;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
 import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthFlows {
 
@@ -53,6 +51,27 @@ public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthF
     private OAuthFlow password;
     private OAuthFlow clientCredentials;
     private OAuthFlow authorizationCode;
+
+    public static OAuthFlows createInstance(AnnotationModel annotation) {
+        OAuthFlows from = new OAuthFlowsImpl();
+        AnnotationModel implicitAnnotation = annotation.getValue("implicit", AnnotationModel.class);
+        if (implicitAnnotation != null) {
+            from.setImplicit(OAuthFlowImpl.createInstance(implicitAnnotation));
+        }
+        AnnotationModel passwordAnnotation = annotation.getValue("password", AnnotationModel.class);
+        if (passwordAnnotation != null) {
+            from.setPassword(OAuthFlowImpl.createInstance(passwordAnnotation));
+        }
+        AnnotationModel clientCredentialsAnnotation = annotation.getValue("clientCredentials", AnnotationModel.class);
+        if (clientCredentialsAnnotation != null) {
+            from.setClientCredentials(OAuthFlowImpl.createInstance(clientCredentialsAnnotation));
+        }
+        AnnotationModel authorizationCodeAnnotation = annotation.getValue("authorizationCode", AnnotationModel.class);
+        if (authorizationCodeAnnotation != null) {
+            from.setAuthorizationCode(OAuthFlowImpl.createInstance(authorizationCodeAnnotation));
+        }
+        return from;
+    }
 
     @Override
     public OAuthFlow getImplicit() {
@@ -94,29 +113,28 @@ public class OAuthFlowsImpl extends ExtensibleImpl<OAuthFlows> implements OAuthF
         this.authorizationCode = authorizationCode;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.security.OAuthFlows from, OAuthFlows to,
-            boolean override) {
+    public static void merge(OAuthFlows from, OAuthFlows to, boolean override) {
         if (from == null) {
             return;
         }
-        if (!isAnnotationNull(from.password())) {
+        if (from.getPassword() != null) {
             OAuthFlow flow = new OAuthFlowImpl();
-            OAuthFlowImpl.merge(from.password(), flow, override);
+            OAuthFlowImpl.merge(from.getPassword(), flow, override);
             to.setPassword(mergeProperty(to.getPassword(), flow, override));
         }
-        if (!isAnnotationNull(from.authorizationCode())) {
+        if (from.getAuthorizationCode() != null) {
             OAuthFlow flow = new OAuthFlowImpl();
-            OAuthFlowImpl.merge(from.authorizationCode(), flow, override);
+            OAuthFlowImpl.merge(from.getAuthorizationCode(), flow, override);
             to.setAuthorizationCode(mergeProperty(to.getAuthorizationCode(), flow, override));
         }
-        if (!isAnnotationNull(from.clientCredentials())) {
+        if (from.getClientCredentials() != null) {
             OAuthFlow flow = new OAuthFlowImpl();
-            OAuthFlowImpl.merge(from.clientCredentials(), flow, override);
+            OAuthFlowImpl.merge(from.getClientCredentials(), flow, override);
             to.setClientCredentials(mergeProperty(to.getClientCredentials(), flow, override));
         }
-        if (!isAnnotationNull(from.implicit())) {
+        if (from.getImplicit() != null) {
             OAuthFlow flow = new OAuthFlowImpl();
-            OAuthFlowImpl.merge(from.implicit(), flow, override);
+            OAuthFlowImpl.merge(from.getImplicit(), flow, override);
             to.setImplicit(mergeProperty(to.getImplicit(), flow, override));
         }
     }
