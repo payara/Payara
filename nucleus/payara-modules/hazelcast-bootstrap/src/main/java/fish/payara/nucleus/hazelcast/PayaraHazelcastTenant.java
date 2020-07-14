@@ -132,11 +132,6 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     }
 
     @Override
-    public void tenantUnavailable() {
-        ctxUtil.clearInstanceInvocation();
-    }
-
-    @Override
     public boolean isAvailable() {
         if (!ctxUtil.isRunning()) {
             lock.lock();
@@ -150,6 +145,15 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void clearThreadContext() {
+        invMgr.popAllInvocations();
+    }
+
+    private void tenantUnavailable() {
+        ctxUtil.clearInstanceInvocation();
     }
 
     private class EventListenerImpl implements EventListener {
@@ -176,6 +180,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
                 ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
                 if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
                     // decouple the tenant classes from the event
+                    tenantUnavailable();
                     destroyEvent.tenantUnavailable(Globals.getDefaultHabitat().getService(HazelcastCore.class).getInstance());
                 }
             }
