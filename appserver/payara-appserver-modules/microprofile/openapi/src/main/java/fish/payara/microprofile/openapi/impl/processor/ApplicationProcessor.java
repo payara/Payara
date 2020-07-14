@@ -42,7 +42,6 @@ package fish.payara.microprofile.openapi.impl.processor;
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
-import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
@@ -64,26 +63,17 @@ import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
-import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import static java.util.Collections.singleton;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import static java.util.stream.Collectors.toSet;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -97,7 +87,6 @@ import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.Style;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.ClassModel;
@@ -107,7 +96,6 @@ import org.glassfish.hk2.classmodel.reflect.FieldModel;
 import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.internal.data.ApplicationInfo;
 
 /**
  * A processor to parse the application for annotations, to add to the OpenAPI
@@ -1087,8 +1075,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     // Create the schema
                     if (context.isAllowedType(referenceClassType)) {
                         visitSchema(schemaAnnotation, referenceClass, context);
+                    } else if(referenceClassType instanceof ClassModel) {
+                        apiWalker.processAnnotation((ClassModel)referenceClassType, this);
                     } else {
-                        apiWalker.processAnnotations(singleton(referenceClassType), Schema.class, this::visitSchema);
+                        LOGGER.log(FINE, "Unrecognised schema {0} class found.", new Object[]{referenceClassName});
                     }
                 }
 

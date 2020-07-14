@@ -70,7 +70,7 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
             from.setType(SecurityScheme.Type.valueOf(type.getValue()));
         }
         from.setDescription(annotation.getValue("description", String.class));
-        from.setName(annotation.getValue("securitySchemeName", String.class));
+        from.setName(annotation.getValue("apiKeyName", String.class));
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
@@ -86,7 +86,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
             from.setFlows(OAuthFlowsImpl.createInstance(flowsAnnotation));
         }
         from.setOpenIdConnectUrl(annotation.getValue("openIdConnectUrl", String.class));
-        from.setApiKeyName(annotation.getValue("apiKeyName", String.class));
         return from;
     }
 
@@ -183,14 +182,6 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
         this.ref = ref;
     }
 
-    public String getApiKeyName() {
-        return apiKeyName;
-    }
-
-    public void setApiKeyName(String apiKeyName) {
-        this.apiKeyName = apiKeyName;
-    }
-
     public static void merge(SecurityScheme from, SecurityScheme to, boolean override) {
         if (from == null) {
             return;
@@ -201,10 +192,7 @@ public class SecuritySchemeImpl extends ExtensibleImpl<SecurityScheme> implement
             return;
         }
 
-        if (from instanceof SecuritySchemeImpl) {
-            to.setName(mergeProperty(to.getName(), ((SecuritySchemeImpl) from).getApiKeyName(), override));
-        }
-
+        to.setName(mergeProperty(to.getName(), from.getName(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
         to.setScheme(mergeProperty(to.getScheme(), from.getScheme(), override));
         to.setBearerFormat(mergeProperty(to.getBearerFormat(), from.getBearerFormat(), override));

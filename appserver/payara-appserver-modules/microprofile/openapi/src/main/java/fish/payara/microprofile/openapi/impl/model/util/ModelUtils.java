@@ -41,11 +41,9 @@ package fish.payara.microprofile.openapi.impl.model.util;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
-import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -54,7 +52,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -82,6 +79,7 @@ import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
+import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.ClassModel;
 import org.glassfish.hk2.classmodel.reflect.MethodModel;
@@ -598,57 +596,6 @@ public final class ModelUtils {
                 }
             }
         }
-    }
-
-    public static org.eclipse.microprofile.openapi.models.Operation getOperation(
-            MethodModel method,
-            OpenAPI api,
-            Map<String, Set<Type>> resourceMapping) {
-        String path = getResourcePath(method, resourceMapping);
-        if (path != null) {
-            PathItem pathItem = api.getPaths().getPathItem(path);
-            if (pathItem != null) {
-                PathItem.HttpMethod httpMethod = getHttpMethod(method);
-                return pathItem.getOperations().get(httpMethod);
-            }
-        }
-        return null;
-    }
-
-    public static String getResourcePath(Type declaration, Map<String, Set<Type>> resourceMapping) {
-        if (declaration instanceof MethodModel) {
-            return getResourcePath((MethodModel) declaration, resourceMapping);
-        } else if (declaration instanceof ClassModel) {
-            return getResourcePath((ClassModel) declaration, resourceMapping);
-        }
-        return null;
-    }
-
-    public static String getResourcePath(ClassModel clazz, Map<String, Set<Type>> resourceMapping) {
-        // If the class is a resource and contains a mapping
-        AnnotationInfo annotations = AnnotationInfo.valueOf(clazz);
-        if (annotations.isAnnotationPresent(Path.class)) {
-            for (Map.Entry<String, Set<Type>> entry : resourceMapping.entrySet()) {
-                if (entry.getValue() != null && entry.getValue().contains(clazz)) {
-                    return normaliseUrl(entry.getKey() + "/" + annotations.getAnnotationValue(Path.class));
-                }
-            }
-        }
-        return null;
-    }
-
-    public static String getResourcePath(MethodModel method, Map<String, Set<Type>> resourceMapping) {
-        AnnotationInfo annotations = AnnotationInfo.valueOf(method.getDeclaringType());
-        if (annotations.isAnyAnnotationPresent(method,
-                GET.class, POST.class, PUT.class, DELETE.class, HEAD.class, OPTIONS.class, PATCH.class)) {
-            if (annotations.isAnnotationPresent(Path.class, method)) {
-                // If the method is a valid resource
-                return normaliseUrl(getResourcePath(method.getDeclaringType(), resourceMapping) + "/"
-                        + annotations.getAnnotationValue(Path.class, method));
-            }
-            return normaliseUrl(getResourcePath(method.getDeclaringType(), resourceMapping));
-        }
-        return null;
     }
 
     public static String getSimpleName(String fqn) {

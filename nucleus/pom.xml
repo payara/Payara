@@ -121,7 +121,8 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.version>1.8</grizzly.npn.version>
+        <grizzly.npn.version>1.9.payara-p1</grizzly.npn.version>
+        <grizzly.npn.osgi.version>1.9</grizzly.npn.osgi.version>
 
         <!-- Microprofile -->
         <!-- JAX-RS -->
@@ -899,6 +900,12 @@ Parent is ${project.parent}</echo>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
                 <version>2.2</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>4.0.3</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

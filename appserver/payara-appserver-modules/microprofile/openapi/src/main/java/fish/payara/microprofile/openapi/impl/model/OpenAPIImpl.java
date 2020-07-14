@@ -46,6 +46,7 @@ import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.Components;
@@ -220,10 +221,18 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
         this.components = components;
     }
 
+    public static OpenAPI merge(OpenAPI parent, List<OpenAPI> children, boolean override) {
+        for (OpenAPI child : children) {
+            OpenAPIImpl.merge(child, parent, override, null);
+        }
+        return parent;
+    }
+
     public static void merge(OpenAPI from, OpenAPI to, boolean override, ApiContext context) {
         if (from == null) {
             return;
         }
+        to.setOpenapi(mergeProperty(to.getOpenapi(), from.getOpenapi(), override));
         // Handle @Info
         if (from.getInfo() != null) {
             if (to.getInfo() == null) {
@@ -277,6 +286,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
         }
         // Handle @Components
         ComponentsImpl.merge(from.getComponents(), to.getComponents(), override, context);
+        PathsImpl.merge(from.getPaths(), to.getPaths(), override);
     }
 
 }

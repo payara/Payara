@@ -48,42 +48,16 @@
         <artifactId>extras</artifactId>
         <version>5.2020.3-SNAPSHOT</version>
     </parent>
-    <artifactId>certificate-management</artifactId>
-    <packaging>glassfish-jar</packaging>
-    <name>Payara Certificate Management</name>
-    <description>Commands and Services for generating and managing SSL/TLS certificates</description>
+    <groupId>fish.payara.extras.certificate-management</groupId>
+    <artifactId>certificate-management-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>Payara Certificate Management Parent</name>
+    <description>Aggregator parent for Integrated Certificate Management</description>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.1</include>
-                </includes>
-            </resource>
-        </resources>
-    </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
-            <artifactId>admin-cli</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
-            <artifactId>server-mgmt</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.cluster</groupId>
-            <artifactId>cluster-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.cluster</groupId>
-            <artifactId>cluster-cli</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>certificate-management-cli</module>
+        <module>certificate-management-admin</module>
+        <module>certificate-management-common</module>
+        <module>certificate-management-console-plugin</module>
+    </modules>
 </project>
