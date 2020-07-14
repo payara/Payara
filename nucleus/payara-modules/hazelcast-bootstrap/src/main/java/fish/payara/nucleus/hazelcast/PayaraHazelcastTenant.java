@@ -106,7 +106,11 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public Closeable setTenant(boolean createRequestScope) {
-        return (createRequestScope? ctxUtil.pushRequestContext() : ctxUtil.pushContext())::close;
+        try {
+            return (createRequestScope? ctxUtil.pushRequestContext() : ctxUtil.pushContext())::close;
+        } catch (IllegalStateException exc) {
+            throw exc;
+        }
     }
 
     @Override
@@ -155,12 +159,9 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
         @Override
         public void event(EventListener.Event payaraEvent) {
-            log.warning(String.format("Event: %s, isLoaded = %b", payaraEvent.name(), ctxUtil.isRunning())); // +++ REMOVE ME
             if (payaraEvent.is(Deployment.MODULE_STARTED)) {
                 ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
                 if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
-                    log.warning(String.format("Running Event Module %s", ((ModuleInfo) payaraEvent.hook()).getName())); // +++ REMOVE ME
-                    log.warning(String.format("Event: %s, isLoaded = %b", payaraEvent.name(), ctxUtil.isRunning())); // +++ REMOVE ME
                     lock.lock();
                     try {
                         condition.signalAll();
@@ -172,7 +173,6 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
                 ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
                 if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
                     // decouple the tenant classes from the event
-                    log.warning(String.format("Event: %s, isLoaded = %b", payaraEvent.name(), ctxUtil.isRunning())); // +++ REMOVE ME
                     destroyEvent.tenantUnavailable(Globals.getDefaultHabitat().getService(HazelcastCore.class).getInstance());
                 }
             }
