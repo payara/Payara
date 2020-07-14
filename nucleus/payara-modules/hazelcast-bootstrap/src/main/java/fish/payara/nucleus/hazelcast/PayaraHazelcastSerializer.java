@@ -44,7 +44,10 @@ import org.glassfish.internal.api.JavaEEContextUtil;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import com.sun.enterprise.util.ExceptionUtil;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
@@ -54,6 +57,11 @@ import org.glassfish.internal.api.JavaEEContextUtil.Context;
  * @since 4.1.2.173
  */
 public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
+    private final JavaEEContextUtil ctxUtil;
+    private final StreamSerializer<Object> delegate;
+    private static final Logger log = Logger.getLogger(PayaraHazelcastSerializer.class.getName());
+
+
     @SuppressWarnings("unchecked")
     public PayaraHazelcastSerializer(JavaEEContextUtil ctxUtil, StreamSerializer<?> delegate) {
         this.ctxUtil = ctxUtil;
@@ -77,6 +85,15 @@ public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
         try (Context ctx = readerCtxUtil.setApplicationClassLoader()) {
             return delegate.read(in);
         }
+        catch(Throwable ex) {
+            if (ExceptionUtil.getRootCause(ex) instanceof ClassNotFoundException
+                    && (componentId == null || !readerCtxUtil.isRunning())) {
+                log.log(Level.FINE, "Unable to Deserialize - No tenant", ex);
+                return null;
+            } else {
+                throw ex;
+            }
+        }
     }
 
     @Override
@@ -88,7 +105,4 @@ public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
     public void destroy() {
         delegate.destroy();
     }
-
-    private final JavaEEContextUtil ctxUtil;
-    private final StreamSerializer<Object> delegate;
 }

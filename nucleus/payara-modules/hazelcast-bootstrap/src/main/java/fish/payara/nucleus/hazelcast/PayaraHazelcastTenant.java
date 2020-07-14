@@ -106,6 +106,9 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public Closeable setTenant(boolean createRequestScope) {
+        if (!ctxUtil.isRunning()) {
+            return () -> { };
+        }
         try {
             return (createRequestScope? ctxUtil.pushRequestContext() : ctxUtil.pushContext())::close;
         } catch (IllegalStateException exc) {
