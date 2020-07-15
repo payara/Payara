@@ -24,7 +24,7 @@
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
-        <docker.java.tag>8u232</docker.java.tag>
+        <docker.java.tag>8u252</docker.java.tag>
         <docker.java.image>${docker.java.repository}:${docker.java.tag}</docker.java.image>
 
         <docker.payara.domainName>production</docker.payara.domainName>
