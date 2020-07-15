@@ -149,7 +149,10 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public void clearThreadContext() {
-        invMgr.putAllInvocations(null);
+        if (!invMgr.isInvocationStackEmpty()) {
+            log.warning(() -> String.format("clearThreadContext - no-empty invocations: %s", invMgr.getAllInvocations().toString()));
+            invMgr.putAllInvocations(null);
+        }
     }
 
     private void tenantUnavailable() {
