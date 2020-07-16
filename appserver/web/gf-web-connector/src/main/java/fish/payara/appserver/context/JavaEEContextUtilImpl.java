@@ -110,6 +110,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     @Override
     public Context pushContext() {
         InvocationManager invMgr = serverContext.getInvocationManager();
+        if (!isCurrentInvocationPresentAndSame(invMgr) && !isRunning()) {
+            return new ContextImpl.Context(null, invMgr, null);
+        }
         boolean invocationCreated = pushContextToInvocationManager(invMgr);
         if(invocationCreated == false && capturedInvocation == null && instanceComponentId != null) {
             // invocation was not set because it didn't exist when the object got de-serialized
@@ -130,6 +133,31 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         return new ContextImpl.Context(invocationCreated? invMgr.getCurrentInvocation() : null, invMgr, oldClassLoader);
     }
 
+    private boolean pushContextToInvocationManager(InvocationManager invMgr) {
+        if (isCurrentInvocationPresentAndSame(invMgr)) {
+            return false;
+        }
+        if (invMgr.getCurrentInvocation() == null && capturedInvocation != null) {
+            ComponentInvocation newInvocation = capturedInvocation.clone();
+            newInvocation.clearRegistry();
+            invMgr.preInvoke(newInvocation);
+            return true;
+        }
+        return false;
+    }
+
+    private void doSetInstanceContext() {
+        capturedInvocation = serverContext.getInvocationManager().getCurrentInvocation();
+        if (capturedInvocation != null) {
+            capturedInvocation = capturedInvocation.clone();
+            instanceComponentId = capturedInvocation.getComponentId();
+        }
+        else if (instanceComponentId != null) {
+            // deserialized version
+            createInvocationContext();
+        }
+    }
+
     /**
      * pushes invocation context onto the stack
      * Also creates Request scope
@@ -139,6 +167,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     @Override
     public Context pushRequestContext() {
         Context rootCtx = pushContext();
+        if (!isCurrentInvocationPresentAndSame(serverContext.getInvocationManager()) && !isRunning()) {
+            return rootCtx;
+        }
         BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
         ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<>());
         if (context.ctx != null) {
@@ -222,23 +253,17 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         return this;
     }
 
-    private void doSetInstanceContext() {
-        capturedInvocation = serverContext.getInvocationManager().getCurrentInvocation();
-        if (capturedInvocation != null) {
-            capturedInvocation = capturedInvocation.clone();
-            instanceComponentId = capturedInvocation.getComponentId();
-        }
-        else if (instanceComponentId != null) {
-            // deserialized version
-            createInvocationContext();
-        }
-    }
-
-    private boolean pushContextToInvocationManager(InvocationManager invMgr) {
-        if (invMgr.getCurrentInvocation() == null && capturedInvocation != null) {
-            ComponentInvocation newInvocation = capturedInvocation.clone();
-            newInvocation.clearRegistry();
-            invMgr.preInvoke(newInvocation);
+    private boolean isCurrentInvocationPresentAndSame(InvocationManager invMgr) {
+        ComponentInvocation invocation = invMgr.getCurrentInvocation();
+        if (invocation != null) {
+            if (instanceComponentId == null || !instanceComponentId.equals(invocation.getComponentId())) {
+            } else {
+                return false;
+            }
+            if (capturedInvocation == null || !capturedInvocation.getComponentId().equals(invocation.getComponentId())) {
+            } else {
+                return false;
+            }
             return true;
         }
         return false;
