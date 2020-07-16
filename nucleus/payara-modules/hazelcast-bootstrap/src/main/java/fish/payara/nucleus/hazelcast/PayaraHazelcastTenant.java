@@ -56,6 +56,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Instance;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
@@ -74,6 +75,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     private static final Logger log = Logger.getLogger(PayaraHazelcastTenant.class.getName());
 
     // serialized fields
+    private Instance contextInstance;
     private String moduleName;
     private EventListenerImpl destroyEventListener;
 
@@ -84,12 +86,13 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     public PayaraHazelcastTenant() { } // de-serialization requirement
 
     private void init(DestroyEventContext event) {
+        contextInstance = ctxUtil.currentInvocation();
         moduleName = VersioningUtils.getUntaggedName(invMgr.getCurrentInvocation().getModuleName());
         destroyEventListener = new EventListenerImpl(event);
     }
 
     private void init(String componentId, DestroyEventContext destroyEvent) {
-        ctxUtil.setInstanceComponentId(componentId);
+        contextInstance = ctxUtil.fromComponentId(componentId);
         destroyEventListener = new EventListenerImpl(destroyEvent);
     }
 
@@ -107,7 +110,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     @Override
     public Closeable setTenant() {
         try {
-            return ctxUtil.pushRequestContext()::close;
+            return contextInstance.pushRequestContext()::close;
         } catch (IllegalStateException exc) {
             throw exc;
         }
@@ -115,7 +118,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
-        out.writeUTF(ctxUtil.getInstanceComponentId());
+        out.writeUTF(contextInstance.getInstanceComponentId());
         out.writeUTF(moduleName);
         out.writeObject(destroyEventListener.destroyEvent);
     }
@@ -130,10 +133,10 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public boolean isAvailable() {
-        if (!ctxUtil.isRunning()) {
+        if (!contextInstance.isRunning()) {
             lock.lock();
             try {
-                log.finest(String.format("WAITING: tenant not available: %s", ctxUtil.getInstanceComponentId()));
+                log.finest(String.format("WAITING: tenant not available: %s", contextInstance.getInstanceComponentId()));
                 condition.await(50, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ex) {
             } finally {
@@ -153,7 +156,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     }
 
     private void tenantUnavailable() {
-        ctxUtil.clearInstanceInvocation();
+        contextInstance.clearInstanceInvocation();
     }
 
     private class EventListenerImpl implements EventListener {

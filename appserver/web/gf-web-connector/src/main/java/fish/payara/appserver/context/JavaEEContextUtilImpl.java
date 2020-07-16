@@ -152,9 +152,12 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
                     .anyMatch(moduleInfo -> !moduleInfo.isLoaded())) {
                 return false;
             }
+            ensureCached();
+            ComponentInvocation newInvocation = cachedInvocation.clone();
+            invocationManager.preInvoke(newInvocation);
+            return new ContextImpl.Context(newInvocation, invocationManager,
+                    Utility.setContextClassLoader(getInvocationClassLoader()));
         }
-        return env != null;
-    }
 
     static boolean isLeaked(ComponentEnvManager compEnvMgr, ComponentInvocation cachedInvocation, String componentId) {
         if (cachedInvocation != null) {
