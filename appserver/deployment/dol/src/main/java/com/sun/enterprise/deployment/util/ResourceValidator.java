@@ -141,8 +141,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             parseResources(deploymentContext, application, appResources);
 
             // Ensure we have a valid component invocation before triggering lookups
-            contextUtil.setEmptyInvocation();
-            try (Context ctx = contextUtil.pushContext()) {
+            try (Context ctx = contextUtil.empty().pushContext()) {
                 validateResources(deploymentContext, application, appResources);
             }
         }

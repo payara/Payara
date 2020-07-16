@@ -45,9 +45,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.lang.reflect.Proxy;
 import java.util.Collection;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import java.util.HashMap;
@@ -55,7 +53,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.inject.spi.CDI;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -70,131 +67,41 @@ import org.jvnet.hk2.annotations.Service;
  * @author lprimak
  */
 @Service
-@PerLookup
-public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
-    private transient ServerContext serverContext;
-    private transient ComponentEnvManager compEnvMgr;
-    private transient ApplicationRegistry appRegistry;
-    private transient ComponentInvocation capturedInvocation;
-    private String instanceComponentId;
-    private static final String EMPTY_COMPONENT = "___EMPTY___";
-    private static final long serialVersionUID = 1L;
+public class JavaEEContextUtilImpl implements JavaEEContextUtil {
+    private ServerContext serverContext;
+    private ComponentEnvManager compEnvMgr;
+    private ApplicationRegistry appRegistry;
+    private InvocationManager invocationManager;
+
 
     @PostConstruct
     void init() {
         serverContext = Globals.getDefaultHabitat().getService(ServerContext.class);
         compEnvMgr = Globals.getDefaultHabitat().getService(ComponentEnvManager.class);
         appRegistry = Globals.getDefaultHabitat().getService(ApplicationRegistry.class);
-        doSetInstanceContext();
-    }
-
-    protected ServerContext getServerContext() {
-        return serverContext;
+        invocationManager = serverContext.getInvocationManager();
     }
 
     @Override
-    public String getInstanceComponentId() {
-        return instanceComponentId;
+    public Instance empty() {
+        return new InstanceImpl();
     }
 
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        init();
-    }
-
-    /**
-     * pushes Java EE invocation context
-     *
-     * @return the new context
-     */
     @Override
-    public Context pushContext() {
-        InvocationManager invMgr = serverContext.getInvocationManager();
-        if (!isCurrentInvocationPresentAndSame(invMgr) && !isRunning()) {
-            return new ContextImpl.Context(null, invMgr, null);
+    public Instance currentInvocation() {
+        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+        if (currentInvocation == null) {
+            throw new IllegalStateException("No Current Invocation present");
         }
-        boolean invocationCreated = pushContextToInvocationManager(invMgr);
-        if(invocationCreated == false && capturedInvocation == null && instanceComponentId != null) {
-            // invocation was not set because it didn't exist when the object got de-serialized
-            doSetInstanceContext();
-            if(capturedInvocation != null) {
-                invocationCreated = pushContextToInvocationManager(invMgr);
-            }
-        }
-        ClassLoader oldClassLoader = null;
-        if (invocationCreated) {
-            if (EMPTY_COMPONENT.equals(getInstanceComponentId())) {
-                oldClassLoader = Utility.getClassLoader();
-            }
-            else {
-                oldClassLoader = Utility.setContextClassLoader(getInvocationClassLoader());
-            }
-        }
-        return new ContextImpl.Context(invocationCreated? invMgr.getCurrentInvocation() : null, invMgr, oldClassLoader);
+        return new InstanceImpl(currentInvocation);
     }
 
-    private boolean pushContextToInvocationManager(InvocationManager invMgr) {
-        if (isCurrentInvocationPresentAndSame(invMgr)) {
-            return false;
-        }
-        if (invMgr.getCurrentInvocation() == null && capturedInvocation != null) {
-            ComponentInvocation newInvocation = capturedInvocation.clone();
-            newInvocation.clearRegistry();
-            invMgr.preInvoke(newInvocation);
-            return true;
-        }
-        return false;
-    }
-
-    private void doSetInstanceContext() {
-        capturedInvocation = serverContext.getInvocationManager().getCurrentInvocation();
-        if (capturedInvocation != null) {
-            capturedInvocation = capturedInvocation.clone();
-            instanceComponentId = capturedInvocation.getComponentId();
-        }
-        else if (instanceComponentId != null) {
-            // deserialized version
-            createInvocationContext();
-        }
-    }
-
-    /**
-     * pushes invocation context onto the stack
-     * Also creates Request scope
-     *
-     * @return new context that was created
-     */
     @Override
-    public Context pushRequestContext() {
-        Context rootCtx = pushContext();
-        if (!isCurrentInvocationPresentAndSame(serverContext.getInvocationManager()) && !isRunning()) {
-            return rootCtx;
+    public Instance fromComponentId(String componentId) {
+        if (componentId == null) {
+            throw new IllegalArgumentException("componentId cannot be null");
         }
-        BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
-        ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive()? null : brc, new HashMap<>());
-        if (context.ctx != null) {
-            context.ctx.associate(context.storage);
-            context.ctx.activate();
-        }
-        return context;
-    }
-
-    /**
-     * set context class loader by component ID
-     */
-    @Override
-    public Context setApplicationClassLoader() {
-        ClassLoader cl = null;
-        if (capturedInvocation != null && capturedInvocation.getJNDIEnvironment() != null) {
-            cl = getClassLoaderForEnvironment((JndiNameEnvironment)capturedInvocation.getJNDIEnvironment());
-        }
-        else if (instanceComponentId != null) {
-            cl = getClassLoaderForEnvironment(compEnvMgr.getJndiNameEnvironment(instanceComponentId));
-        }
-        if (cl != null) {
-            return new ContextImpl.ClassLoaderContext(Utility.setContextClassLoader(cl), true);
-        }
-        return new ContextImpl.ClassLoaderContext(null, false);
+        return new InstanceImpl(componentId);
     }
 
     @Override
@@ -204,97 +111,186 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     }
 
     @Override
-    public void setInstanceContext() {
-        instanceComponentId = null;
-        doSetInstanceContext();
-    }
-
-    @Override
-    public void setEmptyInvocation() {
-        instanceComponentId = EMPTY_COMPONENT;
-        capturedInvocation = createInvocation(null);
-    }
-
-    @Override
-    public void clearInstanceInvocation() {
-        capturedInvocation = null;
-    }
-
-    @Override
     public String getInvocationComponentId() {
         ComponentInvocation inv = serverContext.getInvocationManager().getCurrentInvocation();
         return inv != null? inv.getComponentId() : null;
     }
 
-    @Override
-    public boolean isRunning() {
-        JndiNameEnvironment env = compEnvMgr.getJndiNameEnvironment(instanceComponentId);
-        if (env != null) {
-            ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
-            Collection<ModuleInfo> modules = appInfo.getModuleInfos();
-            String moduleName = DOLUtils.getModuleName(env);
-            if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
-                    .anyMatch(moduleInfo -> !moduleInfo.isRunning())) {
-                return false;
-            }
-        }
-        return env != null;
-    }
-
-    @Override
-    public JavaEEContextUtil setInstanceComponentId(String componentId) {
-        this.instanceComponentId = componentId;
-        if (componentId != null) {
-            createInvocationContext();
-        }
-        else {
-            capturedInvocation = null;
-        }
-        return this;
-    }
-
-    private boolean isCurrentInvocationPresentAndSame(InvocationManager invMgr) {
-        ComponentInvocation invocation = invMgr.getCurrentInvocation();
-        if (invocation != null) {
-            if (instanceComponentId == null || !instanceComponentId.equals(invocation.getComponentId())) {
-            } else {
-                return false;
-            }
-            if (capturedInvocation == null || !capturedInvocation.getComponentId().equals(invocation.getComponentId())) {
-            } else {
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
-
     private ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {
         if (componentEnv instanceof BundleDescriptor) {
-            BundleDescriptor bd = (BundleDescriptor)componentEnv;
+            BundleDescriptor bd = (BundleDescriptor) componentEnv;
             return bd.getClassLoader();
         } else if (componentEnv instanceof EjbDescriptor) {
-            EjbDescriptor ed = (EjbDescriptor)componentEnv;
+            EjbDescriptor ed = (EjbDescriptor) componentEnv;
             return ed.getEjbBundleDescriptor().getClassLoader();
         }
         return null;
     }
 
-    private void createInvocationContext() {
-        JndiNameEnvironment jndiEnv = compEnvMgr.getJndiNameEnvironment(instanceComponentId);
-        if (jndiEnv != null) { // create invocation only for valid JNDI environment
-            capturedInvocation = createInvocation(jndiEnv);
-        }
-        else {
-            capturedInvocation = null;
-        }
-    }
-
-    private ComponentInvocation createInvocation(JndiNameEnvironment jndiEnv) {
+    private ComponentInvocation createInvocation(JndiNameEnvironment jndiEnv, String componentId) {
         ComponentInvocation newInvocation = new ComponentInvocation();
-        newInvocation.componentId = instanceComponentId;
+        newInvocation.componentId = componentId;
         newInvocation.setJNDIEnvironment(jndiEnv);
         newInvocation.setComponentInvocationType(ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION);
         return newInvocation;
+    }
+
+
+    public class InstanceImpl implements Instance {
+        private final String componentId;
+        private ComponentInvocation cachedInvocation;
+
+
+        /**
+         * empty invocation
+         */
+        private InstanceImpl() {
+            // empty
+            componentId = null;
+            checkState();
+        }
+
+        /**
+         * instance from  current invocation
+         *
+         * @param currentInvocation non-null current invocation
+         */
+        private InstanceImpl(ComponentInvocation currentInvocation) {
+            componentId = currentInvocation.getComponentId();
+            cachedInvocation = currentInvocation.clone();
+            cachedInvocation.clearRegistry();
+            checkState();
+        }
+
+        private InstanceImpl(String componentId) {
+            this.componentId = componentId;
+            checkState();
+        }
+
+        @Override
+        public Context pushContext() {
+            if (isEmpty()) {
+                return pushEmptyContext();
+            }
+            if (!isValidAndNotEmpty()) {
+                // same as invocation, or app not running
+                return new ContextImpl.Context(null, invocationManager, null);
+            }
+            ensureCached();
+            ComponentInvocation newInvocation = cachedInvocation.clone();
+            invocationManager.preInvoke(newInvocation);
+            return new ContextImpl.Context(newInvocation, invocationManager,
+                    Utility.setContextClassLoader(getInvocationClassLoader()));
+        }
+
+        private Context pushEmptyContext() {
+            JndiNameEnvironment env = (JndiNameEnvironment)Proxy.newProxyInstance(Utility.getClassLoader(),
+                    new Class[] { JndiNameEnvironment.class }, (proxy, method, args) -> null);
+            return new ContextImpl.Context(createInvocation(env, "___EMPTY___"),
+                    invocationManager, Utility.getClassLoader());
+        }
+
+        @Override
+        public Context pushRequestContext() {
+            Context rootCtx = pushContext();
+            if (!isValidAndNotEmpty()) {
+                return rootCtx;
+            }
+            BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
+            ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive() ? null : brc, new HashMap<>());
+            if (context.ctx != null) {
+                context.ctx.associate(context.storage);
+                context.ctx.activate();
+            }
+            return context;
+        }
+
+        @Override
+        public Context setApplicationClassLoader() {
+            ClassLoader cl = null;
+            if (cachedInvocation != null) {
+                cl = getClassLoaderForEnvironment((JndiNameEnvironment) cachedInvocation.getJNDIEnvironment());
+            } else if (componentId != null) {
+                cl = getClassLoaderForEnvironment(compEnvMgr.getJndiNameEnvironment(componentId));
+            }
+            if (cl != null) {
+                return new ContextImpl.ClassLoaderContext(Utility.setContextClassLoader(cl), true);
+            }
+            return new ContextImpl.ClassLoaderContext(null, false);
+        }
+
+        @Override
+        public String getInstanceComponentId() {
+            return componentId;
+        }
+
+        private void ensureCached() {
+            // empty objects not allowed
+            if (cachedInvocation != null) {
+                return;
+            }
+            JndiNameEnvironment jndiEnv = compEnvMgr.getJndiNameEnvironment(componentId);
+            if (jndiEnv != null) { // create invocation only for valid JNDI environment
+                cachedInvocation = createInvocation(jndiEnv, componentId);
+            } else {
+                throw new IllegalStateException(String.format("Cannot cache invocation: %s", componentId));
+            }
+            checkState();
+        }
+
+        @Override
+        public boolean isRunning() {
+            if (componentId == null) {
+                // empty component cannot be running
+                return false;
+            }
+            JndiNameEnvironment env = compEnvMgr.getJndiNameEnvironment(componentId);
+            if (env != null) {
+                ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
+                Collection<ModuleInfo> modules = appInfo.getModuleInfos();
+                String moduleName = DOLUtils.getModuleName(env);
+                if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
+                        .anyMatch(moduleInfo -> !moduleInfo.isRunning())) {
+                    return false;
+                }
+            }
+            return env != null;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return componentId == null;
+        }
+
+        @Override
+        public void clearInstanceInvocation() {
+            cachedInvocation = null;
+        }
+
+        private boolean isValidAndNotEmpty() {
+            return isCurrentInvocationPresentAndSame() || isRunning();
+        }
+
+        private boolean isCurrentInvocationPresentAndSame() {
+            ComponentInvocation invocation = invocationManager.getCurrentInvocation();
+            if (invocation != null) {
+                return componentId != null && componentId.equals(invocation.getComponentId());
+            } else {
+                return false;
+            }
+        }
+
+        private void checkState() {
+            if (componentId == null && cachedInvocation != null) {
+                // empty invocation
+                throw new IllegalStateException("Cannot have non-null cached invocation for an empty component");
+            }
+            if (cachedInvocation != null) {
+                // check for validity of cached invocation
+                if (cachedInvocation.getComponentId() == null || cachedInvocation.getJNDIEnvironment() == null) {
+                    throw new IllegalStateException("Invalid Cached Invocation - either componentID or JNDIEnvironment is null");
+                }
+            }
+        }
     }
 }

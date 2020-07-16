@@ -48,8 +48,8 @@ import com.sun.enterprise.util.ExceptionUtil;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
+import org.glassfish.internal.api.JavaEEContextUtil.Instance;
 
 /**
  *
@@ -79,15 +79,13 @@ public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
     @Override
     public Object read(ObjectDataInput in) throws IOException {
         String componentId = (String)delegate.read(in);
-        // cannot reuse common ctxUtil because this is a singleton and would cause threading issues
-        JavaEEContextUtil readerCtxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        readerCtxUtil.setInstanceComponentId(componentId);
-        try (Context ctx = readerCtxUtil.setApplicationClassLoader()) {
+        Instance context = componentId != null ? ctxUtil.fromComponentId(componentId) : ctxUtil.empty();
+        try (Context ctx = context.setApplicationClassLoader()) {
             return delegate.read(in);
         }
         catch(Throwable ex) {
             if (ExceptionUtil.getRootCause(ex) instanceof ClassNotFoundException
-                    && (componentId == null || !readerCtxUtil.isRunning())) {
+                    && (componentId == null || !context.isRunning())) {
                 log.log(Level.FINE, "Unable to Deserialize - No tenant", ex);
                 return null;
             } else {
