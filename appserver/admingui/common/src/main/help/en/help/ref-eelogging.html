@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -21,7 +22,7 @@
 
 <h4><a id="sthref192" name="sthref192"></a>Logger Settings</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the Logger Settings page to configure logging for the selected GlassFish Server instance or cluster.</p>
+<p>Use the Logger Settings page to configure logging for the selected Payara Server instance or cluster.</p>
 <p>The Logger Settings page contains the following options.</p>
 <dl>
 <dt>Load Defaults</dt>
@@ -42,7 +43,7 @@
 </dd>
 <dt>Rotation on Date Change</dt>
 <dd>
-<p>When enabled, GlassFish Server rotates log files every day at midnight. This option is disabled by default.</p>
+<p>When enabled, Payara Server rotates log files every day at midnight. This option is disabled by default.</p>
 </dd>
 <dt>Multiline Mode</dt>
 <dd>
@@ -62,7 +63,7 @@
 </dd>
 <dt>File Rotation Limit</dt>
 <dd>
-<p>The size in bytes that the server log file must reach before it is rotated. When the server log reaches the specified size, GlassFish Server creates a new, empty file named <code>server.log</code> and renames the old file <code>server.log_</code><i>date</i>, where <i>date</i> is the date and time when the file was rotated. The default value is 2 megabytes. The minimum value for the limit is 500 kilobytes; if you specify a lower value, the file rotates when it reaches 500 KB. To turn off log file rotation, set the value to 0.</p>
+<p>The size in bytes that the server log file must reach before it is rotated. When the server log reaches the specified size, Payara Server creates a new, empty file named <code>server.log</code> and renames the old file <code>server.log_</code><i>date</i>, where <i>date</i> is the date and time when the file was rotated. The default value is 2 megabytes. The minimum value for the limit is 500 kilobytes; if you specify a lower value, the file rotates when it reaches 500 KB. To turn off log file rotation, set the value to 0.</p>
 </dd>
 <dt>File Rotation Time Limit</dt>
 <dd>
@@ -74,7 +75,7 @@
 </dd>
 <dt>Maximum History Files</dt>
 <dd>
-<p>The maximum number of log files that GlassFish Server keeps before deleting the oldest file. If you set this value to zero (0), GlassFish Server does not delete any old log files.</p>
+<p>The maximum number of log files that Payara Server keeps before deleting the oldest file. If you set this value to zero (0), Payara Server does not delete any old log files.</p>
 </dd>
 <dt>Log File</dt>
 <dd>
@@ -82,7 +83,7 @@
 </dd>
 <dt>Log Handler</dt>
 <dd>
-<p>The absolute class name of a custom log handler. A custom log handler enables you to send logs to a destination other than <code>server.log</code> or <code>syslog</code>. The custom handler must extend the class <code>java.util.logging.Handler</code> (a JSR 047 compliant API). Put the handler class in the GlassFish Server classpath so that the handler is installed during server startup.</p>
+<p>The absolute class name of a custom log handler. A custom log handler enables you to send logs to a destination other than <code>server.log</code> or <code>syslog</code>. The custom handler must extend the class <code>java.util.logging.Handler</code> (a JSR 047 compliant API). Put the handler class in the Payara Server classpath so that the handler is installed during server startup.</p>
 </dd>
 </dl>
 <a id="GHCOM421" name="GHCOM421"></a>
@@ -120,3 +121,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

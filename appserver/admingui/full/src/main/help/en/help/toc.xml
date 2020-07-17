@@ -17,7 +17,7 @@
 -->
 
 <toc version="2.0">
-  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+  <tocitem target="tasks-topic-group" text="Payara Server Administration Console Tasks" expand="false">
     <tocitem target="task-group-batchjobexecutions" text="Viewing Batch Job Executions" expand="false">
       <tocitem target="task-viewbatchjobexecutions" text="To View Batch Job Executions" expand="false"></tocitem>
     </tocitem>
@@ -39,7 +39,7 @@
       <tocitem target="task-jndiexternalresourcedelete" text="To Delete an External JNDI Resource" expand="false"></tocitem>
     </tocitem>
   </tocitem>
-  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+  <tocitem target="ref-topic-group" text="Payara Server Administration Console Reference" expand="false">
     <tocitem target="ref-group-appservsettings" text="server (Admin Server)" expand="false">
       <tocitem target="ref-group-batchjobs" text="Batch" expand="false">
         <tocitem target="ref-batchjobslisting" text="Batch Job Executions" expand="false"></tocitem>

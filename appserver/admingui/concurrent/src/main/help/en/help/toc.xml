@@ -17,7 +17,7 @@
 -->
 
 <toc version="2.0">
-  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+  <tocitem target="tasks-topic-group" text="Payara Server Administration Console Tasks" expand="false">
     <tocitem target="task-group-jndiresources" text="Configuring Concurrent Resources" expand="false">
       <tocitem target="task-contextservicecreate" text="To Create a Context Service" expand="false"></tocitem>
       <tocitem target="task-contextserviceedit" text="To Edit a Context Service" expand="false"></tocitem>
@@ -33,7 +33,7 @@
       <tocitem target="task-managedscheduledexecutorservicedelete" text="To Delete a Managed Scheduled Executor Service" expand="false"></tocitem>
     </tocitem>
   </tocitem>
-  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+  <tocitem target="ref-topic-group" text="Payara Server Administration Console Reference" expand="false">
     <tocitem target="ref-group-resources" text="Resources" expand="false">
       <tocitem target="ref-group-concurrentresources" text="Concurrent Resources" expand="false">
         <tocitem target="ref-concurrentresources" text="Concurrent Resources" expand="false"></tocitem>

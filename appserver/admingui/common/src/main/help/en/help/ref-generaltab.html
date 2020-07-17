@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -21,26 +22,26 @@
 
 <h4><a id="sthref136" name="sthref136"></a><a id="sthref137" name="sthref137"></a>General Information</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The GlassFish Server creates one application server instance, called <code>server</code> at the time of installation. You can delete the server instance and create a new instance with a different name if you prefer.</p>
-<p>Each GlassFish Server instance has its own Java configuration, Java resources, application deployment areas, and server configuration settings. Changes to one application server instance have no effect on other application server instances. You can have one application server instance within one administrative domain.</p>
-<p>For many users, one application server instance meets their needs. However, depending upon your environment, you might want to create one or more additional application server instances. For example, in a development environment you can use different application server instances to test different GlassFish Server configurations, or to compare and test different application deployments. Because you can easily add or delete an application server instance, you can use them to create temporary "sandbox" areas to experiment with while developing.</p>
+<p>The Payara Server creates one application server instance, called <code>server</code> at the time of installation. You can delete the server instance and create a new instance with a different name if you prefer.</p>
+<p>Each Payara Server instance has its own Java configuration, Java resources, application deployment areas, and server configuration settings. Changes to one application server instance have no effect on other application server instances. You can have one application server instance within one administrative domain.</p>
+<p>For many users, one application server instance meets their needs. However, depending upon your environment, you might want to create one or more additional application server instances. For example, in a development environment you can use different application server instances to test different Payara Server configurations, or to compare and test different application deployments. Because you can easily add or delete an application server instance, you can use them to create temporary "sandbox" areas to experiment with while developing.</p>
 <p>In addition, for each application server instance you can also create virtual servers. Within a single installed application server instance you can offer companies or individuals domain names, IP Addresses, and some administration capabilities. For the users, it is almost as if they have their own web server, without the hardware and basic server maintenance. These virtual servers do not span application server instances.</p>
 <p>In operational deployments, for many purposes you can use virtual servers instead of multiple application server instances. However, if virtual servers do not meet your needs, you can also use multiple application server instances.</p>
-<p>An GlassFish Server instance is not started automatically. Once you start an instance, the instance runs until you stop it. When you stop an application server instance, it stops accepting new connections, then waits for all outstanding connections to complete. If your machine crashes or is taken offline, the server quits and any requests it was servicing may be lost.</p>
-<p>Use the General Information page to verify GlassFish Server settings and to view Java Virtual Machine data.</p>
+<p>An Payara Server instance is not started automatically. Once you start an instance, the instance runs until you stop it. When you stop an application server instance, it stops accepting new connections, then waits for all outstanding connections to complete. If your machine crashes or is taken offline, the server quits and any requests it was servicing may be lost.</p>
+<p>Use the General Information page to verify Payara Server settings and to view Java Virtual Machine data.</p>
 <p>The General Information page contains the following information.</p>
 <dl>
 <dt>Stop Button</dt>
 <dd>
-<p>Click the Stop button to stop the GlassFish Server.</p>
+<p>Click the Stop button to stop the Payara Server.</p>
 </dd>
 <dt>Restart Button</dt>
 <dd>
-<p>Click the Restart button to restart the GlassFish Server.</p>
+<p>Click the Restart button to restart the Payara Server.</p>
 </dd>
 <dt>View Log Files Button</dt>
 <dd>
-<p>Click the View Log Files button to view log files for a GlassFish Server instance or cluster.</p>
+<p>Click the View Log Files button to view log files for a Payara Server instance or cluster.</p>
 </dd>
 <dt>Rotate Log Button</dt>
 <dd>
@@ -112,3 +113,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

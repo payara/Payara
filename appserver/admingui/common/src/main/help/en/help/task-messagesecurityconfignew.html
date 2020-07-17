@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -20,7 +21,7 @@
 
 <h4><a id="sthref102" name="sthref102"></a>To Create a Message Security Configuration</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Normally, you do not need to create a message security configuration. GlassFish Server includes a message security configuration for the SOAP authentication layer. The providers for this configuration are not activated by default, but you can activate them by editing the SOAP message security configuration. You can, however, create a configuration for the HttpServlet authentication layer and specify one or more provider configurations for it.</p>
+<p>Normally, you do not need to create a message security configuration. Payara Server includes a message security configuration for the SOAP authentication layer. The providers for this configuration are not activated by default, but you can activate them by editing the SOAP message security configuration. You can, however, create a configuration for the HttpServlet authentication layer and specify one or more provider configurations for it.</p>
 <ol>
 <li>
 <p>In the navigation tree, expand the Configuration node.</p>
@@ -38,7 +39,7 @@
 
 <hr>
 <p><b>Note:</b></p>
-<p>It is not possible to create or delete message security providers for the default <code>server-config</code> configuration. The only message security providers that are supported for the default <code>server-config</code> are SOAP and HttpServlet. Because these two message providers are already created by default when GlassFish Server is installed, the New button is grayed out on the Message Security Configurations page for the default <code>server-config</code>.</p>
+<p>It is not possible to create or delete message security providers for the default <code>server-config</code> configuration. The only message security providers that are supported for the default <code>server-config</code> are SOAP and HttpServlet. Because these two message providers are already created by default when Payara Server is installed, the New button is grayed out on the Message Security Configurations page for the default <code>server-config</code>.</p>
 
 <hr>
 
@@ -78,14 +79,14 @@
 <li>
 <p>In the Additional Properties section, specify additional properties.</p>
 <p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
-<p>The GlassFish Server does not define any additional properties for message security configurations.</p>
+<p>The Payara Server does not define any additional properties for message security configurations.</p>
 </li>
 </ol>
 <a id="GHCOM310" name="GHCOM310"></a>
 <h5>See Also</h5>
 <ul>
 <li>
-<p><a href="task-configmsgsecproviders.html">To Configure GlassFish Server Facilities for Use by Message Security Providers</a></p>
+<p><a href="task-configmsgsecproviders.html">To Configure Payara Server Facilities for Use by Message Security Providers</a></p>
 </li>
 <li>
 <p><a href="task-messagesecurityconfigedit.html">To Edit a Message Security Configuration</a></p>
@@ -109,3 +110,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>
