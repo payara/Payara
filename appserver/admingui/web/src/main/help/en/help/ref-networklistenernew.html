@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -56,7 +57,7 @@
 <dt>Status</dt>
 <dd>
 <p>The status of the network listener. The listener can be enabled or disabled. This option is enabled by default. If the listener is disabled, any attempts to connect to the listener result in a socket exception (<code>java.net.ConnectException</code>).</p>
-<p>In GlassFish Server versions prior to 9.1, a listener whose enabled attribute was set to false returned a 404 response code for any requests sent to it. To achieve this behavior in the current GlassFish Server version, set the listener's status to enabled, and set every associated virtual server's state to OFF. A virtual server lists its associated listeners in its Network Listeners drop-down list.</p>
+<p>In Payara Server versions prior to 9.1, a listener whose enabled attribute was set to false returned a 404 response code for any requests sent to it. To achieve this behavior in the current Payara Server version, set the listener's status to enabled, and set every associated virtual server's state to OFF. A virtual server lists its associated listeners in its Network Listeners drop-down list.</p>
 </dd>
 <dt>Security</dt>
 <dd>
@@ -65,7 +66,7 @@
 </dd>
 <dt>JK Listener</dt>
 <dd>
-<p>If this option is selected, the listener supports Apache's <code>mod-jk</code> protocol. The <code>mod-jk</code> protocol is a proprietary communication/network protocol between Apache's <code>httpd</code> (web server) and an GlassFish Server back-end instance. If the listener supports this protocol, <code>httpd</code> is supposed to handle all static content, whereas any requests for dynamic resources (i.e., Servlets and JSPs) are routed to the <code>mod-jk</code> enabled network listener of the GlassFish Server, using the <code>mod-jk</code> protocol. This option is disabled by default.</p>
+<p>If this option is selected, the listener supports Apache's <code>mod-jk</code> protocol. The <code>mod-jk</code> protocol is a proprietary communication/network protocol between Apache's <code>httpd</code> (web server) and an Payara Server back-end instance. If the listener supports this protocol, <code>httpd</code> is supposed to handle all static content, whereas any requests for dynamic resources (i.e., Servlets and JSPs) are routed to the <code>mod-jk</code> enabled network listener of the Payara Server, using the <code>mod-jk</code> protocol. This option is disabled by default.</p>
 </dd>
 <dt>Port</dt>
 <dd>
@@ -77,7 +78,7 @@
 </dd>
 <dt>Thread Pool</dt>
 <dd>
-<p>The thread pool associated with the network listener. Normally, you select one of the two thread pools that are configured when you install the GlassFish Server.</p>
+<p>The thread pool associated with the network listener. Normally, you select one of the two thread pools that are configured when you install the Payara Server.</p>
 </dd>
 <dt>Transport</dt>
 <dd>
@@ -134,3 +135,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

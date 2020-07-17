@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -38,8 +39,8 @@
 <p>Stateful session bean</p>
 </li>
 </ul>
-<p>You can use the load balancer and multiple clusters to upgrade components in GlassFish Server without any loss of service. A component can be, for example, a JVM machine, the GlassFish Server software, or a web application.</p>
-<p>A rolling upgrade can take place under light to moderate loads. The procedure requires about 10-15 minutes for each GlassFish Server instance.</p>
+<p>You can use the load balancer and multiple clusters to upgrade components in Payara Server without any loss of service. A component can be, for example, a JVM machine, the Payara Server software, or a web application.</p>
+<p>A rolling upgrade can take place under light to moderate loads. The procedure requires about 10-15 minutes for each Payara Server instance.</p>
 <p>Applications must be compatible across the upgrade. They must work correctly during the transition when some instances are running the old version and other instances are running the new version. The old version and the new version must have the same shape of serializable classes that form object graphs that are stored in sessions (for example, nontransient instance variables). If the shape of these classes must change, the application developer must ensure that correct serialization behavior occurs. If the application is not compatible across the upgrade, the cluster must be stopped for a full redeployment.</p>
 <p>This approach is not possible if the application upgrade involves a change to the application database schema.</p>
 
@@ -122,3 +123,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

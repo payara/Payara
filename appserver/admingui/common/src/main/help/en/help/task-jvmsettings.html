@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -22,7 +23,7 @@
 <h4><a id="sthref66" name="sthref66"></a>To Configure the JVM General Settings</h4>
 <a name="BEGIN" id="BEGIN"></a>
 <p>The Java Virtual Machine (JVM) enables Java byte codes to run on a physical machine. Tuning the JVM settings improves performance and avoids memory allocation errors.</p>
-<p>The Java Virtual Machine is included in the Java Platform, Standard Edition (Java SE platform), which is required by the GlassFish Server. Incorrect JVM settings will prevent the server from running, so use care when changing these settings.</p>
+<p>The Java Virtual Machine is included in the Java Platform, Standard Edition (Java SE platform), which is required by the Payara Server. Incorrect JVM settings will prevent the server from running, so use care when changing these settings.</p>
 
 <hr>
 <p><b>Note:</b></p>
@@ -50,11 +51,11 @@
 </li>
 <li>
 <p>On the JVM General Settings page, in the Java Home field, type the name of the installation directory of the Java SE software.</p>
-<p>The GlassFish Server relies on the Java SE platform. If you enter a nonexistent directory name or the directory for an unsupported version of Java SE software, then GlassFish Server will not start.</p>
+<p>The Payara Server relies on the Java SE platform. If you enter a nonexistent directory name or the directory for an unsupported version of Java SE software, then Payara Server will not start.</p>
 </li>
 <li>
 <p>In the Javac Options field, type the command-line options for the Java programming language compiler.</p>
-<p>The GlassFish Server runs the compiler when Enterprise JavaBeans (EJB) components are deployed.</p>
+<p>The Payara Server runs the compiler when Enterprise JavaBeans (EJB) components are deployed.</p>
 </li>
 <li>
 <p>Select the Debug Enabled checkbox to enable debugging with the Java Platform Debugger Architecture (JPDA).</p>
@@ -66,7 +67,7 @@
 </li>
 <li>
 <p>In the RMI Compile Options field, type the command-line options for the <code>rmic</code> compiler.</p>
-<p>The GlassFish Server runs the <code>rmic</code> compiler when EJB components are deployed.</p>
+<p>The Payara Server runs the <code>rmic</code> compiler when EJB components are deployed.</p>
 </li>
 <li>
 <p>In the Bytecode Preprocessor field, type a list of class names.</p>
@@ -75,7 +76,7 @@
 <li>
 <p>In the Additional Properties section, specify additional properties.</p>
 <p>To add a property, click the Add Property button. In the blank row that appears, type the property name in the Name field, and type the property value in the Value field.</p>
-<p>The GlassFish Server does not define any additional properties for the JVM.</p>
+<p>The Payara Server does not define any additional properties for the JVM.</p>
 </li>
 <li>
 <p>Click Save.</p>
@@ -110,3 +111,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

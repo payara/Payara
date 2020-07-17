@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -23,7 +24,7 @@
 <p>The Group Management Service (GMS) is an in-process service that provides cluster monitoring, cluster membership, and group communication services. The GMS performs the following functions:</p>
 <ul>
 <li>
-<p>Notifies registered modules in a GlassFish Server instance when one or more member instances are added to or removed from a cluster, or are suspected or confirmed to have failed.</p>
+<p>Notifies registered modules in a Payara Server instance when one or more member instances are added to or removed from a cluster, or are suspected or confirmed to have failed.</p>
 </li>
 <li>
 <p>Provides the ability to send and receive messages between cluster members.</p>
@@ -53,7 +54,7 @@
 <li>
 <p>In the Bind Interface Address field, type the network interface address for the Group Management Service if there is more than one network interface.</p>
 <p>This setting enables you to configure which network interface is used for the GMS if there is more than one on any of the machines hosting the server instances in the cluster. This value must be a local network interface IP address. By default all public network interface addresses are used.</p>
-<p>To specify an address that is valid for all GlassFish Server instances in the cluster, use a system property to set the address individually for each instance.</p>
+<p>To specify an address that is valid for all Payara Server instances in the cluster, use a system property to set the address individually for each instance.</p>
 <p>For example, create the system property <code>GMS-BIND-INTERFACE-ADDRESS-</code><i>cluster-name</i> on the DAS. Then set this Bind Interface Address option to <code>${GMS-BIND-INTERFACE-ADDRESS-</code><i>cluster-name</i><code>}</code> to specify the system property. Finally, for each instance in the cluster, set the <code>GMS-BIND-INTERFACE-ADDRESS-</code><i>cluster-name</i> system property to the required network interface address on the instance's machine.</p>
 </li>
 <li>
@@ -87,3 +88,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

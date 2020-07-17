@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -33,7 +34,7 @@
 </dd>
 <dt>Migrate EJB Timers</dt>
 <dd>
-<p>Button to migrate Enterprise JavaBeans (EJB) technology timers to from a stopped GlassFish Server instance to a running instance in the cluster. Clicking this button opens the <a href="ref-migrateejbtimers.html">Migrate EJB Timers</a> page. If all instances in the cluster are running, this button is deactivated.</p>
+<p>Button to migrate Enterprise JavaBeans (EJB) technology timers to from a stopped Payara Server instance to a running instance in the cluster. Clicking this button opens the <a href="ref-migrateejbtimers.html">Migrate EJB Timers</a> page. If all instances in the cluster are running, this button is deactivated.</p>
 </dd>
 <dt>Rotate Log</dt>
 <dd>
@@ -53,7 +54,7 @@
 </dd>
 <dt>GMS</dt>
 <dd>
-<p>If this option is enabled, the Group Management Service (GMS) is started in each GlassFish Server instance in the cluster and in the domain administration server (DAS). The DAS participates in each cluster for which GMS is enabled. GMS provides cluster monitoring, cluster membership, and group communication services. This option is enabled by default.</p>
+<p>If this option is enabled, the Group Management Service (GMS) is started in each Payara Server instance in the cluster and in the domain administration server (DAS). The DAS participates in each cluster for which GMS is enabled. GMS provides cluster monitoring, cluster membership, and group communication services. This option is enabled by default.</p>
 </dd>
 <dt>Multicast Port</dt>
 <dd>
@@ -67,7 +68,7 @@
 <dd>
 <p>The Internet Protocol (IP) address of the network interface to which GMS binds. This option must specify the IP address of a local network interface. The default is all public network interface addresses.</p>
 <p>On a multihome machine, this option configures the network interface that used for the GMS. A multihome machine possesses two or more network interfaces.</p>
-<p>To specify an address that is valid for all GlassFish Server instances in the cluster, use a system property to set the address individually for each instance.</p>
+<p>To specify an address that is valid for all Payara Server instances in the cluster, use a system property to set the address individually for each instance.</p>
 <p>For example, use the <a href="ref-clustersystemproperties.html">Cluster System Properties</a> page to create the system property <code>GMS-BIND-INTERFACE-ADDRESS-</code><i>cluster-name</i>. Then set the Bind Address option in this page to <code>${GMS-BIND-INTERFACE-ADDRESS-</code><i>cluster-name</i><code>}</code> to specify the system property. Finally, for each instance in the cluster, set the <code>GMS-BIND-INTERFACE-ADDRESS-</code><i>cluster-name</i> system property to the required network interface address on the instance's machine.</p>
 </dd>
 <dt>Status</dt>
@@ -101,3 +102,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>
