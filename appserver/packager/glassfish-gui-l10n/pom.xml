@@ -182,11 +182,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>hipchat-notifier-console-plugin-l10n</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>jmx-monitoring-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
