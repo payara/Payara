@@ -66,7 +66,7 @@ public class PayaraValueHolder<T> implements Externalizable {
     
     public PayaraValueHolder(T value) throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-            oos.writeObject(Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).getInstanceComponentId());
+            oos.writeObject(Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).getInvocationComponentId());
             oos.writeObject(value);
             data = baos.toByteArray();
         }
@@ -81,7 +81,7 @@ public class PayaraValueHolder<T> implements Externalizable {
             return (T)result;
         }
         catch (ClassNotFoundException ex) {
-            String invocationComponentId = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).getInstanceComponentId();
+            String invocationComponentId = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).getInvocationComponentId();
             if (componentId == null){
                 componentId = "";
             }

@@ -202,7 +202,7 @@ public class TransactionScopedCDIUtil {
 
         private Class<?> beanClass;
         private InjectionTarget<Object> injectionTarget = null;
-        private final Optional<JavaEEContextUtil> ctxUtil;
+        private final Optional<JavaEEContextUtil.Instance> ctxUtil;
 
         public BeanWrapper(Class<?> beanClass) {
             this.beanClass = beanClass;
@@ -219,7 +219,7 @@ public class TransactionScopedCDIUtil {
             catch(MultiException e) {
                 log(e.getMessage());
             }
-            this.ctxUtil = ctxUtil;
+            this.ctxUtil = ctxUtil.map(util -> util.currentInvocation());
         }
 
         private void setInjectionTarget(InjectionTarget<Object> injectionTarget) {
