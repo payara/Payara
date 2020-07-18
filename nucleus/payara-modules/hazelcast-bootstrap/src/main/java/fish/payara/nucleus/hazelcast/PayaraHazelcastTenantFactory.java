@@ -39,9 +39,10 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import com.hazelcast.spi.tenantcontrol.TenantControlFactory;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
 
@@ -51,11 +52,23 @@ import org.glassfish.internal.api.JavaEEContextUtil;
  * @author lprimak
  */
 public class PayaraHazelcastTenantFactory implements TenantControlFactory {
+    private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+    private final InvocationManager invocationMgr = Globals.getDefaultHabitat().getService(InvocationManager.class);
+
     @Override
-    public TenantControl saveCurrentTenant(DestroyEventContext event) {
-        JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
-        if(ctxUtil.getInvocationComponentId() != null) {
-            return new PayaraHazelcastTenant(event);
+    public TenantControl saveCurrentTenant() {
+        if (ctxUtil.getInvocationComponentId() != null) {
+            ComponentInvocation invocation = invocationMgr.getCurrentInvocation();
+            PayaraHazelcastTenant tenantControl = invocation.getRegistryFor(PayaraHazelcastTenant.class);
+            if (tenantControl == null) {
+                tenantControl = new PayaraHazelcastTenant();
+                if (tenantControl.getContextInstance().isRunning()) {
+                    invocation.setRegistryFor(PayaraHazelcastTenant.class, tenantControl);
+                } else {
+                    return TenantControl.NOOP_TENANT_CONTROL;
+                }
+            }
+            return tenantControl;
         } else {
             return TenantControl.NOOP_TENANT_CONTROL;
         }

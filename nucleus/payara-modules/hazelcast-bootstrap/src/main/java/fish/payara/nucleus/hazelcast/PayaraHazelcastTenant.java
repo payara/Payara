@@ -45,6 +45,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -70,41 +71,36 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     private final Events events = Globals.getDefaultHabitat().getService(Events.class);
     private final InvocationManager invMgr = Globals.getDefaultHabitat().getService(InvocationManager.class);
+    private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final Lock lock = new ReentrantLock();
     private final Condition condition = lock.newCondition();
     private static final Logger log = Logger.getLogger(PayaraHazelcastTenant.class.getName());
 
+    // transient fields
+    private EventListenerImpl destroyEventListener;
+
     // serialized fields
     private Instance contextInstance;
     private String moduleName;
-    private EventListenerImpl destroyEventListener;
 
-    public PayaraHazelcastTenant(final DestroyEventContext event) {
-        init(event);
-    }
-
-    public PayaraHazelcastTenant() { } // de-serialization requirement
-
-    private void init(DestroyEventContext event) {
-        contextInstance = ctxUtil.currentInvocation();
-        moduleName = VersioningUtils.getUntaggedName(invMgr.getCurrentInvocation().getModuleName());
-        destroyEventListener = new EventListenerImpl(event);
-    }
-
-    private void init(String componentId, DestroyEventContext destroyEvent) {
-        contextInstance = ctxUtil.fromComponentId(componentId);
-        destroyEventListener = new EventListenerImpl(destroyEvent);
+    public PayaraHazelcastTenant() {
+        if (invMgr.getCurrentInvocation() != null) {
+            contextInstance = ctxUtil.currentInvocation();
+            moduleName = VersioningUtils.getUntaggedName(invMgr.getCurrentInvocation().getModuleName());
+        }
     }
 
     @Override
-    public void register() {
+    public void objectCreated(Optional<DestroyEventContext> destroyContext) {
+        destroyEventListener = new EventListenerImpl(destroyContext);
         events.register(destroyEventListener);
     }
 
     @Override
-    public void unregister() {
+    public void objectDestroyed() {
         // Hazelcast object has been destroyed
         events.unregister(destroyEventListener);
+        destroyEventListener = null;
     }
 
     @Override
@@ -120,15 +116,12 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     public void writeData(ObjectDataOutput out) throws IOException {
         out.writeUTF(contextInstance.getInstanceComponentId());
         out.writeUTF(moduleName);
-        out.writeObject(destroyEventListener.destroyEvent);
     }
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
-        String componentId = in.readUTF();
+        contextInstance = ctxUtil.fromComponentId(in.readUTF());
         moduleName = in.readUTF();
-        DestroyEventContext destroyEvent = in.readObject();
-        init(componentId, destroyEvent);
     }
 
     @Override
@@ -159,11 +152,15 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         contextInstance.clearInstanceInvocation();
     }
 
+    Instance getContextInstance() {
+        return contextInstance;
+    }
+
     private class EventListenerImpl implements EventListener {
-        private final DestroyEventContext destroyEvent;
+        private final Optional<DestroyEventContext> destroyEvent;
 
 
-        private EventListenerImpl(DestroyEventContext event) {
+        private EventListenerImpl(Optional<DestroyEventContext> event) {
             this.destroyEvent = event;
         }
 
@@ -184,7 +181,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
                 if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
                     // decouple the tenant classes from the event
                     tenantUnavailable();
-                    destroyEvent.tenantUnavailable(Globals.getDefaultHabitat().getService(HazelcastCore.class).getInstance());
+                    destroyEvent.ifPresent((DestroyEventContext ctx) -> ctx.tenantUnavailable(hzCore.getInstance()));
                 }
             }
         }
