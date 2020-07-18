@@ -57,8 +57,8 @@ public class PayaraHazelcastTenantFactory implements TenantControlFactory {
 
     @Override
     public TenantControl saveCurrentTenant() {
-        if (ctxUtil.getInvocationComponentId() != null) {
-            ComponentInvocation invocation = invocationMgr.getCurrentInvocation();
+        ComponentInvocation invocation = invocationMgr.getCurrentInvocation();
+        if (invocation != null) {
             PayaraHazelcastTenant tenantControl = invocation.getRegistryFor(PayaraHazelcastTenant.class);
             if (tenantControl == null) {
                 tenantControl = new PayaraHazelcastTenant();
