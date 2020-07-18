@@ -38,7 +38,7 @@
     holder.
 -->
 <toc version="2.0">
-  <tocitem target="reference/title" text="GlassFish Server Reference Manual" expand="false">
+  <tocitem target="reference/title" text="Payara Server Reference Manual" expand="false">
     <tocitem target="reference/add-library" text="add-library" expand="false"></tocitem>
     <tocitem target="reference/add-resources" text="add-resources" expand="false"></tocitem>
     <tocitem target="reference/appclient" text="appclient" expand="false"></tocitem>

@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -59,10 +60,10 @@
 </ul>
 </li>
 <li>
-<p>The name must be unique in the domain and must not be the name of a another cluster, a named configuration, a GlassFish Server instance, or a node.</p>
+<p>The name must be unique in the domain and must not be the name of a another cluster, a named configuration, a Payara Server instance, or a node.</p>
 </li>
 <li>
-<p>The name must not be <code>domain</code>, <code>server</code>, or any other keyword that is reserved by GlassFish Server.</p>
+<p>The name must not be <code>domain</code>, <code>server</code>, or any other keyword that is reserved by Payara Server.</p>
 </li>
 </ul>
 </dd>
@@ -82,12 +83,12 @@
 </dd>
 <dt>Message Queue Cluster Config Type</dt>
 <dd>
-<p>Use this option to specify the type of Message Queue broker cluster to use for the new GlassFish Server cluster. By default, GlassFish Server uses a conventional Message Queue broker cluster with a master broker, with a broker embedded in each of the instances in the GlassFish Server cluster.</p>
-<p>If this option is set to Custom, several additional options are displayed to configure the Message Queue broker cluster to use for the GlassFish Server cluster. See <a href="#CHDJFEJB">Options for Custom Message Queue Broker Clusters</a>.</p>
+<p>Use this option to specify the type of Message Queue broker cluster to use for the new Payara Server cluster. By default, Payara Server uses a conventional Message Queue broker cluster with a master broker, with a broker embedded in each of the instances in the Payara Server cluster.</p>
+<p>If this option is set to Custom, several additional options are displayed to configure the Message Queue broker cluster to use for the Payara Server cluster. See <a href="#CHDJFEJB">Options for Custom Message Queue Broker Clusters</a>.</p>
 </dd>
 <dt>Server Instances to be Created</dt>
 <dd>
-<p>A list of GlassFish Server instances that are to be created when the cluster is created. For each instance, the following information is provided:</p>
+<p>A list of Payara Server instances that are to be created when the cluster is created. For each instance, the following information is provided:</p>
 <dl>
 <dt>Instance Name</dt>
 <dd>
@@ -120,20 +121,20 @@
 </dl>
 <a id="CHDJFEJB" name="CHDJFEJB"></a>
 <h5>Options for Custom Message Queue Broker Clusters</h5>
-<p>When the Message Queue Cluster Config Type is set to Custom, the following options are displayed to configure the Message Queue broker cluster to use for the GlassFish Server cluster.</p>
+<p>When the Message Queue Cluster Config Type is set to Custom, the following options are displayed to configure the Message Queue broker cluster to use for the Payara Server cluster.</p>
 <dl>
 <dt>JMS Service Type</dt>
 <dd>
-<p>The type of brokers (called JMS hosts in GlassFish Server) to use in the broker cluster. The type chosen determines what types of broker clusters are available. The broker types are as follows.</p>
+<p>The type of brokers (called JMS hosts in Payara Server) to use in the broker cluster. The type chosen determines what types of broker clusters are available. The broker types are as follows.</p>
 <dl>
 <dt>Embedded</dt>
 <dd>
-<p>Broker configuration and lifecycle are managed by GlassFish Server. Each GlassFish clustered instance is serviced by a broker running in the same JVM as the instance.</p>
+<p>Broker configuration and lifecycle are managed by Payara Server. Each GlassFish clustered instance is serviced by a broker running in the same JVM as the instance.</p>
 <p>If the JMS Service Type option is set to Embedded, only conventional Message Queue broker clusters are supported. Options to configure the conventional cluster are displayed.</p>
 </dd>
 <dt>Local</dt>
 <dd>
-<p>Broker configuration and lifecycle are managed by GlassFish Server. Each GlassFish clustered instance is serviced by a broker running in a separate JVM on the same host as the instance.</p>
+<p>Broker configuration and lifecycle are managed by Payara Server. Each GlassFish clustered instance is serviced by a broker running in a separate JVM on the same host as the instance.</p>
 <p>If the JMS Service Type option is set to Local, both conventional and enhanced (highly available) Message Queue broker clusters are supported. Options to select the cluster type and to configure the cluster are displayed.</p>
 </dd>
 <dt>Remote</dt>
@@ -145,7 +146,7 @@
 </dd>
 <dt>JMS Cluster Type</dt>
 <dd>
-<p>The type of Message Queue broker cluster to use for the GlassFish Server cluster.</p>
+<p>The type of Message Queue broker cluster to use for the Payara Server cluster.</p>
 <p>If the JMS Cluster Type option is set to Conventional, the following options are displayed.</p>
 <dl>
 <dt>JMS Configuration Store Type</dt>
@@ -201,3 +202,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

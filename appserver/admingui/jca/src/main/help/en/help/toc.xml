@@ -17,7 +17,7 @@
 -->
 
 <toc version="2.0">
-  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+  <tocitem target="tasks-topic-group" text="Payara Server Administration Console Tasks" expand="false">
     <tocitem target="task-group-connectorresources" text="Managing Connector Resources" expand="false">
       <tocitem target="task-connectorresourcenew" text="To Create a Connector Resource" expand="false"></tocitem>
       <tocitem target="task-connectorresourceedit" text="To Edit a Connector Resource" expand="false"></tocitem>
@@ -47,7 +47,7 @@
       <tocitem target="task-connectionservice" text="To Configure the Connector Service" expand="false"></tocitem>
     </tocitem>
   </tocitem>
-  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+  <tocitem target="ref-topic-group" text="Payara Server Administration Console Reference" expand="false">
     <tocitem target="ref-group-resources" text="Resources" expand="false">
       <tocitem target="ref-group-connectorresources" text="Connectors" expand="false">
         <tocitem target="ref-connectors" text="Connectors" expand="false"></tocitem>

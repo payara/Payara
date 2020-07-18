@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -21,7 +22,7 @@
 
 <h4><a id="sthref74" name="sthref74"></a>Java Message Service</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the Java Message Service page to configure settings to be used by the default JMS provider, GlassFish Server Message Queue.</p>
+<p>Use the Java Message Service page to configure settings to be used by the default JMS provider, Payara Server Message Queue.</p>
 <p>The Java Message Service page contains the following options.</p>
 <dl>
 <dt>Load Defaults</dt>
@@ -42,21 +43,21 @@
 <dl>
 <dt>EMBEDDED</dt>
 <dd>
-<p>Access the JMS service on the local host. The JMS service is started in the same JVM machine as GlassFish Server. Lazy initialization starts the default embedded broker on the first access of JMS services rather than at GlassFish Server startup. This is the default type of JMS Service.</p>
+<p>Access the JMS service on the local host. The JMS service is started in the same JVM machine as Payara Server. Lazy initialization starts the default embedded broker on the first access of JMS services rather than at Payara Server startup. This is the default type of JMS Service.</p>
 </dd>
 <dt>LOCAL</dt>
 <dd>
-<p>Access the JMS service on the local host. The JMS provider is started along with the GlassFish Server.</p>
+<p>Access the JMS service on the local host. The JMS provider is started along with the Payara Server.</p>
 </dd>
 <dt>REMOTE</dt>
 <dd>
-<p>Access the JMS service on another system. If you choose REMOTE, the JMS service is not started by GlassFish Server the next time the server starts. Instead, the JMS service is started and managed by Message Queue, so you must start the Message Queue broker separately. If you choose this value and are using a remote host, follow the instructions in <a href="task-jmshostedit.html">To Edit a JMS Host</a> to specify the name of the remote host.</p>
+<p>Access the JMS service on another system. If you choose REMOTE, the JMS service is not started by Payara Server the next time the server starts. Instead, the JMS service is started and managed by Message Queue, so you must start the Message Queue broker separately. If you choose this value and are using a remote host, follow the instructions in <a href="task-jmshostedit.html">To Edit a JMS Host</a> to specify the name of the remote host.</p>
 </dd>
 </dl>
 </dd>
 <dt>Startup Timeout</dt>
 <dd>
-<p>The number of seconds GlassFish Server waits for the JMS service to start before aborting the startup. On a slow or overloaded system, increase the value from the default. The default value is 60.</p>
+<p>The number of seconds Payara Server waits for the JMS service to start before aborting the startup. On a slow or overloaded system, increase the value from the default. The default value is 60.</p>
 </dd>
 <dt>Start Arguments</dt>
 <dd>
@@ -80,8 +81,8 @@
 </dd>
 <dt>Master Broker</dt>
 <dd>
-<p>The name of the GlassFish Server clustered instance whose associated Message Queue broker is to be used as the master broker in the Message Queue broker cluster. Leave this field blank to enable GlassFish Server to designate a master broker automatically.</p>
-<p>If you change this value, you must restart the GlassFish Server cluster that uses the configuration.</p>
+<p>The name of the Payara Server clustered instance whose associated Message Queue broker is to be used as the master broker in the Message Queue broker cluster. Leave this field blank to enable Payara Server to designate a master broker automatically.</p>
+<p>If you change this value, you must restart the Payara Server cluster that uses the configuration.</p>
 </dd>
 <dt>Address List Behavior</dt>
 <dd>
@@ -132,3 +133,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>
