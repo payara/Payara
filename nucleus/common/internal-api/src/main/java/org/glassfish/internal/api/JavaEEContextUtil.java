@@ -66,13 +66,11 @@ public interface JavaEEContextUtil {
 
     /**
      *
-     * @param componentId component id for this instance
-     * if componentId is null, it will be equivalent of calling empty()
-     * which will create an empty instance
+     * @param componentId component id for this instance, non-null
      *
      * @return new instance based on componentId
      */
-    Instance fromComponentId(String componentId);
+    Instance fromComponentId(String componentId) throws IllegalArgumentException;
 
     /**
      * @return Class Loader that's associated with current invocation or null if
@@ -81,18 +79,18 @@ public interface JavaEEContextUtil {
     ClassLoader getInvocationClassLoader();
 
     /**
-     * @return component ID for the current invocation (not this instance), or
-     * null
+     * @return component ID for the current invocation or null
      */
     String getInvocationComponentId();
 
     /**
-     * specific, immutable instance of the context
+     * specific, immutable, thread-safe instance of the context
      */
     interface Instance {
         /**
          * pushes Java EE invocation context onto the invocation stack use
          * try-with-resources to pop the context
+         * no-op if non-running context
          *
          * @return the new context that was created
          */
@@ -101,6 +99,7 @@ public interface JavaEEContextUtil {
         /**
          * pushes invocation context onto the stack Also creates Request scope
          * use try-with-resources to pop the context
+         * no-op if non-running context
          *
          * @return new context that was created
          */
@@ -108,7 +107,7 @@ public interface JavaEEContextUtil {
 
         /**
          * set context class loader by component id of this instance
-         * for empty component, class loader remains unset and the
+         * for empty or unloaded component, class loader remains unset and the
          * context is a no-op (no re-set gets done) so it's a no-op
          *
          * @return context so class loader can be reset
@@ -121,7 +120,7 @@ public interface JavaEEContextUtil {
         String getInstanceComponentId();
 
         /**
-         * @return true if component is loaded / running
+         * @return true if component is loaded and running
          */
         boolean isRunning();
 

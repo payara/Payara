@@ -97,7 +97,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
     }
 
     @Override
-    public Instance fromComponentId(String componentId) {
+    public Instance fromComponentId(String componentId) throws IllegalArgumentException {
         if (componentId == null) {
             throw new IllegalArgumentException("componentId cannot be null");
         }
