@@ -87,6 +87,8 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         if (invMgr.getCurrentInvocation() != null) {
             contextInstance = ctxUtil.currentInvocation();
             moduleName = VersioningUtils.getUntaggedName(invMgr.getCurrentInvocation().getModuleName());
+        } else {
+            contextInstance = ctxUtil.empty();
         }
     }
 
@@ -120,7 +122,8 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
-        contextInstance = ctxUtil.fromComponentId(in.readUTF());
+        String componentId = in.readUTF();
+        contextInstance = componentId == null ? ctxUtil.empty() : ctxUtil.fromComponentId(componentId);
         moduleName = in.readUTF();
     }
 
@@ -130,7 +133,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
             lock.lock();
             try {
                 log.finest(String.format("WAITING: tenant not available: %s", contextInstance.getInstanceComponentId()));
-                condition.await(50, TimeUnit.MILLISECONDS);
+                condition.await(100, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ex) {
             } finally {
                 lock.unlock();

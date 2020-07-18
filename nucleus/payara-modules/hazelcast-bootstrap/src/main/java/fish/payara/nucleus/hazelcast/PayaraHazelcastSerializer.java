@@ -84,8 +84,7 @@ public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
             return delegate.read(in);
         }
         catch(Throwable ex) {
-            if (ExceptionUtil.getRootCause(ex) instanceof ClassNotFoundException
-                    && (componentId == null || !context.isRunning())) {
+            if (ExceptionUtil.getRootCause(ex) instanceof ClassNotFoundException && !context.isRunning()) {
                 log.log(Level.FINE, "Unable to Deserialize - No tenant", ex);
                 return null;
             } else {
