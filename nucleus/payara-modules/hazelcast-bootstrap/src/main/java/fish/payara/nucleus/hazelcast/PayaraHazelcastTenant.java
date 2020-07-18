@@ -64,7 +64,7 @@ import org.glassfish.internal.deployment.Deployment;
 
 /**
  * Java EE Context and class loading support for Hazelcast objects and thread-callbacks
- * 
+ *
  * @author lprimak
  */
 public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
