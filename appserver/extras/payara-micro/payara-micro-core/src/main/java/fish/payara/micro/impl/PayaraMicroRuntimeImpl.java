@@ -145,7 +145,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
         for (Entry<UUID,Future<ClusterCommandResult>> entry : commandResult.entrySet()) {
             UUID uuid = entry.getKey();
-            InstanceDescriptor id = instanceService.getDescriptor(uuid.toString());
+            InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
                 result.put(id, entry.getValue());
             }
@@ -174,7 +174,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
         for (Entry<UUID,Future<ClusterCommandResult>> entry : commandResult.entrySet()) {
             UUID uuid = entry.getKey();
-            InstanceDescriptor id = instanceService.getDescriptor(uuid.toString());
+            InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
                 result.put(id, entry.getValue());
             }
@@ -203,7 +203,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
         for (Entry<UUID, Future<T>> entry : runCallable.entrySet()) {
             UUID uuid = entry.getKey();
-            InstanceDescriptor id = instanceService.getDescriptor(uuid.toString());
+            InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
                 result.put(id, entry.getValue());
             }
@@ -238,7 +238,7 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
         for (Entry<UUID, Future<T>> entry : runCallable.entrySet()) {
             UUID uuid = entry.getKey();
-            InstanceDescriptor id = instanceService.getDescriptor(uuid.toString());
+            InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
                 result.put(id, entry.getValue());
             }

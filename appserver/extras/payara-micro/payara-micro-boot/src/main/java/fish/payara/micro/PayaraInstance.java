@@ -74,7 +74,7 @@ public interface PayaraInstance {
 
     Set<InstanceDescriptor> getClusteredPayaras();
 
-    InstanceDescriptor getDescriptor(String member);
+    InstanceDescriptor getDescriptor(UUID member);
 
     String getInstanceName();
 
