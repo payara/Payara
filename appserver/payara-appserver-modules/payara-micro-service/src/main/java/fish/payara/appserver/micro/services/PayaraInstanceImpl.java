@@ -366,7 +366,7 @@ public class PayaraInstanceImpl implements EventListener, MessageReceiver, Payar
     }
 
     @Override
-    public InstanceDescriptorImpl getDescriptor(String member) {
+    public InstanceDescriptorImpl getDescriptor(UUID member) {
         InstanceDescriptorImpl result = null;
         if (cluster.isEnabled()) {
             result = (InstanceDescriptorImpl) cluster.getClusteredStore().get(INSTANCE_STORE_NAME, member);
