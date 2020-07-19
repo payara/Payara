@@ -112,8 +112,14 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
 
     @Override
     public String getInvocationComponentId() {
-        ComponentInvocation inv = serverContext.getInvocationManager().getCurrentInvocation();
+        ComponentInvocation inv = invocationManager.getCurrentInvocation();
         return inv != null? inv.getComponentId() : null;
+    }
+
+    @Override
+    boolean isRunningInvocation() {
+        ComponentInvocation inv = invocationManager.getCurrentInvocation();
+        return inv != null ? isRunning(inv.getComponentId()) : false;
     }
 
     private ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {
@@ -133,6 +139,24 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         newInvocation.setJNDIEnvironment(jndiEnv);
         newInvocation.setComponentInvocationType(ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION);
         return newInvocation;
+    }
+
+    private boolean isRunning(String componentId) {
+        if (componentId == null) {
+            // empty component cannot be running
+            return false;
+        }
+        JndiNameEnvironment env = compEnvMgr.getJndiNameEnvironment(componentId);
+        if (env != null) {
+            ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
+            Collection<ModuleInfo> modules = appInfo.getModuleInfos();
+            String moduleName = DOLUtils.getModuleName(env);
+            if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
+                    .anyMatch(moduleInfo -> !moduleInfo.isRunning())) {
+                return false;
+            }
+        }
+        return env != null;
     }
 
 
@@ -244,21 +268,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
 
         @Override
         public boolean isRunning() {
-            if (componentId == null) {
-                // empty component cannot be running
-                return false;
-            }
-            JndiNameEnvironment env = compEnvMgr.getJndiNameEnvironment(componentId);
-            if (env != null) {
-                ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
-                Collection<ModuleInfo> modules = appInfo.getModuleInfos();
-                String moduleName = DOLUtils.getModuleName(env);
-                if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
-                        .anyMatch(moduleInfo -> !moduleInfo.isRunning())) {
-                    return false;
-                }
-            }
-            return env != null;
+            return JavaEEContextUtilImpl.this.isRunning(componentId);
         }
 
         @Override
