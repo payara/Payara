@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,15 +39,21 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class ExternalDocumentationImpl extends ExtensibleImpl<ExternalDocumentation> implements ExternalDocumentation {
 
     protected String description;
     protected String url;
+
+    public static ExternalDocumentation createInstance(AnnotationModel annotation) {
+        org.eclipse.microprofile.openapi.models.ExternalDocumentation from = new ExternalDocumentationImpl();
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setUrl(annotation.getValue("url", String.class));
+        return from;
+    }
 
     @Override
     public String getDescription() {
@@ -69,13 +75,16 @@ public class ExternalDocumentationImpl extends ExtensibleImpl<ExternalDocumentat
         this.url = url;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.ExternalDocumentation from, ExternalDocumentation to,
+    public static void merge(
+            ExternalDocumentation from,
+            ExternalDocumentation to,
             boolean override) {
-        if (isAnnotationNull(from)) {
+
+        if (from == null) {
             return;
         }
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setUrl(mergeProperty(to.getUrl(), from.url(), override));
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setUrl(mergeProperty(to.getUrl(), from.getUrl(), override));
     }
 
 }

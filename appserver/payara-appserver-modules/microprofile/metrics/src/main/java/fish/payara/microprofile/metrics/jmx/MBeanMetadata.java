@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,13 +45,12 @@ import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.KEY;
 import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SPECIFIER;
 import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRIBUTE;
 import java.util.ArrayList;
-import static java.util.Arrays.asList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import java.util.Optional;
-import java.util.Set;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -73,64 +72,39 @@ public class MBeanMetadata implements Metadata {
 
     @XmlElement
     private boolean dynamic = true;
-    
+
     @XmlElement
     private String name;
-    
+
     @XmlElement
     private String displayName;
-    
+
     @XmlElement
     private String description;
-    
+
     @XmlElement
     private String unit;
-    
+
     @XmlElement
     private String type;
-    
+
     @XmlElement
     private boolean reusable;
 
     @XmlTransient
     private Boolean valid;
-    
+
     @XmlElementWrapper(name = "tags", nillable = true)
     @XmlElement(name="tag")
     private List<XmlTag> tags;
-    
 
-    private static final Set<String> SUPPORTED_UNITS
-            = new HashSet<>(asList(
-                    MetricUnits.NONE,
-                    MetricUnits.BITS,
-                    MetricUnits.KILOBITS,
-                    MetricUnits.MEGABITS,
-                    MetricUnits.GIGABITS,
-                    MetricUnits.KIBIBITS,
-                    MetricUnits.MEBIBITS,
-                    MetricUnits.GIBIBITS,
-                    MetricUnits.BYTES,
-                    MetricUnits.KILOBYTES,
-                    MetricUnits.MEGABYTES,
-                    MetricUnits.GIGABYTES,
-                    MetricUnits.NANOSECONDS,
-                    MetricUnits.MICROSECONDS,
-                    MetricUnits.MILLISECONDS,
-                    MetricUnits.SECONDS,
-                    MetricUnits.MINUTES,
-                    MetricUnits.HOURS,
-                    MetricUnits.DAYS,
-                    MetricUnits.PERCENT,
-                    MetricUnits.PER_SECOND
-            ));
 
     public MBeanMetadata() {
     }
-    
+
     public MBeanMetadata(Metadata metadata) {
         this(null, metadata.getName(), metadata.getDisplayName(), metadata.getDescription().orElse(null), metadata.getTypeRaw(), metadata.getUnit().orElse(null));
-        
+
     }
 
     public MBeanMetadata(String mBean, String name, String displayName, String description, MetricType typeRaw, String unit) {
@@ -165,34 +139,34 @@ public class MBeanMetadata implements Metadata {
         }
         return valid;
     }
-    
+
     List<XmlTag> getTags() {
         if (tags == null) {
             tags = new ArrayList<>();
         }
         return tags;
     }
-    
+
     @Override
     public String getName() {
         return name;
     }
-    
+
     @Override
     public String getDisplayName() {
         return displayName;
     }
-    
+
     @Override
     public Optional<String> getUnit() {
         return Optional.ofNullable(unit);
     }
-    
+
     @Override
     public Optional<String> getDescription() {
         return Optional.ofNullable(description);
     }
-    
+
     @Override
     public String getType() {
         return type;
@@ -259,11 +233,11 @@ public class MBeanMetadata implements Metadata {
     public boolean isReusable() {
         return reusable;
     }
-    
+
     public void setTags(List<XmlTag> tags) {
         this.tags = tags;
     }
-    
+
     public void addTags(List<XmlTag> tags) {
         if (this.tags == null) {
             this.tags = new ArrayList<>();
@@ -271,4 +245,31 @@ public class MBeanMetadata implements Metadata {
         this.tags.addAll(tags);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, displayName, description, unit, type, reusable);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Metadata)) {
+            return false;
+        }
+        Metadata that = (Metadata) o;
+
+        //Retrieve the Optional value or set to the "defaults" if empty
+        String thatDescription = (that.getDescription().isPresent()) ? that.getDescription().get() : null;
+        String thatUnit = (that.getUnit().isPresent()) ? that.getUnit().get() : MetricUnits.NONE;
+
+        //Need to use this.getDisplayname() and this.getTypeRaw() for the Optional.orElse() logic
+        return Objects.equals(name, that.getName()) &&
+                Objects.equals(this.getDisplayName(), that.getDisplayName()) &&
+                Objects.equals(description, thatDescription) &&
+                Objects.equals(unit, thatUnit) &&
+                Objects.equals(this.getTypeRaw(), that.getTypeRaw()) &&
+                Objects.equals(reusable, that.isReusable());
+    }
 }

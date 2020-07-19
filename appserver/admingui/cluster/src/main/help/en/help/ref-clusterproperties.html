@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -49,15 +50,15 @@
 <p>Button to delete one or more selected properties. Any property that is deleted reverts to its default value or, if no default value is set, is undefined.</p>
 </dd>
 </dl>
-<p>GlassFish Server defines the following cluster properties:</p>
+<p>Payara Server defines the following cluster properties:</p>
 <dl>
 <dt><code>GMS_DISCOVERY_URI_LIST</code></dt>
 <dd>
-<p>The locations of GlassFish Server instances in the cluster to use for discovering the cluster. This property is required only if the Group Management Service (GMS) is not using multicast for broadcasting messages.</p>
+<p>The locations of Payara Server instances in the cluster to use for discovering the cluster. This property is required only if the Group Management Service (GMS) is not using multicast for broadcasting messages.</p>
 <p>Valid values for this property are as follows:</p>
 <ul>
 <li>
-<p>A comma-separated list of uniform resource identifiers (URIs). Each URI must locate a GlassFish Server instance or the DAS. This format is required if multiple GlassFish Server instances are running on the same host.</p>
+<p>A comma-separated list of uniform resource identifiers (URIs). Each URI must locate a Payara Server instance or the DAS. This format is required if multiple Payara Server instances are running on the same host.</p>
 <p>The format of each URI in the list is as follows:</p>
 <p><i>scheme</i><code>://</code><i>host-name-or -IP-address</i><code>:</code><i>port</i></p>
 <ul>
@@ -84,7 +85,7 @@
 <dd>
 <p>The port number of the port on which the cluster listens for messages from GMS.</p>
 <p>The default value is a reference to the <code>GMS_LISTENER_PORT-</code><i>cluster-name</i> system property. By default, this system property is not set. In this situation, GMS selects a free port from the range that is defined by the properties <code>GMS_TCPSTARTPORT</code> and <code>GMS_TCPENDPORT</code>. By default, this range is 9090-9200. In most situations, the default behavior should suffice.</p>
-<p>However, if GMS is <b>not</b> using multicast for broadcasting messages, this property must specify a port number that is valid for all GlassFish Server instances in the cluster. To use the default value to meet this requirement, use a system property to set the port number individually for each instance.</p>
+<p>However, if GMS is <b>not</b> using multicast for broadcasting messages, this property must specify a port number that is valid for all Payara Server instances in the cluster. To use the default value to meet this requirement, use a system property to set the port number individually for each instance.</p>
 <p>For example, use the <a href="ref-clustersystemproperties.html">Cluster System Properties</a> page to create the system property <code>GMS_LISTENER_PORT-</code><i>cluster-name</i> for the DAS. Then, for each instance in the cluster, set the <code>GMS_LISTENER_PORT-</code><i>cluster-name</i> system property to the port number on which the instance listens for messages from GMS. The default value of the <code>GMS_LISTENER_PORT</code> property for the cluster references this system property.</p>
 </dd>
 <dt><code>GMS_LOOPBACK</code></dt>
@@ -147,3 +148,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

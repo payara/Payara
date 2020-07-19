@@ -39,15 +39,12 @@
  */
 package fish.payara.microprofile.openapi.test.app.application;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
 import org.eclipse.microprofile.openapi.annotations.Components;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.callbacks.Callback;
@@ -57,34 +54,33 @@ import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
-import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 @OpenAPIDefinition(
         info = @Info(title = "title", version = "version"),
         components = @Components(
-                callbacks= {
-                        @Callback(name = "name1", ref = "ref1"),
-                        @Callback(name = "name2", callbackUrlExpression = "http://callbackUrlExpression.com", 
-                            operations = 
-                            @CallbackOperation(method = "GET", summary = "summary",
+                callbacks = {
+                    @Callback(name = "name1", ref = "ref1"),
+                    @Callback(name = "name2", callbackUrlExpression = "http://callbackUrlExpression.com",
+                            operations
+                            = @CallbackOperation(method = "GET", summary = "summary",
                                     responses = {
                                         @APIResponse(
-                                            responseCode = "200",
-                                            description = "successful operation",
-                                            content = @Content(
-                                                mediaType = "applictaion/json",
-                                                schema = @Schema(
-                                                    type = SchemaType.ARRAY,
-                                                    implementation = String.class
+                                                responseCode = "200",
+                                                description = "successful operation",
+                                                content = @Content(
+                                                        mediaType = "applictaion/json",
+                                                        schema = @Schema(
+                                                                type = SchemaType.ARRAY,
+                                                                implementation = String.class
+                                                        )
                                                 )
-                                            )
                                         )}))
                 }
-                ))
+        ))
 @Path("/callbacks")
 @Produces(MediaType.APPLICATION_JSON)
 public class CallbacksTest extends OpenApiApplicationTest {

@@ -10,6 +10,10 @@ pipeline {
     tools {
         jdk "zulu-8"
     }
+    environment {
+        Dibbles = "\${Dabbles}"
+        Bibbly = "Bibbles"
+    }
     stages {
         stage('Report') {
             steps {
@@ -24,10 +28,12 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -PQuickBuild \
-                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}\
-                -Dfailsafe.rerunFailingTestsCount=2"""
+                withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
+                    sh """mvn -B -V -ff -e clean install -PQuickBuild \
+                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}\
+                    -Dfailsafe.rerunFailingTestsCount=2"""
+                }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post{
@@ -78,7 +84,7 @@ pipeline {
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-Health/tck-arquillian-extension/pom.xml \
                 -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP Health TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            
+
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -B -V -ff -e clean verify -f MicroProfile-Health/tck-runner/pom.xml \
                 -Dfailsafe.rerunFailingTestsCount=2 -Dpayara.version=${pom.version}"
@@ -96,7 +102,7 @@ pipeline {
                 sh "mvn -B -V -ff -e clean install -f MicroProfile-JWT-Auth/tck-arquillian-extension/pom.xml \
                 -Dpayara.version=${pom.version}"
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installed MP JWT-Auth TCK Arquillian Extension  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            
+
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JWT-Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 sh "mvn -B -V -ff -e clean verify -f MicroProfile-JWT-Auth/tck-runner/pom.xml \
                 -Dfailsafe.rerunFailingTestsCount=2 -Punstable -Dpayara.version=${pom.version}"

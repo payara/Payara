@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -201,7 +201,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     private Deployment deployment;
-    
+
     @Inject
     private PayaraExecutorService executorService;
 
@@ -298,7 +298,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
             ProxyServices proxyServices = new ProxyServicesImpl(services);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
-            
+
             ExecutorServices executorServices = new ExecutorServicesImpl(executorService);
             deploymentImpl.getServices().add(ExecutorServices.class, executorServices);
 
@@ -313,13 +313,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             deploymentImpl.getServices().add(EjbServices.class, ejbServices);
         }
 
-        DeployCommandParameters dc = context.getCommandParameters(DeployCommandParameters.class);
         ExternalConfigurationImpl externalConfiguration = new ExternalConfigurationImpl();
         externalConfiguration.setRollingUpgradesDelimiter(System.getProperty("fish.payara.rollingUpgradesDelimiter", ":"));
-        externalConfiguration.setBeanIndexOptimization(dc != null ? !dc.isAvailabilityEnabled() : true);
+        externalConfiguration.setBeanIndexOptimization(!deployParams.isAvailabilityEnabled());
         externalConfiguration.setNonPortableMode(false);
         configureConcurrentDeployment(context, externalConfiguration);
-        
+
         deploymentImpl.getServices().add(ExternalConfiguration.class, externalConfiguration);
 
         BeanDeploymentArchive beanDeploymentArchive = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
@@ -500,7 +499,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // Get current TCL
             ClassLoader oldTCL = Thread.currentThread().getContextClassLoader();
 
-            invocationManager.pushAppEnvironment(() ->  applicationInfo.getName());
+            invocationManager.pushAppEnvironment(applicationInfo::getName);
 
             ComponentInvocation componentInvocation = createComponentInvocation(applicationInfo);
 
@@ -554,7 +553,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         try {
             WeldBootstrap bootstrap = applicationInfo.getTransientAppMetaData(WELD_BOOTSTRAP, WeldBootstrap.class);
             if (bootstrap != null) {
-                invocationManager.pushAppEnvironment(() ->  applicationInfo.getName());
+                invocationManager.pushAppEnvironment(applicationInfo::getName);
 
                 try {
                     doBootstrapShutdown(applicationInfo);
@@ -869,7 +868,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
         deploymentImpl.addDynamicExtension(createProbeExtension());
     }
-    
+
     private void configureConcurrentDeployment(DeploymentContext context, ExternalConfigurationImpl configuration) {
         configuration.setConcurrentDeployment(WeldUtils.isConcurrentDeploymentEnabled());
         configuration.setPreLoaderThreadPoolSize(WeldUtils.getPreLoaderThreads());

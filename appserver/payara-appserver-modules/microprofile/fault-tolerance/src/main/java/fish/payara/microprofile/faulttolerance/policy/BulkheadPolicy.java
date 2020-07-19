@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package fish.payara.microprofile.faulttolerance.policy;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.CompletionStage;
 
 import javax.interceptor.InvocationContext;
 
@@ -56,12 +57,14 @@ public final class BulkheadPolicy extends Policy {
 
     public final int value;
     public final int waitingTaskQueue;
+    public final boolean exitOnCompletion;
 
     public BulkheadPolicy(Method annotatedMethod, int value, int waitingTaskQueue) {
         checkAtLeast(1, annotatedMethod, Bulkhead.class, "value", value);
         checkAtLeast(0, annotatedMethod, Bulkhead.class, "waitingTaskQueue", waitingTaskQueue);
         this.value = value;
         this.waitingTaskQueue = waitingTaskQueue;
+        this.exitOnCompletion = annotatedMethod.getReturnType() == CompletionStage.class;
     }
 
     public static BulkheadPolicy create(InvocationContext context, FaultToleranceConfig config) {
@@ -73,4 +76,5 @@ public final class BulkheadPolicy extends Policy {
         }
         return null;
     }
+
 }

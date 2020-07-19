@@ -136,7 +136,7 @@
     <indexitem text="migrating (reference)" target="ref-migrateejbtimers"></indexitem>
     <indexitem text="migrating (task)" target="task-migrate-ejb-timers"></indexitem>
   </indexitem>
-  <indexitem text="GlassFish Server">
+  <indexitem text="Payara Server">
     <indexitem text="viewing monitoring data for applications (task)" target="task-mon-app-clustered-instance"></indexitem>
     <indexitem text="viewing monitoring data for applications (task)" target="task-mon-app-standalone-instance"></indexitem>
   </indexitem>

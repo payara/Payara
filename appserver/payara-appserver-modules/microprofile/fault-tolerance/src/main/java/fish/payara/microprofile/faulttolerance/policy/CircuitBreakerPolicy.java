@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@ package fish.payara.microprofile.faulttolerance.policy;
 
 import java.lang.reflect.Method;
 import java.time.temporal.ChronoUnit;
-import java.util.logging.Logger;
 
 import javax.interceptor.InvocationContext;
 
@@ -56,23 +55,24 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
  */
 public final class CircuitBreakerPolicy extends Policy {
 
-    static final Logger logger = Logger.getLogger(CircuitBreakerPolicy.class.getName());
-
-    public final Class<? extends Throwable>[] failOn;
+    private final Class<? extends Throwable>[] failOn;
+    private final Class<? extends Throwable>[] skipOn;
     public final long delay;
     public final ChronoUnit delayUnit;
     public final int requestVolumeThreshold;
     public final double failureRatio;
     public final int successThreshold;
 
-    public CircuitBreakerPolicy(Method annotatedMethod, Class<? extends Throwable>[] failOn, long delay, ChronoUnit delayUnit,
-            int requestVolumeThreshold, double failureRatio, int successThreshold) {
+    public CircuitBreakerPolicy(Method annotatedMethod, Class<? extends Throwable>[] failOn,
+            Class<? extends Throwable>[] skipOn, long delay, ChronoUnit delayUnit, int requestVolumeThreshold,
+            double failureRatio, int successThreshold) {
         checkAtLeast(0, annotatedMethod, CircuitBreaker.class, "delay", delay);
         checkAtLeast(1, annotatedMethod, CircuitBreaker.class, "requestVolumeThreshold", requestVolumeThreshold);
         checkAtLeast(0d, annotatedMethod, CircuitBreaker.class, "failureRatio", failureRatio);
         checkAtMost(1.0d, annotatedMethod, CircuitBreaker.class, "failureRatio", failureRatio);
         checkAtLeast(1, annotatedMethod, CircuitBreaker.class, "successThreshold", successThreshold);
         this.failOn = failOn;
+        this.skipOn = skipOn;
         this.delay = delay;
         this.delayUnit = delayUnit;
         this.requestVolumeThreshold = requestVolumeThreshold;
@@ -85,6 +85,7 @@ public final class CircuitBreakerPolicy extends Policy {
             CircuitBreaker annotation = config.getAnnotation(CircuitBreaker.class);
             return new CircuitBreakerPolicy(context.getMethod(),
                     config.failOn(annotation),
+                    config.skipOn(annotation),
                     config.delay(annotation),
                     config.delayUnit(annotation),
                     config.requestVolumeThreshold(annotation),
@@ -95,12 +96,23 @@ public final class CircuitBreakerPolicy extends Policy {
     }
 
     /**
-     * Helper method that checks whether or not the given exception is included in the failOn parameter.
+     * Helper method that checks whether or not the given exception is considered a success or failure.
+     * 
+     * Relevant part from the {@link CircuitBreaker} documentation:
+     * <blockquote>
+     * When a method returns a result, the following rules are applied to determine whether the result is a success or a failure:
+     * <ul>
+     * <li>If the method does not throw a {@link Throwable}, it is considered a success
+     * <li>Otherwise, if the thrown object is assignable to any value in the {@link #skipOn()} parameter, is is considered a success
+     * <li>Otherwise, if the thrown object is assignable to any value in the {@link #failOn()} parameter, it is considered a failure
+     * <li>Otherwise it is considered a success
+     * </ul>
+     * </blockquote>
      * 
      * @param ex The exception to check
-     * @return True if the exception is covered by {@link #failOn} list of this policy
+     * @return True if the exception is considered a failure, false if it is considered a success.
      */
-    public boolean failOn(Exception ex) {
-        return Policy.isCaught(ex, failOn);
+    public boolean isFailure(Throwable ex) {
+        return !Policy.isCaught(ex, skipOn) && Policy.isCaught(ex, failOn);
     }
 }

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.201-SNAPSHOT</version>
+        <version>5.2020.4-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
@@ -303,7 +303,7 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>javadb</artifactId>
+            <artifactId>h2db</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

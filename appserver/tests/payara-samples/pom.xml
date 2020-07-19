@@ -9,7 +9,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>5.201-SNAPSHOT</version>
+        <version>5.2020.4-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -22,20 +22,41 @@
         <java.min.version>1.8</java.min.version>
         <maven.min.version>3.5</maven.min.version>
 
-        <arquillian.payara.micro.version>2.0</arquillian.payara.micro.version>
-        <arquillian.payara.remote.version>2.0</arquillian.payara.remote.version>
+        <arquillian.payara.micro.version>2.3</arquillian.payara.micro.version>
+        <arquillian.payara.remote.version>2.3</arquillian.payara.remote.version>
         <payara.version>${project.version}</payara.version>
         <payara.domain.name>domain1</payara.domain.name>
 
         <micro.isActive>false</micro.isActive>
+
+        <!-- Exclude unstable tests by default-->
+        <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
     </properties>
 
     <modules>
         <module>test-utils</module>
         <module>samples</module>
-        <module>samples-programmatic</module>
         <module>classpath</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>payara-micro-managed</id>
+            <modules>
+                <module>samples-programmatic</module>
+            </modules>
+        </profile>
+    	<profile>
+    		<id>unstable</id>
+    		<modules>
+    			<module>classpath</module>
+    		</modules>
+                <properties>
+                    <!-- Include all test, including unstable -->
+                    <excludedGroups></excludedGroups>
+                </properties>
+    	</profile>
+    </profiles>
 
     <repositories>
         <!-- omnifaces jacc-provider is not in any other repository -->

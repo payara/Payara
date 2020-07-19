@@ -8,4 +8,5 @@
         <security-role>
         <role-name>payaraUser</role-name>
     </security-role>
+    <distributable />
 </web-app>

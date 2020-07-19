@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.core.deployment;
 
@@ -54,6 +54,8 @@ import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.admin.report.HTMLActionReporter;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
+import fish.payara.nucleus.hotdeploy.HotDeployService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.ApplicationMetaDataProvider;
@@ -84,7 +86,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
+import static java.util.logging.Level.FINE;
 import java.util.logging.Logger;
 
 /**
@@ -124,12 +128,16 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     @Inject
     Provider<ClassLoaderHierarchy> clhProvider;
 
+    @Inject
+    private HotDeployService hotDeployService;
+
     private static String WRITEOUT_XML = System.getProperty(
         "writeout.xml");
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DolProvider.class);
 
 
+    @Override
     public MetaData getMetaData() {
         return new MetaData(false, new Class[] { Application.class }, null);
     }
@@ -139,6 +147,9 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
         sourceArchive.setExtraData(Types.class, dc.getTransientAppMetaData(Types.class.getName(), Types.class));
         sourceArchive.setExtraData(Parser.class, dc.getTransientAppMetaData(Parser.class.getName(), Parser.class));
+
+        Optional<ApplicationState> appState = hotDeployService.getApplicationState(dc);
+        appState.ifPresent(state -> sourceArchive.setExtraData(ApplicationState.class, state));
 
         ClassLoader cl = dc.getClassLoader();
         DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
@@ -174,10 +185,10 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         handleDeploymentPlan(deploymentPlan, archivist, sourceArchive, holder);
 
         long start = System.currentTimeMillis();
-        Application application=null;
-        if (holder!=null) {
-            application = holder.app;
-
+        Application application = appState
+                .map(state -> state.getModuleMetaData(Application.class))
+                .orElse(holder != null ? holder.app : null);
+        if (application != null) {
             application.setAppName(name);
             application.setClassLoader(cl);
             application.setRoleMapper(null);
@@ -185,6 +196,15 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             if (application.isVirtual()) {
                 ModuleDescriptor md = application.getStandaloneBundleDescriptor().getModuleDescriptor();
                 md.setModuleName(name);
+
+                if (appState.map(ApplicationState::isActive).orElse(false)) {
+                    application.getStandaloneBundleDescriptor().setClassLoader(cl);
+                    dc.addModuleMetaData(application.getStandaloneBundleDescriptor());
+                    for (RootDeploymentDescriptor extension : application.getStandaloneBundleDescriptor().getExtensionsDescriptors()) {
+                        extension.setClassLoader(cl);
+                        dc.addModuleMetaData(extension);
+                    }
+                }
             }
 
             try {
@@ -215,11 +235,12 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         sourceArchive.removeExtraData(Types.class);
         sourceArchive.removeExtraData(Parser.class);
 
-        Logger.getAnonymousLogger().log(Level.FINE, "DOL Loading time" + (System.currentTimeMillis() - start));
+        Logger.getAnonymousLogger().log(FINE, "DOL Loading time{0}", System.currentTimeMillis() - start);
 
         return application;
     }
 
+    @Override
     public Application load(DeploymentContext dc) throws IOException {
         DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
         Application application = processDOL(dc);
@@ -235,8 +256,8 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 dc.addModuleMetaData(extension);
             }
         }
-        Boolean hotDeploy = dc.getTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, Boolean.class);
-        if (!Boolean.TRUE.equals(hotDeploy)) {
+        Optional<ApplicationState> appState = hotDeployService.getApplicationState(dc);
+        if (!appState.isPresent()) {
             addModuleConfig(dc, application);
         }
         validateKeepStateOption(dc, params, application);
@@ -247,14 +268,19 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
     /**
      * return the name for the given application
+     *
+     * @param archive
+     * @param context
+     * @return
      */
+    @Override
     public String getNameFor(ReadableArchive archive,
                              DeploymentContext context) {
         if (context == null) {
             return null;
         }
         DeployCommandParameters params = context.getCommandParameters(DeployCommandParameters.class);
-        Application application = null;
+        Application application;
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
         try (DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.DETERMINE_APP_NAME, "DeploymentDescriptors")) {
             // for these cases, the standard DD could contain the application

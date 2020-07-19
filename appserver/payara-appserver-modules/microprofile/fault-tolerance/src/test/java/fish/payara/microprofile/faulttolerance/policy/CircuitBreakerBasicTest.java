@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,8 @@ import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenExce
 import org.junit.Before;
 import org.junit.Test;
 
-import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextStub;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState.CircuitState;
@@ -70,32 +71,34 @@ import fish.payara.microprofile.faulttolerance.test.TestUtils;
 public class CircuitBreakerBasicTest {
 
     private final AtomicInteger circuitBreakerCallCounter = new AtomicInteger();
-    final AtomicReference<CircuitBreakerState> state = new AtomicReference<>();
     final CompletableFuture<Void> waitBeforeHalfOpenAgain = new CompletableFuture<>();
-    private final FaultToleranceService service = new FaultToleranceServiceStub() {
+    private final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        public CircuitBreakerState getState(int requestVolumeThreshold, InvocationContext context) {
-            return state.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
-        }
+        public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
+            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) { 
 
-        @Override
-        public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
-            // test method completes the future when it is ready for execution to proceed and open the circuit (task)
-            if (waitBeforeHalfOpenAgain.isDone()) {
-                task.run();
-                return CompletableFuture.completedFuture(null);
-            }
-            return CompletableFuture.runAsync(() -> {
-                try {
-                    waitBeforeHalfOpenAgain.get();
-                } catch (Exception e) {
-                    // continue
+                @Override
+                public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
+                    // test method completes the future when it is ready for execution to proceed and open the circuit (task)
+                    if (waitBeforeHalfOpenAgain.isDone()) {
+                        task.run();
+                        return CompletableFuture.completedFuture(null);
+                    }
+                    return CompletableFuture.runAsync(() -> {
+                        try {
+                            waitBeforeHalfOpenAgain.get();
+                        } catch (Exception e) {
+                            // continue
+                        }
+                        task.run();
+                    });
                 }
-                task.run();
-            });
+            };
         }
     };
+
+    final AtomicReference<CircuitBreakerState> state = service.getStateReference();
 
     @Before
     public void resetCounter() {
@@ -188,7 +191,8 @@ public class CircuitBreakerBasicTest {
     private Integer proceedToResultValue(Object... methodArguments) throws Exception {
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
         FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(getClass(), annotatedMethod);
-        return (Integer) policy.proceed(new StaticAnalysisContext(this, annotatedMethod, methodArguments), service);
+        StaticAnalysisContext context = new StaticAnalysisContext(this, annotatedMethod, methodArguments);
+        return (Integer) policy.proceed(context, () -> service.getMethodContext(context, policy));
     }
 
     private int incrementAndFailingOnEveryOtherInvocationOnFirst6() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,20 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.callbacks.CallbackImpl;
+import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
+import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
+import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
+import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
+import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
+import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
+import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
+import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
 import org.eclipse.microprofile.openapi.models.examples.Example;
@@ -53,16 +63,7 @@ import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
-
-import fish.payara.microprofile.openapi.impl.model.callbacks.CallbackImpl;
-import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
-import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
-import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
-import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
-import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
-import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
-import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
-import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class ComponentsImpl extends ExtensibleImpl<Components> implements Components {
 
@@ -75,6 +76,20 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
     protected Map<String, SecurityScheme> securitySchemes = new TreeMap<>();
     protected Map<String, Link> links = new TreeMap<>();
     protected Map<String, Callback> callbacks = new TreeMap<>();
+
+    public static Components createInstance(AnnotationModel annotation, ApiContext context) {
+        Components from = new ComponentsImpl();
+        extractAnnotations(annotation, context, "schemas", "name", SchemaImpl::createInstance, from.getSchemas());
+        extractAnnotations(annotation, context, "responses", "name", APIResponseImpl::createInstance, from.getResponses());
+        extractAnnotations(annotation, context, "parameters", "name", ParameterImpl::createInstance, from.getParameters());
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples());
+        extractAnnotations(annotation, context, "requestBodies", "name", RequestBodyImpl::createInstance, from.getRequestBodies());
+        extractAnnotations(annotation, context, "securitySchemes", "securitySchemeName", SecuritySchemeImpl::createInstance, from.getSecuritySchemes());
+        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks());
+        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks());
+        from.getHeaders().putAll(HeaderImpl.createInstances(annotation, context));
+        return from;
+    }
 
     @Override
     public Map<String, Schema> getSchemas() {
@@ -283,100 +298,98 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
         callbacks.remove(key);
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.Components from, Components to,
-            boolean override, Map<String, Schema> currentSchemas) {
+    public static void merge(Components from, Components to,
+            boolean override, ApiContext context) {
         if (from == null) {
             return;
         }
         // Handle @Schema
-        if (from.schemas() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.media.Schema schema : from.schemas()) {
-                if (schema.name() != null) {
+        if (from.getSchemas()!= null) {
+            for (String schemaName : from.getSchemas().keySet()) {
+                if (schemaName != null) {
                     Schema newSchema = new SchemaImpl();
-                    SchemaImpl.merge(schema, newSchema, override, currentSchemas);
-                    to.addSchema(schema.name(), newSchema);
+                    SchemaImpl.merge(from.getSchemas().get(schemaName), newSchema, override, context);
+                    to.addSchema(schemaName, newSchema);
                 }
             }
         }
         // Handle @Callback
-        if (from.callbacks() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.callbacks.Callback callback : from.callbacks()) {
-                if (callback != null && callback.name() != null) {
+        if (from.getCallbacks()!= null) {
+            for (String callbackName : from.getCallbacks().keySet()) {
+                if (callbackName != null) {
                     Callback newCallback = new CallbackImpl();
-                    CallbackImpl.merge(callback, newCallback, override, currentSchemas);
-                    to.addCallback(callback.name(), newCallback);
+                    CallbackImpl.merge(from.getCallbacks().get(callbackName), newCallback, override, context);
+                    to.addCallback(callbackName, newCallback);
                 }
             }
         }
         // Handle @ExampleObject
-        if (from.examples() != null) {
-            for (ExampleObject example : from.examples()) {
-                if (example.name() != null) {
+        if (from.getExamples() != null) {
+            for (String exampleName : from.getExamples().keySet()) {
+                if (exampleName != null) {
                     Example newExample = new ExampleImpl();
-                    ExampleImpl.merge(example, newExample, override);
-                    to.addExample(example.name(), newExample);
+                    ExampleImpl.merge(from.getExamples().get(exampleName), newExample, override);
+                    to.addExample(exampleName, newExample);
                 }
             }
         }
         // Handle @Header
-        if (from.headers() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.headers.Header header : from.headers()) {
-                if (header.name() != null) {
+        if (from.getHeaders()!= null) {
+            for (String headerName : from.getHeaders().keySet()) {
+                if (headerName != null) {
                     Header newHeader = new HeaderImpl();
-                    HeaderImpl.merge(header, newHeader, override, currentSchemas);
-                    to.addHeader(header.name(), newHeader);
+                    HeaderImpl.merge(from.getHeaders().get(headerName), newHeader, override, context);
+                    to.addHeader(headerName, newHeader);
                 }
             }
         }
         // Handle @Link
-        if (from.links() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.links.Link link : from.links()) {
-                if (link.name() != null) {
+        if (from.getLinks()!= null) {
+            for (String linkName : from.getLinks().keySet()) {
+                if (linkName != null) {
                     Link newLink = new LinkImpl();
-                    LinkImpl.merge(link, newLink, override);
-                    to.addLink(link.name(), newLink);
+                    LinkImpl.merge(from.getLinks().get(linkName), newLink, override);
+                    to.addLink(linkName, newLink);
                 }
             }
         }
         // Handle @Parameter
-        if (from.parameters() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.parameters.Parameter parameter : from.parameters()) {
-                if (parameter.name() != null) {
+        if (from.getParameters() != null) {
+            for (String parameterName : from.getParameters().keySet()) {
+                if (parameterName != null) {
                     Parameter newParameter = new ParameterImpl();
-                    ParameterImpl.merge(parameter, newParameter, override, currentSchemas);
-                    to.addParameter(parameter.name(), newParameter);
+                    ParameterImpl.merge(from.getParameters().get(parameterName), newParameter, override, context);
+                    to.addParameter(parameterName, newParameter);
                 }
             }
         }
         // Handle @RequestBody
-        if (from.requestBodies() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.parameters.RequestBody requestBody : from
-                    .requestBodies()) {
-                if (requestBody.name() != null) {
+        if (from.getRequestBodies()!= null) {
+            for (String requestBodyName : from.getRequestBodies().keySet()) {
+                if (requestBodyName != null) {
                     RequestBody newRequestBody = new RequestBodyImpl();
-                    RequestBodyImpl.merge(requestBody, newRequestBody, override, currentSchemas);
-                    to.addRequestBody(requestBody.name(), newRequestBody);
+                    RequestBodyImpl.merge(from.getRequestBodies().get(requestBodyName), newRequestBody, override, context);
+                    to.addRequestBody(requestBodyName, newRequestBody);
                 }
             }
         }
         // Handle @APIResponse
-        if (from.responses() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.responses.APIResponse response : from.responses()) {
-                if (response.name() != null) {
+        if (from.getResponses()!= null) {
+            for (String responseName : from.getResponses().keySet()) {
+                if (responseName != null) {
                     APIResponse newResponse = new APIResponseImpl();
-                    APIResponseImpl.merge(response, newResponse, override, currentSchemas);
-                    to.addResponse(response.name(), newResponse);
+                    APIResponseImpl.merge(from.getResponses().get(responseName), newResponse, override, context);
+                    to.addResponse(responseName, newResponse);
                 }
             }
         }
         // Handle @SecurityScheme
-        if (from.securitySchemes() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.security.SecurityScheme security : from
-                    .securitySchemes()) {
-                if (security.securitySchemeName() != null) {
+        if (from.getSecuritySchemes()!= null) {
+            for (String securitySchemeName : from.getSecuritySchemes().keySet()) {
+                if (securitySchemeName != null) {
                     SecurityScheme newSecurity = new SecuritySchemeImpl();
-                    SecuritySchemeImpl.merge(security, newSecurity, override);
-                    to.addSecurityScheme(security.securitySchemeName(), newSecurity);
+                    SecuritySchemeImpl.merge(from.getSecuritySchemes().get(securitySchemeName), newSecurity, override);
+                    to.addSecurityScheme(securitySchemeName, newSecurity);
                 }
             }
         }

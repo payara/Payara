@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.loader;
 
@@ -66,6 +66,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
+import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
@@ -89,6 +90,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -109,6 +111,10 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipFile;
+import org.glassfish.api.deployment.GeneratedResourceEntry;
+import org.glassfish.api.deployment.ResourceEntry;
+import org.glassfish.api.deployment.ResourceClassLoader;
 
 /**
  * Specialized web application class loader.
@@ -149,7 +155,8 @@ import java.util.logging.Logger;
  */
 public class WebappClassLoader
     extends URLClassLoader
-    implements Reloader, InstrumentableClassLoader, PreDestroy,
+    implements Reloader, ResourceClassLoader,
+        InstrumentableClassLoader, PreDestroy,
         DDPermissionsLoader, JarFileResourcesProvider
 {
     // ------------------------------------------------------- Static Variables
@@ -203,14 +210,14 @@ public class WebappClassLoader
      * The cache of ResourceEntry for classes and resources we have loaded,
      * keyed by resource name.
      */
-    protected ConcurrentHashMap<String, ResourceEntry> resourceEntries =
-        new ConcurrentHashMap<String, ResourceEntry>();
+    protected ConcurrentHashMap<String, ResourceEntry> resourceEntries
+            = new ConcurrentHashMap<>();
 
     /**
      * The list of not found resources.
      */
-    protected ConcurrentHashMap<String, String> notFoundResources =
-        new ConcurrentHashMap<String, String>();
+    protected ConcurrentHashMap<String, String> notFoundResources
+            = new ConcurrentHashMap<>();
 
     /**
      * The debugging detail level of this component.
@@ -276,7 +283,7 @@ public class WebappClassLoader
      * The list of JARs, in the order they should be searched
      * for locally loaded classes or resources.
      */
-    protected List<String> jarNames = new ArrayList<String>();
+    protected List<String> jarNames = new ArrayList<>();
 
     /**
      * The list of JARs last modified dates, in the order they should be
@@ -294,7 +301,8 @@ public class WebappClassLoader
      * A list of read File and Jndi Permission's required if this loader
      * is for a web application context.
      */
-    private final ConcurrentLinkedQueue<Permission> permissionList = new ConcurrentLinkedQueue<Permission>();
+    private final ConcurrentLinkedQueue<Permission> permissionList
+            = new ConcurrentLinkedQueue<>();
 
     //holder for declared and ee permissions
     private PermsHolder permissionsHolder;
@@ -310,7 +318,8 @@ public class WebappClassLoader
      * The PermissionCollection for each CodeSource for a web
      * application context.
      */
-    private final ConcurrentHashMap<String, PermissionCollection> loaderPC = new ConcurrentHashMap<String, PermissionCollection>();
+    private final ConcurrentHashMap<String, PermissionCollection> loaderPC
+            = new ConcurrentHashMap<>();
 
     /**
      * Instance of the SecurityManager installed.
@@ -341,7 +350,8 @@ public class WebappClassLoader
     /**
      * List of byte code pre-processors per webapp class loader.
      */
-    private final ConcurrentLinkedQueue<BytecodePreprocessor> byteCodePreprocessors = new ConcurrentLinkedQueue<BytecodePreprocessor>();
+    private final ConcurrentLinkedQueue<BytecodePreprocessor> byteCodePreprocessors
+            = new ConcurrentLinkedQueue<>();
     // END SJSAS 6344989
 
     private boolean useMyFaces;
@@ -391,6 +401,31 @@ public class WebappClassLoader
 
     private final Application application;
     private final Date creationTime = new Date();
+    private boolean hotDeploy = false;
+    
+    private static Class[] CONSTRUCTOR_ARGS_TYPES;
+    private static Object CONSTRUCTOR_ARGUMENTS;
+    private static final boolean IS_JDK_VERSION_HIGHER_THAN_8 = JDK.getMajor() > 8;
+    private static Boolean isMultiReleaseJar;
+    private static final Name MULTI_RELEASE = new Name("Multi-Release");
+
+    static {
+
+        if (!IS_JDK_VERSION_HIGHER_THAN_8) {
+            isMultiReleaseJar = false;
+        } else {
+            isMultiReleaseJar = true;
+            try {
+                final Class<?> runtimeVersionClass = Class.forName("java.lang.Runtime$Version");
+                CONSTRUCTOR_ARGS_TYPES = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
+                CONSTRUCTOR_ARGUMENTS = Runtime.class.getDeclaredMethod("version").invoke(null);
+            } catch (Exception e) {
+                isMultiReleaseJar = false;
+            }
+        }
+
+    }
+      
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -404,16 +439,31 @@ public class WebappClassLoader
         init();
     }
 
-
     /**
-     * Construct a new ClassLoader with the given parent ClassLoader,
-     * but no defined repositories.
+     * Construct a new ClassLoader with the given parent ClassLoader, but no
+     * defined repositories.
+     *
      * @param parent
      * @param application
      */
     public WebappClassLoader(ClassLoader parent, Application application) {
         super(new URL[0], parent);
         this.application = application;
+        init();
+    }
+
+    /**
+     * Construct a new ClassLoader with the given parent ClassLoader, but no
+     * defined repositories.
+     *
+     * @param parent
+     * @param application
+     * @param hotDeploy
+     */
+    public WebappClassLoader(ClassLoader parent, Application application, boolean hotDeploy) {
+        super(new URL[0], parent);
+        this.application = application;
+        this.hotDeploy = hotDeploy;
         init();
     }
 
@@ -523,19 +573,69 @@ public class WebappClassLoader
         }
     }
 
-
     /**
      * Return the context name for this class loader.
+     *
+     * @return
      */
     public String getContextName() {
-        return (this.contextName);
+        return this.contextName;
     }
 
-
+    @Override
     public ConcurrentHashMap<String, ResourceEntry> getResourceEntries() {
         return resourceEntries;
     }
 
+    @Override
+    public Class addResourceEntry(String name, ResourceEntry entry) {
+        Class clazz = null;
+        if (!this.resourceEntries.containsKey(name)) {
+            definePackage(name, entry);
+            clazz = defineLoadedClass(name, entry);
+            this.resourceEntries.put(name, entry);
+            for (Map.Entry<String, GeneratedResourceEntry> e : entry.generatedResources.entrySet()) {
+                String generatedClassName = e.getKey();
+                GeneratedResourceEntry generatedEntry = e.getValue();
+                generatedEntry.loadedClass = defineClass(
+                        generatedClassName,
+                        generatedEntry.binaryContent, 0,
+                        generatedEntry.binaryContent.length,
+                        generatedEntry.protectionDomain
+                );
+            }
+        }
+        return clazz;
+    }
+
+    @Override
+    public Class addGeneratedResourceEntry(
+            String mainClassName,
+            String generatedClassName,
+            byte[] generatedBinaryContent,
+            ProtectionDomain protectionDomain) {
+
+        Class generatedClass;
+
+        if (this.resourceEntries.containsKey(mainClassName)) {
+            generatedClass = defineClass(generatedClassName,
+                    generatedBinaryContent, 0,
+                    generatedBinaryContent.length,
+                    protectionDomain);
+            GeneratedResourceEntry generatedResourceEntry = new GeneratedResourceEntry();
+            generatedResourceEntry.binaryContent = generatedBinaryContent;
+            generatedResourceEntry.loadedClass = generatedClass;
+            generatedResourceEntry.protectionDomain = protectionDomain;
+            ResourceEntry entry = this.resourceEntries.get(mainClassName);
+            entry.generatedResources.put(generatedClassName, generatedResourceEntry);
+        } else {
+            generatedClass = defineClass(generatedClassName,
+                    generatedBinaryContent, 0,
+                    generatedBinaryContent.length,
+                    protectionDomain);
+        }
+        return generatedClass;
+    }
 
     /**
      * Return the debugging detail level for this component.
@@ -1060,41 +1160,10 @@ public class WebappClassLoader
             }
             try {
                 ResourceEntry entry = findClassInternal(name);
-                // Create the code source object
-                CodeSource codeSource =
-                    new CodeSource(entry.codeBase, entry.certificates);
+
                 synchronized (this) {
                     if (entry.loadedClass == null) {
-                        /* START GlassFish [680]
-                        clazz = defineClass(name, entry.binaryContent, 0,
-                                entry.binaryContent.length,
-                                codeSource);
-                        */
-                        // START GlassFish [680]
-                        // We use a temporary byte[] so that we don't change
-                        // the content of entry in case bytecode
-                        // preprocessing takes place.
-                        byte[] binaryContent = entry.binaryContent;
-                        if (!byteCodePreprocessors.isEmpty()) {
-                            // ByteCodePreprpcessor expects name as
-                            // java/lang/Object.class
-                            String resourceName =
-                                name.replace('.', '/') + ".class";
-                            for(BytecodePreprocessor preprocessor : byteCodePreprocessors) {
-                                binaryContent = preprocessor.preprocess(
-                                    resourceName, binaryContent);
-                            }
-                        }
-                        clazz = defineClass(name, binaryContent, 0,
-                                binaryContent.length,
-                                codeSource);
-                        // END GlassFish [680]
-                        entry.loadedClass = clazz;
-                        entry.binaryContent = null;
-                        entry.source = null;
-                        entry.codeBase = null;
-                        entry.manifest = null;
-                        entry.certificates = null;
+                        clazz = defineLoadedClass(name, entry);
                     } else {
                         clazz = entry.loadedClass;
                     }
@@ -1163,7 +1232,6 @@ public class WebappClassLoader
         return clazz;
 
     }
-
 
     /**
      * Find the specified resource in our local repository, and return a
@@ -1700,7 +1768,6 @@ public class WebappClassLoader
         }
         throw new ClassNotFoundException(name);
     }
-
 
     /**
      * Get the Permissions for a CodeSource.  If this instance
@@ -2580,7 +2647,7 @@ public class WebappClassLoader
                 if (jarFiles[0] == null) {
                     for (int i = 0; i < jarFiles.length; i++) {
                         try {
-                            jarFiles[i] = new JarFile(jarRealFiles[i]);
+                            jarFiles[i] = newJarFile(jarRealFiles[i]);
                         } catch (IOException e) {
                             if (logger.isLoggable(Level.FINE)) {
                                 logger.log(Level.FINE, "Failed to open JAR", e);
@@ -2605,7 +2672,9 @@ public class WebappClassLoader
     /**
      * Find specified class in local repositories.
      *
+     * @param name
      * @return the loaded class, or null if the class isn't found
+     * @throws java.lang.ClassNotFoundException
      */
     protected ResourceEntry findClassInternal(String name)
         throws ClassNotFoundException {
@@ -2635,57 +2704,9 @@ public class WebappClassLoader
         }
 
         // Looking up the package
-        String packageName = null;
-        int pos = name.lastIndexOf('.');
-        if (pos != -1) {
-            packageName = name.substring(0, pos);
-        }
-
-        Package pkg = null;
-
-        if (packageName != null) {
-
-// START OF IASRI 4717252
-          synchronized (loaderPC) {
-// END OF IASRI 4717252
-            pkg = getPackage(packageName);
-
-            // Define the package (if null)
-            if (pkg == null) {
-                if (entry.manifest == null) {
-                    definePackage(packageName, null, null, null, null, null,
-                                  null, null);
-                } else {
-                    definePackage(packageName, entry.manifest, entry.codeBase);
-                }
-            }
-// START OF IASRI 4717252
-          }
-// END OF IASRI 4717252
-        }
-
-        if (securityManager != null) {
-
-            // Checking sealing
-            if (pkg != null) {
-                boolean sealCheck = true;
-                if (pkg.isSealed()) {
-                    sealCheck = pkg.isSealed(entry.codeBase);
-                } else {
-                    sealCheck = (entry.manifest == null)
-                        || !isPackageSealed(packageName, entry.manifest);
-                }
-                if (!sealCheck) {
-                    throw new SecurityException
-                            ("Sealing violation loading " + name + " : Package "
-                                    + packageName + " is sealed.");
-                }
-            }
-
-        }
+        definePackage(name, entry);
 
         return entry;
-
     }
 
     /**
@@ -3371,9 +3392,106 @@ public class WebappClassLoader
             });
      }
 
-    private String getJavaVersion() {
+    private void definePackage(String name, ResourceEntry entry) {
+        // Looking up the package
+        String packageName = null;
+        int pos = name.lastIndexOf('.');
+        if (pos != -1) {
+            packageName = name.substring(0, pos);
+        }
 
-        String version = null;
+        Package pkg = null;
+
+        if (packageName != null) {
+
+            // START OF IASRI 4717252
+            synchronized (loaderPC) {
+            // END OF IASRI 4717252
+                pkg = getPackage(packageName);
+
+                // Define the package (if null)
+                if (pkg == null) {
+                    if (entry.manifest == null) {
+                        definePackage(packageName, null, null, null, null, null,
+                                null, null);
+                    } else {
+                        definePackage(packageName, entry.manifest, entry.codeBase);
+                    }
+                }
+            // START OF IASRI 4717252
+            }
+            // END OF IASRI 4717252
+        }
+
+        if (securityManager != null) {
+
+            // Checking sealing
+            if (pkg != null) {
+                boolean sealCheck;
+                if (pkg.isSealed()) {
+                    sealCheck = pkg.isSealed(entry.codeBase);
+                } else {
+                    sealCheck = (entry.manifest == null)
+                            || !isPackageSealed(packageName, entry.manifest);
+                }
+                if (!sealCheck) {
+                    throw new SecurityException("Sealing violation loading " + name + " : Package "
+                            + packageName + " is sealed.");
+                }
+            }
+
+        }
+
+    }
+
+    private synchronized Class<?> defineLoadedClass(String name, ResourceEntry entry) {
+        Class<?> clazz;
+        // Create the code source object
+        CodeSource codeSource
+                = new CodeSource(entry.codeBase, entry.certificates);
+        /* START GlassFish [680]
+                        clazz = defineClass(name, entry.binaryContent, 0,
+                                entry.binaryContent.length,
+                                codeSource);
+         */
+        // START GlassFish [680]
+        // We use a temporary byte[] so that we don't change
+        // the content of entry in case bytecode
+        // preprocessing takes place.
+        byte[] binaryContent = entry.binaryContent;
+
+        // If class already created in previous classloader then skip the byteCodePreprocessors
+        if (!byteCodePreprocessors.isEmpty() && entry.loadedClass == null) {
+
+            // ByteCodePreprpcessor expects name as
+            // java/lang/Object.class
+            String resourceName
+                    = name.replace('.', '/') + ".class";
+            for (BytecodePreprocessor preprocessor : byteCodePreprocessors) {
+                binaryContent = preprocessor.preprocess(
+                        resourceName, binaryContent);
+            }
+        }
+
+        clazz = defineClass(name, binaryContent, 0,
+                binaryContent.length,
+                codeSource);
+
+        // END GlassFish [680]
+        entry.loadedClass = clazz;
+        if (!hotDeploy) {
+            entry.binaryContent = null;
+            entry.source = null;
+            entry.codeBase = null;
+            entry.manifest = null;
+            entry.certificates = null;
+        }
+        return clazz;
+    }
+
+     private String getJavaVersion() {
+
+        String version;
 
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
@@ -3428,5 +3546,42 @@ public class WebappClassLoader
     private static String getString(String key, Object ... arguments) {
         String msg = rb.getString(key);
         return MessageFormat.format(msg, arguments);
+    }
+
+    private static JarFile newJarFile(final File file) throws IOException {
+
+        JarFile jarFile = new JarFile(file);
+        if (!IS_JDK_VERSION_HIGHER_THAN_8 || !isMultiReleaseJar) {
+            return jarFile;
+        }
+
+        if (isMultiReleaseJar(jarFile)) {
+            return newInstance(JarFile.class, CONSTRUCTOR_ARGS_TYPES,
+                    new Object[]{file, true, ZipFile.OPEN_READ, CONSTRUCTOR_ARGUMENTS});
+        }
+
+        return jarFile;
+    }
+    
+    public static <T> T newInstance(Class<T> ofClass, Class<?>[] constructorArgTypes, Object[] args) {
+        try {
+            Constructor<T> constructor = ofClass.getConstructor(constructorArgTypes);
+            return constructor.newInstance(args);
+        } catch (Exception ex) {
+            return null; 
+        }
+    }
+
+    private static boolean isMultiReleaseJar(JarFile jarFile) {
+        try {
+            Manifest manifest = jarFile.getManifest();
+            if (manifest == null) {
+                return false;
+            } else {
+                return manifest.getMainAttributes().containsKey(MULTI_RELEASE);
+            }
+        } catch (IOException ex) {
+            return false;
+        }
     }
 }

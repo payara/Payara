@@ -56,6 +56,7 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.*;
@@ -101,6 +102,11 @@ public class JVMStatsProviderBootstrap implements PostConstruct, MonitoringDataS
             StatsProviderManager.register("jvm", PluginPoint.SERVER, 
                     "jvm/thread-system/thread-"+t.getThreadId(), threadInfoStatsProvider, ContainerMonitoring.LEVEL_HIGH);
         }
+    }
+
+    static {
+        MonitoringDataCollection.register(CountStatistic.class,
+                (collector, count) -> collector.collect(count.getName(), count.getCount()));
     }
 
     @Override

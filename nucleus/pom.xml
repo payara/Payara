@@ -48,22 +48,12 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>5.201-SNAPSHOT</version>
+        <version>5.2020.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
     <packaging>pom</packaging>
     <name>Payara Nucleus Parent Project</name>
-    <url>https://github.com/payara/Payara</url>
-
-    <licenses>
-      <license>
-        <name>CDDL + GPLv2 with classpath exception</name>
-        <url>https://raw.githubusercontent.com/payara/Payara/master/LICENSE.txt</url>
-        <distribution>repo</distribution>
-        <comments>A business-friendly OSS license</comments>
-      </license>
-    </licenses>
 
     <repositories>
         <!-- Try Maven central first, not last, which happens when omitted here -->
@@ -131,7 +121,8 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.version>1.8</grizzly.npn.version>
+        <grizzly.npn.version>1.9.payara-p1</grizzly.npn.version>
+        <grizzly.npn.osgi.version>1.9</grizzly.npn.osgi.version>
 
         <!-- Microprofile -->
         <!-- JAX-RS -->
@@ -155,10 +146,10 @@
         <classmate.version>1.5.0</classmate.version>
         <jboss.logging.version>3.3.2.Final</jboss.logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.24.1-GA</javassist.version>
+        <javassist.version>3.26.0-GA</javassist.version>
 
-        <!-- A pure Java implementation of the SSH-2 protocol, a successor to Ganymed  -->
-        <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
+        <!-- A pure Java implementation of the SSH-2 protocol -->
+        <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>4.0.2.payara-p1</pfl.version>
@@ -167,9 +158,8 @@
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.6</commons-io.version>
-
-        <mimepull.version>1.9.11</mimepull.version>
-        <jline.version>3.11.0</jline.version>
+      
+        <mimepull.version>1.9.12</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
         <org.apache.felix.main.version>6.0.2</org.apache.felix.main.version>
@@ -200,7 +190,7 @@
 
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
-        <logging-annotation-processor.version>1.8</logging-annotation-processor.version>
+        <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.10.payara-p1</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
@@ -721,16 +711,16 @@ Parent is ${project.parent}</echo>
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>fish.payara.monitoring-console</groupId>
+                <artifactId>monitoring-console-api</artifactId>
+                <version>${monitoring-console-api.version}</version>
+            </dependency>            
+            <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
-                <version>1.0.1</version>
+                <version>${osgi-resource-locator.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.sun.xml.stream</groupId>
-                <artifactId>sjsxp</artifactId>
-                <version>1.0</version>
-            </dependency>
             <dependency>
                 <groupId>antlr</groupId>
                 <artifactId>antlr</artifactId>
@@ -909,7 +899,13 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
-                <version>2.1</version>
+                <version>2.2</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>4.0.3</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -933,9 +929,10 @@ Parent is ${project.parent}</echo>
                 <version>1.0</version>
             </dependency>
             <dependency>
-                <groupId>org.jvnet.hudson</groupId>
+                <groupId>org.jenkins-ci</groupId>
                 <artifactId>trilead-ssh2</artifactId>
                 <version>${trilead-ssh2.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.ha</groupId>
@@ -971,13 +968,13 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
-                <version>1.62</version>
+                <version>1.64</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcpkix-jdk15on</artifactId>
-                <version>1.62</version>
+                <version>1.64</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

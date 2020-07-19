@@ -1,22 +1,19 @@
 package fish.payara.microprofile.openapi.impl.model;
 
-import static fish.payara.microprofile.openapi.impl.model.ExtensibleImpl.extensionName;
-
-import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Map.Entry;
-
-import org.eclipse.microprofile.openapi.models.Extensible;
-import org.eclipse.microprofile.openapi.models.Reference;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import static fish.payara.microprofile.openapi.impl.model.ExtensibleImpl.extensionName;
+import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import org.eclipse.microprofile.openapi.models.Extensible;
+import org.eclipse.microprofile.openapi.models.Reference;
 
 @JsonSerialize(using = ExtensibleTreeMap.ExtensibleTreeMapSerializer.class)
 public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends TreeMap<String, V>

@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -21,12 +22,12 @@
 
 <h4><a id="sthref98" name="sthref98"></a>To Create a JACC Provider</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the New JACC Provider page to create a new JSR-115/196compliant Java Authorization Contract for Containers (JACC) provider that can be used by third-party authorization modules for applications running in GlassFish Server. The JACC provider is created as a <code>jacc-provider</code> element within the <code>security-service</code> element in the domain's <code>domain.xml</code> file.</p>
-<p>The default GlassFish Server installation includes two JACC providers, named <code>default</code> and <code>simple</code>. Any new JACC providers you create are in addition to these two default providers. The default GlassFish Server JACC providers implement a simple, file-based authorization engine that complies with the JACC specification.</p>
+<p>Use the New JACC Provider page to create a new JSR-115/196compliant Java Authorization Contract for Containers (JACC) provider that can be used by third-party authorization modules for applications running in Payara Server. The JACC provider is created as a <code>jacc-provider</code> element within the <code>security-service</code> element in the domain's <code>domain.xml</code> file.</p>
+<p>The default Payara Server installation includes two JACC providers, named <code>default</code> and <code>simple</code>. Any new JACC providers you create are in addition to these two default providers. The default Payara Server JACC providers implement a simple, file-based authorization engine that complies with the JACC specification.</p>
 <p>For information on how to write the implementation classes for a JACC provider, see the JACC specification at <code><a href="http://jcp.org/en/jsr/detail?id=115">http://jcp.org/en/jsr/detail?id=115</a></code>.</p>
 <ol>
 <li>
-<p>Under the Configurations node In the navigation tree, expand the expand the GlassFish Server instance or cluster for which you want to create a JACC provider.</p>
+<p>Under the Configurations node In the navigation tree, expand the expand the Payara Server instance or cluster for which you want to create a JACC provider.</p>
 <p>To create a provider that will be available to all instances and clusters, choose the <code>default-config</code> node.</p>
 </li>
 <li>
@@ -73,3 +74,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

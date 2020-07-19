@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -36,7 +37,7 @@
 </dd>
 <dt><code>proxyHandler</code></dt>
 <dd>
-<p>The fully qualified class name of a custom implementation of the <code>com.sun.appserv.ProxyHandler</code> abstract class, which allows a back-end GlassFish Server instance to retrieve information about the original client request that was intercepted by an SSL-terminating proxy server (for example, a load balancer). An implementation of this abstract class inspects a given request for the custom request headers through which the proxy server communicates the information about the original client request to the Enterprise Server instance, and returns that information to its caller.</p>
+<p>The fully qualified class name of a custom implementation of the <code>com.sun.appserv.ProxyHandler</code> abstract class, which allows a back-end Payara Server instance to retrieve information about the original client request that was intercepted by an SSL-terminating proxy server (for example, a load balancer). An implementation of this abstract class inspects a given request for the custom request headers through which the proxy server communicates the information about the original client request to the Enterprise Server instance, and returns that information to its caller.</p>
 <p>The default implementation reads the client IP address from an HTTP request header named <code>Proxy-ip</code>, the SSL <code>keysize</code> from an HTTP request header named <code>Proxy-keysize</code>, and the SSL client certificate chain from an HTTP request header named <code>Proxy-auth-cert</code>. The <code>Proxy-auth-cert</code> value must contain the BASE-64 encoded client certificate chain without the <code>BEGIN CERTIFICATE</code> and <code>END CERTIFICATE</code> boundaries and with <code>\n</code> replaced with <code>% d% a</code>.</p>
 <p>This setting is used only if the Auth Pass Through checkbox for the network listener protocol's HTTP page is set to true.</p>
 </dd>
@@ -48,3 +49,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

@@ -37,40 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SshAuth;
-import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.cluster.RemoteType;
+import com.sun.enterprise.util.cluster.SshAuthType;
+import com.sun.enterprise.util.net.NetUtils;
+
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.sun.enterprise.util.net.NetUtils;
 import java.util.logging.Level;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import org.glassfish.hk2.api.PerLookup;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
-import java.util.logging.Logger;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- * Remote AdminCommand to update a config node.  This command is run only on DAS.
- *  Update the config node on DAS
+ * Remote AdminCommand to update a config node. This command is run only on DAS.
+ * <p>
+ * Update the config node on DAS
  *
  * @author Carla Mott
  */
@@ -80,14 +92,16 @@ import java.util.logging.Logger;
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Node.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="_update-node", 
+        opType=RestEndpoint.OpType.POST,
+        path="_update-node",
         description="Update Node",
         params={
             @RestParam(name="name", value="$parent")
         })
 })
 public class UpdateNodeCommand implements AdminCommand {
+
+    private static final Logger LOG = Logger.getLogger(UpdateNodeCommand.class.getName());
 
     @Inject
     Nodes nodes;
@@ -116,14 +130,18 @@ public class UpdateNodeCommand implements AdminCommand {
     @Param(name="sshnodehost", optional=true)
     String sshnodehost;
 
+    /** {@link SshAuthType} name */
+    @Param(name = "sshauthtype", optional=true)
+    String sshAuthType;
+
     @Param(name="sshkeyfile", optional=true)
     String sshkeyfile;
 
-    @Param(name = "sshpassword", optional = true, password=true)
-     String sshpassword;
+    @Param(name = "sshkeypassphrase", optional = true, password = true)
+    String sshkeypassphrase;
 
-    @Param(name = "sshkeypassphrase", optional = true, password=true)
-     String sshkeypassphrase;
+    @Param(name = "sshpassword", optional = true, password=true)
+    String sshpassword;
 
     @Param(name = "windowsdomain", optional = true)
     String windowsdomain;
@@ -140,15 +158,16 @@ public class UpdateNodeCommand implements AdminCommand {
     @Param(name = "useTls", optional = true)
     String useTls;
 
+    /** {@link RemoteType} name */
     @Param(name = "type", optional=true)
     String type;
 
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        Logger logger= context.getLogger();
-
-        Node node= nodes.getNode(name);
+        LOG.finest(() -> String.format("execute(context=%s)", context));
+        final ActionReport report = context.getActionReport();
+        final Logger logger = context.getLogger();
+        final Node node = nodes.getNode(name);
         if (node == null) {
             //node doesn't exist
             String msg = Strings.get("noSuchNode", name);
@@ -159,17 +178,13 @@ public class UpdateNodeCommand implements AdminCommand {
         }
         // Validate installdir if passed and running on localhost and not a Docker node
         if (StringUtils.ok(nodehost) && NetUtils.isThisHostLocal(nodehost) && StringUtils.ok(installdir)
-                && !node.getType().equals("DOCKER")){
-            TokenResolver resolver = null;
+            && !node.getType().equals(RemoteType.DOCKER.name())) {
 
             // Create a resolver that can replace system properties in strings
-            Map<String, String> systemPropsMap =
-                    new HashMap<String, String>((Map) (System.getProperties()));
-            resolver = new TokenResolver(systemPropsMap);
+            Map<String, String> systemPropsMap = new HashMap<String, String>((Map) (System.getProperties()));
+            TokenResolver resolver = new TokenResolver(systemPropsMap);
             String resolvedInstallDir = resolver.resolve(installdir);
             File actualInstallDir = new File(resolvedInstallDir + File.separatorChar + NodeUtils.LANDMARK_FILE);
-
-
             if (!actualInstallDir.exists()) {
                 report.setMessage(Strings.get("invalid.installdir", installdir));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -182,15 +197,12 @@ public class UpdateNodeCommand implements AdminCommand {
             String badparam = null;
             String configNodedir = node.getNodeDir();
             String configInstalldir = node.getInstallDir();
-
             if (!allowableChange(nodedir, configNodedir)){
                 badparam = "nodedir";
             }
-
             if (!allowableChange(installdir, configInstalldir)) {
                 badparam = "installdir";
             }
-
             if (StringUtils.ok(badparam)) {
                 String msg = Strings.get("noUpdate.nodeInUse", name, badparam);
                 logger.warning(msg);
@@ -198,72 +210,99 @@ public class UpdateNodeCommand implements AdminCommand {
                 report.setMessage(msg);
                 return;
             }
-
         }
 
         try {
             updateNodeElement(name);
-        } catch(TransactionFailure e) {
-            logger.log(Level.WARNING, "failed.to.update.node {0}", name);
+        } catch (TransactionFailure e) {
+            logger.log(Level.WARNING, Strings.get("failed.to.update.node {0}", name), e);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
         }
-
-
     }
 
 
-    public void updateNodeElement(final String nodeName) throws TransactionFailure {
+    private void updateNodeElement(final String nodeName) throws TransactionFailure {
+        LOG.fine(() -> String.format("updateNodeElement(nodeName=%s)", nodeName));
         ConfigSupport.apply(new SingleConfigCode() {
             @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                // get the transaction
                 Transaction t = Transaction.getTransaction(param);
-                if (t!=null) {
-                   Nodes nodes = ((Domain)param).getNodes();
+                if (t != null) {
+                    Nodes nodes = ((Domain) param).getNodes();
                     Node node = nodes.getNode(nodeName);
                     Node writeableNode = t.enroll(node);
-                    if (windowsdomain != null)
+                    if (windowsdomain != null) {
                         writeableNode.setWindowsDomain(windowsdomain);
-                    if (nodedir != null)
+                    }
+                    if (nodedir != null) {
                         writeableNode.setNodeDir(nodedir);
-                    if (nodehost != null)
+                    }
+                    if (nodehost != null) {
                         writeableNode.setNodeHost(nodehost);
-                    if (installdir != null)
+                    }
+                    if (installdir != null) {
                         writeableNode.setInstallDir(installdir);
-                    if (type != null)
+                    }
+                    if (type != null) {
                         writeableNode.setType(type);
-                    if (sshport != null || sshnodehost != null ||sshuser != null || sshkeyfile != null) {
-                        SshConnector sshC = writeableNode.getSshConnector();
-                        if (sshC == null)  {
-                            sshC =writeableNode.createChild(SshConnector.class);
-                        }else
-                            sshC = t.enroll(sshC);
-
-                        if (sshport != null)
-                            sshC.setSshPort(sshport);
-                        if(sshnodehost != null)
-                            sshC.setSshHost(sshnodehost);
-
-                        if (sshuser != null || sshkeyfile != null || sshpassword != null || sshkeypassphrase != null ) {
-                            SshAuth sshA = sshC.getSshAuth();
-                            if (sshA == null) {
-                               sshA = sshC.createChild(SshAuth.class);
-                            } else
-                                sshA = t.enroll(sshA);
-
-                            if (sshuser != null)
-                                sshA.setUserName(sshuser);
-                            if (sshkeyfile != null)
-                                sshA.setKeyfile(sshkeyfile);
-                            if(sshpassword != null)
-                                sshA.setPassword(sshpassword);
-                            if(sshkeypassphrase != null)
-                                sshA.setKeyPassphrase(sshkeypassphrase);
-                            sshC.setSshAuth(sshA);
+                    }
+                    if (RemoteType.SSH.name().equals(type) || RemoteType.DCOM.name().equals(type)) {
+                        SshConnector sshConnector = writeableNode.getSshConnector();
+                        if (sshConnector == null)  {
+                            sshConnector = writeableNode.createChild(SshConnector.class);
+                        } else {
+                            sshConnector = t.enroll(sshConnector);
                         }
-                        writeableNode.setSshConnector(sshC);
 
+                        if (sshport != null) {
+                            sshConnector.setSshPort(sshport);
+                        }
+                        if(sshnodehost != null) {
+                            sshConnector.setSshHost(sshnodehost);
+                        }
+                        writeableNode.setSshConnector(sshConnector);
+                        if (sshAuthType != null || sshuser != null //
+                            || sshkeyfile != null || sshpassword != null || sshkeypassphrase != null) {
+                            SshAuth sshAuth = sshConnector.getSshAuth();
+                            if (sshAuth == null) {
+                               sshAuth = sshConnector.createChild(SshAuth.class);
+                            } else {
+                                sshAuth = t.enroll(sshAuth);
+                            }
+
+                            if (sshuser != null) {
+                                sshAuth.setUserName(sshuser);
+                            }
+                            if (sshkeypassphrase != null) {
+                                sshAuth.setKeyPassphrase(sshkeypassphrase);
+                            }
+                            if (sshAuthType == null) {
+                                // if both set, keyfile wins
+                                if (sshpassword != null) {
+                                    sshAuth.setKeyfile(null);
+                                    sshAuth.setPassword(sshpassword);
+                                }
+                                if (sshkeyfile != null) {
+                                    sshAuth.setKeyfile(sshkeyfile);
+                                    sshAuth.setPassword(null);
+                                }
+                            } else {
+                                if (SshAuthType.KEY.name().equals(sshAuthType)) {
+                                    // keyfile is set even if null, it would not be possible to
+                                    // return to default from UI otherwise
+                                    sshAuth.setKeyfile(sshkeyfile);
+                                    sshAuth.setPassword(null);
+                                } else if (SshAuthType.PASSWORD.name().equals(sshAuthType)) {
+                                    sshAuth.setKeyfile(null);
+                                    sshAuth.setKeyPassphrase(null);
+                                    if (sshpassword != null) {
+                                        sshAuth.setPassword(sshpassword);
+                                    }
+                                }
+                            }
+                            sshConnector.setSshAuth(sshAuth);
+                        }
                     }
 
                     if (dockerImage != null) {
@@ -291,7 +330,8 @@ public class UpdateNodeCommand implements AdminCommand {
     /**
      * If the node is in use, is it OK to change currentvalue to newvalue?
      */
-    private static boolean allowableChange(String newvalue, String currentvalue) {
+    private static boolean allowableChange(final String newvalue, final String currentvalue) {
+        LOG.finest(() -> String.format("allowableChange(newvalue=%s, currentvalue=%s)", newvalue, currentvalue));
 
         // If the new value is not specified, then we aren't changing anything
         if (newvalue == null) {
@@ -319,9 +359,9 @@ public class UpdateNodeCommand implements AdminCommand {
             Map<String, String> systemPropsMap =
                         new HashMap<String, String>((Map)(System.getProperties()));
             TokenResolver resolver = new TokenResolver(systemPropsMap);
-            newvalue = resolver.resolve(newvalue);
-            currentvalue = resolver.resolve(currentvalue);
-            return newvalue.equals(currentvalue);
+            final String resolvedNewValue = resolver.resolve(newvalue);
+            final String resolvedCurrentValue = resolver.resolve(currentvalue);
+            return resolvedNewValue.equals(resolvedCurrentValue);
         }
 
         // Values don't match.

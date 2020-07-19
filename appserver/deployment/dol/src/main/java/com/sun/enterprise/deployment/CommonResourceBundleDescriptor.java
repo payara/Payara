@@ -42,7 +42,6 @@ package com.sun.enterprise.deployment;
 
 import org.glassfish.deployment.common.JavaEEResourceType;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**

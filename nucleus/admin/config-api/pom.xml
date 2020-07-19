@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>5.201-SNAPSHOT</version>
+        <version>5.2020.4-SNAPSHOT</version>
     </parent>
     
     <artifactId>config-api</artifactId>
@@ -139,11 +139,6 @@
             <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.stream</groupId>
-            <artifactId>sjsxp</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

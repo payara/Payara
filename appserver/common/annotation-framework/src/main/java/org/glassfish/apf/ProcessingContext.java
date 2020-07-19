@@ -40,11 +40,10 @@
 
 package org.glassfish.apf;
 
-import java.util.Set;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
 /**
- * This interface defines the context for the annotation procesing
+ * This interface defines the context for the annotation processing
  * handler. There is only one context instance per AnnotationProcessor 
  * invocation.
  *

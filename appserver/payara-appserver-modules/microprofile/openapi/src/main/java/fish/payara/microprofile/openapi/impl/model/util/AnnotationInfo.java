@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,53 +40,61 @@
 package fish.payara.microprofile.openapi.impl.model.util;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.ClassModel;
+import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
+import org.glassfish.hk2.classmodel.reflect.FieldModel;
+import org.glassfish.hk2.classmodel.reflect.InterfaceModel;
+import org.glassfish.hk2.classmodel.reflect.MethodModel;
+import org.glassfish.hk2.classmodel.reflect.Parameter;
 
 /**
  * Represents the aggregated annotations on a type, its fields and methods including annotations "inherited" from
  * super-classes and implemented interfaces. Should a field or method from a super-class be overridden the
  * {@link Annotation} closest to the represented type (the overriding one) is kept.
  */
-public final class AnnotationInfo<T> {
+public final class AnnotationInfo {
 
-    private static final Map<Class<?>, AnnotationInfo<?>> TYPES = new ConcurrentHashMap<>();
+    private static final Map<ExtensibleType<? extends ExtensibleType>, AnnotationInfo> TYPES = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
-    public static <T> AnnotationInfo<T> valueOf(Class<T> type) {
-        return (AnnotationInfo<T>) TYPES.computeIfAbsent(type, key -> new AnnotationInfo<>(key));
+    public static AnnotationInfo valueOf(ExtensibleType<? extends ExtensibleType> type) {
+        return (AnnotationInfo) TYPES.computeIfAbsent(type, key -> new AnnotationInfo(key));
     }
 
-    private final Class<T> type;
-    private final Map<Class<? extends Annotation>, Annotation> typeAnnotations = new ConcurrentHashMap<>();
-    private final Map<String, Map<Class<? extends Annotation>, Annotation>> fieldAnnotations = new ConcurrentHashMap<>();
-    private final Map<String, Map<Class<? extends Annotation>, Annotation>> methodAnnotations = new ConcurrentHashMap<>();
-    private final Map<String, Map<Class<? extends Annotation>, Annotation>> methodParameterAnnotations = new ConcurrentHashMap<>();
+    private final ExtensibleType<? extends ExtensibleType> type;
+    private final Map<String, AnnotationModel> typeAnnotations = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, AnnotationModel>> fieldAnnotations = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, AnnotationModel>> methodAnnotations = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, AnnotationModel>> methodParameterAnnotations = new ConcurrentHashMap<>();
 
-    private AnnotationInfo(Class<T> type) {
+    private AnnotationInfo(ExtensibleType<? extends ExtensibleType> type) {
         this.type = type;
         init(type);
     }
 
-    public Class<T> getType() {
+    public ExtensibleType<? extends ExtensibleType> getType() {
         return type;
     }
 
     /**
-     * Version of {@link Class#getAnnotation(Class)} also considering annotations "inherited" from
-     * super-types for this {@link AnnotationInfo#getType()}.
-     * 
+     * Version of {@link Class#getAnnotation(Class)} also considering
+     * annotations "inherited" from super-types for this
+     * {@link AnnotationInfo#getType()}.
+     *
      * @param annotationType annotation type to check
-     * @return the annotation of the given type if present or {@code null} otherwise
+     * @return the annotation of the given type if present or {@code null}
+     * otherwise
      */
     @SuppressWarnings("unchecked")
-    public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
-        return (A) typeAnnotations.get(annotationType);
+    public AnnotationModel getAnnotation(Class<? extends Annotation> annotationType) {
+        return typeAnnotations.get(annotationType.getName());
     }
 
     /**
@@ -98,8 +106,8 @@ public final class AnnotationInfo<T> {
      * @return the annotation of the given type if present or {@code null} otherwise
      */
     @SuppressWarnings("unchecked")
-    public <A extends Annotation> A getAnnotation(Class<A> annotationType, Field field) {
-        return (A) fieldAnnotations.get(field.getName()).get(annotationType);
+    public AnnotationModel getAnnotation(Class<? extends Annotation> annotationType, FieldModel field) {
+        return fieldAnnotations.get(field.getName()).get(annotationType.getName());
     }
 
     /**
@@ -111,8 +119,8 @@ public final class AnnotationInfo<T> {
      * @return the annotation of the given type if present or {@code null} otherwise
      */
     @SuppressWarnings("unchecked")
-    public <A extends Annotation> A getAnnotation(Class<A> annotationType, Method method) {
-        return (A) methodAnnotations.get(getSignature(method)).get(annotationType);
+    public AnnotationModel getAnnotation(Class<? extends Annotation> annotationType, MethodModel method) {
+        return methodAnnotations.get(getSignature(method)).get(annotationType.getName());
     }
 
     /**
@@ -125,8 +133,26 @@ public final class AnnotationInfo<T> {
      * @return the annotation of the given type if present or {@code null} otherwise
      */
     @SuppressWarnings("unchecked")
-    public <A extends Annotation> A getAnnotation(Class<A> annotationType, Parameter parameter) {
-        return (A) methodParameterAnnotations.get(getIdentifier(parameter)).get(annotationType);
+    public AnnotationModel getAnnotation(Class<? extends Annotation> annotationType, Parameter parameter) {
+        return methodParameterAnnotations.get(getIdentifier(parameter)).get(annotationType.getName());
+    }
+
+    @SuppressWarnings("unchecked")
+    public String getAnnotationValue(Class<? extends Annotation> annotationType) {
+        AnnotationModel model = getAnnotation(annotationType);
+        if (model != null) {
+            return model.getValue("value", String.class);
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public String getAnnotationValue(Class<? extends Annotation> annotationType, AnnotatedElement parameter) {
+        AnnotationModel model = getAnnotation(annotationType, parameter);
+        if (model != null) {
+            return model.getValue("value", String.class);
+        }
+        return null;
     }
 
     /**
@@ -138,18 +164,14 @@ public final class AnnotationInfo<T> {
      *                       {@link Method} defined or inherited by it or a {@link Parameter} of such a method.
      * @return the annotation of the given type if present or {@code null} otherwise
      */
-    public <A extends Annotation> A getAnnotation(Class<A> annotationType, AnnotatedElement element) {
-        Class<?> kind = element.getClass();
-        if (kind == Class.class) {
+    public AnnotationModel getAnnotation(Class<? extends Annotation> annotationType, AnnotatedElement element) {
+        if (element instanceof ClassModel) {
             return getAnnotation(annotationType);
-        }
-        if (kind == Field.class) {
-            return getAnnotation(annotationType, (Field) element);
-        }
-        if (kind == Method.class) {
-            return getAnnotation(annotationType, (Method) element);
-        }
-        if (kind == Parameter.class) {
+        } else if (element instanceof FieldModel) {
+            return getAnnotation(annotationType, (FieldModel) element);
+        } else if (element instanceof MethodModel) {
+            return getAnnotation(annotationType, (MethodModel) element);
+        } else if (element instanceof Parameter) {
             return getAnnotation(annotationType, (Parameter) element);
         }
         return null;
@@ -172,7 +194,7 @@ public final class AnnotationInfo<T> {
      * @return true in case it is present at the given field. The field must be defined in this
      *         {@link AnnotationInfo#getType()} or any of its super-types.
      */
-    public boolean isAnnotationPresent(Class<? extends Annotation> annotationType, Field field) {
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotationType, FieldModel field) {
         return getAnnotation(annotationType, field) != null;
     }
 
@@ -184,7 +206,7 @@ public final class AnnotationInfo<T> {
      *                       {@link AnnotationInfo#getType()} or any of its super-types.
      * @return true in case it is present at the given method, else false
      */
-    public boolean isAnnotationPresent(Class<? extends Annotation> annotationType, Method method) {
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotationType, MethodModel method) {
         return getAnnotation(annotationType, method) != null;
     }
 
@@ -238,53 +260,59 @@ public final class AnnotationInfo<T> {
         return methodParameterAnnotations.get(getIdentifier(parameter)).size();
     }
 
-    private void init(Class<?> type) {
-        // recurse first so that re-stated annotations "override"
-        Class<?> supertype = type.getSuperclass();
-        if (supertype != null && supertype != Object.class) {
-            init(supertype);
-        }
-        for (Class<?> implementedInterface : type.getInterfaces()) {
-            init(implementedInterface);
-        }
-        // collect annotations
-        putAll(type.getDeclaredAnnotations(), typeAnnotations);
-        for (Field field : type.getDeclaredFields()) {
-            putAll(field.getDeclaredAnnotations(), 
-                    fieldAnnotations.computeIfAbsent(field.getName(), key -> new ConcurrentHashMap<>()));
-        }
-        for (Method method : type.getDeclaredMethods()) {
-            putAll(method.getDeclaredAnnotations(),
-                methodAnnotations.computeIfAbsent(getSignature(method), key -> new ConcurrentHashMap<>()));
-            for (Parameter parameter : method.getParameters()) {
-                putAll(parameter.getDeclaredAnnotations(), 
-                        methodParameterAnnotations.computeIfAbsent(getIdentifier(parameter), key -> new ConcurrentHashMap<>()));
-            }
-        }
+      private void init(ExtensibleType<? extends ExtensibleType> type) {
+          // recurse first so that re-stated annotations "override"
+          ExtensibleType<? extends ExtensibleType> supertype = type.getParent();
+          if (supertype != null) {
+              init(supertype);
+          }
+          for (InterfaceModel implementedInterface : type.getInterfaces()) {
+              if (implementedInterface != null) {
+                  init(implementedInterface);
+              }
+          }
+
+          // collect annotations
+          putAll(type.getAnnotations(), typeAnnotations);
+          if (type instanceof ClassModel) {
+              for (FieldModel field : ((ClassModel) type).getFields()) {
+                  putAll(
+                          field.getAnnotations(),
+                          fieldAnnotations.computeIfAbsent(field.getName(), key -> new ConcurrentHashMap<>())
+                  );
+              }
+          }
+          for (MethodModel method : type.getMethods()) {
+              putAll(
+                      method.getAnnotations(),
+                      methodAnnotations.computeIfAbsent(getSignature(method), key -> new ConcurrentHashMap<>())
+              );
+              for (Parameter parameter : method.getParameters()) {
+                  putAll(
+                          parameter.getAnnotations(),
+                          methodParameterAnnotations.computeIfAbsent(getIdentifier(parameter), key -> new ConcurrentHashMap<>())
+                  );
+              }
+          }
+
     }
 
-    private static void putAll(Annotation[] annotations, Map<Class<? extends Annotation>, Annotation> map) {
-        for (Annotation a : annotations) {
-            map.put(a.annotationType(), a);
+    private static void putAll(Collection<AnnotationModel> annotations, Map<String, AnnotationModel> map) {
+        for (AnnotationModel a : annotations) {
+            map.put(a.getType().getName(), a);
         }
     }
 
     private static String getIdentifier(Parameter parameter) {
-        try {
-            java.lang.reflect.Field index = parameter.getClass().getDeclaredField("index");
-            index.setAccessible(true);
-            return getSignature(parameter.getDeclaringExecutable()) + "#" + index.getInt(parameter);
-        } catch (Exception e) {
-            return getSignature(parameter.getDeclaringExecutable()) + "#" + parameter.toString();
-        }
+        return getSignature(parameter.getMethod()) + "#" + parameter.getIndex();
     }
 
-    private static String getSignature(Executable method) {
+    private static String getSignature(MethodModel method) {
         StringBuilder signature = new StringBuilder();
         signature.append(method.getName());
         signature.append('(');
-        for (Class<?> parameterType : method.getParameterTypes()) {
-            signature.append(parameterType.getName()).append(", ");
+        for (String parameterType : method.getArgumentTypes()) {
+            signature.append(parameterType).append(", ");
         }
         signature.append(')');
         return signature.toString();

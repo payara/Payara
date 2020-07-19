@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,15 +39,13 @@
  */
 package fish.payara.microprofile.openapi.impl.model.media;
 
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.eclipse.microprofile.openapi.models.media.Encoding;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 
 public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaType {
 

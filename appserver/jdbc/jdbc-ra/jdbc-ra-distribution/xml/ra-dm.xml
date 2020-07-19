@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
 
 <connector xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
@@ -80,7 +81,7 @@
     <!-- This should specify the name of the driver vendor. The following is an example.
         <vendor-name>XYZ INC.</vendor-name>
     -->
-    <vendor-name>Sun Microsystems</vendor-name>
+    <vendor-name>H2</vendor-name>
 
     <!-- The "eis-type" element should occur exactly once. -->
     <!-- This should specify the database, for example the product name of
@@ -141,12 +142,12 @@
                 <config-property>
                     <config-property-name>User</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>APP</config-property-value>
+                    <config-property-value>sa</config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>Password</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>APP</config-property-value>
+                    <config-property-value></config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>LoginTimeOut</config-property-name>
@@ -161,7 +162,7 @@
                 <config-property>
                     <config-property-name>ClassName</config-property-name>
                     <config-property-type>java.lang.String</config-property-type>
-                    <config-property-value>org.apache.derby.jdbc.ClientDriver</config-property-value>
+                    <config-property-value>org.h2.Driver</config-property-value>
                 </config-property>
                 <config-property>
                     <config-property-name>ConnectionValidationRequired</config-property-name>

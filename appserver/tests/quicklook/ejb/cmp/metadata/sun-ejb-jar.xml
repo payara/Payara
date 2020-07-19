@@ -42,6 +42,8 @@
 
 -->
 
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
+
 <sun-ejb-jar>
   <enterprise-beans>
     <unique-id>656565</unique-id>
@@ -74,7 +76,7 @@
       </ejb-ref>
     </ejb>
     <cmp-resource>
-      <jndi-name>jdbc/__derby</jndi-name>
+      <jndi-name>jdbc/__Test</jndi-name>
     </cmp-resource>
   </enterprise-beans>
 </sun-ejb-jar>

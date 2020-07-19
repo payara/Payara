@@ -37,14 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.jacc;
 
-import static com.sun.enterprise.security.common.AppservAccessController.privilegedException;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
-import static org.glassfish.api.web.Constants.ADMIN_VS;
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
+import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
+import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
+import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.ee.SecurityUtil;
+import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
+import com.sun.enterprise.security.jacc.cache.CachedPermission;
+import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl;
+import com.sun.enterprise.security.jacc.cache.PermissionCache;
+import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;
+import com.sun.enterprise.security.web.integration.WebPrincipal;
+import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
+import com.sun.logging.LogDomains;
+
+import fish.payara.jacc.JaccConfigurationFactory;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -59,7 +78,6 @@ import java.security.PrivilegedActionException;
 import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -80,44 +98,23 @@ import org.glassfish.security.common.Group;
 import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.common.Role;
 
-import com.sun.enterprise.config.serverbeans.ApplicationRef;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
-//V3:Commented import com.sun.enterprise.server.ApplicationServer;
-import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.deployment.web.LoginConfiguration;
-import com.sun.enterprise.security.SecurityContext;
-//import org.apache.catalina.Globals;
-import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
-import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
-import com.sun.enterprise.security.audit.AuditManager;
-import com.sun.enterprise.security.ee.SecurityUtil;
-import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
-import com.sun.enterprise.security.jacc.cache.CachedPermission;
-import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl;
-import com.sun.enterprise.security.jacc.cache.PermissionCache;
-import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;
-import com.sun.enterprise.security.web.integration.WebPrincipal;
-import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
-import com.sun.logging.LogDomains;
-
-import fish.payara.jacc.JaccConfigurationFactory;
+import static com.sun.enterprise.security.common.AppservAccessController.privilegedException;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
+import static org.glassfish.api.web.Constants.ADMIN_VS;
 
 /**
- * This class is the entry point for authorization decisions in the web container. It implements JACC, 
- * the JSR 115 - JavaTM Authorization Contract for Containers. This class is a 
+ * This class is the entry point for authorization decisions in the web container. It implements JACC,
+ * the JSR 115 - JavaTM Authorization Contract for Containers. This class is a
  * companion class of EJBSecurityManager.
  *
  * <p>
  * All the authorization decisions required to allow access to a resource in the web container should happen
  * via this class.
- * 
+ *
  * <p>
  * Note that according to the JACC specification, for the actual authorization decision we delegate our queries
- * to a JACC aware {@link Policy}, which is pluggable (can be replaced by the user).  
+ * to a JACC aware {@link Policy}, which is pluggable (can be replaced by the user).
  *
  * @author Jean-Francois Arcand
  * @author Harpreet Singh.
@@ -125,7 +122,7 @@ import fish.payara.jacc.JaccConfigurationFactory;
  * class and extend this class from AbstractSecurityManager
  */
 public class JaccWebAuthorizationManager {
-    
+
     private static final Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
 
     /**
@@ -136,7 +133,7 @@ public class JaccWebAuthorizationManager {
     private static final String RESOURCE = "hasResourcePermission";
     private static final String USERDATA = "hasUserDataPermission";
     private static final String EMPTY_STRING = "";
-    
+
     private static final WebResourcePermission allResources = new WebResourcePermission("/*", (String) null);
     private static final WebUserDataPermission allConnections = new WebUserDataPermission("/*", null);
     private static Permission[] protoPerms = { allResources, allConnections };
@@ -144,10 +141,10 @@ public class JaccWebAuthorizationManager {
 
     // The context ID associated with this instance. This is the name
     // of the application
-    private String CONTEXT_ID;
+    private final String CONTEXT_ID;
     private String CODEBASE;
 
-    // The JACC policy provider. This is the pluggable lower level authorization module 
+    // The JACC policy provider. This is the pluggable lower level authorization module
     // to which this class delegates all authorization queries.
     protected Policy policy = Policy.getPolicy();
     protected PolicyConfigurationFactory policyConfigurationFactory;
@@ -155,24 +152,24 @@ public class JaccWebAuthorizationManager {
     protected CodeSource codesource;
 
     // protection domain cache
-    private Map<Set<Principal>, ProtectionDomain> protectionDomainCache = Collections.synchronizedMap(new WeakHashMap<>());
+    private final Map<Set<Principal>, ProtectionDomain> protectionDomainCache = Collections.synchronizedMap(new WeakHashMap<>());
 
     // Permissions tied to unchecked permission cache, and used
     // to determine if the effective policy is grant all
     // WebUserData and WebResource permisions.
     private CachedPermission allResourcesCachedPermission;
     private CachedPermission allConnectionsCachedPermission;
-    
+
     // Unchecked permission cache used by the CachedPermissions defined above.
     private PermissionCache uncheckedPermissionCache;
 
-    private WebSecurityManagerFactory webSecurityManagerFactory;
-    private ServerContext serverContext;
+    private final WebSecurityManagerFactory webSecurityManagerFactory;
+    private final ServerContext serverContext;
 
-    private WebBundleDescriptor webBundleDescriptor;
+    private final WebBundleDescriptor webBundleDescriptor;
 
     // ProbeProvider
-    private WebSecurityDeployerProbeProvider probeProvider = new WebSecurityDeployerProbeProvider();
+    private final WebSecurityDeployerProbeProvider probeProvider = new WebSecurityDeployerProbeProvider();
     private boolean register = true;
 
     public JaccWebAuthorizationManager(WebBundleDescriptor webBundleDescriptor, ServerContext serverContext, WebSecurityManagerFactory webSecurityManagerFactory, boolean register) throws PolicyContextException {
@@ -181,15 +178,12 @@ public class JaccWebAuthorizationManager {
         this.CONTEXT_ID = getContextID(webBundleDescriptor);
         this.serverContext = serverContext;
         this.webSecurityManagerFactory = webSecurityManagerFactory;
-        
-        String appname = getAppId();
 
-        postConstruct();
-        
-        // Initialize this class and specifically load permissions into the JACC Policy Configuration.
+        String appname = getAppId();
+        SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory().setAppNameForContext(getAppId(), CONTEXT_ID);
         initialise(appname);
     }
-    
+
     // fix for CR 6155144
     // used to get the policy context id. Also used by the RealmAdapter
     public static String getContextID(WebBundleDescriptor webBundleDescriptor) {
@@ -197,22 +191,22 @@ public class JaccWebAuthorizationManager {
     }
 
     /**
-     * This method returns true to indicate that a policy check was made and there were no constrained resources. 
-     * 
+     * This method returns true to indicate that a policy check was made and there were no constrained resources.
+     *
      * <p>
-     * When caching is disabled must always return false, which will ensure that policy is consulted to authorize 
+     * When caching is disabled must always return false, which will ensure that policy is consulted to authorize
      * each request.
-     * 
+     *
      * @return true when there are no constrained resources, false otherwise
      */
     public boolean hasNoConstrainedResources() {
         boolean noConstrainedResources = false;
-        
+
         if (allResourcesCachedPermission != null && allConnectionsCachedPermission != null) {
             boolean x = allResourcesCachedPermission.checkPermission();
             boolean y = allConnectionsCachedPermission.checkPermission();
             noConstrainedResources = x && y;
-            
+
             if (noConstrainedResources) {
                 try {
                     setPolicyContext(CONTEXT_ID);
@@ -221,19 +215,19 @@ public class JaccWebAuthorizationManager {
                 }
             }
         }
-        
+
         return noConstrainedResources;
     }
-    
+
     /**
-     * Checks if for the given request and the given request URI and method are the target of any user-data-constraint with a 
+     * Checks if for the given request and the given request URI and method are the target of any user-data-constraint with a
      * and whether any such constraint is already satisfied.
-     * 
+     *
      * <p>
      * if uri == null, determine if the connection characteristics of the request satisfy the applicable policy. If the uri
      * is not null, determine if the uri and Http method require a CONFIDENTIAL transport. The uri value does not include
      * the context path, and any colons occurring in the uri must be escaped.
-     * 
+     *
      * <p>
      * Note: this method is not intended to be called if the request is secure. It checks whether the resource can be
      * accessed over the current connection type (which is presumed to be insecure), and if an insecure connection type is
@@ -242,18 +236,18 @@ public class JaccWebAuthorizationManager {
      * <p>
      * If the request is secure, the second check is skipped, and the proper result is returned (but that is not the
      * intended use model).
-     * 
+     *
      * @param servletRequest the request that may be redirected
      * @param uri the request URI (minus the context path) to check
      * @param method the request method to check
      *
      * @return 1 if access is permitted (as is or without SSL). -1 if the the access will be permitted after a redirect to
      * SSL. return 0 if access will be denied independent of whether a redirect to SSL is done.
-     * 
+     *
      */
     public int hasUserDataPermission(HttpServletRequest servletRequest, String uri, String httpMethod) {
         setServletRequestForJACC(servletRequest);
-        
+
         WebUserDataPermission dataPermission;
         boolean requestIsSecure = servletRequest.isSecure();
         if (uri == null) {
@@ -276,7 +270,7 @@ public class JaccWebAuthorizationManager {
 
         // Audit the grant
         recordWebInvocation(servletRequest, USERDATA, isGranted);
-        
+
         if (!isGranted && !requestIsSecure) {
 
             if (uri == null) {
@@ -294,69 +288,69 @@ public class JaccWebAuthorizationManager {
 
         return result;
     }
-    
+
     public boolean isPermitAll(HttpServletRequest request) {
         boolean isPermitAll = false;
-        
+
         WebResourcePermission webResourcePermission = createWebResourcePermission(request);
-        
+
         if (uncheckedPermissionCache != null) {
             isPermitAll = uncheckedPermissionCache.checkPermission(webResourcePermission);
         }
-        
+
         if (isPermitAll == false) {
             isPermitAll = checkPermissionWithoutCache(webResourcePermission, null);
         }
-        
+
         return isPermitAll;
     }
-    
+
     /**
      * Perform access control based on the <code>HttpServletRequest</code>. Return <code>true</code> if this constraint is
      * satisfied and processing should continue, or <code>false</code> otherwise.
-     * 
+     *
      * @return true is the resource is granted, false if denied
      */
     public boolean hasResourcePermission(HttpServletRequest servletRequest) {
         SecurityContext securityContect = getSecurityContext(servletRequest.getUserPrincipal());
-        
+
         WebResourcePermission webResourcePermission = createWebResourcePermission(servletRequest);
         setServletRequestForJACC(servletRequest);
-        
+
         boolean isGranted = checkPermission(webResourcePermission, securityContect.getPrincipalSet());
-        
+
         SecurityContext.setCurrent(securityContect);
-        
+
         if (logger.isLoggable(FINE)) {
             logger.log(Level.FINE, "[Web-Security] hasResource isGranted: {0}", isGranted);
             logger.log(Level.FINE, "[Web-Security] hasResource perm: {0}", webResourcePermission);
         }
-        
+
         recordWebInvocation(servletRequest, RESOURCE, isGranted);
-        
+
         return isGranted;
     }
-    
+
     /**
      * Return <code>true</code> if the specified servletName has the specified security role, within the context of the
      * <code>WebRoleRefPermission</code>; otherwise return <code>false</code>.
-     * 
+     *
      * @param servletName the resource's name
      * @param role Security role to be checked
      * @param principal Principal for whom the role is to be checked
-     * 
+     *
      * @return true is the resource is granted, false if denied
      */
     public boolean hasRoleRefPermission(String servletName, String role, Principal principal) {
         WebRoleRefPermission requestedPermission = new WebRoleRefPermission(servletName, role);
-        
+
         boolean isGranted = checkPermission(requestedPermission, getSecurityContext(principal).getPrincipalSet());
-        
+
         if (logger.isLoggable(Level.FINE)) {
             logger.log(FINE, "[Web-Security] hasRoleRef perm: {0}", requestedPermission);
             logger.log(FINE, "[Web-Security] hasRoleRef isGranted: {0}", isGranted);
         }
-        
+
         return isGranted;
     }
 
@@ -367,6 +361,7 @@ public class JaccWebAuthorizationManager {
      * @throws PolicyContextException
      */
     public void release() throws PolicyContextException {
+        logger.config(() -> "release(); id of the context: " + CONTEXT_ID);
         boolean wasInService = getPolicyFactory().inService(CONTEXT_ID);
         PolicyConfiguration config = getPolicyFactory().getPolicyConfiguration(CONTEXT_ID, false);
         removePolicyStatements(config, webBundleDescriptor);
@@ -375,13 +370,14 @@ public class JaccWebAuthorizationManager {
         if (wasInService) {
             Policy.getPolicy().refresh();
         }
-        
+
         PermissionCacheFactory.removePermissionCache(uncheckedPermissionCache);
         uncheckedPermissionCache = null;
         webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
     }
-    
+
     public void destroy() throws PolicyContextException {
+        logger.config(() -> "destroy(); id of the context: " + CONTEXT_ID);
         PolicyConfigurationFactory policyFactory = getPolicyFactory();
 
         boolean wasInService = policyFactory.inService(CONTEXT_ID);
@@ -401,30 +397,27 @@ public class JaccWebAuthorizationManager {
         webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
     }
 
-    
-    
-    // ### Private methods
-    
-    // #### Construction
-    
 
-    private void postConstruct() {
-        SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory().setAppNameForContext(getAppId(), CONTEXT_ID);
-    }
-
+    /**
+     * Initialise this class and specifically load permissions into the JACC Policy Configuration.
+     *
+     * @param appName
+     * @throws PolicyContextException
+     */
     private void initialise(String appName) throws PolicyContextException {
+        logger.finest(() -> String.format("initialise(appName=%s)", appName));
         getPolicyFactory();
         CODEBASE = removeSpaces(CONTEXT_ID);
-        
+
         if (ADMIN_VS.equals(getVirtualServers(appName))) {
             LoginConfiguration loginConfiguration = webBundleDescriptor.getLoginConfiguration();
             if (loginConfiguration != null) {
                 String realmName = loginConfiguration.getRealmName();
-                
+
                 // Process mappings from sun-web.xml
                 SunWebApp sunDes = webBundleDescriptor.getSunDescriptor();
                 if (sunDes != null) {
-                    
+
                     SecurityRoleMapping[] roleMappings = sunDes.getSecurityRoleMapping();
                     if (roleMappings != null) {
                         for (SecurityRoleMapping roleMapping : roleMappings) {
@@ -436,7 +429,7 @@ public class JaccWebAuthorizationManager {
                             }
                         }
                     }
-                    
+
                     SecurityRoleAssignment[] roleAssignments = sunDes.getSecurityRoleAssignments();
                     if (roleAssignments != null) {
                         for (SecurityRoleAssignment roleAssignment : roleAssignments) {
@@ -444,7 +437,7 @@ public class JaccWebAuthorizationManager {
                                 webSecurityManagerFactory.addAdminGroup(roleAssignment.getRoleName(), realmName, new Group(roleAssignment.getRoleName()));
                                 continue;
                             }
-                            
+
                             for (String principal : roleAssignment.getPrincipalNames()) {
                                 webSecurityManagerFactory.addAdminPrincipal(principal, realmName, new PrincipalImpl(principal));
                             }
@@ -458,7 +451,7 @@ public class JaccWebAuthorizationManager {
         try {
             try {
                 logger.log(FINE, "[Web-Security] Creating a Codebase URI with = {0}", CODEBASE);
-                
+
                 URI uri = new URI("file:///" + CODEBASE);
                 if (uri != null) {
                     codesource = new CodeSource(new URL(uri.toString()), (Certificate[]) null);
@@ -514,7 +507,7 @@ public class JaccWebAuthorizationManager {
             // Note that the PolicyConfiguration is pluggable and can have been replaced by the user
             policyConfiguration = policyFactory.getPolicyConfiguration(CONTEXT_ID, false);
             try {
-                
+
                 // Translate the constraints in the webBundleDescriptor into permissions that will be stored
                 // in the policyConfiguration.
                 JaccWebConstraintsTranslator.translateConstraintsToPermissions(webBundleDescriptor, policyConfiguration);
@@ -525,13 +518,13 @@ public class JaccWebAuthorizationManager {
         }
 
     }
-    
+
     private String removeSpaces(String withSpaces) {
         return withSpaces.replace(' ', '_');
     }
-    
-    
-    
+
+
+
     // #### Other private methods
 
     // this will change too - get the application id name
@@ -541,19 +534,19 @@ public class JaccWebAuthorizationManager {
 
     /**
      * Invoke the <code>Policy</code> to determine if the <code>Permission</code> object has security permission.
-     * 
+     *
      * @param requestedPermission an instance of <code>Permission</code>.
      * @param principalSet a set containing the principals to check for authorization
-     * 
+     *
      * @return true if granted, false if denied.
      */
     private boolean checkPermission(Permission requestedPermission, Set<Principal> principalSet) {
         boolean hasPermission = false;
-        
+
         if (uncheckedPermissionCache != null) {
             hasPermission = uncheckedPermissionCache.checkPermission(requestedPermission);
         }
-        
+
         if (hasPermission == false) {
             hasPermission = checkPermissionWithoutCache(requestedPermission, principalSet);
         } else {
@@ -566,7 +559,7 @@ public class JaccWebAuthorizationManager {
                 hasPermission = false;
             }
         }
-        
+
         return hasPermission;
     }
 
@@ -595,12 +588,12 @@ public class JaccWebAuthorizationManager {
         // Check whether the requested permission is granted to any of the given principals
         return policy.implies(getProtectionDomain(principals), requestedPermission);
     }
-    
+
     private PolicyConfigurationFactory getPolicyFactory() throws PolicyContextException {
         if (policyConfigurationFactory != null) {
             return policyConfigurationFactory;
         }
-        
+
         return _getPolicyFactory();
     }
 
@@ -616,10 +609,10 @@ public class JaccWebAuthorizationManager {
                 throw pce;
             }
         }
-        
+
         return policyConfigurationFactory;
     }
-    
+
     private ProtectionDomain getProtectionDomain(Set<Principal> principalSet) {
         return protectionDomainCache.computeIfAbsent(principalSet, e -> {
             Principal[] principals = (principalSet == null ? null : (Principal[]) principalSet.toArray(new Principal[0]));
@@ -632,7 +625,7 @@ public class JaccWebAuthorizationManager {
 
     private WebResourcePermission createWebResourcePermission(HttpServletRequest servletRequest) {
         String uri = (String) servletRequest.getAttribute(CONSTRAINT_URI);
-        
+
         if (uri == null) {
             uri = servletRequest.getRequestURI();
             if (uri != null) {
@@ -644,25 +637,25 @@ public class JaccWebAuthorizationManager {
                 }
             }
         }
-        
+
         if (uri == null) {
             logger.fine("[Web-Security] mappedUri is null");
             throw new RuntimeException("Fatal Error in creating WebResourcePermission");
         }
-        
+
         if (uri.equals("/")) {
             uri = EMPTY_STRING;
         } else {
             // FIX TO BE CONFIRMED: encode all colons
             uri = uri.replaceAll(":", "%3A");
         }
-        
+
         return new WebResourcePermission(uri, servletRequest.getMethod());
     }
 
     private static String setPolicyContext(String newContextID) throws Throwable {
         String oldContextID = PolicyContext.getContextID();
-        
+
         if (oldContextID != newContextID && (oldContextID == null || newContextID == null || !oldContextID.equals(newContextID))) {
 
             if (logger.isLoggable(Level.FINE)) {
@@ -683,19 +676,19 @@ public class JaccWebAuthorizationManager {
         } else {
             logger.log(FINE, "[Web-Security] Policy Context ID was: {0}", oldContextID);
         }
-        
+
         return oldContextID;
     }
 
     /**
      * This is an private method for transforming principal into a SecurityContext
-     * 
+     *
      * @param principal expected to be a WebPrincipal
      * @return SecurityContext
      */
     private SecurityContext getSecurityContext(Principal principal) {
         SecurityContext securityContext = null;
-        
+
         if (principal != null) {
             if (principal instanceof WebPrincipal) {
                 WebPrincipal webPrincipal = (WebPrincipal) principal;
@@ -704,17 +697,17 @@ public class JaccWebAuthorizationManager {
                 securityContext = SecurityContext.getCurrent();
             }
         }
-        
+
         if (securityContext == null) {
             securityContext = SecurityContext.getDefaultSecurityContext();
         }
-        
+
         return securityContext;
     }
 
     /**
      * This is an private method for policy context handler data info
-     * 
+     *
      * @param httpRequest
      */
     private void setServletRequestForJACC(HttpServletRequest httpRequest) {
@@ -722,22 +715,22 @@ public class JaccWebAuthorizationManager {
             webSecurityManagerFactory.pcHandlerImpl.getHandlerData().setHttpServletRequest(httpRequest);
         }
     }
-    
+
     private void recordWebInvocation(HttpServletRequest servletRequest, String type, boolean isGranted) {
         AuditManager auditManager = SecurityServicesUtil.getInstance().getAuditManager();
-        
+
         if (auditManager != null && auditManager.isAuditOn() && (auditManager instanceof AppServerAuditManager)) {
             AppServerAuditManager appServerAuditManager = (AppServerAuditManager) auditManager;
             Principal principal = servletRequest.getUserPrincipal();
             String user = (principal != null) ? principal.getName() : null;
-            
+
             appServerAuditManager.webInvocation(user, servletRequest, type, isGranted);
         }
     }
-    
+
     /**
      * Remove All Policy Statements from Configuration config must be in open state when this method is called
-     * 
+     *
      * @param policyConfiguration
      * @param webBundleDescriptor
      * @throws PolicyContextException
@@ -750,7 +743,7 @@ public class JaccWebAuthorizationManager {
         for (Role role : webBundleDescriptor.getRoles()) {
             policyConfiguration.removeRole(role.getName());
         }
-        
+
         // 1st call will remove "*" role if present. 2nd will remove all roles (if supported).
         policyConfiguration.removeRole("*");
         policyConfiguration.removeRole("*");
@@ -758,7 +751,7 @@ public class JaccWebAuthorizationManager {
 
     private String principalSetToString(Set<Principal> principalSet) {
         StringBuilder principalStringBuilder = null;
-        
+
         if (principalSet != null) {
             Principal[] principals = principalSet.toArray(new Principal[0]);
             for (int i = 0; i < principals.length; i++) {
@@ -769,7 +762,7 @@ public class JaccWebAuthorizationManager {
                 }
             }
         }
-        
+
         return principalStringBuilder != null ? principalStringBuilder.toString() : null;
     }
 
@@ -791,14 +784,14 @@ public class JaccWebAuthorizationManager {
 
         return null;
     }
-    
+
     private void logProtectionDomainCreated(Principal[] principals) {
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, "[Web-Security] Generating a protection domain for Permission check.");
 
             if (principals != null) {
-                for (int i = 0; i < principals.length; i++) {
-                    logger.log(FINE, "[Web-Security] Checking with Principal : {0}", principals[i].toString());
+                for (Principal principal : principals) {
+                    logger.log(FINE, "[Web-Security] Checking with Principal : {0}", principal.toString());
                 }
             } else {
                 logger.log(FINE, "[Web-Security] Checking with Principals: null");

@@ -51,7 +51,7 @@ import org.glassfish.internal.api.ServerContext;
  * @author Steve Millidge (Payara Foundation)
  */
 public class SystemPropertyConfigSource extends PayaraConfigSource implements ConfigSource {
-    
+
     // Provides access to information on the server including;
     // command line, initial context, service locator, installation
     // Classloaders, config root for the server
@@ -63,13 +63,13 @@ public class SystemPropertyConfigSource extends PayaraConfigSource implements Co
 
     /**
      * Only use in unit tests
-     * @param test 
+     * @param test
      */
     SystemPropertyConfigSource(boolean test) {
         super(test);
     }
-    
-    
+
+
 
     @Override
     public Map<String, String> getProperties() {
@@ -103,5 +103,5 @@ public class SystemPropertyConfigSource extends PayaraConfigSource implements Co
     public String getName() {
         return "SystemProperty";
     }
-    
+
 }

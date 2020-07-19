@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 package org.glassfish.appclient.client.jws.boot;
 
 import java.io.File;
@@ -60,7 +60,7 @@ import java.net.URLClassLoader;
 public abstract class ClassPathManager {
     
     public static final String PERSISTENCE_JAR_CLASSES = 
-            "org.apache.derby.client.ClientDataSourceFactory," /* derbyclient.jar */ +
+            "org.h2.jdbcx.JdbcDataSource," +
             "persistence.antlr.ActionElement," /* toplink-essentials */ +
             "org.netbeans.modules.dbschema.ColumnElement," /* dbschema */
             ;

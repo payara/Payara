@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.deployment.admin;
 
+import fish.payara.nucleus.hotdeploy.HotDeployService;
+import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
@@ -153,14 +155,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     @Inject
     VersioningService versioningService;
 
+    @Inject
+    private HotDeployService hotDeployService;
+
     private File safeCopyOfApp = null;
     private File safeCopyOfDeploymentPlan = null;
     private File safeCopyOfAltDD = null;
     private File safeCopyOfRuntimeAltDD = null;
     private File originalPathValue;
     private List<String> previousTargets = new ArrayList<>();
-    private Properties previousVirtualServers = new Properties();
-    private Properties previousEnabledAttributes = new Properties();
+    private final Properties previousVirtualServers = new Properties();
+    private final Properties previousEnabledAttributes = new Properties();
     private Logger logger;
     private ExtendedDeploymentContext initialContext;
     private ExtendedDeploymentContext deploymentContext;
@@ -269,6 +274,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             initialContext = new DeploymentContextImpl(report, archive, this, env);
             initialContext.setArchiveHandler(archiveHandler);
 
+            if (hotDeploy && !metadataChanged) {
+                hotDeployService.getApplicationState(path)
+                        .ifPresent(s -> s.start(initialContext, events));
+            } else {
+                hotDeployService.removeApplicationState(path);
+            }
+
             structuredTracing.register(initialContext);
 
             span.finish();
@@ -359,7 +371,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
     @Override
     public Collection<? extends AccessCheck> getAccessChecks() {
-        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        final List<AccessCheck> accessChecks = new ArrayList<>();
         accessChecks.add(new AccessCheck(DeploymentCommandUtils.getResourceNameForApps(domain), "create"));
         accessChecks.add(new AccessCheck(DeploymentCommandUtils.getTargetResourceNameForNewAppRef(domain, target), "create"));
 
@@ -386,8 +398,17 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     public void execute(AdminCommandContext context) {
         long timeTakenToDeploy = 0;
         long deploymentTimeMillis = 0;
-
+        Optional<ApplicationState> appState = Optional.empty();
         try (SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.VALIDATE_TARGET, "registry")){
+
+            if (!hotDeploy) {
+                hotDeployService.removeApplicationState(initialContext.getSourceDir());
+            } else if (!(appState = hotDeployService.getApplicationState(initialContext.getSourceDir())).isPresent()) {
+                ApplicationState applicationState = new ApplicationState(name, path, initialContext);
+                applicationState.setTarget(target);
+                appState = Optional.of(applicationState);
+            }
+
             // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
             Collection<Interceptor> interceptors = habitat.getAllServices(Interceptor.class);
             if (interceptors != null) {
@@ -404,15 +425,18 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             ApplicationConfigInfo savedAppConfig
                     = new ApplicationConfigInfo(apps.getModule(Application.class, name));
             Properties undeployProps = null;
-            if (!hotDeploy) {
+            if (appState.map(ApplicationState::isInactive).orElse(true)) {
                 undeployProps = handleRedeploy(name, report, context);
             }
+            appState.filter(ApplicationState::isInactive)
+                    .ifPresent(hotDeployService::addApplicationState);
+
             if (enabled == null) {
                 enabled = Boolean.TRUE;
             }
 
             // clean up any left over repository files
-            if (!keepreposdir.booleanValue()) {
+            if (!keepreposdir) {
                 span.start(DeploymentTracing.AppStage.CLEANUP, "applications");
                 final File reposDir = new File(env.getApplicationRepositoryPath(), VersioningUtils.getRepositoryName(name));
                 if (reposDir.exists()) {
@@ -470,9 +494,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             // create the parent class loader
             deploymentContext
                     = deployment.getBuilder(logger, this, report).
-                            source(initialContext.getSource()).archiveHandler(archiveHandler).build(initialContext);
-            structuredTracing.register(deploymentContext);
-
+                            source(initialContext.getSource())
+                            .archiveHandler(archiveHandler)
+                            .build(initialContext);
 
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {
@@ -529,7 +553,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             savedAppConfig.store(appProps);
 
-            deploymentContext.addTransientAppMetaData(DeploymentProperties.HOT_DEPLOY, hotDeploy);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, previousTargets);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_VIRTUAL_SERVERS, previousVirtualServers);
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_ENABLED_ATTRIBUTES, previousEnabledAttributes);
@@ -537,6 +560,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             span.finish(); // next phase is launched by prepare
             Deployment.ApplicationDeployment deplResult = deployment.prepare(null, deploymentContext);
             if (deplResult != null && !loadOnly) {
+                appState.ifPresent(s -> s.storeMetaData(deploymentContext));
                 // initialize makes its own phase as well
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
@@ -564,7 +588,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                     timeTakenToDeploy = timing.elapsed();
                     deploymentTimeMillis = System.currentTimeMillis();
-                    if (!hotDeploy) {
+                    if (tx != null) {
                         Application application = deploymentContext.getTransientAppMetaData("application", Application.class);
                         // Set the application deploy time
                         application.setDeploymentTime(Long.toString(timeTakenToDeploy));
@@ -664,10 +688,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     }
 
                 }
+                appState.map(ApplicationState::getPath)
+                        .ifPresent(hotDeployService::removeApplicationState);
             }
             if (deploymentContext != null && !loadOnly) {
                 deploymentContext.postDeployClean(true);
             }
+            appState.ifPresent(ApplicationState::close);
         }
     }
 

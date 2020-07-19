@@ -37,12 +37,16 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
+
+// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.util.cluster;
 
 /**
+ * Type of the remote node. Relates to a way how DAS will communicate with it.
  *
  * @author Byron Nevins
  */
 public enum RemoteType {
-    SSH, DCOM, CONFIG
+    SSH, DCOM, CONFIG, DOCKER
 }

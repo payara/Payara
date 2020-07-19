@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,12 @@
  */
 package fish.payara.microprofile.openapi.impl.model.servers;
 
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implements ServerVariable {
 
@@ -52,6 +52,17 @@ public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implement
     private String defaultValue;
 
     protected List<String> enumeration = new ArrayList<>();
+
+    public static ServerVariable createInstance(AnnotationModel annotation, ApiContext context) {
+        ServerVariable from = new ServerVariableImpl();
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setDefaultValue(annotation.getValue("defaultValue", String.class));
+        List<String> enumeration = annotation.getValue("enumeration", List.class);
+        if (enumeration != null) {
+            from.setEnumeration(enumeration);
+        }
+        return from;
+    }
 
     @Override
     public String getDescription() {

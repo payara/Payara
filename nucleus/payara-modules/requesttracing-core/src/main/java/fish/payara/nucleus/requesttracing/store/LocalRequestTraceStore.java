@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 
 /**
@@ -55,12 +56,12 @@ import java.util.stream.Collectors;
 public class LocalRequestTraceStore implements RequestTraceStoreInterface {
 
     private final Set<RequestTrace> store = ConcurrentHashMap.newKeySet();
-    private int maxStoreSize;
+    private IntSupplier maxStoreSize;
 
     private final TraceStorageStrategy strategy;
 
     LocalRequestTraceStore(TraceStorageStrategy strategy) {
-        this.maxStoreSize = 0;
+        this.maxStoreSize = () -> 0;
         this.strategy = strategy;
     }
 
@@ -72,7 +73,7 @@ public class LocalRequestTraceStore implements RequestTraceStoreInterface {
     @Override
     public RequestTrace addTrace(RequestTrace trace, RequestTrace traceToRemove) {
         store.add(trace);
-        traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize, traceToRemove);
+        traceToRemove = strategy.getTraceForRemoval(getTraces(), maxStoreSize.getAsInt(), traceToRemove);
         if (traceToRemove == null) {
             return null;
         }
@@ -92,16 +93,17 @@ public class LocalRequestTraceStore implements RequestTraceStoreInterface {
     }
 
     @Override
-    public void setSize(int maxSize) {
-        while (store.size() > maxSize) {
-            store.remove(strategy.getTraceForRemoval(getTraces(), maxSize, null));
+    public void setSize(IntSupplier maxSize) {
+        int currentMaxSize = maxSize.getAsInt();
+        while (store.size() > currentMaxSize) {
+            store.remove(strategy.getTraceForRemoval(getTraces(), currentMaxSize, null));
         }
         this.maxStoreSize = maxSize;
     }
 
     @Override
     public int getStoreSize() {
-        return maxStoreSize;
+        return maxStoreSize.getAsInt();
     }
 
     @Override

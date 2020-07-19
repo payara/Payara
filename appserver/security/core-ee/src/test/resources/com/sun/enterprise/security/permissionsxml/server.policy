@@ -58,8 +58,9 @@ grant codeBase "file:${com.sun.aas.imqLib}/-" {
     permission java.security.AllPermission;
 };
 
-// Derby driver classes get all permissions by default
-grant codeBase "file:${com.sun.aas.derbyRoot}/lib/-" {
+// H2 driver classes get all permissions by default
+
+grant codeBase "file:${fish.payara.aas.h2Root}/bin/-" {
     permission java.security.AllPermission;
 }; 
 

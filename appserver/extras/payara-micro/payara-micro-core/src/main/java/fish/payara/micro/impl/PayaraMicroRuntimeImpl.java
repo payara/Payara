@@ -188,8 +188,12 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
      * @param <T> The Type of the Callable
      * @param callable The Callable object to run
      * @return 
+     * @deprecated This method has an undefined ClassLoader and is unusable by a user, 
+     * as it only operates on server ClassLoader rather than on application ClassLoader <br/>
+     * {It will be removed in the upcoming releases}. 
      */
     @Override
+    @Deprecated
     public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Callable<T> callable) {
         
         // NEEDS TO HANDLE THE CASE FOR LOCAL RUNNING IF NO CLUSTER ENABLED
@@ -214,8 +218,14 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
      * @param members The collection of members to run the callable on
      * @param callable The Callable object to run
      * @return 
+     * 
+     * @deprecated This method has an undefined ClassLoader and is unusable by a user, 
+     * as it only operates on server ClassLoader rather than on application ClassLoader <br/>
+     * {It will be removed in the upcoming releases}. 
+     * 
      */
     @Override
+    @Deprecated
     public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Collection<InstanceDescriptor> members, Callable<T> callable) {
         
         HashSet<String> memberUUIDs = new HashSet<>(members.size());

@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 -->
 
 <!initPage
@@ -69,7 +70,6 @@
         mapPut(map="#{pageSession.valueMap}"  key="nodedir"  value="#{pageSession.attrMap['nodeDir']}");
         mapPut(map="#{pageSession.valueMap}"  key="type",  value="#{pageSession.attrMap['type']}");
         mapPut(map="#{pageSession.valueMap}"  key="windowsdomain",  value="#{pageSession.attrMap['windowsDomain']}");
-        setPageSessionAttribute(key="winPsSelected" value="2");
         if ("(#{pageSession.attrMap['type']}=SSH) || (#{pageSession.attrMap['type']}=DCOM)"){
             mapPut(map="#{pageSession.valueMap}"  key="installdir",  value="#{pageSession.attrMap['installDir']}");
             //for edit, we don't want to clear install dir when switching from ssh to config or Docker node.
@@ -127,33 +127,43 @@
             setPageSessionAttribute(key="showInstalldirDocker" value="#{false}");
             setPageSessionAttribute(key="isTemp" value="#{true}");
         }
-        setPageSessionAttribute(key="psSelected" value="1");
-        setPageSessionAttribute(key="winPsSelected" value="2");
 
         gf.checkIfEndPointExist(endpoint="#{pageSession.selfUrl}/ssh-connector" exists="#{requestScope.sshConnectorExist}");
-        if (#{requestScope.sshConnectorExist}){
+        if (#{requestScope.sshConnectorExist}) {
             gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}/ssh-connector.json", currentMap="#{pageSession.attrMap}"  valueMap="#{pageSession.attrMap}");
-            if ("#{pageSession.attrMap['type']}=SSH"){
+            if ("#{pageSession.attrMap['type']}=SSH") {
                 mapPut(map="#{pageSession.valueMap}"  key="sshport",  value="#{pageSession.attrMap['sshPort']}");
             }
-            
-            if ("#{pageSession.attrMap['type']}=DCOM"){
+            if ("#{pageSession.attrMap['type']}=DCOM") {
                 mapPut(map="#{pageSession.valueMap}"  key="winPort",  value="#{pageSession.attrMap['sshPort']}");
             }
             gf.checkIfEndPointExist(endpoint="#{pageSession.selfUrl}/ssh-connector/ssh-auth" exists="#{requestScope.sshConnectorExist}");
-            if (#{requestScope.sshConnectorExist}){
+            if (#{requestScope.sshConnectorExist}) {
                 gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}/ssh-connector/ssh-auth.json", currentMap="#{pageSession.attrMap}"  valueMap="#{pageSession.attrMap}");
                 mapPut(map="#{pageSession.valueMap}"  key="sshuser",  value="#{pageSession.attrMap['userName']}");
                 mapPut(map="#{pageSession.valueMap}"  key="sshkeyfile",  value="#{pageSession.attrMap['keyfile']}");
                 if ("#{pageSession.attrMap['type']}=SSH"){
-                    gf.convertNodePswd(pswd="#{pageSession.attrMap['password']}" pswdText="#{pageSession.pswdText}" pswdAlias="#{pageSession.pswdAlias}" psSelected="#{pageSession.psSelected}");
+                    gf.convertNodePswd(pswd="#{pageSession.attrMap['password']}" pswdText="#{pageSession.pswdText}" pswdAlias="#{pageSession.pswdAlias}");
+                    gf.presetNodeAuthSelectBox(
+                        keyfile="#{pageSession.attrMap['keyfile']}"
+                        pswdText="#{pageSession.pswdText}"
+                        pswdAlias="#{pageSession.pswdAlias}"
+                        defaultValue="1"
+                        sshAuthTypeSelected="#{pageSession.psSelected}");
                 }
-                if ("#{pageSession.attrMap['type']}=DCOM"){
+                if ("#{pageSession.attrMap['type']}=DCOM") {
                     mapPut(map="#{pageSession.valueMap}"  key="windowsuser",  value="#{pageSession.attrMap['userName']}");
-                    gf.convertNodePswd(pswd="#{pageSession.attrMap['password']}" pswdText="#{pageSession.winPswdText}" pswdAlias="#{pageSession.winPswdAlias}" psSelected="#{pageSession.winPsSelected}");
+                    gf.convertNodePswd(pswd="#{pageSession.attrMap['password']}" pswdText="#{pageSession.winPswdText}" pswdAlias="#{pageSession.winPswdAlias}");
+                    gf.presetNodeAuthSelectBox(
+                        keyfile=""
+                        pswdText="#{pageSession.winPswdText}"
+                        pswdAlias="#{pageSession.winPswdAlias}"
+                        defaultValue="2"
+                        sshAuthTypeSelected="#{pageSession.winPsSelected}");
                 }
             }
         }
+
         //fill in default for CONFIG to SSH or DCOM case.
         if (! #{requestScope.sshConnectorExist}){
             mapPut(map="#{pageSession.valueMap}"  key="sshport", value="22");
@@ -169,14 +179,12 @@
         setPageSessionAttribute(key="titleHelp" value="$resource{i18ncs.node.EditPageTitleHelp}");
         />
     </event>
-            <sun:form id="propertyForm" autoComplete="off">
+
+<sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
 #include "/cluster/node/nodeAttr.inc"
-
-"<br /><br />
-	<sun:hidden id="helpKey" value="$resource{help_cluster.nodeEdit}" />
+  <sun:hidden id="helpKey" value="$resource{help_cluster.nodeEdit}" />
 </sun:form>
-
 
 #include "/cluster/node/nodeJS.inc"
 

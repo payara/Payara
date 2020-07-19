@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,11 @@
 package fish.payara.security.openid.api;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.json.JsonObject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * An injectable interface that provides access to access token, identity token,
@@ -64,7 +66,7 @@ public interface OpenIdContext extends Serializable {
      *
      * @return
      */
-    String getCallerGroups();
+    Set<String> getCallerGroups();
 
     /**
      * Subject Identifier. A locally unique and never reassigned identifier
@@ -112,7 +114,7 @@ public interface OpenIdContext extends Serializable {
      *
      * @return
      */
-    Optional<Integer> getExpiresIn();
+    Optional<Long> getExpiresIn();
 
     /**
      * Gets the User Claims that was received from the userinfo endpoint
@@ -134,5 +136,21 @@ public interface OpenIdContext extends Serializable {
      * @return
      */
     JsonObject getProviderMetadata();
+
+    /**
+     * Invalidates the RP's active OpenId Connect session and if
+     * {@link fish.payara.security.annotations.LogoutDefinition#notifyProvider}
+     * set to {@code true} then redirect the End-User's User Agent to the
+     * {@code end_session_endpoint} to notify the OP that the user has logged
+     * out of the RP's application and ask the user whether they want to logout
+     * from the OP as well. After successful logout, the End-User's User Agent
+     * redirect back to the RP's {@code post_redirect_uri}
+     * configured via
+     * {@link fish.payara.security.annotations.LogoutDefinition#redirectURI}
+     *
+     * @param request
+     * @param response
+     */
+    void logout(HttpServletRequest request, HttpServletResponse response);
 
 }

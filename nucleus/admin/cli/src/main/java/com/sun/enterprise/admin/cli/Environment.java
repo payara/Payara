@@ -56,35 +56,33 @@ import java.util.*;
  * @author Bill Shannon
  */
 public final class Environment {
-    // XXX - should Environment just extend HashMap?
-
     // commands that extend AsadminMain may set this as desired
     private static String PREFIX = "AS_ADMIN_";
     private static String SHORT_PREFIX = "AS_";
 
-    private Map<String, String> env = new HashMap<String, String>();
+    private final Map<String, String> env = new HashMap<>();
     private boolean debug = false;
     private boolean trace = false;
     private File logfile = null;
 
     /**
-     * Set the prefix for environment variables referenced from the system 
+     * Set the prefix for environment variables referenced from the system
      * environment by Environment objects.
      * @param p the new prefix
      */
     public static void setPrefix(String p) {
         PREFIX = p;
     }
-    
+
     /**
-     * Get the prefix for environment variables referenced from the system 
+     * Get the prefix for environment variables referenced from the system
      * environment by Environment objects.
-     * @return 
+     * @return
      */
     public static String getPrefix() {
         return PREFIX;
     }
-    
+
     /**
      * Set the short prefix for environment variables referenced from the system
      * environment by Environment objects. This effects methods such as debug(), trace(), etc.
@@ -93,15 +91,15 @@ public final class Environment {
     public static void setShortPrefix(String p) {
         SHORT_PREFIX = p;
     }
-    
-    /** 
+
+    /**
      * Get the name of the environment variable used to set debugging on
-     * @return 
+     * @return
      */
     public static String getDebugVar() {
         return SHORT_PREFIX + "DEBUG";
     }
-    
+
     /**
      * Initialise the environment with all relevant system environment entries.
      */
@@ -129,7 +127,7 @@ public final class Environment {
 
         String traceProp = SHORT_PREFIX + "TRACE";
         trace = System.getProperty(traceProp) != null || Boolean.parseBoolean(System.getenv(traceProp)) || Boolean.getBoolean(traceProp);
-               
+
         // System Prop trumps environmental variable
         String logProp = SHORT_PREFIX + "LOGFILE";
         String fname = System.getProperty(logProp);
@@ -223,7 +221,7 @@ public final class Environment {
 
     /**
      * Return a set of all the entries, just like a Map does.
-     * @return 
+     * @return
      */
     public Set<Map.Entry<String, String>> entrySet() {
         return env.entrySet();
@@ -239,15 +237,15 @@ public final class Environment {
     private String optionToEnv(String name) {
         return PREFIX + name.replace('-', '_').toUpperCase(Locale.ENGLISH);
     }
-    
+
     public boolean debug() {
         return debug;
     }
-    
-    public boolean trace() { 
+
+    public boolean trace() {
         return trace;
     }
-    
+
     public File getDebugLogfile() {
         return logfile;
     }

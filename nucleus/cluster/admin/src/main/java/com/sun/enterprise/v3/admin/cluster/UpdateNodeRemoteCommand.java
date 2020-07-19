@@ -37,23 +37,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.util.cluster.RemoteType;
-import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SshAuth;
+import com.sun.enterprise.config.serverbeans.SshConnector;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.cluster.RemoteType;
+import com.sun.enterprise.util.cluster.SshAuthType;
+
+import java.util.function.Supplier;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ServiceLocator;
-import java.util.logging.Logger;
-import javax.inject.Inject;
+
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALLDIR;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEDIR;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPORT;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEUSER;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHAUTHTYPE;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYFILE;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYPASSPHRASE;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHPASSWORD;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_TYPE;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_WINDOWSDOMAINNAME;
 
 /**
  * Remote AdminCommand to update a remote node.  This command is run only on DAS.
@@ -63,37 +84,40 @@ import javax.inject.Inject;
  */
 public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
 
+    private static final Logger LOG = Logger.getLogger(UpdateNodeRemoteCommand.class.getName());
+
     @Inject
     private CommandRunner cr;
 
     @Inject
-    ServiceLocator habitat;
+    private ServiceLocator serviceLocator;
 
     @Inject
     private Nodes nodes;
 
-    @Param(name="name", primary = true)
+    @Param(name = "name", primary = true)
     private String name;
 
-    @Param(name="nodehost", optional=true)
+    @Param(name = "nodehost", optional = true)
     private String nodehost;
 
-    @Param(name = "installdir", optional=true)
+    @Param(name = "installdir", optional = true)
     private String installdir;
 
-    @Param(name = "nodedir", optional=true)
+    @Param(name = "nodedir", optional = true)
     private String nodedir;
 
     // these are the variables set as parameters in subclasses
     // we can't set them as parameters in this class bacause of the names
     protected String remotePort;
     protected String remoteUser;
+    protected String sshAuthType;
     protected String sshkeyfile;
-    protected String remotepassword;
     protected String sshkeypassphrase;
+    protected String remotepassword;
     protected String windowsdomain;
 
-    @Param(name =  "force", optional = true, defaultValue = "false")
+    @Param(name = "force", optional = true, defaultValue = "false")
     private boolean force;
 
     private static final String NL = System.lineSeparator();
@@ -103,6 +127,7 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
     protected abstract String getDefaultPort();
 
     protected final void executeInternal(AdminCommandContext context) {
+        LOG.finest(() -> String.format("executeInternal(context=%s)", context));
         ActionReport report = context.getActionReport();
         StringBuilder msg = new StringBuilder();
         Node node = null;
@@ -129,66 +154,43 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
         // Ah the problems caused by hard-coding ssh into parameter names!
         populateParameters();
 
-        // First create a map that holds the parameters and reflects what
-        // the user passed on the command line.
-        ParameterMap map = new ParameterMap();
-        map.add("DEFAULT", name);
-        map.add(NodeUtils.PARAM_INSTALLDIR, installdir);
-        map.add(NodeUtils.PARAM_NODEHOST, nodehost);
-        map.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        map.add(NodeUtils.PARAM_REMOTEPORT, remotePort);
-        map.add(NodeUtils.PARAM_REMOTEUSER, remoteUser);
-        map.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-        map.add(NodeUtils.PARAM_REMOTEPASSWORD, remotepassword);
-        map.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
-        map.add(NodeUtils.PARAM_WINDOWSDOMAINNAME, windowsdomain);
-        map.add(NodeUtils.PARAM_TYPE, getType().toString());
-
-        // Now init any parameters that weren't passed into the command
-        // using the values from the config
-        initFromConfig(node);
-
-        // Finally, anything that still isn't set, use the defaults.
-        // These should likely come from config -- but they don't
-        // as of now
-        setDefaults();
-
-        // validateMap holds the union of what the user passed and what was
-        // in the config so we have all the settings needed to validate what
-        // the node will look like after we update it.
-        ParameterMap validateMap = new ParameterMap();
-        validateMap.add(NodeUtils.PARAM_INSTALLDIR, installdir);
-        validateMap.add(NodeUtils.PARAM_NODEHOST, nodehost);
-        validateMap.add(NodeUtils.PARAM_NODEDIR, nodedir);
-        validateMap.add(NodeUtils.PARAM_REMOTEPORT, remotePort);
-        validateMap.add(NodeUtils.PARAM_REMOTEUSER, remoteUser);
-        validateMap.add(NodeUtils.PARAM_SSHKEYFILE, sshkeyfile);
-        validateMap.add(NodeUtils.PARAM_REMOTEPASSWORD, remotepassword);
-        validateMap.add(NodeUtils.PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
-        validateMap.add(NodeUtils.PARAM_WINDOWSDOMAINNAME, windowsdomain);
-        validateMap.add(NodeUtils.PARAM_TYPE, getType().toString());
-
         // Validate the settings
         try {
-            NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-            nodeUtils.validate(validateMap);
+            NodeUtils nodeUtils = new NodeUtils(serviceLocator, logger);
+            nodeUtils.validate(createValidationParameters(node));
         } catch (CommandValidationException e) {
             String m1 = Strings.get("node.ssh.invalid.params");
-            if (!force) {
+            if (force) {
+                String m2 = Strings.get("update.node.ssh.continue.force");
+                msg.append(StringUtils.cat(NL, m1, e.getMessage(), m2));
+            } else {
                 String m2 = Strings.get("update.node.ssh.not.updated");
                 msg.append(StringUtils.cat(NL, m1, m2, e.getMessage()));
                 report.setMessage(msg.toString());
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
-            } else {
-                String m2 = Strings.get("update.node.ssh.continue.force");
-                msg.append(StringUtils.cat(NL, m1, e.getMessage(), m2));
             }
         }
+
+        // First create a map that holds the parameters and reflects what
+        // the user passed on the command line.
+        ParameterMap commandParameters = new ParameterMap();
+        commandParameters.add("DEFAULT", name);
+        commandParameters.add(PARAM_INSTALLDIR, installdir);
+        commandParameters.add(PARAM_NODEHOST, nodehost);
+        commandParameters.add(PARAM_NODEDIR, nodedir);
+        commandParameters.add(PARAM_REMOTEPORT, remotePort);
+        commandParameters.add(PARAM_REMOTEUSER, remoteUser);
+        commandParameters.add(PARAM_SSHPASSWORD, remotepassword);
+        commandParameters.add(PARAM_SSHAUTHTYPE, sshAuthType);
+        commandParameters.add(PARAM_SSHKEYFILE, sshkeyfile);
+        commandParameters.add(PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
+        commandParameters.add(PARAM_WINDOWSDOMAINNAME, windowsdomain);
+        commandParameters.add(PARAM_TYPE, getType().toString());
         // Settings are valid. Now use the generic update-node command to
         // update the node.
         CommandInvocation ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
-        ci.parameters(map);
+        ci.parameters(commandParameters);
         ci.execute();
 
         if (StringUtils.ok(report.getMessage())) {
@@ -197,75 +199,58 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
             }
             msg.append(report.getMessage());
         }
-
         report.setMessage(msg.toString());
     }
 
+
     /**
-     * Initialize any parameters not provided by the user from the
-     * configuration.
+     * Creates map used for validation, based on current node's values.
+     * Values which are not set
      */
-    private void initFromConfig(Node node) {
-        if (nodehost == null) {
-            nodehost = node.getNodeHost();
-        }
+    private ParameterMap createValidationParameters(final Node node) {
+        final ParameterMap parameters = new ParameterMap();
+        parameters.insert("DEFAULT", name);
+        parameters.insert(PARAM_TYPE, getType().toString());
+        parameters.insert(PARAM_NODEHOST, nodehost, node.getNodeHost());
+        parameters.insert(PARAM_INSTALLDIR, installdir, node.getInstallDir());
+        parameters.insert(PARAM_NODEDIR, nodedir, node.getNodeDir());
+        parameters.insert(PARAM_WINDOWSDOMAINNAME, windowsdomain, node.getWindowsDomain());
 
-        if (installdir == null) {
-            installdir = node.getInstallDir();
-        }
+        final SshConnector sshc = node.getSshConnector();
+        parameters.insert(PARAM_REMOTEPORT, remotePort, getSupplier(sshc, sshc::getSshPort));
 
-        if (nodedir == null) {
-            nodedir = node.getNodeDir();
-        }
+        final SshAuth ssha = sshc.getSshAuth();
+        parameters.insert(PARAM_REMOTEUSER, remoteUser, getSupplier(ssha, ssha::getUserName));
+        parameters.insert(PARAM_SSHAUTHTYPE, sshAuthType, getSupplier(ssha, () -> null));
 
-        if (windowsdomain == null) {
-            windowsdomain = node.getWindowsDomain();
-
-            if (windowsdomain == null) {
-                windowsdomain = node.getNodeHost();
+        if (sshAuthType == null) {
+            if (sshkeyfile == null && remotepassword == null) {
+                parameters.insert(PARAM_SSHPASSWORD, null, getSupplier(ssha, ssha::getPassword));
+                parameters.insert(PARAM_SSHKEYFILE, null, getSupplier(ssha, ssha::getKeyfile));
+                parameters.insert(PARAM_SSHKEYPASSPHRASE, null, getSupplier(ssha, ssha::getKeyPassphrase));
+            } else if (remotepassword != null) {
+                parameters.insert(PARAM_SSHPASSWORD, remotepassword, getSupplier(ssha, ssha::getPassword));
+            } else {
+                parameters.insert(PARAM_SSHKEYFILE, sshkeyfile, getSupplier(ssha, ssha::getKeyfile));
+                parameters.insert(PARAM_SSHKEYPASSPHRASE, sshkeypassphrase, getSupplier(ssha, ssha::getKeyPassphrase));
+            }
+        } else {
+            if (SshAuthType.KEY.name().equals(sshAuthType)) {
+                parameters.insert(PARAM_SSHKEYFILE, sshkeyfile, getSupplier(ssha, ssha::getKeyfile));
+                parameters.insert(PARAM_SSHKEYPASSPHRASE, sshkeypassphrase, getSupplier(ssha, ssha::getKeyPassphrase));
+            } else if (SshAuthType.PASSWORD.name().equals(sshAuthType)) {
+                parameters.insert(PARAM_SSHPASSWORD, remotepassword, getSupplier(ssha, ssha::getPassword));
             }
         }
-
-        SshConnector sshc = node.getSshConnector();
-        if (sshc == null) {
-            return;
-        }
-
-        if (remotePort == null) {
-            remotePort = sshc.getSshPort();
-        }
-
-        SshAuth ssha = sshc.getSshAuth();
-        if (ssha == null) {
-            return;
-        }
-
-        if (remoteUser == null) {
-            remoteUser = ssha.getUserName();
-        }
-
-        if (sshkeyfile == null) {
-            sshkeyfile = ssha.getKeyfile();
-        }
-
-        if (remotepassword == null) {
-            remotepassword = ssha.getPassword();
-        }
-
-        if (sshkeypassphrase == null) {
-            sshkeypassphrase = ssha.getPassword();
-        }
+        return parameters;
     }
 
-   private void setDefaults() {
-        if (!StringUtils.ok(remotePort)) {
-            remotePort = getDefaultPort();
+
+    private Supplier<String> getSupplier(final Object getterOwner, final Supplier<String> getter) {
+        if (getterOwner == null) {
+            return () -> null;
         }
-        if (!StringUtils.ok(remoteUser)) {
-            remoteUser = NodeUtils.NODE_DEFAULT_REMOTE_USER;
-        }
-        if (!StringUtils.ok(installdir)) {
-            installdir = NodeUtils.NODE_DEFAULT_INSTALLDIR;
-        }
+        return () -> getter.get();
     }
+
 }

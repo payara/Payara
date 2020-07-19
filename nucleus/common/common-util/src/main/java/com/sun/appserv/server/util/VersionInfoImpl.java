@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+ // Portions Copyright [2020] Payara Foundation and/or affiliates
+ 
 package com.sun.appserv.server.util;
 
 import javax.inject.Singleton;
@@ -66,6 +69,11 @@ public class VersionInfoImpl implements VersionInfo {
     @Override
     public String getMinorVersion() {
         return Version.getMinorVersion();
+    }
+
+    @Override
+    public String getUpdateVersion() {
+       return Version.getUpdateVersion();
     }
 
 }

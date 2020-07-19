@@ -6,7 +6,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>5.201-SNAPSHOT</version>
+        <version>5.2020.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-samples-profiled-tests</artifactId>
@@ -23,14 +23,12 @@
         <module>jacc-per-app</module>
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
-        <module>jaxws-tracing</module>
+        <module>jaxws-security</module>
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>oauth2</module>
-        <module>openid</module>
-        <module>asadmin</module>
-        <module>microprofile-endpoints</module>
         <module>realm-identity-stores</module>
+        <module>payara-expression-config-properties</module>
     </modules>
 
     <dependencyManagement>
@@ -45,24 +43,23 @@
     </dependencyManagement>
 
     <profiles>
-        <profile>
-            <id>stable</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <!-- Tracked by QA-152 -->
-                                <exclude>fish.payara.security.oidc.test.UseCookiesTest</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
 
-
+		<profile>
+			<id>unstable</id>
+			<modules>
+		        <module>openid</module>
+		        <module>jaxws-tracing</module>
+		        <module>asadmin</module>
+		        <module>microprofile-endpoints</module>
+         	</modules>
+		</profile>
+		<profile>
+			<id>unstable-remote</id>
+			<modules>
+                <module>ejb-invoker-secure-endpoint</module>
+			</modules>
+		</profile>
+        
         <!-- Profiles for the application servers against which the samples are run -->
 
         <profile>
@@ -216,7 +213,6 @@
             -->
             <modules>
                 <module>ejb-http-remoting</module>
-                <module>ejb-invoker-secure-endpoint</module>
             </modules>
             <dependencies>
                 <dependency>

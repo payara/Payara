@@ -208,6 +208,9 @@ public class DomainPortValidator {
             portNotSpecified = true;
         }
         if (portNotSpecified) {
+            if (defaultPort == null || defaultPort.trim().isEmpty()) {
+                throw new DomainException(STRINGS.get("MissingDefaultPort", key));
+            }
             port = convertPortStr(defaultPort);
             defaultPortUsed = true;
         }

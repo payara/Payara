@@ -40,13 +40,13 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.201-SNAPSHOT</version>
+        <version>5.2020.4-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.packager</groupId>
@@ -106,7 +106,6 @@
         <module>glassfish-cmp</module>
         <module>metro</module>
         <module>glassfish-appclient</module>
-        <module>javadb</module>
         <module>h2db</module>
         <module>jersey</module>
         <module>glassfish-jcdi</module>

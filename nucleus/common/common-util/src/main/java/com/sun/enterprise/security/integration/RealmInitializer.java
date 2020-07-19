@@ -37,22 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.integration;
 
 /**
  * Interface to facilitate Initialization of the injected Realm Instance with Application Descriptor info.
- * 
+ *
  * <p>
  * See com.sun.enterprise.web.WebContainer and com.sun.web.security.RealmAdapter
  */
 public interface RealmInitializer {
 
-    void initializeRealm(Object bundledescriptor, boolean isSystemApp, String realmName);
+    /**
+     * Initializes the internal state of this instance with provided parameters.
+     *
+     * @param bundleDescriptor - contains bundle-specific configuration
+     * @param isSystemApp - realm may have different behavior for system applications
+     * @param defaultRealmName - this realm name will be used as a default if there is not
+     *            any other configured in the descriptor.
+     */
+    void initializeRealm(Object bundleDescriptor, boolean isSystemApp, String defaultRealmName);
 
-    // TODO: FIXME, dilution parameter type from Container to Object
+
+    /**
+     * Sets the realm's virtual server container.
+     *
+     * @param container
+     */
     void setVirtualServer(Object container);
 
+    /**
+     * Reinitializes the web security manager.
+     */
     void updateWebSecurityManager();
 
     /**

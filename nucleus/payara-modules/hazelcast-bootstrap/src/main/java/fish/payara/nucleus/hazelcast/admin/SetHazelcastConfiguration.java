@@ -46,6 +46,7 @@ import fish.payara.nucleus.hazelcast.HazelcastConfigSpecificConfiguration;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -363,7 +364,12 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
 
             } catch (TransactionFailure ex) {
                 logger.log(Level.WARNING, "Exception during command ", ex);
-                actionReport.setMessage(ex.getCause().getMessage());
+                Throwable cause = ex.getCause();
+                if (cause != null) {
+                    actionReport.setMessage(ex.getCause().getMessage());
+                } else {
+                    actionReport.setMessage(ex.getMessage());
+                }
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -385,6 +391,10 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         }
                     }
                 }
+            }
+
+            if (encryptDatagrid != null && encryptDatagrid) {
+                checkForDatagridKey(actionReport);
             }
 
         }
@@ -465,5 +475,14 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
             result = target;
         }
         return result;
+    }
+
+    private void checkForDatagridKey(ActionReport actionReport) {
+        File datagridKey = new File(server.getConfigDirPath().getPath() + File.separator + "datagrid-key");
+        if (!datagridKey.exists()) {
+            actionReport.setActionExitCode(ActionReport.ExitCode.WARNING);
+            actionReport.appendMessage("Could not find datagrid-key in domain config directory. Please ensure" +
+                    " that you generate one before restarting the domain.");
+        }
     }
 }

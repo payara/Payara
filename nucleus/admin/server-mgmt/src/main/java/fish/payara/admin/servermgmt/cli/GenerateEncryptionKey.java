@@ -44,6 +44,7 @@ import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.net.NetUtils;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
@@ -72,6 +73,9 @@ import java.util.Random;
 @PerLookup
 public class GenerateEncryptionKey extends LocalDomainCommand {
 
+    @Param(name = "domain_name", primary = true, optional = true)
+    private String domainName;
+
     private static final String DATAGRID_KEY_FILE = "datagrid-key";
     private static final LocalStringsImpl SERVERMGMT_CLI_STRINGS =
             new LocalStringsImpl(ChangeMasterPasswordCommandDAS.class);
@@ -83,8 +87,14 @@ public class GenerateEncryptionKey extends LocalDomainCommand {
     private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";
 
     @Override
-    protected int executeCommand() throws CommandException {
+    protected void validate() throws CommandException {
+        setDomainName(domainName);
+        super.validate();
         checkDomainIsNotRunning();
+    }
+
+    @Override
+    protected int executeCommand() throws CommandException {
         char[] masterPasswordChars = verifyMasterPassword();
 
         File datagridKeyFile = new File(getServerDirs().getConfigDir(), DATAGRID_KEY_FILE);

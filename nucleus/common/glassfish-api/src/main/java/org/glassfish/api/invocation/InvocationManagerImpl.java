@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 package org.glassfish.api.invocation;
 
 import static java.lang.ThreadLocal.withInitial;
+import static java.util.Collections.emptyList;
+import static java.util.logging.Level.WARNING;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.EJB_INVOCATION;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVICE_STARTUP;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
@@ -49,12 +51,16 @@ import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocati
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -68,236 +74,218 @@ import org.jvnet.hk2.annotations.Service;
 @Singleton
 public class InvocationManagerImpl implements InvocationManager {
 
-    // This TLS variable stores an ArrayList.
-    // The ArrayList contains ComponentInvocation objects which represent
-    // the stack of invocations on this thread. Accesses to the ArrayList
-    // don't need to be synchronized because each thread has its own ArrayList.
-    private InheritableThreadLocal<InvocationArray<ComponentInvocation>> frames;
+    private static final Logger LOGGER = Logger.getLogger(InvocationManagerImpl.class.getName());
 
-    private final ThreadLocal<Stack<ApplicationEnvironment>> applicationEnvironments = withInitial(Stack<ApplicationEnvironment>::new);
-    private final ThreadLocal<Deque<Method>> webServiceMethods = withInitial(ArrayDeque<Method>::new);
-
-    private Map<ComponentInvocationType, List<RegisteredComponentInvocationHandler>> regCompInvHandlerMap = new HashMap<>();
-
-    private final ComponentInvocationHandler[] invHandlers;
+    private final InheritableThreadLocal<InvocationFrames> framesByThread;
+    private final ThreadLocal<Deque<ApplicationEnvironment>> appEnvironments = withInitial(ArrayDeque::new);
+    private final ThreadLocal<Deque<Method>> webServiceMethods = withInitial(ArrayDeque::new);
+    private final ConcurrentMap<ComponentInvocationType, ListComponentInvocationHandler> typeHandlers = new ConcurrentHashMap<>();
+    private final ComponentInvocationHandler allTypesHandler;
 
     public InvocationManagerImpl() {
-        this(null);
+        this((ComponentInvocationHandler) null);
+    }
+
+    public InvocationManagerImpl(ComponentInvocationHandler... handlers) {
+        this(Arrays.asList(handlers));
     }
 
     @Inject
     private InvocationManagerImpl(@Optional IterableProvider<ComponentInvocationHandler> handlers) {
-        if (handlers == null) {
-            invHandlers = null;
-        } else {
-            LinkedList<ComponentInvocationHandler> localHandlers = new LinkedList<ComponentInvocationHandler>();
-            for (ComponentInvocationHandler handler : handlers) {
-                localHandlers.add(handler);
+        this((Iterable<ComponentInvocationHandler>) handlers);
+    }
+
+    private InvocationManagerImpl(Iterable<ComponentInvocationHandler> handlers) {
+        this.allTypesHandler = initInvocationHandlers(handlers);
+
+        framesByThread = new InheritableThreadLocal<InvocationFrames>() {
+
+            @Override
+            protected InvocationFrames initialValue() {
+                return new InvocationFrames();
             }
 
-            if (localHandlers.size() > 0) {
-                invHandlers = localHandlers.toArray(new ComponentInvocationHandler[localHandlers.size()]);
-            } else {
-                invHandlers = null;
-            }
-        }
-
-        frames = new InheritableThreadLocal<InvocationArray<ComponentInvocation>>() {
-
-            protected InvocationArray<ComponentInvocation> initialValue() {
-                return new InvocationArray<>();
-            }
-
-            protected InvocationArray<ComponentInvocation> childValue(InvocationArray<ComponentInvocation> parentValue) {
+            @Override
+            protected InvocationFrames childValue(InvocationFrames parentValue) {
                 return computeChildTheadInvocation(parentValue);
             }
         };
     }
 
-    @SuppressWarnings("unchecked")
+    private static ComponentInvocationHandler initInvocationHandlers(Iterable<ComponentInvocationHandler> handlers) {
+        if (handlers == null) {
+            return null;
+        }
+        List<ComponentInvocationHandler> hs = new ArrayList<>();
+        handlers.forEach(hs::add);
+        if (hs.isEmpty()) {
+            return null;
+        }
+        if (hs.size() == 1) {
+            return hs.get(0);
+        }
+        return new ListComponentInvocationHandler(hs);
+    }
+
     @Override
     public void setThreadInheritableInvocation(List<? extends ComponentInvocation> parentValue) {
-        frames.set(computeChildTheadInvocation((InvocationArray<ComponentInvocation>) parentValue));
+        framesByThread.set(computeChildTheadInvocation(InvocationFrames.valueOf(parentValue)));
     }
 
+    @Override
     public <T extends ComponentInvocation> void preInvoke(T invocation) throws InvocationException {
 
-        InvocationArray<ComponentInvocation> invocationArray = frames.get();
+        InvocationFrames frames = framesByThread.get();
         if (invocation.getInvocationType() == SERVICE_STARTUP) {
-            invocationArray.setInvocationAttribute(SERVICE_STARTUP);
+            frames.setState(SERVICE_STARTUP);
             return;
         }
 
-        int beforeSize = invocationArray.size();
-        ComponentInvocation previousInvocation = beforeSize > 0 ? invocationArray.get(beforeSize - 1) : null;
-
-        // If ejb call EJBSecurityManager, for servlet call RealmAdapter
-        ComponentInvocationType invocationType = invocation.getInvocationType();
-
-        if (invHandlers != null) {
-            for (ComponentInvocationHandler handler : invHandlers) {
-                handler.beforePreInvoke(invocationType, previousInvocation, invocation);
-            }
-        }
-
-        List<RegisteredComponentInvocationHandler> setCIH = regCompInvHandlerMap.get(invocationType);
-        if (setCIH != null) {
-            for (int i = 0; i < setCIH.size(); i++) {
-                setCIH.get(i).getComponentInvocationHandler().beforePreInvoke(invocationType, previousInvocation, invocation);
-            }
-        }
-
-        // Push this invocation on the stack
-        invocationArray.add(invocation);
-
-        if (invHandlers != null) {
-            for (ComponentInvocationHandler handler : invHandlers) {
-                handler.afterPreInvoke(invocationType, previousInvocation, invocation);
-            }
-        }
-
-        if (setCIH != null) {
-            for (int i = 0; i < setCIH.size(); i++) {
-                setCIH.get(i).getComponentInvocationHandler().afterPreInvoke(invocationType, previousInvocation, invocation);
-            }
-        }
-
-    }
-
-    public <T extends ComponentInvocation> void postInvoke(T invocation) throws InvocationException {
-
-        // Get this thread's ArrayList
-        InvocationArray<ComponentInvocation> invocationArray = frames.get();
-        if (invocation.getInvocationType() == SERVICE_STARTUP) {
-            invocationArray.setInvocationAttribute(UN_INITIALIZED);
-            return;
-        }
-
-        int beforeSize = invocationArray.size();
-        if (beforeSize == 0) {
-            throw new InvocationException();
-        }
-
-        ComponentInvocation prevInv = beforeSize > 1 ? invocationArray.get(beforeSize - 2) : null;
-        ComponentInvocation curInv = invocationArray.get(beforeSize - 1);
+        ComponentInvocation prev = frames.peekLast();
+        ComponentInvocationType type = invocation.getInvocationType();
+        ComponentInvocationHandler typeHandler = typeHandlers.get(type);
 
         try {
-            ComponentInvocationType invType = invocation.getInvocationType();
-
-            if (invHandlers != null) {
-                for (ComponentInvocationHandler handler : invHandlers) {
-                    handler.beforePostInvoke(invType, prevInv, curInv);
-                }
+            if (allTypesHandler != null) {
+                allTypesHandler.beforePreInvoke(type, prev, invocation);
             }
-
-            List<RegisteredComponentInvocationHandler> setCIH = regCompInvHandlerMap.get(invType);
-            if (setCIH != null) {
-                for (int i = 0; i < setCIH.size(); i++) {
-                    setCIH.get(i).getComponentInvocationHandler().beforePostInvoke(invType, prevInv, curInv);
-                }
+            if (typeHandler != null) {
+                typeHandler.beforePreInvoke(type, prev, invocation);
             }
-
         } finally {
-            // pop the stack
-            invocationArray.remove(beforeSize - 1);
+            // Push this invocation on the stack
+            frames.addLast(invocation);
 
-            if (invHandlers != null) {
-                for (ComponentInvocationHandler handler : invHandlers) {
-                    handler.afterPostInvoke(invocation.getInvocationType(), prevInv, invocation);
-                }
+            if (allTypesHandler != null) {
+                allTypesHandler.afterPreInvoke(type, prev, invocation);
             }
-
-            ComponentInvocationType invType = invocation.getInvocationType();
-
-            List<RegisteredComponentInvocationHandler> setCIH = regCompInvHandlerMap.get(invType);
-            if (setCIH != null) {
-                for (int i = 0; i < setCIH.size(); i++) {
-                    setCIH.get(i).getComponentInvocationHandler().afterPostInvoke(invType, prevInv, curInv);
-                }
+            if (typeHandler != null) {
+                typeHandler.afterPreInvoke(type, prev, invocation);
             }
+        }
+    }
 
+    @Override
+    public <T extends ComponentInvocation> void postInvoke(T invocation) throws InvocationException {
+        InvocationFrames frames = framesByThread.get();
+        if (invocation.getInvocationType() == SERVICE_STARTUP) {
+            frames.setState(UN_INITIALIZED);
+            return;
         }
 
+        Iterator<ComponentInvocation> iter = frames.descendingIterator();
+        if (!iter.hasNext()) {
+            throw new InvocationException("No invocation on invocation stack. Expected invocation: " + invocation);
+        }
+
+        ComponentInvocation current = iter.next(); // the last is the current is "invocation"
+        if (isInconsistentUse(invocation, current)) {
+            LOGGER.log(WARNING, "postInvoke not called with top of the invocation stack. Expected:\n{0}\nbut was:\n{1}",
+                    new Object[] { current, invocation });
+            LOGGER.log(Level.FINE, "Stacktrace: ",
+                    new IllegalStateException("This exception is not thrown, it is only to trace the invocation"));
+        }
+        ComponentInvocation prev = iter.hasNext() ? iter.next() : null;
+
+        ComponentInvocationType type = invocation.getInvocationType();
+        ComponentInvocationHandler typeHandler = typeHandlers.get(type);
+        try {
+            if (allTypesHandler != null) {
+                allTypesHandler.beforePostInvoke(type, prev, current);
+            }
+            if (typeHandler != null) {
+                typeHandler.beforePostInvoke(type, prev, current);
+            }
+        } finally {
+            // pop the stack
+            frames.removeLast();
+
+            if (allTypesHandler != null) {
+                allTypesHandler.afterPostInvoke(type, prev, current);
+            }
+            if (typeHandler != null) {
+                typeHandler.afterPostInvoke(type, prev, current);
+            }
+        }
+    }
+
+    private static boolean isInconsistentUse(ComponentInvocation a, ComponentInvocation b) {
+        if (a == null || b == null) {
+            return a != b;
+        }
+        if (a.getClass() != b.getClass()) {
+            return true;
+        }
+        return a != b && !a.getClass().getSimpleName().equals("WebComponentInvocation"); // Effectively we ignore WebComponentInvocations for now
     }
 
     /**
-     * return true iff no invocations on the stack for this thread
-     * @return
+     * @return true iff no invocations on the stack for this thread
      */
     @Override
     public boolean isInvocationStackEmpty() {
-        InvocationArray<ComponentInvocation> invocations = frames.get();
-        return invocations == null || invocations.size() == 0;
+        InvocationFrames invocations = framesByThread.get();
+        return invocations == null || invocations.isEmpty();
     }
 
     /**
-     * return the Invocation object of the component being called
-     * @param <T>
-     * @return
+     * @return the Invocation object of the component being called
      */
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getCurrentInvocation() {
-        InvocationArray<ComponentInvocation> invocations = frames.get();
-        int invocationsSize = invocations.size();
-        if (invocationsSize == 0) {
-            return null;
-        }
-
-        return (T) invocations.get(invocationsSize - 1);
+        return (T) framesByThread.get().peekLast();
     }
 
     /**
-     * return the Invocation object of the caller
-     * return null if none exist (e.g. caller is from another VM)
-     * @param <T>
-     * @return
+     * @return the Invocation object of the caller or null if none exist (e.g. caller is from another VM)
      */
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ComponentInvocation> T getPreviousInvocation() throws InvocationException {
-        InvocationArray<ComponentInvocation> invocations = frames.get();
-        int invocationsSize = invocations.size();
-        if (invocationsSize < 2) {
+        Iterator<ComponentInvocation> iter = framesByThread.get().descendingIterator();
+        if (!iter.hasNext()) {
             return null;
         }
-
-        return (T) invocations.get(invocationsSize - 2);
+        iter.next();
+        if (!iter.hasNext()) {
+            return null;
+        }
+        return (T) iter.next();
     }
 
     @Override
     public List<? extends ComponentInvocation> getAllInvocations() {
-        return frames.get();
+        InvocationFrames frames = framesByThread.get();
+        return frames == null ? emptyList() : new ArrayList<>(frames);
     }
 
     @Override
     public List<? extends ComponentInvocation> popAllInvocations() {
-        List<? extends ComponentInvocation> result = frames.get();
-        frames.set(null);
+        List<? extends ComponentInvocation> result = getAllInvocations();
+        framesByThread.set(null);
         return result;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void putAllInvocations(List<? extends ComponentInvocation> invocations) {
-        frames.set(new InvocationArray<>((List<ComponentInvocation>) invocations));
+        framesByThread.set(InvocationFrames.valueOf(invocations));
     }
 
-    private InvocationArray<ComponentInvocation> computeChildTheadInvocation(InvocationArray<ComponentInvocation> parentValue) {
+    static InvocationFrames computeChildTheadInvocation(InvocationFrames parent) {
+        InvocationFrames childFrames = new InvocationFrames();
+        InvocationFrames parentFrames = parent;
 
-        // Always creates a new ArrayList
-        InvocationArray<ComponentInvocation> childInvocationArray = new InvocationArray<ComponentInvocation>();
-        InvocationArray<ComponentInvocation> parentInvocationArray = parentValue;
-
-        if (parentInvocationArray != null && parentInvocationArray.size() > 0 && parentInvocationArray.outsideStartup()) {
+        if (parentFrames != null && !parentFrames.isEmpty() && !parentFrames.isStartup()) {
 
             // Get current invocation
-            ComponentInvocation parentInvocation = parentInvocationArray.get(parentInvocationArray.size() - 1);
+            ComponentInvocation parentFrame = parentFrames.getLast();
 
             // TODO: The following is ugly. The logic of what needs to be in the
             // new ComponentInvocation should be with the respective container
 
-            if (parentInvocation.getInvocationType() == SERVLET_INVOCATION) {
+            ComponentInvocationType parentType = parentFrame.getInvocationType();
+            if (parentType == SERVLET_INVOCATION) {
 
                 // If this is a thread created by user in servlet's service method
                 // create a new ComponentInvocation with transaction
@@ -305,110 +293,133 @@ public class InvocationManagerImpl implements InvocationManager {
                 // so that the resource won't be enlisted or registered
 
                 ComponentInvocation invocation = new ComponentInvocation();
-                invocation.setComponentInvocationType(parentInvocation.getInvocationType());
-                invocation.setComponentId(parentInvocation.getComponentId());
-                invocation.setAppName(parentInvocation.getAppName());
-                invocation.setModuleName(parentInvocation.getModuleName());
-                invocation.setContainer(parentInvocation.getContainer());
-                invocation.setJndiEnvironment(parentInvocation.getJndiEnvironment());
+                invocation.setComponentInvocationType(parentType);
+                invocation.setComponentId(parentFrame.getComponentId());
+                invocation.setAppName(parentFrame.getAppName());
+                invocation.setModuleName(parentFrame.getModuleName());
+                invocation.setContainer(parentFrame.getContainer());
+                invocation.setJndiEnvironment(parentFrame.getJndiEnvironment());
 
-                childInvocationArray.add(invocation);
-            } else if (parentInvocation.getInvocationType() != EJB_INVOCATION) {
-
+                childFrames.add(invocation);
+            } else if (parentType != EJB_INVOCATION) {
                 // Push a copy of invocation onto the new result
-                // ArrayList
-                ComponentInvocation cpy = new ComponentInvocation();
-                cpy.componentId = parentInvocation.getComponentId();
-                cpy.setComponentInvocationType(parentInvocation.getInvocationType());
-                cpy.instance = parentInvocation.getInstance();
-                cpy.container = parentInvocation.getContainerContext();
-                cpy.transaction = parentInvocation.getTransaction();
-
-                childInvocationArray.add(cpy);
+                childFrames.add(new ComponentInvocation(
+                        parentFrame.getComponentId(),
+                        parentType,
+                        parentFrame.getInstance(),
+                        parentFrame.getContainerContext(),
+                        parentFrame.getTransaction()));
             }
         }
 
-        return childInvocationArray;
+        return childFrames;
     }
 
 
-    static class InvocationArray<T extends ComponentInvocation> extends ArrayList<T> {
+    static final class InvocationFrames extends ArrayDeque<ComponentInvocation> {
 
         private static final long serialVersionUID = 1L;
 
-        private ComponentInvocationType invocationAttribute;
+        private ComponentInvocationType state;
 
-        private InvocationArray(List<T> invocations) {
+        static InvocationFrames valueOf(Collection<? extends ComponentInvocation> invocations) {
+            return invocations instanceof InvocationFrames
+                    ? (InvocationFrames) invocations
+                    : new InvocationFrames(invocations == null ? emptyList() : invocations);
+        }
+
+        private InvocationFrames(Collection<? extends ComponentInvocation> invocations) {
             super(invocations);
         }
 
-        private InvocationArray() {
+        InvocationFrames() {
         }
 
-        public void setInvocationAttribute(ComponentInvocationType attribute) {
-            this.invocationAttribute = attribute;
+        void setState(ComponentInvocationType state) {
+            this.state = state;
         }
 
-        public ComponentInvocationType getInvocationAttribute() {
-            return invocationAttribute;
-        }
-
-        public boolean outsideStartup() {
-            return getInvocationAttribute() != SERVICE_STARTUP;
+        boolean isStartup() {
+            return state == SERVICE_STARTUP;
         }
     }
 
     @Override
     public void registerComponentInvocationHandler(ComponentInvocationType type, RegisteredComponentInvocationHandler handler) {
-        List<RegisteredComponentInvocationHandler> setRegCompInvHandlers = regCompInvHandlerMap.get(type);
-
-        if (setRegCompInvHandlers == null) {
-            setRegCompInvHandlers = new ArrayList<RegisteredComponentInvocationHandler>();
-            regCompInvHandlerMap.put(type, setRegCompInvHandlers);
-        }
-
-        if (setRegCompInvHandlers.size() == 0) {
-            setRegCompInvHandlers.add(handler);
-        }
+        typeHandlers.computeIfAbsent(type,
+                key -> new ListComponentInvocationHandler(new CopyOnWriteArrayList<>())) // OBS! must be thread safe List here
+            .add(handler.getComponentInvocationHandler());
     }
 
     @Override
     public void pushAppEnvironment(ApplicationEnvironment env) {
-        applicationEnvironments.get().push(env);
+        appEnvironments.get().addLast(env);
     }
 
     @Override
     public ApplicationEnvironment peekAppEnvironment() {
-        Stack<ApplicationEnvironment> stack = applicationEnvironments.get();
-
-        if (stack.isEmpty()) {
-            return null;
-        }
-
-        return stack.peek();
+        return appEnvironments.get().peekLast();
     }
 
     @Override
     public void popAppEnvironment() {
-        Stack<ApplicationEnvironment> stack = applicationEnvironments.get();
-
-        if (!stack.isEmpty()) {
-            stack.pop();
-        }
+        appEnvironments.get().pollLast();
     }
-    
+
     @Override
     public void pushWebServiceMethod(Method method) {
-        webServiceMethods.get().push(method);
+        webServiceMethods.get().addLast(method);
     }
-    
+
     @Override
     public Method peekWebServiceMethod() {
-        return webServiceMethods.get().peek();
+        return webServiceMethods.get().peekLast();
     }
-    
+
     @Override
     public void popWebServiceMethod() {
-        webServiceMethods.get().pollFirst();
+        webServiceMethods.get().pollLast();
+    }
+
+    /**
+     * Adapter to make {@link List} of {@link ComponentInvocationHandler} usable as a single
+     * {@link ComponentInvocationHandler} to break down all moving parts in this implementation.
+     */
+    private static final class ListComponentInvocationHandler implements ComponentInvocationHandler {
+
+        private final List<ComponentInvocationHandler> handlers;
+
+        ListComponentInvocationHandler(List<ComponentInvocationHandler> handlers) {
+            this.handlers = handlers;
+        }
+
+        void add(ComponentInvocationHandler handler) {
+            handlers.add(handler);
+        }
+
+        @Override
+        public void beforePreInvoke(ComponentInvocationType type, ComponentInvocation prev, ComponentInvocation cur)
+                throws InvocationException {
+            handlers.forEach(handler -> handler.beforePreInvoke(type, prev, cur));
+        }
+
+        @Override
+        public void afterPreInvoke(ComponentInvocationType type, ComponentInvocation prev, ComponentInvocation cur)
+                throws InvocationException {
+            handlers.forEach(handler -> handler.afterPreInvoke(type, prev, cur));
+        }
+
+        @Override
+        public void beforePostInvoke(ComponentInvocationType type, ComponentInvocation prev, ComponentInvocation cur)
+                throws InvocationException {
+            handlers.forEach(handler -> handler.beforePostInvoke(type, prev, cur));
+        }
+
+        @Override
+        public void afterPostInvoke(ComponentInvocationType type, ComponentInvocation prev, ComponentInvocation cur)
+                throws InvocationException {
+            handlers.forEach(handler -> handler.afterPostInvoke(type, prev, cur));
+        }
+
     }
 }

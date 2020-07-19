@@ -61,6 +61,7 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -119,6 +120,11 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct, Monitor
                     "http-service/" + id + "/request",
                     httpServiceStatsProvider);
         }
+    }
+
+    static {
+        MonitoringDataCollection.register(CountStatistic.class,
+                (collector, count) -> collector.collect(count.getName(), count.getCount()));
     }
 
     @Override

@@ -39,14 +39,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.201-SNAPSHOT</version>
+        <version>5.2020.4-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.admingui</groupId>
     <artifactId>admingui</artifactId>
@@ -172,7 +172,7 @@
         <commons-fileupload.version>1.3.3</commons-fileupload.version>
         <woodstock-dojo-ajax-nodemo.version>0.4.4</woodstock-dojo-ajax-nodemo.version>
         <woodstock-jsf.version>4.0.2.10.payara-p16</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>4.0.2.10.payara-p16</woodstock-jsf-suntheme.version>
+        <woodstock-jsf-suntheme.version>4.0.2.10.payara-p18</woodstock-jsf-suntheme.version>
         <woodstock-json.version>1.0</woodstock-json.version>
         <woodstock-prototype.version>1.7.3</woodstock-prototype.version>
     </properties>

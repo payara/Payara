@@ -39,24 +39,19 @@
  */
 package fish.payara.microprofile.openapi.test.app.application;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Arrays;
 import java.util.List;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
-import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 /**
  * In response to {@link https://github.com/payara/Payara/issues/3832} this test should make sure the
