@@ -121,7 +121,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
     private final InvocationInfo postConstructInvInfo;
     private final InvocationInfo preDestroyInvInfo;
 
-    protected final ClusteredSingletonLookup clusteredLookup = //
+    protected final ClusteredSingletonLookup clusteredLookup =
         new ClusteredSingletonLookupImpl(ejbDescriptor, componentId);
 
 

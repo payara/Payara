@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
@@ -77,6 +78,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     // transient fields
     private EventListenerImpl destroyEventListener;
+    private int unavailableCount;
 
     // serialized fields
     private Instance contextInstance;
@@ -131,7 +133,9 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         if (!contextInstance.isRunning()) {
             lock.lock();
             try {
-                log.finest(String.format("WAITING: tenant not available: %s", contextInstance.getInstanceComponentId()));
+                ++unavailableCount;
+                log.log(unavailableCount > 100 ? Level.INFO : Level.FINEST,
+                        String.format("BLOCKED: tenant not available: %s", contextInstance.getInstanceComponentId()));
                 condition.await(100, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ex) {
             } finally {
@@ -139,6 +143,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
             }
             return false;
         }
+        unavailableCount = 0;
         return true;
     }
 
