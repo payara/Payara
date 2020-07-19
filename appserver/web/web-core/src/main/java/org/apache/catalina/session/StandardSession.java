@@ -791,9 +791,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      */
     @Override
     public void expire() {
-
         expire(true);
-
     }
 
     /**

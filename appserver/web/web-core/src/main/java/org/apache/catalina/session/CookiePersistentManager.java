@@ -111,8 +111,8 @@ public class CookiePersistentManager extends StandardManager {
     }
 
     @Override
-    public Session[] findSessions() {
-        return null;
+    public List<Session> findSessions() {
+        return Collections.emptyList();
     }
 
     @Override
