@@ -91,9 +91,9 @@ public class PayaraValueHolder<T> implements Externalizable {
             if (componentId == null){
                 componentId = "";
             }
-            if (componentId.equals(invocationComponentId)) {
-                throw new ClassNotFoundException(String.format("Wrong application: expected %s bug got %s", componentId, invocationComponentId),
-                        new IllegalStateException("Wrong Application"));
+            if (!componentId.equals(invocationComponentId)) {
+                throw new ClassNotFoundException(String.format("Wrong application: expected %s but got %s", componentId, invocationComponentId),
+                        new IllegalStateException("Wrong Application", ex));
             } else {
                 throw ex;
             }

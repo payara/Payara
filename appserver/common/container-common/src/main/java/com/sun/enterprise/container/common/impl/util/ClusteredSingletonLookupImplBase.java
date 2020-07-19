@@ -57,22 +57,30 @@ import org.glassfish.internal.api.Globals;
  * @author lprimak
  */
 public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingletonLookup {
-
     private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final String componentId;
     private final SingletonType singletonType;
     private final String keyPrefix;
     private final String mapKey;
     private final AtomicReference<String> sessionHzKey = new AtomicReference<>();
-    private final AtomicReference<String> lockKey = new AtomicReference<>();
-    private final IAtomicLong count;
+    private final AtomicReference<ValueRef<FencedLock>> lock = new AtomicReference<>();
+    private final AtomicReference<ValueRef<IAtomicLong>> count = new AtomicReference<>();
+
+    static class ValueRef<T> {
+        public final String key;
+        public final T value;
+
+        public ValueRef(String key, T value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
 
     public ClusteredSingletonLookupImplBase(String componentId, SingletonType singletonType) {
         this.componentId = componentId;
         this.singletonType = singletonType;
         this.keyPrefix = makeKeyPrefix();
         this.mapKey = makeMapKey();
-        this.count = getHazelcastInstance().getCPSubsystem().getAtomicLong(getSessionHzKey()+ "/count");
     }
 
     protected final String getKeyPrefix() {
@@ -84,7 +92,21 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     }
 
     protected final String getLockKey() {
-        return lockKey.updateAndGet(v -> v != null ? v : makeLockKey());
+        return getLockRef().key;
+    }
+
+    protected final String getCountKey() {
+        return getCountRef().key;
+    }
+
+    private ValueRef<FencedLock> getLockRef() {
+        return lock.updateAndGet(v -> v != null ? v : new ValueRef(makeLockKey(),
+                getHazelcastInstance().getCPSubsystem().getLock(makeLockKey())));
+    }
+
+    private ValueRef<IAtomicLong> getCountRef() {
+        return count.updateAndGet(v -> v != null ? v : new ValueRef(makeCountKey(),
+                getHazelcastInstance().getCPSubsystem().getAtomicLong(makeCountKey())));
     }
 
     public final String getSessionHzKey() {
@@ -97,12 +119,13 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
      */
     protected final void invalidateKeys() {
         sessionHzKey.set(null);
-        lockKey.set(null);
+        lock.set(null);
+        count.set(null);
     }
 
     @Override
     public FencedLock getDistributedLock() {
-        return getHazelcastInstance().getCPSubsystem().getLock(getLockKey());
+        return getLockRef().value;
     }
 
     @Override
@@ -112,7 +135,7 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public  IAtomicLong getClusteredUsageCount() {
-        return count;
+        return getCountRef().value;
     }
 
     private HazelcastInstance getHazelcastInstance() {
@@ -147,6 +170,10 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     private String makeLockKey() {
         return getSessionHzKey() + "/lock";
+    }
+
+    private String makeCountKey() {
+        return getSessionHzKey() + "/count";
     }
 
     private String makeSessionHzKey() {
