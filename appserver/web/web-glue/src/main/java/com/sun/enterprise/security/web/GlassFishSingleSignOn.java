@@ -37,23 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.web;
 
-import org.apache.catalina.*;
+import org.apache.catalina.HttpRequest;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.Realm;
+import org.apache.catalina.Request;
+import org.apache.catalina.Response;
+import org.apache.catalina.Session;
+import org.apache.catalina.SessionEvent;
 import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
-
 import org.glassfish.web.LogFacade;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -108,12 +110,12 @@ public class GlassFishSingleSignOn extends SingleSignOn
     /**
      * Number of cache hits
      */
-    private AtomicInteger hitCount = new AtomicInteger(0);
+    private final AtomicInteger hitCount = new AtomicInteger(0);
 
     /**
      * Number of cache misses
      */
-    private AtomicInteger missCount = new AtomicInteger(0);
+    private final AtomicInteger missCount = new AtomicInteger(0);
 
     // ------------------------------------------------------------- Properties
 
@@ -246,18 +248,12 @@ public class GlassFishSingleSignOn extends SingleSignOn
      *
      * @param request The servlet request we are processing
      * @param response The servlet response we are creating
-     * @param context The valve context used to invoke the next valve in the current processing pipeline
      *
-     * @exception IOException if an input/output error occurs
-     * @exception ServletException if a servlet error occurs
-     */
-    /**
-     * IASRI 4665318 public void invoke(Request request, Response response, ValveContext context) throws IOException,
-     * ServletException {
+     * @return the valve flag
      */
     // START OF IASRI 4665318
     @Override
-    public int invoke(Request request, Response response) throws IOException, ServletException {
+    public int invoke(final Request request, final Response response) {
         // END OF IASRI 4665318
 
         // If this is not an HTTP request and response, just pass them on
@@ -292,7 +288,8 @@ public class GlassFishSingleSignOn extends SingleSignOn
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, LogFacade.CHECKING_SSO_COOKIE);
         }
-        Cookie cookies[] = hreq.getCookies();
+
+        final Cookie[] cookies = hreq.getCookies();
         if (cookies == null) {
             return INVOKE_NEXT;
         }
