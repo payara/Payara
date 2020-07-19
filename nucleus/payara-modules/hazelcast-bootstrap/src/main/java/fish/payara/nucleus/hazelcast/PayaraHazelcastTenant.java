@@ -83,7 +83,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     private Instance contextInstance;
     private String moduleName;
 
-    public PayaraHazelcastTenant() {
+    PayaraHazelcastTenant() {
         if (invMgr.getCurrentInvocation() != null) {
             contextInstance = ctxUtil.currentInvocation();
             moduleName = VersioningUtils.getUntaggedName(invMgr.getCurrentInvocation().getModuleName());
