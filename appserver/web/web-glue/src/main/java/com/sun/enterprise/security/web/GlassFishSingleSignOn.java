@@ -433,13 +433,10 @@ public class GlassFishSingleSignOn extends SingleSignOn
         }
         // S1AS8 6155481 END
         // Look up and remove the corresponding SingleSignOnEntry
-        SingleSignOnEntry sso = null;
-        synchronized (cache) {
-            sso = (SingleSignOnEntry) cache.remove(ssoId);
-        }
-
-        if (sso == null)
+        final SingleSignOnEntry sso = this.cache.remove(ssoId);
+        if (sso == null) {
             return;
+        }
 
         // Expire any associated sessions
         sso.expireSessions();
@@ -464,30 +461,24 @@ public class GlassFishSingleSignOn extends SingleSignOn
         long tooOld = System.currentTimeMillis() - ssoMaxInactive * 1000L;
         // S1AS8 6155481 START
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, LogFacade.SSO_EXPIRATION_STARTED, cache.size());
+            logger.log(Level.FINE, LogFacade.SSO_EXPIRATION_STARTED, this.cache.size());
         }
         // S1AS8 6155481 END
-        ArrayList<String> removals = new ArrayList<String>(cache.size() / 2);
+        final ArrayList<String> removals = new ArrayList<>(this.cache.size() / 2);
 
         // build list of removal targets
 
         // Note that only those SSO entries which are NOT associated with
-        // any session are elegible for removal here.
+        // any session are eligible for removal here.
         // Currently no session association ever happens so this covers all
         // SSO entries. However, this should be addressed separately.
 
         try {
-            synchronized (cache) {
-
-                Iterator<String> it = cache.keySet().iterator();
-                while (it.hasNext()) {
-                    String key = it.next();
-                    SingleSignOnEntry sso = (SingleSignOnEntry) cache.get(key);
-                    if (sso.isEmpty() && sso.getLastAccessTime() < tooOld) {
-                        removals.add(key);
-                    }
+            this.cache.forEach((ssoId, sso) -> {
+                if (sso.isEmpty() && sso.getLastAccessTime() < tooOld) {
+                    removals.add(ssoId);
                 }
-            }
+            });
 
             int removalCount = removals.size();
             // S1AS8 6155481 START
@@ -495,13 +486,13 @@ public class GlassFishSingleSignOn extends SingleSignOn
                 logger.log(Level.FINE, LogFacade.SSO_CACHE_EXPIRE, removalCount);
             }
             // S1AS8 6155481 END
-            // deregister any elegible sso entries
-            for (int i = 0; i < removalCount; i++) {
+            // deregister any eligible sso entries
+            for (final String removal : removals) {
                 // S1AS8 6155481 START
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, LogFacade.SSO_EXPRIRATION_REMOVING_ENTRY, removals.get(i));
+                    logger.log(Level.FINE, LogFacade.SSO_EXPRIRATION_REMOVING_ENTRY, removal);
                 }
-                deregister(removals.get(i));
+                deregister(removal);
             }
             // S1AS8 6155481 END
         } catch (Throwable e) { // don't let thread die
@@ -608,7 +599,7 @@ public class GlassFishSingleSignOn extends SingleSignOn
      * @return Number of sessions participating in SSO
      */
     public int getActiveSessionCount() {
-        return cache.size();
+        return this.cache.size();
     }
 
     /**
