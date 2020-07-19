@@ -65,12 +65,14 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     private final String mapKey;
     private final AtomicReference<String> sessionHzKey = new AtomicReference<>();
     private final AtomicReference<String> lockKey = new AtomicReference<>();
+    private final IAtomicLong count;
 
     public ClusteredSingletonLookupImplBase(String componentId, SingletonType singletonType) {
         this.componentId = componentId;
         this.singletonType = singletonType;
         this.keyPrefix = makeKeyPrefix();
         this.mapKey = makeMapKey();
+        this.count = getHazelcastInstance().getCPSubsystem().getAtomicLong(getSessionHzKey()+ "/count");
     }
 
     protected final String getKeyPrefix() {
@@ -110,7 +112,7 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public  IAtomicLong getClusteredUsageCount() {
-        return getHazelcastInstance().getCPSubsystem().getAtomicLong(getSessionHzKey()+ "/count");
+        return count;
     }
 
     private HazelcastInstance getHazelcastInstance() {

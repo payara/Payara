@@ -713,7 +713,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
                 IAtomicLong count = clusteredLookup.getClusteredUsageCount();
                 if (count.decrementAndGet() <= 0) {
                     clusteredLookup.getClusteredSingletonMap().delete(clusteredLookup.getClusteredSessionKey());
-                    count.destroy();
+                    count.set(0);
                 } else if (sessDesc.dontCallPreDestroyOnDetach()) {
                     doPreDestroy = false;
                 }

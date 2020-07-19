@@ -71,7 +71,6 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     private final Events events = Globals.getDefaultHabitat().getService(Events.class);
     private final InvocationManager invMgr = Globals.getDefaultHabitat().getService(InvocationManager.class);
-    private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final Lock lock = new ReentrantLock();
     private final Condition condition = lock.newCondition();
     private static final Logger log = Logger.getLogger(PayaraHazelcastTenant.class.getName());
@@ -184,7 +183,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
                 if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
                     // decouple the tenant classes from the event
                     tenantUnavailable();
-                    destroyEvent.ifPresent((DestroyEventContext ctx) -> ctx.tenantUnavailable(hzCore.getInstance()));
+                    destroyEvent.ifPresent(DestroyEventContext::tenantUnavailable);
                 }
             }
         }
