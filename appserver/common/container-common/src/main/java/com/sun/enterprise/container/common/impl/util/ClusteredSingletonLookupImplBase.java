@@ -63,18 +63,9 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     private final String keyPrefix;
     private final String mapKey;
     private final AtomicReference<String> sessionHzKey = new AtomicReference<>();
-    private final AtomicReference<ValueRef<FencedLock>> lock = new AtomicReference<>();
-    private final AtomicReference<ValueRef<IAtomicLong>> count = new AtomicReference<>();
+    private final AtomicReference<FencedLock> lock = new AtomicReference<>();
+    private final AtomicReference<IAtomicLong> count = new AtomicReference<>();
 
-    static class ValueRef<T> {
-        public final String key;
-        public final T value;
-
-        public ValueRef(String key, T value) {
-            this.key = key;
-            this.value = value;
-        }
-    }
 
     public ClusteredSingletonLookupImplBase(String componentId, SingletonType singletonType) {
         this.componentId = componentId;
@@ -91,41 +82,14 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
         return mapKey;
     }
 
-    protected final String getLockKey() {
-        return getLockRef().key;
-    }
-
-    protected final String getCountKey() {
-        return getCountRef().key;
-    }
-
-    private ValueRef<FencedLock> getLockRef() {
-        return lock.updateAndGet(v -> v != null ? v : new ValueRef(makeLockKey(),
-                getHazelcastInstance().getCPSubsystem().getLock(makeLockKey())));
-    }
-
-    private ValueRef<IAtomicLong> getCountRef() {
-        return count.updateAndGet(v -> v != null ? v : new ValueRef(makeCountKey(),
-                getHazelcastInstance().getCPSubsystem().getAtomicLong(makeCountKey())));
-    }
-
     public final String getSessionHzKey() {
         return sessionHzKey.updateAndGet(v -> v != null ? v : makeSessionHzKey());
     }
 
-    /**
-     * {@link #getSessionHzKey()} and {@link #getLockKey()} are dependent on {@link #getClusteredSessionKey()} so should
-     * its value change cache keys need to be invalidated using this method.
-     */
-    protected final void invalidateKeys() {
-        sessionHzKey.set(null);
-        lock.set(null);
-        count.set(null);
-    }
-
     @Override
     public FencedLock getDistributedLock() {
-        return getLockRef().value;
+        return lock.updateAndGet(v -> v != null ? v : getHazelcastInstance()
+                .getCPSubsystem().getLock(makeLockKey()));
     }
 
     @Override
@@ -135,7 +99,8 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public  IAtomicLong getClusteredUsageCount() {
-        return getCountRef().value;
+        return count.updateAndGet(v -> v != null ? v : getHazelcastInstance()
+                .getCPSubsystem().getAtomicLong(makeCountKey()));
     }
 
     private HazelcastInstance getHazelcastInstance() {

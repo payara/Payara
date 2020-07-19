@@ -44,6 +44,7 @@ import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.S
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
@@ -53,9 +54,8 @@ import javax.enterprise.inject.spi.BeanManager;
  * @author lprimak
  */
 public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
-
     private final BeanManager beanManager;
-    private final ThreadLocal<String> sessionKey = new ThreadLocal<>();
+    private final AtomicReference<String> sessionKey = new AtomicReference<>();
 
     public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
         super(componentId, CDI);
@@ -67,15 +67,19 @@ public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBa
         return sessionKey.get();
     }
 
-    void setClusteredSessionKey(Class<?> beanClass) {
+    void setClusteredSessionKeyIfNotSet(Class<?> beanClass) {
+        sessionKey.updateAndGet(v -> v != null ? v : makeSessionKey(beanClass));
+    }
+
+    private String makeSessionKey(Class<?> beanClass) {
         Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
         if (managedBeans.size() > 1) {
             throw new IllegalArgumentException("Multiple beans found for " + beanClass);
         }
         if (managedBeans.size() == 1) {
             Bean<?> bean = managedBeans.iterator().next();
-            sessionKey.set(getBeanName(bean, getAnnotation(beanManager, bean)));
-            invalidateKeys();
+            return getBeanName(bean, getAnnotation(beanManager, bean));
         }
+        return null;
     }
 }

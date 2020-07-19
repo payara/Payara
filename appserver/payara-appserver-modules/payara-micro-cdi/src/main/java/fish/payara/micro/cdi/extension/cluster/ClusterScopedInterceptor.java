@@ -96,7 +96,7 @@ public class ClusterScopedInterceptor implements Serializable {
     @PostConstruct
     Object postConstruct(InvocationContext invocationContext) throws Exception {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
-        clusteredLookup.setClusteredSessionKey(beanClass);
+        clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass);
         clusteredLookup.getClusteredUsageCount().incrementAndGet();
         return invocationContext.proceed();
     }
@@ -105,7 +105,7 @@ public class ClusterScopedInterceptor implements Serializable {
     Object preDestroy(InvocationContext invocationContext) throws Exception {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
         Clustered clusteredAnnotation = getAnnotation(beanManager, beanClass);
-        clusteredLookup.setClusteredSessionKey(beanClass);
+        clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass);
         IAtomicLong count = clusteredLookup.getClusteredUsageCount();
         if (count.decrementAndGet() <= 0) {
             clusteredLookup.getClusteredSingletonMap().delete(clusteredLookup.getClusteredSessionKey());
@@ -119,14 +119,14 @@ public class ClusterScopedInterceptor implements Serializable {
 
     private void lock(Class<?> beanClass, Clustered clusteredAnnotation) {
         if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
-            clusteredLookup.setClusteredSessionKey(beanClass);
+            clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass);
             clusteredLookup.getDistributedLock().lock();
         }
     }
 
     private void unlock(Class<?> beanClass, Clustered clusteredAnnotation) {
         if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
-            clusteredLookup.setClusteredSessionKey(beanClass);
+            clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass);
             clusteredLookup.getDistributedLock().unlock();
         }
     }
