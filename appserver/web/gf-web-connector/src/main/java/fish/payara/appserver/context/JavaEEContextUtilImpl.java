@@ -113,6 +113,12 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
     }
 
     @Override
+    public boolean isInvocationRunning() {
+        ComponentInvocation inv = invocationManager.getCurrentInvocation();
+        return inv != null ? isLoadedOrRunning(inv.getComponentId(), true) : false;
+    }
+
+    @Override
     public boolean isInvocationLoaded() {
         ComponentInvocation inv = invocationManager.getCurrentInvocation();
         return inv != null ? isLoaded(inv.getComponentId(), inv) : false;
