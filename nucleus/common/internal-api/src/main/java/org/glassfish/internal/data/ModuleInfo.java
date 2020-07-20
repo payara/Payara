@@ -167,7 +167,7 @@ public class ModuleInfo {
     public boolean isRunning() {
         return started;
     }
- 
+
     public boolean isLoaded() {
         return loaded;
     }
