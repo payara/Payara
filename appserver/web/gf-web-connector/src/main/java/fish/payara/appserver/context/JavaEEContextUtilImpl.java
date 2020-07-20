@@ -119,13 +119,13 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
     @Override
     public boolean isInvocationRunning() {
         ComponentInvocation inv = invocationManager.getCurrentInvocation();
-        return inv != null ? isLoadedOrRunning(inv.getComponentId(), true) : false;
+        return inv != null ? isLoadedOrRunning(inv.getComponentId(), inv, true).isLoadedOrRunning : false;
     }
 
     @Override
     public boolean isInvocationLoaded() {
         ComponentInvocation inv = invocationManager.getCurrentInvocation();
-        return inv != null ? isLoadedOrRunning(inv.getComponentId(), false) : false;
+        return inv != null ? isLoadedOrRunning(inv.getComponentId(), inv, false).isLoadedOrRunning : false;
     }
 
     private ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {
@@ -147,24 +147,47 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         return newInvocation;
     }
 
-    private boolean isLoadedOrRunning(String componentId, boolean running) {
+    private EnvCheckResult isLoadedOrRunning(String componentId, ComponentInvocation cachedInvocation, boolean running) {
+        boolean isLeaked = false;
         if (componentId == null) {
             // empty component cannot be running
-            return false;
+            return new EnvCheckResult(!running, isLeaked);
         }
         JndiNameEnvironment env = compEnvMgr.getJndiNameEnvironment(componentId);
         if (env != null) {
+            isLeaked = isLeaked(cachedInvocation, componentId);
             ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
             Collection<ModuleInfo> modules = appInfo.getModuleInfos();
             String moduleName = DOLUtils.getModuleName(env);
             if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
                     .anyMatch(moduleInfo -> running ? !moduleInfo.isRunning() : !moduleInfo.isLoaded())) {
-                return false;
+                return new EnvCheckResult(false, isLeaked);
             }
         }
-        return env != null;
+        return new EnvCheckResult((env != null), isLeaked);
     }
 
+    private boolean isLeaked(ComponentInvocation cachedInvocation, String componentId) {
+        if (cachedInvocation != null) {
+            if (getClassLoaderForEnvironment((JndiNameEnvironment) cachedInvocation
+                    .getJNDIEnvironment()) != getClassLoaderForEnvironment(compEnvMgr.
+                            getJndiNameEnvironment(componentId))) {
+                // referencing old class loader / environment, remove it
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private class EnvCheckResult {
+        final boolean isLoadedOrRunning;
+        final boolean isLeaked;
+
+        public EnvCheckResult(boolean isLoadedOrRunning, boolean isLeaked) {
+            this.isLoadedOrRunning = isLoadedOrRunning;
+            this.isLeaked = isLeaked;
+        }
+    }
 
     public class InstanceImpl implements Instance {
         private final String componentId;
@@ -223,7 +246,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         @Override
         public Context pushRequestContext() {
             Context rootCtx = pushContext();
-            if (!isValidAndNotEmpty()) {
+            if (!rootCtx.isValid()) {
                 return rootCtx;
             }
             BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
@@ -239,6 +262,10 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         public Context setApplicationClassLoader() {
             ClassLoader cl = null;
             ComponentInvocation localCachedInvocation = cachedInvocation;
+            if (!isEmpty() && isLeaked(localCachedInvocation, componentId)) {
+                cachedInvocation = null;
+                localCachedInvocation = ensureCached();
+            }
             if (localCachedInvocation != null) {
                 cl = getClassLoaderForEnvironment((JndiNameEnvironment) localCachedInvocation.getJNDIEnvironment());
             } else if (componentId != null) {
@@ -274,12 +301,22 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
 
         @Override
         public boolean isRunning() {
-            return JavaEEContextUtilImpl.this.isLoadedOrRunning(componentId, true);
+            return isLoadedOrRunning(true);
+        }
+
+        private boolean isLoadedOrRunning(boolean running) {
+            EnvCheckResult result = JavaEEContextUtilImpl.this.isLoadedOrRunning(componentId, cachedInvocation, running);
+            if (result.isLeaked) {
+                cachedInvocation = null;
+                return false;
+            } else {
+                return result.isLoadedOrRunning;
+            }
         }
 
         @Override
         public boolean isLoaded() {
-            return JavaEEContextUtilImpl.this.isLoadedOrRunning(componentId, false);
+            return isLoadedOrRunning(false);
         }
 
         @Override
