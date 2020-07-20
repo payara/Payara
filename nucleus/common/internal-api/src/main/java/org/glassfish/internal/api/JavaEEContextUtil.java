@@ -152,7 +152,12 @@ public interface JavaEEContextUtil {
         void clearInstanceInvocation();
     }
 
-    interface Context extends Closeable {};
+    interface Context extends Closeable {
+        default boolean isValid() {
+            return true;
+        }
+    };
+
     interface Closeable extends AutoCloseable {
         @Override
         public void close();

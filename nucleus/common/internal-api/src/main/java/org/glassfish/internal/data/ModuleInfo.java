@@ -452,5 +452,6 @@ public class ModuleInfo {
     public void reset() {
         cleanClassLoaders();
         started = false;
+        loaded = false;
     }
 }

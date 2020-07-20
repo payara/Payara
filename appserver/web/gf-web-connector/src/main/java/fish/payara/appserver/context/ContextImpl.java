@@ -62,6 +62,12 @@ class ContextImpl {
             }
         }
 
+        @Override
+        public boolean isValid() {
+            return invocation != null;
+        }
+
+
         private final ComponentInvocation invocation;
         private final InvocationManager invMgr;
         private final ClassLoader oldClassLoader;
