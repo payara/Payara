@@ -117,6 +117,12 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
     }
 
     @Override
+    public boolean isInvocationRunning() {
+        ComponentInvocation inv = invocationManager.getCurrentInvocation();
+        return inv != null ? isLoadedOrRunning(inv.getComponentId(), true) : false;
+    }
+
+    @Override
     public boolean isInvocationLoaded() {
         ComponentInvocation inv = invocationManager.getCurrentInvocation();
         return inv != null ? isLoadedOrRunning(inv.getComponentId(), false) : false;

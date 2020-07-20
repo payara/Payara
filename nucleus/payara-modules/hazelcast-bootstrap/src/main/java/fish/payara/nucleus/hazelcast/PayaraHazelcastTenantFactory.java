@@ -61,7 +61,7 @@ public class PayaraHazelcastTenantFactory implements TenantControlFactory {
         TenantControl tenantControl = TenantControl.NOOP_TENANT_CONTROL;
         if (invocation != null) {
             tenantControl = invocation.getRegistryFor(TenantControl.class);
-            if (tenantControl == null && ctxUtil.isInvocationLoaded()) {
+            if (tenantControl == null && ctxUtil.isInvocationRunning()) {
                 tenantControl = new PayaraHazelcastTenant();
                 invocation.setRegistryFor(TenantControl.class, tenantControl);
             } else if (tenantControl == null) {
