@@ -44,18 +44,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.extras</groupId>
-        <artifactId>extras</artifactId>
+        <groupId>fish.payara.server.internal.extras</groupId>
+        <artifactId>embedded</artifactId>
         <version>5.2020.4-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.internal.extras</groupId>
-    <artifactId>embedded</artifactId>
+    <artifactId>embedded-tests</artifactId>
     <packaging>pom</packaging>
-    <name>Payara Embedded modules</name>
+    <name>Payara Embedded modules - Tests</name>
     <modules>
-        <module>all</module>
-        <module>web</module>
-        <module>tests</module>
+        <module>embedded-vs-jersey</module>
     </modules>
 </project>

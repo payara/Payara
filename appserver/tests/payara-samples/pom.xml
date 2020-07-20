@@ -36,7 +36,6 @@
     <modules>
         <module>test-utils</module>
         <module>samples</module>
-        <module>classpath</module>
     </modules>
 
     <profiles>
