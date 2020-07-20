@@ -84,9 +84,14 @@ public interface JavaEEContextUtil {
     String getInvocationComponentId();
 
     /**
+     * @return true if current invocation exists and is running
+     */
+    boolean isInvocationRunning();
+
+    /**
      * @return true if current invocation exists and is loaded / ready
      */
-    public boolean isInvocationLoaded();
+    boolean isInvocationLoaded();
 
     /**
      * specific, immutable, thread-safe instance of the context
