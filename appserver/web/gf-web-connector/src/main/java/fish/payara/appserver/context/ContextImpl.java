@@ -39,6 +39,7 @@
  */
 package fish.payara.appserver.context;
 
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.util.Utility;
 import java.util.Map;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -52,7 +53,6 @@ import org.jboss.weld.context.bound.BoundRequestContext;
  * @author lprimak
  */
 class ContextImpl {
-
     public static class Context implements JavaEEContextUtil.Context {
         @Override
         public void close() {
@@ -64,17 +64,21 @@ class ContextImpl {
 
         @Override
         public boolean isValid() {
-            return invocation != null;
+            return invocation != null && !JavaEEContextUtilImpl.isLeaked(compEnvMgr,
+                    invocation, invocation.getComponentId());
         }
 
 
         private final ComponentInvocation invocation;
         private final InvocationManager invMgr;
+        private final ComponentEnvManager compEnvMgr;
         private final ClassLoader oldClassLoader;
 
-        public Context(ComponentInvocation invocation, InvocationManager invMgr, ClassLoader oldClassLoader) {
+        public Context(ComponentInvocation invocation, InvocationManager invMgr, ComponentEnvManager compEnvMgr,
+                ClassLoader oldClassLoader) {
             this.invocation = invocation;
             this.invMgr = invMgr;
+            this.compEnvMgr = compEnvMgr;
             this.oldClassLoader = oldClassLoader;
         }
     }
