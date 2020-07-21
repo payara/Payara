@@ -39,6 +39,7 @@
  */
 package org.glassfish.internal.api;
 
+import fish.payara.context.ContextProducer;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -47,119 +48,17 @@ import org.jvnet.hk2.annotations.Contract;
  * @author lprimak
  */
 @Contract
-public interface JavaEEContextUtil {
-    /**
-     * Creates an empty instance, i.e. if the empty context is pushed
-     * on top of another context, the other context will be 'suppressed'
-     * for the duration of this context
-     *
-     * @return new empty instance
-     */
-    Instance empty();
+public interface JavaEEContextUtil extends ContextProducer {
+    @Override Instance empty();
+    @Override Instance currentInvocation() throws IllegalStateException;
+    @Override Instance fromComponentId(String componentId) throws IllegalArgumentException;
 
-    /**
-     * captures current invocation and returns it as an instance
-     *
-     * @return new captured instance
-     */
-    Instance currentInvocation() throws IllegalStateException;
-
-    /**
-     *
-     * @param componentId component id for this instance, non-null
-     *
-     * @return new instance based on componentId
-     */
-    Instance fromComponentId(String componentId) throws IllegalArgumentException;
-
-    /**
-     * @return Class Loader that's associated with current invocation or null if
-     * there is no current invocation
-     */
-    ClassLoader getInvocationClassLoader();
-
-    /**
-     * @return component ID for the current invocation or null
-     */
-    String getInvocationComponentId();
-
-    /**
-     * @return true if current invocation exists and is running
-     */
-    boolean isInvocationRunning();
-
-    /**
-     * @return true if current invocation exists and is loaded / ready
-     */
-    boolean isInvocationLoaded();
-
-    /**
-     * specific, immutable, thread-safe instance of the context
-     */
-    interface Instance {
-        /**
-         * pushes Java EE invocation context onto the invocation stack use
-         * try-with-resources to pop the context
-         * no-op if non-running context
-         *
-         * @return the new context that was created
-         */
-        Context pushContext();
-
-        /**
-         * pushes invocation context onto the stack Also creates Request scope
-         * use try-with-resources to pop the context
-         * no-op if non-running context
-         *
-         * @return new context that was created
-         */
-        Context pushRequestContext();
-
-        /**
-         * set context class loader by component id of this instance
-         * for empty or unloaded component, class loader remains unset and the
-         * context is a no-op (no re-set gets done) so it's a no-op
-         *
-         * @return context so class loader can be reset
-         */
-        Context setApplicationClassLoader();
-
-        /**
-         * @return component ID for the current instance, or null if empty instance
-         */
-        String getInstanceComponentId();
-
-        /**
-         * @return true if component is loaded and running
-         */
-        boolean isRunning();
-
-        /**
-         * @return true if component is loaded and starting
-         */
-        boolean isLoaded();
-
-        /**
-         * @return true if this is an empty context
-         */
-        boolean isEmpty();
-
-        /**
-         * remove cached invocation from this instance, in case the
-         * underlying app unloaded but component ID remains, just in case the
-         * app is reloaded
-         */
-        void clearInstanceInvocation();
+    interface Instance extends ContextProducer.Instance {
+        @Override Context pushContext();
+        @Override Context pushRequestContext();
+        @Override Context setApplicationClassLoader();
     }
 
-    interface Context extends Closeable {
-        default boolean isValid() {
-            return true;
-        }
-    };
-
-    interface Closeable extends AutoCloseable {
-        @Override
-        public void close();
+    interface Context extends ContextProducer.Context {
     }
 }
