@@ -39,6 +39,8 @@
  */
 package fish.payara.context;
 
+import java.util.stream.Stream;
+
 /**
  * Wraps an object with a proxy that sets Payara context around
  * every method call. This is useful for listeners, callbacks,
@@ -47,6 +49,14 @@ package fish.payara.context;
  *
  * This was create primarily to facilitate integration with Hazelcast,
  * which has listeners that do not capture Payara context.
+ *
+ * Example:
+ * @Inject Contextualizer contextualizer;
+ * @Inject MyListener myListener;
+ *
+ * // runs myListener.listen() method in a separate thread,
+ * // with context captured from current thread
+ * new Thread(contextualizer.contextualize(() -> myListener.listen(), Runnable.class));
  *
  * @author lprimak
  */
@@ -60,4 +70,26 @@ public interface Contextualizer {
      * @return proxied object
      */
     <T> T contextualize(T object, Class<T> intf);
+
+    /**
+     * Wraps an object in a proxy that preserves Payara context
+     *
+     * @param <T>
+     * @param object
+     * @param context
+     * @param intf
+     * @return proxied object
+     */
+    <T> T contextualize(T object, ContextProducer.Instance context, Class<T> intf);
+
+    /**
+     * Wraps an object in a proxy that preserves Payara context
+     *
+     * @param <T>
+     * @param object
+     * @param context
+     * @param interfaces
+     * @return proxied object
+     */
+    <T> T contextualize(T object, ContextProducer.Instance context, Stream<Class<?>> interfaces);
 }
