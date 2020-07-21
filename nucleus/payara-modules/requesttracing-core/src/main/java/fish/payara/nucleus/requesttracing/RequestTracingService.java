@@ -330,7 +330,10 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
             for (Notifier notifier : configuration.getNotifierList()) {
                 ConfigView view = ConfigSupport.getImpl(notifier);
                 NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-                executionOptions.addNotifierExecutionOption(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+                NotifierExecutionOptionsFactory<Notifier> notifierExecutionOptions = executionOptionsFactoryStore.get(annotation.type());
+                if (notifierExecutionOptions != null) {
+                    executionOptions.addNotifierExecutionOption(notifierExecutionOptions.build(notifier));
+                }
             }
         }
         if (executionOptions.getNotifierExecutionOptionsList().isEmpty()) {
