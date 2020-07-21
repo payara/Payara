@@ -52,7 +52,7 @@ import javax.enterprise.inject.spi.Extension;
  */
 public class CDIExtension implements Extension {
       void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-        AnnotatedType<ContextProducer> producerAT = bm.createAnnotatedType(ContextProducer.class);
-        bbd.addAnnotatedType(producerAT, ContextProducer.class.getName());
+        AnnotatedType<ContextCDIProducer> at = bm.createAnnotatedType(ContextCDIProducer.class);
+        bbd.addAnnotatedType(at, ContextCDIProducer.class.getName());
     }
 }

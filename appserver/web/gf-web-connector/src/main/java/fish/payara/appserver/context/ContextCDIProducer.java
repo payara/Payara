@@ -39,17 +39,21 @@
  */
 package fish.payara.appserver.context;
 
+import fish.payara.context.ContextProducer;
 import fish.payara.context.Contextualizer;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.JavaEEContextUtil;
 
 /**
  * CDI producer for context
  *
  * @author lprimak
  */
-public class ContextProducer {
+public class ContextCDIProducer {
+    private final ContextProducer contextproducer = Globals.getDefaultHabitat()
+            .getService(JavaEEContextUtil.class);
     private final Contextualizer contextualizer = Globals.getDefaultHabitat()
             .getService(ContextualizerImpl.class);
 
@@ -58,5 +62,11 @@ public class ContextProducer {
     @ApplicationScoped
     Contextualizer getContextualizer() {
         return contextualizer;
+    }
+
+    @Produces
+    @ApplicationScoped
+    ContextProducer getContextProducer() {
+        return contextproducer;
     }
 }
