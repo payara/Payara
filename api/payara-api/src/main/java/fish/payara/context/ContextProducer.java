@@ -42,6 +42,17 @@ package fish.payara.context;
 /**
  * Utility to create / push Jakarta EE and CDI thread contexts
  *
+ * Example:
+ * @Inject ContextProducer producer;
+ * // EJB/CDI thread:
+ * Instance saved = producer.currentInvocation*();
+ * // insure 'saved' is not leaked when application undeployed,
+ * // otherwise use producer.fromComponentId(producer.getInvocationComponentId())
+ * // and in another, non EJB/CDI thread:
+ * try (Context ctx = saved.pushRequestContext()) {
+ *     // runs with EJB / CDI context
+ * }
+ *
  * @author lprimak
  */
 public interface ContextProducer {

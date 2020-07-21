@@ -39,10 +39,12 @@
  */
 package fish.payara.appserver.context;
 
+import fish.payara.context.ContextProducer;
 import fish.payara.context.Contextualizer;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.jvnet.hk2.annotations.Service;
@@ -59,24 +61,35 @@ public class ContextualizerImpl implements Contextualizer {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T contextualize(T object, Class<T> intf) {
-        return (T) Proxy.newProxyInstance(ctxUtil.getInvocationClassLoader(), new Class[]{intf},
-                new InvocationHandlerImpl(ctxUtil.currentInvocation(), object));
+        return contextualize(object, ctxUtil.currentInvocation(), Stream.of(intf));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T contextualize(T object, ContextProducer.Instance context, Class<T> intf) {
+        return contextualize(object, context, Stream.of(intf));
+    }
+
+    @Override
+    public <T> T contextualize(T object, ContextProducer.Instance context, Stream<Class<?>> interfaces) {
+        return (T) Proxy.newProxyInstance(ctxUtil.getInvocationClassLoader(), interfaces.toArray(Class<?>[]::new),
+                new InvocationHandlerImpl(context, object));
     }
 
     public class InvocationHandlerImpl implements InvocationHandler {
-        private final JavaEEContextUtil.Instance inv;
+        private final ContextProducer.Instance inv;
         private final Object delegate;
         private boolean ignore;
 
 
-        private InvocationHandlerImpl(JavaEEContextUtil.Instance currentInvocation, Object delegate) {
+        private InvocationHandlerImpl(ContextProducer.Instance currentInvocation, Object delegate) {
             this.inv = currentInvocation;
             this.delegate = delegate;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            try (JavaEEContextUtil.Context ctx = inv.pushRequestContext()) {
+            try (ContextProducer.Context ctx = inv.pushRequestContext()) {
                 if (!ignore && ctx.isValid()) {
                     return method.invoke(delegate, args);
                 } else {
