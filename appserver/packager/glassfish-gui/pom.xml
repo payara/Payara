@@ -239,11 +239,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>slack-notifier-console-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>snmp-notifier-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
