@@ -41,7 +41,10 @@ package fish.payara.cdi.jsr107;
 
 import fish.payara.cdi.jsr107.impl.NamedCache;
 import com.hazelcast.core.HazelcastInstance;
+import fish.payara.context.TenantControlSettings;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import fish.payara.nucleus.hazelcast.PayaraHazelcastTenant;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -50,6 +53,7 @@ import javax.cache.configuration.Factory;
 import javax.cache.configuration.FactoryBuilder;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.Bean;
@@ -186,4 +190,19 @@ public class JSR107Producer {
         return result;
     }
     
+    @Produces
+    @ApplicationScoped
+    TenantControlSettings getTenantControlSettings() {
+        return new TenantControlSettings() {
+            @Override
+            public Set<String> getDisabledTenants() {
+                return PayaraHazelcastTenant.getDisabledTenants();
+            }
+
+            @Override
+            public Set<Class<?>> getFilteredClasses() {
+                return PayaraHazelcastTenant.getFilteredClasses();
+            }
+        };
+    }
 }
