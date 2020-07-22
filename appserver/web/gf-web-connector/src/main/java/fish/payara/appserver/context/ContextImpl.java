@@ -121,5 +121,10 @@ class ContextImpl {
             this.ctx = ctx;
             this.storage = storage;
         }
+
+        @Override
+        public boolean isValid() {
+            return rootCtx.isValid();
+        }
     }
 }

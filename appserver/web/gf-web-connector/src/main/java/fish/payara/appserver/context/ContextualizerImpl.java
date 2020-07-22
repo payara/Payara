@@ -71,6 +71,7 @@ public class ContextualizerImpl implements Contextualizer {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T contextualize(T object, ContextProducer.Instance context, Stream<Class<?>> interfaces) {
         return (T) Proxy.newProxyInstance(ctxUtil.getInvocationClassLoader(), interfaces.toArray(Class<?>[]::new),
                 new InvocationHandlerImpl(context, object));

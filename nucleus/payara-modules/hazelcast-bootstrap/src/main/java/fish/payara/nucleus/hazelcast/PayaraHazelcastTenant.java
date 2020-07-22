@@ -42,10 +42,14 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
+import com.hazelcast.spi.impl.operationservice.BackupAwareOperation;
+import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -75,10 +79,10 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     private final Lock lock = new ReentrantLock();
     private final Condition condition = lock.newCondition();
     private static final Logger log = Logger.getLogger(PayaraHazelcastTenant.class.getName());
+    private static final Map<String, Integer> blockedCounts = new ConcurrentHashMap<>();
 
     // transient fields
     private EventListenerImpl destroyEventListener;
-    private int unavailableCount;
 
     // serialized fields
     private Instance contextInstance;
@@ -129,13 +133,21 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     }
 
     @Override
-    public boolean isAvailable() {
-        if (!contextInstance.isRunning()) {
+    public boolean isAvailable(Operation op) {
+        if (!contextInstance.isLoaded()) {
+            if (filter(op)) {
+                return true;
+            }
             lock.lock();
             try {
-                ++unavailableCount;
+                String componentId = contextInstance.getInstanceComponentId();
+                int unavailableCount = blockedCounts.compute(componentId, (k, v) -> v == null ? 0 : ++v);
                 log.log(unavailableCount > 100 ? Level.INFO : Level.FINEST,
-                        String.format("BLOCKED: tenant not available: %s", contextInstance.getInstanceComponentId()));
+                        String.format("BLOCKED: tenant not available: %s, Operation: %s",
+                                componentId, op.toString()));
+                if (unavailableCount > 100) {
+                    blockedCounts.remove(componentId);
+                }
                 condition.await(100, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ex) {
             } finally {
@@ -143,14 +155,21 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
             }
             return false;
         }
-        unavailableCount = 0;
         return true;
+    }
+
+    private boolean filter(Operation op) {
+        if (op instanceof BackupAwareOperation) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
     public void clearThreadContext() {
         if (!invMgr.isInvocationStackEmpty()) {
-            log.warning(() -> String.format("clearThreadContext - no-empty invocations: %s", invMgr.getAllInvocations().toString()));
+            log.warning(() -> String.format("clearThreadContext - non-empty invocations: %s", invMgr.getAllInvocations().toString()));
             invMgr.putAllInvocations(null);
         }
     }
