@@ -56,7 +56,7 @@ package fish.payara.context;
  * @author lprimak
  */
 public interface ContextProducer {
-        /**
+    /**
      * Creates an empty instance, i.e. if the empty context is pushed
      * on top of another context, the other context will be 'suppressed'
      * for the duration of this context
@@ -92,11 +92,10 @@ public interface ContextProducer {
     String getInvocationComponentId();
 
     /**
-     * @return true if current invocation exists and is running
-     */
-    boolean isInvocationRunning();
-
-    /**
+     * This is different from class loaded, as there are some situations
+     * where class is loaded but initialization is not complete,
+     * such as CDI initializations, extensions start, etc.
+     *
      * @return true if current invocation exists and is loaded / ready
      */
     boolean isInvocationLoaded();
@@ -138,11 +137,10 @@ public interface ContextProducer {
         String getInstanceComponentId();
 
         /**
-         * @return true if component is loaded and running
-         */
-        boolean isRunning();
-
-        /**
+         * This is different from class loaded, as there are some situations
+         * where class is loaded but initialization is not complete, such as CDI
+         * initializations, extensions start, etc.
+         *
          * @return true if component is loaded and starting
          */
         boolean isLoaded();
@@ -161,9 +159,7 @@ public interface ContextProducer {
     }
 
     interface Context extends Closeable {
-        default boolean isValid() {
-            return true;
-        }
+        boolean isValid();
     };
 
     interface Closeable extends AutoCloseable {

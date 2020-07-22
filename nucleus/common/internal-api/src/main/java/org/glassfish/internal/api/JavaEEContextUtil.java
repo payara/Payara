@@ -60,5 +60,9 @@ public interface JavaEEContextUtil extends ContextProducer {
     }
 
     interface Context extends ContextProducer.Context {
+        @Override
+        default boolean isValid() {
+            return true;
+        }
     }
 }

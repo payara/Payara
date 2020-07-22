@@ -46,8 +46,10 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.util.Optional;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
+import org.glassfish.internal.api.JavaEEContextUtil.Context;
 
 /**
  * Packages up an object into a Serializable value
@@ -77,8 +79,12 @@ public class PayaraValueHolder<T> implements Externalizable {
         String componentId = null;
         try (ByteArrayInputStream bais = new ByteArrayInputStream(data); PayaraTCCLObjectInputStream ois = new PayaraTCCLObjectInputStream(bais)) {
             componentId = (String)ois.readObject();
-            Object result = ois.readObject();
-            return (T)result;
+            JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+            JavaEEContextUtil.Instance inst = Optional.ofNullable(componentId)
+                    .map(ctxUtil::fromComponentId).orElse(ctxUtil.empty());
+            try (Context ctx = inst.setApplicationClassLoader()) {
+                return (T) ois.readObject();
+            }
         }
         catch (ClassNotFoundException ex) {
             String invocationComponentId = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).getInvocationComponentId();

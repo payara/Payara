@@ -28,7 +28,6 @@ public class JavaEEContextUtilTest {
     public void empty() {
         Instance empty = ctxUtil.empty();
         assertTrue(empty.isEmpty());
-        assertFalse(empty.isRunning());
         assertTrue(empty.isLoaded());
         assertNull(empty.getInstanceComponentId());
         ClassLoader cl = Utility.getClassLoader();
