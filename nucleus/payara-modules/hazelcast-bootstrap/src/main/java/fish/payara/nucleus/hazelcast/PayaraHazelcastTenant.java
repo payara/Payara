@@ -39,17 +39,19 @@
  */
 package fish.payara.nucleus.hazelcast;
 
+import com.hazelcast.cache.impl.operation.AddCacheConfigOperation;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
-import com.hazelcast.spi.impl.operationservice.BackupAwareOperation;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -80,6 +82,8 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     private final Condition condition = lock.newCondition();
     private static final Logger log = Logger.getLogger(PayaraHazelcastTenant.class.getName());
     private static final Map<String, Integer> blockedCounts = new ConcurrentHashMap<>();
+    private static final Set<String> disabledTenants = new ConcurrentSkipListSet<>();
+    private static final Set<Class<?>> filteredClasses = new ConcurrentSkipListSet<>();
 
     // transient fields
     private EventListenerImpl destroyEventListener;
@@ -87,6 +91,11 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     // serialized fields
     private Instance contextInstance;
     private String moduleName;
+
+    static {
+        filteredClasses.add(AddCacheConfigOperation.class);
+    }
+
 
     PayaraHazelcastTenant() {
         if (invMgr.getCurrentInvocation() != null) {
@@ -135,7 +144,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     @Override
     public boolean isAvailable(Operation op) {
         if (!contextInstance.isLoaded()) {
-            if (filter(op)) {
+            if (filter(op) || disabledTenants.contains(moduleName)) {
                 return true;
             }
             lock.lock();
@@ -143,8 +152,8 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
                 String componentId = contextInstance.getInstanceComponentId();
                 int unavailableCount = blockedCounts.compute(componentId, (k, v) -> v == null ? 0 : ++v);
                 log.log(unavailableCount > 100 ? Level.INFO : Level.FINEST,
-                        String.format("BLOCKED: tenant not available: %s, Operation: %s",
-                                componentId, op.toString()));
+                        String.format("BLOCKED: tenant not available: %s, module %s, Operation: %s",
+                                componentId, moduleName, op.toString()));
                 if (unavailableCount > 100) {
                     blockedCounts.remove(componentId);
                 }
@@ -159,11 +168,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     }
 
     private boolean filter(Operation op) {
-        if (op instanceof BackupAwareOperation) {
-            return true;
-        }
-
-        return false;
+        return filteredClasses.stream().anyMatch(cls -> cls.isInstance(op));
     }
 
     @Override
@@ -180,6 +185,14 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     Instance getContextInstance() {
         return contextInstance;
+    }
+
+    public static Set<String> getDisabledTenants() {
+        return disabledTenants;
+    }
+
+    public static Set<Class<?>> getFilteredClasses() {
+        return filteredClasses;
     }
 
     private class EventListenerImpl implements EventListener {
