@@ -167,11 +167,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>email-notifier-console-plugin-l10n</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>eventbus-notifier-console-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
