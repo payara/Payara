@@ -162,11 +162,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>datadog-notifier-console-plugin-l10n</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>email-notifier-console-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -192,17 +187,7 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>slack-notifier-console-plugin-l10n</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>snmp-notifier-console-plugin-l10n</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admingui</groupId>
-            <artifactId>xmpp-notifier-console-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
