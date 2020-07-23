@@ -172,12 +172,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-newrelic</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>asadmin-recorder</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
