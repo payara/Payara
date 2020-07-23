@@ -317,41 +317,6 @@
 
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-slack</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-snmp</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-xmpp</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-datadog</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-newrelic</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>asadmin-recorder</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
