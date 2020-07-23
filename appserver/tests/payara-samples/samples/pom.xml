@@ -35,6 +35,7 @@
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
+        <module>remote-ejb-tracing</module>
     </modules>
 
     <dependencyManagement>
