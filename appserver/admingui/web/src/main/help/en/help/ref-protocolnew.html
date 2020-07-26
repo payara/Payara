@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -69,7 +70,7 @@
 </dd>
 <dt>Redirect Port</dt>
 <dd>
-<p>Port value that redirects a request to another port. The GlassFish Server automatically redirects the request if these two conditions exist:</p>
+<p>Port value that redirects a request to another port. The Payara Server automatically redirects the request if these two conditions exist:</p>
 <ul>
 <li>
 <p>The network listener that references this protocol is supporting non-SSL requests.</p>
@@ -78,7 +79,7 @@
 <p>A request is received for which a matching security constraint requires SSL transport.</p>
 </li>
 </ul>
-<p>If a redirect port is not specified, the GlassFish Server uses the port number specified in the original request. By default, no port is specified.</p>
+<p>If a redirect port is not specified, the Payara Server uses the port number specified in the original request. By default, no port is specified.</p>
 </dd>
 <dt>Max Connections</dt>
 <dd>
@@ -170,7 +171,7 @@
 </dd>
 <dt>Comet Support</dt>
 <dd>
-<p>If this option is selected, Comet support is enabled for the network listener that references this protocol. By default, this option is disabled. If your servlet or JSP page uses Comet technology, make sure it is initialized when the GlassFish Server starts up by adding the <code>load-on-startup</code> element to your <code>web.xml</code> file. For example:</p>
+<p>If this option is selected, Comet support is enabled for the network listener that references this protocol. By default, this option is disabled. If your servlet or JSP page uses Comet technology, make sure it is initialized when the Payara Server starts up by adding the <code>load-on-startup</code> element to your <code>web.xml</code> file. For example:</p>
 <pre>
 &lt;servlet&gt;
 &lt;servlet-name&gt;CheckIn&lt;/servlet-name&gt;
@@ -192,7 +193,7 @@
 </dd>
 <dt>Trace</dt>
 <dd>
-<p>If this option is selected, the TRACE operation is enabled. If this option is disabled, the GlassFish Server is less susceptible to cross-site scripting attacks. This option is enabled by default.</p>
+<p>If this option is selected, the TRACE operation is enabled. If this option is disabled, the Payara Server is less susceptible to cross-site scripting attacks. This option is enabled by default.</p>
 </dd>
 <dt>Auth Pass Through</dt>
 <dd>
@@ -253,3 +254,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

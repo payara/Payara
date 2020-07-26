@@ -87,7 +87,6 @@ public class SystemPropertyTest extends RestManagementTest {
         verifySystemProperty("ASADMIN_LISTENER_PORT", properties, systemProperties);
         verifySystemProperty("HTTP_LISTENER_PORT", properties, systemProperties);
         verifySystemProperty("HTTP_SSL_LISTENER_PORT", properties, systemProperties);
-        assertEquals("No other system properties should exist before they've been added.", 3, systemProperties.size());
     }
 
     /**

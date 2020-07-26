@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -66,10 +66,11 @@ public class OpenIdConfiguration {
     private OpenIdProviderMetadata providerMetadata;
     private OpenIdTokenEncryptionMetadata encryptionMetadata;
     private ClaimsConfiguration claimsConfiguration;
+    private LogoutConfiguration logoutConfiguration;
     private boolean tokenAutoRefresh;
     private int tokenMinValidity;
 
-    private static final String BASE_URL_EXPRESSION = "${baseURL}";
+    static final String BASE_URL_EXPRESSION = "${baseURL}";
 
     public String getClientId() {
         return clientId;
@@ -212,6 +213,15 @@ public class OpenIdConfiguration {
 
     public OpenIdConfiguration setClaimsConfiguration(ClaimsConfiguration claimsConfiguration) {
         this.claimsConfiguration = claimsConfiguration;
+        return this;
+    }
+
+    public LogoutConfiguration getLogoutConfiguration() {
+        return logoutConfiguration;
+    }
+
+    public OpenIdConfiguration setLogoutConfiguration(LogoutConfiguration logoutConfiguration) {
+        this.logoutConfiguration = logoutConfiguration;
         return this;
     }
 

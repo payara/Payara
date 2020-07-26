@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -170,7 +170,7 @@ public class ODLLogFormatter extends AnsiColorFormatter implements LogEventBroad
     protected String getProductId() {
 
         String version = Version.getAbbreviatedVersion() + Version.getVersionPrefix() +
-                Version.getMajorVersion() + "." + Version.getMinorVersion();
+                Version.getMajorVersion() + "." + Version.getMinorVersion() + "." + Version.getUpdateVersion();
         return (version);
     }
 

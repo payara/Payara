@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -49,7 +50,7 @@
 </li>
 <li>
 <p>In the Redirect Port field, type the port value to be used to redirect a request to another port.</p>
-<p>The GlassFish Server automatically redirects the request if these two conditions exist:</p>
+<p>The Payara Server automatically redirects the request if these two conditions exist:</p>
 <ul>
 <li>
 <p>This protocol is supporting non-SSL requests.</p>
@@ -58,7 +59,7 @@
 <p>A request is received for which a matching security constraint requires SSL transport.</p>
 </li>
 </ul>
-<p>If a redirect port is not specified, the GlassFish Server uses the port number specified in the original request.</p>
+<p>If a redirect port is not specified, the Payara Server uses the port number specified in the original request.</p>
 </li>
 <li>
 <p>In the Max Connections field, type the maximum number of persistent connections to be maintained in Keep-Alive mode.</p>
@@ -161,7 +162,7 @@
 </li>
 <li>
 <p>Select the Trace Enabled checkbox to enable the TRACE operation.</p>
-<p>If this option is disabled, the GlassFish Server is less susceptible to cross-site scripting attacks. This option is enabled by default.</p>
+<p>If this option is disabled, the Payara Server is less susceptible to cross-site scripting attacks. This option is enabled by default.</p>
 </li>
 <li>
 <p>Select the Auth Pass Through checkbox to indicate that the network listener that uses this protocol receives traffic from an SSL-terminating proxy server.</p>
@@ -172,7 +173,7 @@
 <p>This option is enabled by default.</p>
 </li>
 <li>
-<p>Select the XPowered By Enabled checkbox to tell the GlassFish Server to use <code>X-Powered-By</code> headers according to the Java Servlet 3.0 and Java Server Pages 2.0 specifications.</p>
+<p>Select the XPowered By Enabled checkbox to tell the Payara Server to use <code>X-Powered-By</code> headers according to the Java Servlet 3.0 and Java Server Pages 2.0 specifications.</p>
 <p>This option is enabled by default.</p>
 </li>
 <li>
@@ -226,3 +227,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

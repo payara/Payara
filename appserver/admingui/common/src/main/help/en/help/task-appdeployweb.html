@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -39,7 +40,7 @@
 <p>Click Browse to browse to the file, or type the full path to the file.</p>
 </li>
 <li>
-<p>If the application is an archive file that resides on the server machine, or is an unpackaged application from an exploded directory, select the option Local Packaged File or Directory That Is Accessible From the GlassFish Server.</p>
+<p>If the application is an archive file that resides on the server machine, or is an unpackaged application from an exploded directory, select the option Local Packaged File or Directory That Is Accessible From the Payara Server.</p>
 <p>The server machine is the host that is running the domain administration server (DAS).</p>
 <p>Click Browse Files to browse to a file, or Browse Folders to browse to a directory. Alternatively, type the full path name to the file or directory. Deploying from an exploded directory is for advanced developers and is not recommended for production environments.</p>
 </li>
@@ -47,7 +48,7 @@
 </li>
 <li>
 <p>From the Type drop-down list, select Web Application.</p>
-<p>If you specified either a Packaged File to Be Uploaded to the Server or a Local Packaged File That Is Accessible From the GlassFish Server, the application type is detected automatically. If you specified a Directory That Is Accessible From the GlassFish Server, you must specify the type manually.</p>
+<p>If you specified either a Packaged File to Be Uploaded to the Server or a Local Packaged File That Is Accessible From the Payara Server, the application type is detected automatically. If you specified a Directory That Is Accessible From the Payara Server, you must specify the type manually.</p>
 </li>
 <li>
 <p>In the Context Root field, type a string that identifies the web application.</p>
@@ -91,7 +92,7 @@
 <p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
 <p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
 <p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
-<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+<p>To preserve active state data, Payara Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
 </li>
 <li>
 <p>In the Deployment Order field, type a number to specify the deployment order of the application.</p>
@@ -167,3 +168,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

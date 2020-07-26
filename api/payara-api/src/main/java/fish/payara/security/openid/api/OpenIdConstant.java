@@ -68,6 +68,7 @@ public interface OpenIdConstant {
     public static final String LOGIN_HINT = "login_hint";
     public static final String ACR_VALUES = "acr_values";
     public static final String CODE = "code";
+    public static final String POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri";
 
     // Access Token request/response parameters
     public static final String GRANT_TYPE = "grant_type";
@@ -93,6 +94,7 @@ public interface OpenIdConstant {
     public static final String AUTHORIZATION_ENDPOINT = "authorization_endpoint";
     public static final String TOKEN_ENDPOINT = "token_endpoint";
     public static final String USERINFO_ENDPOINT = "userinfo_endpoint";
+    public static final String END_SESSION_ENDPOINT = "end_session_endpoint";
     public static final String REGISTRATION_ENDPOINT = "registration_endpoint";
     public static final String JWKS_URI = "jwks_uri";
     

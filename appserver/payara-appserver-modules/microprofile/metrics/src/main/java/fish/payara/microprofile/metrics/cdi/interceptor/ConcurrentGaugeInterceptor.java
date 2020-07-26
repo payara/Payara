@@ -56,7 +56,7 @@ import fish.payara.microprofile.metrics.cdi.AnnotationReader;
 @ConcurrentGauge
 @Interceptor
 @Priority(Interceptor.Priority.LIBRARY_BEFORE + 1)
-public class ConcurrentGuageInterceptor extends AbstractInterceptor {
+public class ConcurrentGaugeInterceptor extends AbstractInterceptor {
 
     @Override
     protected <E extends Member & AnnotatedElement> Object applyInterceptor(InvocationContext context, E element)

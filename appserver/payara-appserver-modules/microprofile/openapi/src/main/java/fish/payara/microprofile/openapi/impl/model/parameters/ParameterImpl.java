@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,26 +39,24 @@
  */
 package fish.payara.microprofile.openapi.impl.model.parameters;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.microprofile.openapi.annotations.enums.Explode;
-import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
-import org.eclipse.microprofile.openapi.annotations.enums.ParameterStyle;
-import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
-import org.eclipse.microprofile.openapi.models.examples.Example;
-import org.eclipse.microprofile.openapi.models.media.Content;
-import org.eclipse.microprofile.openapi.models.media.Schema;
-import org.eclipse.microprofile.openapi.models.parameters.Parameter;
-
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.eclipse.microprofile.openapi.models.examples.Example;
+import org.eclipse.microprofile.openapi.models.media.Content;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+import org.eclipse.microprofile.openapi.models.parameters.Parameter;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.EnumModel;
 
 public class ParameterImpl extends ExtensibleImpl<Parameter> implements Parameter {
 
@@ -76,7 +74,39 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
     private Schema schema;
     private Map<String, Example> examples = new HashMap<>();
     private Object example;
-    private Content content;
+    private Content content = new ContentImpl();
+    private List<ContentImpl> contents = new ArrayList<>();
+
+    public static Parameter createInstance(AnnotationModel annotation, ApiContext context) {
+        ParameterImpl from = new ParameterImpl();
+        from.setName(annotation.getValue("name", String.class));
+        EnumModel inEnum = annotation.getValue("in", EnumModel.class);
+        if (inEnum != null) {
+            from.setIn(In.valueOf(inEnum.getValue()));
+        }
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setRequired(annotation.getValue("required", Boolean.class));
+        from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
+        from.setAllowEmptyValue(annotation.getValue("allowEmptyValue", Boolean.class));
+        String ref = annotation.getValue("ref", String.class);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        EnumModel styleEnum = annotation.getValue("style", EnumModel.class);
+        if (styleEnum != null) {
+            from.setStyle(Style.valueOf(styleEnum.getValue()));
+        }
+        from.setExplode(annotation.getValue("explode", Boolean.class));
+        from.setAllowReserved(annotation.getValue("allowReserved", Boolean.class));
+        AnnotationModel schemaAnnotation = annotation.getValue("schema", AnnotationModel.class);
+        if (schemaAnnotation != null) {
+            from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
+        }
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples());
+        from.setExample(annotation.getValue("example", Object.class));
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
+        return from;
+    }
 
     @Override
     public String getName() {
@@ -221,6 +251,14 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
         this.content = content;
     }
 
+    public List<ContentImpl> getContents() {
+        return contents;
+    }
+
+    public void setContents(List<ContentImpl> contents) {
+        this.contents = contents;
+    }
+
     @Override
     public String getRef() {
         return ref;
@@ -234,51 +272,63 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
         this.ref = ref;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.parameters.Parameter from, Parameter to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
+    public static void merge(Parameter from, Parameter to,
+            boolean override, ApiContext context) {
+        if (from == null) {
             return;
         }
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            applyReference(to, from.ref());
+        if (from.getRef() != null && !from.getRef().isEmpty()) {
+            applyReference(to, from.getRef());
             return;
         }
-        to.setName(mergeProperty(to.getName(), from.name(), override));
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        if (from.in() != null && from.in() != ParameterIn.DEFAULT) {
-            to.setIn(mergeProperty(to.getIn(), Parameter.In.valueOf(from.in().name()), override));
+        to.setName(mergeProperty(to.getName(), from.getName(), override));
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        if (from.getIn()!= null) {
+            to.setIn(mergeProperty(to.getIn(),from.getIn(), override));
         }
-        to.setRequired(mergeProperty(to.getRequired(), from.required(), override));
-        to.setDeprecated(mergeProperty(to.getDeprecated(), from.deprecated(), override));
-        to.setAllowEmptyValue(mergeProperty(to.getAllowEmptyValue(), from.allowEmptyValue(), override));
-        if (from.style() != null && from.style() != ParameterStyle.DEFAULT) {
-            to.setStyle(mergeProperty(to.getStyle(), Style.valueOf(from.style().name()), override));
+        to.setRequired(mergeProperty(to.getRequired(), from.getRequired(), override));
+        to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
+        to.setAllowEmptyValue(mergeProperty(to.getAllowEmptyValue(), from.getAllowEmptyValue(), override));
+        if (from.getStyle() != null){
+            to.setStyle(mergeProperty(to.getStyle(), from.getStyle(), override));
         }
-        if (from.explode() != null && from.explode() != Explode.DEFAULT) {
+        if (from.getExplode() != null) {
             to.setExplode(mergeProperty(to.getExplode(), false, override));
         }
-        to.setAllowReserved(mergeProperty(to.getAllowReserved(), from.allowReserved(), override));
-        if (!isAnnotationNull(from.schema())) {
+        to.setAllowReserved(mergeProperty(to.getAllowReserved(), from.getAllowReserved(), override));
+        if (from.getSchema() != null) {
             if (to.getSchema() == null) {
                 to.setSchema(new SchemaImpl());
             }
-            SchemaImpl.merge(from.schema(), to.getSchema(), override, currentSchemas);
+            SchemaImpl.merge(from.getSchema(), to.getSchema(), override, context);
         }
-        to.setExample(mergeProperty(to.getExample(), from.example(), override));
-        if (from.examples() != null) {
-            for (ExampleObject exampleObject : from.examples()) {
-                Example example = new ExampleImpl();
-                ExampleImpl.merge(exampleObject, example, override);
-                to.addExample(exampleObject.name(), example);
+        to.setExample(mergeProperty(to.getExample(), from.getExample(), override));
+        if (from.getExamples() != null) {
+            for (String exampleName : from.getExamples().keySet()) {
+                if (exampleName != null) {
+                    Example example = new ExampleImpl();
+                    ExampleImpl.merge(from.getExamples().get(exampleName), example, override);
+                    to.addExample(exampleName, example);
+                }
             }
         }
-        if (from.content() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.media.Content content : from.content()) {
+        if (from instanceof ParameterImpl) {
+            ParameterImpl fromImpl = (ParameterImpl)from;
+            if (fromImpl.getContents() != null) {
                 if (to.getContent() == null) {
                     to.setContent(new ContentImpl());
                 }
-                ContentImpl.merge(content, to.getContent(), override, null);
+                for (ContentImpl content : fromImpl.getContents()) {
+                    ContentImpl.merge(content, to.getContent(), override, context);
+                }
             }
+
+        }
+        if (from.getContent() != null) {
+            if (to.getContent() == null) {
+                to.setContent(new ContentImpl());
+            }
+            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
         }
     }
 

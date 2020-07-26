@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -91,6 +91,14 @@ public @interface OpenIdAuthenticationDefinition {
      * @return
      */
     ClaimsDefinition claimsDefinition() default @ClaimsDefinition;
+
+    /**
+     * Optional. The Logout definition defines the logout and RP session
+     * management configuration.
+     *
+     * @return
+     */
+    LogoutDefinition logout() default @LogoutDefinition;
 
     /**
      * The Microprofile Config key for the clientId is <code>{@value}</code>
@@ -328,24 +336,25 @@ public @interface OpenIdAuthenticationDefinition {
     public static final String OPENID_MP_TOKEN_AUTO_REFRESH = "payara.security.openid.token.autoRefresh";
 
     /**
-     * The Microprofile Config key for the minimum validity in secondes of
-     * Access Tokens is <code>{@value}</code>.
-     */
-    public static final String OPENID_MP_TOKEN_MIN_VALIDITY = "payara.security.openid.token.minValidity";
-
-    /**
      * Optional. Enables or disables the automatically performed refresh of
-     * Access and Refresh Token.
+     * Access and Identity Token. If refresh token operation failed then logout
+     * the End-User from RP's application.
      *
-     * @return {@code true}, if Access and Refresh Token shall be refreshed
+     * @return {@code true}, if Access and Identity Token shall be refreshed
      * automatically when they are expired.
      */
     boolean tokenAutoRefresh() default false;
 
     /**
+     * The Microprofile Config key for the minimum validity in seconds of Access
+     * Tokens and Identity Token is <code>{@value}</code>.
+     */
+    public static final String OPENID_MP_TOKEN_MIN_VALIDITY = "payara.security.openid.token.minValidity";
+
+    /**
      * Optional. Sets the minimum validity time in milliseconds the Access Token
-     * must be valid before it is considered expired. Value must not be
-     * negative.
+     * and Identity Token must be valid before it is considered expired. Value
+     * must not be negative.
      *
      * @return
      */

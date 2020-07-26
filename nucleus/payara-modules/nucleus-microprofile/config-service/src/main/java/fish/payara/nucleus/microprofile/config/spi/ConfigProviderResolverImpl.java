@@ -217,7 +217,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             appInfo = applicationRegistry.get(appName);
         }
 
-        if (appInfo != null && appInfo.getAppClassLoader().equals(loader)) {
+        if (appInfo != null && loader.equals(appInfo.getAppClassLoader())) {
             return appInfo;
         }
 
@@ -438,7 +438,6 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.put(Character.class, new CharacterConverter());
         result.put(Short.class, new ShortConverter());
         return result;
-
     }
 
     Map<Class<?>, Converter<?>> getDiscoveredConverters(ApplicationInfo appInfo) {

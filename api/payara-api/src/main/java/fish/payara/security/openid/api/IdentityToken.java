@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -71,4 +71,12 @@ public interface IdentityToken {
      * @return
      */
     Object getClaim(String key);
+
+    /**
+     * Checks if the Identity Token is expired.
+     *
+     * @return {@code true}, if identity token is expired or it will be expired in
+     * the next X milliseconds configured by user.
+     */
+    boolean isExpired();
 }

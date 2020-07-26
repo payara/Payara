@@ -39,7 +39,9 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
+import java.math.BigDecimal;
 import static org.eclipse.microprofile.openapi.OASFactory.createAPIResponse;
 import static org.eclipse.microprofile.openapi.OASFactory.createContent;
 import static org.eclipse.microprofile.openapi.OASFactory.createDiscriminator;
@@ -50,12 +52,6 @@ import static org.eclipse.microprofile.openapi.OASFactory.createHeader;
 import static org.eclipse.microprofile.openapi.OASFactory.createMediaType;
 import static org.eclipse.microprofile.openapi.OASFactory.createSchema;
 import static org.eclipse.microprofile.openapi.OASFactory.createXML;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.math.BigDecimal;
-
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Encoding;
@@ -63,9 +59,10 @@ import org.eclipse.microprofile.openapi.models.media.Encoding.Style;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.media.XML;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.media.*}.

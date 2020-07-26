@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static org.eclipse.microprofile.openapi.OASFactory.createAPIResponse;
 import static org.eclipse.microprofile.openapi.OASFactory.createCallback;
@@ -50,15 +51,12 @@ import static org.eclipse.microprofile.openapi.OASFactory.createPathItem;
 import static org.eclipse.microprofile.openapi.OASFactory.createRequestBody;
 import static org.eclipse.microprofile.openapi.OASFactory.createSchema;
 import static org.eclipse.microprofile.openapi.OASFactory.createSecurityScheme;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Reference;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Checks the JSON rendering of all types that can be used as {@link Reference}.

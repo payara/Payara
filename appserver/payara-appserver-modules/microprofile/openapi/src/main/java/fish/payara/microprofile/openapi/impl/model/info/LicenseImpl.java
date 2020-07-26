@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,17 +39,22 @@
  */
 package fish.payara.microprofile.openapi.impl.model.info;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
-import org.eclipse.microprofile.openapi.models.info.License;
-
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import org.eclipse.microprofile.openapi.models.info.License;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class LicenseImpl extends ExtensibleImpl<License> implements License {
 
     private String name;
     private String url;
+
+    public static License createInstance(AnnotationModel annotation) {
+        License from = new LicenseImpl();
+        from.setName(annotation.getValue("name", String.class));
+        from.setUrl(annotation.getValue("url", String.class));
+        return from;
+    }
 
     @Override
     public String getName() {
@@ -71,13 +76,12 @@ public class LicenseImpl extends ExtensibleImpl<License> implements License {
         this.url = url;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.info.License from, License to,
-            boolean override) {
-        if (isAnnotationNull(from)) {
+    public static void merge(License from, License to, boolean override) {
+        if (from == null) {
             return;
         }
-        to.setName(mergeProperty(to.getName(), from.name(), override));
-        to.setUrl(mergeProperty(to.getUrl(), from.url(), override));
+        to.setName(mergeProperty(to.getName(), from.getName(), override));
+        to.setUrl(mergeProperty(to.getUrl(), from.getUrl(), override));
     }
 
 }

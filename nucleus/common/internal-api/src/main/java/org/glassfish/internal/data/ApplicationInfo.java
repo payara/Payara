@@ -61,6 +61,7 @@ import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.bootstrap.DescriptorFileFinder;
 import org.glassfish.hk2.bootstrap.HK2Populator;
 import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -101,6 +102,8 @@ public class ApplicationInfo extends ModuleInfo {
 
     private ServiceLocator appServiceLocator;
     private DeploymentFailedListener deploymentFailedListener;
+
+    private Types types;
 
     /**
      * Creates a new instance of an ApplicationInfo
@@ -224,6 +227,24 @@ public class ApplicationInfo extends ModuleInfo {
      */
     public ServiceLocator getAppServiceLocator() {
         return appServiceLocator;
+    }
+
+    /**
+     * Returns the parsed application classes type
+     *
+     * @return The parsed application classes type
+     */
+    public Types getTypes() {
+        return types;
+    }
+
+    /**
+     * Sets the parsed application classes type for this application
+     *
+     * @param types
+     */
+    public void setTypes(Types types) {
+        this.types = types;
     }
 
     /**

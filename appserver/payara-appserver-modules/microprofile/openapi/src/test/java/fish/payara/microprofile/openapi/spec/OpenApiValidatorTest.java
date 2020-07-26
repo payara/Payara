@@ -39,13 +39,11 @@
  */
 package fish.payara.microprofile.openapi.spec;
 
-import java.io.File;
-import java.util.logging.Logger;
-
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+import java.util.logging.Logger;
+import org.junit.Test;
 
 /**
  * Test that should verify the validity of the {@link OpenApiValidator} model by using it against some of the examples
