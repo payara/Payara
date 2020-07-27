@@ -352,14 +352,6 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        <!-- Yubikey Authentication -->
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>yubikey-authentication</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
         <!-- roles api -->
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
