@@ -487,7 +487,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             events.send(new Event<>(Deployment.DEPLOYMENT_BEFORE_CLASSLOADER_CREATION, context), false);
 
             context.createApplicationClassLoader(clh, handler);
-
+            tempAppInfo.setAppClassLoader(context.getFinalClassLoader());
+            
             events.send(new Event<>(Deployment.AFTER_APPLICATION_CLASSLOADER_CREATION, context), false);
 
             // this is a first time deployment as opposed as load following an unload event,
@@ -1809,11 +1810,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             return false;
         }
 
-        if (virtEnv != null && virtEnv.isPaasEnabled()) {
-            return true;
-        }
-
-        return false;
+        return virtEnv != null && virtEnv.isPaasEnabled();
     }
 
     // gets the default target when no target is specified for non-paas case
@@ -1838,7 +1835,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
            // for other cases, we try to derive it from domain.xml
            List<String> targets =
                domain.getAllReferencedTargetsForApplication(appName);
-           if (targets.size() == 0) {
+           if (targets.isEmpty()) {
                throw new IllegalArgumentException("Application not registered");
            }
            if (targets.size() > 1) {
@@ -2461,7 +2458,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (appInfo.getSniffers().size() > 0) {
             for (Sniffer sniffer : appInfo.getSniffers()) {
                 if (sniffer.isUserVisible()) {
-                    sb.append(sniffer.getModuleType() + ", ");
+                    sb.append(sniffer.getModuleType()).append(", ");
                 }
             }
         }
