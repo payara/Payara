@@ -189,6 +189,9 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     
     public void addSpanReference(RequestTraceSpanContext spanContext, SpanContextRelationshipType relationshipType) {
         spanReferences.add(new SpanReference(spanContext, relationshipType));
+        for (Map.Entry<String, String> baggageItem : spanContext.baggageItems()) {
+            this.spanContext.addBaggageItem(baggageItem.getKey(), baggageItem.getValue());
+        }
     }
     
     public List<SpanReference> getSpanReferences() {

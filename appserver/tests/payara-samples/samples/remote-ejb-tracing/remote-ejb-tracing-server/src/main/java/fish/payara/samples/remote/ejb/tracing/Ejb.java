@@ -39,32 +39,54 @@
  */
 package fish.payara.samples.remote.ejb.tracing;
 
+import io.opentracing.Span;
+import io.opentracing.Tracer;
 import org.eclipse.microprofile.opentracing.Traced;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+import java.util.Map;
 import java.util.Random;
 
 @Stateless
 public class Ejb implements EjbRemote {
 
+    @Inject
+    Tracer tracer;
+
     @Override
     public String nonAnnotatedMethod() {
         randomSleep();
-        return "Wibbles";
+        Span activeSpan = tracer.activeSpan();
+        if (activeSpan != null) {
+            return getBaggageItems(activeSpan);
+        } else {
+            return "Nothing found!";
+        }
     }
 
     @Override
     @Traced(operationName = "customName")
     public String annotatedMethod() {
         randomSleep();
-        return "Wobbles";
+        Span activeSpan = tracer.activeSpan();
+        if (activeSpan != null) {
+            return getBaggageItems(activeSpan);
+        } else {
+            return "Nothing found!";
+        }
     }
 
     @Override
     @Traced(false)
     public String shouldNotBeTraced() {
         randomSleep();
-        return "Tiddles";
+        Span activeSpan = tracer.activeSpan();
+        if (activeSpan != null) {
+            return getBaggageItems(activeSpan);
+        } else {
+            return "Nothing found!";
+        }
     }
 
     private void randomSleep() {
@@ -73,5 +95,13 @@ public class Ejb implements EjbRemote {
         } catch (InterruptedException ie) {
             // om nom nom
         }
+    }
+
+    private String getBaggageItems(Span activeSpan) {
+        String baggageItems = "\n";
+        for (Map.Entry<String, String> baggageItem : activeSpan.context().baggageItems()) {
+            baggageItems += baggageItem.getKey() + " : " + baggageItem.getValue() + "\n";
+        }
+        return baggageItems;
     }
 }

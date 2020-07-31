@@ -37,46 +37,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.remote.ejb.tracing;
+package fish.payara.ejb.opentracing;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
-import org.junit.Test;
+import fish.payara.opentracing.OpenTracingService;
+import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.annotations.Service;
+import org.omg.IOP.Codec;
+import org.omg.PortableInterceptor.ClientRequestInterceptor;
+import org.omg.PortableInterceptor.ORBInitInfo;
+import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.Properties;
+import javax.inject.Singleton;
 
-public class RemoteEjbClientTest {
+@Service(name = "OpenTracingIiopInterceptorFactory")
+@Singleton
+public class OpenTracingIiopInterceptorFactory implements IIOPInterceptorFactory {
 
-    @Test
-    public void executeRemoteEjbMethodTest() {
-        Properties contextProperties = new Properties();
-        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
+    private ClientRequestInterceptor clientRequestInterceptor;
+    private ServerRequestInterceptor serverRequestInterceptor;
 
-        try {
-            Context context = new InitialContext(contextProperties);
-            EjbRemote ejb = (EjbRemote) context.lookup("java:global/remote-ejb-tracing-server/Ejb");
+    @Override
+    public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
+        ServiceLocator staticBaseServiceLocator = Globals.getStaticBaseServiceLocator();
+        if (clientRequestInterceptor == null) {
+            OpenTracingService openTracingService = staticBaseServiceLocator.getService(OpenTracingService.class);
 
-            Tracer tracer = GlobalTracer.get();
-
-            try (Scope scope = tracer.buildSpan("ExecuteEjb").startActive(true)) {
-                Span span = scope.span();
-                span.setBaggageItem("Wibbles", "Wobbles");
-                System.out.println(ejb.annotatedMethod());
-                span.setBaggageItem("Nibbles", "Nobbles");
-                System.out.println(ejb.nonAnnotatedMethod());
-                span.setBaggageItem("Bibbles", "Bobbles");
-                System.out.println(ejb.shouldNotBeTraced());
+            if (openTracingService != null) {
+                clientRequestInterceptor = new OpenTracingIiopClientInterceptor(openTracingService);
             }
-        } catch (NamingException e) {
-            e.printStackTrace();
         }
+
+        return clientRequestInterceptor;
+    }
+
+    @Override
+    public ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
+        ServiceLocator staticBaseServiceLocator = Globals.getStaticBaseServiceLocator();
+        if (serverRequestInterceptor == null) {
+            OpenTracingService openTracingService = staticBaseServiceLocator.getService(OpenTracingService.class);
+
+            if (openTracingService != null) {
+                serverRequestInterceptor = new OpenTracingIiopServerInterceptor(openTracingService);
+            }
+        }
+
+        return serverRequestInterceptor;
     }
 
 

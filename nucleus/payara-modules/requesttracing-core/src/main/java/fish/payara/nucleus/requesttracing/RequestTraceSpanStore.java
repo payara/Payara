@@ -88,6 +88,11 @@ public class RequestTraceSpanStore {
         currentTrace.endTrace();
     }
 
+    void endTrace(long timestampMillis) {
+        RequestTrace currentTrace = spanStore.get();
+        currentTrace.endTrace(timestampMillis);
+    }
+
     /**
      * Returns how long the request trace took
      * @return 0 if the trace has not finished

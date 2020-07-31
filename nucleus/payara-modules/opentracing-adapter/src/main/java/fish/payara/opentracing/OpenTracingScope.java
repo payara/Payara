@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,8 +42,11 @@
  */
 package fish.payara.opentracing;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.opentracing.Span;
@@ -61,16 +64,16 @@ public class OpenTracingScope implements io.opentracing.Scope {
     
     @Override
     public void close() {
-        Iterator<Span> keys = allSpans.keySet().iterator();
-        while (keys.hasNext()){
-            Span span = keys.next();
+        // Close spans in reverse order so root span isn't finished before children
+        List<Span> keys = new ArrayList<>(allSpans.keySet());
+        Collections.reverse(keys);
+        for (Span span : keys) {
             if (allSpans.get(span)){
                 span.finish();
             }
-            // Prevent scope holding on a reference to old spans
-            keys.remove();
         }
-        
+
+        allSpans.clear();
         currentSpan = null;
     }
 

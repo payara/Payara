@@ -37,47 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.remote.ejb.tracing;
+package fish.payara.ejb.opentracing;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
-import org.junit.Test;
+public class OpenTracingIiopCommon {
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.Properties;
-
-public class RemoteEjbClientTest {
-
-    @Test
-    public void executeRemoteEjbMethodTest() {
-        Properties contextProperties = new Properties();
-        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
-
-        try {
-            Context context = new InitialContext(contextProperties);
-            EjbRemote ejb = (EjbRemote) context.lookup("java:global/remote-ejb-tracing-server/Ejb");
-
-            Tracer tracer = GlobalTracer.get();
-
-            try (Scope scope = tracer.buildSpan("ExecuteEjb").startActive(true)) {
-                Span span = scope.span();
-                span.setBaggageItem("Wibbles", "Wobbles");
-                System.out.println(ejb.annotatedMethod());
-                span.setBaggageItem("Nibbles", "Nobbles");
-                System.out.println(ejb.nonAnnotatedMethod());
-                span.setBaggageItem("Bibbles", "Bobbles");
-                System.out.println(ejb.shouldNotBeTraced());
-            }
-        } catch (NamingException e) {
-            e.printStackTrace();
-        }
-    }
+    public static final int OPENTRACING_IIOP_ID = 3226428;
+    public static final long OPENTRACING_IIOP_SERIAL_VERSION_UID = 20200731171822L;
 
 
 }

@@ -60,24 +60,27 @@ public class RequestTraceSpanContext implements Serializable, io.opentracing.Spa
 
     private final UUID spanId;
     private UUID traceId;
-    private final Map<String, String> baggageItems;
+    private final Map<String, String> baggageItems = new HashMap<>();;
 
     protected RequestTraceSpanContext() {
         spanId = UUID.randomUUID();
         traceId = UUID.randomUUID();
-        baggageItems = new HashMap<>();
     }
 
     protected RequestTraceSpanContext(UUID traceId) {
         spanId = UUID.randomUUID();
         this.traceId = traceId;
-        baggageItems = new HashMap<>();
     }
 
     public RequestTraceSpanContext(UUID traceId, UUID parentId) {
         spanId = parentId;
         this.traceId = traceId;
-        baggageItems = new HashMap<>();
+    }
+
+    public RequestTraceSpanContext(UUID traceId, UUID parentId, Map<String, String> baggageItems) {
+        spanId = parentId;
+        this.traceId = traceId;
+        this.baggageItems.putAll(baggageItems);
     }
 
     public UUID getSpanId() {

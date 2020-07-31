@@ -37,47 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.remote.ejb.tracing;
+package fish.payara.ejb.opentracing;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
-import org.junit.Test;
+import io.opentracing.propagation.TextMap;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.Properties;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-public class RemoteEjbClientTest {
+import static fish.payara.ejb.opentracing.OpenTracingIiopCommon.OPENTRACING_IIOP_SERIAL_VERSION_UID;
 
-    @Test
-    public void executeRemoteEjbMethodTest() {
-        Properties contextProperties = new Properties();
-        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
+public class OpenTracingIiopTextMap implements TextMap, Serializable {
 
-        try {
-            Context context = new InitialContext(contextProperties);
-            EjbRemote ejb = (EjbRemote) context.lookup("java:global/remote-ejb-tracing-server/Ejb");
+    private Map<String, String> map = new HashMap<>();
 
-            Tracer tracer = GlobalTracer.get();
+    private static final long serialVersionUID = OPENTRACING_IIOP_SERIAL_VERSION_UID;
 
-            try (Scope scope = tracer.buildSpan("ExecuteEjb").startActive(true)) {
-                Span span = scope.span();
-                span.setBaggageItem("Wibbles", "Wobbles");
-                System.out.println(ejb.annotatedMethod());
-                span.setBaggageItem("Nibbles", "Nobbles");
-                System.out.println(ejb.nonAnnotatedMethod());
-                span.setBaggageItem("Bibbles", "Bobbles");
-                System.out.println(ejb.shouldNotBeTraced());
-            }
-        } catch (NamingException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public Iterator<Map.Entry<String, String>> iterator() {
+        return map.entrySet().iterator();
     }
 
-
+    @Override
+    public void put(String key, String value) {
+        map.put(key, value);
+    }
 }

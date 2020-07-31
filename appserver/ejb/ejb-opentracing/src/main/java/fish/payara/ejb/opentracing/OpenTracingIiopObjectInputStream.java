@@ -37,47 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.remote.ejb.tracing;
+package fish.payara.ejb.opentracing;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
-import org.junit.Test;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidClassException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
+import java.util.HashMap;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.util.Properties;
+import static fish.payara.ejb.opentracing.OpenTracingIiopCommon.OPENTRACING_IIOP_SERIAL_VERSION_UID;
 
-public class RemoteEjbClientTest {
+public class OpenTracingIiopObjectInputStream extends ObjectInputStream {
 
-    @Test
-    public void executeRemoteEjbMethodTest() {
-        Properties contextProperties = new Properties();
-        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
-
-        try {
-            Context context = new InitialContext(contextProperties);
-            EjbRemote ejb = (EjbRemote) context.lookup("java:global/remote-ejb-tracing-server/Ejb");
-
-            Tracer tracer = GlobalTracer.get();
-
-            try (Scope scope = tracer.buildSpan("ExecuteEjb").startActive(true)) {
-                Span span = scope.span();
-                span.setBaggageItem("Wibbles", "Wobbles");
-                System.out.println(ejb.annotatedMethod());
-                span.setBaggageItem("Nibbles", "Nobbles");
-                System.out.println(ejb.nonAnnotatedMethod());
-                span.setBaggageItem("Bibbles", "Bobbles");
-                System.out.println(ejb.shouldNotBeTraced());
-            }
-        } catch (NamingException e) {
-            e.printStackTrace();
-        }
+    public OpenTracingIiopObjectInputStream(InputStream inputStream) throws IOException {
+        super(inputStream);
     }
 
+    @Override
+    protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+        // Only deserialise main transport class and its required field types
+        if ((desc.getName().equals(OpenTracingIiopTextMap.class.getName())
+                && desc.getSerialVersionUID() == OPENTRACING_IIOP_SERIAL_VERSION_UID)
+                || desc.getName().equals(HashMap.class.getName())) {
+            return super.resolveClass(desc);
+        } else {
+            throw new InvalidClassException("Not an authorised class", desc.getName());
+        }
+    }
 
 }

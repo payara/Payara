@@ -70,6 +70,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     private long elapsedTime;
     private final LinkedList<RequestTraceSpan> trace;
     private final List<RequestTraceSpanLog> spanLogs;
+    private RequestTraceSpan startingSpan;
 
     /**
      * Add a new event to the series being traced
@@ -166,6 +167,10 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
     }
 
     public void endTrace() {
+        endTrace(Instant.now().toEpochMilli());
+    }
+
+    public void endTrace(long timestampMillis) {
         if (!started) {
             return;
         }
@@ -173,7 +178,7 @@ public class RequestTrace implements Serializable, Comparable<RequestTrace> {
         Collections.sort(trace);
 
         RequestTraceSpan startSpan = trace.getFirst();
-        endTime = Instant.now();
+        endTime = Instant.ofEpochMilli(timestampMillis);
         startSpan.setSpanDuration(startTime.until(endTime, ChronoUnit.NANOS));
         startSpan.setTraceEndTime(endTime);
         elapsedTime = TimeUnit.MILLISECONDS.convert(startSpan.getSpanDuration(), TimeUnit.NANOSECONDS);
