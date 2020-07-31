@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -15,12 +16,12 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-
+<!-- Portions Copyright [2020] [Payara Foundation and/or its affiliates] -->
 <p><a id="ref-editjdbcrealm" name="ref-editjdbcrealm"></a><a id="GHCOM00102" name="GHCOM00102"></a></p>
 
 <h4><a id="sthref204" name="sthref204"></a><a id="sthref205" name="sthref205"></a>Properties Specific to the <code>JDBCRealm</code> Class</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>To protect your web pages or web applications, you can set the security so that only registered users can access them. This is known as the authentication facility. This type of realm involves storing the credentials of your users inside a database. The GlassFish Server uses the database information and the enabled JDBC realm option inside the configuration file.</p>
+<p>To protect your web pages or web applications, you can set the security so that only registered users can access them. This is known as the authentication facility. This type of realm involves storing the credentials of your users inside a database. The Payara Server uses the database information and the enabled JDBC realm option inside the configuration file.</p>
 <p>The following properties are required for a JDBC realm.</p>
 <dl>
 <dt>JAAS Context</dt>
@@ -72,7 +73,7 @@
 
 <hr>
 <p><b>Note:</b></p>
-<p>In versions of GlassFish Server prior to 4.0, the default algorithm was <code>MD5</code>. If you have applications that depend on the <code>MD5</code> algorithm, you can override the default <code>SHA-25</code> algorithm by using the <code>asadmin set</code> subcommand:</p>
+<p>In versions of Payara Server prior to 4.0, the default algorithm was <code>MD5</code>. If you have applications that depend on the <code>MD5</code> algorithm, you can override the default <code>SHA-25</code> algorithm by using the <code>asadmin set</code> subcommand:</p>
 <pre>
 asadmin&gt; <b>set server.security-service.property.default-digest-algorithm=MD5</b>
 </pre>
@@ -80,7 +81,7 @@ asadmin&gt; <b>set server.security-service.property.default-digest-algorithm=MD5
 <pre>
 asadmin&gt; <b>get server.security-service.property.default-digest-algorithm</b>
 </pre>
-<p>Also note that, to maintain backward compatibility, if an upgrade is performed from GlassFish Server v2.<i>x</i> or v3.0.<i>x</i> to GlassFish Server 4.0, the default algorithm is automatically set to <code>MD5</code> in cases where the digest algorithm had not been explicitly set in the older GlassFish Server version.</p>
+<p>Also note that, to maintain backward compatibility, if an upgrade is performed from Payara Server v2.<i>x</i> or v3.0.<i>x</i> to Payara Server 4.0, the default algorithm is automatically set to <code>MD5</code> in cases where the digest algorithm had not been explicitly set in the older Payara Server version.</p>
 
 <hr>
 
@@ -98,7 +99,8 @@ asadmin&gt; <b>get server.security-service.property.default-digest-algorithm</b>
 </dd>
 <dt>Encoding</dt>
 <dd>
-<p>The encoding. Allowed values are <code>Hex</code> and <code>Base64</code>. If <code>digest-algorithm</code> is specified, the default is <code>Hex</code>. If <code>digest-algorithm</code> is not specified, by default no encoding is specified.</p>
+<p>The encoding. Allowed values are <code>Hex</code>, <code>Base64</code> and <code>Hashed</code>. If <code>digest-algorithm</code> is specified, the default is <code>Hex</code>. If <code>digest-algorithm</code> is not specified, by default no encoding is specified.</p>
+<p>If the encoding is <code>Hashed</code>, passwords in the database are assumed to be in format MD5(username:realm:password).</p>
 </dd>
 <dt>Charset</dt>
 <dd>
@@ -108,3 +110,4 @@ asadmin&gt; <b>get server.security-service.property.default-digest-algorithm</b>
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,25 +39,37 @@
  */
 package fish.payara.microprofile.openapi.impl.model.parameters;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
-import java.util.Map;
-
-import org.eclipse.microprofile.openapi.models.media.Content;
-import org.eclipse.microprofile.openapi.models.media.Schema;
-import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
-
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import java.util.ArrayList;
+import java.util.List;
+import org.eclipse.microprofile.openapi.models.media.Content;
+import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements RequestBody {
 
     private String description;
     private Content content = new ContentImpl();
+    private List<ContentImpl> contents = new ArrayList<>();
     private Boolean required;
     private String ref;
+
+    public static RequestBody createInstance(AnnotationModel annotation, ApiContext context) {
+        RequestBodyImpl from = new RequestBodyImpl();
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setRequired(annotation.getValue("required", Boolean.class));
+        String ref = annotation.getValue("ref", String.class);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
+        return from;
+    }
 
     @Override
     public String getDescription() {
@@ -102,24 +114,42 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
         this.ref = ref;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.parameters.RequestBody from, RequestBody to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
+    public List<ContentImpl> getContents() {
+        return contents;
+    }
+
+    public void setContents(List<ContentImpl> contents) {
+        this.contents = contents;
+    }
+
+    public static void merge(RequestBody from, RequestBody to,
+            boolean override, ApiContext context) {
+        if (from == null) {
             return;
         }
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            applyReference(to, from.ref());
+        if (from.getRef() != null && !from.getRef().isEmpty()) {
+            applyReference(to, from.getRef());
             return;
         }
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setRequired(mergeProperty(to.getRequired(), from.required(), override));
-        if (from.content() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.media.Content content : from.content()) {
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setRequired(mergeProperty(to.getRequired(), from.getRequired(), override));
+        if (from instanceof RequestBodyImpl) {
+            RequestBodyImpl fromImpl = (RequestBodyImpl) from;
+            if (fromImpl.getContents() != null) {
                 if (to.getContent() == null) {
                     to.setContent(new ContentImpl());
                 }
-                ContentImpl.merge(content, to.getContent(), override, currentSchemas);
+                for (ContentImpl content : fromImpl.getContents()) {
+                    ContentImpl.merge(content, to.getContent(), override, context);
+                }
             }
+
+        }
+        if (from.getContent() != null) {
+            if (to.getContent() == null) {
+                to.setContent(new ContentImpl());
+            }
+            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
         }
 
     }

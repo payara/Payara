@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.metrics.writer;
 
+import static fish.payara.microprofile.metrics.MetricUnitsUtils.scaleToBaseUnit;
+
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -63,6 +65,7 @@ import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
+
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 
 /**
@@ -370,47 +373,6 @@ public class OpenMetricsExporter implements MetricExporter {
         String out = name.replaceAll("[^a-zA-Z0-9_]+", "_");
         //Colon-underscore (:_) is translated to single colon
         return out.replaceAll(":_", ":");
-    }
-
-    private static Number scaleToBaseUnit(Number value, Metadata metadata) {
-        if (!metadata.getUnit().isPresent()) {
-            return value;
-        }
-        String unit = metadata.getUnit().get();
-        if (unit == null || unit.isEmpty() || unit.equals(MetricUnits.NONE)) {
-            return value;
-        }
-        switch (unit) {
-        // bytes from bits
-        case MetricUnits.BITS: return value.longValue() / 8d;
-        case MetricUnits.KILOBITS: return value.doubleValue() * 1000d / 8d;
-        case MetricUnits.MEGABITS: return value.doubleValue() * 1000d * 1000d / 8d;
-        case MetricUnits.GIGABITS: return value.doubleValue() * 1000d * 1000d * 1000d / 8d;
-        case MetricUnits.KIBIBITS: return value.doubleValue() * 1024d / 8d;
-        case MetricUnits.MEBIBITS: return value.doubleValue() * 1024d * 1024d / 8d;
-        case MetricUnits.GIBIBITS: return value.doubleValue() * 1024d * 1024d * 1024d / 8d;
-
-        // bytes from bytes
-        case MetricUnits.BYTES: return value;
-        case MetricUnits.KILOBYTES: return value.doubleValue() * 1000d;
-        case MetricUnits.MEGABYTES: return value.doubleValue() * 1000d * 1000d;
-        case MetricUnits.GIGABYTES: return value.doubleValue() * 1000d * 1000d * 1000d;
-
-        // seconds from time unit
-        case MetricUnits.NANOSECONDS: return value.longValue()  / 1000d / 1000d / 1000d;
-        case MetricUnits.MICROSECONDS: return value.longValue() / 1000d / 1000d;
-        case MetricUnits.MILLISECONDS: return value.longValue() / 1000d;
-        case MetricUnits.SECONDS: return value;
-        case MetricUnits.MINUTES: return value.doubleValue() * 60d;
-        case MetricUnits.HOURS: return value.doubleValue() * 60d * 60d;
-        case MetricUnits.DAYS: return value.doubleValue() * 60d * 60d * 24d;
-
-        // others
-        case MetricUnits.PERCENT:
-        case MetricUnits.PER_SECOND:
-        default:
-            return value;
-        }
     }
 
     private static Tag[] tags(String name, String value, Tag[] rest) {

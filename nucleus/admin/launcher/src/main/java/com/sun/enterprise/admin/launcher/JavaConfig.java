@@ -140,11 +140,28 @@ class JavaConfig {
             return empty;
         }
 
-        if(JDK.getMajor() >= 9
-                && debugOptions.contains("address=")
-                && !debugOptions.contains("address=*:")){
-            debugOptions = debugOptions.replace("address=", "address=*:");
+        if (JDK.getMajor() >= 9) {
+            boolean serverMode = false;
+            String address = null;
+            for (String debugOption : debugOptions.split(",")) {
+                if (debugOption.startsWith("server")) {
+                    String[] serverAttr = debugOption.split("=");
+                    serverMode = serverAttr.length > 1 && serverAttr[1].equals("y");
+                }
+                if (debugOption.startsWith("address")) {
+                    String[] addressAttr = debugOption.split("=");
+                    if (addressAttr.length > 1) {
+                        address = addressAttr[1];
+                    }
+                }
+            }
+            if (serverMode && address != null) {
+                if (address.split(":").length < 2) {
+                    debugOptions = debugOptions.replace("address=", "address=*:");
+                }
+            }
         }
+
         String[] debugOptionArray = debugOptions.split(" ");
 
         if(debugOptionArray.length <= 0) {

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,10 @@ package fish.payara.security.openid.controller;
 
 import static fish.payara.security.annotations.ClaimsDefinition.OPENID_MP_CALLER_GROUP_CLAIM;
 import static fish.payara.security.annotations.ClaimsDefinition.OPENID_MP_CALLER_NAME_CLAIM;
+import static fish.payara.security.annotations.LogoutDefinition.OPENID_MP_PROVIDER_NOTIFY_LOGOUT;
+import static fish.payara.security.annotations.LogoutDefinition.OPENID_MP_LOGOUT_ON_ACCESS_TOKEN_EXPIRY;
+import static fish.payara.security.annotations.LogoutDefinition.OPENID_MP_LOGOUT_ON_IDENTITY_TOKEN_EXPIRY;
+import static fish.payara.security.annotations.LogoutDefinition.OPENID_MP_POST_LOGOUT_REDIRECT_URI;
 import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_ALGORITHM;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_CLIENT_ENC_JWKS;
@@ -61,21 +65,23 @@ import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OP
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_NONCE;
 import static fish.payara.security.annotations.OpenIdAuthenticationDefinition.OPENID_MP_USE_SESSION;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_AUTHORIZATION_ENDPOINT;
+import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_END_SESSION_ENDPOINT;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_JWKS_URI;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_TOKEN_ENDPOINT;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_USERINFO_ENDPOINT;
 import static fish.payara.security.openid.OpenIdUtil.getConfiguredValue;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE_FLOW_TYPES;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_ENDPOINT;
+import static fish.payara.security.openid.api.OpenIdConstant.END_SESSION_ENDPOINT;
 import static fish.payara.security.openid.api.OpenIdConstant.HYBRID_FLOW_TYPES;
 import static fish.payara.security.openid.api.OpenIdConstant.IMPLICIT_FLOW_TYPES;
 import static fish.payara.security.openid.api.OpenIdConstant.JWKS_URI;
-import static fish.payara.security.openid.api.OpenIdConstant.OFFLINE_ACCESS_SCOPE;
 import static fish.payara.security.openid.api.OpenIdConstant.OPENID_SCOPE;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_ENDPOINT;
 import static fish.payara.security.openid.api.OpenIdConstant.USERINFO_ENDPOINT;
 import fish.payara.security.openid.api.PromptType;
 import fish.payara.security.openid.domain.ClaimsConfiguration;
+import fish.payara.security.openid.domain.LogoutConfiguration;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdProviderMetadata;
 import fish.payara.security.openid.domain.OpenIdTokenEncryptionMetadata;
@@ -125,6 +131,7 @@ public class ConfigurationController {
         String authorizationEndpoint;
         String tokenEndpoint;
         String userinfoEndpoint;
+        String endSessionEndpoint;
         String jwksURI;
         URL jwksURL;
 
@@ -146,6 +153,11 @@ public class ConfigurationController {
             userinfoEndpoint = getConfiguredValue(String.class, providerDocument.getString(USERINFO_ENDPOINT), provider, OPENID_MP_USERINFO_ENDPOINT);
         } else {
             userinfoEndpoint = getConfiguredValue(String.class, providerMetadata.userinfoEndpoint(), provider, OPENID_MP_USERINFO_ENDPOINT);
+        }
+        if (isEmpty(providerMetadata.endSessionEndpoint()) && providerDocument.containsKey(END_SESSION_ENDPOINT)) {
+            endSessionEndpoint = getConfiguredValue(String.class, providerDocument.getString(END_SESSION_ENDPOINT), provider, OPENID_MP_END_SESSION_ENDPOINT);
+        } else {
+            endSessionEndpoint = getConfiguredValue(String.class, providerMetadata.endSessionEndpoint(), provider, OPENID_MP_END_SESSION_ENDPOINT);
         }
         if (isEmpty(providerMetadata.jwksURI()) && providerDocument.containsKey(JWKS_URI)) {
             jwksURI = getConfiguredValue(String.class, providerDocument.getString(JWKS_URI), provider, OPENID_MP_JWKS_URI);
@@ -208,21 +220,33 @@ public class ConfigurationController {
         String callerNameClaim = getConfiguredValue(String.class, definition.claimsDefinition().callerNameClaim(), provider, OPENID_MP_CALLER_NAME_CLAIM);
         String callerGroupsClaim = getConfiguredValue(String.class, definition.claimsDefinition().callerGroupsClaim(), provider, OPENID_MP_CALLER_GROUP_CLAIM);
 
+        Boolean notifyProvider = getConfiguredValue(Boolean.class, definition.logout().notifyProvider(), provider, OPENID_MP_PROVIDER_NOTIFY_LOGOUT);
+        String logoutRedirectURI = getConfiguredValue(String.class, definition.logout().redirectURI(), provider, OPENID_MP_POST_LOGOUT_REDIRECT_URI);
+        Boolean accessTokenExpiry = getConfiguredValue(Boolean.class, definition.logout().accessTokenExpiry(), provider, OPENID_MP_LOGOUT_ON_ACCESS_TOKEN_EXPIRY);
+        Boolean identityTokenExpiry = getConfiguredValue(Boolean.class, definition.logout().identityTokenExpiry(), provider, OPENID_MP_LOGOUT_ON_IDENTITY_TOKEN_EXPIRY);
+
         boolean tokenAutoRefresh = getConfiguredValue(Boolean.class, definition.tokenAutoRefresh(), provider, OPENID_MP_TOKEN_AUTO_REFRESH);
         int tokenMinValidity = getConfiguredValue(Integer.class, definition.tokenMinValidity(), provider, OPENID_MP_TOKEN_MIN_VALIDITY);
-        
+
         OpenIdConfiguration configuration = new OpenIdConfiguration()
                 .setProviderMetadata(
                         new OpenIdProviderMetadata(providerDocument)
                                 .setAuthorizationEndpoint(authorizationEndpoint)
                                 .setTokenEndpoint(tokenEndpoint)
                                 .setUserinfoEndpoint(userinfoEndpoint)
+                                .setEndSessionEndpoint(endSessionEndpoint)
                                 .setJwksURL(jwksURL)
                 )
                 .setClaimsConfiguration(
                         new ClaimsConfiguration()
                                 .setCallerNameClaim(callerNameClaim)
                                 .setCallerGroupsClaim(callerGroupsClaim)
+                ).setLogoutConfiguration(
+                        new LogoutConfiguration()
+                                .setNotifyProvider(notifyProvider)
+                                .setRedirectURI(logoutRedirectURI)
+                                .setAccessTokenExpiry(accessTokenExpiry)
+                                .setIdentityTokenExpiry(identityTokenExpiry)
                 )
                 .setEncryptionMetadata(
                         new OpenIdTokenEncryptionMetadata()

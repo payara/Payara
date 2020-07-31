@@ -4,13 +4,14 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.4-SNAPSHOT</version>
     </parent>
     <artifactId>docker-images</artifactId>
     <packaging>pom</packaging>
     <name>Payara Docker Images</name>
 
     <modules>
+        <module>basic</module>
         <module>server-full</module>
         <module>server-web</module>
         <module>server-node</module>
@@ -20,15 +21,18 @@
 
     <properties>
         <payara.version>${project.version}</payara.version>
-        <dockerBaseDir>${project.build.directory}/docker-work-dir</dockerBaseDir>
-        <dockerRepositoryName>payara/${project.artifactId}</dockerRepositoryName>
-        <!-- use false for faster testing, but you depend on cached results then -->
         <docker.noCache>true</docker.noCache>
-        <dockerfile.tag>${payara.version}</dockerfile.tag>
+
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
-        <docker.java.tag>8u232</docker.java.tag>
-        <docker.java.image>${docker.java.repository}:${docker.java.tag}</docker.java.image>
+        <docker.jdk8.tag>8u252</docker.jdk8.tag>
+        <docker.jdk11.tag>11.0.7</docker.jdk11.tag>
+
         <docker.payara.domainName>production</docker.payara.domainName>
+        <docker.payara.rootDirectoryName>payara5</docker.payara.rootDirectoryName>
+
+        <docker.payara.repository>payara/${project.artifactId}</docker.payara.repository>
+        <docker.payara.tag>${payara.version}</docker.payara.tag>
+        <docker.payara.image>${docker.payara.repository}:${docker.payara.tag}</docker.payara.image>
     </properties>
 
     <build>
@@ -45,6 +49,9 @@
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>0.33.0</version>
                     <extensions>true</extensions>
+                    <configuration>
+                        <verbose>true</verbose>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -60,6 +67,34 @@
             </activation>
             <build>
                 <plugins>
+                    <!-- Required until https://github.com/fabric8io/docker-maven-plugin/issues/859 is resolved -->
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>filter-dockerfiles</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk8">
+                                            <filterset>
+                                                <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk8.tag}"/>
+                                            </filterset>
+                                        </copy>
+                                        <copy file="src/main/docker/Dockerfile" toFile="target/antrun/Dockerfile.jdk11">
+                                            <filterset>
+                                                <filter token="docker.java.image" value="${docker.java.repository}:${docker.jdk11.tag}"/>
+                                                <filter token="docker.payara.tag" value="${docker.payara.tag}-jdk11"/>
+                                            </filterset>
+                                        </copy>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
@@ -75,15 +110,34 @@
                         <configuration>
                             <images>
                                 <image>
-                                    <name>${dockerRepositoryName}</name>
+                                    <name>${docker.payara.repository}</name>
                                     <build>
                                         <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
                                         <filter>@</filter>
                                         <tags>
-                                            <tag>${dockerfile.tag}</tag>
+                                            <tag>${docker.payara.tag}</tag>
                                         </tags>
+                                        <cleanup>none</cleanup>
                                         <noCache>${docker.noCache}</noCache>
-                                        <dockerFile>Dockerfile</dockerFile>
+                                        <dockerFile>${project.build.directory}/antrun/Dockerfile.jdk8</dockerFile>
+                                        <assembly>
+                                            <mode>tar</mode>
+                                            <descriptor>assembly.xml</descriptor>
+                                            <tarLongFileMode>gnu</tarLongFileMode>
+                                        </assembly>
+                                    </build>
+                                </image>
+                                <image>
+                                    <name>${docker.payara.repository}</name>
+                                    <build>
+                                        <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                        <filter>@</filter>
+                                        <tags>
+                                            <tag>${docker.payara.tag}-jdk11</tag>
+                                        </tags>
+                                        <cleanup>none</cleanup>
+                                        <noCache>${docker.noCache}</noCache>
+                                        <dockerFile>${project.build.directory}/antrun/Dockerfile.jdk11</dockerFile>
                                         <assembly>
                                             <mode>tar</mode>
                                             <descriptor>assembly.xml</descriptor>

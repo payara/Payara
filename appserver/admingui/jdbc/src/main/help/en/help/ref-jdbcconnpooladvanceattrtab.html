@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -34,7 +35,7 @@
 </dd>
 <dt>Statement Timeout</dt>
 <dd>
-<p>The length of time, in seconds, after which abnormally long running queries will be terminated. GlassFish Server will set <code>QueryTimeout</code> on the statements created. A value of -1 means that the option is disabled. The default value is -1.</p>
+<p>The length of time, in seconds, after which abnormally long running queries will be terminated. Payara Server will set <code>QueryTimeout</code> on the statements created. A value of -1 means that the option is disabled. The default value is -1.</p>
 </dd>
 <dt>Statement Cache Size</dt>
 <dd>
@@ -112,11 +113,11 @@
 </dd>
 <dt>Validation Method</dt>
 <dd>
-<p>GlassFish Server can validate database connections in the following ways.</p>
+<p>Payara Server can validate database connections in the following ways.</p>
 <dl>
 <dt><code>auto-commit</code> and <code>metadata</code></dt>
 <dd>
-<p>GlassFish Server validates a connection by calling the <code>con.getAutoCommit</code> or <code>con.getMetaData</code> method.</p>
+<p>Payara Server validates a connection by calling the <code>con.getAutoCommit</code> or <code>con.getMetaData</code> method.</p>
 
 <hr>
 <p><b>Note:</b></p>
@@ -127,7 +128,7 @@
 </dd>
 <dt><code>custom-validation</code></dt>
 <dd>
-<p>GlassFish Server uses a user-defined validation mechanism specified by the custom implementation class in the Validation Classname field.</p>
+<p>Payara Server uses a user-defined validation mechanism specified by the custom implementation class in the Validation Classname field.</p>
 </dd>
 <dt><code>table</code></dt>
 <dd>
@@ -141,11 +142,11 @@
 </dd>
 <dt>Validation Class Name</dt>
 <dd>
-<p>The custom validation implementation class name. This field is applicable only if the Validation Method was set to <code>custom-validation</code>. The class name provided must be accessible to GlassFish Server. The specified class must implement the <code>org.glassfish.api.jdbc.ConnectionValidation</code> interface. You can either select the name from the drop-down list or type it.</p>
+<p>The custom validation implementation class name. This field is applicable only if the Validation Method was set to <code>custom-validation</code>. The class name provided must be accessible to Payara Server. The specified class must implement the <code>org.glassfish.api.jdbc.ConnectionValidation</code> interface. You can either select the name from the drop-down list or type it.</p>
 </dd>
 <dt>On Any Failure</dt>
 <dd>
-<p>If this option is enabled, the GlassFish Server closes all connections in the pool and reestablishes them when any connection fails. If the option is disabled, individual connections are reestablished only when they are used. This option is disabled by default.</p>
+<p>If this option is enabled, the Payara Server closes all connections in the pool and reestablishes them when any connection fails. If the option is disabled, individual connections are reestablished only when they are used. This option is disabled by default.</p>
 </dd>
 <dt>Allow Non Component Callers</dt>
 <dd>
@@ -211,3 +212,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

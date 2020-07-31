@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,14 +39,12 @@
  */
 package fish.payara.microprofile.openapi.impl.model.security;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
-import org.eclipse.microprofile.openapi.annotations.security.OAuthScope;
+import java.util.List;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
 import org.eclipse.microprofile.openapi.models.security.Scopes;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlow {
 
@@ -54,6 +52,25 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
     private String tokenUrl;
     private String refreshUrl;
     private Scopes scopes;
+
+    public static OAuthFlow createInstance(AnnotationModel annotation) {
+        OAuthFlow from = new OAuthFlowImpl();
+        from.setAuthorizationUrl(annotation.getValue("authorizationUrl", String.class));
+        from.setTokenUrl(annotation.getValue("tokenUrl", String.class));
+        from.setRefreshUrl(annotation.getValue("refreshUrl", String.class));
+        List<AnnotationModel> scopesAnnotation = annotation.getValue("scopes", List.class);
+        if (scopesAnnotation != null) {
+            Scopes scopes = new ScopesImpl();
+            for (AnnotationModel scopeAnnotation : scopesAnnotation) {
+                scopes.addScope(
+                        scopeAnnotation.getValue("name", String.class),
+                        scopeAnnotation.getValue("description", String.class)
+                );
+            }
+            from.setScopes(scopes);
+        }
+        return from;
+    }
 
     @Override
     public String getAuthorizationUrl() {
@@ -95,21 +112,16 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
         this.scopes = scopes;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.security.OAuthFlow from, OAuthFlow to,
-            boolean override) {
-        if (isAnnotationNull(from)) {
+    public static void merge(OAuthFlow from, OAuthFlow to, boolean override) {
+        if (from == null) {
             return;
         }
-        to.setTokenUrl(mergeProperty(to.getTokenUrl(), from.tokenUrl(), override));
-        if (from.scopes() != null) {
-            Scopes scopes = new ScopesImpl();
-            for (OAuthScope scope : from.scopes()) {
-                scopes.addScope(scope.name(), scope.description());
-            }
-            to.setScopes(mergeProperty(to.getScopes(), scopes, override));
+        to.setTokenUrl(mergeProperty(to.getTokenUrl(), from.getTokenUrl(), override));
+        if (from.getScopes() != null) {
+            to.setScopes(mergeProperty(to.getScopes(), from.getScopes(), override));
         }
-        to.setRefreshUrl(mergeProperty(to.getRefreshUrl(), from.refreshUrl(), override));
-        to.setAuthorizationUrl(mergeProperty(to.getAuthorizationUrl(), from.authorizationUrl(), override));
+        to.setRefreshUrl(mergeProperty(to.getRefreshUrl(), from.getRefreshUrl(), override));
+        to.setAuthorizationUrl(mergeProperty(to.getAuthorizationUrl(), from.getAuthorizationUrl(), override));
     }
 
 }

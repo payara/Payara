@@ -42,15 +42,13 @@ package fish.payara.microprofile.openapi.test.app.application;
 import com.fasterxml.jackson.databind.JsonNode;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import fish.payara.microprofile.openapi.test.util.JsonUtils;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.junit.Test;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 /**
  * Referenced components in the "Paths" section of the generated OpenAPI definition should be primarily named as defined

@@ -141,10 +141,10 @@
     <indexitem text="properties" target="ref-editfile-adminrealm"></indexitem>
     <indexitem text="viewing and configuring users" target="ref-managefilerealm"></indexitem>
   </indexitem>
-  <indexitem text="GlassFish News page">
+  <indexitem text="Payara News page">
     <indexitem text="viewing" target="task-support"></indexitem>
   </indexitem>
-  <indexitem text="GlassFish Server">
+  <indexitem text="Payara Server">
     <indexitem text="applications configuration (reference)" target="ref-serverinstappsconfig"></indexitem>
     <indexitem text="applications configuration (task)" target="task-setadvanceappconfig"></indexitem>
     <indexitem text="domain attributes (reference)" target="ref-domainattributestab"></indexitem>
@@ -314,7 +314,7 @@
   </indexitem>
   <indexitem text="redeploying applications (reference)" target="ref-redeploy"></indexitem>
   <indexitem text="redeploying applications (task)" target="task-appredeploy"></indexitem>
-  <indexitem text="registering GlassFish Server (task)" target="task-register"></indexitem>
+  <indexitem text="registering Payara Server (task)" target="task-register"></indexitem>
   <indexitem text="reload settings for applications (reference)" target="ref-serverinstappsconfig"></indexitem>
   <indexitem text="reload settings for applications (task)" target="task-setadvanceappconfig"></indexitem>
   <indexitem text="reloading applications" target="task-apprestart"></indexitem>

@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -21,8 +22,8 @@
 
 <h4><a id="sthref74" name="sthref74"></a><a id="sthref75" name="sthref75"></a><a id="sthref76" name="sthref76"></a>To Change the Limit on the Number of Rotated Log Files</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>When GlassFish Server rotates a log file, it creates a new, empty file named <code>server.log</code> and renames the old file <code>server.log_</code><i>date</i>, where <i>date</i> is the date and time when the file was rotated.</p>
-<p>By default, GlassFish Server limits the number of rotated log files to 10. When this limit is reached, the oldest log file is deleted when GlassFish Server next rotates a log file.</p>
+<p>When Payara Server rotates a log file, it creates a new, empty file named <code>server.log</code> and renames the old file <code>server.log_</code><i>date</i>, where <i>date</i> is the date and time when the file was rotated.</p>
+<p>By default, Payara Server limits the number of rotated log files to 10. When this limit is reached, the oldest log file is deleted when Payara Server next rotates a log file.</p>
 <p>If necessary, you can change the limit on the number of rotated log files. Any new limit that you set applies to rotated log files for both access logging and the server log.</p>
 <ol>
 <li>
@@ -30,13 +31,13 @@
 <p>The behavior of the <code>com.sun.enterprise.server.logging.max_history_files</code> system property is as follows:</p>
 <ul>
 <li>
-<p>If the property is not set, GlassFish Server keeps a maximum of 10 rotated log files.</p>
+<p>If the property is not set, Payara Server keeps a maximum of 10 rotated log files.</p>
 </li>
 <li>
-<p>If the property is set to an invalid number or null, GlassFish Server keeps a maximum of 10 rotated log files.</p>
+<p>If the property is set to an invalid number or null, Payara Server keeps a maximum of 10 rotated log files.</p>
 </li>
 <li>
-<p>If the property is set to 0, GlassFish Server keeps no rotated log files.</p>
+<p>If the property is set to 0, Payara Server keeps no rotated log files.</p>
 </li>
 </ul>
 </li>
@@ -64,3 +65,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

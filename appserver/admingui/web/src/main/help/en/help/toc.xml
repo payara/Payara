@@ -17,7 +17,7 @@
 -->
 
 <toc version="2.0">
-  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+  <tocitem target="tasks-topic-group" text="Payara Server Administration Console Tasks" expand="false">
     <tocitem target="task-group-configwebcontainer" text="Configuring the Web Container" expand="false">
       <tocitem target="task-webcontainergeneral" text="To Configure General Properties for the Web Container" expand="false"></tocitem>
       <tocitem target="task-webcontainersessiontimeout" text="To Configure Session Properties for the Web Container" expand="false"></tocitem>
@@ -59,7 +59,7 @@
       <tocitem target="task-threadpooldelete" text="To Delete a Thread Pool" expand="false"></tocitem>
     </tocitem>
   </tocitem>
-  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+  <tocitem target="ref-topic-group" text="Payara Server Administration Console Reference" expand="false">
     <tocitem target="ref-group-configuration" text="Configurations" expand="false">
       <tocitem target="ref-group-availabilityservice" text="Availability Service" expand="false">
         <tocitem target="ref-webcontaineravailability" text="Web Container Availability" expand="false"></tocitem>

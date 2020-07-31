@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -85,18 +85,19 @@ public interface OAuth2AccessToken extends Serializable {
     public void setRefreshToken(String refreshToken);
 
     /**
-     * Return the time that the access token is granted for, if it is set to expire
+     * Return the time that the access token is granted for, if it is set to
+     * expire
      *
      * @return
      */
-    public Optional<Integer> getExpiresIn();
+    public Optional<Long> getExpiresIn();
 
     /**
      * Sets the time that the access token is granted for
      *
      * @param expiresIn
      */
-    public void setExpiresIn(Integer expiresIn);
+    public void setExpiresIn(Long expiresIn);
 
     /**
      * Gets the time that the access token was last set

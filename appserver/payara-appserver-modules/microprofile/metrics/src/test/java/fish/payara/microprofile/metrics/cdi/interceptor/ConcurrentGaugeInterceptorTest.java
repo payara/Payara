@@ -42,36 +42,36 @@
  */
 package fish.payara.microprofile.metrics.cdi.interceptor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
+import fish.payara.microprofile.metrics.cdi.AnnotationReader;
+import fish.payara.microprofile.metrics.cdi.MetricUtils;
+import fish.payara.microprofile.metrics.impl.Clock;
+import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
+import fish.payara.microprofile.metrics.test.TestUtils;
+import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
+import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.interceptor.InvocationContext;
-
-import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import fish.payara.microprofile.metrics.cdi.AnnotationReader;
-import fish.payara.microprofile.metrics.cdi.MetricUtils;
-import fish.payara.microprofile.metrics.impl.Clock;
-import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
-import fish.payara.microprofile.metrics.test.TestUtils;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 /**
- * Tests the business logic of the {@link ConcurrentGuageInterceptor}.
+ * Tests the business logic of the {@link ConcurrentGaugeInterceptor}.
  *
  * @author Jan Bernitt
  * @since 5.202
  */
-public class ConcurrentGuageInterceptorTest implements Clock {
+public class ConcurrentGaugeInterceptorTest implements Clock {
 
     private final InvocationContext context = mock(InvocationContext.class);
     private MetricRegistryImpl registry;
@@ -154,7 +154,7 @@ public class ConcurrentGuageInterceptorTest implements Clock {
         assertGaugeProbesThreads(0);
     }
 
-    private void assertGaugeProbesThreads(int expectedStartCount) throws Exception {
+    private void assertGaugeProbesThreads(long expectedStartCount) throws Exception {
         Method element = TestUtils.getTestMethod();
         Class<?> bean = getClass();
         AnnotationReader<ConcurrentGauge> reader = AnnotationReader.CONCURRENT_GAUGE;
@@ -169,7 +169,7 @@ public class ConcurrentGuageInterceptorTest implements Clock {
         List<Exception> thrown = new ArrayList<>();
         Runnable proceed = () -> {
             try {
-                ConcurrentGuageInterceptor.proceedProbed(context, element, bean, registry::getMetric);
+                ConcurrentGaugeInterceptor.proceedProbed(context, element, bean, registry::getMetric);
             } catch (Exception ex) {
                 thrown.add(ex);
                 throw new RuntimeException(ex);
@@ -177,12 +177,10 @@ public class ConcurrentGuageInterceptorTest implements Clock {
         };
         Thread async1 = new Thread(proceed);
         async1.start();
-        Thread.sleep(50);
-        assertEquals(expectedStartCount + 1, gauge.getCount());
+        await().until(gauge::getCount, equalTo(expectedStartCount + 1));
         Thread async2 = new Thread(proceed);
         async2.start();
-        Thread.sleep(50);
-        assertEquals(expectedStartCount + 2, gauge.getCount());
+        await().until(gauge::getCount, equalTo(expectedStartCount + 2));
         waiter.complete(null);
         async1.join();
         async2.join();
@@ -190,7 +188,7 @@ public class ConcurrentGuageInterceptorTest implements Clock {
         assertEquals(0, gauge.getCount());
         // now test error when it does not exist
         try {
-            ConcurrentGuageInterceptor.proceedProbed(context, element, bean, (metricId, type) -> null);
+            ConcurrentGaugeInterceptor.proceedProbed(context, element, bean, (metricId, type) -> null);
             fail("Expected a IllegalStateException because the metric does not exist");
         } catch (IllegalStateException ex) {
             assertEquals("No ConcurrentGauge with ID [" + reader.metricID(bean, element)

@@ -39,11 +39,9 @@
  */
 package fish.payara.microprofile.openapi.test.app.application;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -51,12 +49,10 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
-import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
 
 /**
  * TCK lacks tests for parameter annotations being used on fields which should add such parameters to all methods of the

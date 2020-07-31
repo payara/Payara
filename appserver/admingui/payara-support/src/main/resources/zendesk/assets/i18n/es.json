@@ -1,7 +1,7 @@
 {
-  "Payara Support": "Soporte Payara",
+  "Payara Support": "Servicios de Soporte Empresarial de Payara",
   "Email address": "Dirección de email",
-  "Insert Zendesk`s email and password to get OauthToken to communicate": "Introduce el email y password para obtener OauthToken para comunicar",
+  "Insert Zendesk`s email and password to get OauthToken to communicate": "Utilice sus credenciales del centro de clientes de Payara para ingresar",
   "Password": "Password",
   "Insert password to login into Zendesk, it not will be stored": "Introduce password para ingresar, no será almacenada",
   "Please sign in": "Por favor entre",

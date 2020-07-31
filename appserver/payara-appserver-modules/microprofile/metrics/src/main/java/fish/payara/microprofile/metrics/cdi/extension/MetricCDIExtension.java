@@ -57,7 +57,7 @@ package fish.payara.microprofile.metrics.cdi.extension;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.cdi.MetricsAnnotationBinding;
 import fish.payara.microprofile.metrics.cdi.AnnotationReader;
-import fish.payara.microprofile.metrics.cdi.interceptor.ConcurrentGuageInterceptor;
+import fish.payara.microprofile.metrics.cdi.interceptor.ConcurrentGaugeInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.CountedInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.MeteredInterceptor;
 import fish.payara.microprofile.metrics.cdi.interceptor.MetricsInterceptor;
@@ -133,7 +133,7 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         beforeBeanDiscovery.addQualifier(org.eclipse.microprofile.metrics.annotation.Metric.class);
 //
         addAnnotatedType(CountedInterceptor.class, manager, beforeBeanDiscovery);
-        addAnnotatedType(ConcurrentGuageInterceptor.class, manager, beforeBeanDiscovery);
+        addAnnotatedType(ConcurrentGaugeInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(MeteredInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(TimedInterceptor.class, manager, beforeBeanDiscovery);
         addAnnotatedType(MetricsInterceptor.class, manager, beforeBeanDiscovery);

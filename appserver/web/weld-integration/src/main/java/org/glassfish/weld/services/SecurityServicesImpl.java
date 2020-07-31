@@ -64,7 +64,7 @@ public class SecurityServicesImpl implements SecurityServices {
     static class SecurityContextImpl implements org.jboss.weld.security.spi.SecurityContext {
 
         private final SecurityContext myContext;
-        private SecurityContext oldContext;
+        private static ThreadLocal<SecurityContext> oldContext = new ThreadLocal<>();
 
         private SecurityContextImpl() {
             this.myContext = SecurityContext.getCurrent();
@@ -72,8 +72,8 @@ public class SecurityServicesImpl implements SecurityServices {
 
         @Override
         public void associate() {
-            if (oldContext == null) {
-                oldContext = SecurityContext.getCurrent();
+            if (oldContext.get() == null) {
+                oldContext.set(SecurityContext.getCurrent());
             } else {
                 throw new IllegalStateException("Security context is already associated");
             }
@@ -82,8 +82,8 @@ public class SecurityServicesImpl implements SecurityServices {
 
         @Override
         public void dissociate() {
-            SecurityContext.setCurrent(oldContext);
-            oldContext = null;
+            SecurityContext.setCurrent(oldContext.get());
+            oldContext.remove();
         }
 
         @Override

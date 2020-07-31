@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static org.eclipse.microprofile.openapi.OASFactory.createAPIResponse;
 import static org.eclipse.microprofile.openapi.OASFactory.createAPIResponses;
@@ -47,17 +49,13 @@ import static org.eclipse.microprofile.openapi.OASFactory.createParameter;
 import static org.eclipse.microprofile.openapi.OASFactory.createPathItem;
 import static org.eclipse.microprofile.openapi.OASFactory.createPaths;
 import static org.eclipse.microprofile.openapi.OASFactory.createServer;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Checks the JSON rendering of {@link PathsImpl} and {@link PathItemImpl}.

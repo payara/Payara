@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+ <definitions 
+ xmlns="http://schemas.xmlsoap.org/wsdl/" 
+ xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="CalculatorService" targetNamespace="http://servlet.security.jaxws.samples.payara.fish/" xmlns:tns="http://servlet.security.jaxws.samples.payara.fish/" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:fi="http://java.sun.com/xml/ns/wsit/2006/09/policy/fastinfoset/service" xmlns:tcp="http://java.sun.com/xml/ns/wsit/2006/09/policy/soaptcp/service" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702" xmlns:sc="http://schemas.sun.com/2006/03/wss/server" xmlns:wspp="http://java.sun.com/xml/ns/wsit/policy" 
+ >
+    <message name="add"/>
+    <message name="addResponse"/>
+    <message name="NegativeNumberException"/>
+    <message name="log"/>
+    <message name="logResponse"/>
+    <portType name="CalculatorService">
+        <operation name="add">
+            <input message="tns:add"/>
+            <output message="tns:addResponse"/>
+            <fault name="NegativeNumberException" message="tns:NegativeNumberException"/>
+        </operation>
+        <operation name="log">
+            <input message="tns:log"/>
+            <output message="tns:logResponse"/>
+        </operation>
+    </portType>
+    <binding name="CalculatorServicePortBinding" type="tns:CalculatorService">
+        <wsp:PolicyReference URI="#CalculatorServicePortBindingPolicy"/>
+        <operation name="add">
+            <input></input>
+            <output></output>
+            <fault name="NegativeNumberException"/>
+        </operation>
+        <operation name="log">
+            <input></input>
+            <output></output>
+        </operation>
+    </binding>
+    <service name="CalculatorService">
+        <port name="CalculatorServicePort" binding="tns:CalculatorServicePortBinding"/>
+    </service>
+    <wsp:Policy wsu:Id="CalculatorServicePortBindingPolicy">
+        <wsp:ExactlyOne>
+            <wsp:All>
+                <sp:TransportBinding>
+                    <wsp:Policy>
+                        <sp:TransportToken>
+                            <wsp:Policy>
+                                <sp:HttpsToken RequireClientCertificate="false"/>
+                            </wsp:Policy>
+                        </sp:TransportToken>
+                        <sp:Layout>
+                            <wsp:Policy>
+                                <sp:Lax/>
+                            </wsp:Policy>
+                        </sp:Layout>
+                        <sp:IncludeTimestamp/>
+                        <sp:AlgorithmSuite>
+                            <wsp:Policy>
+                                <sp:Basic256/>
+                            </wsp:Policy>
+                        </sp:AlgorithmSuite>
+                    </wsp:Policy>
+                </sp:TransportBinding>
+                <sp:Wss10/>
+                <sp:SignedEncryptedSupportingTokens>
+                    <wsp:Policy>
+                        <sp:UsernameToken sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+                            <wsp:Policy>
+                                <sp:WssUsernameToken10/>
+                            </wsp:Policy>
+                        </sp:UsernameToken>
+                    </wsp:Policy>
+                </sp:SignedEncryptedSupportingTokens>
+            </wsp:All>
+        </wsp:ExactlyOne>
+    </wsp:Policy>
+</definitions>

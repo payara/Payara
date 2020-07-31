@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -44,13 +45,13 @@
 <p>From the SSH User Authentication drop-down list, select Key File.</p>
 </li>
 <li>
-<p>If you require GlassFish Server to set up an SSH key on the node host, enable the Setup SSH Option.</p>
-<p>GlassFish Server sets up the SSH key by copying existing key files from the DAS host or, if required, by generating the files before copying the files.</p>
+<p>If you require Payara Server to set up an SSH key on the node host, enable the Setup SSH Option.</p>
+<p>Payara Server sets up the SSH key by copying existing key files from the DAS host or, if required, by generating the files before copying the files.</p>
 <p>The Generate Key field and the Public Key File field are added to the window.</p>
 </li>
 <li>
-<p>If you require GlassFish Server to generate the SSH key files before copying the files to the node host, enable the Generate Key Option.</p>
-<p>If the SSH key files exist, GlassFish Server does not generate the files, even if you select the Enabled option.</p>
+<p>If you require Payara Server to generate the SSH key files before copying the files to the node host, enable the Generate Key Option.</p>
+<p>If the SSH key files exist, Payara Server does not generate the files, even if you select the Enabled option.</p>
 
 <hr>
 <p><b>Note:</b></p>
@@ -70,11 +71,11 @@
 
 <hr>
 <p><b>Note:</b></p>
-<p>GlassFish Server also supports password authentication through the <code>AS_ADMIN_SSHPASSWORD</code> entry in the password file. The password file is specified in the <code>--paswordfile</code> option of the <a href="/resource/reference/en/help/reference/asadmin"><code>asadmin</code>(1)</a> utility.</p>
+<p>Payara Server also supports password authentication through the <code>AS_ADMIN_SSHPASSWORD</code> entry in the password file. The password file is specified in the <code>--paswordfile</code> option of the <a href="/resource/reference/en/help/reference/asadmin"><code>asadmin</code>(1)</a> utility.</p>
 
 <hr>
 
-<p>If you change the type of the node to SSH and leave this field empty, the Key File option is set to a key file in the user's <code>.ssh</code> directory. If multiple key files are found, GlassFish Server uses the following order of preference:</p>
+<p>If you change the type of the node to SSH and leave this field empty, the Key File option is set to a key file in the user's <code>.ssh</code> directory. If multiple key files are found, Payara Server uses the following order of preference:</p>
 <pre>
 id_rsa
 id_dsa
@@ -124,3 +125,4 @@ identity
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

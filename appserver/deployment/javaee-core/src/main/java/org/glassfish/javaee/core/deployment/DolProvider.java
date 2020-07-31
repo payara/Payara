@@ -197,7 +197,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 ModuleDescriptor md = application.getStandaloneBundleDescriptor().getModuleDescriptor();
                 md.setModuleName(name);
 
-                if (appState.filter(ApplicationState::isActive).isPresent()) {
+                if (appState.map(ApplicationState::isActive).orElse(false)) {
                     application.getStandaloneBundleDescriptor().setClassLoader(cl);
                     dc.addModuleMetaData(application.getStandaloneBundleDescriptor());
                     for (RootDeploymentDescriptor extension : application.getStandaloneBundleDescriptor().getExtensionsDescriptors()) {
