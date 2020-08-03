@@ -135,10 +135,12 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
      */
     private static final class MetricRegistryState implements MetricRegistrationListener {
 
+        final String registryName;
         final MetricRegistryImpl registry = new MetricRegistryImpl();
         final Queue<MetricID> registeredNotAnnotated = new ConcurrentLinkedQueue<>();
 
-        public MetricRegistryState() {
+        public MetricRegistryState(String registryName) {
+            this.registryName = registryName;
             registry.addListener(this);
         }
 
@@ -221,7 +223,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
                 property = "Value";
             }
             // Note that by convention an annotation with value 0 done before the series collected any value is considered permanent
-            metricCollector.annotate(toName(metricID, suffix), 0, false, metadataToAnnotations(metadata, property));
+            metricCollector.annotate(toName(metricID, suffix), 0, false, metadataToAnnotations(state.registryName, metadata, property));
             metricID = state.registeredNotAnnotated.poll();
         }
     }
@@ -241,16 +243,17 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 
-    private static String[] metadataToAnnotations(Metadata metadata, String property) {
+    private static String[] metadataToAnnotations(String registryName, Metadata metadata, String property) {
         String unit = metadata.getUnit().orElse(MetricUnits.NONE);
         return new String[] {
+                "App", registryName, //
                 "Name", metadata.getName(), //
                 "Type", metadata.getType(), //
                 "Unit", unit, //
                 "DisplayName", metadata.getDisplayName(), //
-                "Description", metadata.getDescription().orElse(""),
-                "Property", property,
-                "BaseUnit", MetricUnitsUtils.baseUnit(unit),
+                "Description", metadata.getDescription().orElse(""), //
+                "Property", property, //
+                "BaseUnit", MetricUnitsUtils.baseUnit(unit), //
                 "ScaleToBaseUnit", MetricUnitsUtils.scaleToBaseUnit(1L, unit).toString()
         };
     }
@@ -451,7 +454,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
     }
 
     private MetricRegistryImpl getOrAddRegistryInternal(String registryName) {
-        return registriesByName.computeIfAbsent(registryName.toLowerCase(), key -> new MetricRegistryState()).registry;
+        return registriesByName.computeIfAbsent(registryName.toLowerCase(), key -> new MetricRegistryState(registryName)).registry;
     }
 
     public MetricRegistry getApplicationRegistry() {
