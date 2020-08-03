@@ -41,16 +41,21 @@
 
 package org.glassfish.deployment.admin;
 
+import com.sun.common.util.logging.LoggingOutputStream;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.deployment.admin.PayaraTransformer;
+import static fish.payara.deployment.admin.PayaraTransformer.TRANSFORM_NAMESPACE;
+import org.eclipse.transformer.payara.JakartaNamespaceTransformer;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
@@ -58,6 +63,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import static org.eclipse.transformer.Transformer.SUCCESS_RC;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -89,6 +95,9 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.classmodel.reflect.Parser;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.*;
 import org.glassfish.internal.deployment.analysis.DeploymentSpan;
@@ -230,8 +239,22 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             return false;
         }
 
-        try(DeploymentSpan span = structuredTracing.startSpan(DeploymentTracing.AppStage.OPENING_ARCHIVE)) {
+        try(SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.OPENING_ARCHIVE)) {
+            String transformNS = System.getProperty(TRANSFORM_NAMESPACE);
             archive = archiveFactory.openArchive(path, this);
+            createInitialDeploymentContext(span);
+
+            Types types = deployment.getDeployableTypes(initialContext);
+            if (Boolean.valueOf(transformNS) || (transformNS == null && PayaraTransformer.isJakartaEEApplication(types))) {
+                span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
+                File output = PayaraTransformer.transformApplication(path, context);
+                if (output == null) {
+                    return false;
+                }
+                // Reset archive reading state
+                archive = archiveFactory.openArchive(output, this);
+                createInitialDeploymentContext(span);
+            }
         } catch (IOException e) {
             final String msg = localStrings.getLocalString("deploy.errOpeningArtifact",
                     "deploy.errOpeningArtifact", path.getAbsolutePath());
@@ -268,10 +291,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 return false;
             }
 
-            span.start(DeploymentTracing.AppStage.CREATE_DEPLOYMENT_CONTEXT, "Initial");
-
-            // create an initial  context
-            initialContext = new DeploymentContextImpl(report, archive, this, env);
             initialContext.setArchiveHandler(archiveHandler);
 
             if (hotDeploy && !metadataChanged) {
@@ -280,10 +299,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             } else {
                 hotDeployService.removeApplicationState(path);
             }
-
-            structuredTracing.register(initialContext);
-
-            span.finish();
 
             span.start(DeploymentTracing.AppStage.PROCESS_EVENTS, Deployment.INITIAL_CONTEXT_CREATED.type());
             events.send(new Event<DeploymentContext>(Deployment.INITIAL_CONTEXT_CREATED, initialContext), false);
@@ -366,6 +381,27 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 }
             }
             throw new RuntimeException(ex);
+        }
+    }
+
+    private void createInitialDeploymentContext(SpanSequence span) {
+        span.start(DeploymentTracing.AppStage.CREATE_DEPLOYMENT_CONTEXT, "Initial");
+        // create an initial context
+        initialContext = new DeploymentContextImpl(report, archive, this, env);
+        structuredTracing.register(initialContext);
+        if (properties != null || property != null) {
+            // if one of them is not null, let's merge them
+            // to properties so we don't need to always
+            // check for both
+            if (properties == null) {
+                properties = new Properties();
+            }
+            if (property != null) {
+                properties.putAll(property);
+            }
+        }
+        if (properties != null) {
+            initialContext.getAppProps().putAll(properties);
         }
     }
 
@@ -497,15 +533,16 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                             source(initialContext.getSource())
                             .archiveHandler(archiveHandler)
                             .build(initialContext);
-
+            deploymentContext.addTransientAppMetaData(Types.class.getName(), initialContext.getTransientAppMetaData(Types.class.getName(), Types.class));
+            deploymentContext.addTransientAppMetaData(Parser.class.getName(), initialContext.getTransientAppMetaData(Parser.class.getName(), Parser.class));
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {
                 deploymentContext.getAppProps().putAll(undeployProps);
             }
 
             if (properties != null || property != null) {
-                // if one of them is not null, let's merge them 
-                // to properties so we don't need to always 
+                // if one of them is not null, let's merge them
+                // to properties so we don't need to always
                 // check for both
                 if (properties == null) {
                     properties = new Properties();

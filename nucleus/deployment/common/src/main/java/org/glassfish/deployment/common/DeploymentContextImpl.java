@@ -359,18 +359,21 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         return copy;
     }
 
+    @Override
     public Map<String, Object> getTransientAppMetadata() {
         HashMap<String, Object> copy = new HashMap<String, Object>();
         copy.putAll(transientAppMetaData);
         return copy;
     }
 
+    @Override
     public void addTransientAppMetaData(String metaDataKey, Object metaData) {
         if (metaData!=null) {
             transientAppMetaData.put(metaDataKey, metaData);
         }
     }
 
+    @Override
     public <T> T getTransientAppMetaData(String key, Class<T> metadataType) {
         Object metaData = transientAppMetaData.get(key);
         if (metaData != null) {
