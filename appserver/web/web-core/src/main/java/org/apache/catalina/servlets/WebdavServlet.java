@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.servlets;
 
@@ -159,8 +159,6 @@ public class WebdavServlet
 
     // -------------------------------------------------------------- Constants
 
-
-    private static final String METHOD_HEAD = "HEAD";
     private static final String METHOD_PROPFIND = "PROPFIND";
     private static final String METHOD_PROPPATCH = "PROPPATCH";
     private static final String METHOD_MKCOL = "MKCOL";
@@ -171,7 +169,7 @@ public class WebdavServlet
 
 
     /**
-     * Default depth is infite.
+     * Default depth is infinite.
      */
     private static final int INFINITY = 3; // To limit tree browsing a bit
 
@@ -248,7 +246,7 @@ public class WebdavServlet
         try {
             md5Helper = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("No MD5");
+            throw new IllegalStateException("No MD5 digest found.");
         }
     }
 
@@ -1149,9 +1147,7 @@ public class WebdavServlet
                 // Checking if a child resource of this collection is
                 // already locked
                 List<String> lockPaths = new ArrayList<>();
-                Iterator<LockInfo> locksList = collectionLocks.iterator();
-                while (locksList.hasNext()) {
-                    LockInfo currentLock = locksList.next();
+                for (LockInfo currentLock : collectionLocks) {
                     if (currentLock.hasExpired()) {
                         resourceLocks.remove(currentLock.path);
                         continue;
@@ -1231,9 +1227,7 @@ public class WebdavServlet
                 boolean addLock = true;
 
                 // Checking if there is already a shared lock on this path
-                locksList = collectionLocks.iterator();
-                while (locksList.hasNext()) {
-                    LockInfo currentLock = locksList.next();
+                for (LockInfo currentLock : collectionLocks) {
                     if (currentLock.path.equals(lock.path)) {
 
                         if (currentLock.isExclusive()) {
@@ -1498,34 +1492,25 @@ public class WebdavServlet
 
         // Checking resource locks
 
-        LockInfo lock = resourceLocks.get(path);
-        if (lock != null && lock.hasExpired()) {
-            resourceLocks.remove(path);
-        } else if (lock != null) {
-            // At least one of the tokens of the locks must have been given
-            boolean tokenMatch = false;
-            for (String token : lock.tokens) {
-                if (ifHeader.contains(token))
-                    tokenMatch = true;
+        LockInfo resourceLock = resourceLocks.get(path);
+        if (resourceLock != null) {
+            if (resourceLock.hasExpired()) {
+                resourceLocks.remove(path);
+            } else {
+                // At least one of the tokens of the locks must have been given
+                boolean tokenMatch = resourceLock.tokens.stream().anyMatch(ifHeader::contains);
+                if (!tokenMatch)
+                    return true;
             }
-            if (!tokenMatch)
-                return true;
         }
 
         // Checking inheritable collection locks
 
-        Iterator<LockInfo> collectionLocksList = collectionLocks.iterator();
-        while (collectionLocksList.hasNext()) {
-            lock = collectionLocksList.next();
-            if (lock.hasExpired()) {
-                collectionLocksList.remove();
-            } else if (path.startsWith(lock.path)) {
-
-                boolean tokenMatch = false;
-                for (String token : lock.tokens) {
-                    if (ifHeader.contains(token))
-                        tokenMatch = true;
-                }
+        for (LockInfo collectionLock : collectionLocks) {
+            if (collectionLock.hasExpired()) {
+                collectionLocks.remove(collectionLock);
+            } else if (path.startsWith(collectionLock.path)) {
+                boolean tokenMatch = collectionLock.tokens.stream().anyMatch(ifHeader::contains);
                 if (!tokenMatch)
                     return true;
             }
