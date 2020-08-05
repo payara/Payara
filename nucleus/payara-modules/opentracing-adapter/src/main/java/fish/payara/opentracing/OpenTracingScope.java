@@ -60,20 +60,13 @@ import io.opentracing.Span;
 public class OpenTracingScope implements io.opentracing.Scope {
 
     private Span currentSpan;
-    private Map<Span, Boolean> allSpans = new LinkedHashMap<>();
+    private boolean finishOnClose;
     
     @Override
     public void close() {
-        // Close spans in reverse order so root span isn't finished before children
-        List<Span> keys = new ArrayList<>(allSpans.keySet());
-        Collections.reverse(keys);
-        for (Span span : keys) {
-            if (allSpans.get(span)){
-                span.finish();
-            }
+        if (finishOnClose) {
+            currentSpan.finish();
         }
-
-        allSpans.clear();
         currentSpan = null;
     }
 
@@ -84,15 +77,8 @@ public class OpenTracingScope implements io.opentracing.Scope {
     
     // Package private - used only by ScopeManager
     void setSpan(Span span, Boolean finishOnClose){
-        allSpans.put(span, finishOnClose);
         currentSpan = span;
-    }
-    
-    void removeSpan(Span span){
-        allSpans.remove(span);
-        if (span == currentSpan) {
-            currentSpan = null;
-        }
+        this.finishOnClose = finishOnClose;
     }
     
 }

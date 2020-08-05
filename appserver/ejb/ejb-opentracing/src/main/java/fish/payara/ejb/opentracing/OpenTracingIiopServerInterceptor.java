@@ -134,7 +134,8 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
             return;
         }
 
-        // Make sure active scope is closed
+        // Make sure active scope is closed - this is an entry point to the server so the currently active span
+        // **should** be the one started in receive_request
         try (Scope activeScope = tracer.scopeManager().active()) {
         }
     }
