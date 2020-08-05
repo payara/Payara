@@ -40,8 +40,9 @@
 package fish.payara.samples.ejb.invoker.security;
 
 import fish.payara.samples.CliCommands;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -55,7 +56,8 @@ import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
  * BASIC Auth.
  *
  */
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public class RemoteBeanBasicAuthTest extends AbstractRemoteBeanSecurityTest {
 
     private static final String USERNAME = "myuser";

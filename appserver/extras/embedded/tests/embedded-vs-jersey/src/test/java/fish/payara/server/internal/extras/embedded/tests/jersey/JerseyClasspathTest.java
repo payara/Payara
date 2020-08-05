@@ -38,7 +38,7 @@
  *    holder.
  */
 
-package fish.payara.samples.classpath.embeddedvsjersey;
+package fish.payara.server.internal.extras.embedded.tests.jersey;
 
 import java.io.IOException;
 
@@ -64,7 +64,7 @@ public class JerseyClasspathTest {
 
         try {
             server.start();
-    
+
             Client client = ClientBuilder.newClient();
             client.target("http://127.0.0.1:" + listener.getPort()).request().get();
         } finally {

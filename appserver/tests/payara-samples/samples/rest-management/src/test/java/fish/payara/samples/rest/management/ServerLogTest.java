@@ -39,10 +39,17 @@
  */
 package fish.payara.samples.rest.management;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+
+import fish.payara.samples.ServerOperations;
 
 import java.util.Scanner;
 
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
+
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -50,13 +57,23 @@ import org.junit.Test;
  */
 public class ServerLogTest extends RestManagementTest {
 
+    @Before
+    public void resetLogging() throws Exception {
+        try (final Response response = target.path("rotate-log").request().post(Entity.text(""))) {
+            assertEquals("rotate-log: response.status", Response.Status.OK.getStatusCode(),
+                response.getStatusInfo().getStatusCode());
+        }
+        Thread.sleep(100L);
+        ServerOperations.restartContainer();
+    }
+
     /**
      * A test to make sure that while the server is starting there are no WARNING or ERROR messages in the server log.
      */
     @Test
     public void when_domain_started_expect_no_logged_warnings() {
-        String log = viewLog();
 
+        String log = viewLog();
         try (Scanner scanner = new Scanner(log)) {
             boolean startupLine = false;
             boolean warningFound = false;
@@ -68,6 +85,7 @@ public class ServerLogTest extends RestManagementTest {
                 // Only count lines after the JVM invocation
                 if (line.contains("JVM invocation")) {
                     startupLine = true;
+                    continue;
                 }
                 if (startupLine) {
                     System.err.println(line);
