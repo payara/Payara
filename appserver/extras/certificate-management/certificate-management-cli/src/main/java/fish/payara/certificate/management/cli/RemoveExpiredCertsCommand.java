@@ -48,6 +48,7 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -98,13 +99,13 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
             KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
             store.load(new FileInputStream(keystore), keystorePassword);
             filterExpiredKeys(store);
-            save(store);
+            save(store, keystore, keystorePassword);
 
             // Remove from trust store
             store = KeyStore.getInstance(KeyStore.getDefaultType());
             store.load(new FileInputStream(truststore), truststorePassword);
             filterExpiredKeys(store);
-            save(store);
+            save(store, truststore, truststorePassword);
             
             if (reload) {
                 restartHttpListeners();
@@ -155,13 +156,13 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
      * @throws NoSuchAlgorithmException if the appropriate data integrity algorithm could not be found.
      * @throws CertificateException if any of the certificates included in the keystore data could not be stored.
      */
-    private void save(KeyStore store) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        logger.log(Level.INFO, "Writing keystore to file: {0}.", keystore.getAbsolutePath());
-        try (FileOutputStream out = new FileOutputStream(keystore)) {
-            store.store(out, keystorePassword);
+    private void save(KeyStore store, File outputTarget, char[] password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        logger.log(Level.INFO, "Writing keystore to file: {0}.", outputTarget.getAbsolutePath());
+        try (FileOutputStream out = new FileOutputStream(outputTarget)) {
+            store.store(out, password);
             out.flush();
         }
-        logger.log(Level.INFO, "Keystore written successfully.", keystore.getAbsolutePath());
+        logger.log(Level.INFO, "Keystore written successfully.", outputTarget.getAbsolutePath());
     }
 
 
@@ -203,13 +204,13 @@ public class RemoveExpiredCertsCommand extends AbstractCertManagementCommand {
                 KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
                 store.load(new FileInputStream(keystore), keystorePassword);
                 filterExpiredKeys(store);
-                save(store);
+                save(store, keystore, keystorePassword);
 
                 // Remove from trust store
                 store = KeyStore.getInstance(KeyStore.getDefaultType());
                 store.load(new FileInputStream(truststore), truststorePassword);
                 filterExpiredKeys(store);
-                save(store);
+                save(store, truststore, truststorePassword);
                 if (reload) {
                     restartHttpListeners();
                 }
