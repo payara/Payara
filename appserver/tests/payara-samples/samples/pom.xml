@@ -35,7 +35,6 @@
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
-        <module>remote-ejb-tracing</module>
     </modules>
 
     <dependencyManagement>
@@ -202,6 +201,7 @@
             -->
             <modules>
                 <module>ejb-http-remoting</module>
+                <module>remote-ejb-tracing</module>
             </modules>
             <dependencies>
                 <dependency>

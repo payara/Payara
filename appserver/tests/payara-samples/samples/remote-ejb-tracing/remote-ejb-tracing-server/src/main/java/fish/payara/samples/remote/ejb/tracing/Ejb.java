@@ -54,6 +54,11 @@ public class Ejb implements EjbRemote {
     @Inject
     Tracer tracer;
 
+    /**
+     * This method should not be traced, but the baggage items should still be available.
+     *
+     * @return The current baggage items
+     */
     @Override
     public String nonAnnotatedMethod() {
         randomSleep();
@@ -65,6 +70,11 @@ public class Ejb implements EjbRemote {
         }
     }
 
+    /**
+     * This method should be traced with a custom name
+     *
+     * @return The current baggage items
+     */
     @Override
     @Traced(operationName = "customName")
     public String annotatedMethod() {
@@ -77,12 +87,31 @@ public class Ejb implements EjbRemote {
         }
     }
 
+    /**
+     * This method itself should not be traced.
+     *
+     * @return The current baggage items
+     */
     @Override
     @Traced(false)
     public String shouldNotBeTraced() {
         randomSleep();
         Span activeSpan = tracer.activeSpan();
         if (activeSpan != null) {
+            return getBaggageItems(activeSpan);
+        } else {
+            return "Nothing found!";
+        }
+    }
+
+    @Override
+    public String editBaggageItems() {
+        randomSleep();
+        Span activeSpan = tracer.activeSpan();
+        if (activeSpan != null) {
+            activeSpan.setBaggageItem("Wibbles", "Wabbles");
+            activeSpan.setBaggageItem("Nibbles", "Nabbles");
+            activeSpan.setBaggageItem("Bibbles", "Babbles");
             return getBaggageItems(activeSpan);
         } else {
             return "Nothing found!";

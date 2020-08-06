@@ -43,6 +43,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
+import org.junit.Assert;
 import org.junit.Test;
 
 import javax.naming.Context;
@@ -50,10 +51,10 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.Properties;
 
-public class RemoteEjbClientTest {
+public class RemoteEjbClientIT {
 
     @Test
-    public void executeRemoteEjbMethodTest() {
+    public void executeRemoteEjbMethodIT() {
         Properties contextProperties = new Properties();
         contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
@@ -68,14 +69,36 @@ public class RemoteEjbClientTest {
             try (Scope scope = tracer.buildSpan("ExecuteEjb").startActive(true)) {
                 Span span = scope.span();
                 span.setBaggageItem("Wibbles", "Wobbles");
-                System.out.println(ejb.annotatedMethod());
+                String baggageItems = ejb.annotatedMethod();
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.equals("\nWibbles : Wobbles\n"));
+
                 span.setBaggageItem("Nibbles", "Nobbles");
-                System.out.println(ejb.nonAnnotatedMethod());
+                baggageItems = ejb.nonAnnotatedMethod();
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.contains("Wibbles : Wobbles"));
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.contains("Nibbles : Nobbles"));
+
                 span.setBaggageItem("Bibbles", "Bobbles");
-                System.out.println(ejb.shouldNotBeTraced());
+                baggageItems = ejb.shouldNotBeTraced();
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.contains("Wibbles : Wobbles"));
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.contains("Nibbles : Nobbles"));
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.contains("Bibbles : Bobbles"));
+
+                baggageItems = ejb.editBaggageItems();
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.contains("Wibbles : Wabbles"));
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.contains("Nibbles : Nabbles"));
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.contains("Bibbles : Babbles"));
             }
-        } catch (NamingException e) {
-            e.printStackTrace();
+        } catch (NamingException ne) {
+            Assert.fail("Failed performing lookup:\n" + ne.getMessage());
         }
     }
 

@@ -49,4 +49,6 @@ public interface EjbRemote {
     String annotatedMethod();
 
     String shouldNotBeTraced();
+
+    String editBaggageItems();
 }
