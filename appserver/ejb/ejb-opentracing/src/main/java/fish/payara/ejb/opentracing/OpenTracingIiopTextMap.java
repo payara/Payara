@@ -46,7 +46,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import static fish.payara.ejb.opentracing.OpenTracingIiopCommon.OPENTRACING_IIOP_SERIAL_VERSION_UID;
+/**
+ * TextMap implementation.
+ *
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
+import static fish.payara.ejb.opentracing.OpenTracingIiopInterceptorFactory.OPENTRACING_IIOP_SERIAL_VERSION_UID;
 
 public class OpenTracingIiopTextMap implements TextMap, Serializable {
 

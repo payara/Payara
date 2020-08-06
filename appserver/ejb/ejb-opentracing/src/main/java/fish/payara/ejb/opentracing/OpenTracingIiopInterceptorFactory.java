@@ -51,9 +51,18 @@ import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
 import javax.inject.Singleton;
 
+/**
+ * Factory for creating IIOP client and server interceptors that propagate OpenTracing SpanContext.
+ *
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 @Service(name = "OpenTracingIiopInterceptorFactory")
 @Singleton
 public class OpenTracingIiopInterceptorFactory implements IIOPInterceptorFactory {
+
+    public static final int OPENTRACING_IIOP_ID = 3226428;
+    public static final long OPENTRACING_IIOP_SERIAL_VERSION_UID = 20200731171822L;
+
 
     private ClientRequestInterceptor clientRequestInterceptor;
     private ServerRequestInterceptor serverRequestInterceptor;

@@ -55,10 +55,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 
-import static fish.payara.ejb.opentracing.OpenTracingIiopCommon.OPENTRACING_IIOP_ID;
+import static fish.payara.ejb.opentracing.OpenTracingIiopInterceptorFactory.OPENTRACING_IIOP_ID;
 import static fish.payara.opentracing.OpenTracingService.PAYARA_CORBA_RMI_TRACER_NAME;
 
-
+/**
+ * IIOP Server Interceptor for propagating OpenTracing SpanContext to Payara Server.
+ *
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 public class OpenTracingIiopServerInterceptor extends LocalObject implements ServerRequestInterceptor {
 
     private OpenTracingService openTracingService;

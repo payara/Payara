@@ -46,8 +46,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.util.HashMap;
 
-import static fish.payara.ejb.opentracing.OpenTracingIiopCommon.OPENTRACING_IIOP_SERIAL_VERSION_UID;
+import static fish.payara.ejb.opentracing.OpenTracingIiopInterceptorFactory.OPENTRACING_IIOP_SERIAL_VERSION_UID;
 
+/**
+ * Extension of ObjectInputStream for deserialising {@link OpenTracingIiopTextMap}
+ *
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 public class OpenTracingIiopObjectInputStream extends ObjectInputStream {
 
     public OpenTracingIiopObjectInputStream(InputStream inputStream) throws IOException {

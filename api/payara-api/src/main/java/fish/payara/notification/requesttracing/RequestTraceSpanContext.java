@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -60,27 +60,30 @@ public class RequestTraceSpanContext implements Serializable, io.opentracing.Spa
 
     private final UUID spanId;
     private UUID traceId;
-    private final Map<String, String> baggageItems = new HashMap<>();;
+    private final Map<String, String> baggageItems;
 
     protected RequestTraceSpanContext() {
         spanId = UUID.randomUUID();
         traceId = UUID.randomUUID();
+        baggageItems = new HashMap<>();
     }
 
     protected RequestTraceSpanContext(UUID traceId) {
         spanId = UUID.randomUUID();
         this.traceId = traceId;
+        baggageItems = new HashMap<>();
     }
 
     public RequestTraceSpanContext(UUID traceId, UUID parentId) {
         spanId = parentId;
         this.traceId = traceId;
+        baggageItems = new HashMap<>();
     }
 
     public RequestTraceSpanContext(UUID traceId, UUID parentId, Map<String, String> baggageItems) {
         spanId = parentId;
         this.traceId = traceId;
-        this.baggageItems.putAll(baggageItems);
+        this.baggageItems = new HashMap<>(baggageItems);
     }
 
     public UUID getSpanId() {

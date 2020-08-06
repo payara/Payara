@@ -53,9 +53,17 @@ import org.omg.PortableInterceptor.ForwardRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static fish.payara.ejb.opentracing.OpenTracingIiopCommon.OPENTRACING_IIOP_ID;
+import static fish.payara.ejb.opentracing.OpenTracingIiopInterceptorFactory.OPENTRACING_IIOP_ID;
+import static fish.payara.opentracing.OpenTracingService.PAYARA_CORBA_RMI_TRACER_NAME;
 
+/**
+ * IIOP Client Interceptor for propagating OpenTracing SpanContext to Payara Server.
+ *
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 public class OpenTracingIiopClientInterceptor extends LocalObject implements ClientRequestInterceptor {
 
     private OpenTracingService openTracingService;
@@ -69,9 +77,10 @@ public class OpenTracingIiopClientInterceptor extends LocalObject implements Cli
         if (openTracingService == null) {
             return;
         }
+        // Register global tracer if it hasn't been already
         Tracer tracer = GlobalTracer.get();
         if (!GlobalTracer.isRegistered()) {
-            Tracer tracerImpl = openTracingService.getTracer("__PAYARA_RMI");
+            Tracer tracerImpl = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
             if (tracerImpl == null) {
                 return;
             } else {
@@ -82,6 +91,7 @@ public class OpenTracingIiopClientInterceptor extends LocalObject implements Cli
         // Check if there's an active span
         Span activeSpan = tracer.activeSpan();
         if (activeSpan == null) {
+            // Nothing to propagate, so simply return
             return;
         }
 
@@ -89,6 +99,7 @@ public class OpenTracingIiopClientInterceptor extends LocalObject implements Cli
         OpenTracingIiopTextMap textMap = new OpenTracingIiopTextMap();
         tracer.inject(activeSpan.context(), Format.Builtin.TEXT_MAP, textMap);
 
+        // Convert text map to bytes and attach to service context
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             ObjectOutputStream out = new ObjectOutputStream(bos);
             out.writeObject(textMap);
@@ -96,7 +107,8 @@ public class OpenTracingIiopClientInterceptor extends LocalObject implements Cli
             ServiceContext serviceContext = new ServiceContext(OPENTRACING_IIOP_ID, bos.toByteArray());
             clientRequestInfo.add_request_service_context(serviceContext, true);
         } catch (IOException ex) {
-            // Nom nom nom
+            Logger.getLogger(OpenTracingIiopClientInterceptor.class.getName()).log(Level.SEVERE,
+                    "Exception caught propagating span context");
         }
     }
 
