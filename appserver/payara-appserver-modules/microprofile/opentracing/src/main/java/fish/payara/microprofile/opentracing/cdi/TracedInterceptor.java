@@ -151,9 +151,6 @@ public class TracedInterceptor implements Serializable {
                 span.log(errorInfoMap);
                 throw ex;
             }
-        } finally {
-            // Reactivate original span
-            tracer.scopeManager().activate(parentSpan, true);
         }
     }
 

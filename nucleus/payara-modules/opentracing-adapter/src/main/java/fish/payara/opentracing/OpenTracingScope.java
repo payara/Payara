@@ -39,6 +39,21 @@
  *  and therefore, elected the GPL Version 2 license, then the option applies
  *  only if the new code is made subject to such option by the copyright
  *  holder.
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 2016-2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package fish.payara.opentracing;
 
@@ -54,24 +69,34 @@ public class OpenTracingScope implements io.opentracing.Scope {
 
     private Span currentSpan;
     private boolean finishOnClose;
-    
+
+    private OpenTracingScope previouslyActiveScope;
+    private ScopeManager scopeManager;
+
+    OpenTracingScope(ScopeManager scopeManager, Span spanToActivate, boolean finishOnClose) {
+        this.scopeManager = scopeManager;
+        this.currentSpan = spanToActivate;
+        this.finishOnClose = finishOnClose;
+        previouslyActiveScope = (OpenTracingScope) scopeManager.active();
+        scopeManager.activeScope.set(this);
+    }
+
     @Override
     public void close() {
+        if (scopeManager.activeScope.get() != this) {
+            // This shouldn't happen if users call methods in the expected order. Bail out.
+            return;
+        }
+
         if (finishOnClose) {
             currentSpan.finish();
         }
-        currentSpan = null;
+
+        scopeManager.activeScope.set(previouslyActiveScope);
     }
 
     @Override
     public Span span() {
         return currentSpan;
     }
-    
-    // Package private - used only by ScopeManager
-    void setSpan(Span span, Boolean finishOnClose){
-        currentSpan = span;
-        this.finishOnClose = finishOnClose;
-    }
-    
 }
