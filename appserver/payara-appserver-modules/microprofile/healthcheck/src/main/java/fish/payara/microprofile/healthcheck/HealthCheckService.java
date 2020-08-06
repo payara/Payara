@@ -205,7 +205,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
     private static void addWatch(MonitoringWatchCollector collector, String appName, String metric) {
         String series = appName == null ? "ns:health " + metric : "ns:health @:" + appName + " " + metric;
-        String watchName = "RAG "+ metric + " [" + (appName == null ? "*" : appName) + "]";
+        String watchName = "RAG "+ metric + (appName == null ? "" : " @" + appName);
         collector.watch(series, watchName, "updown")
             .red(-1L, 5, false, null, 1, false)
             .amber(-1L, 1, false, null, 1, false)
