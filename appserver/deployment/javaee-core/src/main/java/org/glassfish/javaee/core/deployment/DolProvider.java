@@ -158,6 +158,8 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                         dc.getAppProps());
         sourceArchive.addArchiveMetaData(DeploymentProperties.COMMAND_PARAMS,
                         params);
+        sourceArchive.addArchiveMetaData(DeploymentContext.ORIGINAL_SOURCE,
+                        dc.getOriginalSource().getURI());
 
         String name = params.name();
         String archiveType = dc.getArchiveHandler().getArchiveType();

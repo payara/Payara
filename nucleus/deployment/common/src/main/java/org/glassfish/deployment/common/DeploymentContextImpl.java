@@ -69,6 +69,8 @@ import org.glassfish.hk2.api.PreDestroy;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.Closeable;
+import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -371,6 +373,11 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         if (metaData!=null) {
             transientAppMetaData.put(metaDataKey, metaData);
         }
+    }
+
+    @Override
+    public void removeTransientAppMetaData(String metaDataKey) {
+        transientAppMetaData.remove(metaDataKey);
     }
 
     @Override
@@ -695,6 +702,14 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     public void postDeployClean(boolean isFinalClean) {
         if (transientAppMetaData != null) {
             if (isFinalClean) {
+                for (Object value : transientAppMetaData.values()) {
+                    if(value instanceof Closeable) {
+                        try {
+                            ((Closeable) value).close();
+                        } catch (IOException ex) {
+                        }
+                    }
+                }
                 transientAppMetaData.clear();
             } else {
                 final String [] classNamesToClean = {Types.class.getName(), Parser.class.getName()};

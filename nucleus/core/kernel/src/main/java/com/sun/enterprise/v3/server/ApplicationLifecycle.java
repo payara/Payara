@@ -694,9 +694,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 }
 
                 parser.awaitTermination();
-                scannerAdapter.close();
                 context.addTransientAppMetaData(Types.class.getName(), parsingContext.getTypes());
                 context.addTransientAppMetaData(Parser.class.getName(), parser);
+                context.addTransientAppMetaData(ReadableArchiveScannerAdapter.class.getName(), scannerAdapter);
                 return parsingContext.getTypes();
             } catch(InterruptedException e) {
                 throw new IOException(e);

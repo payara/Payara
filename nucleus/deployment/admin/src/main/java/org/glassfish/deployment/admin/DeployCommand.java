@@ -241,8 +241,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
         try(SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.OPENING_ARCHIVE)) {
             String transformNS = System.getProperty(TRANSFORM_NAMESPACE);
-            archive = archiveFactory.openArchive(path, this);
-            createInitialDeploymentContext(span);
+            if (!createInitialDeploymentContext(path, span)) {
+                return false;
+            }
 
             Types types = deployment.getDeployableTypes(initialContext);
             if (Boolean.valueOf(transformNS) || (transformNS == null && PayaraTransformer.isJakartaEEApplication(types))) {
@@ -252,8 +253,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     return false;
                 }
                 // Reset archive reading state
-                archive = archiveFactory.openArchive(output, this);
-                createInitialDeploymentContext(span);
+                if (!createInitialDeploymentContext(output, span)) {
+                    return false;
+                }
             }
         } catch (IOException e) {
             final String msg = localStrings.getLocalString("deploy.errOpeningArtifact",
@@ -281,17 +283,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         try(SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.VALIDATE_TARGET, "command")) {
 
             deployment.validateSpecifiedTarget(target);
-
-            span.start(DeploymentTracing.AppStage.OPENING_ARCHIVE, "ArchiveHandler");
-
-            archiveHandler = deployment.getArchiveHandler(archive, type);
-
-            if (archiveHandler == null) {
-                report.failure(logger, localStrings.getLocalString("deploy.unknownarchivetype", "Archive type of {0} was not recognized", path));
-                return false;
-            }
-
-            initialContext.setArchiveHandler(archiveHandler);
 
             if (hotDeploy && !metadataChanged) {
                 hotDeployService.getApplicationState(path)
@@ -384,11 +375,21 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         }
     }
 
-    private void createInitialDeploymentContext(SpanSequence span) {
+    private boolean createInitialDeploymentContext(File path, SpanSequence span) throws IOException {
+
+        archive = archiveFactory.openArchive(path, this);
+        span.start(DeploymentTracing.AppStage.OPENING_ARCHIVE, "ArchiveHandler");
+        archiveHandler = deployment.getArchiveHandler(archive, type);
+        if (archiveHandler == null) {
+            report.failure(logger, localStrings.getLocalString("deploy.unknownarchivetype", "Archive type of {0} was not recognized", path));
+            return false;
+        }
+
         span.start(DeploymentTracing.AppStage.CREATE_DEPLOYMENT_CONTEXT, "Initial");
         // create an initial context
         initialContext = new DeploymentContextImpl(report, archive, this, env);
         structuredTracing.register(initialContext);
+        initialContext.setArchiveHandler(archiveHandler);
         if (properties != null || property != null) {
             // if one of them is not null, let's merge them
             // to properties so we don't need to always
@@ -403,6 +404,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         if (properties != null) {
             initialContext.getAppProps().putAll(properties);
         }
+
+        return true;
     }
 
     @Override
@@ -533,8 +536,10 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                             source(initialContext.getSource())
                             .archiveHandler(archiveHandler)
                             .build(initialContext);
-            deploymentContext.addTransientAppMetaData(Types.class.getName(), initialContext.getTransientAppMetaData(Types.class.getName(), Types.class));
-            deploymentContext.addTransientAppMetaData(Parser.class.getName(), initialContext.getTransientAppMetaData(Parser.class.getName(), Parser.class));
+            if (archiveHandler.getArchiveType().equals("ear")) {
+                deploymentContext.removeTransientAppMetaData(Types.class.getName());
+                deploymentContext.removeTransientAppMetaData(Parser.class.getName());
+            }
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {
                 deploymentContext.getAppProps().putAll(undeployProps);
