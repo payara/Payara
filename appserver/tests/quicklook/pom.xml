@@ -54,6 +54,7 @@
     <groupId>org.glassfish.quicklook</groupId>
     <artifactId>quicklook</artifactId>
     <name>Glassfish Quicklook Bundle</name>
+    <packaging>pom</packaging>
     <description>This pom describes how to run QuickLook tests on the Glassfish Bundle</description>
 
     <properties>

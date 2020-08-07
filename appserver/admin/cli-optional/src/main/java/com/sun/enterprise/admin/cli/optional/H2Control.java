@@ -97,7 +97,7 @@ public final class H2Control extends DBControl {
                     case "start": {
                         Method createTcpServer = serverClass.getDeclaredMethod("createTcpServer", 
                                 new Class[]{String[].class});
-                        Object[] paramObj = new Object[]{new String[]{"-tcpPort", getDbPort(), "-tcpPassword", dbPassword, "-tcpAllowOthers"}};
+                        Object[] paramObj = new Object[]{new String[]{"-tcpPort", getDbPort(), "-tcpPassword", dbPassword, "-tcpAllowOthers", "-ifNotExists"}};
                         Object server = createTcpServer.invoke(serverClass, paramObj);
                         serverClass.getDeclaredMethod("start").invoke(server);
                         System.out.println(serverClass.getDeclaredMethod("getStatus").invoke(server));

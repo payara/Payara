@@ -45,9 +45,11 @@
 <suite name="QuickLookTests" verbose="2" >
   <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
   <parameter name="admin.user" value="admin"/>
-  <parameter name="admin.password" value=""/>
+  <parameter name="admin.password" value="APP"/>
   <parameter name="admin.console.url" value="http://localhost:4848/"/>
   <parameter name="resources.xml.relative.path" value="resources/resources.xml"/>
+  
+  <parameter name="glassfish.home" value="/home/jonathan/NetBeansProjects/Payara/appserver/distributions/payara/target/stage/payara5/glassfish"/>
   
   <test name="asadmin_tests">
     <classes>
