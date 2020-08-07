@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 /*
  * UtilHandlers.java
@@ -1164,28 +1164,12 @@ public class UtilHandlers {
         return builder.toString();
     }
 
-    @Handler(id = "py.getJavaVendor",
+    @Handler(id = "py.isTls13Supported",
             output = {
-                @HandlerOutput(name = "javaVendor", type = String.class)}
+                @HandlerOutput(name = "result", type = Boolean.class)}
     )
-    public static void getJavaVendor(HandlerContext handlerCtx) {
-        handlerCtx.setOutputValue("javaVendor", JDK.getVendor());
-    }
-
-    @Handler(id = "py.getJdkMajorVersion",
-            output = {
-                @HandlerOutput(name = "jdkMajorVersion", type = Integer.class)}
-    )
-    public static void getJdkMajorVersion(HandlerContext handlerCtx) {
-        handlerCtx.setOutputValue("jdkMajorVersion", JDK.getMajor());
-    }
-
-    @Handler(id = "py.getJdkUpdateVersion",
-            output = {
-                @HandlerOutput(name = "jdkUpdateVersion", type = Integer.class)}
-    )
-    public static void getJdkUpdateVersion(HandlerContext handlerCtx) {
-        handlerCtx.setOutputValue("jdkUpdateVersion", JDK.getUpdate());
+    public static void isTls13Supported(HandlerContext handlerCtx) {
+        handlerCtx.setOutputValue("result", JDK.isTls13Supported() || JDK.isOpenJSSEFlagRequired());
     }
 
     private static final String PATH_SEPARATOR = "${path.separator}";
