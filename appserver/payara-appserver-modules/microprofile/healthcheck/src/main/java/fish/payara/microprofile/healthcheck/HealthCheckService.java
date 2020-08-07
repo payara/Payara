@@ -40,10 +40,16 @@
 package fish.payara.microprofile.healthcheck;
 
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
 
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +58,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 
@@ -65,6 +72,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.HealthCheckResponse.State;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
@@ -81,7 +89,9 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.HEALTH;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
+import static java.util.Collections.emptyList;
 import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Service that handles the registration, execution, and response of MicroProfile HealthChecks.
@@ -90,7 +100,7 @@ import static java.util.logging.Level.WARNING;
  */
 @Service(name = "healthcheck-service")
 @RunLevel(StartupRunLevel.VAL)
-public class HealthCheckService implements EventListener, ConfigListener {
+public class HealthCheckService implements EventListener, ConfigListener, MonitoringDataSource, MonitoringWatchSource {
 
     @Inject
     private Events events;
@@ -115,6 +125,8 @@ public class HealthCheckService implements EventListener, ConfigListener {
     private final Map<String, ClassLoader> applicationClassLoaders = new ConcurrentHashMap<>();
     private final List<String> applicationsLoaded = new CopyOnWriteArrayList<>();
 
+    private final AtomicReference<Map<String, Set<String>>> checksCollected = new AtomicReference<>();
+
     private static final String BACKWARD_COMP_ENABLED_PROPERTY = "MP_HEALTH_BACKWARD_COMPATIBILITY_ENABLED";
 
     @PostConstruct
@@ -126,6 +138,133 @@ public class HealthCheckService implements EventListener, ConfigListener {
         this.backwardCompEnabled = microConfigResolver.getConfig()
                 .getOptionalValue(BACKWARD_COMP_ENABLED_PROPERTY, Boolean.class)
                 .orElse(false);
+    }
+
+    @Override
+    @MonitoringData(ns = "health", intervalSeconds = 12)
+    public void collect(MonitoringDataCollector collector) {
+        Map<String, Set<String>> collected = new HashMap<>();
+        Map<String, List<HealthCheckResponse>> healthResponsesByAppName = collectChecks(collector, health, collected);
+        Map<String, List<HealthCheckResponse>> readinessResponsesByAppName = collectChecks(collector, readiness, collected);
+        Map<String, List<HealthCheckResponse>> livenessResponsesByAppName = collectChecks(collector, liveness, collected);
+        checksCollected.set(collected);
+        if (!collected.isEmpty()) {
+            List<HealthCheckResponse> overall = new ArrayList<>();
+            overall.addAll(collectJointType(collector, "Health", healthResponsesByAppName));
+            overall.addAll(collectJointType(collector, "Readiness", readinessResponsesByAppName));
+            overall.addAll(collectJointType(collector, "Liveness", livenessResponsesByAppName));
+            collectUpDown(collector, computeJointState("Overall", overall));
+        }
+        for (String appName : collected.keySet()) {
+            List<HealthCheckResponse> overallByApp = new ArrayList<>();
+            overallByApp.addAll(healthResponsesByAppName.getOrDefault(appName, emptyList()));
+            overallByApp.addAll(readinessResponsesByAppName.getOrDefault(appName, emptyList()));
+            overallByApp.addAll(livenessResponsesByAppName.getOrDefault(appName, emptyList()));
+            collectUpDown(collector.group(appName), computeJointState("Overall", overallByApp));
+        }
+    }
+
+    private static void collectUpDown(MonitoringDataCollector collector, HealthCheckResponse response) {
+        collector.collect(response.getName(), response.getState() == State.UP ? 1 : 0);
+    }
+
+    private static List<HealthCheckResponse> collectJointType(MonitoringDataCollector collector, String type,
+            Map<String, List<HealthCheckResponse>> healthResponsesByAppName) {
+        List<HealthCheckResponse> allForType = new ArrayList<>();
+        for (Entry<String, List<HealthCheckResponse>> e : healthResponsesByAppName.entrySet()) {
+            HealthCheckResponse joint = computeJointState(type, e.getValue());
+            collectUpDown(collector.group(e.getKey()), joint);
+            allForType.addAll(e.getValue());
+        }
+        collectUpDown(collector, computeJointState(type, allForType));
+        return allForType;
+    }
+
+    @Override
+    public void collect(MonitoringWatchCollector collector) {
+        Map<String, Set<String>> collected = checksCollected.get();
+        if (collected != null) {
+            for (Entry<String, Set<String>> e : collected.entrySet()) {
+                String appName = e.getKey();
+                for (String metric : e.getValue()) {
+                    addWatch(collector, appName, metric);
+                }
+                addWatch(collector, appName, "Health");
+                addWatch(collector, appName, "Readiness");
+                addWatch(collector, appName, "Liveness");
+                addWatch(collector, appName, "Overall");
+            }
+            if (!collected.isEmpty()) {
+                addWatch(collector, null, "Health");
+                addWatch(collector, null, "Readiness");
+                addWatch(collector, null, "Liveness");
+                addWatch(collector, null, "Overall");
+            }
+        }
+    }
+
+    private static void addWatch(MonitoringWatchCollector collector, String appName, String metric) {
+        String series = appName == null ? "ns:health " + metric : "ns:health @:" + appName + " " + metric;
+        String watchName = "RAG "+ metric + (appName == null ? "" : " @" + appName);
+        collector.watch(series, watchName, "updown")
+            .red(-1L, 5, false, null, 1, false)
+            .amber(-1L, 1, false, null, 1, false)
+            .green(1L, 1, false, null, 1, false);
+    }
+
+    private Map<String, List<HealthCheckResponse>> collectChecks(MonitoringDataCollector collector,
+            Map<String, Set<HealthCheck>> checks,            Map<String, Set<String>> collected) {
+        Map<String, List<HealthCheckResponse>> stateByApp = new HashMap<>();
+        for (Entry<String, Set<HealthCheck>> entry : checks.entrySet()) {
+            String appName = entry.getKey();
+            MonitoringDataCollector appCollector = collector.group(appName);
+            for (HealthCheck check : entry.getValue()) {
+                HealthCheckResponse response = performHealthCheckInApplicationContext(appName, check);
+                String metric = response.getName();
+                Set<String> appCollected = collected.get(appName);
+                // prevent adding same check more then once, unfortunately we have to run it to find that out
+                if (appCollected == null || !appCollected.contains(metric)) {
+                    stateByApp.computeIfAbsent(appName, key -> new ArrayList<>()).add(response);
+                    collectUpDown(appCollector, response);
+                    if (response.getState() == State.DOWN && response.getData().isPresent()) {
+                        appCollector.annotate(metric, 0L, createAnnotation(response.getData().get()));
+                    }
+                    collected.computeIfAbsent(appName, key -> new HashSet<>()).add(metric);
+                }
+            }
+        }
+        return stateByApp;
+    }
+
+    private static HealthCheckResponse computeJointState(String name, Collection<HealthCheckResponse> responses) {
+        long ups = responses.stream().filter(response -> response.getState() == State.UP).count();
+        if (ups == responses.size()) {
+            return HealthCheckResponse.up(name);
+        }
+        String upNames = responses.stream()
+                .filter(r -> r.getState() == State.UP)
+                .map(r -> r.getName())
+                .collect(joining(","));
+        String downNames = responses.stream()
+                .filter(r -> r.getState() == State.DOWN)
+                .map(r -> r.getName())
+                .collect(joining(","));
+        return HealthCheckResponse.named(name).down()
+                .withData("up", upNames)
+                .withData("down", downNames)
+                .build();
+    }
+
+    private static String[] createAnnotation(Map<String, Object> data) {
+        List<String> attrs = new ArrayList<>();
+        for (Entry<String, Object> e : data.entrySet()) {
+            Object value = e.getValue();
+            if (value instanceof String || value instanceof Number || value instanceof Boolean) {
+                attrs.add(e.getKey());
+                attrs.add(value.toString());
+            }
+        }
+        return attrs.toArray(new String[0]);
     }
 
     @Override
@@ -231,6 +370,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
                         oldValue.addAll(newValue);
                         return oldValue;
                     });
+            //FIXME most likely this unintentionally changes the fields
             readiness.forEach(mergeHealthCheckMap);
             liveness.forEach(mergeHealthCheckMap);
         }
@@ -254,14 +394,7 @@ public class HealthCheckService implements EventListener, ConfigListener {
                 try {
                     healthCheckResponses.add(healthCheck.call());
                 } catch (IllegalStateException ise) {
-                    ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-                    try {
-                        Thread.currentThread().setContextClassLoader(
-                                applicationRegistry.get(healthChecksEntry.getKey()).getAppClassLoader());
-                        healthCheckResponses.add(healthCheck.call());
-                    } finally {
-                        Thread.currentThread().setContextClassLoader(originalClassLoader);
-                    }
+                    healthCheckResponses.add(performHealthCheckInApplicationContext(healthChecksEntry.getKey(), healthCheck));
                 } catch (Exception ex) {
                     LOG.log(WARNING, "Exception executing HealthCheck : " + healthCheck.getClass().getCanonicalName(), ex);
                     // If there's any issue, set the response to an error
@@ -284,6 +417,18 @@ public class HealthCheckService implements EventListener, ConfigListener {
         // If we haven't encountered an exception, construct the JSON response
         if (response.getStatus() != 500) {
             constructResponse(response, healthCheckResponses, type);
+        }
+    }
+
+    private HealthCheckResponse performHealthCheckInApplicationContext(
+            String appName, HealthCheck healthCheck) {
+        Thread currentThread = Thread.currentThread();
+        ClassLoader originalClassLoader = currentThread.getContextClassLoader();
+        try {
+            currentThread.setContextClassLoader(applicationRegistry.get(appName).getAppClassLoader());
+            return healthCheck.call();
+        } finally {
+            currentThread.setContextClassLoader(originalClassLoader);
         }
     }
 
