@@ -426,14 +426,36 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
      */
     public void traceSpan(RequestTraceSpan requestEvent) {
         if (isRequestTracingEnabled() && isTraceInProgress()) {
-            requestEventStore.storeEvent(requestEvent);
+            traceOrEnd(requestEvent);
         }
     }
 
     public void traceSpan(RequestTraceSpan requestEvent, long timestampMillis) {
         if (isRequestTracingEnabled() && isTraceInProgress()) {
+            traceOrEnd(requestEvent, timestampMillis);
+        }
+    }
+
+    private void traceOrEnd(RequestTraceSpan requestEvent) {
+        // If the span is the same one that started the trace, finish it
+        if (spanIsRootSpan(requestEvent)) {
+            endTrace();
+        } else {
+            requestEventStore.storeEvent(requestEvent);
+        }
+    }
+
+    private void traceOrEnd(RequestTraceSpan requestEvent, long timestampMillis) {
+        if (spanIsRootSpan(requestEvent)) {
+            endTrace(timestampMillis);
+        } else {
             requestEventStore.storeEvent(requestEvent, timestampMillis);
         }
+    }
+
+    private boolean spanIsRootSpan(RequestTraceSpan requestEvent) {
+        return !requestEventStore.getTrace().getTraceSpans().isEmpty()
+                && requestEventStore.getTrace().getTraceSpans().getFirst().equals(requestEvent);
     }
 
     private boolean shouldStartTrace() {
@@ -463,6 +485,18 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
             return;
         }
         requestEventStore.endTrace();
+        processTraceEnd();
+    }
+
+    public void endTrace(long timestampMillis) {
+        if (!isRequestTracingEnabled() || !isTraceInProgress()) {
+            return;
+        }
+        requestEventStore.endTrace(timestampMillis);
+        processTraceEnd();
+    }
+
+    private void processTraceEnd() {
         Long thresholdValueInNanos = getThresholdValueInNanos();
 
         long elapsedTime = requestEventStore.getElapsedTime();
@@ -481,15 +515,15 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
             }
             RequestTrace requestTrace = requestEventStore.getTrace();
             uncollectedTraces.add(requestTrace);
-            
+
             Runnable addTask = () -> {
                 RequestTrace removedTrace = requestTraceStore.addTrace(requestTrace);
-                
+
                 // Store the trace in the historic trace store if it's enabled, avoiding recalculation
                 if (executionOptions.isHistoricTraceStoreEnabled()) {
                     historicRequestTraceStore.addTrace(requestTrace, removedTrace);
                 }
-                
+
                 if (removedTrace != null) {
                     if (hazelcast.isEnabled()) {
                         eventBus.publish(EVENT_BUS_LISTENER_NAME, new ClusterMessage(
@@ -499,7 +533,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                     }
                 }
             };
-            
+
             payaraExecutorService.submit(addTask);
 
             for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {

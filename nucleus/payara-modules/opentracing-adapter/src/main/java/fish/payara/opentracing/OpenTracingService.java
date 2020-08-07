@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -59,6 +59,8 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -67,7 +69,7 @@ import org.jvnet.hk2.annotations.Service;
 
 /**
  * Service class for the OpenTracing integration.
- * 
+ *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 @Service(name = "opentracing-service")
@@ -76,10 +78,22 @@ public class OpenTracingService implements EventListener {
     // The tracer instances
     private static final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
     
+    // The name of the Corba RMI Tracer
+    public static final String PAYARA_CORBA_RMI_TRACER_NAME = "__PAYARA_CORBA_RMI";
+
+    private static final Logger logger = Logger.getLogger(OpenTracingService.class.getName());
+
     @PostConstruct
     void postConstruct() {
         // Listen for events
-        Globals.getDefaultBaseServiceLocator().getService(Events.class).register(this);
+        Events events = getFromServiceHandle(Globals.getDefaultBaseServiceLocator(), Events.class);
+
+        if (events != null) {
+            events.register(this);
+        } else {
+            logger.log(Level.WARNING, "OpenTracing service not registered to Payara Events: "
+                    + "The Tracer for an application won't be removed upon undeployment");
+        }
     }
 
     @Override
@@ -94,7 +108,7 @@ public class OpenTracingService implements EventListener {
 
     /**
      * Gets the tracer instance for the given application, or creates one if there isn't one.
-     * 
+     *
      * @param applicationName The name of the application to get or create the Tracer for
      * @return The Tracer instance for the given application
      */
@@ -112,14 +126,20 @@ public class OpenTracingService implements EventListener {
                 if (loadedTracer.hasNext()) {
                     tracer = loadedTracer.next();
                 }
-            } catch (NoClassDefFoundError ex){
-                Logger.getLogger("opentracing").log(Level.SEVERE, "Unable to find Tracer implementation", ex);
+            } catch (NoClassDefFoundError ex) {
+                logger.log(Level.SEVERE, "Unable to find Tracer implementation", ex);
             }
 
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
                 tracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
             } else if (tracer == null) {
-                tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
+                // Check if we have an ORB Tracer with an active span
+                Tracer orbTracer = tracers.get("__PAYARA_CORBA_RMI");
+                if (orbTracer != null && orbTracer.activeSpan() != null) {
+                    tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, orbTracer.scopeManager());
+                } else {
+                    tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
+                }
             }
 
             // Register the tracer instance to the application
@@ -131,11 +151,17 @@ public class OpenTracingService implements EventListener {
 
     /**
      * Pass-through method that checks if Request Tracing is enabled.
-     * 
+     *
      * @return True if the Request Tracing Service is enabled
      */
     public boolean isEnabled() {
-        return Globals.getDefaultBaseServiceLocator().getService(RequestTracingService.class).isRequestTracingEnabled();
+        RequestTracingService requestTracingService = getFromServiceHandle(Globals.getDefaultBaseServiceLocator(),
+                RequestTracingService.class);
+
+        if (requestTracingService != null) {
+            return requestTracingService.isRequestTracingEnabled();
+        }
+        return false;
     }
 
     /**
@@ -188,7 +214,7 @@ public class OpenTracingService implements EventListener {
     public String getApplicationName(InvocationManager invocationManager, InvocationContext invocationContext) {
         // Check the obvious one first
         String appName = invocationManager.getCurrentInvocation().getAppName();
-        
+
         if (appName == null) {
             // Set it to the module name if possible
             appName = invocationManager.getCurrentInvocation().getModuleName();
@@ -221,4 +247,14 @@ public class OpenTracingService implements EventListener {
                 + ">" + annotatedMethod.getReturnType().getSimpleName();
     }
 
+    private <T> T getFromServiceHandle(ServiceLocator serviceLocator, Class<T> serviceClass) {
+        if (serviceLocator != null) {
+            ServiceHandle<T> serviceHandle = serviceLocator.getServiceHandle(serviceClass);
+            if (serviceHandle != null && serviceHandle.isActive()) {
+                return serviceHandle.getService();
+            }
+        }
+
+        return null;
+    }
 }
