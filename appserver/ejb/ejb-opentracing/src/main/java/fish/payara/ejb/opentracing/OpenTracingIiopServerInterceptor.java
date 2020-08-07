@@ -66,24 +66,30 @@ import static fish.payara.opentracing.OpenTracingService.PAYARA_CORBA_RMI_TRACER
 public class OpenTracingIiopServerInterceptor extends LocalObject implements ServerRequestInterceptor {
 
     private OpenTracingService openTracingService;
+    private Tracer tracer;
 
     public OpenTracingIiopServerInterceptor(OpenTracingService openTracingService) {
         this.openTracingService = openTracingService;
+
+        if (openTracingService == null) {
+            return;
+        }
+        this.tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
+        if (tracer == null) {
+            return;
+        }
     }
 
     @Override
     public void receive_request_service_contexts(ServerRequestInfo ri) throws ForwardRequest {
-
+        // Noop
+        return;
     }
 
     @Override
     public void receive_request(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
-        if (openTracingService == null) {
-            return;
-        }
-
-        Tracer tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
-        if (tracer == null) {
+        // Double check we have a tracer
+        if (!tracerAvailable()) {
             return;
         }
 
@@ -92,9 +98,9 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
             return;
         }
 
-        ByteArrayInputStream bis = new ByteArrayInputStream(serviceContext.context_data);
         OpenTracingIiopTextMap openTracingIiopTextMap = null;
-        try (ObjectInput in = new OpenTracingIiopObjectInputStream(bis)) {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(serviceContext.context_data);
+                ObjectInput in = new OpenTracingIiopObjectInputStream(bis)) {
             openTracingIiopTextMap = (OpenTracingIiopTextMap) in.readObject();
         } catch (IOException | ClassNotFoundException exception) {
             throw new ForwardRequest(exception.getMessage(), serverRequestInfo);
@@ -130,11 +136,8 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
     }
 
     private void closeScope() {
-        if (openTracingService == null) {
-            return;
-        }
-        Tracer tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
-        if (tracer == null) {
+        // Double check we have a tracer
+        if (!tracerAvailable()) {
             return;
         }
 
@@ -144,9 +147,22 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
         }
     }
 
+    private boolean tracerAvailable() {
+        if (tracer == null) {
+            if (openTracingService == null) {
+                return false;
+            }
+            this.tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
+            if (tracer == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public String name() {
-        return "OpenTracingServerInterceptor";
+        return this.getClass().getSimpleName();
     }
 
     @Override

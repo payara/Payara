@@ -51,6 +51,11 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.Properties;
 
+/**
+ * Test that verifies the automatic propagation of baggage items across process boundaries when using Remote EJBs.
+ *
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
 public class RemoteEjbClientIT {
 
     @Test
@@ -76,26 +81,21 @@ public class RemoteEjbClientIT {
                 span.setBaggageItem("Nibbles", "Nobbles");
                 baggageItems = ejb.nonAnnotatedMethod();
                 Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.contains("Wibbles : Wobbles"));
-                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.contains("Nibbles : Nobbles"));
+                        baggageItems.contains("Wibbles : Wobbles")
+                                && baggageItems.contains("Nibbles : Nobbles"));
 
                 span.setBaggageItem("Bibbles", "Bobbles");
                 baggageItems = ejb.shouldNotBeTraced();
                 Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.contains("Wibbles : Wobbles"));
-                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.contains("Nibbles : Nobbles"));
-                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.contains("Bibbles : Bobbles"));
+                        baggageItems.contains("Wibbles : Wobbles")
+                                && baggageItems.contains("Nibbles : Nobbles")
+                                && baggageItems.contains("Bibbles : Bobbles"));
 
                 baggageItems = ejb.editBaggageItems();
                 Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.contains("Wibbles : Wabbles"));
-                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.contains("Nibbles : Nabbles"));
-                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.contains("Bibbles : Babbles"));
+                        baggageItems.contains("Wibbles : Wabbles")
+                        && baggageItems.contains("Nibbles : Nabbles")
+                        && baggageItems.contains("Bibbles : Babbles"));
             }
         } catch (NamingException ne) {
             Assert.fail("Failed performing lookup:\n" + ne.getMessage());

@@ -114,6 +114,11 @@
             <artifactId>opentracing-cdi</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.ejb</groupId>
+            <artifactId>ejb-opentracing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

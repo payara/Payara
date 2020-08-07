@@ -54,9 +54,9 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>remote-ejb-tracing-client</module>
-        <module>remote-ejb-tracing-server</module>
         <module>remote-ejb-tracing-common</module>
+        <module>remote-ejb-tracing-server</module>
+        <module>remote-ejb-tracing-client</module>
     </modules>
 
     <dependencyManagement>

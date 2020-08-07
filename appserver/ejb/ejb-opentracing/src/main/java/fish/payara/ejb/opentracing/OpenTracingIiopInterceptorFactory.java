@@ -67,13 +67,13 @@ public class OpenTracingIiopInterceptorFactory implements IIOPInterceptorFactory
     private ClientRequestInterceptor clientRequestInterceptor;
     private ServerRequestInterceptor serverRequestInterceptor;
 
+    private OpenTracingService openTracingService;
+    private ServiceLocator serviceLocator;
+
     @Override
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
-        ServiceLocator staticBaseServiceLocator = Globals.getStaticBaseServiceLocator();
         if (clientRequestInterceptor == null) {
-            OpenTracingService openTracingService = staticBaseServiceLocator.getService(OpenTracingService.class);
-
-            if (openTracingService != null) {
+            if (attemptCreation()) {
                 clientRequestInterceptor = new OpenTracingIiopClientInterceptor(openTracingService);
             }
         }
@@ -83,11 +83,8 @@ public class OpenTracingIiopInterceptorFactory implements IIOPInterceptorFactory
 
     @Override
     public ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
-        ServiceLocator staticBaseServiceLocator = Globals.getStaticBaseServiceLocator();
         if (serverRequestInterceptor == null) {
-            OpenTracingService openTracingService = staticBaseServiceLocator.getService(OpenTracingService.class);
-
-            if (openTracingService != null) {
+            if (attemptCreation()) {
                 serverRequestInterceptor = new OpenTracingIiopServerInterceptor(openTracingService);
             }
         }
@@ -95,5 +92,20 @@ public class OpenTracingIiopInterceptorFactory implements IIOPInterceptorFactory
         return serverRequestInterceptor;
     }
 
+    private boolean attemptCreation() {
+        if (serviceLocator == null) {
+            serviceLocator = Globals.getStaticBaseServiceLocator();
+            if (serviceLocator == null) {
+                return false;
+            }
+        }
+
+        openTracingService = serviceLocator.getService(OpenTracingService.class);
+        if (openTracingService == null) {
+            return false;
+        }
+
+        return true;
+    }
 
 }

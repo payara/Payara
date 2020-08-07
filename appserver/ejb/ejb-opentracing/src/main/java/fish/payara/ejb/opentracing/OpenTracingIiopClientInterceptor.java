@@ -67,24 +67,24 @@ import static fish.payara.opentracing.OpenTracingService.PAYARA_CORBA_RMI_TRACER
 public class OpenTracingIiopClientInterceptor extends LocalObject implements ClientRequestInterceptor {
 
     private OpenTracingService openTracingService;
+    private Tracer tracer;
 
     public OpenTracingIiopClientInterceptor(OpenTracingService openTracingService) {
         this.openTracingService = openTracingService;
+        // Register global tracer if it hasn't been already
+        this.tracer = GlobalTracer.get();
+        if (!GlobalTracer.isRegistered()) {
+            registerTracer();
+        }
     }
 
     @Override
     public void send_request(ClientRequestInfo clientRequestInfo) throws ForwardRequest {
-        if (openTracingService == null) {
-            return;
-        }
-        // Register global tracer if it hasn't been already
-        Tracer tracer = GlobalTracer.get();
+        // Double check we have a tracer and try and get one again if we don't
         if (!GlobalTracer.isRegistered()) {
-            Tracer tracerImpl = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
-            if (tracerImpl == null) {
+            registerTracer();
+            if (!GlobalTracer.isRegistered()) {
                 return;
-            } else {
-                GlobalTracer.register(tracerImpl);
             }
         }
 
@@ -100,8 +100,8 @@ public class OpenTracingIiopClientInterceptor extends LocalObject implements Cli
         tracer.inject(activeSpan.context(), Format.Builtin.TEXT_MAP, textMap);
 
         // Convert text map to bytes and attach to service context
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            ObjectOutputStream out = new ObjectOutputStream(bos);
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(bos)) {
             out.writeObject(textMap);
             out.flush();
             ServiceContext serviceContext = new ServiceContext(OPENTRACING_IIOP_ID, bos.toByteArray());
@@ -109,6 +109,18 @@ public class OpenTracingIiopClientInterceptor extends LocalObject implements Cli
         } catch (IOException ex) {
             Logger.getLogger(OpenTracingIiopClientInterceptor.class.getName()).log(Level.SEVERE,
                     "Exception caught propagating span context");
+        }
+    }
+
+    private void registerTracer() {
+        if (openTracingService == null) {
+            return;
+        }
+        Tracer tracerImpl = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
+        if (tracerImpl == null) {
+            return;
+        } else {
+            GlobalTracer.register(tracerImpl);
         }
     }
 

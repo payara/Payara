@@ -81,6 +81,8 @@ public class OpenTracingService implements EventListener {
     // The name of the Corba RMI Tracer
     public static final String PAYARA_CORBA_RMI_TRACER_NAME = "__PAYARA_CORBA_RMI";
 
+    private static final Logger logger = Logger.getLogger(OpenTracingService.class.getName());
+
     @PostConstruct
     void postConstruct() {
         // Listen for events
@@ -88,6 +90,9 @@ public class OpenTracingService implements EventListener {
 
         if (events != null) {
             events.register(this);
+        } else {
+            logger.log(Level.WARNING, "OpenTracing service not registered to Payara Events: "
+                    + "The Tracer for an application won't be removed upon undeployment");
         }
     }
 
@@ -122,7 +127,7 @@ public class OpenTracingService implements EventListener {
                     tracer = loadedTracer.next();
                 }
             } catch (NoClassDefFoundError ex) {
-                Logger.getLogger("opentracing").log(Level.SEVERE, "Unable to find Tracer implementation", ex);
+                logger.log(Level.SEVERE, "Unable to find Tracer implementation", ex);
             }
 
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
