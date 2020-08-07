@@ -100,9 +100,11 @@ public class OpenTracingIiopInterceptorFactory implements IIOPInterceptorFactory
             }
         }
 
-        openTracingService = serviceLocator.getService(OpenTracingService.class);
         if (openTracingService == null) {
-            return false;
+            openTracingService = serviceLocator.getService(OpenTracingService.class);
+            if (openTracingService == null) {
+                return false;
+            }
         }
 
         return true;
