@@ -2204,6 +2204,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (alternateHZConfigFileStr != null && !alternateHZConfigFileStr.isEmpty()) {
             alternateHZConfigFile = new File(alternateHZConfigFileStr);
         }
+        
+        String userLogPropertiesFileStr = getProperty("payaramicro.logPropertiesFile");
+        if (userLogPropertiesFileStr  != null && !userLogPropertiesFileStr.trim().isEmpty()) {
+             setLogPropertiesFile(new File(userLogPropertiesFileStr));
+        }
 
         autoBindHttp = getBooleanProperty("payaramicro.autoBindHttp");
         autoBindRange = getIntegerProperty("payaramicro.autoBindRange", 5);
@@ -2213,7 +2218,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         logToFile = getBooleanProperty("payaramicro.logToFile");
         userLogFile = getProperty("payaramicro.userLogFile");
         enableAccessLog = getBooleanProperty("payaramicro.enableAccessLog");
-        enableAccessLogFormat = getBooleanProperty("payaramicro.logPropertiesFile");
+        enableAccessLogFormat = getBooleanProperty("payaramicro.enableAccessLogFormat");
         enableDynamicLogging = getBooleanProperty("payaramicro.enableDynamicLogging");
         enableHealthCheck = getBooleanProperty("payaramicro.enableHealthCheck");
         httpPort = getIntegerProperty("payaramicro.port", Integer.MIN_VALUE);
