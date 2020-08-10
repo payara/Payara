@@ -62,7 +62,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import org.glassfish.api.deployment.DeploymentContext;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
@@ -122,13 +121,9 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
 
     public void process(ReadableArchive archiveFile,
             T bundleDesc, ClassLoader classLoader, Parser parser) throws IOException {
-        File source = new File(archiveFile.getURI());
-        URI orignalSourceArchiveUri = archiveFile.getArchiveMetaData(DeploymentContext.ORIGINAL_SOURCE, URI.class);
-        if (orignalSourceArchiveUri != null) {
-            scannedURI.add(orignalSourceArchiveUri);
-        }
+        File file = new File(archiveFile.getURI());
         setParser(parser);
-        process(source, bundleDesc, classLoader);
+        process(file, bundleDesc, classLoader);
         completeProcess(bundleDesc, archiveFile);
         calculateResults(bundleDesc);
     }

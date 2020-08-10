@@ -702,14 +702,6 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     public void postDeployClean(boolean isFinalClean) {
         if (transientAppMetaData != null) {
             if (isFinalClean) {
-                for (Object value : transientAppMetaData.values()) {
-                    if(value instanceof Closeable) {
-                        try {
-                            ((Closeable) value).close();
-                        } catch (IOException ex) {
-                        }
-                    }
-                }
                 transientAppMetaData.clear();
             } else {
                 final String [] classNamesToClean = {Types.class.getName(), Parser.class.getName()};

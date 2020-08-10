@@ -60,8 +60,6 @@ import java.net.URISyntaxException;
  */
 public interface DeploymentContext extends ApplicationContext, ExecutionContext {
 
-    String ORIGINAL_SOURCE = "origin";
-
     /**
      * Application bits, at the raw level. Deployer's should avoid
      * using such low level access as it binds the deployer to a particular directory

@@ -42,6 +42,11 @@ package fish.payara.deployment.admin;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import java.util.Comparator;
 import static org.eclipse.transformer.Transformer.SUCCESS_RC;
 import org.eclipse.transformer.payara.JakartaNamespaceTransformer;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -95,13 +100,27 @@ public class PayaraTransformer {
         return false;
     }
 
-    public static File transformApplication(File path, AdminCommandContext context) throws IOException {
+    public static File transformApplication(File path, AdminCommandContext context, boolean isDirectoryDeployed) throws IOException {
         JakartaNamespaceTransformer transformer = new JakartaNamespaceTransformer(
                 context.getLogger(), path, true
         );
         int result = transformer.run();
         if (result == SUCCESS_RC) {
-            return transformer.getOutput();
+            File output = transformer.getOutput();
+            Path newPath = output.toPath();
+            if (!isDirectoryDeployed) {
+                Files.walk(path.toPath())
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+                newPath = Files.move(output.toPath(), path.toPath());
+                if (newPath == null) {
+                    String msg = localStrings.getLocalString("application.namespace.transform.failed", "Application namespace transformation failed");
+                    context.getActionReport().failure(context.getLogger(), msg);
+                    return null;
+                }
+            }
+            return newPath.toFile();
         } else {
             String msg = localStrings.getLocalString("application.namespace.transform.failed", "Application namespace transformation failed");
             context.getActionReport().failure(context.getLogger(), msg);
