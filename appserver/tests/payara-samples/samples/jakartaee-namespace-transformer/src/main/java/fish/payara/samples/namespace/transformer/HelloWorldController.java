@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,15 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.namespace.trasformer;
+package fish.payara.samples.namespace.transformer;
 
-import jakarta.ws.rs.ApplicationPath;
-import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import java.net.URISyntaxException;
 
 /**
- * Configures JAX-RS for the application.
+ * Hello World REST controller.
  */
-@ApplicationPath("/")
-public class JAXRSConfiguration extends Application {
-    
+@Path("/api/hello")
+public class HelloWorldController {
+
+    @GET
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getInfo() throws URISyntaxException {
+        // ....
+        return Response
+                .ok(Path.class.getCanonicalName())
+                .build();
+    }
+
 }

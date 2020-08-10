@@ -37,8 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.namespace.trasformer;
+package fish.payara.samples.namespace.transformer;
 
+import fish.payara.samples.namespace.transformer.HelloWorldController;
+import fish.payara.samples.namespace.transformer.JAXRSConfiguration;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 
