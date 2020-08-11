@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -94,13 +94,22 @@ public class RuntimeOptions {
                     RUNTIME_OPTION option = RUNTIME_OPTION.valueOf(arg.substring(2).toLowerCase());
                     String value = null;
                     if (option.hasFollowingValue()) {
-                        // there is a second value
-                        value = args[i+1];
-                        i++;
-                        if (value.startsWith("--")) {
-                            throw new IndexOutOfBoundsException();
+                        if (!option.followingValueIsOptional()) {
+                            // there is a second value
+                            value = args[i+1];
+                            i++;
+                            if (value.startsWith("--")) {
+                                throw new IndexOutOfBoundsException();
+                            }
+                            option.validate(value);
+                        } else {
+                            // If we're not at the end, and the next arg isn't a command option, validate it
+                             if (i + 1 != args.length && !args[i + 1].startsWith("--")) {
+                                 value = args[i+1];
+                                 i++;
+                                 option.validate(value);
+                             }
                         }
-                        option.validate(value);
                     }
                     List<String> values = options.get(option);
                     if (values == null) {
