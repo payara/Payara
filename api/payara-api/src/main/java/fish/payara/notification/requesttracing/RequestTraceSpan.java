@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -188,7 +189,21 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
     }
     
     public void addSpanReference(RequestTraceSpanContext spanContext, SpanContextRelationshipType relationshipType) {
+        // Overwrite existing if already added
+        ListIterator<SpanReference> iterator = spanReferences.listIterator();
+        while (iterator.hasNext()){
+            SpanReference spanReference = iterator.next();
+            if (spanReference.getReferenceSpanContext().getSpanId().equals(spanContext.getSpanId())
+                    && spanReference.getSpanContextRelationshipType().equals(relationshipType)) {
+                iterator.remove();
+                break;
+            }
+        }
+        
         spanReferences.add(new SpanReference(spanContext, relationshipType));
+        for (Map.Entry<String, String> baggageItem : spanContext.baggageItems()) {
+            this.spanContext.addBaggageItem(baggageItem.getKey(), baggageItem.getValue());
+        }
     }
     
     public List<SpanReference> getSpanReferences() {

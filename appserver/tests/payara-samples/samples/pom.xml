@@ -6,7 +6,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>5.2020.4-SNAPSHOT</version>
+        <version>5.2020.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-samples-profiled-tests</artifactId>
@@ -15,20 +15,26 @@
     <name>Payara Samples - Profiled Tests</name>
 
     <modules>
+        <!-- This module must run first, because it collides with some change made by other test(s) -->
+        <module>payara-expression-config-properties</module>
+        <module>asadmin</module>
         <module>clustered-singleton</module>
         <module>custom-loginmodule-realm</module>
         <module>datagrid-encryption</module>
         <module>dynamic-roles</module>
+        <module>ejb-invoker-secure-endpoint</module>
         <module>formauth</module>
         <module>jacc-per-app</module>
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
+        <module>jaxws-tracing</module>
+        <module>microprofile-endpoints</module>
+        <module>oauth2</module>
+        <module>openid</module>
         <module>rest-management</module>
         <module>rolesPermitted</module>
-        <module>oauth2</module>
         <module>realm-identity-stores</module>
-        <module>payara-expression-config-properties</module>
     </modules>
 
     <dependencyManagement>
@@ -43,25 +49,7 @@
     </dependencyManagement>
 
     <profiles>
-
-		<profile>
-			<id>unstable</id>
-			<modules>
-		        <module>openid</module>
-		        <module>jaxws-tracing</module>
-		        <module>asadmin</module>
-		        <module>microprofile-endpoints</module>
-         	</modules>
-		</profile>
-		<profile>
-			<id>unstable-remote</id>
-			<modules>
-                <module>ejb-invoker-secure-endpoint</module>
-			</modules>
-		</profile>
-        
         <!-- Profiles for the application servers against which the samples are run -->
-
         <profile>
             <!--
             This profile will install a Payara server and start up the server per sample. Useful for CI servers.
@@ -213,6 +201,7 @@
             -->
             <modules>
                 <module>ejb-http-remoting</module>
+                <module>remote-ejb-tracing</module>
             </modules>
             <dependencies>
                 <dependency>

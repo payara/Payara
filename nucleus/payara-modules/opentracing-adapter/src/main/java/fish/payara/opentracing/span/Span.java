@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,11 @@ import io.opentracing.SpanContext;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
+
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
@@ -57,19 +60,8 @@ import org.glassfish.internal.api.Globals;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 public class Span extends RequestTraceSpan implements io.opentracing.Span {
-    
-    private transient RequestTracingService requestTracing;
-    private final String applicationName;
-    
-    @PostConstruct
-    public void postConstruct() {
-        // Initialise the HK2 service variables
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
 
-        if (serviceLocator != null) {
-            requestTracing = serviceLocator.getService(RequestTracingService.class);
-        }
-    }
+    private final String applicationName;
 
     /**
      * Constructor that creates a RequestTraceSpan object and sets the application name that this Span was created from.
@@ -188,8 +180,10 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
     @Override
     public void finish() {
         // Pass through to the Request Tracing Service
-        getRequestTracingServiceIfNull();
-        requestTracing.traceSpan(this);
+        RequestTracingService requestTracingService = getRequestTracingService();
+        if (requestTracingService != null) {
+            requestTracingService.traceSpan(this);
+        }
     }
 
     @Override
@@ -198,8 +192,10 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
         long finishMillis = convertTimestampMicrosToTimestampMillis(finishMicros);
         
         // Pass through to the Request Tracing Service
-        getRequestTracingServiceIfNull();
-        requestTracing.traceSpan(this, finishMillis);
+        RequestTracingService requestTracingService = getRequestTracingService();
+        if (requestTracingService != null) {
+            requestTracingService.traceSpan(this, finishMillis);
+        }
     }
 
     /**
@@ -225,14 +221,19 @@ public class Span extends RequestTraceSpan implements io.opentracing.Span {
     /**
      * Helper method that gets the Request Tracing Service if this instance does not have it.
      */
-    private void getRequestTracingServiceIfNull() {
-        if (requestTracing == null) {
-            ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+    private RequestTracingService getRequestTracingService() {
+        RequestTracingService requestTracingService = null;
 
-            if (serviceLocator != null) {
-                requestTracing = serviceLocator.getService(RequestTracingService.class);
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+        if (serviceLocator != null) {
+            ServiceHandle<RequestTracingService> serviceHandle = serviceLocator.getServiceHandle(
+                    RequestTracingService.class);
+            if (serviceHandle != null && serviceHandle.isActive()) {
+                requestTracingService = serviceHandle.getService();
             }
         }
+
+        return requestTracingService;
     }
 
 }

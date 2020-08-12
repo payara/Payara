@@ -39,8 +39,10 @@
  */
 package fish.payara.samples.jaxws.endpoint.servlet;
 
+import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.SincePayara;
+import fish.payara.samples.Unstable;
 import fish.payara.samples.jaxws.endpoint.JAXWSEndpointTest;
 
 import java.net.MalformedURLException;
@@ -57,6 +59,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
@@ -64,8 +67,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 @RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible("JAX-WS is not supported on Micro")
 @FixMethodOrder(NAME_ASCENDING)
 @SincePayara("5.193")
+@Category(Unstable.class)
+// Due to bug in grizzly fails on JDK8u232 and newer
 public class ServletEndpointTest extends JAXWSEndpointTest {
 
     @Deployment

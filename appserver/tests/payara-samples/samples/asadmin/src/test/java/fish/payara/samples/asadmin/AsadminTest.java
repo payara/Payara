@@ -70,7 +70,7 @@ import fish.payara.samples.PayaraTestShrinkWrap;
 @RunWith(PayaraArquillianTestRunner.class)
 public abstract class AsadminTest {
 
-    private ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+    private final ServiceLocator serviceLocator = Globals.getDefaultHabitat();
     private CommandRunner commandRunner;
     private Target targetUtil;
 

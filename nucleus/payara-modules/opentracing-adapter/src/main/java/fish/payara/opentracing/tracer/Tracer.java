@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -71,6 +71,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -94,6 +97,11 @@ public class Tracer implements io.opentracing.Tracer {
     public Tracer(String applicationName) {
         this.applicationName = applicationName;
         scopeManager = new fish.payara.opentracing.ScopeManager();
+    }
+
+    public Tracer(String applicationName, ScopeManager scopeManager) {
+        this.applicationName = applicationName;
+        this.scopeManager = scopeManager;
     }
 
     @Override
@@ -200,7 +208,7 @@ public class Tracer implements io.opentracing.Tracer {
                 if (spanId == null){
                     throw new IllegalArgumentException("No SpanId recieved");
                 }
-                return new RequestTraceSpanContext(traceId, spanId);
+                return new RequestTraceSpanContext(traceId, spanId, baggageItems);
             } else {
                 return null; //Did not recieve a SpanContext
             }
@@ -272,7 +280,15 @@ public class Tracer implements io.opentracing.Tracer {
             ignoreActiveSpan = false;
             microsecondsStartTime = 0;
             span = new fish.payara.opentracing.span.Span(operationName, applicationName);
-            requestTracing = Globals.getDefaultBaseServiceLocator().getService(RequestTracingService.class);
+
+            ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+            if (serviceLocator != null) {
+                ServiceHandle<RequestTracingService> serviceHandle = serviceLocator.getServiceHandle(
+                        RequestTracingService.class);
+                if (serviceHandle != null && serviceHandle.isActive()) {
+                    requestTracing = serviceHandle.getService();
+                }
+            }
         }
 
         @Override
@@ -284,7 +300,8 @@ public class Tracer implements io.opentracing.Tracer {
 
         @Override
         public SpanBuilder addReference(String referenceType, SpanContext referencedContext) {
-            span.addSpanReference((RequestTraceSpanContext) referencedContext, SpanContextRelationshipType.valueOf(referenceType));
+            span.addSpanReference((RequestTraceSpanContext) referencedContext, SpanContextRelationshipType.valueOf(
+                    referenceType));
             return this;
         }
 

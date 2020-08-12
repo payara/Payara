@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  */
 package fish.payara.nucleus.requesttracing.store.strategy;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -44,10 +45,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import fish.payara.notification.requesttracing.RequestTrace;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 /**
  * Tests the correct behaviour of the {@link ReservoirTraceStorageStrategy}.
@@ -56,41 +60,30 @@ import fish.payara.notification.requesttracing.RequestTrace;
  */
 public class ReservoirTraceStorageStrategyTest extends AbstractStorageStrategyTest {
 
+    private List<RequestTrace> traces;
+
     public ReservoirTraceStorageStrategyTest() {
-        super(new ReservoirTraceStorageStrategy());
+        super(new ReservoirTraceStorageStrategy(1L));
+    }
+
+    @Before
+    public void populateTraces() {
+        traces = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            RequestTrace trace = createTrace();
+            trace.getTraceSpans().getFirst().setEventName(String.valueOf(i));
+            traces.add(trace);
+        }
     }
 
     @Test
-    public void anyTraceHasSameProbabilityToBeRemovedAboveMaxSize() {
-        int maxSize = 9;
-        List<RequestTrace> traces = new ArrayList<>();
-        for (int i = 0; i < maxSize; i++) {
-            traces.add(createTrace());
-        }
-        Map<UUID, Integer> removedCounts = new HashMap<>();
-        List<RequestTrace> added = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            RequestTrace newTrace = createTrace();
-            added.add(newTrace);
-            traces.add(newTrace);
-            for (int j = 0; j < 1000; j++) {
-                RequestTrace traceForRemoval = strategy.getTraceForRemoval(traces, maxSize, null);
-                removedCounts.compute(traceForRemoval.getTraceId(), (key, value) -> value == null ? 0 : value + 1);
-            }
-            traces.remove(newTrace); // we remove always the new one to have easier time verifying the numbers
-        }
-        // now we did 10x100 evaluations, 
-        // in an even distribution each of the 9 traces kept in the list should be removed about 1000 times (1/10 * 1000 * 10 runs)
-        for (RequestTrace trace : traces) {
-            int count = removedCounts.get(trace.getTraceId());
-            int diff = Math.abs(1000 - count);
-            assertTrue("Expected a vairation of below 100 but was "+diff, diff < 150);
-        }
-        // in an even distribution each of the 10 added traces should be removed about 100 times (1/10 * 1000 runs)
-        for (RequestTrace trace : added) {
-            int count = removedCounts.get(trace.getTraceId());
-            int diff = Math.abs(100 - count);
-            assertTrue("Expected a vairation of below 30 but was "+diff, diff < 30);
-        }
+    public void test_random_chance_of_trace_removal() {
+        final String errorMessage = "Incorrect trace removed, trace to be removed isn't random.";
+        assertEquals(errorMessage, "5", strategy.getTraceForRemoval(traces, 0, null).getTraceSpans().getFirst().getEventName());
+        assertEquals(errorMessage, "8", strategy.getTraceForRemoval(traces, 0, null).getTraceSpans().getFirst().getEventName());
+        assertEquals(errorMessage, "7", strategy.getTraceForRemoval(traces, 0, null).getTraceSpans().getFirst().getEventName());
+        assertEquals(errorMessage, "3", strategy.getTraceForRemoval(traces, 0, null).getTraceSpans().getFirst().getEventName());
+        assertEquals(errorMessage, "4", strategy.getTraceForRemoval(traces, 0, null).getTraceSpans().getFirst().getEventName());
     }
+
 }

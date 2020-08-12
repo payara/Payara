@@ -136,17 +136,19 @@ public class TracedInterceptor implements Serializable {
         final String applicationName = openTracing.getApplicationName(invocationManager, invocationContext);
         final Tracer tracer = openTracing.getTracer(applicationName);
         final String operationName = getOperationName(invocationContext, traced);
-        final Span activeSpan = tracer.buildSpan(operationName).start();
-        try (Scope scope = tracer.scopeManager().activate(activeSpan, true)) {
+        Span parentSpan = tracer.activeSpan();
+
+        final Span span = tracer.buildSpan(operationName).start();
+        try (Scope scope = tracer.scopeManager().activate(span, true)) {
             try {
                 return invocationContext.proceed();
             } catch (final Exception ex) {
                 LOG.log(Level.FINEST, "Setting the error to the active span ...", ex);
-                activeSpan.setTag(Tags.ERROR.getKey(), true);
+                span.setTag(Tags.ERROR.getKey(), true);
                 final Map<String, Object> errorInfoMap = new HashMap<>();
                 errorInfoMap.put(Fields.EVENT, "error");
                 errorInfoMap.put(Fields.ERROR_OBJECT, ex.getClass().getName());
-                activeSpan.log(errorInfoMap);
+                span.log(errorInfoMap);
                 throw ex;
             }
         }

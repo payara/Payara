@@ -45,6 +45,7 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 
 import fish.payara.samples.CliCommands;
+import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.ServerOperations;
 
@@ -75,6 +76,7 @@ import static org.junit.Assert.fail;
  * @author Gaurav Gupta
  */
 @RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public class MicroprofileSecureEndpointTest {
 
     @ArquillianResource

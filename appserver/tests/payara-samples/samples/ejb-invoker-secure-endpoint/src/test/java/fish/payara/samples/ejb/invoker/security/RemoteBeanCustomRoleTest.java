@@ -40,8 +40,9 @@
 package fish.payara.samples.ejb.invoker.security;
 
 import fish.payara.samples.CliCommands;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -54,7 +55,8 @@ import static java.util.Arrays.asList;
  * accessible to custom defined roles.
  *
  */
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public class RemoteBeanCustomRoleTest extends AbstractRemoteBeanSecurityTest {
 
     private static final String USERNAME = "myuser_customrole";
