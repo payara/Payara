@@ -148,6 +148,7 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.toMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.glassfish.hk2.classmodel.reflect.util.ParsingConfig;
 
 /**
  * Application Loader is providing useful methods to load applications
@@ -670,8 +671,25 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try {
                 ResourceLocator locator = determineLocator();
                 // scan the jar and store the result in the deployment context.
-                ParsingContext.Builder parsingContextBuilder = new ParsingContext.Builder().logger(context.getLogger())
-                        .executorService(executorService.getUnderlyingExecutorService());
+                ParsingContext.Builder parsingContextBuilder = new ParsingContext.Builder()
+                        .logger(context.getLogger())
+                        .executorService(executorService.getUnderlyingExecutorService())
+                        .config(new ParsingConfig() {
+                            @Override
+                            public Set<String> getAnnotationsOfInterest() {
+                                return Collections.emptySet();
+                            }
+
+                            @Override
+                            public Set<String> getTypesOfInterest() {
+                                return Collections.emptySet();
+                            }
+
+                            @Override
+                            public boolean modelUnAnnotatedMembers() {
+                                return true;
+                            }
+                        });
                 // workaround bug in Builder
                 parsingContextBuilder.locator(locator);
                 ParsingContext parsingContext = parsingContextBuilder.build();
