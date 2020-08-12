@@ -107,13 +107,13 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     }
 
     @Override
-    public void objectCreated(Optional<DestroyEventContext> destroyContext) {
+    public void distributedObjectCreated(Optional<DestroyEventContext> destroyContext) {
         destroyEventListener = new EventListenerImpl(destroyContext);
         events.register(destroyEventListener);
     }
 
     @Override
-    public void objectDestroyed() {
+    public void distributedObjectDestroyed() {
         // Hazelcast object has been destroyed
         events.unregister(destroyEventListener);
         destroyEventListener = null;
