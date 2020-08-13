@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 /**
  *
  * @author anilam
@@ -46,6 +46,8 @@ package org.glassfish.admingui.common.handlers;
 
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import java.net.URLEncoder;
@@ -56,6 +58,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
+
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
@@ -70,6 +73,7 @@ import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.DeployUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.admingui.common.util.TargetUtil;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.admingui.common.util.AppUtil;
 
 
@@ -80,6 +84,17 @@ public class ApplicationHandlers {
     private static final String NAME_CONFIG_NAME = "configName";
     private static final String NAME_RESULT = "result";
 
+    @Handler(id = "py.getContextRoot",
+            input = {
+                @HandlerInput(name = "appName", type = String.class, required = true)},
+            output = {
+                @HandlerOutput(name = NAME_RESULT, type = String.class)})
+    public static void getContextRoot(HandlerContext handlerCtx) {
+        Applications applications = Globals.getDefaultBaseServiceLocator().getService(Applications.class);
+        String appName = (String) handlerCtx.getInputValue("appName");
+        Application app = applications.getApplication(appName);
+        handlerCtx.setOutputValue(NAME_RESULT, app.getContextRoot());
+    }
 
     /**
      *	<p> This handler returns the list of applications for populating the table.
@@ -293,17 +308,17 @@ public class ApplicationHandlers {
 
     @Handler(id = "gf.appScopedResourcesExist",
         input = {
-            @HandlerInput(name = "appName", type = String.class, required = true), 
+            @HandlerInput(name = "appName", type = String.class, required = true),
             @HandlerInput(name = "moduleList", type = List.class, required = true)
             },
         output = {
             @HandlerOutput(name = "appScopedResExists", type = java.lang.Boolean.class)})
     public static void appScopedResourcesExist(HandlerContext handlerCtx) {
-        String appName = (String) handlerCtx.getInputValue("appName"); 
+        String appName = (String) handlerCtx.getInputValue("appName");
         try {
-            List<String> moduleList = 
+            List<String> moduleList =
                     (List<String>) handlerCtx.getInputValue("moduleList");
-            handlerCtx.setOutputValue("appScopedResExists", 
+            handlerCtx.setOutputValue("appScopedResExists",
                     AppUtil.doesAppContainsResources(appName, moduleList));
         } catch (NullPointerException e) {
             handlerCtx.setOutputValue("appScopedResExists", false);
@@ -446,7 +461,7 @@ public class ApplicationHandlers {
         output = {
             @HandlerOutput(name = NAME_CONFIG_NAME, type = String.class)})
     public static void getConfigName(HandlerContext handlerCtx) {
-        handlerCtx.setOutputValue(NAME_CONFIG_NAME, 
+        handlerCtx.setOutputValue(NAME_CONFIG_NAME,
                 TargetUtil.getConfigName((String) handlerCtx.getInputValue("target")));
     }
 
@@ -617,7 +632,7 @@ public class ApplicationHandlers {
                 attrs = RestUtil.getAttributesMap(endpoint);
             } else {
                 endpoint = prefix+"/deployment-groups/deployment-group/" + oneTarget + "/application-ref/" + appName;
-                attrs = RestUtil.getAttributesMap(endpoint);                
+                attrs = RestUtil.getAttributesMap(endpoint);
             }
             oneRow.put("name", appName);
             oneRow.put("selected", false);
@@ -758,7 +773,7 @@ public class ApplicationHandlers {
         List<Map<String, String>> list = new ArrayList<>();
 
         while (it.hasNext()) {
-            url = it.next(); 
+            url = it.next();
             String target = "";
             int i = url.indexOf("@@@");
             if (i >= 0) {
@@ -817,7 +832,7 @@ public class ApplicationHandlers {
         }
         return ctxRoot;
     }
-    
+
 
 
 /********************/
@@ -892,7 +907,7 @@ public class ApplicationHandlers {
                     for (String hostName : hostNames) {
                         if (localHostName != null && hostName.equalsIgnoreCase("localhost"))
                             hostName = localHostName;
-//                            URLs.add("[" + target + "]  - " + protocol + "://" + hostName + ":" + resolvedPort + "[ " + one + " " + configName 
+//                            URLs.add("[" + target + "]  - " + protocol + "://" + hostName + ":" + resolvedPort + "[ " + one + " " + configName
 //                                    + " " + listener + " " + target + " ]");
                         URLs.add(target + "@@@" + protocol + "://" + hostName + ":" + resolvedPort);
                     }

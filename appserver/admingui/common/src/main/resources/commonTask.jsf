@@ -45,6 +45,7 @@
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+    
 />
 <!composition template="/templates/default.layout" guiTitle="$resource{i18n.commonTasks.title}"
       <!-- GLASSFISH-20207 guiOnLoad="if (frameOnload) {frameOnload();};"  -->
@@ -62,6 +63,14 @@
 </f:verbatim>
 </define>
 <!define name="content">
+
+  <event>
+    <!beforeCreate
+    py.getContextRoot(appName="__monitoringconsole" result="#{pageSession.contextRoot}");
+    getTargetURLList(AppID="__monitoringconsole", contextRoot="#{pageSession.contextRoot}",  URLList="#{pageSession.monitoringConsoleURLs}");
+    />
+  </event>
+    
     "<div style="height:100%; background-color:#B6C6D6; #{pageSession.contentCSS}">
       <sun:form id="form">
         <sun:commonTasksSection id="commonTasksSection" helpText="$resource{i18n.commonTasks.help}"  title="$resource{i18n.commonTasks.title}" columns="$int{2}" style="visibility: #{commonTaskVisibility}">
@@ -119,7 +128,12 @@
             </sun:commonTask>
         </sun:commonTasksGroup>
 
-          <sun:commonTasksGroup id="monitoring"  title="$resource{i18n.commonTasks.group.Monitoring}" >
+          <sun:commonTasksGroup id="monitoring" title="$resource{i18n.commonTasks.group.Monitoring}" >
+            <sun:commonTask
+              text="$resource{i18n.commonTasks.task.monitoring}"
+              toolTip="$resource{i18n.commonTasks.task.monitoring.toolTip}"
+              onClick="javascript:var win=window.open('#{pageSession.monitoringConsoleURLs[0].url}','_blank');if (win) {win.focus();}; return false;">
+            </sun:commonTask>
               <sun:commonTask
                 text="$resource{i18nc.tree.monitorData}"
                 toolTip="$resource{i18nc.tree.monitorData}"
