@@ -93,7 +93,7 @@ public class ApplicationHandlers {
         Applications applications = Globals.getDefaultBaseServiceLocator().getService(Applications.class);
         String appName = (String) handlerCtx.getInputValue("appName");
         Application app = applications.getApplication(appName);
-        handlerCtx.setOutputValue(NAME_RESULT, app.getContextRoot());
+        handlerCtx.setOutputValue(NAME_RESULT, app == null ? null : app.getContextRoot());
     }
 
     /**

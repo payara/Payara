@@ -67,6 +67,10 @@
   <event>
     <!beforeCreate
     py.getContextRoot(appName="__monitoringconsole" result="#{pageSession.contextRoot}");
+    setAttribute(key="showMonitoringLink" value="true" );
+    if($pageSession{contextRoot}=#{null}) {
+	    setAttribute(key="showMonitoringLink" value="false" );
+    }    
     getTargetURLList(AppID="__monitoringconsole", contextRoot="#{pageSession.contextRoot}",  URLList="#{pageSession.monitoringConsoleURLs}");
     />
   </event>
@@ -129,7 +133,7 @@
         </sun:commonTasksGroup>
 
           <sun:commonTasksGroup id="monitoring" title="$resource{i18n.commonTasks.group.Monitoring}" >
-            <sun:commonTask
+            <sun:commonTask rendered="#{showMonitoringLink}"
               text="$resource{i18n.commonTasks.task.monitoring}"
               toolTip="$resource{i18n.commonTasks.task.monitoring.toolTip}"
               onClick="javascript:var win=window.open('#{pageSession.monitoringConsoleURLs[0].url}','_blank');if (win) {win.focus();}; return false;">
