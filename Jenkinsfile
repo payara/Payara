@@ -159,7 +159,7 @@ pipeline {
             }
             post {
                 success {
-                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee8-samples-log.zi
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee8-samples-log.zip'
                 }
                 always {
                     junit '**/target/surefire-reports/*.xml'
