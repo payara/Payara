@@ -1,0 +1,105 @@
+#!groovy
+// Jenkinsfile for building a PR and running a subset of tests against it
+def pom
+def DOMAIN_NAME
+def payaraBuildNumber
+def rc
+pipeline {
+    agent any
+    options {
+        disableConcurrentBuilds()
+    }
+    environment {
+        Dibbles = "\${Dabbles}"
+        Bibbly = "Bibbles"
+        MP_METRICS_TAGS='tier=integration'
+        MP_CONFIG_CACHE_DURATION=0
+    }
+    tools {
+        jdk "zulu-8"
+    }
+    stages {
+        stage('Report') {
+            steps {
+                script{
+                    pom = readMavenPom file: 'pom.xml'
+                    payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
+                    DOMAIN_NAME = "test-domain"
+                    echo "Payara pom version is ${pom.version}"
+                    echo "Build number is ${payaraBuildNumber}"
+                    echo "Domain name is ${DOMAIN_NAME}"
+
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Certificates Expiring Soon  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    rc = sh(returnStatus: true, script: "keytool -list -v -keystore \'${pwd()}/nucleus/admin/template/src/main/resources/config/cacerts.jks\' -storepass \'changeit\' | grep -E \"Valid from:.*`date +'%b' --date='+1 month'`.*`date +'%Y'`|`date +'%b'`.*`date +'%Y'`\"")
+                    if(rc != 1) {
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Certificates Expiring Soon  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
+                    sh "mvn -B -V -ff -e clean install -PQuickBuild -DskipTests=true,checkstyle.skip=true,cpd.skip=true,findbugs.skip=true,spotbugs.skip=true,pmd.skip=true,maven.javadoc.skip=true,maven.test.skip=true"
+                }
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post{
+                success{
+                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara5/glassfish/logs/server.log'
+                }
+            }
+        }
+        stage('Checkout MP TCK Runners') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/master"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Setup for MP TCK Runners') {
+            steps {
+                makeDomain()
+            }
+        }
+        stage('Run MP TCK Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean verify \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
+                -Dsurefire.rerunFailingTestsCount=2"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+    }
+}
+
+void makeDomain() {
+    script{
+        ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
+        DOMAIN_NAME = "test-domain"
+    }
+    sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+}
+
+void setupDomain() {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    makeDomain()
+    sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} start-database || true"
+}
+
+void teardownDomain() {
+    echo 'tidying up after tests:'
+    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} stop-database || true"
+    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
+}

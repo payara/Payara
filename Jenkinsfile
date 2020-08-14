@@ -12,6 +12,8 @@ pipeline {
     environment {
         Dibbles = "\${Dabbles}"
         Bibbly = "Bibbles"
+        MP_METRICS_TAGS='tier=integration'
+        MP_CONFIG_CACHE_DURATION=0
     }
     tools {
         jdk "zulu-8"
@@ -97,6 +99,37 @@ pipeline {
                always {
                    junit '**/target/surefire-reports/*.xml'
                }
+            }
+        }
+        stage('Checkout MP TCK Runners') {
+            steps{
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                    branches: [[name: "*/master"]],
+                    userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+        }
+        stage('Setup for MP TCK Runners') {
+            steps {
+                makeDomain()
+            }
+        }
+        stage('Run MP TCK Tests') {
+            steps {
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                sh """mvn -B -V -ff -e clean verify \
+                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
+                -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
+                -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara5"""
+                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+            }
+            post {
+                always {
+                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'mp-tck-log.zip'
+                    junit '**/target/surefire-reports/*.xml'
+                }
             }
         }
         stage('Checkout EE8 Tests') {
@@ -194,13 +227,17 @@ pipeline {
     }
 }
 
-void setupDomain() {
-    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+void makeDomain() {
     script{
         ASADMIN = "./appserver/distributions/payara/target/stage/payara5/bin/asadmin"
         DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
+}
+
+void setupDomain() {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    makeDomain()
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} start-database || true"
 }
