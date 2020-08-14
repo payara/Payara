@@ -75,10 +75,12 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                always {
+                success {
                     zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'quicklook-log.zip'
-                    teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
+                }
+                always {
+                    teardownDomain()
                 }
             }
         }
@@ -96,7 +98,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-               always {
+               success {
                    junit '**/target/surefire-reports/*.xml'
                }
             }
@@ -110,11 +112,6 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
         }
-        stage('Setup for MP TCK Runners') {
-            steps {
-                makeDomain()
-            }
-        }
         stage('Run MP TCK Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -126,9 +123,8 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                always {
+                success {
                     zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'mp-tck-log.zip'
-                    teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -158,10 +154,12 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                always {
+                success {
                     zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee8-samples-log.zip'
-                    teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
+                }
+                always {
+                    teaddownDomain()
                 }
             }
         }
@@ -187,7 +185,7 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                always {
+                success {
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -218,10 +216,12 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                always {
+                success {
                     zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'ee7-samples-log.zip'
-                    teardownDomain()
                     junit '**/target/surefire-reports/*.xml'
+                }
+                always {
+                    teardownDomain()
                 }
             }
         }
