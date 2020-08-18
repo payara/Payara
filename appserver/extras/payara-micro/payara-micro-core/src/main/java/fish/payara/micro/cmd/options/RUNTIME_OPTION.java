@@ -91,7 +91,7 @@ public enum RUNTIME_OPTION {
     accessloginterval(true),
     accesslogsuffix(true),
     accesslogprefix(true),
-    enablerequesttracing(false),
+    enablerequesttracing(true, new RequestTracingValidator(), true),
     requesttracingthresholdunit(true),
     requesttracingthresholdvalue(true),
     enablerequesttracingadaptivesampling(false),
@@ -114,13 +114,22 @@ public enum RUNTIME_OPTION {
     contextroot(true),
     warmup(false);
 
-    private RUNTIME_OPTION(boolean hasValue) {
+    RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());
     }
 
-    private RUNTIME_OPTION(boolean hasValue, Validator validator) {
+    RUNTIME_OPTION(boolean hasValue, boolean optionalValue) {
+        this(hasValue, new Validator(), optionalValue);
+    }
+
+    RUNTIME_OPTION(boolean hasValue, Validator validator) {
+        this(hasValue, validator, false);
+    }
+
+    RUNTIME_OPTION(boolean hasValue, Validator validator, boolean optionalValue) {
         this.value = hasValue;
         this.validator = validator;
+        this.optional = optionalValue;
     }
 
     boolean validate(String optionValue) throws ValidationException {
@@ -130,9 +139,17 @@ public enum RUNTIME_OPTION {
     boolean hasFollowingValue() {
         return value;
     }
+
+    boolean followingValueIsOptional() {
+        return optional;
+    }
+
     private final Validator validator;
     
     // Indicates the runtime option requires a value
     private final boolean value;
+
+    // Indicates the runtime option is optional
+    private final boolean optional;
 
 }
