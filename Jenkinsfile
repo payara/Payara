@@ -125,9 +125,6 @@ pipeline {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
-                failure {
-                    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara5/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: 'mp-tck-log.zip'
-                }
                 always {
                     junit '**/target/surefire-reports/*.xml'                    
                 }
