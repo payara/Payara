@@ -66,8 +66,6 @@ public class RequestTracingValidator extends Validator {
                 throw new ValidationException(MessageFormat.format(
                         RuntimeOptions.commandlogstrings.getString("requestTracingIncorrect"), optionValue));
             }
-
-            return true;
         }
 
         return true;
