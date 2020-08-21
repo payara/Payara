@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  * @version
  */
 public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends AbstractBundleNode<T> {
-    public final static String SPEC_VERSION = "4.0";
+    public final static String SPEC_VERSION = "5.0";
 
     protected T descriptor;
     private Map<String, Vector<String>> servletMappings;
