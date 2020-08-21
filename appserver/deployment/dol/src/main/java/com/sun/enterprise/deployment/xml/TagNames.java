@@ -226,6 +226,7 @@ public interface TagNames {
     public static final String J2EE_NAMESPACE = "http://java.sun.com/xml/ns/j2ee";
     public static final String JAVAEE_DEFAULTNAMESPACEPREFIX = "javaee";
     public static final String JAVAEE_NAMESPACE = "http://xmlns.jcp.org/xml/ns/javaee";
+    public static final String JAKARTAEE_NAMESPACE = "https://jakarta.ee/xml/ns/jakartaee";
     public static final String XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 
     public static final String WLS_WEB_APP_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-web-app";

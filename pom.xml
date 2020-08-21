@@ -181,7 +181,7 @@
         <jakarta.security.jacc-api.version>2.0.0</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>2.0.0</jakarta.security.auth.message-api.version>
         <jms-api.version>3.0.0</jms-api.version>
-        <mq.version>6.1.0</mq.version>
+        <mq.version>6.1.1</mq.version>
         <jakarta.batch-api.version>2.0.0</jakarta.batch-api.version>
         <com.ibm.jbatch.container.version>2.0.0</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.0.0</com.ibm.jbatch.spi.version>
