@@ -130,5 +130,9 @@
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.transformer</groupId>
+            <artifactId>org.eclipse.transformer.payara</artifactId>
+        </dependency>
     </dependencies>
 </project>
