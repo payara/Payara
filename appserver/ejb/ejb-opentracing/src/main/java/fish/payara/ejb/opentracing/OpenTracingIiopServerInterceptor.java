@@ -149,7 +149,7 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
 
     private boolean tracerAvailable() {
         if (tracer == null) {
-            if (openTracingService == null) {
+            if (openTracingService == null || !openTracingService.isEnabled()) {
                 return false;
             }
             this.tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
