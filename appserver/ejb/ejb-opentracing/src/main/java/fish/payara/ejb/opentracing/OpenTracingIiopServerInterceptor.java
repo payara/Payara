@@ -71,12 +71,8 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
     public OpenTracingIiopServerInterceptor(OpenTracingService openTracingService) {
         this.openTracingService = openTracingService;
 
-        if (openTracingService == null) {
-            return;
-        }
-        this.tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
-        if (tracer == null) {
-            return;
+        if (openTracingService != null || openTracingService.isEnabled()) {
+            this.tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
         }
     }
 
