@@ -102,5 +102,28 @@ public class RemoteEjbClientIT {
         }
     }
 
+    @Test
+    public void transactionIdAddedAsBaggageIT() {
+        Properties contextProperties = new Properties();
+        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
+        contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
+        contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
+
+        try {
+            Context context = new InitialContext(contextProperties);
+            EjbRemote ejb = (EjbRemote) context.lookup("java:global/remote-ejb-tracing-server/Ejb");
+
+            Tracer tracer = GlobalTracer.get();
+
+            try (Scope scope = tracer.buildSpan("ExecuteEjb").startActive(true)) {
+                String baggageItems = ejb.annotatedMethod();
+                Assert.assertTrue("Baggage items didn't contain transaction ID, received: " + baggageItems,
+                        baggageItems.contains("TX-ID"));
+            }
+        } catch (NamingException ne) {
+            Assert.fail("Failed performing lookup:\n" + ne.getMessage());
+        }
+    }
+
 
 }
