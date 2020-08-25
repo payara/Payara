@@ -1747,8 +1747,12 @@ public class JavaEETransactionManagerSimplified
                 span.log(spanLog.getTimeMillis(), spanLog.getLogEntries());
 
                 // Add transaction ID as baggage item
-                if (tx != null && tx.getClass().equals(JavaEETransactionImpl.class)) {
-                    span.setBaggageItem("TX-ID", ((JavaEETransactionImpl) tx).getTransactionId());
+                if (tx != null) {
+                    if (tx.getClass().equals(JavaEETransactionImpl.class)) {
+                        span.setBaggageItem("TX-ID", ((JavaEETransactionImpl) tx).getTransactionId());
+                    } else {
+                        span.setBaggageItem("TransactionInfo", tx.toString());
+                    }
                 }
             }
         } else {
