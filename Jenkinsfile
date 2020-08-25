@@ -245,8 +245,8 @@ void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     makeDomain()
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
-    sh"./${getPayaraDirectoryName()}/bin/asadmin delete-jvm-options -Xmx512m"
-    sh"./${getPayaraDirectoryName()}/bin/asadmin create-jvm-options -Xmx2g"
+    sh "${ASADMIN} delete-jvm-options -Xmx512m"
+    sh "${ASADMIN} create-jvm-options -Xmx2g"
     sh "${ASADMIN} start-database || true"
 }
 
