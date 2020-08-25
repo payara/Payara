@@ -4188,11 +4188,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
                 if (span != null) {
                     span.log(spanLog.getTimeMillis(), spanLog.getLogEntries());
-
-                    // Add transaction ID as baggage item
-                    if (info.getTransactionId() != null) {
-                        span.setBaggageItem("TX-ID", info.getTransactionId());
-                    }
                 } else {
                     // Traces started in the pre-OpenTracing style won't have an active span, so just attempt to add as
                     // is to thread local trace if there is one
