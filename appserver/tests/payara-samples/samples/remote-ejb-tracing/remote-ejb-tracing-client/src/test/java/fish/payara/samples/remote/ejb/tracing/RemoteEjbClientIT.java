@@ -76,7 +76,7 @@ public class RemoteEjbClientIT {
                 span.setBaggageItem("Wibbles", "Wobbles");
                 String baggageItems = ejb.annotatedMethod();
                 Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.equals("\nWibbles : Wobbles\n"));
+                        baggageItems.contains("\nWibbles : Wobbles\n"));
 
                 span.setBaggageItem("Nibbles", "Nobbles");
                 baggageItems = ejb.nonAnnotatedMethod();
