@@ -247,6 +247,8 @@ void setupDomain() {
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} delete-jvm-options -Xmx512m"
     sh "${ASADMIN} create-jvm-options -Xmx2g"
+    sh "${ASADMIN} delete-jvm-options --target default-config -Xmx512m"
+    sh "${ASADMIN} create-jvm-options --target default-config -Xmx2g"
     sh "${ASADMIN} start-database || true"
 }
 
