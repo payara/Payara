@@ -41,7 +41,6 @@
 package fish.payara.microprofile.metrics.jmx;
 
 import javax.xml.bind.annotation.*;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -58,7 +57,7 @@ public class MBeanMetadataConfig {
     private final List<MBeanMetadata> vendorMetadata = new CopyOnWriteArrayList<>();
 
     public List<MBeanMetadata> getBaseMetadata() {
-        return Collections.unmodifiableList(baseMetadata);
+        return baseMetadata;
     }
 
     public void setBaseMetadata(List<MBeanMetadata> baseMetadata) {
@@ -71,7 +70,7 @@ public class MBeanMetadataConfig {
     }
 
     public List<MBeanMetadata> getVendorMetadata() {
-        return Collections.unmodifiableList(vendorMetadata);
+        return vendorMetadata;
     }
 
     public void setVendorMetadata(List<MBeanMetadata> vendorMetadata) {
