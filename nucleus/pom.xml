@@ -966,6 +966,11 @@ Parent is ${project.parent}</echo>
                 <version>${javassist.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.eclipse.transformer</groupId>
+                <artifactId>org.eclipse.transformer.payara</artifactId>
+                <version>${payara.transformer}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
                 <version>1.64</version>

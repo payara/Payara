@@ -42,6 +42,7 @@ package fish.payara.notification.requesttracing;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -234,9 +235,13 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         
         result.append("\"startTime\":\"").append(startTime.atZone(ZoneId.systemDefault()).toString())
                 .append("\",");
-        result.append("\"endTime\":\"").append(endTime.atZone(ZoneId.systemDefault()).toString())
-                .append("\",");
-        result.append("\"traceDuration\":\"").append(spanDuration).append("\"");
+        if (endTime != null) {
+            result.append("\"endTime\":\"").append(endTime.atZone(ZoneId.systemDefault()).toString())
+                    .append("\",");
+            result.append("\"traceDuration\":\"").append(spanDuration).append("\"");
+        } else {
+            result.append("\"traceDuration\":\"").append(startTime.until(Instant.now(), ChronoUnit.NANOS)).append("\"");
+        }
         
         if (spanTags != null && !spanTags.isEmpty()) {
             result.append(",\"spanTags\":[");

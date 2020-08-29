@@ -1293,18 +1293,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                     if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
                                         requestTracingThresholdUnit = parseTimeUnit(requestTracing[1],
                                                 "request tracing threshold unit").name();
-                                    } // If there is a second entry, and it's not a String
-                                    else if (requestTracing.length == 2 && !requestTracing[1].matches("\\D+")) {
-                                        throw new IllegalArgumentException();
                                     }
                                 } // If the first entry is a String
                                 else if (requestTracing[0].matches("\\D+")) {
                                     requestTracingThresholdUnit = parseTimeUnit(requestTracing[0],
                                             "request tracing threshold unit").name();
-                                    // There shouldn't be a second entry
-                                    if (requestTracing.length == 2) {
-                                        throw new IllegalArgumentException();
-                                    }
                                 }
                             } else {
                                 throw new IllegalArgumentException();

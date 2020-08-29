@@ -50,7 +50,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.BiFunction;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
@@ -67,7 +66,6 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -79,11 +77,9 @@ import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
-import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
-import org.glassfish.hk2.classmodel.reflect.ClassModel;
 import org.glassfish.hk2.classmodel.reflect.MethodModel;
-import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.ParameterizedType;
 
 public final class ModelUtils {
 
@@ -271,7 +267,7 @@ public final class ModelUtils {
         }
     }
 
-    public static SchemaType getSchemaType(org.glassfish.hk2.classmodel.reflect.ParameterizedType type, ApiContext context) {
+    public static SchemaType getSchemaType(ParameterizedType type, ApiContext context) {
         if(type.isArray()) {
             return SchemaType.ARRAY;
         } else {
@@ -318,6 +314,19 @@ public final class ModelUtils {
             return SchemaType.ARRAY;
         }
         return SchemaType.OBJECT;
+    }
+
+    public static boolean isMap(String typeName, ApiContext context) {
+        Class clazz = null;
+        try {
+            clazz = context.getApplicationClassLoader().loadClass(typeName);
+        } catch (Throwable app) {
+            try {
+                clazz = Class.forName(typeName);
+            } catch (Throwable t) {
+            }
+        }
+        return Map.class.isAssignableFrom(clazz);
     }
 
     /**
