@@ -44,14 +44,11 @@ import com.hazelcast.spi.MemberAddressProvider;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.logging.Level;
 import org.glassfish.api.admin.ServerEnvironment;
 import java.util.logging.Logger;
@@ -70,14 +67,14 @@ public class MemberAddressPicker implements MemberAddressProvider {
     private InetSocketAddress bindAddress;
     private InetSocketAddress publicAddress;
     private static final Logger logger = Logger.getLogger(MemberAddressPicker.class.getName());
-    
+
     MemberAddressPicker(ServerEnvironment env, HazelcastRuntimeConfiguration config, HazelcastConfigSpecificConfiguration localConfig) {
         this.env = env;
         this.config = config;
         this.localConfig = localConfig;
-        
+
         // determine public address and bind address
-        findAppropriateInterfaces();
+        initBindAndPublicAddress();
     }
 
     @Override
@@ -97,13 +94,78 @@ public class MemberAddressPicker implements MemberAddressProvider {
 
     @Override
     public InetSocketAddress getPublicAddress() {
-        if (publicAddress != null) {
-            return publicAddress;
-        } else {
-            return bindAddress;
+        return publicAddress;
+    }
+
+    private void initBindAndPublicAddress() {
+        InetAddress chosenAddress = chooseAddress();
+
+        if (localConfig.getPublicAddress() != null && !localConfig.getPublicAddress().isEmpty()) {
+            String address[] = localConfig.getPublicAddress().split(":");
+            if (address.length > 1) {
+                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(address[1]));
+            } else {
+                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(config.getStartPort()));
+            }
+        }
+
+        logger.fine("Finding an appropriate address for Hazelcast to use");
+        int port = 0;
+        if (env.isDas() && !env.isMicro()) {
+            port = new Integer(config.getDasPort());
+            if (config.getDASPublicAddress() != null && !config.getDASPublicAddress().isEmpty()) {
+                publicAddress = new InetSocketAddress(config.getDASPublicAddress(), port);
+            }
+
+            if (config.getDASBindAddress() != null && !config.getDASBindAddress().isEmpty()) {
+                String bindAddr = config.getDASBindAddress();
+                if (bindAddr.trim().equals("*")) {
+                    bindAddress = new InetSocketAddress(port);
+                    logger.log(Level.FINE, "Using Wildcard bind address");
+                } else {
+                    bindAddress = new InetSocketAddress(bindAddr, port);
+                    logger.log(Level.FINE, "Bind address is specified in the configuration so we will use that {0}", bindAddress);
+                }
+                setPublicAddressIfNecessary(chosenAddress, port);
+                return;
+            }
+
+            if (chosenAddress != null) {
+                bindAddress = new InetSocketAddress(chosenAddress, port);
+            }
+        }
+
+        if (bindAddress == null) {
+            bindAddress = tryLocalHostOrLoopback(port);
+        }
+
+        setPublicAddressIfNecessary(chosenAddress, port);
+    }
+
+    private void setPublicAddressIfNecessary(InetAddress chosenAddress, int port) {
+        if (publicAddress == null) {
+            if (chosenAddress != null) {
+                publicAddress = new InetSocketAddress(chosenAddress, port);
+            } else if (!bindAddress.getAddress().isAnyLocalAddress()) {
+                publicAddress = bindAddress;
+            } else {
+                publicAddress = tryLocalHostOrLoopback(port);
+            }
         }
     }
-    
+
+
+    private InetSocketAddress tryLocalHostOrLoopback(int port) {
+        try {
+            // ok do the easy thing
+            logger.log(Level.FINE, "Could not find an appropriate address by searching falling back to local host");
+            return new InetSocketAddress(InetAddress.getLocalHost(), port);
+        } catch (UnknownHostException ex) {
+            logger.log(Level.FINE, "Could not find local host, falling back to loop back address");
+            return new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
+        }
+    }
+
     /**
      * This method picks an interface using the following rules
      * If there is only one interface that is not loopback choose that
@@ -116,33 +178,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
      * If tcpip mode choose the interface which matches a subnet in the tcpip list
      * If none of those choose the first interface that is not the default docker one
      */
-    private void findAppropriateInterfaces() {
-        
-        if (localConfig.getPublicAddress() != null && !localConfig.getPublicAddress().isEmpty()) {
-            String address[] = localConfig.getPublicAddress().split(":");
-            if (address.length > 1) {
-                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(address[1]));
-            } else {
-                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(config.getStartPort()));
-            }
-        }
-        
-        logger.fine("Finding an appropriate address for Hazelcast to use");
-        int port = 0;
-        if (env.isDas() && !env.isMicro()) {
-            port = new Integer(config.getDasPort());
-            if (config.getDASPublicAddress() != null && !config.getDASPublicAddress().isEmpty()) {
-                publicAddress = new InetSocketAddress(config.getDASPublicAddress(), port);
-            }
-            
-            if (config.getDASBindAddress() != null && !config.getDASBindAddress().isEmpty()) {
-                bindAddress = new InetSocketAddress(config.getDASBindAddress(), port);
-                logger.log(Level.FINE, "Bind address is specified in the configuration so we will use that {0}", bindAddress);
-                return;
-            }
-        }
-       
-        
+    private static InetAddress chooseAddress() {
         //add to list filtering out docker0
         HashSet<NetworkInterface> possibleInterfaces = new HashSet<>();
         try {
@@ -151,20 +187,18 @@ public class MemberAddressPicker implements MemberAddressProvider {
             while (interfaces.hasMoreElements()) {
                 NetworkInterface intf = interfaces.nextElement();
                 logger.log(Level.FINE, "Found Network Interface {0}", new Object[]{intf.getName()});
-                
-                if (intf.isUp() && !intf.isLoopback() && !intf.isVirtual() && !intf.getName().contains("docker0") &&!intf.getDisplayName().contains("Teredo") && intf.getInterfaceAddresses().size()>0) {
+
+                if (intf.isUp() && !intf.isLoopback() && !intf.isVirtual() && !intf.getName().contains("docker0") && !intf.getDisplayName().contains("Teredo") && intf.getInterfaceAddresses().size() > 0) {
                     logger.log(Level.FINE, "Adding interface {0} as a possible interface", intf.getName());
                     possibleInterfaces.add(intf);
                 } else {
-                    logger.fine("Ignoring down, docker or loopback interface " + intf.getName());
+                    logger.log(Level.FINE, "Ignoring down, docker or loopback interface {0}", intf.getName());
                 }
             }
         } catch (SocketException socketException) {
-            logger.log(Level.WARNING,"There was a problem determining the network interfaces on this machine", socketException);
+            logger.log(Level.WARNING, "There was a problem determining the network interfaces on this machine", socketException);
         }
-        
         if (possibleInterfaces.size() >= 1) {
-            
             InetAddress chosenAddress = null;
 
             // we haven't found an address
@@ -180,19 +214,9 @@ public class MemberAddressPicker implements MemberAddressProvider {
                 }
             }
             logger.log(Level.FINE, "Picked address {0}", chosenAddress);
-            bindAddress = new InetSocketAddress(chosenAddress,port);
-        }
-        
-        if (bindAddress == null) {
-            try {
-                // ok do the easy thing
-                logger.log(Level.FINE,"Could not find an appropriate address by searching falling back to local host");
-                bindAddress = new InetSocketAddress(InetAddress.getLocalHost(),port);
-            } catch (UnknownHostException ex) {
-                logger.log(Level.FINE,"Could not find local host, falling back to loop back address");
-                bindAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(),port);
-            }
+            return chosenAddress;
+        } else {
+            return null;
         }
     }
-    
 }
