@@ -402,6 +402,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     public void execute(AdminCommandContext context) {
         long timeTakenToDeploy = 0;
         long deploymentTimeMillis = 0;
+        ApplicationInfo appInfo = null;
         Optional<ApplicationState> appState = Optional.empty();
         try (SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.VALIDATE_TARGET, "registry")){
 
@@ -582,7 +583,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 // initialize makes its own phase as well
                 deployment.initialize(deplResult.appInfo, deplResult.appInfo.getSniffers(), deplResult.context);
             }
-            ApplicationInfo appInfo = deplResult != null ? deplResult.appInfo : null;
+            appInfo = deplResult != null ? deplResult.appInfo : null;
 
             /*
              * Various deployers might have added to the downloadable or
@@ -711,6 +712,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
             if (deploymentContext != null && !loadOnly) {
                 deploymentContext.postDeployClean(true);
+            }
+            if (appInfo != null) {
+                appInfo.postDeployClean();
             }
             appState.ifPresent(ApplicationState::close);
         }
