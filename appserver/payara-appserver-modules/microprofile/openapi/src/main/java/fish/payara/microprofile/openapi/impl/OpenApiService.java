@@ -64,6 +64,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -93,6 +95,7 @@ import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toSet;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
 
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -115,6 +118,9 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     @Inject
     private ServiceLocator habitat;
+
+    @Inject
+    private ExecutorService executor;
 
     @Override
     public void postConstruct() {
@@ -172,9 +178,18 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
             // Create all the relevant resources
             if (isValidApp(appInfo)) {
+                Types types = appInfo.getTransientAppMetaData(Types.class.getName(), Types.class);
                 // Store the application mapping in the list
-                mappings.add(new OpenApiMapping(appInfo));
+                mappings.add(new OpenApiMapping(appInfo, types));
                 allDocuments = null;
+
+                executor.submit(() -> {
+                    try {
+                        getDocument();
+                    } catch (OpenAPIBuildException ex) {
+                        LOGGER.log(WARNING, "OpenAPI document creation failed.", ex);
+                    }
+                });
             }
         } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
@@ -250,10 +265,12 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         private final ApplicationInfo appInfo;
         private final OpenApiConfiguration appConfig;
         private volatile OpenAPI document;
+        private Types hk2Types;
 
-        OpenApiMapping(ApplicationInfo appInfo) {
-            this.appInfo = appInfo;
+        OpenApiMapping(ApplicationInfo appInfo, Types hk2Types) {
+               this.appInfo = appInfo;
             this.appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
+            this.hk2Types = hk2Types;
         }
 
         ApplicationInfo getAppInfo() {
@@ -265,8 +282,11 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         }
 
         private OpenAPI buildDocument() throws OpenAPIBuildException {
-            document = new OpenAPIImpl();
+            if(hk2Types == null) {
+                throw new IllegalStateException("HK2 Class model types not available.");
+            }
 
+            document = new OpenAPIImpl();
             try {
                 String contextRoot = getContextRoot(appInfo);
                 List<URL> baseURLs = getServerURL(contextRoot);
@@ -274,14 +294,16 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 document = new ModelReaderProcessor().process(document, appConfig);
                 document = new FileProcessor(appInfo.getAppClassLoader()).process(document, appConfig);
                 document = new ApplicationProcessor(
-                        appInfo.getTypes(),
-                        filterTypes(appInfo, appConfig),
+                        hk2Types,
+                        filterTypes(appInfo, appConfig, hk2Types),
                         appInfo.getAppClassLoader()
                 ).process(document, appConfig);
                 document = new BaseProcessor(baseURLs).process(document, appConfig);
                 document = new FilterProcessor().process(document, appConfig);
             } catch (Throwable t) {
                 throw new OpenAPIBuildException(t);
+            } finally {
+                hk2Types = null;
             }
 
             LOGGER.info("OpenAPI document created.");
@@ -293,9 +315,9 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     /**
      * @return a list of all classes in the archive.
      */
-    private Set<Type> filterTypes(ApplicationInfo appInfo, OpenApiConfiguration config) {
+    private Set<Type> filterTypes(ApplicationInfo appInfo, OpenApiConfiguration config, Types hk2Types) {
         ReadableArchive archive = appInfo.getSource();
-        Set<Type> types = new HashSet<>(filterLibTypes(appInfo, config, archive));
+        Set<Type> types = new HashSet<>(filterLibTypes(config, hk2Types, archive));
         types.addAll(
                 Collections.list(archive.entries()).stream()
                         // Only use the classes
@@ -303,7 +325,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                         // Remove the WEB-INF/classes and return the proper class name format
                         .map(clazz -> clazz.replaceAll("WEB-INF/classes/", "").replace("/", ".").replace(".class", ""))
                         // Fetch class type
-                        .map(clazz -> appInfo.getTypes().getBy(clazz))
+                        .map(clazz -> hk2Types.getBy(clazz))
                         // Don't return null classes
                         .filter(Objects::nonNull)
                         .collect(toSet())
@@ -311,7 +333,10 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         return config == null ? types : config.getValidClasses(types);
     }
 
-    private Set<Type> filterLibTypes(ApplicationInfo appInfo, OpenApiConfiguration config, ReadableArchive archive) {
+    private Set<Type> filterLibTypes(
+            OpenApiConfiguration config,
+            Types hk2Types,
+            ReadableArchive archive) {
         Set<Type> types = new HashSet<>();
         if (config != null && config.getScanLib()) {
             Enumeration<String> subArchiveItr = archive.entries();
@@ -328,7 +353,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                                         // return the proper class name format
                                         .map(clazz -> clazz.replace("/", ".").replace(".class", ""))
                                         // Fetch class type
-                                        .map(clazz -> appInfo.getTypes().getBy(clazz))
+                                        .map(clazz -> hk2Types.getBy(clazz))
                                         // Don't return null classes
                                         .filter(Objects::nonNull)
                                         .collect(toSet())
