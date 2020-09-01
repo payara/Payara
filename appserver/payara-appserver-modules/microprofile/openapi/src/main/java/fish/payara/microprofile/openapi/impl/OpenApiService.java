@@ -282,33 +282,38 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             return document;
         }
 
-        private OpenAPI buildDocument() throws OpenAPIBuildException {
+        private synchronized OpenAPI buildDocument() throws OpenAPIBuildException {
+            if(this.document != null) {
+                return this.document;
+            }
+
             if(hk2Types == null) {
                 throw new IllegalStateException("HK2 Class model types not available.");
             }
 
-            document = new OpenAPIImpl();
+            OpenAPI doc = new OpenAPIImpl();
             try {
                 String contextRoot = getContextRoot(appInfo);
                 List<URL> baseURLs = getServerURL(contextRoot);
 
-                document = new ModelReaderProcessor().process(document, appConfig);
-                document = new FileProcessor(appInfo.getAppClassLoader()).process(document, appConfig);
-                document = new ApplicationProcessor(
+                doc = new ModelReaderProcessor().process(doc, appConfig);
+                doc = new FileProcessor(appInfo.getAppClassLoader()).process(doc, appConfig);
+                doc = new ApplicationProcessor(
                         hk2Types,
                         filterTypes(appInfo, appConfig, hk2Types),
                         appInfo.getAppClassLoader()
-                ).process(document, appConfig);
-                document = new BaseProcessor(baseURLs).process(document, appConfig);
-                document = new FilterProcessor().process(document, appConfig);
+                ).process(doc, appConfig);
+                doc = new BaseProcessor(baseURLs).process(doc, appConfig);
+                doc = new FilterProcessor().process(doc, appConfig);
             } catch (Throwable t) {
                 throw new OpenAPIBuildException(t);
             } finally {
                 hk2Types = null;
+                this.document = doc;
             }
 
             LOGGER.info("OpenAPI document created.");
-            return document;
+            return this.document;
         }
 
     }
