@@ -59,7 +59,7 @@ public class LogFormatHelper {
 
     private static final String GZIP_EXTENSION = ".gz";
     private static final int ODL_SUBSTRING_LEN = 5;
-    private static final String ODL_LINE_BEGIN_REGEX = "\\[(\\d){4}";
+    private static final String ODL_LINE_BEGIN_REGEX = "\\[[\\-\\:\\d]{4}";
     private static final Pattern ODL_PATTERN = Pattern.compile(ODL_LINE_BEGIN_REGEX);
 
 
