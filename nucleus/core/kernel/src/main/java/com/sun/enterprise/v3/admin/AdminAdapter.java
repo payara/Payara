@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -83,6 +84,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.event.RestrictTo;
+import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -310,8 +312,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             String headerValue = nameValuePair[1];
 
             int index = headerValue.lastIndexOf('.');
-            return  headerValue.substring(index+1)
-                    .equals(server.getName())? true : false;
+            return  headerValue.substring(index+1).equals(server.getName());
 
         }
         return false;
@@ -526,11 +527,28 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         }
 
         try {
+            
+            //If the upload option is present, this needs converting to a path
+            if (parameters.containsKey("upload")) {
+                
+                Buffer contentBuffer = req.getInputBuffer().getBuffer();
+                int capacity = contentBuffer.capacity();
+                byte[] path = new byte[capacity];
+                for (int i = 0; i < capacity; i++) {
+                    path[i] = contentBuffer.get(i);
+                }
+                
+                parameters.add("path", new String(path)); //path as passed in
+                parameters.remove("upload"); //remove to prevent exception as this is not a param in the command class
+            }
+            
+            
             Payload.Inbound inboundPayload = PayloadImpl.Inbound
                 .newInstance(req.getContentType(), req.getInputStream());
             if (aalogger.isLoggable(Level.FINE)) {
                 aalogger.log(Level.FINE, "***** AdminAdapter {0}  *****", req.getMethod());
             }
+            
             AdminCommand adminCommand = commandRunner.getCommand(scope, command, report, aalogger);
             if (adminCommand==null) {
                 // maybe commandRunner already reported the failure?
