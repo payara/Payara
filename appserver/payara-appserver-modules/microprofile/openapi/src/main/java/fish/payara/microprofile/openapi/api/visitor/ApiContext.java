@@ -52,7 +52,6 @@ import org.glassfish.hk2.classmodel.reflect.Type;
  */
 public interface ApiContext {
 
-    public AnnotationInfo getAnnotationInfo(ExtensibleType<? extends ExtensibleType> type);
     /**
      * The current {@link OpenAPI} object being operated on.
      */
@@ -93,4 +92,12 @@ public interface ApiContext {
      * @return the application class loader
      */
     ClassLoader getApplicationClassLoader();
+
+    /**
+     *
+     * @param type
+     * @return the aggregated annotation info of type
+     */
+    public AnnotationInfo getAnnotationInfo(ExtensibleType<? extends ExtensibleType> type);
+
 }
