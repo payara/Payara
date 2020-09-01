@@ -44,6 +44,7 @@ import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
+import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
 import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
@@ -268,7 +269,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         private Types hk2Types;
 
         OpenApiMapping(ApplicationInfo appInfo, Types hk2Types) {
-               this.appInfo = appInfo;
+            this.appInfo = appInfo;
             this.appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
             this.hk2Types = hk2Types;
         }

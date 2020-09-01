@@ -39,8 +39,10 @@
  */
 package fish.payara.microprofile.openapi.api.visitor;
 
+import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
+import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
 import org.glassfish.hk2.classmodel.reflect.Type;
 
 /**
@@ -50,6 +52,7 @@ import org.glassfish.hk2.classmodel.reflect.Type;
  */
 public interface ApiContext {
 
+    public AnnotationInfo getAnnotationInfo(ExtensibleType<? extends ExtensibleType> type);
     /**
      * The current {@link OpenAPI} object being operated on.
      */
