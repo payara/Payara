@@ -291,8 +291,10 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
                 throw new IllegalStateException("HK2 Class model types not available.");
             }
 
+            ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
             OpenAPI doc = new OpenAPIImpl();
             try {
+                Thread.currentThread().setContextClassLoader(appInfo.getAppClassLoader());
                 String contextRoot = getContextRoot(appInfo);
                 List<URL> baseURLs = getServerURL(contextRoot);
 
@@ -308,6 +310,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             } catch (Throwable t) {
                 throw new OpenAPIBuildException(t);
             } finally {
+                Thread.currentThread().setContextClassLoader(currentClassLoader);
                 hk2Types = null;
                 this.document = doc;
             }

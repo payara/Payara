@@ -260,8 +260,8 @@ public final class AnnotationInfo {
               init(supertype);
           }
           for (InterfaceModel implementedInterface : type.getInterfaces()) {
-              if (implementedInterface != null) {
-                  init(implementedInterface);
+              if (implementedInterface != null && implementedInterface != type) {
+                    init(implementedInterface);
               }
           }
 
