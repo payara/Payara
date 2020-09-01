@@ -44,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
-import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
+import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
@@ -833,7 +833,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 String schemaName = null;
                 if (type instanceof ExtensibleType) {
                     ExtensibleType implementationType = (ExtensibleType) type;
-                    AnnotationInfo annotationInfo = AnnotationInfo.valueOf(implementationType);
+                    AnnotationInfo annotationInfo = context.getAnnotationInfo(implementationType);
                     AnnotationModel annotation = annotationInfo.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
                     // Get the schema name
                     if (annotation != null) {
