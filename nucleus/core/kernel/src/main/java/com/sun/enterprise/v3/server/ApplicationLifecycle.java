@@ -1805,6 +1805,31 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                 }
                             }
                         }
+                        
+                        DeploymentGroup deploymentGroup = dmn.getDeploymentGroupNamed(target);
+                        if (deploymentGroup != null) {
+                            // update the application-ref from Deployment Group
+                            for (ApplicationRef appRef
+                                    : deploymentGroup.getApplicationRef()) {
+                                if (appRef.getRef().equals(appName)) {
+                                    ConfigBeanProxy appRef_w = t.enroll(appRef);
+                                    ((ApplicationRef) appRef_w).setEnabled(String.valueOf(enabled));
+                                    break;
+                                }
+                            }
+
+                            // update the application-ref from Deployment Group instances
+                            for (Server svr : deploymentGroup.getInstances()) {
+                                for (ApplicationRef appRef
+                                        : svr.getApplicationRef()) {
+                                    if (appRef.getRef().equals(appName)) {
+                                        ConfigBeanProxy appRef_w = t.enroll(appRef);
+                                        ((ApplicationRef) appRef_w).setEnabled(String.valueOf(enabled));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
              }
              return Boolean.TRUE;
