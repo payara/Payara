@@ -58,8 +58,42 @@ public class DataSourceDefinitionTest {
     @Test
     public void testServerAndURL() {
         DataSourceDefinitionHandler handler = new DataSourceDefinitionHandler();
-        DataSourceDefinition definition = new DataSourceDefinition() {
+        
+        //Check url overrides serverName and sets it to null
+        DataSourceDefinition definition = new DataSourceDefinitionImpl() {
             @Override
+            public String url() {
+                return "http://database:5432/demo";
+            }
+
+            @Override
+            public String serverName() {
+                return "localhost";
+            }
+            
+        };
+        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(definition);
+        Assert.assertNull(descriptor.getServerName());
+        
+        
+        //Check if url is not set then serverName is left as-is
+        definition = new DataSourceDefinitionImpl() {
+            @Override
+            public String url() {
+                return null;
+            }
+
+            @Override
+            public String serverName() {
+                return "localhost";
+            }
+        };
+        descriptor = handler.createDescriptor(definition);
+        Assert.assertEquals("localhost", descriptor.getServerName());
+    }
+    
+    abstract class DataSourceDefinitionImpl implements DataSourceDefinition {
+        @Override
             public String name() {
                 return null;
             }
@@ -72,11 +106,6 @@ public class DataSourceDefinitionTest {
             @Override
             public String description() {
                 return null;
-            }
-
-            @Override
-            public String url() {
-                return "jdbc://foo/bar";
             }
 
             @Override
@@ -97,11 +126,6 @@ public class DataSourceDefinitionTest {
             @Override
             public int portNumber() {
                 return -1;
-            }
-
-            @Override
-            public String serverName() {
-                return "localhost";
             }
 
             @Override
@@ -153,10 +177,6 @@ public class DataSourceDefinitionTest {
             public Class<? extends Annotation> annotationType() {
                 return DataSourceDefinition.class;
             }
-        };
-        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(definition);
-        Assert.assertNull(descriptor.getServerName());
-        
     }
             
             
