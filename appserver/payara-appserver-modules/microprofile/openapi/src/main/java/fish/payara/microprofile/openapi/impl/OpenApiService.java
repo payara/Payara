@@ -39,12 +39,12 @@
  */
 package fish.payara.microprofile.openapi.impl;
 
+import com.sun.enterprise.v3.server.ApplicationLifecycle;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
-import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
 import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
@@ -65,8 +65,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ExecutorService;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -95,8 +93,10 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toSet;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -121,7 +121,7 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     private ServiceLocator habitat;
 
     @Inject
-    private ExecutorService executor;
+    private ApplicationLifecycle applicationLifecycle;
 
     @Override
     public void postConstruct() {
@@ -179,18 +179,10 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
             // Create all the relevant resources
             if (isValidApp(appInfo)) {
-                Types types = appInfo.getTransientAppMetaData(Types.class.getName(), Types.class);
                 // Store the application mapping in the list
-                mappings.add(new OpenApiMapping(appInfo, types));
+                OpenApiMapping mapping = new OpenApiMapping(appInfo);
+                mappings.add(mapping);
                 allDocuments = null;
-
-                executor.submit(() -> {
-                    try {
-                        getDocument();
-                    } catch (OpenAPIBuildException ex) {
-                        LOGGER.log(WARNING, "OpenAPI document creation failed.", ex);
-                    }
-                });
             }
         } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
@@ -208,8 +200,9 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
      * @return the document If multiple application deployed then merge all the
      * documents. Creates one if it hasn't already been created.
      * @throws OpenAPIBuildException if creating the document failed.
+     * @throws java.io.IOException if source archive not accessible
      */
-    public OpenAPI getDocument() throws OpenAPIBuildException {
+    public OpenAPI getDocument() throws OpenAPIBuildException, IOException {
         if (mappings.isEmpty() || !isEnabled()) {
             return null;
         }
@@ -266,43 +259,43 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         private final ApplicationInfo appInfo;
         private final OpenApiConfiguration appConfig;
         private volatile OpenAPI document;
-        private Types hk2Types;
 
-        OpenApiMapping(ApplicationInfo appInfo, Types hk2Types) {
+        OpenApiMapping(ApplicationInfo appInfo) {
             this.appInfo = appInfo;
             this.appConfig = new OpenApiConfiguration(appInfo.getAppClassLoader());
-            this.hk2Types = hk2Types;
         }
 
         ApplicationInfo getAppInfo() {
             return appInfo;
         }
 
-        private synchronized OpenAPI getDocument() throws OpenAPIBuildException {
+        private OpenAPI getDocument() throws OpenAPIBuildException {
             return document;
         }
 
-        private synchronized OpenAPI buildDocument() throws OpenAPIBuildException {
-            if(this.document != null) {
+        private synchronized OpenAPI buildDocument() throws OpenAPIBuildException, IOException {
+            if (this.document != null) {
                 return this.document;
             }
 
-            if(hk2Types == null) {
-                throw new IllegalStateException("HK2 Class model types not available.");
-            }
+            Parser parser = applicationLifecycle.getDeployableParser(
+                    appInfo.getSource(),
+                    true,
+                    true,
+                    StructuredDeploymentTracing.create(appInfo.getName()),
+                    LOGGER
+            );
+            Types types = parser.getContext().getTypes();
 
-            ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
             OpenAPI doc = new OpenAPIImpl();
             try {
-                Thread.currentThread().setContextClassLoader(appInfo.getAppClassLoader());
                 String contextRoot = getContextRoot(appInfo);
                 List<URL> baseURLs = getServerURL(contextRoot);
-
                 doc = new ModelReaderProcessor().process(doc, appConfig);
                 doc = new FileProcessor(appInfo.getAppClassLoader()).process(doc, appConfig);
                 doc = new ApplicationProcessor(
-                        hk2Types,
-                        filterTypes(appInfo, appConfig, hk2Types),
+                        types,
+                        filterTypes(appInfo, appConfig, types),
                         appInfo.getAppClassLoader()
                 ).process(doc, appConfig);
                 doc = new BaseProcessor(baseURLs).process(doc, appConfig);
@@ -310,8 +303,6 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             } catch (Throwable t) {
                 throw new OpenAPIBuildException(t);
             } finally {
-                Thread.currentThread().setContextClassLoader(currentClassLoader);
-                hk2Types = null;
                 this.document = doc;
             }
 
