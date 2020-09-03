@@ -663,63 +663,81 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     @SuppressWarnings("squid:S2095")
     public Types getDeployableTypes(DeploymentContext context) throws IOException {
-        synchronized(context) {
+        synchronized (context) {
             Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
-            if (types!=null) {
+            if (types != null) {
                 return types;
             }
             StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
-            try {
-                ResourceLocator locator = determineLocator();
-                // scan the jar and store the result in the deployment context.
-                ParsingContext.Builder parsingContextBuilder = new ParsingContext.Builder()
-                        .logger(context.getLogger())
-                        .executorService(executorService.getUnderlyingExecutorService())
-                        .config(new ParsingConfig() {
-                            @Override
-                            public Set<String> getAnnotationsOfInterest() {
-                                return Collections.emptySet();
-                            }
+            Boolean skipScanExternalLibProp = Boolean.valueOf(context.getAppProps().getProperty(DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB));
+            Parser parser = getDeployableParser(
+                    context.getSource(),
+                    skipScanExternalLibProp,
+                    false,
+                    tracing,
+                    context.getLogger()
+            );
+            ParsingContext parsingContext = parser.getContext();
+            context.addTransientAppMetaData(Types.class.getName(), parsingContext.getTypes());
+            context.addTransientAppMetaData(Parser.class.getName(), parser);
+            return parsingContext.getTypes();
+        }
+    }
 
-                            @Override
-                            public Set<String> getTypesOfInterest() {
-                                return Collections.emptySet();
-                            }
-
-                            @Override
-                            public boolean modelUnAnnotatedMembers() {
-                                return true;
-                            }
-                        });
-                // workaround bug in Builder
-                parsingContextBuilder.locator(locator);
-                ParsingContext parsingContext = parsingContextBuilder.build();
-                Parser parser = new Parser(parsingContext);
-                ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, context.getSource());
-                DeploymentSpan mainScanSpan = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, context.getSource().getName());
-                parser.parse(scannerAdapter, () -> mainScanSpan.close());
-                for (ReadableArchive externalLibArchive :
-                    getExternalLibraries(context)) {
-                    ReadableArchiveScannerAdapter libAdapter = null;
-                    try {
-                        DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, externalLibArchive.getName());
-                        libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive);
-                        parser.parse(libAdapter, () -> span.close());
-                    } finally {
-                        if (libAdapter!=null) {
-                            libAdapter.close();
+    public Parser getDeployableParser(
+            ReadableArchive source,
+            boolean skipScanExternalLibProp,
+            boolean modelUnAnnotatedMembers,
+            StructuredDeploymentTracing tracing,
+            Logger logger
+    ) throws IOException {
+        try {
+            ResourceLocator locator = determineLocator();
+            // scan the jar and store the result in the deployment context.
+            ParsingContext.Builder parsingContextBuilder = new ParsingContext.Builder()
+                    .logger(logger)
+                    .executorService(executorService.getUnderlyingExecutorService())
+                    .config(new ParsingConfig() {
+                        @Override
+                        public Set<String> getAnnotationsOfInterest() {
+                            return Collections.emptySet();
                         }
+
+                        @Override
+                        public Set<String> getTypesOfInterest() {
+                            return Collections.emptySet();
+                        }
+
+                        @Override
+                        public boolean modelUnAnnotatedMembers() {
+                            return modelUnAnnotatedMembers;
+                        }
+                    });
+            // workaround bug in Builder
+            parsingContextBuilder.locator(locator);
+            ParsingContext parsingContext = parsingContextBuilder.build();
+            Parser parser = new Parser(parsingContext);
+            ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, source);
+            DeploymentSpan mainScanSpan = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, source.getName());
+            parser.parse(scannerAdapter, () -> mainScanSpan.close());
+            for (ReadableArchive externalLibArchive : getExternalLibraries(source, skipScanExternalLibProp)) {
+                ReadableArchiveScannerAdapter libAdapter = null;
+                try {
+                    DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, externalLibArchive.getName());
+                    libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive);
+                    parser.parse(libAdapter, () -> span.close());
+                } finally {
+                    if (libAdapter != null) {
+                        libAdapter.close();
                     }
                 }
-
-                parser.awaitTermination();
-                scannerAdapter.close();
-                context.addTransientAppMetaData(Types.class.getName(), parsingContext.getTypes());
-                context.addTransientAppMetaData(Parser.class.getName(), parser);
-                return parsingContext.getTypes();
-            } catch(InterruptedException e) {
-                throw new IOException(e);
             }
+
+            parser.awaitTermination();
+            scannerAdapter.close();
+            return parser;
+        } catch (InterruptedException e) {
+            throw new IOException(e);
         }
     }
 
@@ -745,20 +763,16 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
-    private List<ReadableArchive> getExternalLibraries(
-        DeploymentContext context) throws IOException {
+    private List<ReadableArchive> getExternalLibraries(ReadableArchive source, Boolean skipScanExternalLibProp) throws IOException {
         List<ReadableArchive> externalLibArchives = new ArrayList<>();
 
-        String skipScanExternalLibProp = context.getAppProps().getProperty(
-                DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB);
-
-        if (Boolean.valueOf(skipScanExternalLibProp)) {
+        if (skipScanExternalLibProp) {
             // if we skip scanning external libraries, we should just
             // return an empty list here
             return Collections.emptyList();
         }
 
-        List<URI> externalLibs = DeploymentUtils.getExternalLibraries(context.getSource());
+        List<URI> externalLibs = DeploymentUtils.getExternalLibraries(source);
         for (URI externalLib : externalLibs) {
             externalLibArchives.add(archiveFactory.openArchive(new File(externalLib.getPath())));
         }
