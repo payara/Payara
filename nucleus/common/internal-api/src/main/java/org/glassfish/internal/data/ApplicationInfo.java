@@ -509,10 +509,6 @@ public class ApplicationInfo extends ModuleInfo {
         }
     }
 
-    public void postDeployClean() {
-        this.transientAppMetaData.clear();
-    }
-
     /**
      * Saves its state to the configuration. this method must be called within a
      * transaction to the configured Application instance.
