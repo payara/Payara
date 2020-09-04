@@ -550,7 +550,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             // first, then register the real one
             appRegistry.remove(appName);
             appInfo.setIsJavaEEApp(sortedEngineInfos);
-            appInfo.addTransientAppMetaData(Types.class.getName(), getDeployableTypes(context));
             appRegistry.add(appName, appInfo);
 
             notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.PREPARE, context);
