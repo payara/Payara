@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation]
+
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
