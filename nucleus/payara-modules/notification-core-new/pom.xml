@@ -46,16 +46,16 @@
         <artifactId>payara-nucleus-modules</artifactId>
         <version>5.2020.5-SNAPSHOT</version>
     </parent>
-    <artifactId>requesttracing-core</artifactId>
+    <artifactId>notification-core-new</artifactId>
     <packaging>glassfish-jar</packaging>
-    <name>Request Tracing Core services</name>
-    <description>Request Tracing Core Services</description>
+    <name>Notification Core services</name>
+    <description>Notification Core Services</description>
     <developers>
         <developer>
             <id>mcaliskan</id>
             <name>Mert Caliskan</name>
-            <url>http://www.payara.fish</url>
-            <organization>Payara Services Ltd.</organization>
+            <url>http://www.payara.co</url>
+            <organization>Payara Inc.</organization>
             <roles>
                 <role>developer</role>
             </roles>
@@ -71,81 +71,22 @@
                 </includes>
             </resource>
         </resources>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                        <configuration>
-                            <instructions>
-                                <Export-Package>
-                                    fish.payara.nucleus.requesttracing,
-                                    fish.payara.nucleus.requesttracing.domain,
-                                    fish.payara.nucleus.requesttracing.domain.execoptions,
-                                    fish.payara.nucleus.requesttracing.configuration,
-                                    fish.payara.nucleus.requesttracing.store,
-                                    fish.payara.nucleus.requesttracing.events
-                                </Export-Package>
-                            </instructions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
+
     <dependencies>
-        <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>notification-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>hazelcast-bootstrap</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
-            <artifactId>monitoring-console-api</artifactId>
-        </dependency>
-        
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.json</artifactId>
-            <scope>test</scope>
+            <groupId>fish.payara.server.internal.core</groupId>
+            <artifactId>logging</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>payara-executor-service</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-            <version>${opentracing.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
