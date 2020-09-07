@@ -98,8 +98,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
     }
 
     private void initBindAndPublicAddress() {
-        InetAddress chosenAddress = chooseAddress();
-
+        // try setting public address from configuration, Payara node config
         if (localConfig.getPublicAddress() != null && !localConfig.getPublicAddress().isEmpty()) {
             String address[] = localConfig.getPublicAddress().split(":");
             if (address.length > 1) {
@@ -111,15 +110,20 @@ public class MemberAddressPicker implements MemberAddressProvider {
 
         logger.fine("Finding an appropriate address for Hazelcast to use");
         int port = 0;
+        InetAddress chosenAddress = chooseAddress();
         if (env.isDas() && !env.isMicro()) {
             port = new Integer(config.getDasPort());
             if (config.getDASPublicAddress() != null && !config.getDASPublicAddress().isEmpty()) {
+                // try setting public address from global Payara config
                 publicAddress = new InetSocketAddress(config.getDASPublicAddress(), port);
             }
 
+            // bind address
             if (config.getDASBindAddress() != null && !config.getDASBindAddress().isEmpty()) {
                 String bindAddr = config.getDASBindAddress();
-                if (bindAddr.trim().equals("*")) {
+                // wildcard does not work in multi-homed environments in Hazelcast
+                boolean tryWildCard = false;
+                if (tryWildCard && bindAddr.trim().equals("*")) {
                     bindAddress = new InetSocketAddress(port);
                     logger.log(Level.FINE, "Using Wildcard bind address");
                 } else {
@@ -153,7 +157,6 @@ public class MemberAddressPicker implements MemberAddressProvider {
             }
         }
     }
-
 
     private InetSocketAddress tryLocalHostOrLoopback(int port) {
         try {
