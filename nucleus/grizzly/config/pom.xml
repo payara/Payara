@@ -44,17 +44,17 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.server.internal.grizzly</groupId>
         <artifactId>nucleus-grizzly</artifactId>
         <version>5.2020.5-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>grizzly-config</artifactId>
     <name>grizzly-config</name>
     <packaging>glassfish-jar</packaging>
-    
+
     <build>
         <resources>
             <resource>
@@ -70,10 +70,10 @@
                     <forkCount>1</forkCount>
                     <reuseForks>false</reuseForks>
                 </configuration>
-            </plugin>            
+            </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
@@ -91,7 +91,7 @@
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>tls-sni</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http</artifactId>
@@ -126,7 +126,7 @@
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- test deps -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -136,7 +136,7 @@
          <dependency>
              <groupId>org.glassfish.grizzly</groupId>
              <artifactId>grizzly-npn-api</artifactId>
-             <version>${grizzly.npn.version}</version>
+             <version>${grizzly.npn.api.version}</version>
              <scope>test</scope>
          </dependency>
     </dependencies>

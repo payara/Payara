@@ -121,7 +121,7 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.version>1.9.payara-p1</grizzly.npn.version>
+        <grizzly.npn.api.version>1.9.payara-p1</grizzly.npn.api.version>
         <grizzly.npn.osgi.version>1.9</grizzly.npn.osgi.version>
 
         <!-- Microprofile -->
@@ -158,7 +158,7 @@
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.6</commons-io.version>
-      
+
         <mimepull.version>1.9.12</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
@@ -714,7 +714,7 @@ Parent is ${project.parent}</echo>
                 <groupId>fish.payara.monitoring-console</groupId>
                 <artifactId>monitoring-console-api</artifactId>
                 <version>${monitoring-console-api.version}</version>
-            </dependency>            
+            </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
