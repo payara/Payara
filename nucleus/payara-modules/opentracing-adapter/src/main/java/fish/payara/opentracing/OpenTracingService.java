@@ -113,6 +113,10 @@ public class OpenTracingService implements EventListener {
      * @return The Tracer instance for the given application
      */
     public synchronized Tracer getTracer(String applicationName) {
+        if (applicationName == null) {
+            return null;
+        }
+
         // Get the tracer if there is one
         Tracer tracer = tracers.get(applicationName);
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
 
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
@@ -368,8 +368,8 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
 
     }
 
-
-    private DataSourceDefinitionDescriptor createDescriptor(DataSourceDefinition defn) {
+    //Not private as accessed by tests
+    DataSourceDefinitionDescriptor createDescriptor(DataSourceDefinition defn) {
 
         DataSourceDefinitionDescriptor desc = new DataSourceDefinitionDescriptor();
         desc.setMetadataSource(MetadataSource.ANNOTATION);
@@ -394,11 +394,12 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
             desc.setDatabaseName(defn.databaseName());
         }
 
-        if ((desc.getPortNumber() != -1 && desc.getDatabaseName() != null && desc.getServerName() != null)) {
+        if (desc.getPortNumber() != -1 && desc.getDatabaseName() != null && desc.getServerName() != null) {
             //standard properties are set, ignore URL
         } else {
             if (defn.url() != null && !defn.url().equals("")) {
                 desc.setUrl(defn.url());
+                desc.setServerName(null); //To prevent serverName overriding the URL, always use the URL if the standard properties are not set
             }
         }
 

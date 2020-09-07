@@ -60,7 +60,7 @@ import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementI
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
-import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
+import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import java.lang.reflect.Method;
@@ -555,7 +555,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (superClass != null) {
 
                 // Get the parent schema annotation
-                AnnotationModel parentSchemAnnotation = AnnotationInfo.valueOf(superClass)
+                AnnotationModel parentSchemAnnotation = context.getAnnotationInfo(superClass)
                         .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
 
                 ParameterizedInterfaceModel parameterizedInterface = clazz.getParameterizedInterface(superClass);
@@ -589,7 +589,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Get the parent schema object name
         String parentName = null;
-        AnnotationModel classSchemaAnnotation = AnnotationInfo.valueOf(field.getDeclaringType())
+        AnnotationModel classSchemaAnnotation = context.getAnnotationInfo(field.getDeclaringType())
                 .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
         if (classSchemaAnnotation != null) {
             parentName = classSchemaAnnotation.getValue("name", String.class);
@@ -617,7 +617,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
         // Check if it's a request body
-        if (ModelUtils.isRequestBody(parameter)) {
+        if (ModelUtils.isRequestBody(context, parameter)) {
             if (context.getWorkingOperation().getRequestBody() == null) {
                 context.getWorkingOperation().setRequestBody(new RequestBodyImpl());
             }
@@ -629,10 +629,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (schema.getRef() != null && !schema.getRef().isEmpty()) {
                 mediaType.setSchema(new SchemaImpl().ref(schema.getRef()));
             }
-        } else if (ModelUtils.getParameterType(parameter) != null) {
+        } else if (ModelUtils.getParameterType(context, parameter) != null) {
             for (Parameter param : context.getWorkingOperation()
                     .getParameters()) {
-                if (param.getName().equals(ModelUtils.getParameterName(parameter))) {
+                if (param.getName().equals(ModelUtils.getParameterName(context, parameter))) {
                     Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
                     SchemaImpl.merge(schema, param.getSchema(), true, context);
                     if (schema.getRef() != null && !schema.getRef().isEmpty()) {
@@ -794,20 +794,20 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             // Get all parameters with the same name
             List<org.glassfish.hk2.classmodel.reflect.Parameter> matchingMethodParameters = annotated.getParameters()
                     .stream()
-                    .filter(x -> name.equals(ModelUtils.getParameterName(x)))
+                    .filter(x -> name.equals(ModelUtils.getParameterName(context, x)))
                     .collect(Collectors.toList());
             // If there is more than one match, filter it further
             In in = parameter.getIn();
             if (matchingMethodParameters.size() > 1 && in != null) {
                 // Remove all parameters of the wrong input type
                 matchingMethodParameters
-                        .removeIf(x -> ModelUtils.getParameterType(x) != In.valueOf(in.name()));
+                        .removeIf(x -> ModelUtils.getParameterType(context, x) != In.valueOf(in.name()));
             }
             if (matchingMethodParameters.isEmpty()) {
                 return null;
             }
             // If there's only one matching parameter, handle it immediately
-            String matchingMethodParamName = ModelUtils.getParameterName(matchingMethodParameters.get(0));
+            String matchingMethodParamName = ModelUtils.getParameterName(context, matchingMethodParameters.get(0));
             // Find the matching operation parameter
             for (Parameter operationParam : context
                     .getWorkingOperation().getParameters()) {
@@ -824,7 +824,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      */
     private static Parameter findOperationParameterFor(
             org.glassfish.hk2.classmodel.reflect.Parameter annotated, ApiContext context) {
-        String actualName = ModelUtils.getParameterName(annotated);
+        String actualName = ModelUtils.getParameterName(context, annotated);
         if (actualName == null) {
             return null;
         }
@@ -949,7 +949,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         // Get the request body type of the method
         org.glassfish.hk2.classmodel.reflect.ParameterizedType bodyType = null;
         for (org.glassfish.hk2.classmodel.reflect.Parameter methodParam : method.getParameters()) {
-            if (ModelUtils.isRequestBody(methodParam)) {
+            if (ModelUtils.isRequestBody(context, methodParam)) {
                 bodyType = methodParam;
                 break;
             }
@@ -1173,7 +1173,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         if (referenceClass != null && referenceClass instanceof ExtensibleType) {
             ExtensibleType referenceClassType = (ExtensibleType) referenceClass;
-            final AnnotationModel schemaAnnotation = AnnotationInfo.valueOf(referenceClassType)
+            final AnnotationModel schemaAnnotation = context.getAnnotationInfo(referenceClassType)
                     .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
             String schemaName = null;
             if (schemaAnnotation != null) {

@@ -42,7 +42,6 @@ package fish.payara.microprofile.openapi.impl.visitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
-import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
 import java.lang.annotation.Annotation;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -122,7 +121,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
     }
 
     public final void processAnnotation(ClassModel annotatedClass, ApiVisitor visitor) {
-        AnnotationInfo annotations = AnnotationInfo.valueOf(annotatedClass);
+        AnnotationInfo annotations = context.getAnnotationInfo(annotatedClass);
         processAnnotation((E) annotatedClass, annotations, visitor, new OpenApiContext(context, annotatedClass));
 
         for (final MethodModel method : annotatedClass.getMethods()) {

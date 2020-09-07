@@ -99,6 +99,17 @@
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>enable-requesttracing</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/glassfish/bin/asadmin</executable>
+                            <commandlineArgs>set-requesttracing-configuration --enabled true --dynamic true</commandlineArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>deploy-${deployableName}</id>
                         <phase>pre-integration-test</phase>
                         <goals>
@@ -118,6 +129,17 @@
                         <configuration>
                             <executable>${payara.home}/glassfish/bin/asadmin</executable>
                             <commandlineArgs>undeploy ${deployableName}</commandlineArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>disable-requesttracing</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/glassfish/bin/asadmin</executable>
+                            <commandlineArgs>set-requesttracing-configuration --enabled false --dynamic true</commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>
