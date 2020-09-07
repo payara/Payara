@@ -78,7 +78,7 @@ public class OpenApiResource {
         OpenAPI document = null;
         try {
             document = openApiService.getDocument();
-        } catch (OpenAPIBuildException ex) {
+        } catch (OpenAPIBuildException | IOException ex) {
             LOGGER.log(WARNING, "OpenAPI document creation failed.", ex);
         }
 

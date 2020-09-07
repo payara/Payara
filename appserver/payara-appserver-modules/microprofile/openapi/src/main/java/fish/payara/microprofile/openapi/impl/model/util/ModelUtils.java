@@ -39,8 +39,10 @@
  */
 package fish.payara.microprofile.openapi.impl.model.util;
 
+import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
+import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -128,12 +130,13 @@ public final class ModelUtils {
     }
 
     /**
+     * @param context
      * @param method the method to analyse.
      * @return the {@link HttpMethod} applied to this method, or null if there is
      *         none.
      */
-    public static HttpMethod getHttpMethod(MethodModel method) {
-        AnnotationInfo annotations = AnnotationInfo.valueOf(method.getDeclaringType());
+    public static HttpMethod getHttpMethod(OpenApiContext context, MethodModel method) {
+        AnnotationInfo annotations = context.getAnnotationInfo(method.getDeclaringType());
         if (annotations.isAnnotationPresent(GET.class, method)) {
             return HttpMethod.GET;
         }
@@ -227,10 +230,10 @@ public final class ModelUtils {
         return operation;
     }
 
-    public static Operation findOperation(OpenAPI api, MethodModel method, String path) {
+    public static Operation findOperation(OpenApiContext context, OpenAPI api, MethodModel method, String path) {
         Operation foundOperation = null;
         try {
-            return api.getPaths().getPathItem(path).getOperations().get(getHttpMethod(method));
+            return api.getPaths().getPathItem(path).getOperations().get(getHttpMethod(context, method));
         } catch (NullPointerException ex) {
             // Operation not found
         }
@@ -360,8 +363,8 @@ public final class ModelUtils {
         return type1;
     }
 
-    public static boolean isRequestBody(org.glassfish.hk2.classmodel.reflect.Parameter parameter) {
-        AnnotationInfo annotations = AnnotationInfo.valueOf(parameter.getMethod().getDeclaringType());
+    public static boolean isRequestBody(ApiContext context, org.glassfish.hk2.classmodel.reflect.Parameter parameter) {
+        AnnotationInfo annotations = context.getAnnotationInfo(parameter.getMethod().getDeclaringType());
         if (annotations.getAnnotationCount(parameter) == 0) {
             return true;
         }
@@ -372,8 +375,8 @@ public final class ModelUtils {
         );
     }
 
-    public static In getParameterType(org.glassfish.hk2.classmodel.reflect.Parameter parameter) {
-        AnnotationInfo annotations = AnnotationInfo.valueOf(parameter.getMethod().getDeclaringType());
+    public static In getParameterType(ApiContext context, org.glassfish.hk2.classmodel.reflect.Parameter parameter) {
+        AnnotationInfo annotations = context.getAnnotationInfo(parameter.getMethod().getDeclaringType());
         if (annotations.isAnnotationPresent(PathParam.class, parameter)) {
             return In.PATH;
         }
@@ -389,8 +392,8 @@ public final class ModelUtils {
         return null;
     }
 
-    public static String getParameterName(org.glassfish.hk2.classmodel.reflect.Parameter parameter) {
-        AnnotationInfo annotations = AnnotationInfo.valueOf(parameter.getMethod().getDeclaringType());
+    public static String getParameterName(ApiContext context, org.glassfish.hk2.classmodel.reflect.Parameter parameter) {
+        AnnotationInfo annotations = context.getAnnotationInfo(parameter.getMethod().getDeclaringType());
         if (annotations.isAnnotationPresent(PathParam.class, parameter)) {
             return annotations.getAnnotationValue(PathParam.class, parameter);
         } else if (annotations.isAnnotationPresent(QueryParam.class, parameter)) {
