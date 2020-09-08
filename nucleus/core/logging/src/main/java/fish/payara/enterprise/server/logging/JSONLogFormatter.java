@@ -379,6 +379,30 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                         .append(eventObject.toString()), level);
             }
 
+            Object[] parameters = record.getParameters();
+            if (parameters != null) {
+                for (Object parameter : parameters) {
+                    if (parameter instanceof Map) {
+                        for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) parameter).entrySet()) {
+                            // there are implementations that allow <null> keys...
+                            String key;
+                            if (entry.getKey() != null) {
+                                key = entry.getKey().toString();
+                            } else {
+                                key = "null";
+                            }
+
+                            // also handle <null> values...
+                            if (entry.getValue() != null) {
+                                eventObject.add(key, entry.getValue().toString());
+                            } else {
+                                eventObject.add(key, "null");
+                            }
+                        }
+                    }
+                }
+            }
+
             String logMessage = record.getMessage();
 
             if (null == logMessage || logMessage.trim().equals("")) {
