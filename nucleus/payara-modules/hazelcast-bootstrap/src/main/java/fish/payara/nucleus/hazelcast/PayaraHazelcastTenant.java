@@ -49,7 +49,6 @@ import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -108,7 +107,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable, C
     }
 
     @Override
-    public void distributedObjectCreated(Optional<DestroyEventContext> destroyContext) {
+    public void distributedObjectCreated(DestroyEventContext destroyContext) {
         destroyEventListener = new EventListenerImpl(destroyContext);
         events.register(destroyEventListener);
     }
@@ -197,15 +196,15 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable, C
     }
 
     private class EventListenerImpl implements EventListener {
-        private final Optional<DestroyEventContext> destroyEvent;
+        private final DestroyEventContext destroyEvent;
 
 
-        private EventListenerImpl(Optional<DestroyEventContext> event) {
+        private EventListenerImpl(DestroyEventContext event) {
             this.destroyEvent = event;
         }
 
         @Override
-        public void event(EventListener.Event payaraEvent) {
+        public void event(EventListener.Event<?> payaraEvent) {
             if (payaraEvent.is(Deployment.MODULE_STARTED)) {
                 ModuleInfo hook = (ModuleInfo) payaraEvent.hook();
                 if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
@@ -221,7 +220,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable, C
                 if (!(hook instanceof ApplicationInfo) && VersioningUtils.getUntaggedName(hook.getName()).equals(moduleName)) {
                     // decouple the tenant classes from the event
                     tenantUnavailable();
-                    destroyEvent.ifPresent(DestroyEventContext::tenantUnavailable);
+                    destroyEvent.tenantUnavailable();
                 }
             }
         }
