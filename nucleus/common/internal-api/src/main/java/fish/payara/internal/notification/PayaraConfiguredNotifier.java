@@ -73,7 +73,7 @@ public abstract class PayaraConfiguredNotifier<NC extends PayaraNotifierConfigur
         this.configuration = config.getNotifierConfigurationByType(configClass);
         if (configuration == null) {
             try {
-                ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {
+                configuration = (NC) ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {
                     @Override
                     public Object run(final NotificationServiceConfiguration configurationProxy)
                             throws PropertyVetoException, TransactionFailure {

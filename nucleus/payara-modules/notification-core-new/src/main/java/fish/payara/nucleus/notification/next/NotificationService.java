@@ -39,15 +39,18 @@
  */
 package fish.payara.nucleus.notification.next;
 
-import static fish.payara.nucleus.notification.next.admin.NotifierUtils.getNotifierName;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -79,6 +82,7 @@ import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.notification.next.log.NewLogNotifierConfiguration;
 
 /**
@@ -99,30 +103,70 @@ public class NotificationService implements EventListener, ConfigListener {
     private NotificationServiceConfiguration configuration;
 
     @Inject
-    private Events events;
-
-    @Inject
-    private ServiceLocator habitat;
+    private ServiceLocator serviceLocator;
 
     @Inject
     Transactions transactions;
 
     @Inject
-    ServerEnvironment env;
+    private PayaraExecutorService executor;
+    private ScheduledFuture<?> execution;
+
+    private final Set<NotifierHandler> notifiers;
+
+    private boolean isInstance;
 
     private boolean enabled;
 
-    @PostConstruct
-    void postConstruct() {
-        events.register(this);
-        configuration = habitat.getService(NotificationServiceConfiguration.class);
+    public NotificationService() {
+        this.notifiers = new HashSet<>();
     }
 
-    public void event(Event event) {
+    @PostConstruct
+    void initialize() {
+        // Get the config if it's not been injected
+        if (configuration == null) {
+            configuration = serviceLocator.getService(NotificationServiceConfiguration.class);
+        }
+
+        // Register an event listener
+        final Events events = serviceLocator.getService(Events.class);
+        if (events != null) {
+            events.register(this);
+        }
+
+        // Is this service running on an instance?
+        final ServerEnvironment env = serviceLocator.getService(ServerEnvironment.class);
+        isInstance = env.isInstance();
+
+        // Find and register all notifier services
+        final List<ServiceHandle<PayaraNotifier>> notifierHandles = serviceLocator.getAllServiceHandles(PayaraNotifier.class);
+        for (ServiceHandle<PayaraNotifier> handle : notifierHandles) {
+            notifiers.add(new NotifierHandler(handle));
+        }
+    }
+
+    @PreDestroy
+    void destroy() {
+        notifiers.clear();
+    }
+
+    @Override
+    public void event(Event<?> event) {
         if (event.is(EventTypes.SERVER_READY)) {
             bootstrapNotificationService();
         }
+        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+            shutdownNotificationService();
+        }
         transactions.addListenerForType(NotificationServiceConfiguration.class, this);
+    }
+
+    public void shutdownNotificationService() {
+        if (execution != null) {
+            execution.cancel(true);
+        }
+        notifiers.forEach(NotifierHandler::destroy);
     }
 
     public void bootstrapNotificationService() {
@@ -130,6 +174,8 @@ public class NotificationService implements EventListener, ConfigListener {
             this.enabled = Boolean.valueOf(configuration.getEnabled());
 
             if (this.enabled) {
+
+                // Configure the log notifier by default
                 final List<PayaraNotifierConfiguration> notifierConfigurations = configuration.getNotifierConfigurationList();
                 if (notifierConfigurations != null && notifierConfigurations.isEmpty()) {
                     try {
@@ -147,6 +193,14 @@ public class NotificationService implements EventListener, ConfigListener {
                         logger.log(Level.SEVERE, "Error occurred while setting initial log notifier configuration", e);
                     }
                 }
+
+                // Bootstrap each notifier
+                notifiers.forEach(NotifierHandler::bootstrap);
+
+                // Start flushing notifiers as a background task
+                execution = executor.scheduleWithFixedDelay(() -> {
+                    notifiers.forEach(NotifierHandler::run);
+                }, 0, 500, TimeUnit.MILLISECONDS);
     
                 logger.info("Payara Notification Service bootstrapped with configuration: " + configuration);
             }
@@ -155,13 +209,11 @@ public class NotificationService implements EventListener, ConfigListener {
 
     public void notify(@SubscribeTo PayaraNotification event) {
         if (enabled) {
-            final List<ServiceHandle<PayaraNotifier>> notifierHandles = habitat.getAllServiceHandles(PayaraNotifier.class);
-
             final List<String> blacklist = event.getBlacklist();
             final List<String> whitelist = event.getWhitelist();
 
-            for (ServiceHandle<PayaraNotifier> notifierHandle : notifierHandles) {
-                final String notifierName = getNotifierName(notifierHandle.getActiveDescriptor());
+            for (NotifierHandler handler : notifiers) {
+                final String notifierName = handler.getName();
 
                 if (!blacklist.isEmpty() && blacklist.contains(notifierName)) {
                     continue;
@@ -169,7 +221,8 @@ public class NotificationService implements EventListener, ConfigListener {
                 if (!whitelist.isEmpty() && !whitelist.contains(notifierName)) {
                     continue;
                 }
-                notifierHandle.getService().handleNotification(event);
+
+                handler.accept(event);
             }
         }
     }
@@ -177,10 +230,9 @@ public class NotificationService implements EventListener, ConfigListener {
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         boolean isCurrentInstanceMatchTarget = false;
-        if (env.isInstance()) {
+        if (isInstance) {
             isCurrentInstanceMatchTarget = true;
-        }
-        else {
+        } else {
             for (PropertyChangeEvent pe : events) {
                 ConfigBeanProxy proxy = (ConfigBeanProxy) pe.getSource();
                 while (proxy != null && !(proxy instanceof Config)) {
@@ -196,7 +248,6 @@ public class NotificationService implements EventListener, ConfigListener {
 
         if (isCurrentInstanceMatchTarget) {
             return ConfigSupport.sortAndDispatch(events, new Changed() {
-
                 @Override
                 public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
 
