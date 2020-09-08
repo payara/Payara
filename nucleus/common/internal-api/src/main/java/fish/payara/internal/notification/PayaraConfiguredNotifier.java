@@ -39,6 +39,8 @@
  */
 package fish.payara.internal.notification;
 
+import static java.lang.Boolean.valueOf;
+
 import java.beans.PropertyVetoException;
 import java.lang.reflect.ParameterizedType;
 import java.util.logging.Level;
@@ -73,12 +75,12 @@ public abstract class PayaraConfiguredNotifier<NC extends PayaraNotifierConfigur
         this.configuration = config.getNotifierConfigurationByType(configClass);
         if (configuration == null) {
             try {
-                configuration = (NC) ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {
+                ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {
                     @Override
                     public Object run(final NotificationServiceConfiguration configurationProxy)
                             throws PropertyVetoException, TransactionFailure {
-                        NC notifierConfiguration = configurationProxy.createChild(configClass);
-                        configurationProxy.getNotifierConfigurationList().add(notifierConfiguration);
+                        configuration = configurationProxy.createChild(configClass);
+                        configurationProxy.getNotifierConfigurationList().add(configuration);
                         return configurationProxy;
                     }
                 }, config);
@@ -86,6 +88,10 @@ public abstract class PayaraConfiguredNotifier<NC extends PayaraNotifierConfigur
                 logger.log(Level.SEVERE, "Error occurred while setting initial notifier configuration", e);
             }
         }
+    }
+
+    public boolean isEnabled() {
+        return valueOf(configuration.getEnabled());
     }
 
 }
