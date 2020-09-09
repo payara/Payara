@@ -131,7 +131,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     private OpenApiWalker apiWalker;
 
     /**
-     * @param types parsed application classes
+     * @param allTypes parsed application classes
      * @param allowedTypes filtered application classes for OpenAPI metadata
      * processing
      * @param appClassLoader the class loader for the application.
@@ -316,10 +316,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                             && response.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD) != null) {
                         MediaType wildcardMedia = response.getContent().getMediaType(javax.ws.rs.core.MediaType.WILDCARD);
 
-                        // Copy the wildcard return type to the valid response types
+                        // Merge the wildcard return type with the valid response types
+                        //This keeps the specific details of a reponse type that has a schema
                         List<String> mediaTypes = produces.getValue("value", List.class);
                         for (String mediaType : mediaTypes) {
-                            response.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
+                            MediaType held = response.getContent().getMediaType(getContentType(mediaType));
+                            if (held == null) {
+                                response.getContent().addMediaType(getContentType(mediaType), wildcardMedia);
+                            } else {
+                                MediaTypeImpl.merge(held, wildcardMedia, true);
+                            }
                         }
                         // If there is an @Produces, remove the wildcard
                         response.getContent().removeMediaType(javax.ws.rs.core.MediaType.WILDCARD);
