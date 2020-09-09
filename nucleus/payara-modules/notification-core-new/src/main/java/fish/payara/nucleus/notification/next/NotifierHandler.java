@@ -60,7 +60,7 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
 
     private static final Logger LOGGER = Logger.getLogger(NotifierHandler.class.getName());
 
-    private final LazyService lazy;
+    private final PayaraNotifier notifier;
     private final String notifierName;
 
     private final Queue<PayaraNotification> notificationQueue;
@@ -70,7 +70,7 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     }
 
     public NotifierHandler(ServiceHandle<PayaraNotifier> notifierHandle, PayaraNotifierConfiguration config) {
-        this.lazy = new LazyService(notifierHandle, config);
+        this.notifier = notifierHandle.getService();
         this.notifierName = getNotifierName(notifierHandle.getActiveDescriptor());
         this.notificationQueue = new ArrayDeque<>();
     }
@@ -80,30 +80,34 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     }
 
     protected void destroy() {
-        if (lazy.isEnabled()) {
-            lazy.getNotifier().destroy();
-        }
+        notifier.destroy();
     }
 
     protected void bootstrap() {
-        if (lazy.isEnabled()) {
-            lazy.getNotifier().bootstrap();
-        }
+        notifier.bootstrap();
     }
 
     @Override
     public void accept(PayaraNotification notification) {
-        if (lazy.isEnabled() && !this.notificationQueue.add(notification)) {
+        if (isEnabled() && !this.notificationQueue.add(notification)) {
             LOGGER.warning(format("Notifier %s failed to accept the notification \"%s\".", notifierName, notification));
         }
+    }
+
+    private boolean isEnabled() {
+        if (notifier instanceof PayaraConfiguredNotifier) {
+            PayaraNotifierConfiguration config = PayaraConfiguredNotifier.class.cast(notifier).getConfiguration();
+            return valueOf(config.getEnabled());
+        }
+        return true;
     }
 
     @Override
     public void run() {
         final PayaraNotification notification = notificationQueue.peek();
         try {
-            if (notification != null && lazy.isEnabled()) {
-                lazy.getNotifier().handleNotification(notification);
+            if (notification != null && isEnabled()) {
+                notifier.handleNotification(notification);
                 notificationQueue.remove();
             }
         } catch (Exception ex) {
@@ -112,34 +116,4 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
         }
     }
 
-    private static class LazyService {
-
-        private final ServiceHandle<PayaraNotifier> notifierHandle;
-        private final PayaraNotifierConfiguration notifierConfig;
-        private PayaraNotifier notifier;
-
-        private LazyService(ServiceHandle<PayaraNotifier> notifierHandle, PayaraNotifierConfiguration notifierConfig) {
-            this.notifierHandle = notifierHandle;
-            this.notifierConfig = notifierConfig;
-        }
-
-        private boolean isEnabled() {
-            if (notifierConfig == null) {
-                return true;
-            }
-            if (notifier == null) {
-                return valueOf(notifierConfig.getEnabled());
-            }
-            return valueOf(PayaraConfiguredNotifier.class.cast(notifier).getConfiguration().getEnabled());
-        }
-
-        private synchronized PayaraNotifier getNotifier() {
-            if (notifier == null) {
-                notifier = notifierHandle.getService();
-            }
-            return notifier;
-        }
-
-    }
-    
 }

@@ -70,6 +70,7 @@ public abstract class PayaraConfiguredNotifier<NC extends PayaraNotifierConfigur
     void injectConfiguration() {
         final NotificationServiceConfiguration config = habitat.getService(NotificationServiceConfiguration.class);
         this.domainConfiguration = config.getNotifierConfigurationByType(getConfigurationClass(getClass()));
+        this.configuration = GlassFishStubBean.cloneBean(domainConfiguration, configClass);
     }
 
     @Override
