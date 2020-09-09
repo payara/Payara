@@ -38,18 +38,32 @@
  */
 package fish.payara.nucleus.requesttracing.admin;
 
+import java.beans.PropertyVetoException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.notification.TimeUtil;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -59,11 +73,9 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
-import java.beans.PropertyVetoException;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.internal.notification.TimeUtil;
+import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 
 /**
  * Admin command to enable/disable all request tracing services defined in
@@ -153,6 +165,12 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "historicTraceStoreTimeout", optional = true)
     private String historicTraceStoreTimeout;
 
+    @Param(name = "enableNotifiers", optional = true)
+    private List<String> enableNotifiers;
+
+    @Param(name = "disableNotifiers", optional = true)
+    private List<String> disableNotifiers;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -228,6 +246,15 @@ public class SetRequestTracingConfiguration implements AdminCommand {
                             warn = !historicTraceStoreTimeout.equals(proxy.getHistoricTraceStoreTimeout());
                             proxy.setHistoricTraceStoreTimeout(historicTraceStoreTimeout);
                         }
+
+                        List<String> notifiers = proxy.getNotifierList();
+                        if (enableNotifiers != null) {
+                            enableNotifiers.forEach(notifiers::add);
+                        }
+                        if (disableNotifiers != null) {
+                            disableNotifiers.forEach(notifiers::remove);
+                        }
+
                         actionReport.setActionExitCode(ExitCode.SUCCESS);
                         if (warn) {
                             actionReport.setMessage(STRINGS.get("requesttracing.configure.store.size.warning"));
@@ -332,6 +359,18 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             service.getExecutionOptions().setHistoricTraceStoreTimeout(TimeUtil.setStoreTimeLimit(historicTraceStoreTimeout));
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.historictrace.timeout.success",
                     "Request Tracing Historic Trace Store Timeout is set to {0}.", historicTraceStoreTimeout) + "\n");
+        }
+
+        List<String> notifiers = service.getExecutionOptions().getEnabledNotifiers();
+        if (enableNotifiers != null) {
+            enableNotifiers.forEach(notifiers::add);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.notifier.enable.success",
+                    "Request Tracing Notifiers {0} have been enabled.", Arrays.toString(enableNotifiers.toArray())) + "\n");
+        }
+        if (disableNotifiers != null) {
+            disableNotifiers.forEach(notifiers::remove);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.notifier.disable.success",
+                    "Request Tracing Notifiers {0} have been disabled.", Arrays.toString(disableNotifiers.toArray())) + "\n");
         }
 
         service.bootstrapRequestTracingService();

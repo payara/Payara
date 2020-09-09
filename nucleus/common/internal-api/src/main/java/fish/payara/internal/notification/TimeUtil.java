@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,41 +37,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.admin.notifier;
-
-
-import fish.payara.nucleus.notification.configuration.XmppNotifier;
-import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
-
-import java.beans.PropertyVetoException;
+package fish.payara.internal.notification;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "requesttracing-xmpp-notifier-configure")
-@PerLookup
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-        @RestEndpoint(configBean = RequestTracingServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
-                path = "requesttracing-xmpp-notifier-configure",
-                description = "Configures XMPP Notifier for RequestTracing Service")
-})
-public class XmppRequestTracingNotifierConfigurer extends BaseRequestTracingNotifierConfigurer<XmppNotifier> {
+public class TimeUtil {
 
-    @Override
-    protected void applyValues(XmppNotifier notifier) throws PropertyVetoException {
-        if(this.enabled != null) {
-            notifier.enabled(enabled);
+    public static final int CLEANUP_TASK_FIVE_MIN_PERIOD = 500;
+
+    private static final int SECOND = 1;
+    private static final int MINUTE = 60 * SECOND;
+    private static final int HOUR = 60 * MINUTE;
+    private static final int DAY = 24 * HOUR;
+
+    public static long setStoreTimeLimit(String timeLimit) {
+        long value = 0;
+        if (timeLimit != null) {
+            try {
+                value = Integer.parseInt(timeLimit);
+            }
+            catch (NumberFormatException nfe) {
+                int i = 0;
+                while (i < timeLimit.length() &&
+                        Character.isDigit(timeLimit.charAt(i)))
+                    i++;
+
+                if (i > 0) {
+                    value = Integer.parseInt(timeLimit.substring(0, i));
+
+                    char multiplier = timeLimit.charAt(i);
+                    switch (multiplier) {
+                        case 's' : value *= SECOND;
+                            break;
+                        case 'm' : value *= MINUTE;
+                            break;
+                        case 'h' : value *= HOUR;
+                            break;
+                        case 'd' : value *= DAY;
+                            break;
+                        default  : break;
+                    }
+                }
+            }
         }
+        return value;
     }
 }

@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.notification.next;
 
-import static fish.payara.nucleus.notification.next.admin.NotifierUtils.getNotifierName;
+import static fish.payara.internal.notification.NotifierUtils.getNotifierName;
 import static java.lang.Boolean.valueOf;
 import static java.lang.String.format;
 

@@ -47,6 +47,11 @@ public class PayaraNotificationBuilder {
         this.notification = notification;
     }
 
+    public PayaraNotificationBuilder subject(String subject) {
+        notification.setSubject(subject);
+        return this;
+    }
+
     public PayaraNotificationBuilder message(String message) {
         notification.setMessage(message);
         return this;

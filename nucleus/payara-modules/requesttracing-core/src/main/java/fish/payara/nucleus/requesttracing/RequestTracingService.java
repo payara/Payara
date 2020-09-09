@@ -40,7 +40,6 @@
 package fish.payara.nucleus.requesttracing;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,15 +74,13 @@ import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.NotProcessed;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.internal.notification.PayaraNotificationFactory;
+import fish.payara.internal.notification.TimeUtil;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -99,19 +96,6 @@ import fish.payara.nucleus.eventbus.EventBus;
 import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.TimeUtil;
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.domain.EventSource;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.domain.NotificationEventFactory;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
-import fish.payara.nucleus.notification.log.LogNotifier;
-import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
-import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
 import fish.payara.nucleus.requesttracing.events.RequestTracingEvents;
@@ -169,9 +153,6 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
     private ServiceLocator habitat;
 
     @Inject
-    NotificationService notificationService;
-
-    @Inject
     private Topic<PayaraNotification> notificationEventBus;
 
     @Inject
@@ -179,12 +160,6 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
 
     @Inject
     RequestTraceSpanStore requestEventStore;
-
-    @Inject
-    NotificationEventFactoryStore eventFactoryStore;
-
-    @Inject
-    private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
 
     @Inject
     private HazelcastCore hazelcast;
@@ -217,21 +192,6 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
         events.register(this);
         configuration = habitat.getService(RequestTracingServiceConfiguration.class);
         payaraExecutorService = habitat.getService(PayaraExecutorService.class);
-        if (configuration != null && configuration.getNotifierList() != null && configuration.getNotifierList().isEmpty()) {
-            try {
-                ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
-                    @Override
-                    public Object run(final RequestTracingServiceConfiguration configurationProxy)
-                            throws PropertyVetoException, TransactionFailure {
-                        LogNotifier notifier = configurationProxy.createChild(LogNotifier.class);
-                        configurationProxy.getNotifierList().add(notifier);
-                        return configurationProxy;
-                    }
-                }, configuration);
-            } catch (TransactionFailure e) {
-                logger.log(Level.SEVERE, "Error occurred while setting initial log notifier", e);
-            }
-        }
     }
 
     @Override
@@ -351,22 +311,9 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
      * @since 4.1.2.173
      */
     public void bootstrapNotifierList() {
-        executionOptions.resetNotifierExecutionOptions();
+        executionOptions.clearNotifiers();
         if (configuration.getNotifierList() != null) {
-            for (Notifier notifier : configuration.getNotifierList()) {
-                ConfigView view = ConfigSupport.getImpl(notifier);
-                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-                NotifierExecutionOptionsFactory<Notifier> notifierExecutionOptions = executionOptionsFactoryStore.get(annotation.type());
-                if (notifierExecutionOptions != null) {
-                    executionOptions.addNotifierExecutionOption(notifierExecutionOptions.build(notifier));
-                }
-            }
-        }
-        if (executionOptions.getNotifierExecutionOptionsList().isEmpty()) {
-            // Add logging execution options by default
-            LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
-            logNotifierExecutionOptions.setEnabled(true);
-            executionOptions.addNotifierExecutionOption(logNotifierExecutionOptions);
+            configuration.getNotifierList().forEach(executionOptions::enableNotifier);
         }
     }
 
@@ -562,15 +509,13 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
 
             payaraExecutorService.submit(addTask);
 
-            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
-                String subject = "Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold";
-                if (notifierExecutionOptions.isEnabled()) {
-                    NotificationEventFactory<?> notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                    NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(subject, requestTrace);
-                    notificationService.notify(EventSource.REQUESTTRACING, notificationEvent);
-                }
-                notificationEventBus.publish(notificationFactory.buildNotificationEvent(subject, requestTrace.toString()));
-            }
+            List<String> enabledNotifiers = getExecutionOptions().getEnabledNotifiers();
+            PayaraNotification notification = notificationFactory.newBuilder()
+                .whitelist(enabledNotifiers.toArray(new String[0]))
+                .subject("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold")
+                .message(requestTrace.toString())
+                .build();
+            notificationEventBus.publish(notification);
         }
         requestEventStore.flushStore();
     }
