@@ -227,10 +227,10 @@ public class NotificationService implements EventListener, ConfigListener {
             for (NotifierHandler handler : notifiers) {
                 final String notifierName = handler.getName();
 
-                if (!blacklist.isEmpty() && blacklist.contains(notifierName)) {
+                if (blacklist != null && blacklist.contains(notifierName)) {
                     continue;
                 }
-                if (!whitelist.isEmpty() && !whitelist.contains(notifierName)) {
+                if (whitelist != null && !whitelist.contains(notifierName)) {
                     continue;
                 }
 

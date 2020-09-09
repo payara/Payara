@@ -55,11 +55,6 @@ public class PayaraNotification {
     private List<String> whitelist;
     private List<String> blacklist;
 
-    protected PayaraNotification() {
-        this.whitelist = new ArrayList<>();
-        this.blacklist = new ArrayList<>();
-    }
-
     public String getEventType() {
         return eventType;
     }

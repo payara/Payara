@@ -38,8 +38,11 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,6 +71,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import fish.payara.internal.notification.NotifierUtils;
 import fish.payara.internal.notification.TimeUtil;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -158,6 +162,7 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     private void updateConfig(HealthCheckServiceConfiguration config, AdminCommandContext context) {
         final ActionReport report = initActionReport(context);
         try {
+            final Set<String> notifierNames = NotifierUtils.getNotifierNames(serviceLocator);
             ConfigSupport.apply(configProxy -> {
                     configProxy.enabled(enabled.toString());
                     configProxy.setHistoricalTraceStoreSize(String.valueOf(historicalTraceStoreSize));
@@ -169,10 +174,24 @@ public class SetHealthCheckConfiguration implements AdminCommand {
                     }
                     List<String> notifiers = configProxy.getNotifierList();
                     if (enableNotifiers != null) {
-                        enableNotifiers.forEach(notifiers::add);
+                        for (String notifier : enableNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                notifiers.add(notifier);
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(configProxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
                     }
                     if (disableNotifiers != null) {
-                        disableNotifiers.forEach(notifiers::remove);
+                        for (String notifier : disableNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                notifiers.remove(notifier);
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(configProxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
                     }
 
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

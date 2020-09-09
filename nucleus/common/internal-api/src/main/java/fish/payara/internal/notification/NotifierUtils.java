@@ -39,7 +39,13 @@
  */
 package fish.payara.internal.notification;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 
 public final class NotifierUtils {
     
@@ -54,5 +60,14 @@ public final class NotifierUtils {
             name = descriptor.getImplementationClass().getSimpleName();
         }
         return name;
+    }
+
+    public static final Set<String> getNotifierNames(ServiceLocator serviceLocator) {
+        final List<ServiceHandle<PayaraNotifier>> notifierHandles = serviceLocator.getAllServiceHandles(PayaraNotifier.class);
+        final Set<String> names = new HashSet<>();
+        for (ServiceHandle<PayaraNotifier> handle : notifierHandles) {
+            names.add(getNotifierName(handle.getActiveDescriptor()));
+        }
+        return names;
     }
 }

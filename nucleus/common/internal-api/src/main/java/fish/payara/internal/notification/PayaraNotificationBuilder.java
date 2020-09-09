@@ -39,6 +39,8 @@
  */
 package fish.payara.internal.notification;
 
+import java.util.ArrayList;
+
 public class PayaraNotificationBuilder {
 
     private final PayaraNotification notification;
@@ -64,6 +66,9 @@ public class PayaraNotificationBuilder {
 
     public PayaraNotificationBuilder whitelist(String... notifierNames) {
         for (int i = 0; i < notifierNames.length; i++) {
+            if (notification.getWhitelist() == null) {
+                notification.setWhitelist(new ArrayList<>());
+            }
             notification.getWhitelist().add(notifierNames[i]);
         }
         return this;
@@ -71,6 +76,9 @@ public class PayaraNotificationBuilder {
 
     public PayaraNotificationBuilder blacklist(String... notifierNames) {
         for (int i = 0; i < notifierNames.length; i++) {
+            if (notification.getBlacklist() == null) {
+                notification.setBlacklist(new ArrayList<>());
+            }
             notification.getBlacklist().add(notifierNames[i]);
         }
         return this;

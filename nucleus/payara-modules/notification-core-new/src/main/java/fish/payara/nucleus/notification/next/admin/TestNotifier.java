@@ -103,7 +103,7 @@ public class TestNotifier implements AdminCommand {
         PayaraNotificationBuilder builder = factory.newBuilder()
                 .message(MESSAGE);
 
-        if (all != null && !all) {
+        if (all == null || !all) {
             if (notifiers.isEmpty()) {
                 report.setMessage("Must either specify all notifiers or a select list");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);

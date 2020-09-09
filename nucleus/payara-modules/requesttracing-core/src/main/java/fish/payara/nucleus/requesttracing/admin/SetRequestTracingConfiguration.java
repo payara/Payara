@@ -38,10 +38,12 @@
  */
 package fish.payara.nucleus.requesttracing.admin;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -67,6 +69,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -74,6 +78,9 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.internal.notification.NotifierUtils;
+import fish.payara.internal.notification.PayaraNotification;
+import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.internal.notification.TimeUtil;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 
@@ -98,6 +105,9 @@ public class SetRequestTracingConfiguration implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(SetRequestTracingConfiguration.class);
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(SetRequestTracingConfiguration.class);
+
+    @Inject
+    private ServiceLocator serviceLocator;
 
     @Inject
     ServerEnvironment server;
@@ -184,6 +194,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         final RequestTracingServiceConfiguration requestTracingServiceConfiguration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
 
         if (requestTracingServiceConfiguration != null) {
+            final Set<String> notifierNames = NotifierUtils.getNotifierNames(serviceLocator);
             try {
                 ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
                     @Override
@@ -249,10 +260,24 @@ public class SetRequestTracingConfiguration implements AdminCommand {
 
                         List<String> notifiers = proxy.getNotifierList();
                         if (enableNotifiers != null) {
-                            enableNotifiers.forEach(notifiers::add);
+                            for (String notifier : enableNotifiers) {
+                                if (notifierNames.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                } else {
+                                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                            new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                                }
+                            }
                         }
                         if (disableNotifiers != null) {
-                            disableNotifiers.forEach(notifiers::remove);
+                            for (String notifier : disableNotifiers) {
+                                if (notifierNames.contains(notifier)) {
+                                    notifiers.remove(notifier);
+                                } else {
+                                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                            new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                                }
+                            }
                         }
 
                         actionReport.setActionExitCode(ExitCode.SUCCESS);
