@@ -827,6 +827,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
         if (from instanceof SchemaImpl
                 && ((SchemaImpl) from).getImplementation() != null
+                && context != null
                 && context.getApi().getComponents().getSchemas() != null) {
             String implementationClass = ((SchemaImpl) from).getImplementation();
             
