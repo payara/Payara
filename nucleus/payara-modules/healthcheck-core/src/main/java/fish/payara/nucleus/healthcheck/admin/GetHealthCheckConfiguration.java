@@ -38,27 +38,28 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
+
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.healthcheck.HealthCheckConstants;
-import fish.payara.nucleus.healthcheck.configuration.Checker;
-import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
-import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
-import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
-import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
-import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
-import java.util.HashMap;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -66,16 +67,21 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.types.Property;
-
-import javax.inject.Inject;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
+import org.jvnet.hk2.config.types.Property;
+
+import fish.payara.internal.notification.NotifierUtils;
+import fish.payara.internal.notification.PayaraNotifier;
+import fish.payara.nucleus.healthcheck.HealthCheckConstants;
+import fish.payara.nucleus.healthcheck.configuration.Checker;
+import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
+import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
+import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
+import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
+import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 
 /**
  * @author mertcaliskan
@@ -147,7 +153,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
 
         HealthCheckServiceConfiguration configuration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
         List<ServiceHandle<BaseHealthCheck>> allServiceHandles = habitat.getAllServiceHandles(BaseHealthCheck.class);
-        List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
+        List<ServiceHandle<PayaraNotifier>> allNotifierServiceHandles = habitat.getAllServiceHandles(PayaraNotifier.class);
 
         mainActionReport.appendMessage("Health Check Service Configuration is enabled?: " + configuration.getEnabled() + "\n");
         
@@ -176,32 +182,25 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
 
         mainExtraProps.put("healthcheckConfiguration", mainExtraPropsMap);
         mainActionReport.setExtraProperties(mainExtraProps);
-
-        if (!configuration.getNotifierList().isEmpty()) {
-            List<Class<Notifier>> notifierClassList = configuration.getNotifierList().stream().map((input) -> {
-                return resolveNotifierClass(input);
-            }).collect(Collectors.toList());
+            
+        final List<String> notifiers = configuration.getNotifierList();
+        if (!notifiers.isEmpty()) {
 
             Properties extraProps = new Properties();
-            for (ServiceHandle<BaseNotifierService> serviceHandle : allNotifierServiceHandles) {
-                Notifier notifier = configuration.getNotifierByType(serviceHandle.getService().getNotifierType());
-                if (notifier != null) {
-                    ConfigView view = ConfigSupport.getImpl(notifier);
-                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+            for (ServiceHandle<PayaraNotifier> serviceHandle : allNotifierServiceHandles) {
 
-                    if (notifierClassList.contains(view.<Notifier>getProxyType())) {
-                        Object values[] = new Object[2];
-                        values[0] = annotation.type();
-                        values[1] = notifier.getEnabled();
-                        notifiersColumnFormatter.addRow(values);
+                final String notifierName = NotifierUtils.getNotifierName(serviceHandle.getActiveDescriptor());
 
-                        Map<String, Object> map = new HashMap<>(2);
-                        map.put("notifierName", values[0]);
-                        map.put("notifierEnabled", values[1]);
+                Object values[] = new Object[2];
+                values[0] = notifierName;
+                values[1] = notifiers.contains(notifierName);
+                notifiersColumnFormatter.addRow(values);
 
-                        extraProps.put("notifierList" + annotation.type(), map);
-                    }
-                }
+                Map<String, Object> map = new HashMap<>(2);
+                map.put("notifierName", values[0]);
+                map.put("notifierEnabled", values[1]);
+
+                extraProps.put("notifierList" + notifierName, map);
             }
             mainActionReport.getExtraProperties().putAll(extraProps);
             mainActionReport.appendMessage(notifiersColumnFormatter.toString());
@@ -525,8 +524,4 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         return extraPropsMap;
     }
 
-    private static Class<Notifier> resolveNotifierClass(Notifier input) {
-        ConfigView view = ConfigSupport.getImpl(input);
-        return view.getProxyType();
-    }
 }

@@ -39,18 +39,28 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import java.beans.PropertyVetoException;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.TimeUtil;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -61,12 +71,9 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
-import java.beans.PropertyVetoException;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.validation.constraints.Min;
+import fish.payara.internal.notification.TimeUtil;
+import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 
 /**
  * Admin command to enable/disable all health check services defined in
@@ -183,42 +190,6 @@ public class HealthCheckConfigurer implements AdminCommand {
                 // apply as not the DAS so implicitly it is for us
                 configureDynamically();
             }
-        }
-
-        enableLogNotifier(context);
-    }
-
-    private void enableLogNotifier(AdminCommandContext context) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-
-        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("healthcheck-log-notifier-configure", subReport, context.getSubject());
-
-        ParameterMap params = new ParameterMap();
-        params.add("dynamic", dynamic.toString());
-        params.add("target", target);
-        if (notifierEnabled != null) {
-            params.add("enabled", notifierEnabled.toString());
-        }
-        if (notifierEnabled == null && enabled != null) {
-            params.add("enabled", enabled.toString());
-        }
-        Config config = targetUtil.getConfig(target);
-        if (config == null) {
-            subReport.setMessage("No such config named: " + target);
-            subReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        String noisy = "true";
-        NotificationServiceConfiguration configuration = config.getExtensionByType(NotificationServiceConfiguration.class);
-        NotifierConfiguration notifierConfiguration = configuration.getNotifierConfigurationByType(LogNotifierConfiguration.class);
-        noisy = notifierConfiguration.getNoisy();
-        params.add("noisy", noisy);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
         }
     }
 

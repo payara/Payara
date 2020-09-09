@@ -60,7 +60,7 @@ import java.lang.management.ThreadMXBean;
 import java.text.DecimalFormat;
 import java.util.concurrent.TimeUnit;
 
-import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
+import static fish.payara.internal.notification.TimeUtil.prettyPrintDuration;
 
 /**
  * @author mertcaliskan

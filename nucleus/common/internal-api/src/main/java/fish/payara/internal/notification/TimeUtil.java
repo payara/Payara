@@ -39,6 +39,8 @@
  */
 package fish.payara.internal.notification;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author mertcaliskan
  */
@@ -50,6 +52,9 @@ public class TimeUtil {
     private static final int MINUTE = 60 * SECOND;
     private static final int HOUR = 60 * MINUTE;
     private static final int DAY = 24 * HOUR;
+
+    private static long ONE_SEC = 1000;
+    private static long ONE_MIN = 60 * ONE_SEC;
 
     public static long setStoreTimeLimit(String timeLimit) {
         long value = 0;
@@ -82,5 +87,36 @@ public class TimeUtil {
             }
         }
         return value;
+    }
+
+    public static String prettyPrintDuration(long value) {
+        long minutes = 0;
+        long seconds = 0;
+        StringBuilder sb = new StringBuilder();
+
+        if (value > ONE_MIN) {
+            minutes = TimeUnit.MILLISECONDS.toMinutes(value);
+            value -= TimeUnit.MINUTES.toMillis(minutes);
+        }
+        if (value > ONE_SEC) {
+            seconds = TimeUnit.MILLISECONDS.toSeconds(value);
+            value -= TimeUnit.SECONDS.toMillis(seconds);
+        }
+        if (value >= 0) {
+            if (minutes > 0) {
+                sb.append(minutes).append(" minutes ");
+            }
+            if (seconds > 0) {
+                sb.append(seconds).append(" seconds ");
+            }
+            if (value > 0) {
+                sb.append(value);
+                sb.append(" milliseconds");
+            }
+            return sb.toString();
+        }
+        else {
+            return null;
+        }
     }
 }

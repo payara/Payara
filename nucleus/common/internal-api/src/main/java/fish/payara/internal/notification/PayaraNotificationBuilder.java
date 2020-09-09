@@ -57,6 +57,11 @@ public class PayaraNotificationBuilder {
         return this;
     }
 
+    public PayaraNotificationBuilder eventType(String eventType) {
+        notification.setEventType(eventType);
+        return this;
+    }
+
     public PayaraNotificationBuilder whitelist(String... notifierNames) {
         for (int i = 0; i < notifierNames.length; i++) {
             notification.getWhitelist().add(notifierNames[i]);

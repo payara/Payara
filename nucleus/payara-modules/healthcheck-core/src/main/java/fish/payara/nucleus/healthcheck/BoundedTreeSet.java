@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,49 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck.admin.notifier;
+package fish.payara.nucleus.healthcheck;
 
-
-import fish.payara.nucleus.healthcheck.admin.SetHealthCheckServiceNotifierConfiguration;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.DatadogNotifier;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
-
-import java.beans.PropertyVetoException;
+import java.io.Serializable;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author mertcaliskan
- * @deprecated replaced by {@link SetHealthCheckServiceNotifierConfiguration}
  */
-@Deprecated
-@Service(name = "healthcheck-datadog-notifier-configure")
-@PerLookup
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-        @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
-                path = "healthcheck-datadog-notifier-configure",
-                description = "Configures Datadog Notifier for HealthCheck Service")
-})
-public class DatadogHealthCheckNotifierConfigurer extends BaseHealthCheckNotifierConfigurer<DatadogNotifier> {
+public class BoundedTreeSet<N extends Comparable> extends ConcurrentSkipListSet<N> implements Serializable {
 
-    @Override
-    protected void applyValues(DatadogNotifier notifier) throws PropertyVetoException {
-        if(this.enabled != null) {
-            notifier.enabled(enabled);
+    protected final int maxSize;
+
+    public BoundedTreeSet(int maxSize) {
+        super();
+        this.maxSize = maxSize;
+    }
+
+    public boolean add(N n) {
+        super.add(n);
+
+        if(size() > maxSize) {
+            remove(last());
         }
-        if (this.noisy != null) {
-            notifier.noisy(noisy);
-        } else {
-            notifier.noisy(getNotifierNoisy("get-datadog-notifier-configuration"));
-        }
-   }
+        return true;
+    }
 }

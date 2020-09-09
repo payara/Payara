@@ -38,6 +38,7 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,15 +46,15 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
 
+import com.sun.enterprise.config.serverbeans.Config;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
@@ -67,13 +68,9 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import com.sun.enterprise.config.serverbeans.Config;
-
+import fish.payara.internal.notification.TimeUtil;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.TimeUtil;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 
 /**
  * Service to configure the {@link HealthCheckServiceConfiguration} of the {@link Target}.
@@ -132,6 +129,12 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     @Param(name = "historical-trace-store-timeout", optional = true)
     private String historicalTraceStoreTimeout;
 
+    @Param(name = "enableNotifiers", optional = true)
+    private List<String> enableNotifiers;
+
+    @Param(name = "disableNotifiers", optional = true)
+    private List<String> disableNotifiers;
+
     @Override
     public void execute(AdminCommandContext context) {
         targetConfig = targetUtil.getConfig(target);
@@ -142,7 +145,6 @@ public class SetHealthCheckConfiguration implements AdminCommand {
         if (dynamic && (!server.isDas() || targetConfig.isDas())) {
             configureDynamically();
         }
-        updateLogNotifier(context);
     }
 
     private static ActionReport initActionReport(AdminCommandContext context) {
@@ -165,6 +167,14 @@ public class SetHealthCheckConfiguration implements AdminCommand {
                     if (historicalTraceStoreTimeout != null) {
                         configProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
                     }
+                    List<String> notifiers = configProxy.getNotifierList();
+                    if (enableNotifiers != null) {
+                        enableNotifiers.forEach(notifiers::add);
+                    }
+                    if (disableNotifiers != null) {
+                        disableNotifiers.forEach(notifiers::remove);
+                    }
+
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return configProxy;
                 }, config);
@@ -176,24 +186,6 @@ public class SetHealthCheckConfiguration implements AdminCommand {
         }
     }
 
-    private void updateLogNotifier(AdminCommandContext context) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("set-healthcheck-service-notifier-configuration", subReport, context.getSubject());
-        ParameterMap params = new ParameterMap();
-        params.add("target", target);
-        params.add("dynamic", String.valueOf(dynamic));
-        params.add("enabled", enabled.toString());
-        params.add("notifier", NotifierType.LOG.name().toLowerCase());
-        // noisy will default to the notifier's config when not set so we do not set it as this is what we want
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-    }
-
     private void configureDynamically() {
         healthCheck.setEnabled(enabled);
         healthCheck.setHistoricalTraceStoreSize(historicalTraceStoreSize);
@@ -202,6 +194,14 @@ public class SetHealthCheckConfiguration implements AdminCommand {
         }
         if (historicalTraceStoreTimeout != null) {
             healthCheck.setHistoricalTraceStoreTimeout(TimeUtil.setStoreTimeLimit(this.historicalTraceStoreTimeout));
+        }
+
+        List<String> notifiers = healthCheck.getEnabledNotifiers();
+        if (enableNotifiers != null) {
+            enableNotifiers.forEach(notifiers::add);
+        }
+        if (disableNotifiers != null) {
+            disableNotifiers.forEach(notifiers::remove);
         }
     }
 }
