@@ -37,54 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.internal.notification;
+package org.glassfish.config.support;
 
-import java.lang.reflect.ParameterizedType;
+import static java.lang.String.format;
+import static java.util.logging.Level.WARNING;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
-import org.glassfish.config.support.GlassFishStubBean;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
-import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
+public class GlassFishStubBean implements InvocationHandler {
 
-@Contract
-public abstract class PayaraConfiguredNotifier<NC extends PayaraNotifierConfiguration> implements PayaraNotifier {
+    private static final Logger LOGGER = Logger.getLogger(GlassFishStubBean.class.getName());
 
-    private final Class<NC> configClass;
+    private final Map<String, Object> getterResults;
 
-    @Inject
-    private ServiceLocator habitat;
-
-    private NC domainConfiguration;
-
-    protected NC configuration;
-
-    public PayaraConfiguredNotifier() {
-        this.configClass = getConfigurationClass(getClass());
-    }
-
-    @PostConstruct
-    void injectConfiguration() {
-        final NotificationServiceConfiguration config = habitat.getService(NotificationServiceConfiguration.class);
-        this.domainConfiguration = config.getNotifierConfigurationByType(getConfigurationClass(getClass()));
+    private GlassFishStubBean(ConfigBeanProxy bean) {
+        this.getterResults = new HashMap<>();
+        for (Method m : bean.getClass().getMethods()) {
+            final String methodName = m.getName();
+            if (methodName.startsWith("get") && !methodName.equals("getParent") && m.getParameterTypes().length == 0) {
+                try {
+                    getterResults.put(methodName, m.invoke(bean));
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    LOGGER.log(WARNING, format("Failed to call getter method \"%s\" for config bean \"%s\".",
+                            methodName, bean.getClass().getSimpleName()), ex);
+                }
+            }
+        }
     }
 
     @Override
-    public void bootstrap() {
-        this.configuration = GlassFishStubBean.cloneBean(domainConfiguration, configClass);
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        return getterResults.get(method.getName());
     }
 
-    public NC getConfiguration() {
-        return configuration;
-    }
-
-    public static <NC extends PayaraNotifierConfiguration> Class<NC> getConfigurationClass(
-            Class<?> notifierClass) {
-        final ParameterizedType genericSuperclass = (ParameterizedType) notifierClass.getGenericSuperclass();
-        return (Class<NC>) genericSuperclass.getActualTypeArguments()[0];
+    public static <T extends ConfigBeanProxy> T cloneBean(T configBean, Class<T> interfaceClass) {
+        return (T) Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[]{interfaceClass}, new GlassFishStubBean(configBean));
     }
 
 }

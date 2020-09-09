@@ -41,7 +41,6 @@ package fish.payara.nucleus.notification.next.admin;
 
 import static fish.payara.nucleus.notification.next.admin.NotifierUtils.getNotifierName;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,9 +141,8 @@ public class GetNotificationConfiguration implements AdminCommand {
             PayaraNotifierConfiguration notifierConfig = null;
             if (serviceHandle.getService() instanceof PayaraConfiguredNotifier) {
                 // Get the associated configuration
-                ParameterizedType genericSuperclass = (ParameterizedType) serviceHandle.getService().getClass().getGenericSuperclass();
-                Class<PayaraNotifierConfiguration> notifierConfigurationClass = (Class<PayaraNotifierConfiguration>) genericSuperclass.getActualTypeArguments()[0];
-                notifierConfig = configuration.getNotifierConfigurationByType(notifierConfigurationClass);
+                Class<?> notifierClass = serviceHandle.getActiveDescriptor().getImplementationClass();
+                notifierConfig = configuration.getNotifierConfigurationByType(PayaraConfiguredNotifier.getConfigurationClass(notifierClass));
             }
 
             if (notifierConfig == null) {

@@ -54,6 +54,7 @@ public class ExampleNotifier extends PayaraConfiguredNotifier<ExampleNotifierCon
 
     @Override
     public void bootstrap() {
+        super.bootstrap();
         System.out.println("Bootstrapping custom notifier");
     }
 

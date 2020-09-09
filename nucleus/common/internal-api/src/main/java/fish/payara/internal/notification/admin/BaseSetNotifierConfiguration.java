@@ -38,8 +38,9 @@
  */
 package fish.payara.internal.notification.admin;
 
+import static java.lang.Boolean.valueOf;
+
 import java.beans.PropertyVetoException;
-import java.lang.reflect.ParameterizedType;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,13 +54,13 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import fish.payara.internal.notification.PayaraConfiguredNotifier;
 import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
@@ -73,9 +74,6 @@ public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConf
 
     @Inject
     protected ServerEnvironment server;
-
-    @Inject
-    private CommandRunner commandRunner;
 
     @Inject
     private N service;
@@ -106,46 +104,29 @@ public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConf
 
         Config configuration = targetUtil.getConfig(target);
         final NotificationServiceConfiguration notificationServiceConfiguration = configuration.getExtensionByType(NotificationServiceConfiguration.class);
-        ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        Class<NC> notifierConfigurationClass = (Class<NC>) genericSuperclass.getActualTypeArguments()[0];
+        Class<NC> notifierConfigurationClass = PayaraConfiguredNotifier.getConfigurationClass(service.getClass());
 
         NC c = notificationServiceConfiguration.getNotifierConfigurationByType(notifierConfigurationClass);
 
         try {
-            if (c == null) {
-                ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {
-                    @Override
-                    public Object run(final NotificationServiceConfiguration notificationServiceConfigurationProxy)
-                            throws PropertyVetoException, TransactionFailure {
-                        NC c = notificationServiceConfigurationProxy.createChild(notifierConfigurationClass);
-                        applyValues(c);
-                        notificationServiceConfigurationProxy.getNotifierConfigurationList().add(c);
-                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return notificationServiceConfigurationProxy;
-                    }
-                }, notificationServiceConfiguration);
-            }
-            else {
-                ConfigSupport.apply(new SingleConfigCode<NC>() {
-                    public Object run(NC cProxy) throws PropertyVetoException, TransactionFailure {
-                        applyValues(cProxy);
-                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return cProxy;
-                    }
-                }, c);
-            }
+            ConfigSupport.apply(new SingleConfigCode<NC>() {
+                public Object run(NC cProxy) throws PropertyVetoException, TransactionFailure {
+                    applyValues(cProxy);
+                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                    return cProxy;
+                }
+            }, c);
 
-            if (dynamic) {
+            if (dynamic && valueOf(notificationServiceConfiguration.getEnabled())) {
                 if (server.isDas()) {
                     if (targetUtil.getConfig(target).isDas()) {
                          configureDynamically();
                     }
-                }
-                else {
+                } else {
                     configureDynamically();
                 }
             }
-        } catch(TransactionFailure ex) {
+        } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -162,6 +143,7 @@ public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConf
     }
 
     protected void configureDynamically() {
-        // Not currently implemented
+        service.destroy();
+        service.bootstrap();
     }
 }

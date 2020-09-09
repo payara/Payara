@@ -78,6 +78,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
+import fish.payara.internal.notification.PayaraConfiguredNotifier;
 import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
@@ -142,7 +143,18 @@ public class NotificationService implements EventListener, ConfigListener {
         // Find and register all notifier services
         final List<ServiceHandle<PayaraNotifier>> notifierHandles = serviceLocator.getAllServiceHandles(PayaraNotifier.class);
         for (ServiceHandle<PayaraNotifier> handle : notifierHandles) {
-            notifiers.add(new NotifierHandler(handle));
+            NotifierHandler handler;
+            final boolean isNotifierConfigurable = handle
+                    .getActiveDescriptor()
+                    .getAdvertisedContracts()
+                    .contains(PayaraConfiguredNotifier.class.getName());
+            if (isNotifierConfigurable) {
+                PayaraNotifierConfiguration notifierConfig = getOrCreateNotifierConfiguration((ServiceHandle<PayaraConfiguredNotifier<?>>) (ServiceHandle<?>) handle);
+                handler = new NotifierHandler(handle, notifierConfig);
+            } else {
+                handler = new NotifierHandler(handle);
+            }
+            notifiers.add(handler);
         }
     }
 
@@ -202,7 +214,7 @@ public class NotificationService implements EventListener, ConfigListener {
                     notifiers.forEach(NotifierHandler::run);
                 }, 0, 500, TimeUnit.MILLISECONDS);
     
-                logger.info("Payara Notification Service bootstrapped with configuration: " + configuration);
+                logger.info("Payara Notification Service bootstrapped.");
             }
         }
     }
@@ -259,5 +271,25 @@ public class NotificationService implements EventListener, ConfigListener {
             }, logger);
         }
         return null;
+    }
+
+    private PayaraNotifierConfiguration getOrCreateNotifierConfiguration(ServiceHandle<PayaraConfiguredNotifier<?>> handle) {
+        final Class<PayaraNotifierConfiguration> configClass = PayaraConfiguredNotifier.getConfigurationClass((Class<PayaraConfiguredNotifier>)handle.getActiveDescriptor().getImplementationClass());
+        if (configuration.getNotifierConfigurationByType(configClass) == null) {
+            try {
+                ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {
+                    @Override
+                    public Object run(final NotificationServiceConfiguration configurationProxy)
+                            throws PropertyVetoException, TransactionFailure {
+                        final PayaraNotifierConfiguration config = configurationProxy.createChild(configClass);
+                        configurationProxy.getNotifierConfigurationList().add(config);
+                        return config;
+                    }
+                }, configuration);
+            } catch (TransactionFailure e) {
+                logger.log(Level.SEVERE, "Error occurred while setting initial notifier configuration", e);
+            }
+        }
+        return configuration.getNotifierConfigurationByType(configClass);
     }
 }

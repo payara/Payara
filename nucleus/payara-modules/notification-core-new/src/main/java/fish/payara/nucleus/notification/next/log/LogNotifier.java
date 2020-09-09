@@ -69,6 +69,7 @@ public class LogNotifier extends PayaraConfiguredNotifier<NewLogNotifierConfigur
 
     @Override
     public void bootstrap() {
+        super.bootstrap();
         if (Boolean.valueOf(configuration.getUseSeparateLogFile())) {
             Handler[] existingHandlers = logger.getHandlers();
             for (Handler handler : existingHandlers) {

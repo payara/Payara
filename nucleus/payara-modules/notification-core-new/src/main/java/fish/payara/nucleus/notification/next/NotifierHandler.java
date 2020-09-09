@@ -40,6 +40,7 @@
 package fish.payara.nucleus.notification.next;
 
 import static fish.payara.nucleus.notification.next.admin.NotifierUtils.getNotifierName;
+import static java.lang.Boolean.valueOf;
 import static java.lang.String.format;
 
 import java.util.ArrayDeque;
@@ -50,8 +51,10 @@ import java.util.logging.Logger;
 
 import org.glassfish.hk2.api.ServiceHandle;
 
+import fish.payara.internal.notification.PayaraConfiguredNotifier;
 import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.internal.notification.PayaraNotifier;
+import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
 
@@ -63,7 +66,11 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     private final Queue<PayaraNotification> notificationQueue;
 
     public NotifierHandler(ServiceHandle<PayaraNotifier> notifierHandle) {
-        this.lazy = new LazyService(notifierHandle);
+        this(notifierHandle, null);
+    }
+
+    public NotifierHandler(ServiceHandle<PayaraNotifier> notifierHandle, PayaraNotifierConfiguration config) {
+        this.lazy = new LazyService(notifierHandle, config);
         this.notifierName = getNotifierName(notifierHandle.getActiveDescriptor());
         this.notificationQueue = new ArrayDeque<>();
     }
@@ -73,16 +80,20 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     }
 
     protected void destroy() {
-        lazy.getNotifier().destroy();
+        if (lazy.isEnabled()) {
+            lazy.getNotifier().destroy();
+        }
     }
 
     protected void bootstrap() {
-        lazy.getNotifier().bootstrap();
+        if (lazy.isEnabled()) {
+            lazy.getNotifier().bootstrap();
+        }
     }
 
     @Override
     public void accept(PayaraNotification notification) {
-        if (!this.notificationQueue.add(notification)) {
+        if (lazy.isEnabled() && !this.notificationQueue.add(notification)) {
             LOGGER.warning(format("Notifier %s failed to accept the notification \"%s\".", notifierName, notification));
         }
     }
@@ -91,7 +102,7 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     public void run() {
         final PayaraNotification notification = notificationQueue.peek();
         try {
-            if (notification != null) {
+            if (notification != null && lazy.isEnabled()) {
                 lazy.getNotifier().handleNotification(notification);
                 notificationQueue.remove();
             }
@@ -104,10 +115,22 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     private static class LazyService {
 
         private final ServiceHandle<PayaraNotifier> notifierHandle;
+        private final PayaraNotifierConfiguration notifierConfig;
         private PayaraNotifier notifier;
 
-        private LazyService(ServiceHandle<PayaraNotifier> notifierHandle) {
+        private LazyService(ServiceHandle<PayaraNotifier> notifierHandle, PayaraNotifierConfiguration notifierConfig) {
             this.notifierHandle = notifierHandle;
+            this.notifierConfig = notifierConfig;
+        }
+
+        private boolean isEnabled() {
+            if (notifierConfig == null) {
+                return true;
+            }
+            if (notifier == null) {
+                return valueOf(notifierConfig.getEnabled());
+            }
+            return valueOf(PayaraConfiguredNotifier.class.cast(notifier).getConfiguration().getEnabled());
         }
 
         private synchronized PayaraNotifier getNotifier() {
