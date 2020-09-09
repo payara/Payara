@@ -43,8 +43,8 @@ import static fish.payara.internal.notification.NotifierUtils.getNotifierName;
 import static java.lang.Boolean.valueOf;
 import static java.lang.String.format;
 
-import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,7 +72,7 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     public NotifierHandler(ServiceHandle<PayaraNotifier> notifierHandle, PayaraNotifierConfiguration config) {
         this.notifier = notifierHandle.getService();
         this.notifierName = getNotifierName(notifierHandle.getActiveDescriptor());
-        this.notificationQueue = new ArrayDeque<>();
+        this.notificationQueue = new ConcurrentLinkedQueue<>();
     }
 
     protected String getName() {
@@ -89,17 +89,9 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
 
     @Override
     public void accept(PayaraNotification notification) {
-        if (isEnabled() && !this.notificationQueue.add(notification)) {
+        if (isEnabled() && !this.notificationQueue.offer(notification)) {
             LOGGER.warning(format("Notifier %s failed to accept the notification \"%s\".", notifierName, notification));
         }
-    }
-
-    private boolean isEnabled() {
-        if (notifier instanceof PayaraConfiguredNotifier) {
-            PayaraNotifierConfiguration config = PayaraConfiguredNotifier.class.cast(notifier).getConfiguration();
-            return valueOf(config.getEnabled());
-        }
-        return true;
     }
 
     @Override
@@ -114,6 +106,14 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
             LOGGER.log(Level.WARNING,
                     format("Notifier %s failed to handle notification \"%s\".", notifierName, notification), ex);
         }
+    }
+
+    private boolean isEnabled() {
+        if (notifier instanceof PayaraConfiguredNotifier) {
+            PayaraNotifierConfiguration config = PayaraConfiguredNotifier.class.cast(notifier).getConfiguration();
+            return valueOf(config.getEnabled());
+        }
+        return true;
     }
 
 }
