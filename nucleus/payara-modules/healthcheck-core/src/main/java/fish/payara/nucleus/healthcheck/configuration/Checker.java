@@ -29,8 +29,12 @@ public interface Checker extends ConfigBeanProxy, ConfigExtension {
 
     String getName();
     void setName(String value) throws PropertyVetoException;
-
+    
     @Attribute
+    String getDisplayOnHealthEndpoint();
+    void setDisplayOnHealthEndpoint(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "false")
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
 

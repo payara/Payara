@@ -13,6 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
+import static fish.payara.nucleus.healthcheck.HealthCheckConstants.DEFAULT_CPU_USAGE_NAME;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
@@ -25,7 +26,7 @@ import java.beans.PropertyVetoException;
 @CheckerConfigurationType(type = CheckerType.CPU_USAGE)
 public interface CpuUsageChecker extends Checker, ThresholdDiagnosticsChecker {
 
-    @Attribute(defaultValue = "CPUC")
+    @Attribute(defaultValue = DEFAULT_CPU_USAGE_NAME)
     String getName();
     void setName(String value) throws PropertyVetoException;
 }

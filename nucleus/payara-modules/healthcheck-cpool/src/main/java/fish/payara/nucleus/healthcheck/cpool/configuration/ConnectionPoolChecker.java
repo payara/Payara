@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.healthcheck.cpool.configuration;
 
+import static fish.payara.nucleus.healthcheck.HealthCheckConstants.DEFAULT_CONNECTION_POOL_NAME;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.CheckerType;
 import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
@@ -55,10 +56,10 @@ import java.beans.PropertyVetoException;
 @CheckerConfigurationType(type = CheckerType.CONNECTION_POOL)
 public interface ConnectionPoolChecker extends Checker, ThresholdDiagnosticsChecker {
 
-    @Attribute(defaultValue = "CONP")
+    @Attribute(defaultValue = DEFAULT_CONNECTION_POOL_NAME)
     String getName();
     void setName(String value) throws PropertyVetoException;
-
+    
     @Attribute
     String getPoolName();
     void setPoolName(String poolName) throws PropertyVetoException;

@@ -92,6 +92,7 @@ import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import static java.util.Collections.emptyList;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.joining;
+import org.glassfish.api.invocation.InvocationManager;
 
 /**
  * Service that handles the registration, execution, and response of MicroProfile HealthChecks.
@@ -274,11 +275,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
             ApplicationInfo appInfo = Deployment.APPLICATION_UNLOADED.getHook(event);
             if (appInfo != null) {
                 String appName = appInfo.getName();
-                readiness.remove(appName);
-                liveness.remove(appName);
-                health.remove(appName);
-                applicationClassLoaders.remove(appName);
-                applicationsLoaded.remove(appName);
+                unregisterHealthCheck(appName);
             }
         }
 
@@ -321,8 +318,19 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
             }
         }
 
+        Set<HealthCheck> currentApp = healthChecks.get(appName);
+        currentApp.clear();
+        
         // Add the healthcheck to the Set in the Map
         healthChecks.get(appName).add(healthCheck);
+    }
+    
+    public void unregisterHealthCheck(String appName) {
+        readiness.remove(appName);
+        liveness.remove(appName);
+        health.remove(appName);
+        applicationClassLoaders.remove(appName);
+        applicationsLoaded.remove(appName);
     }
 
     /**
@@ -494,5 +502,25 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
         return new UnprocessedChangeEvents(unchangedList);
     }
-
+    
+      /**
+     * Gets the application name from the invocation manager.
+     *
+     * @return The application name
+     */
+    public String getApplicationName() {
+        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
+                .getService(InvocationManager.class);
+        if (invocationManager.getCurrentInvocation() == null) {
+            return invocationManager.peekAppEnvironment().getName();
+        }
+        String appName = invocationManager.getCurrentInvocation().getAppName();
+        if (appName == null) {
+            appName = invocationManager.getCurrentInvocation().getModuleName();
+        }
+        if (appName == null) {
+            appName = invocationManager.getCurrentInvocation().getComponentId();
+        }
+        return appName;
+    }
 }

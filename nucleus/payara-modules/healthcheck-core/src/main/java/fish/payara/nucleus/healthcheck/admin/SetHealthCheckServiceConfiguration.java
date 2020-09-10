@@ -141,6 +141,11 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private boolean dynamic;
 
     // general properties params:
+    @Param(name = "checker-name", optional = true)
+    private String checkerName;
+    
+    @Param(name = "displayon-health-endpoint", optional = true, defaultValue = "false")
+    private Boolean displayOnHealthEndpoint;
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
@@ -152,7 +157,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     @Param(name = "time-unit", optional = true,
             acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String timeUnit;
-
+    
     // hogging threads properties params:
 
     @Param(name = "hogging-threads-threshold", optional = true)
@@ -324,6 +329,9 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     }
 
     private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException {
+        updateProperty(config, "checker-name", config.getName(), checkerName, Checker::setName);
+        updateProperty(config, "display-on-health-endpoint", config.getDisplayOnHealthEndpoint(), 
+                displayOnHealthEndpoint.toString(), Checker::setDisplayOnHealthEndpoint);
         updateProperty(config, "enabled", config.getEnabled(), enabled.toString(), Checker::setEnabled);
         updateProperty(config, "time", config.getTime(), time, Checker::setTime);
         updateProperty(config, "time-unit", config.getUnit(), timeUnit, Checker::setUnit);

@@ -13,6 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
+import static fish.payara.nucleus.healthcheck.HealthCheckConstants.DEFAULT_HOGGING_THREADS_NAME;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
@@ -25,10 +26,10 @@ import java.beans.PropertyVetoException;
 @CheckerConfigurationType(type = CheckerType.HOGGING_THREADS)
 public interface HoggingThreadsChecker extends Checker {
 
-    @Attribute(defaultValue = "HOGT")
+    @Attribute(defaultValue = DEFAULT_HOGGING_THREADS_NAME)
     String getName();
     void setName(String value) throws PropertyVetoException;
-
+    
     @Attribute(defaultValue = "95", dataType = Long.class)
     String getThresholdPercentage();
     void setThresholdPercentage(String value) throws PropertyVetoException;

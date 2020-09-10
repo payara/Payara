@@ -38,6 +38,7 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
+import static fish.payara.nucleus.healthcheck.HealthCheckConstants.DEFAULT_GARBAGE_COLLECTOR_NAME;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
@@ -50,7 +51,7 @@ import java.beans.PropertyVetoException;
 @CheckerConfigurationType(type = CheckerType.GARBAGE_COLLECTOR)
 public interface GarbageCollectorChecker extends Checker, ThresholdDiagnosticsChecker {
 
-    @Attribute(defaultValue = "GBGC")
+    @Attribute(defaultValue = DEFAULT_GARBAGE_COLLECTOR_NAME)
     String getName();
     void setName(String value) throws PropertyVetoException;
 }

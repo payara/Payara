@@ -107,6 +107,9 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
+    
+    @Param(name = "displayOnHealthEndpoint", optional = true, defaultValue = "false")
+    protected Boolean displayOnHealthEndpoint;
 
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
@@ -160,6 +163,7 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
         ParameterMap checkerConfigureParameters = new ParameterMap();
         checkerConfigureParameters.add("enabled", enabled.toString());
         checkerConfigureParameters.add("dynamic", dynamic.toString());
+        checkerConfigureParameters.add("displayOnHealthEndpoint", displayOnHealthEndpoint.toString());
         checkerConfigureParameters.add("time", time);
         checkerConfigureParameters.add("unit", unit);
         checkerConfigureParameters.add("checkerName", checkerName);

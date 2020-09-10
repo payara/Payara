@@ -13,6 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
+import static fish.payara.nucleus.healthcheck.HealthCheckConstants.DEFAULT_MACHINE_MEMORY_USAGE_NAME;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
@@ -25,7 +26,7 @@ import java.beans.PropertyVetoException;
 @CheckerConfigurationType(type = CheckerType.MACHINE_MEMORY_USAGE)
 public interface MachineMemoryUsageChecker extends Checker, ThresholdDiagnosticsChecker {
 
- @Attribute(defaultValue = "MEMM")
- String getName();
- void setName(String value) throws PropertyVetoException;
+    @Attribute(defaultValue = DEFAULT_MACHINE_MEMORY_USAGE_NAME)
+    String getName();
+    void setName(String value) throws PropertyVetoException;
 }

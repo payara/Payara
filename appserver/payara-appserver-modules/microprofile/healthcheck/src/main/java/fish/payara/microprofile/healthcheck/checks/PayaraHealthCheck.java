@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -37,52 +37,58 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.healthcheck;
+package fish.payara.microprofile.healthcheck.checks;
+
+import fish.payara.notification.healthcheck.HealthCheckResultEntry;
+import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import org.eclipse.microprofile.health.HealthCheck;
+import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 
 /**
- * @author mertcaliskan
+ *
+ * @author Susan Rai
  */
-public interface HealthCheckConstants {
+public class PayaraHealthCheck implements HealthCheck {
 
-    final long ONE_KB = 1024;
-    final long ONE_MB = ONE_KB * ONE_KB;
-    final long ONE_GB = ONE_KB * ONE_MB;
+    private String name;
+    private String healthStatus;
+    private HealthCheckResult healthCheckResult;
 
-    final long ONE_SEC = 1000;
-    final long ONE_MIN = 60 * ONE_SEC;
-    final long FIVE_MIN = 5 * ONE_MIN;
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    final String THRESHOLD_CRITICAL = "threshold-critical";
-    final String THRESHOLD_WARNING = "threshold-warning";
-    final String THRESHOLD_GOOD = "threshold-good";
-    final String THRESHOLD_DEFAULTVAL_CRITICAL = "80";
-    final String THRESHOLD_DEFAULTVAL_WARNING = "50";
-    final String THRESHOLD_DEFAULTVAL_GOOD = "0";
+    public void setHealthStatus(String healthStatus) {
+        this.healthStatus = healthStatus;
+    }
 
-    final String YOUNG_COPY = "Copy";
-    final String YOUNG_PS_SCAVENGE = "PS Scavenge";
-    final String YOUNG_PARNEW = "ParNew";
-    final String YOUNG_G1GC = "G1 Young Generation";
+    public void setHealthCheckResult(HealthCheckResult healthCheckResult) {
+        this.healthCheckResult = healthCheckResult;
+    }
 
-    final String OLD_MARK_SWEEP_COMPACT = "MarkSweepCompact";
-    final String OLD_PS_MARKSWEEP = "PS MarkSweep";
-    final String OLD_CONCURRENTMARKSWEEP = "ConcurrentMarkSweep";
-    final String OLD_G1GC = "G1 Old Generation";
+    @Override
+    public HealthCheckResponse call() {
+        HealthCheckResponseBuilder responseBuilder = HealthCheckResponse.named(name);
+        boolean state = true;
 
-    final String DEFAULT_ENABLED = "false";
-    final String DEFAULT_DISPLAY_ON_HEALTH_ENDPOINT = "false";
-    final String DEFAULT_TIME = "5";
-    final String DEFAULT_UNIT = "MINUTES";
-    final String DEFAULT_RETRY_COUNT = "3";
-    final String DEFAULT_THRESHOLD_PERCENTAGE = "95";
-    final String DEFAULT_TIMEOUT = "30000";
+        if (healthCheckResult != null) {
+            for (HealthCheckResultEntry healthCheckResultEntry : healthCheckResult.getEntries()) {
+                responseBuilder.withData("Message", healthCheckResultEntry.getMessage());
+            }
 
-    final String DEFAULT_GARBAGE_COLLECTOR_NAME = "GBGC";
-    final String DEFAULT_CONNECTION_POOL_NAME = "CONP";
-    final String DEFAULT_CPU_USAGE_NAME = "CPUC";
-    final String DEFAULT_HEAP_MEMORY_USAGE_NAME = "HEAP";
-    final String DEFAULT_MACHINE_MEMORY_USAGE_NAME = "MEMM";
-    final String DEFAULT_HOGGING_THREADS_NAME = "HOGT";
-    final String DEFAULT_STUCK_THREAD_NAME = "STUCK";
-    final String DEFAULT_MICROPROFILE_HEALTHCHECK_NAME = "MP";
+        } else {
+            responseBuilder.withData("Message", "Nothing to display");
+        }
+
+        if (healthStatus != null) {
+            responseBuilder.withData("HealthCheckStatus", healthStatus);
+            if (healthStatus.equals("CRITICAL") || healthStatus.equals("CHECK_ERROR")) {
+                state = false;
+            }
+        }
+
+        return responseBuilder.state(state).build();
+    }
+
 }

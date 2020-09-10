@@ -123,6 +123,9 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     @Param(name = "checkerName", optional = true)
     private String checkerName;
     
+    @Param(name = "displayOnHealthEndpoint", optional = true, defaultValue = "false")
+    protected Boolean displayOnHealthEndpoint;
+    
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
@@ -217,6 +220,9 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         if (enabled != null) {
             checkerProxy.setEnabled(enabled.toString());
         }
+        if (displayOnHealthEndpoint != null) {
+            checkerProxy.setDisplayOnHealthEndpoint(displayOnHealthEndpoint.toString());
+        }
         if (time != null) {
             checkerProxy.setTime(time);
         }
@@ -226,7 +232,7 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         if (name != null) {
             checkerProxy.setName(name);
         }
-        
+
         // Take priority over deprecated parameter
         if (checkerName != null) {
             checkerProxy.setName(checkerName);

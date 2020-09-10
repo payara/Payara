@@ -72,6 +72,14 @@ public class HealthCheckResultEntry implements Serializable {
         return status;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
