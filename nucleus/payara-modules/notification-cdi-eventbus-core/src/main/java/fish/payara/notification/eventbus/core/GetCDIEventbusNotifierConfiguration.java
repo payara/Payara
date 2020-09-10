@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,19 +39,23 @@
  */
 package fish.payara.notification.eventbus.core;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import java.util.HashMap;
 import java.util.Map;
-import org.glassfish.api.admin.*;
+
+import javax.inject.Inject;
+
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import fish.payara.internal.notification.admin.BaseGetNotifierConfiguration;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 /**
  * @author mertcaliskan
@@ -70,34 +74,27 @@ import javax.inject.Inject;
 public class GetCDIEventbusNotifierConfiguration extends BaseGetNotifierConfiguration<CDIEventbusNotifierConfiguration> {
 
     @Inject
-    HazelcastCore hazelcast;
-
-    @Override
-    protected String listConfiguration(CDIEventbusNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Noisy","LoopBack"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[3];
-
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getNoisy();
-        values[2] = configuration.getLoopBack();
-
-        columnFormatter.addRow(values);
-        return columnFormatter.toString();
-    }
+    private HazelcastCore hazelcast;
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(CDIEventbusNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(4);
-        
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
+
         if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
-            map.put("loopBack", configuration.getLoopBack());
-        } else {
-            map.put("noisy", Boolean.TRUE.toString());
+            map.put("Loopback", configuration.getLoopBack());
         }
+
+        return map;
+    }
+
+    @Override
+    protected Map<String, Object> getNotifierProperties(CDIEventbusNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
+
         map.put("hazelcastEnabled", hazelcast.isEnabled());
+        if (configuration != null) {
+            map.put("loopback", configuration.getLoopBack());
+        }
 
         return map;
     }
