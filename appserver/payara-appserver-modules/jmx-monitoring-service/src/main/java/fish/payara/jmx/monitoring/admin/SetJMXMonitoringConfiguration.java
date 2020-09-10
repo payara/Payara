@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,11 +43,15 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import fish.payara.admin.amx.config.AMXConfiguration;
+import fish.payara.internal.notification.NotifierUtils;
 import fish.payara.jmx.monitoring.JMXMonitoringService;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -130,6 +134,12 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
 
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
+
+    @Param(name = "enableNotifiers", optional = true)
+    private List<String> enableNotifiers;
+
+    @Param(name = "disableNotifiers", optional = true)
+    private List<String> disableNotifiers;
 
     @Inject
     protected Logger logger;
@@ -217,6 +227,30 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
         }
         if (null != logfrequencyunit) {
             monitoringConfig.setLogFrequencyUnit(logfrequencyunit);
+        }
+
+        final Set<String> notifierNames = NotifierUtils.getNotifierNames(serviceLocator);
+        List<String> notifiers = monitoringConfig.getNotifierList();
+
+        if (enableNotifiers != null) {
+            for (String notifier : enableNotifiers) {
+                if (notifierNames.contains(notifier)) {
+                    notifiers.add(notifier);
+                } else {
+                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                            new PropertyChangeEvent(monitoringConfig, "notifiers", notifiers, notifiers));
+                }
+            }
+        }
+        if (disableNotifiers != null) {
+            for (String notifier : disableNotifiers) {
+                if (notifierNames.contains(notifier)) {
+                    notifiers.remove(notifier);
+                } else {
+                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                            new PropertyChangeEvent(monitoringConfig, "notifiers", notifiers, notifiers));
+                }
+            }
         }
     }
 

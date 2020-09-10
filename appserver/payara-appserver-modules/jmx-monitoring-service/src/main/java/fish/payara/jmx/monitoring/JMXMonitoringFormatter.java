@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,15 +39,17 @@
  */
 package fish.payara.jmx.monitoring;
 
-import fish.payara.nucleus.notification.domain.EventSource;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.domain.NotificationEventFactory;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
-import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.logging.Level;
+
 import javax.management.MBeanServer;
+
+import org.glassfish.hk2.api.messaging.Topic;
+
+import fish.payara.internal.notification.PayaraNotification;
+import fish.payara.internal.notification.PayaraNotificationBuilder;
+import fish.payara.internal.notification.PayaraNotificationFactory;
 
 /**
  * The runnable class which gathers JMX monitoring info from a list of
@@ -64,8 +66,9 @@ public class JMXMonitoringFormatter implements Runnable {
     private final MBeanServer mBeanServer;
     private final List<JMXMonitoringJob> JmxMonitoringJobs;
     private final JMXMonitoringService monitoringService;
-    private final NotificationEventFactoryStore eventFactoryStore;
-    private final NotificationService notificationService;
+    private List<String> enabledNotifiers;
+    private Topic<PayaraNotification> notificationEventBus;
+    private PayaraNotificationFactory notificationFactory;
 
     /**
      * Constructor for the JMXMonitoringFormatter class.
@@ -81,13 +84,14 @@ public class JMXMonitoringFormatter implements Runnable {
     //This is done this way and not through injection as the result is a hk2 circular dependency error as this class
     //is also used in JMXMonitoringService and each cannot be injected into the other
     public JMXMonitoringFormatter(MBeanServer mBeanServer, List<JMXMonitoringJob> jobs,
-            JMXMonitoringService monitoringService, NotificationEventFactoryStore store,
-            NotificationService notificationService) {
+            JMXMonitoringService monitoringService, Topic<PayaraNotification> notificationEventBus,
+            PayaraNotificationFactory notificationFactory, List<String> enabledNotifiers) {
         this.mBeanServer = mBeanServer;
         this.JmxMonitoringJobs = jobs;
         this.monitoringService = monitoringService;
-        this.eventFactoryStore = store;
-        this.notificationService = notificationService;
+        this.notificationEventBus = notificationEventBus;
+        this.notificationFactory = notificationFactory;
+        this.enabledNotifiers = enabledNotifiers;
     }
 
     /**
@@ -121,18 +125,14 @@ public class JMXMonitoringFormatter implements Runnable {
      * i.e. the Mbeans being monitored
      */
     private void sendNotification(Level level, String message, Object[] parameters) {
+        PayaraNotificationBuilder notification = notificationFactory.newBuilder()
+            .whitelist(enabledNotifiers.toArray(new String[0]))
+            .subject(LOGMESSAGE_PREFIX + message);
 
-        if (monitoringService.getNotifierExecutionOptionsList() != null) {
-            for (NotifierExecutionOptions options : monitoringService.getNotifierExecutionOptionsList()) {
-                if (options.isEnabled()) {
-                    NotificationEventFactory notificationEventFactory
-                            = eventFactoryStore.get(options.getNotifierType());
-                    NotificationEvent event = notificationEventFactory.
-                            buildNotificationEvent(level, LOGMESSAGE_PREFIX,
-                                    message, parameters);
-                    notificationService.notify(EventSource.MONITORING, event);
-                }
-            }
+        if (parameters != null && parameters.length > 0) {
+            notification = notification.message(MessageFormat.format(message, parameters));
         }
+
+        notificationEventBus.publish(notification.build());
     }
 }

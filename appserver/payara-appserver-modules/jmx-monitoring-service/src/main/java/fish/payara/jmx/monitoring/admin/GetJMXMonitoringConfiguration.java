@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,17 +44,16 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
+
+import fish.payara.internal.notification.NotifierUtils;
+import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.service.BaseNotifierService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -73,8 +72,6 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfigView;
 
 /**
  * Asadmin command to get the JMX monitoring service's current configuration and
@@ -137,7 +134,7 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
         ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(NOTIFIER_HEADERS);
 
         MonitoringServiceConfiguration monitoringConfig = config.getExtensionByType(MonitoringServiceConfiguration.class);
-        List<ServiceHandle<BaseNotifierService>> allNotifierServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
+        List<ServiceHandle<PayaraNotifier>> allNotifierServiceHandles = habitat.getAllServiceHandles(PayaraNotifier.class);
 
         jmxMonitoringColumnFormatter.addRow(new Object[]{monitoringConfig.getEnabled(), monitoringConfig.getLogFrequency(),
             monitoringConfig.getLogFrequencyUnit()});
@@ -168,33 +165,25 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
         actionReport.setExtraProperties(extraProps);
 
         if (!monitoringConfig.getNotifierList().isEmpty()) {
-            List<Class<Notifier>> notifierClassList = monitoringConfig.getNotifierList().stream().map((input) -> {
-                return resolveNotifierClass(input);
-            }).collect(Collectors.toList());
+            
+            List<String> notifiers = monitoringConfig.getNotifierList();
 
             Properties notifierProps = new Properties();
-            for (ServiceHandle<BaseNotifierService> serviceHandle : allNotifierServiceHandles) {
-                Notifier notifier = monitoringConfig.getNotifierByType(serviceHandle.getService().getNotifierType());
-                if (notifier != null) {
-                    ConfigView view = ConfigSupport.getImpl(notifier);
-                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+            for (ServiceHandle<PayaraNotifier> serviceHandle : allNotifierServiceHandles) {
+                final String notifierName = NotifierUtils.getNotifierName(serviceHandle.getActiveDescriptor());
+                Object values[] = new Object[2];
+                values[0] = notifierName;
+                values[1] = notifiers.contains(notifierName);
+                notifiersColumnFormatter.addRow(values);
 
-                    if (notifierClassList.contains(view.<Notifier>getProxyType())) {
-                        Object values[] = new Object[2];
-                        values[0] = annotation.type();
-                        values[1] = notifier.getEnabled();
-                        notifiersColumnFormatter.addRow(values);
+                Map<String, Object> mapNotifiers = new HashMap<>(2);
+                mapNotifiers.put("notifierName", values[0]);
+                mapNotifiers.put("notifierEnabled", values[1]);
 
-                        Map<String, Object> mapNotifiers = new HashMap<>(2);
-                        mapNotifiers.put("notifierName", values[0]);
-                        mapNotifiers.put("notifierEnabled", values[1]);
-
-                        notifierProps.put("notifierList" + annotation.type(), mapNotifiers);
-                    }
-                }
-
-                actionReport.getExtraProperties().putAll(notifierProps);
+                notifierProps.put("notifierList" + notifierName, mapNotifiers);
             }
+
+            actionReport.getExtraProperties().putAll(notifierProps);
         }
 
         jmxMonitoringReport.setMessage(jmxMonitoringColumnFormatter.toString());
@@ -222,17 +211,6 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
         } else {
             return "✗";
         }
-    }
-
-    /**
-     *
-     * @since 4.1.2.174
-     * @param input
-     * @return
-     */
-    private Class<Notifier> resolveNotifierClass(Notifier input) {
-        ConfigView view = ConfigSupport.getImpl(input);
-        return view.getProxyType();
     }
 
 }
