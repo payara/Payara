@@ -259,13 +259,15 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
         api.getPaths().getPathItems().forEach((String s, PathItem t) -> {
             t.getOperations().forEach((PathItem.HttpMethod u, org.eclipse.microprofile.openapi.models.Operation v) -> {
                 v.getResponses().getAPIResponses().forEach((String w, org.eclipse.microprofile.openapi.models.responses.APIResponse x) -> {
-                    x.getContent().getMediaTypes().forEach((y, z) -> {
-                        SchemaImpl.merge(z.getSchema(), z.getSchema(), true, context);
-                        if (z.getSchema() instanceof SchemaImpl) {
-                            SchemaImpl schema = (SchemaImpl) z.getSchema();
-                            schema.setImplementation(null);
-                        }
-                    });
+                    if (x.getContent() != null) {
+                        x.getContent().getMediaTypes().forEach((y, z) -> {
+                            SchemaImpl.merge(z.getSchema(), z.getSchema(), true, context);
+                            if (z.getSchema() instanceof SchemaImpl) {
+                                SchemaImpl schema = (SchemaImpl) z.getSchema();
+                                schema.setImplementation(null);
+                            }
+                        });
+                    }
                 });
             });
         });

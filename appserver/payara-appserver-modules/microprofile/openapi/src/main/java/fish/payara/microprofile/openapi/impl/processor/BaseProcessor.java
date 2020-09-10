@@ -147,5 +147,5 @@ public class BaseProcessor implements OASProcessor {
     private static void removeEmptyPaths(OpenAPI api) {
         PathItem emptyItem = new PathItemImpl();
         api.getPaths().entrySet().removeIf(entry -> emptyItem.equals(entry.getValue()));
-    }    
+    }
 }
