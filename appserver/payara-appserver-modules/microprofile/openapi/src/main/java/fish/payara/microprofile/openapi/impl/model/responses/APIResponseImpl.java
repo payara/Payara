@@ -44,7 +44,6 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
-import fish.payara.microprofile.openapi.impl.model.media.EncodingImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;

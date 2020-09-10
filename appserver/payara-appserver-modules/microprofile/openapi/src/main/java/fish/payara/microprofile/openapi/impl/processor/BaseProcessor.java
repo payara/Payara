@@ -41,22 +41,17 @@ package fish.payara.microprofile.openapi.impl.processor;
 
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
-import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
 import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
-import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.normaliseUrl;
 import java.net.URL;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
-import org.eclipse.microprofile.openapi.models.media.Schema;
-import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 
 /**
  * A processor to apply any configuration options to the model, and fill any
