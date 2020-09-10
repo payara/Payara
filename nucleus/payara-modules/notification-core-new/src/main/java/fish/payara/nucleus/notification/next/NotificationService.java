@@ -65,7 +65,9 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.messaging.MessageReceiver;
 import org.glassfish.hk2.api.messaging.SubscribeTo;
+import org.glassfish.hk2.extras.ExtrasUtilities;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Changed;
@@ -126,6 +128,8 @@ public class NotificationService implements EventListener, ConfigListener {
 
     public NotificationService() {
         this.notifiers = new HashSet<>();
+        // done in constructor to ensure that topics are valid for injection
+        ExtrasUtilities.enableTopicDistribution(Globals.getDefaultHabitat());
     }
 
     @PostConstruct
