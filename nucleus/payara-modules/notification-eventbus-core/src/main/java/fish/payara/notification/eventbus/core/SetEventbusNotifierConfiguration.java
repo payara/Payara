@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,21 +37,47 @@
  */
 package fish.payara.notification.eventbus.core;
 
-import fish.payara.notification.NotificationData;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
+import java.beans.PropertyVetoException;
+
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.BaseSetNotifierConfiguration;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-public class EventbusNotificationEvent extends NotificationEvent {
+@Service(name = "set-eventbus-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "set-eventbus-notifier-configuration",
+                description = "Configures Eventbus Notification Service")
+})
+public class SetEventbusNotifierConfiguration extends BaseSetNotifierConfiguration<EventbusNotifierConfiguration, EventbusNotifierService> {
 
-    private NotificationData notificationData;
+    @Param(name = "topicName", defaultValue = "payara.notification.event", optional = true)
+    private String topicName;
 
-    public NotificationData getNotificationData() {
-        return notificationData;
+    @Override
+    protected void applyValues(EventbusNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
+        if (this.topicName != null) {
+            configuration.setTopicName(this.topicName);
+        }
     }
 
-    public void setNotificationData(NotificationData notificationData) {
-        this.notificationData = notificationData;
-    }
 }

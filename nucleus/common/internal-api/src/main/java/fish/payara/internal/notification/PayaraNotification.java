@@ -39,12 +39,15 @@
  */
 package fish.payara.internal.notification;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * A notification received by notifiers and the notification service
  */
-public class PayaraNotification {
+public class PayaraNotification implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String eventType;
     private String serverName;
