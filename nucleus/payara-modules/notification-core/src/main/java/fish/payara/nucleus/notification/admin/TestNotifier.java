@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.next.admin;
+package fish.payara.nucleus.notification.admin;
 
 import java.util.List;
 
@@ -68,7 +68,7 @@ import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
  * @author jonathan coustick
  * @since 4.1.2.173
  */
-@Service(name = "test-new-notifier-configuration")
+@Service(name = "test-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -76,7 +76,7 @@ import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "test-new-notifier-configuration",
+                path = "test-notifier-configuration",
                 description = "Tests Notifier Configuration")
 })
 public class TestNotifier implements AdminCommand {

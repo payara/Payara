@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.next;
+package fish.payara.nucleus.notification;
 
 import static fish.payara.internal.notification.NotifierUtils.getNotifierName;
 import static java.lang.Boolean.valueOf;

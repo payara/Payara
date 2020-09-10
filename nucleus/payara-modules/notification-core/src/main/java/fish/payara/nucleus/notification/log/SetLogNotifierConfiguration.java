@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.nucleus.notification.log;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
+import java.beans.PropertyVetoException;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import fish.payara.internal.notification.admin.BaseSetNotifierConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class NotifierConfigurationExecutionOptionsFactoryStore {
+@Service(name = "set-log-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@I18n("notification.log.configure")
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "set-log-notifier-configuration",
+                description = "Configures Log Notification Service")
+})
+public class SetLogNotifierConfiguration extends BaseSetNotifierConfiguration<LogNotifierConfiguration, LogNotifier> {
 
-    private Map<NotifierType, NotifierConfigurationExecutionOptionsFactory> factoryStore =
-            new ConcurrentHashMap<>();
+    @Param(name = "useSeparateLogFile", defaultValue = "false", optional = true)
+    private String useSeparateLogFile;
 
-    public NotifierConfigurationExecutionOptionsFactory get(NotifierType type) {
-        return factoryStore.get(type);
+    @Override
+    protected void applyValues(LogNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
+        if (this.useSeparateLogFile != null) {
+            configuration.useSeparateLogFile(Boolean.valueOf(this.useSeparateLogFile));
+        }
     }
 
-    public void register(NotifierType type, NotifierConfigurationExecutionOptionsFactory factory) {
-        factoryStore.put(type, factory);
-    }
 }

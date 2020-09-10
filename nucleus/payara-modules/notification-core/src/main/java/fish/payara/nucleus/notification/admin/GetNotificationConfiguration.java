@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,20 +39,29 @@
  */
 package fish.payara.nucleus.notification.admin;
 
+import static fish.payara.internal.notification.NotifierUtils.getNotifierName;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.inject.Inject;
+
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
-import fish.payara.nucleus.notification.service.BaseNotifierService;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -60,15 +69,11 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfigView;
 
-import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.stream.Collectors;
+import fish.payara.internal.notification.PayaraConfiguredNotifier;
+import fish.payara.internal.notification.PayaraNotifier;
+import fish.payara.internal.notification.PayaraNotifierConfiguration;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * Admin command to list Notification Configuration
@@ -80,12 +85,12 @@ import java.util.stream.Collectors;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("get.notification.configuration")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = { CommandTarget.CONFIG, CommandTarget.DAS })
 @RestEndpoints({
     @RestEndpoint(configBean = NotificationServiceConfiguration.class,
             opType = RestEndpoint.OpType.GET,
             path = "get-notification-configuration",
-            description = "List Notification Configuration")
+            description = "List New Notification Configuration")
 })
 public class GetNotificationConfiguration implements AdminCommand {
 
@@ -100,73 +105,66 @@ public class GetNotificationConfiguration implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-        Config config = targetUtil.getConfig(target);
-        if (config == null) {
-            context.getActionReport().setMessage("No such config named: " + target);
-            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+
+        // Get the command report
+        final ActionReport report = context.getActionReport();
+
+        // Get the target configuration
+        final Config targetConfig = targetUtil.getConfig(target);
+        if (targetConfig == null) {
+            report.setMessage("No such config named: " + target);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        ActionReport mainActionReport = context.getActionReport();
-        final NotificationServiceConfiguration notificationServiceConfiguration = config.getExtensionByType(NotificationServiceConfiguration.class);
-        NotificationServiceConfiguration configuration = config.getExtensionByType(NotificationServiceConfiguration.class);
-        List<ServiceHandle<BaseNotifierService>> allServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
-        String headers[] = {"Enabled", "Notifier Enabled", "Notifier Noisy"};
+        final NotificationServiceConfiguration configuration = targetConfig.getExtensionByType(NotificationServiceConfiguration.class);
+        final String notificationServiceEnabled = configuration.getEnabled();
+        final List<ServiceHandle<PayaraNotifier>> notifierHandles = habitat.getAllServiceHandles(PayaraNotifier.class);
+
+        if (notifierHandles.isEmpty()) {
+            report.setMessage("No notifiers defined");
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            return;
+        }
+
+        String headers[] = { "Notifier Name", "Enabled", "Notifier Enabled", "Notifier Noisy" };
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
 
-        if (configuration.getNotifierConfigurationList().isEmpty()) {
-            mainActionReport.setMessage("No notifier defined");
-        }
-        else {
-            List<Class<NotifierConfiguration>> notifierConfigurationClassList = configuration.getNotifierConfigurationList().stream().map((input) -> {
-                return resolveNotifierConfigurationClass(input);
-            }).collect(Collectors.toList());
+        Properties extraProps = new Properties();
+        for (ServiceHandle<PayaraNotifier> serviceHandle : notifierHandles) {
 
-            Properties extraProps = new Properties();
-            for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {
-                NotifierConfiguration notifierConfiguration = configuration.getNotifierConfigurationByType(serviceHandle.getService().getNotifierConfigType());
+            Object values[] = new Object[4];
+            values[0] = getNotifierName(serviceHandle.getActiveDescriptor());
+            values[1] = notificationServiceEnabled;
 
-                if (notifierConfiguration != null) {
-                    ConfigView view = ConfigSupport.getImpl(notifierConfiguration);
-                    NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-
-                    if (notifierConfigurationClassList.contains(view.<NotifierConfiguration>getProxyType())) {
-
-                        Object values[] = new Object[3];
-                        values[0] = notificationServiceConfiguration.getEnabled();
-                        values[1] = notifierConfiguration.getEnabled();
-                        values[2] = notifierConfiguration.getNoisy();
-                        columnFormatter.addRow(values);
-
-                        Map<String, Object> map;
-                        if (NotifierType.LOG.equals(annotation.type())) {
-                            map = new HashMap<>(4);
-                            map.put("enabled", values[0]);
-                            map.put("notifierEnabled", values[1]);
-                            map.put("noisy", values[2]);
-                            LogNotifierConfiguration logNotifierConfiguration = (LogNotifierConfiguration) notifierConfiguration;
-                            map.put("useSeparateLogFile", logNotifierConfiguration.getUseSeparateLogFile());
-                        }
-                        else {
-                            map = new HashMap<>(3);
-                            map.put("enabled", values[0]);
-                            map.put("notifierEnabled", values[1]);
-                            map.put("noisy", values[2]);
-                        }
-
-                        extraProps.put("getNotificationConfiguration" + annotation.type(), map);
-                    }
-                }
+            // Get the notifier config if applicable
+            PayaraNotifierConfiguration notifierConfig = null;
+            if (serviceHandle.getService() instanceof PayaraConfiguredNotifier) {
+                // Get the associated configuration
+                Class<?> notifierClass = serviceHandle.getActiveDescriptor().getImplementationClass();
+                notifierConfig = configuration.getNotifierConfigurationByType(PayaraConfiguredNotifier.getConfigurationClass(notifierClass));
             }
-            mainActionReport.setExtraProperties(extraProps);
-            mainActionReport.setMessage(columnFormatter.toString());
+
+            if (notifierConfig == null) {
+                values[2] = PayaraNotifierConfiguration.DEFAULT_ENABLED_VALUE;
+                values[3] = PayaraNotifierConfiguration.DEFAULT_NOISY_VALUE;
+            } else {
+                values[2] = notifierConfig.getEnabled();
+                values[3] = notifierConfig.getNoisy();
+            }
+
+            columnFormatter.addRow(values);
+
+            Map<String, Object> map = new HashMap<>(3);
+            map.put("enabled", values[1]);
+            map.put("notifierEnabled", values[2]);
+            map.put("noisy", values[3]);
+            extraProps.put("getNotificationConfiguration." + values[0], map);
         }
 
-        mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        report.setMessage(columnFormatter.toString());
+        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        report.setExtraProperties(extraProps);
     }
 
-    private Class<NotifierConfiguration> resolveNotifierConfigurationClass(NotifierConfiguration input) {
-        ConfigView view = ConfigSupport.getImpl(input);
-        return view.getProxyType();
-    }
 }

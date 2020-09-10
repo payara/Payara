@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,18 +39,70 @@
  */
 package fish.payara.nucleus.notification.log;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Configured;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
+import fish.payara.internal.notification.PayaraConfiguredNotifier;
+import fish.payara.internal.notification.PayaraNotification;
 
 /**
- * Configuration class for attaching log notification mechanism into.
- * Health check and Request tracing services enables the use of log notification mechanism with this notifier configuration.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.LOG)
-public interface LogNotifier extends Notifier {
+@Service(name = "log-notifier")
+@RunLevel(StartupRunLevel.VAL)
+public class LogNotifier extends PayaraConfiguredNotifier<LogNotifierConfiguration> {
+
+    @Inject
+    private ServiceLocator habitat;
+
+    private PayaraNotificationFileHandler handler;
+
+    private Logger logger = Logger.getLogger(LogNotifier.class.getCanonicalName());
+
+    @Override
+    public void bootstrap() {
+        super.bootstrap();
+        if (Boolean.valueOf(configuration.getUseSeparateLogFile())) {
+            Handler[] existingHandlers = logger.getHandlers();
+            for (Handler handler : existingHandlers) {
+                logger.removeHandler(handler);
+            }
+            logger.addHandler(getHandler());
+            logger.setUseParentHandlers(false);
+        }
+        else {
+            if (handler != null) {
+                logger.removeHandler(getHandler());
+            }
+            logger.setUseParentHandlers(true);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        handler = null;
+    }
+
+    private Handler getHandler() {
+        if (handler == null) {
+            handler = habitat.createAndInitialize(PayaraNotificationFileHandler.class);
+        }
+        return handler;
+    }
+
+    @Override
+    public void handleNotification(PayaraNotification event) {
+        if (Boolean.valueOf(configuration.getEnabled())) {
+            logger.info(event.getMessage());
+        }
+    }
+
 }
