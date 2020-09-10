@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,20 @@
  */
 package fish.payara.notification.jms;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import java.util.HashMap;
 import java.util.Map;
-import org.glassfish.api.admin.*;
+
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.BaseGetNotifierConfiguration;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
@@ -66,43 +70,36 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetJmsNotifierConfiguration extends BaseGetNotifierConfiguration<JmsNotifierConfiguration> {
 
-
     @Override
-    protected String listConfiguration(JmsNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Noisy", "Context Factory Class", "Connection Factory Name", "Queue Name", "URL", "Username", "Password"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[8];
+    protected Map<String, Object> getNotifierConfiguration(JmsNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getNoisy();
-        values[2] = configuration.getContextFactoryClass();
-        values[3] = configuration.getConnectionFactoryName();
-        values[4] = configuration.getQueueName();
-        values[5] = configuration.getUrl();
-        values[6] = configuration.getUsername();
-        values[7] = configuration.getPassword();
+        if (configuration != null) {
+            map.put("Context Factory Class", configuration.getContextFactoryClass());
+            map.put("Connection Factory Name", configuration.getConnectionFactoryName());
+            map.put("Queue Name", configuration.getQueueName());
+            map.put("URL", configuration.getUrl());
+            map.put("Username", configuration.getUsername());
+            map.put("Password", configuration.getPassword());
+        }
 
-        columnFormatter.addRow(values);
-        return columnFormatter.toString();
+        return map;
     }
 
     @Override
-    protected Map<String, Object> getNotifierConfiguration(JmsNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(8);
+    protected Map<String, Object> getNotifierProperties(JmsNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierProperties(configuration);
 
         if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
             map.put("contextFactoryClass", configuration.getContextFactoryClass());
             map.put("connectionFactoryName", configuration.getConnectionFactoryName());
             map.put("queueName", configuration.getQueueName());
             map.put("url", configuration.getUrl());
             map.put("username", configuration.getUsername());
             map.put("password", configuration.getPassword());
-        } else {
-            map.put("noisy", Boolean.TRUE.toString());
         }
 
         return map;
     }
+
 }
