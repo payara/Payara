@@ -41,6 +41,12 @@ package fish.payara.internal.notification;
 
 import java.util.ArrayList;
 
+/**
+ * A builder object created by a {@link PayaraNotificationFactory} used to
+ * configure Notifications for sending.
+ * 
+ * @author Matthew Gill
+ */
 public class PayaraNotificationBuilder {
 
     private final PayaraNotification notification;

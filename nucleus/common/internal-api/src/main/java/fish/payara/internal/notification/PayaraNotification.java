@@ -39,9 +39,11 @@
  */
 package fish.payara.internal.notification;
 
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A notification received by notifiers and the notification service
+ */
 public class PayaraNotification {
 
     private String eventType;

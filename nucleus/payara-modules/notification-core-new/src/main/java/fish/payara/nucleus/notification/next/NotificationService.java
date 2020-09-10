@@ -87,9 +87,11 @@ import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.notification.next.log.NewLogNotifierConfiguration;
 
 /**
- * Main service class that provides {@link #notify(NotificationEvent)} method used by services, which needs disseminating notifications.
+ * Main service class that received {@link #notify(PayaraNotification)} HK2
+ * events, and distributes them to notifiers discovered by the service.
  *
  * @author mertcaliskan
+ * @author Matthew Gill
  */
 @Service(name = "new-notification-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -107,7 +109,10 @@ public class NotificationService implements EventListener, ConfigListener {
     private ServiceLocator serviceLocator;
 
     @Inject
-    Transactions transactions;
+    private Events events;
+
+    @Inject
+    private Transactions transactions;
 
     @Inject
     private PayaraExecutorService executor;
@@ -131,7 +136,6 @@ public class NotificationService implements EventListener, ConfigListener {
         }
 
         // Register an event listener
-        final Events events = serviceLocator.getService(Events.class);
         if (events != null) {
             events.register(this);
         }
@@ -161,6 +165,10 @@ public class NotificationService implements EventListener, ConfigListener {
     @PreDestroy
     void destroy() {
         notifiers.clear();
+
+        if (events != null) {
+            events.unregister(this);
+        }
     }
 
     @Override

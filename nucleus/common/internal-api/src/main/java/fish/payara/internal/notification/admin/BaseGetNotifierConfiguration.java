@@ -67,7 +67,11 @@ import org.glassfish.internal.api.Target;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
+ * The base admin command to get the configuration of a specified notifier.
+ * Extend this class to fetch custom notifier configuration options.
+ * 
  * @author mertcaliskan
+ * @author Matthew Gill
  */
 public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConfiguration> implements AdminCommand {
 
@@ -115,6 +119,11 @@ public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConf
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
+    /**
+     * @param configuration the configuration to print
+     * @return A column formatted string representing the configuration
+     * @see #getNotifierConfiguration(PayaraNotifierConfiguration)
+     */
     protected String listConfiguration(NC configuration) {
         Map<String, Object> configMap = getNotifierConfiguration(configuration);
 
@@ -135,6 +144,10 @@ public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConf
         return columnFormatter.toString();
     }
 
+    /**
+     * @param configuration the configuration to get properties from
+     * @return a map from user readable attribute names to their values
+     */
     protected Map<String, Object> getNotifierConfiguration(NC configuration) {
         Map<String, Object> map = new LinkedHashMap<>(2);
 
@@ -149,6 +162,10 @@ public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConf
         return map;
     }
 
+    /**
+     * @param configuration the configuration to get properties from
+     * @return a map from camelcase attribute names to their values
+     */
     protected Map<String, Object> getNotifierProperties(NC configuration) {
         Map<String, Object> map = new LinkedHashMap<>(2);
 

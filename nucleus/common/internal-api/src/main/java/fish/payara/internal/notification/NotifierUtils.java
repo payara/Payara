@@ -47,10 +47,17 @@ import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 
+/**
+ * A collection of static methods used by notification sources.
+ */
 public final class NotifierUtils {
     
     private NotifierUtils() {}
 
+    /**
+     * @param descriptor the HK2 service descriptor for the notifier
+     * @return a string name representing the notifier
+     */
     public static final String getNotifierName(ActiveDescriptor<?> descriptor) {
         String name = descriptor.getName();
         if (name == null) {
@@ -62,6 +69,13 @@ public final class NotifierUtils {
         return name;
     }
 
+    /**
+     * List the names of all registered notifiers
+     * 
+     * @param serviceLocator the service locator to use to find the notifiers
+     * @return a set of all notifier names
+     * @see #getNotifierName(ActiveDescriptor)
+     */
     public static final Set<String> getNotifierNames(ServiceLocator serviceLocator) {
         final List<ServiceHandle<PayaraNotifier>> notifierHandles = serviceLocator.getAllServiceHandles(PayaraNotifier.class);
         final Set<String> names = new HashSet<>();

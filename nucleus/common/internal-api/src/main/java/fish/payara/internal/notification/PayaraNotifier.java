@@ -41,13 +41,28 @@ package fish.payara.internal.notification;
 
 import org.jvnet.hk2.annotations.Contract;
 
+/**
+ * A contract for a service representing a dynamic PayaraNotifier with no
+ * domain.xml configuration. For a notifier with domain.xml configuration see
+ * {@link PayaraConfiguredNotifier}.
+ */
 @Contract
 public interface PayaraNotifier {
 
+    /**
+     * Receive notifications from the notification service.
+     * @param event the notification
+     */
     void handleNotification(PayaraNotification event);
 
+    /**
+     * Initialise the object from any configuration values.
+     */
     default void bootstrap() {};
 
+    /**
+     * Destroy any objects before configuration values are changed.
+     */
     default void destroy() {};
 
 }

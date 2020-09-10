@@ -45,6 +45,12 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
+/**
+ * A class used to configure notifiers from the domain.xml.
+ * 
+ * @author mertcaliskan
+ * @author Matthew Gill
+ */
 @Configured
 public interface PayaraNotifierConfiguration extends ConfigBeanProxy {
 

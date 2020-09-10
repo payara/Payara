@@ -50,6 +50,11 @@ import org.jvnet.hk2.annotations.Contract;
 
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
+/**
+ * A notifier that is backed by a configuration in the domain.xml
+ * 
+ * @param <NC> the configuration class for the notifier
+ */
 @Contract
 public abstract class PayaraConfiguredNotifier<NC extends PayaraNotifierConfiguration> implements PayaraNotifier {
 
@@ -73,6 +78,9 @@ public abstract class PayaraConfiguredNotifier<NC extends PayaraNotifierConfigur
         this.configuration = GlassFishStubBean.cloneBean(domainConfiguration, configClass);
     }
 
+    /**
+     * Bootstrap the notifier and update the configuration from the domain.xml.
+     */
     @Override
     public void bootstrap() {
         this.configuration = GlassFishStubBean.cloneBean(domainConfiguration, configClass);
@@ -82,6 +90,11 @@ public abstract class PayaraConfiguredNotifier<NC extends PayaraNotifierConfigur
         return configuration;
     }
 
+    /**
+     * @param <NC>          a generic class of the notifier configuration class
+     * @param notifierClass the notifier of the class
+     * @return the class used to configure the configured notifier
+     */
     public static <NC extends PayaraNotifierConfiguration> Class<NC> getConfigurationClass(
             Class<?> notifierClass) {
         final ParameterizedType genericSuperclass = (ParameterizedType) notifierClass.getGenericSuperclass();

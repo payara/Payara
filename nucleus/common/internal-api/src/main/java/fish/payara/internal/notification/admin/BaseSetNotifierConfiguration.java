@@ -65,6 +65,11 @@ import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
+ * The base admin command to set the configuration of a specified notifier.
+ * Extend this class to configure custom notifier configuration options
+ * from @Param injected fields.
+ * 
+ * @author Matthew Gill
  * @author mertcaliskan
  */
 public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConfiguration, N extends PayaraNotifier> implements AdminCommand {
@@ -133,6 +138,14 @@ public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConf
         }
     }
 
+    /**
+     * Configure the configuration ConfigBeanProxy from the @Param injected class
+     * fields.
+     * 
+     * @param configuration the ConfigBeanProxy to configure
+     * @throws PropertyVetoException an exception thrown if the property doesn't
+     *                               pass the configured validation.
+     */
     protected void applyValues(NC configuration) throws PropertyVetoException {
         if (this.enabled != null) {
             configuration.enabled(this.enabled);
@@ -142,6 +155,10 @@ public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConf
         }
     }
 
+    /**
+     * Called after static configuration if the dynamic field is enabled and this
+     * instance is the one selected.
+     */
     protected void configureDynamically() {
         service.destroy();
         service.bootstrap();

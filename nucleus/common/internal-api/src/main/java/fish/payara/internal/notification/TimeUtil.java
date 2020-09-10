@@ -42,6 +42,8 @@ package fish.payara.internal.notification;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * Time utilities used by notification sources
+ * 
  * @author mertcaliskan
  */
 public class TimeUtil {

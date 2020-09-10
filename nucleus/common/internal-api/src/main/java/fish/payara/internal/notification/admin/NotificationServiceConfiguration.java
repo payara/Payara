@@ -50,7 +50,6 @@ import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
  * @author mertcaliskan
- *
  */
 @Configured(name = "new-notification-service-configuration")
 public interface NotificationServiceConfiguration extends ConfigExtension {

@@ -53,7 +53,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Factory for building {@link NotificationEvent}
+ * Factory for building {@link PayaraNotification} events.
+ * 
  * @author mertcaliskan
  * @since 4.1.2.171
  */
@@ -99,6 +100,9 @@ public class PayaraNotificationFactory {
         return event;
     }
 
+    /**
+     * @return a builder object used to configure notifiers
+     */
     public PayaraNotificationBuilder newBuilder() {
         return new PayaraNotificationBuilder(createEvent());
     }
