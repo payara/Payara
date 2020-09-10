@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,17 +42,14 @@
  */
 package fish.payara.audit;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-
 import java.beans.PropertyVetoException;
 import java.util.List;
+
 import javax.validation.constraints.Pattern;
 
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
 /**
@@ -60,7 +57,7 @@ import org.jvnet.hk2.config.Element;
  * @author jonathan coustick
  */
 @Configured
-public interface AdminAuditConfiguration extends ConfigBeanProxy, ConfigExtension {
+public interface AdminAuditConfiguration extends ConfigExtension {
     
     @Attribute(defaultValue="false",dataType=Boolean.class)
     String getEnabled();
@@ -70,25 +67,8 @@ public interface AdminAuditConfiguration extends ConfigBeanProxy, ConfigExtensio
     @Pattern(regexp = "MODIFIERS|ACCESSORS|INTERNAL", message = "Invalid audit level. Value must be one of: MODIFIERS, ACCESSORS or INTERNAL.")
     String getAuditLevel();
     void setAuditLevel(String value) throws PropertyVetoException;
-    
-    @Element("*")
-    List<Notifier> getNotifierList();
-    
-    @DuckTyped
-    <T extends Notifier> T getNotifierByType(Class<T> type);
-    
-    class Duck {
-        public static <T extends Notifier> T getNotifierByType(AdminAuditConfiguration config, Class<T> type) {
-            for (Notifier notifier : config.getNotifierList()) {
-                try {
-                    return type.cast(notifier);
-                } catch (Exception e) {
-                    // ignore, not the right type.
-                }
-            }
-            return null;
-        }
 
-    }
-    
+    @Element("notifier")
+    List<String> getNotifierList();
+
 }
