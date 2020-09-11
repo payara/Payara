@@ -79,7 +79,6 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
     
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
-        System.out.println("payara hralth --------------------------------------------------------");
         // Check if this context is the root one ("/")
         if (ctx.getContextPath().isEmpty()) {
             // Check if there is already a servlet for healthcheck
