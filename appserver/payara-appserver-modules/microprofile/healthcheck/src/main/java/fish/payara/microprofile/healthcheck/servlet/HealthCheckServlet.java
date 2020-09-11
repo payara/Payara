@@ -104,7 +104,7 @@ public class HealthCheckServlet extends HttpServlet {
             }
         }   
 
-        healthCheckService.performHealthChecks(response, HealthCheckType.fromPath(request.getPathInfo()));
+        healthCheckService.performHealthChecks(response, HealthCheckType.fromPath(request.getPathInfo()), request.getParameter("pretty"));
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

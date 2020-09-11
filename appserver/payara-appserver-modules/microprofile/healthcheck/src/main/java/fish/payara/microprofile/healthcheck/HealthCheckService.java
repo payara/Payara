@@ -89,9 +89,14 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.HEALTH;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
+import java.io.StringWriter;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonMap;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.joining;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 import org.glassfish.api.invocation.InvocationManager;
 
 /**
@@ -392,7 +397,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
      * @param type the type of health check
      * @throws IOException If there's an issue writing the response
      */
-    public void performHealthChecks(HttpServletResponse response, HealthCheckType type) throws IOException {
+    public void performHealthChecks(HttpServletResponse response, HealthCheckType type, String enablePrettyPrint) throws IOException {
         Set<HealthCheckResponse> healthCheckResponses = new HashSet<>();
 
         // Iterate over every HealthCheck stored in the Map
@@ -424,7 +429,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
         // If we haven't encountered an exception, construct the JSON response
         if (response.getStatus() != 500) {
-            constructResponse(response, healthCheckResponses, type);
+            constructResponse(response, healthCheckResponses, type, enablePrettyPrint);
         }
     }
 
@@ -442,7 +447,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
     private void constructResponse(HttpServletResponse httpResponse,
             Set<HealthCheckResponse> healthCheckResponses,
-            HealthCheckType type) throws IOException {
+            HealthCheckType type, String enablePrettyPrint) throws IOException {
         httpResponse.setContentType("application/json");
 
         // For each HealthCheckResponse we got from executing the health checks...
@@ -475,7 +480,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 httpResponse.setStatus(503);
             }
         }
-
+       
         // Create the final aggregate object
         JsonObjectBuilder responseObject = Json.createObjectBuilder();
 
@@ -488,8 +493,16 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
         // Add all of the checks
         responseObject.add("checks", checksArray);
 
+        String prettyPrinting = enablePrettyPrint.equals("false") ? "" : JsonGenerator.PRETTY_PRINTING;
+        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(singletonMap(prettyPrinting, ""));
+        StringWriter stringWriter = new StringWriter();
+
+        try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
+            jsonWriter.writeObject(responseObject.build());
+        }
+        
         // Print the outcome
-        httpResponse.getOutputStream().print(responseObject.build().toString());
+        httpResponse.getOutputStream().print(stringWriter.toString());
     }
 
     @Override
