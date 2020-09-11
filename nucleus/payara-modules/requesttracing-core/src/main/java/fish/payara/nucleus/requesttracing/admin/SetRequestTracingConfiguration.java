@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -181,6 +180,9 @@ public class SetRequestTracingConfiguration implements AdminCommand {
     @Param(name = "disableNotifiers", optional = true)
     private List<String> disableNotifiers;
 
+    @Param(name = "setNotifiers", optional = true)
+    private List<String> setNotifiers;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -273,6 +275,17 @@ public class SetRequestTracingConfiguration implements AdminCommand {
                             for (String notifier : disableNotifiers) {
                                 if (notifierNames.contains(notifier)) {
                                     notifiers.remove(notifier);
+                                } else {
+                                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                            new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                                }
+                            }
+                        }
+                        if (setNotifiers != null) {
+                            notifiers.clear();
+                            for (String notifier : setNotifiers) {
+                                if (notifierNames.contains(notifier)) {
+                                    notifiers.add(notifier);
                                 } else {
                                     throw new PropertyVetoException("Unrecognised notifier " + notifier,
                                             new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
@@ -396,6 +409,12 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             disableNotifiers.forEach(notifiers::remove);
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.notifier.disable.success",
                     "Request Tracing Notifiers {0} have been disabled.", Arrays.toString(disableNotifiers.toArray())) + "\n");
+        }
+        if (setNotifiers != null) {
+            notifiers.clear();
+            setNotifiers.forEach(notifiers::add);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.notifier.enable.success",
+                    "Request Tracing Notifiers {0} have been enabled.", Arrays.toString(setNotifiers.toArray())) + "\n");
         }
 
         service.bootstrapRequestTracingService();

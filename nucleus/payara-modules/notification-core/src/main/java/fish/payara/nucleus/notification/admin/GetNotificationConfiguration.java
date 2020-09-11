@@ -159,7 +159,7 @@ public class GetNotificationConfiguration implements AdminCommand {
             map.put("enabled", values[1]);
             map.put("notifierEnabled", values[2]);
             map.put("noisy", values[3]);
-            extraProps.put("getNotificationConfiguration." + values[0], map);
+            extraProps.put("getNotificationConfiguration" + values[0].toString().replaceAll("-", ""), map);
         }
 
         report.setMessage(columnFormatter.toString());

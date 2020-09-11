@@ -115,6 +115,9 @@ public class SetAdminAuditConfiguration implements AdminCommand {
     @Param(name = "disableNotifiers", optional = true)
     private List<String> disableNotifiers;
 
+    @Param(name = "setNotifiers", optional = true)
+    private List<String> setNotifiers;
+
     @Inject
     private ServiceLocator serviceLocator;
 
@@ -161,6 +164,17 @@ public class SetAdminAuditConfiguration implements AdminCommand {
                             }
                         }
                     }
+                    if (setNotifiers != null) {
+                        notifiers.clear();
+                        for (String notifier : setNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                notifiers.add(notifier);
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
+                    }
                     return null;
                 }
             }, configuration);
@@ -175,6 +189,10 @@ public class SetAdminAuditConfiguration implements AdminCommand {
                 }
                 if (disableNotifiers != null) {
                     disableNotifiers.forEach(notifiers::remove);
+                }
+                if (setNotifiers != null) {
+                    notifiers.clear();
+                    setNotifiers.forEach(notifiers::add);
                 }
             }
         } catch (TransactionFailure ex) {

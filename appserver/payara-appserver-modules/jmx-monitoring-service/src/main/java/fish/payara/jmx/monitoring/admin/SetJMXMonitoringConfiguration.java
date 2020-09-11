@@ -141,6 +141,9 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
     @Param(name = "disableNotifiers", optional = true)
     private List<String> disableNotifiers;
 
+    @Param(name = "setNotifiers", optional = true)
+    private List<String> setNotifiers;
+
     @Inject
     protected Logger logger;
 
@@ -246,6 +249,17 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
             for (String notifier : disableNotifiers) {
                 if (notifierNames.contains(notifier)) {
                     notifiers.remove(notifier);
+                } else {
+                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                            new PropertyChangeEvent(monitoringConfig, "notifiers", notifiers, notifiers));
+                }
+            }
+        }
+        if (setNotifiers != null) {
+            notifiers.clear();
+            for (String notifier : setNotifiers) {
+                if (notifierNames.contains(notifier)) {
+                    notifiers.add(notifier);
                 } else {
                     throw new PropertyVetoException("Unrecognised notifier " + notifier,
                             new PropertyChangeEvent(monitoringConfig, "notifiers", notifiers, notifiers));

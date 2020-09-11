@@ -1,7 +1,7 @@
 <!--
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -80,13 +80,13 @@
             setPageSessionAttribute(key="historicTraceStoreEnabledSelected", value="true");
         }
 
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
-        setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
-        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
-            convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-notifiers" method="GET" result="#{requestScope.respAllNotifiers}");
+        setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.availableServices}");
+        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.availableServices}"){
+            convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.availableServices}" array="#{pageSession.allNotifiersArray}");
             gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
         }
-        py.sortRequestTracingEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.subReports.get(0).extraProperties}" avaliableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
+        py.sortRequestTracingEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.subReports.get(0).extraProperties}" availableNotifiers="#{pageSession.allservices}" enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
         convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
         />
 </event>
@@ -106,9 +106,10 @@
                     mapPut(map="#{pageSession.valueMap}" key="sampleRateFirstEnabled" value="#{pageSession.sampleRateFirstEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="reservoirSamplingEnabled" value="#{pageSession.reservoirSamplingEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="historicTraceStoreEnabled" value="#{pageSession.historicTraceStoreEnabledSelected}");
+                    convertArrayToCommaString(array="#{pageSession.enabledNotifiersArr}", commaString="#{requestScope.commaSeparatedNotifiers}");
+                    mapPut(map="#{pageSession.valueMap}" key="setNotifiers" value="#{requestScope.commaSeparatedNotifiers}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-                    py.updateNotifiers(endpoint="#{sessionScope.REQUEST_TRACING_CONFIG_URL}" dynamic="#{pageSession.dynamicSelected}" target="#{pageSession.configName}" selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
                     />
             </sun:button>
         </sun:panelGroup>
@@ -206,7 +207,7 @@
 
 
     <sun:propertySheetSection id="notifiers">
-        <sun:property id="avaliableNotifiers" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
+        <sun:property id="availableNotifiers" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
             <sun:addRemove id="notifiersAddRemove"
                            selectAll="$boolean{true}"
                            items="#{pageSession.allNotifiers}"

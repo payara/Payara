@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -139,6 +138,9 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     @Param(name = "disableNotifiers", optional = true)
     private List<String> disableNotifiers;
 
+    @Param(name = "setNotifiers", optional = true)
+    private List<String> setNotifiers;
+
     @Override
     public void execute(AdminCommandContext context) {
         targetConfig = targetUtil.getConfig(target);
@@ -193,6 +195,17 @@ public class SetHealthCheckConfiguration implements AdminCommand {
                             }
                         }
                     }
+                    if (setNotifiers != null) {
+                        notifiers.clear();
+                        for (String notifier : setNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                notifiers.add(notifier);
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(configProxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
+                    }
 
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return configProxy;
@@ -221,6 +234,10 @@ public class SetHealthCheckConfiguration implements AdminCommand {
         }
         if (disableNotifiers != null) {
             disableNotifiers.forEach(notifiers::remove);
+        }
+        if (setNotifiers != null) {
+            notifiers.clear();
+            setNotifiers.forEach(notifiers::add);
         }
     }
 }

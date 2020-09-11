@@ -180,7 +180,7 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
                 mapNotifiers.put("notifierName", values[0]);
                 mapNotifiers.put("notifierEnabled", values[1]);
 
-                notifierProps.put("notifierList" + notifierName, mapNotifiers);
+                notifierProps.put("notifierList" + notifierName.replaceAll("-", ""), mapNotifiers);
             }
 
             actionReport.getExtraProperties().putAll(notifierProps);

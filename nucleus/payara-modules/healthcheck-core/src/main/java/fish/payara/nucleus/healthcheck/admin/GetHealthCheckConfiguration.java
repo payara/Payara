@@ -200,7 +200,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 map.put("notifierName", values[0]);
                 map.put("notifierEnabled", values[1]);
 
-                extraProps.put("notifierList" + notifierName, map);
+                extraProps.put("notifierList" + notifierName.replaceAll("-", ""), map);
             }
             mainActionReport.getExtraProperties().putAll(extraProps);
             mainActionReport.appendMessage(notifiersColumnFormatter.toString());

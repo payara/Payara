@@ -114,7 +114,7 @@ public class NotifierServiceLister implements AdminCommand {
                 sb.append("\t" + notifierName + "\n");
                 names.add(notifierName);
             }
-            extrasProps.put("avaliableServices", names);
+            extrasProps.put("availableServices", names);
             report.setMessage(sb.toString());
             report.setExtraProperties(extrasProps);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

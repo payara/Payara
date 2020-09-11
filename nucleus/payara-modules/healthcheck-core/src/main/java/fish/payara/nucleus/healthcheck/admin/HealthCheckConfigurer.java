@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,11 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,6 +74,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import fish.payara.internal.notification.NotifierUtils;
 import fish.payara.internal.notification.TimeUtil;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -137,6 +141,15 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Param(name = "historicalTraceStoreTimeout", optional = true)
     private String historicalTraceStoreTimeout;
 
+    @Param(name = "enableNotifiers", optional = true)
+    private List<String> enableNotifiers;
+
+    @Param(name = "disableNotifiers", optional = true)
+    private List<String> disableNotifiers;
+
+    @Param(name = "setNotifiers", optional = true)
+    private List<String> setNotifiers;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -151,25 +164,59 @@ public class HealthCheckConfigurer implements AdminCommand {
         final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
         if (healthCheckServiceConfiguration != null) {
             try {
+                final Set<String> notifierNames = NotifierUtils.getNotifierNames(serviceLocator);
                 ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
                     @Override
-                    public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy) throws
+                    public Object run(final HealthCheckServiceConfiguration proxy) throws
                             PropertyVetoException, TransactionFailure {
                         if (enabled != null) {
-                            healthCheckServiceConfigurationProxy.enabled(enabled.toString());
+                            proxy.enabled(enabled.toString());
                         }
                         if (historicalTraceEnabled != null) {
-                            healthCheckServiceConfigurationProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                            proxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
                         }
                         if (historicalTraceStoreSize != null) {
-                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                            proxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                        }
+                        if (historicalTraceStoreTimeout != null) {
+                            proxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
                         }
 
-                        if (historicalTraceStoreTimeout != null) {
-                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
+                        List<String> notifiers = proxy.getNotifierList();
+                        if (enableNotifiers != null) {
+                            for (String notifier : enableNotifiers) {
+                                if (notifierNames.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                } else {
+                                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                            new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                                }
+                            }
                         }
+                        if (disableNotifiers != null) {
+                            for (String notifier : disableNotifiers) {
+                                if (notifierNames.contains(notifier)) {
+                                    notifiers.remove(notifier);
+                                } else {
+                                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                            new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                                }
+                            }
+                        }
+                        if (setNotifiers != null) {
+                            notifiers.clear();
+                            for (String notifier : setNotifiers) {
+                                if (notifierNames.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                } else {
+                                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                            new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                                }
+                            }
+                        }
+
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return healthCheckServiceConfigurationProxy;
+                        return proxy;
                     }
 
                 }, healthCheckServiceConfiguration);
@@ -205,6 +252,18 @@ public class HealthCheckConfigurer implements AdminCommand {
         if (historicalTraceStoreTimeout != null) {
             long timeout = TimeUtil.setStoreTimeLimit(this.historicalTraceStoreTimeout);
             service.setHistoricalTraceStoreTimeout(timeout);
+        }
+
+        List<String> notifiers = service.getEnabledNotifiers();
+        if (enableNotifiers != null) {
+            enableNotifiers.forEach(notifiers::add);
+        }
+        if (disableNotifiers != null) {
+            disableNotifiers.forEach(notifiers::remove);
+        }
+        if (setNotifiers != null) {
+            notifiers.clear();
+            setNotifiers.forEach(notifiers::add);
         }
     }
 }
