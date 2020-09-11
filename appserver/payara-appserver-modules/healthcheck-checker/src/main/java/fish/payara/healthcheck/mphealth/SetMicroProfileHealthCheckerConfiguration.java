@@ -104,6 +104,10 @@ public class SetMicroProfileHealthCheckerConfiguration implements AdminCommand {
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
+    
+    @Param(name = "display-on-health-endpoint", alias = "displayOnHealthEndpoint",
+            optional = true, defaultValue = "false")
+    private Boolean displayOnHealthEndpoint;
 
     @Param(name = "time", optional = true)
     @Min(value = 1, message = "Time period must be 1 or more")
@@ -200,6 +204,10 @@ public class SetMicroProfileHealthCheckerConfiguration implements AdminCommand {
     private void applyValues(MicroProfileHealthCheckerConfiguration checkerProxy) throws PropertyVetoException {
         if (enabled != null) {
             checkerProxy.setEnabled(enabled.toString());
+        }
+        
+        if (displayOnHealthEndpoint != null) {
+            checkerProxy.setDisplayOnHealthEndpoint(displayOnHealthEndpoint.toString());
         }
         
         if (checkerName != null) {

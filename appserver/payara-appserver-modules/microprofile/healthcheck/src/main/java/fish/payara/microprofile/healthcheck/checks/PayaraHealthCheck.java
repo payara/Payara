@@ -72,16 +72,11 @@ public class PayaraHealthCheck implements HealthCheck {
         HealthCheckResponseBuilder responseBuilder = HealthCheckResponse.named(name);
         boolean state = true;
 
-        if (healthCheckResult != null) {
-            for (HealthCheckResultEntry healthCheckResultEntry : healthCheckResult.getEntries()) {
-                responseBuilder.withData("Message", healthCheckResultEntry.getMessage());
-            }
-
-        } else {
-            responseBuilder.withData("Message", "Nothing to display");
+        for (HealthCheckResultEntry healthCheckResultEntry : healthCheckResult.getEntries()) {
+            responseBuilder.withData("Message", healthCheckResultEntry.getMessage());
         }
 
-        if (healthStatus != null) {
+        if (!healthStatus.trim().isEmpty()) {
             responseBuilder.withData("HealthCheckStatus", healthStatus);
             if (healthStatus.equals("CRITICAL") || healthStatus.equals("CHECK_ERROR")) {
                 state = false;

@@ -133,7 +133,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private String target;
     private Config targetConfig;
 
-    @Param(name = "service")
+    @Param(name = "service", alias = "serviceName")
     private String serviceName;
     private CheckerType serviceType;
 
@@ -141,10 +141,11 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private boolean dynamic;
 
     // general properties params:
-    @Param(name = "checker-name", optional = true)
+    @Param(name = "checker-name", alias = "checkerName",  optional = true)
     private String checkerName;
     
-    @Param(name = "displayon-health-endpoint", optional = true, defaultValue = "false")
+    @Param(name = "display-on-health-endpoint", alias = "displayOnHealthEndpoint",
+            optional = true, defaultValue = "false")
     private Boolean displayOnHealthEndpoint;
 
     @Param(name = "enabled", optional = false)
@@ -154,44 +155,47 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "time-unit", optional = true,
+    @Param(name = "time-unit", optional = true, alias ="unit",
             acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String timeUnit;
     
     // hogging threads properties params:
 
-    @Param(name = "hogging-threads-threshold", optional = true)
+    @Param(name = "hogging-threads-threshold", alias = "threshold-percentage", optional = true)
     @Min(value = 0, message = "Hogging threads threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Hogging threads threshold is a percentage so must be less than 100")
     private String hogginThreadsThreshold;
 
     @Min(value = 0, message = "Hogging threads retry count must be zero or more")
-    @Param(name = "hogging-threads-retry-count", optional = true)
+    @Param(name = "hogging-threads-retry-count", alias = "retry-count", optional = true)
     private String hogginThreadsRetryCount;
 
     // stuck threads property params:
 
-    @Param(name = "stuck-threads-threshold", optional = true)
+    @Param(name = "stuck-threads-threshold", alias = "threshold", optional = true)
     @Min(value = 1, message = "Threshold length must be 1 or more")
     private String stuckThreadsThreshold;
 
-    @Param(name = "stuck-threads-threshold-unit", optional = true,
+    @Param(name = "stuck-threads-threshold-unit", alias = "thresholdUnit", optional = true,
             acceptableValues = "DAYS,HOURS,MILLISECONDS,MINUTES,SECONDS")
     private String stuckThreadsThresholdUnit;
 
     // threshold properties params:
 
-    @Param(name = "threshold-critical", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL)
+    @Param(name = "threshold-critical", optional = true, alias = "thresholdCritical",
+            defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL)
     @Min(value = 0, message = "Critical threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Critical threshold is a percentage so must be less than 100")
     private String thresholdCritical;
 
-    @Param(name = "threshold-warning", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING)
+    @Param(name = "threshold-warning", optional = true, alias = "thresholdWarning",
+            defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING)
     @Min(value = 0, message = "Warning threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Wanring threshold is a percentage so must be less than 100")
     private String thresholdWarning;
 
-    @Param(name = "threshold-good", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD)
+    @Param(name = "threshold-good", optional = true, alias = "thresholdGood",
+            defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD)
     @Min(value = 0, message = "Good threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Good threshold is a percentage so must be less than 100")
     private String thresholdGood;

@@ -43,11 +43,10 @@ import fish.payara.microprofile.healthcheck.HealthCheckService;
 import fish.payara.microprofile.healthcheck.HealthCheckType;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import fish.payara.microprofile.healthcheck.checks.PayaraHealthCheck;
-import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.io.IOException;
-import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -87,13 +86,17 @@ public class HealthCheckServlet extends HttpServlet {
 
         for (Checker checker : payaraHealthCheckService.getConfiguration().getCheckerList()) {
             String checkName = checker.getName();
+            System.out.println("Checker name = " + checkName);
             if (Boolean.valueOf(checker.getEnabled()) && Boolean.valueOf(checker.getDisplayOnHealthEndpoint())) {
                 PayaraHealthCheck payaraHealthCheck = new PayaraHealthCheck();
                 payaraHealthCheck.setName(checkName);
 
                 BaseHealthCheck check = payaraHealthCheckService.getCheck(checkName);
+                check.doCheck();
+                
                 if (check.getChecksDone() > 0) {
-                    payaraHealthCheck.setHealthStatus(check.getMostRecentCumulativeStatus().name());
+//                    HealthCheckResultStatus status = check.getMostRecentCumulativeStatus();
+                    payaraHealthCheck.setHealthStatus(check.getMostRecentCumulativeStatus() == null ? "" : check.getMostRecentCumulativeStatus().name());
                     payaraHealthCheck.setHealthCheckResult(check.getMostRecentCumulativeResult());
                 }
 

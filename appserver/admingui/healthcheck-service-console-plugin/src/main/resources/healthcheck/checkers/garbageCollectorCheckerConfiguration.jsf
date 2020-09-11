@@ -57,9 +57,13 @@
                 value="#{requestScope.resp.data.subReports.get(0).extraProperties.garbageCollector}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
                 
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "displayOnHealthEndpoint"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
+        }
+        
+        if (#{pageSession.valueMap['displayOnHealthEndpoint']}=true) {
+            setPageSessionAttribute(key="displayOnHealthEndpointSelected", value="true");
         }
         
         setPageSessionAttribute(key="dynamic", value="true");
@@ -78,9 +82,10 @@
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
-                    mapPut(map="#{pageSession.valueMap}" key="serviceName" value="healthcheck-gc");
+                    mapPut(map="#{pageSession.valueMap}" key="displayOnHealthEndpoint" value="#{pageSession.displayOnHealthEndpointSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="serviceName" value="garbage-collector");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/healthcheck-service-configure-checker-with-thresholds"
+                    gf.updateEntity(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/set-healthcheck-service-configuration"
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
@@ -99,6 +104,11 @@
                       label="$resource{i18nhx.healthcheck.configuration.dynamicLabel}"  
                       helpText="$resource{i18nhx.healthcheck.configuration.dynamicLabelHelpText}">
             <sun:checkbox id="dynamicBox" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="displayOnHealthEndpointProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.checker.configuration.displayOnHealthEndpointLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.displayOnHealthEndpointHelpText}">
+            <sun:checkbox id="displayOnHealthEndpointBox" selected="#{pageSession.displayOnHealthEndpointSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.nameLabel}"  
