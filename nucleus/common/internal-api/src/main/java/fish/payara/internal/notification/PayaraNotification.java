@@ -56,6 +56,7 @@ public class PayaraNotification implements Serializable {
     private String instanceName;
     private String subject;
     private String message;
+    private Serializable data;
 
     private List<String> whitelist;
     private List<String> blacklist;
@@ -130,5 +131,13 @@ public class PayaraNotification implements Serializable {
 
     protected void setBlacklist(List<String> blacklist) {
         this.blacklist = blacklist;
+    }
+
+    public Serializable getData() {
+        return data;
+    }
+
+    protected void setData(Serializable data) {
+        this.data = data;
     }
 }

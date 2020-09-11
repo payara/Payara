@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,14 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification;
+package fish.payara.notification.eventbus.core.model;
 
-/**
- * @author mertcaliskan
- */
-public interface Notification {
-    String getDomain();
-    String getSubject();
-    String getMessage();
-    NotificationData getData();
+import fish.payara.notification.NotificationData;
+
+public class DefaultNotificationData extends NotificationData {
+
+    private static final long serialVersionUID = 1L;
+
+    private final String message;
+
+    protected DefaultNotificationData(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public String toString() {
+        return message;
+    }
+    
 }

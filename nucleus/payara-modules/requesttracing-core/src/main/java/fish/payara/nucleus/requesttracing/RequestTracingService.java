@@ -90,6 +90,7 @@ import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
+import fish.payara.notification.requesttracing.RequestTracingNotificationData;
 import fish.payara.nucleus.config.ClusteredConfig;
 import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.eventbus.EventBus;
@@ -514,6 +515,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                 .whitelist(enabledNotifiers.toArray(new String[0]))
                 .subject("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold")
                 .message(requestTrace.toString())
+                .data(new RequestTracingNotificationData(requestTrace))
                 .build();
             notificationEventBus.publish(notification);
         }

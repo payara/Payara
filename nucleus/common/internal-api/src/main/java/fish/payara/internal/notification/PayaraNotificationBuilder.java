@@ -39,6 +39,7 @@
  */
 package fish.payara.internal.notification;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -62,6 +63,11 @@ public class PayaraNotificationBuilder {
 
     public PayaraNotificationBuilder message(String message) {
         notification.setMessage(message);
+        return this;
+    }
+
+    public PayaraNotificationBuilder data(Serializable data) {
+        notification.setData(data);
         return this;
     }
 

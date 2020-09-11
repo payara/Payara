@@ -56,6 +56,8 @@ import org.jvnet.hk2.annotations.Service;
 import fish.payara.internal.notification.PayaraConfiguredNotifier;
 import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.micro.cdi.Outbound;
+import fish.payara.notification.eventbus.EventbusMessage;
+import fish.payara.notification.eventbus.core.model.CDIEventbusMessage;
 
 /**
  * @author mertcaliskan
@@ -88,7 +90,10 @@ public class CDIEventbusNotifierService extends PayaraConfiguredNotifier<CDIEven
         }
     }
 
-    private void sendNotification(final PayaraNotification event) {
+    private void sendNotification(final PayaraNotification notification) {
+
+        final EventbusMessage event = new CDIEventbusMessage(notification);
+
         CDI.current().getBeanManager().fireEvent(event, new Outbound() {
             @Override
             public String eventName() {
@@ -102,7 +107,7 @@ public class CDIEventbusNotifierService extends PayaraConfiguredNotifier<CDIEven
 
             @Override
             public String[] instanceName() {
-                return new String[] { event.getInstanceName() };
+                return new String[] { notification.getInstanceName() };
             }
 
             @Override
@@ -111,4 +116,5 @@ public class CDIEventbusNotifierService extends PayaraConfiguredNotifier<CDIEven
             }
         });
     }
+
 }

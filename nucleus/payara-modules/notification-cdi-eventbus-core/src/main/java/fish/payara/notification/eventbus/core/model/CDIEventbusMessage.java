@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,24 +37,74 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.requesttracing;
+package fish.payara.notification.eventbus.core.model;
 
+import java.io.Serializable;
+
+import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.notification.NotificationData;
+import fish.payara.notification.eventbus.EventbusMessage;
 
-/**
- * @author mertcaliskan
- */
-public class RequestTracingNotificationData extends NotificationData {
+public class CDIEventbusMessage implements EventbusMessage {
 
     private static final long serialVersionUID = 1L;
 
-    private RequestTrace requestTrace;
+    private final String host;
+    private final String serverName;
+    private final String instance;
+    private final String domain;
+    private final String subject;
+    private final String message;
+    private final NotificationData data;
 
-    public RequestTracingNotificationData(RequestTrace requestTrace) {
-        this.requestTrace = requestTrace;
+    public CDIEventbusMessage(PayaraNotification notification) {
+        this.host = notification.getHostName();
+        this.serverName = notification.getServerName();
+        this.instance = notification.getInstanceName();
+        this.domain = notification.getDomainName();
+        this.subject = notification.getSubject();
+        this.message = notification.getMessage();
+        final Serializable data = notification.getData();
+        if (data != null && data instanceof NotificationData) {
+            this.data = (NotificationData) notification.getData();
+        } else {
+            this.data = new DefaultNotificationData(message);
+        }
     }
 
-    public RequestTrace getRequestTrace() {
-        return requestTrace;
+    @Override
+    public String getHost() {
+        return host;
     }
+
+    @Override
+    public String getServerName() {
+        return serverName;
+    }
+
+    @Override
+    public String getInstance() {
+        return instance;
+    }
+
+    @Override
+    public String getDomain() {
+        return domain;
+    }
+
+    @Override
+    public String getSubject() {
+        return subject;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public NotificationData getData() {
+        return data;
+    }
+    
 }
