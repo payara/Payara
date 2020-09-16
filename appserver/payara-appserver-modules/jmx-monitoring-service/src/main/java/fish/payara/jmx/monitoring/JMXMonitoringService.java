@@ -48,8 +48,10 @@ import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -115,7 +117,7 @@ public class JMXMonitoringService implements EventListener {
     private boolean enabled;
     private int amxBootDelay = 10;
     private long monitoringDelay = amxBootDelay + 15;
-    private final List<String> enabledNotifiers = new ArrayList<>();
+    private final Set<String> enabledNotifiers = new LinkedHashSet<>();
     private ScheduledFuture<?> monitoringFuture;
 
     @PostConstruct
@@ -188,7 +190,7 @@ public class JMXMonitoringService implements EventListener {
      * @since 4.1.2.174
      * @return
      */
-    public List<String> getEnabledNotifiers() {
+    public Set<String> getEnabledNotifiers() {
         return enabledNotifiers;
     }
 

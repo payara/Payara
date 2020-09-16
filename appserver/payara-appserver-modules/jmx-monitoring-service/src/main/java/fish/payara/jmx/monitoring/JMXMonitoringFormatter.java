@@ -40,6 +40,7 @@
 package fish.payara.jmx.monitoring;
 
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -66,7 +67,7 @@ public class JMXMonitoringFormatter implements Runnable {
     private final MBeanServer mBeanServer;
     private final List<JMXMonitoringJob> JmxMonitoringJobs;
     private final JMXMonitoringService monitoringService;
-    private List<String> enabledNotifiers;
+    private final Collection<String> enabledNotifiers;
     private Topic<PayaraNotification> notificationEventBus;
     private PayaraNotificationFactory notificationFactory;
 
@@ -85,7 +86,7 @@ public class JMXMonitoringFormatter implements Runnable {
     //is also used in JMXMonitoringService and each cannot be injected into the other
     public JMXMonitoringFormatter(MBeanServer mBeanServer, List<JMXMonitoringJob> jobs,
             JMXMonitoringService monitoringService, Topic<PayaraNotification> notificationEventBus,
-            PayaraNotificationFactory notificationFactory, List<String> enabledNotifiers) {
+            PayaraNotificationFactory notificationFactory, Collection<String> enabledNotifiers) {
         this.mBeanServer = mBeanServer;
         this.JmxMonitoringJobs = jobs;
         this.monitoringService = monitoringService;

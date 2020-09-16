@@ -42,8 +42,8 @@ package fish.payara.nucleus.requesttracing.domain.execoptions;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -78,7 +78,7 @@ public class RequestTracingExecutionOptions {
     // Default timeout value **NOT** taken from RequestTracingServiceConfiguration, but from TimeUtil.setStoreTimeLimit
     private Long historicTraceStoreTimeout = 0L;
 
-    private final List<String> enabledNotifiers = new ArrayList<>();
+    private final Set<String> enabledNotifiers = new LinkedHashSet<>();
 
     public Boolean isEnabled() {
         if (enabled == null) {
@@ -248,7 +248,7 @@ public class RequestTracingExecutionOptions {
      * Gets the notifier options configured with request tracing
      * @return 
      */
-    public List<String> getEnabledNotifiers() {
+    public Set<String> getEnabledNotifiers() {
         return enabledNotifiers;
     }
     

@@ -207,7 +207,9 @@ public class HealthCheckConfigurer implements AdminCommand {
                             notifiers.clear();
                             for (String notifier : setNotifiers) {
                                 if (notifierNames.contains(notifier)) {
-                                    notifiers.add(notifier);
+                                    if (!notifiers.contains(notifier)) {
+                                        notifiers.add(notifier);
+                                    }
                                 } else {
                                     throw new PropertyVetoException("Unrecognised notifier " + notifier,
                                             new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
@@ -254,7 +256,7 @@ public class HealthCheckConfigurer implements AdminCommand {
             service.setHistoricalTraceStoreTimeout(timeout);
         }
 
-        List<String> notifiers = service.getEnabledNotifiers();
+        Set<String> notifiers = service.getEnabledNotifiers();
         if (enableNotifiers != null) {
             enableNotifiers.forEach(notifiers::add);
         }

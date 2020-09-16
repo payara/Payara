@@ -238,7 +238,9 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
         if (enableNotifiers != null) {
             for (String notifier : enableNotifiers) {
                 if (notifierNames.contains(notifier)) {
-                    notifiers.add(notifier);
+                    if (!notifiers.contains(notifier)) {
+                        notifiers.add(notifier);
+                    }
                 } else {
                     throw new PropertyVetoException("Unrecognised notifier " + notifier,
                             new PropertyChangeEvent(monitoringConfig, "notifiers", notifiers, notifiers));
@@ -259,7 +261,9 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
             notifiers.clear();
             for (String notifier : setNotifiers) {
                 if (notifierNames.contains(notifier)) {
-                    notifiers.add(notifier);
+                    if (!notifiers.contains(notifier)) {
+                        notifiers.add(notifier);
+                    }
                 } else {
                     throw new PropertyVetoException("Unrecognised notifier " + notifier,
                             new PropertyChangeEvent(monitoringConfig, "notifiers", notifiers, notifiers));

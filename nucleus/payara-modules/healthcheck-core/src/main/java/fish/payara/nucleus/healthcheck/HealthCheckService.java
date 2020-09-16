@@ -39,10 +39,9 @@
 package fish.payara.nucleus.healthcheck;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -119,7 +118,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     @Inject 
     private PayaraExecutorService executor;
 
-    private List<String> enabledNotifiers = new ArrayList<>();
+    private Set<String> enabledNotifiers = new LinkedHashSet<>();
     private Map<String, HealthCheckTask> registeredTasks = new HashMap<>();
     private boolean enabled;
     private boolean historicalTraceEnabled;
@@ -352,7 +351,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
      * Gets a list of all notifiers enabled the healthcheck service.
      * @return 
      */
-    public List<String> getEnabledNotifiers() {
+    public Set<String> getEnabledNotifiers() {
         return enabledNotifiers;
     }
 

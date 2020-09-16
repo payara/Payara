@@ -147,7 +147,9 @@ public class SetAdminAuditConfiguration implements AdminCommand {
                     if (enableNotifiers != null) {
                         for (String notifier : enableNotifiers) {
                             if (notifierNames.contains(notifier)) {
-                                notifiers.add(notifier);
+                                if (!notifiers.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                }
                             } else {
                                 throw new PropertyVetoException("Unrecognised notifier " + notifier,
                                         new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
@@ -168,7 +170,9 @@ public class SetAdminAuditConfiguration implements AdminCommand {
                         notifiers.clear();
                         for (String notifier : setNotifiers) {
                             if (notifierNames.contains(notifier)) {
-                                notifiers.add(notifier);
+                                if (!notifiers.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                }
                             } else {
                                 throw new PropertyVetoException("Unrecognised notifier " + notifier,
                                         new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
@@ -183,7 +187,7 @@ public class SetAdminAuditConfiguration implements AdminCommand {
                 auditService.setEnabled(enabled);
                 auditService.setAuditLevel(AuditLevel.valueOf(auditLevel));
 
-                List<String> notifiers = auditService.getEnabledNotifiers();
+                Set<String> notifiers = auditService.getEnabledNotifiers();
                 if (enableNotifiers != null) {
                     enableNotifiers.forEach(notifiers::add);
                 }

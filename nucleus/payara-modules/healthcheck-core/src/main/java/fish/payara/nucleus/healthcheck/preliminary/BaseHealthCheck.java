@@ -41,6 +41,7 @@ package fish.payara.nucleus.healthcheck.preliminary;
 
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -285,7 +286,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
         String subject = "Health Check notification with severity level: " + level.getName();
         String messageFormatted = getMessageFormatted(new Object[]{name, getCumulativeMessages(checkResult.getEntries())});
 
-        List<String> enabledNotifiers = healthCheckService.getEnabledNotifiers();
+        Collection<String> enabledNotifiers = healthCheckService.getEnabledNotifiers();
         PayaraNotification notification = notificationFactory.newBuilder()
             .whitelist(enabledNotifiers.toArray(new String[0]))
             .subject(name)

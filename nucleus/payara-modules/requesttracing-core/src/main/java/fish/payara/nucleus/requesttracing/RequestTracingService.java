@@ -41,6 +41,7 @@ package fish.payara.nucleus.requesttracing;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -510,7 +511,7 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
 
             payaraExecutorService.submit(addTask);
 
-            List<String> enabledNotifiers = getExecutionOptions().getEnabledNotifiers();
+            Collection<String> enabledNotifiers = getExecutionOptions().getEnabledNotifiers();
             PayaraNotification notification = notificationFactory.newBuilder()
                 .whitelist(enabledNotifiers.toArray(new String[0]))
                 .subject("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold")

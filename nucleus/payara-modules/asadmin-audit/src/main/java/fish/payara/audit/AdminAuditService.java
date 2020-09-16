@@ -43,8 +43,8 @@
 package fish.payara.audit;
 
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -89,7 +89,7 @@ public class AdminAuditService {
     @Inject
     AdminAuditConfiguration configuration;
 
-    private final List<String> enabledNotifiers = new ArrayList<>();
+    private final Set<String> enabledNotifiers = new LinkedHashSet<>();
     
     @PostConstruct
     public void postConstruct() {
@@ -120,7 +120,7 @@ public class AdminAuditService {
         auditLevel = level;
     }
 
-    public List<String> getEnabledNotifiers() {
+    public Set<String> getEnabledNotifiers() {
         return enabledNotifiers;
     }
     
