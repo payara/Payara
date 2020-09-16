@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -284,14 +284,29 @@ class ZipPayloadImpl extends PayloadImpl {
 
                 @Override
                 public Payload.Part next() {
+                    byte[] extraBytes = nextEntry.getExtra();
+                    if (extraBytes == null) {
+                        Properties extractProperties = new Properties();
+                        extractProperties.put("data-request-type", "file-xfer");
+                        extractProperties.put("data-request-name", nextEntry.getName());
+                        final Payload.Part part = new ZipPayloadImpl.Part(
+                            nextEntry.getName(), 
+                            null,
+                            extractProperties,
+                            Inbound.this);
+                        isNextEntryPrefetched = false;
+                        return part;
+                    } else {
                     final Extra extra = new Extra(nextEntry.getExtra());
-                    final Payload.Part part = new ZipPayloadImpl.Part(
+                        final Payload.Part part = new ZipPayloadImpl.Part(
                             nextEntry.getName(), 
                             extra.getContentType(),
                             extra.getProperties(),
                             Inbound.this);
-                    isNextEntryPrefetched = false;
-                    return part;
+                        isNextEntryPrefetched = false;
+                        return part;
+                    }
+                    
                 }
 
                 @Override
@@ -332,7 +347,7 @@ class ZipPayloadImpl extends PayloadImpl {
      * the Part.
      * <p>
      * The "normal" properties and the content type are exposed separately to
-     * the rest of the ipmlementation but we use a single Properties dump to
+     * the rest of the implementation but we use a single Properties dump to
      * represent both.  So before exposing the Properties object we remove
      * the content-type entry.
      */
