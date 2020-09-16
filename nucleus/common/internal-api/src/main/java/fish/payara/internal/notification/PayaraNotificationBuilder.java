@@ -83,6 +83,9 @@ public class PayaraNotificationBuilder {
             }
             notification.getWhitelist().add(notifierNames[i]);
         }
+        if (notifierNames.length == 0){
+            notification.setWhitelist(null);
+        }
         return this;
     }
 
