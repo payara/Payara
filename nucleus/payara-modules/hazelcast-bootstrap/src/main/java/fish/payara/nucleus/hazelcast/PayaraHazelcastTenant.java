@@ -40,11 +40,11 @@
 package fish.payara.nucleus.hazelcast;
 
 import com.hazelcast.cache.impl.operation.AddCacheConfigOperation;
-import com.hazelcast.internal.nio.ClassLoaderUtil;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.spi.impl.operationservice.Operation;
+import com.hazelcast.spi.tenantcontrol.BypassClassCaching;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.IOException;
@@ -74,7 +74,7 @@ import org.glassfish.internal.deployment.Deployment;
  *
  * @author lprimak
  */
-public class PayaraHazelcastTenant implements TenantControl, DataSerializable, ClassLoaderUtil.BypassClassCaching {
+public class PayaraHazelcastTenant implements TenantControl, DataSerializable, BypassClassCaching {
     private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     private final Events events = Globals.getDefaultHabitat().getService(Events.class);
     private final InvocationManager invMgr = Globals.getDefaultHabitat().getService(InvocationManager.class);
