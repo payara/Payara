@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -50,7 +50,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -190,7 +189,7 @@ public abstract class PayloadFilesManager {
          * Creates a new PayloadFilesManager for dealing with permanent files that
          * will be anchored at the specified target directory.
          * @param targetDir directory under which the payload's files should be stored
-         * @param report result report to which extraction results will be appened
+         * @param report result report to which extraction results will be appended
          * @param logger logger to receive messages
          */
         public Perm(final File targetDir, final ActionReport report, final Logger logger) {

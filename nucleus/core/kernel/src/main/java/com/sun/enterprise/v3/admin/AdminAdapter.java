@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.admin;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -68,6 +69,7 @@ import javax.inject.Named;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
+import org.glassfish.admin.payload.PayloadFilesManager;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
@@ -83,6 +85,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.event.RestrictTo;
+import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -111,6 +114,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.uuid.UuidGenerator;
 import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import java.io.File;
+import static org.glassfish.admin.payload.PayloadFilesManager.strings;
 
 /**
  * Listen to admin commands...
@@ -200,14 +205,14 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     /**
      * Call the service method, and notify all listeners
      *
-     * @exception Exception if an error happens during handling of
+     * @exception RuntimeException if an error happens during handling of
      *   the request. Common errors are:
      *   <ul><li>IOException if an input/output error occurs and we are
      *   processing an included servlet (otherwise it is swallowed and
-     *   handled by the top level error handler mechanism)
+     *   handled by the top level error handler mechanism)</li>
      *       <li>ServletException if a servlet throws an exception and
      *  we are processing an included servlet (otherwise it is swallowed
-     *  and handled by the top level error handler mechanism)
+     *  and handled by the top level error handler mechanism)</li>
      *  </ul>
      *  Tomcat should be able to handle and log any other exception ( including
      *  runtime exceptions )
@@ -310,8 +315,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             String headerValue = nameValuePair[1];
 
             int index = headerValue.lastIndexOf('.');
-            return  headerValue.substring(index+1)
-                    .equals(server.getName())? true : false;
+            return  headerValue.substring(index+1).equals(server.getName());
 
         }
         return false;
@@ -526,11 +530,47 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         }
 
         try {
+            
+            //If the upload option is present and false, this needs converting to a path
+            String uploadValue = parameters.getOne("upload");
+            if ("false".equalsIgnoreCase(uploadValue)) {
+                
+                Buffer contentBuffer = req.getInputBuffer().getBuffer();
+                int capacity = contentBuffer.capacity();
+                byte[] path = new byte[capacity];
+                for (int i = 0; i < capacity; i++) {
+                    path[i] = contentBuffer.get(i);
+                }
+                
+                parameters.add("path", new String(path)); //path as passed in
+                parameters.remove("upload"); //remove to prevent exception as this is not a param in the command class
+                
+            }
+            
+            
             Payload.Inbound inboundPayload = PayloadImpl.Inbound
                 .newInstance(req.getContentType(), req.getInputStream());
             if (aalogger.isLoggable(Level.FINE)) {
                 aalogger.log(Level.FINE, "***** AdminAdapter {0}  *****", req.getMethod());
             }
+            
+            //This is seperated from the false test as the inboundPayload is required to be set whether
+            //or not the upload flag is set.
+            if ("true".equalsIgnoreCase(uploadValue)) {
+                //This is a file that needs to be extracted
+                File extractLocation = new File(domain.getApplicationRoot() + File.separator + "upload-" + inboundPayload.hashCode() + File.separator);
+                if (!extractLocation.mkdirs()) {
+                    aalogger.log(Level.WARNING, strings.getLocalString(
+                        "payload.mkdirsFailed",
+                        "Attempt to create directories for {0} failed; no further information is available. Continuing.",
+                        extractLocation.getAbsolutePath()));
+                }
+                PayloadFilesManager.Perm permFileManager = new PayloadFilesManager.Perm(extractLocation, null, aalogger);
+                permFileManager.processParts(inboundPayload);
+                parameters.add("path", extractLocation.toString());
+                parameters.remove("upload");
+            }
+            
             AdminCommand adminCommand = commandRunner.getCommand(scope, command, report, aalogger);
             if (adminCommand==null) {
                 // maybe commandRunner already reported the failure?

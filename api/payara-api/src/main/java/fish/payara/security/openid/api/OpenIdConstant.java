@@ -162,5 +162,7 @@ public interface OpenIdConstant {
     // phone scope claims
     public static final String PHONE_NUMBER = "phone_number";
     public static final String PHONE_NUMBER_VERIFIED = "phone_number_verified";
-    
+
+    // Original user Request
+    public static final String ORIGINAL_REQUEST = "oidc.original.request";
 }
