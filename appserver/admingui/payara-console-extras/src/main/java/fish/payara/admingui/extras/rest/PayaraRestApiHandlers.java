@@ -530,7 +530,7 @@ public class PayaraRestApiHandlers {
                 continue;
             }
             
-            String name = "service-" + notifier.split("notifierName=", 2)[1].toLowerCase();
+            String name = notifier.split("notifierName=", 2)[1].toLowerCase();
             if (notifier.contains("notifierEnabled=true")){
                 enabled.add(name);
             } else {

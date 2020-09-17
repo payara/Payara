@@ -39,9 +39,8 @@
  */
 package fish.payara.notification.eventbus.core;
 
-import java.beans.PropertyVetoException;
+import java.util.Map;
 
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
@@ -52,38 +51,44 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.admin.BaseSetNotifierConfiguration;
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "set-cdieventbus-notifier-configuration")
+@Service(name = "get-eventbus-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
-                path = "set-cdieventbus-notifier-configuration",
-                description = "Configures CDI Eventbus Notification Service")
+                opType = RestEndpoint.OpType.GET,
+                path = "get-eventbus-notifier-configuration",
+                description = "Lists Eventbus Notifier Configuration")
 })
-public class SetCDIEventbusNotifierConfiguration extends BaseSetNotifierConfiguration<CDIEventbusNotifierConfiguration, CDIEventbusNotifierService> {
-
-    @Param(name = "loopBack", defaultValue = "false", optional = true)
-    private Boolean loopBack;
-
-    // Not using it, it's needed in order get the asadmin invocation right
-    @Param(name = "hazelcastEnabled", defaultValue = "false", optional = true)
-    private Boolean hazelcastEnabled;
+public class GetEventbusNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<EventbusNotifierConfiguration> {
 
     @Override
-    protected void applyValues(CDIEventbusNotifierConfiguration configuration) throws PropertyVetoException {
-        super.applyValues(configuration);
-        if (this.loopBack != null) {
-            configuration.loopBack(Boolean.valueOf(this.loopBack));
+    protected Map<String, Object> getNotifierConfiguration(EventbusNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
+
+        if (configuration != null) {
+            map.put("Topic Name", configuration.getTopicName());
         }
+
+        return map;
     }
 
+    @Override
+    protected Map<String, Object> getNotifierProperties(EventbusNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
+
+        if (configuration != null) {
+            map.put("topicName", configuration.getTopicName());
+        }
+
+        return map;
+    }
 }

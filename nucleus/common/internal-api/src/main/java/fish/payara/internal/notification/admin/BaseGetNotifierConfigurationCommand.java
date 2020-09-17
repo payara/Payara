@@ -73,7 +73,7 @@ import fish.payara.internal.notification.PayaraNotifierConfiguration;
  * @author mertcaliskan
  * @author Matthew Gill
  */
-public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConfiguration> implements AdminCommand {
+public abstract class BaseGetNotifierConfigurationCommand<C extends PayaraNotifierConfiguration> implements AdminCommand {
 
     @Inject
     private Target targetUtil;
@@ -81,7 +81,7 @@ public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConf
     @Inject
     protected ServiceLocator habitat;
 
-    private Class<NC> notifierConfigurationClass;
+    private Class<C> notifierConfigurationClass;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String target;
@@ -97,10 +97,10 @@ public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConf
         ActionReport mainActionReport = context.getActionReport();
 
         ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
-        notifierConfigurationClass = (Class<NC>) genericSuperclass.getActualTypeArguments()[0];
+        notifierConfigurationClass = (Class<C>) genericSuperclass.getActualTypeArguments()[0];
 
         NotificationServiceConfiguration configuration = config.getExtensionByType(NotificationServiceConfiguration.class);
-        NC nc = configuration.getNotifierConfigurationByType(notifierConfigurationClass);
+        C nc = configuration.getNotifierConfigurationByType(notifierConfigurationClass);
 
         String message;
         Properties extraProps = new Properties();
@@ -124,7 +124,7 @@ public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConf
      * @return A column formatted string representing the configuration
      * @see #getNotifierConfiguration(PayaraNotifierConfiguration)
      */
-    protected String listConfiguration(NC configuration) {
+    protected String listConfiguration(C configuration) {
         Map<String, Object> configMap = getNotifierConfiguration(configuration);
 
         Iterator<Entry<String, Object>> configIterator = configMap.entrySet().iterator();
@@ -148,7 +148,7 @@ public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConf
      * @param configuration the configuration to get properties from
      * @return a map from user readable attribute names to their values
      */
-    protected Map<String, Object> getNotifierConfiguration(NC configuration) {
+    protected Map<String, Object> getNotifierConfiguration(C configuration) {
         Map<String, Object> map = new LinkedHashMap<>(2);
 
         if (configuration != null) {
@@ -166,7 +166,7 @@ public abstract class BaseGetNotifierConfiguration<NC extends PayaraNotifierConf
      * @param configuration the configuration to get properties from
      * @return a map from camelcase attribute names to their values
      */
-    protected Map<String, Object> getNotifierProperties(NC configuration) {
+    protected Map<String, Object> getNotifierProperties(C configuration) {
         Map<String, Object> map = new LinkedHashMap<>(2);
 
         if (configuration != null) {

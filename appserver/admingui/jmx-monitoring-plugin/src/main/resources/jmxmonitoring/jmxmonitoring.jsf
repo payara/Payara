@@ -62,7 +62,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         gf.restRequest(endpoint="#{pageSession.JMXMONITORING_CONFIG_URL}/monitored-attribute.json" method="GET" result="#{requestScope.propTable}")
         setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.monitoredAttributes}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.jmxmonitoringConfiguration}");
-        setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
+        setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLogNotifier}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.encodedConfigName}");
                 
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});

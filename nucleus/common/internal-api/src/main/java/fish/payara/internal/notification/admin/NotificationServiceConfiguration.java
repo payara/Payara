@@ -62,7 +62,7 @@ public interface NotificationServiceConfiguration extends ConfigExtension {
     List<PayaraNotifierConfiguration> getNotifierConfigurationList();
 
     @DuckTyped
-    <T extends PayaraNotifierConfiguration> T getNotifierConfigurationByType(Class<?> type);
+    <T extends PayaraNotifierConfiguration> T getNotifierConfigurationByType(Class<T> type);
 
     class Duck {
         public static <T extends PayaraNotifierConfiguration> T getNotifierConfigurationByType(NotificationServiceConfiguration config, Class<T> type) {

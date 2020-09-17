@@ -55,7 +55,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.admin.BaseSetNotifierConfiguration;
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
 
 /**
  * @author mertcaliskan
@@ -72,7 +72,7 @@ import fish.payara.internal.notification.admin.BaseSetNotifierConfiguration;
                 path = "set-log-notifier-configuration",
                 description = "Configures Log Notification Service")
 })
-public class SetLogNotifierConfiguration extends BaseSetNotifierConfiguration<LogNotifierConfiguration, LogNotifier> {
+public class SetLogNotifierConfiguration extends BaseSetNotifierConfigurationCommand<LogNotifierConfiguration> {
 
     @Param(name = "useSeparateLogFile", defaultValue = "false", optional = true)
     private String useSeparateLogFile;

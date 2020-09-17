@@ -195,6 +195,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
             Properties notifierExtraProps = new Properties();
 
             for (ServiceHandle<PayaraNotifier> serviceHandle : allServiceHandles) {
+                final String notifierClassName = serviceHandle.getActiveDescriptor().getImplementationClass().getSimpleName();
                 final String notifierName = NotifierUtils.getNotifierName(serviceHandle.getActiveDescriptor());
 
                 Object values[] = new Object[2];
@@ -206,7 +207,7 @@ public class GetRequestTracingConfiguration implements AdminCommand {
                 notifierExtraPropsMap.put("notifierName", values[0]);
                 notifierExtraPropsMap.put("notifierEnabled", values[1]);
 
-                notifierExtraProps.put("getRequesttracingConfiguration" + notifierName.replaceAll("-", ""), 
+                notifierExtraProps.put("getRequesttracingConfiguration" + notifierClassName, 
                         notifierExtraPropsMap);
                 notifiersActionReport.setExtraProperties(notifierExtraProps);
             }

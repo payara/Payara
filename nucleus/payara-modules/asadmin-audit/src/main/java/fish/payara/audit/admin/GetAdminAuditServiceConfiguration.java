@@ -136,6 +136,7 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
             List<String> notifiers = config.getNotifierList();
 
             for (ServiceHandle<PayaraNotifier> serviceHandle : allNotifierServiceHandles) {
+                final String notifierClassName = serviceHandle.getActiveDescriptor().getImplementationClass().getSimpleName();
                 final String notifierName = NotifierUtils.getNotifierName(serviceHandle.getActiveDescriptor());
 
                 Object values[] = new Object[2];
@@ -147,7 +148,7 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
                 mapNotifiers.put("notifierName", values[0]);
                 mapNotifiers.put("notifierEnabled", values[1]);
 
-                notifierProps.put("notifierList" + notifierName.replaceAll("-", ""), mapNotifiers);
+                notifierProps.put("notifierList" + notifierClassName, mapNotifiers);
 
             }
         }

@@ -39,6 +39,7 @@
  */
 package fish.payara.internal.notification;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,5 +84,15 @@ public final class NotifierUtils {
             names.add(getNotifierName(handle.getActiveDescriptor()));
         }
         return names;
+    }
+
+    /**
+     * @param <C>           a generic class of the notifier configuration class
+     * @param notifierClass the notifier of the class
+     * @return the class used to configure the configured notifier
+     */
+    public static <C extends PayaraNotifierConfiguration> Class<C> getConfigurationClass(Class<?> notifierClass) {
+        final ParameterizedType genericSuperclass = (ParameterizedType) notifierClass.getGenericSuperclass();
+        return (Class<C>) genericSuperclass.getActualTypeArguments()[0];
     }
 }

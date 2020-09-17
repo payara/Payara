@@ -39,66 +39,31 @@
  */
 package fish.payara.internal.notification;
 
-import java.lang.reflect.ParameterizedType;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
 import org.glassfish.config.support.GlassFishStubBean;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Contract;
-
-import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * A notifier that is backed by a configuration in the domain.xml
  * 
- * @param <NC> the configuration class for the notifier
+ * @param <C> the configuration class for the notifier
  */
 @Contract
-public abstract class PayaraConfiguredNotifier<NC extends PayaraNotifierConfiguration> implements PayaraNotifier {
+public abstract class PayaraConfiguredNotifier<C extends PayaraNotifierConfiguration> implements PayaraNotifier {
 
-    private final Class<NC> configClass;
+    private final Class<C> configClass;
 
-    @Inject
-    private ServiceLocator habitat;
-
-    private NC domainConfiguration;
-
-    protected NC configuration;
+    protected C configuration;
 
     public PayaraConfiguredNotifier() {
-        this.configClass = getConfigurationClass(getClass());
+        this.configClass = NotifierUtils.getConfigurationClass(getClass());
     }
 
-    @PostConstruct
-    void injectConfiguration() {
-        final NotificationServiceConfiguration config = habitat.getService(NotificationServiceConfiguration.class);
-        this.domainConfiguration = config.getNotifierConfigurationByType(getConfigurationClass(getClass()));
-        this.configuration = GlassFishStubBean.cloneBean(domainConfiguration, configClass);
+    public final void setConfiguration(C configuration) {
+        this.configuration = GlassFishStubBean.cloneBean(configuration, configClass);
     }
 
-    /**
-     * Bootstrap the notifier and update the configuration from the domain.xml.
-     */
-    @Override
-    public void bootstrap() {
-        this.configuration = GlassFishStubBean.cloneBean(domainConfiguration, configClass);
-    }
-
-    public NC getConfiguration() {
+    public final C getConfiguration() {
         return configuration;
-    }
-
-    /**
-     * @param <NC>          a generic class of the notifier configuration class
-     * @param notifierClass the notifier of the class
-     * @return the class used to configure the configured notifier
-     */
-    public static <NC extends PayaraNotifierConfiguration> Class<NC> getConfigurationClass(
-            Class<?> notifierClass) {
-        final ParameterizedType genericSuperclass = (ParameterizedType) notifierClass.getGenericSuperclass();
-        return (Class<NC>) genericSuperclass.getActualTypeArguments()[0];
     }
 
 }

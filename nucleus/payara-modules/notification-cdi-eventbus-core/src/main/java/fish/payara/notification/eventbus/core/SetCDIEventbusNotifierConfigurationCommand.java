@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.jms;
+package fish.payara.notification.eventbus.core;
 
-import java.util.Map;
+import java.beans.PropertyVetoException;
 
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
@@ -51,55 +52,38 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.admin.BaseGetNotifierConfiguration;
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "get-jms-notifier-configuration")
+@Service(name = "set-cdieventbus-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "get-jms-notifier-configuration",
-                description = "Lists JMS Notifier Configuration")
+                opType = RestEndpoint.OpType.POST,
+                path = "set-cdieventbus-notifier-configuration",
+                description = "Configures CDI Eventbus Notification Service")
 })
-public class GetJmsNotifierConfiguration extends BaseGetNotifierConfiguration<JmsNotifierConfiguration> {
+public class SetCDIEventbusNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<CDIEventbusNotifierConfiguration> {
+
+    @Param(name = "loopBack", defaultValue = "false", optional = true)
+    private Boolean loopBack;
+
+    // Not using it, it's needed in order get the asadmin invocation right
+    @Param(name = "hazelcastEnabled", defaultValue = "false", optional = true)
+    private Boolean hazelcastEnabled;
 
     @Override
-    protected Map<String, Object> getNotifierConfiguration(JmsNotifierConfiguration configuration) {
-        Map<String, Object> map = super.getNotifierConfiguration(configuration);
-
-        if (configuration != null) {
-            map.put("Context Factory Class", configuration.getContextFactoryClass());
-            map.put("Connection Factory Name", configuration.getConnectionFactoryName());
-            map.put("Queue Name", configuration.getQueueName());
-            map.put("URL", configuration.getUrl());
-            map.put("Username", configuration.getUsername());
-            map.put("Password", configuration.getPassword());
+    protected void applyValues(CDIEventbusNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
+        if (this.loopBack != null) {
+            configuration.loopBack(Boolean.valueOf(this.loopBack));
         }
-
-        return map;
-    }
-
-    @Override
-    protected Map<String, Object> getNotifierProperties(JmsNotifierConfiguration configuration) {
-        Map<String, Object> map = super.getNotifierProperties(configuration);
-
-        if (configuration != null) {
-            map.put("contextFactoryClass", configuration.getContextFactoryClass());
-            map.put("connectionFactoryName", configuration.getConnectionFactoryName());
-            map.put("queueName", configuration.getQueueName());
-            map.put("url", configuration.getUrl());
-            map.put("username", configuration.getUsername());
-            map.put("password", configuration.getPassword());
-        }
-
-        return map;
     }
 
 }

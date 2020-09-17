@@ -80,6 +80,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
+import fish.payara.internal.notification.NotifierManager;
+import fish.payara.internal.notification.NotifierUtils;
 import fish.payara.internal.notification.PayaraConfiguredNotifier;
 import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.internal.notification.PayaraNotifier;
@@ -98,7 +100,7 @@ import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 @Service(name = "notification-service")
 @RunLevel(StartupRunLevel.VAL)
 @MessageReceiver
-public class NotificationService implements EventListener, ConfigListener {
+public class NotificationService implements NotifierManager, EventListener, ConfigListener {
 
     private static final Logger logger = Logger.getLogger(NotificationService.class.getName());
 
@@ -157,7 +159,7 @@ public class NotificationService implements EventListener, ConfigListener {
                     .getAdvertisedContracts()
                     .contains(PayaraConfiguredNotifier.class.getName());
             if (isNotifierConfigurable) {
-                PayaraNotifierConfiguration notifierConfig = getOrCreateNotifierConfiguration((ServiceHandle<PayaraConfiguredNotifier<?>>) (ServiceHandle<?>) handle);
+                PayaraNotifierConfiguration notifierConfig = getOrCreateNotifierConfiguration(handle);
                 handler = new NotifierHandler(handle, notifierConfig);
             } else {
                 handler = new NotifierHandler(handle);
@@ -190,7 +192,9 @@ public class NotificationService implements EventListener, ConfigListener {
         if (execution != null) {
             execution.cancel(true);
         }
-        notifiers.forEach(NotifierHandler::destroy);
+        if (enabled) {
+            notifiers.forEach(NotifierHandler::destroy);
+        }
     }
 
     public void bootstrapNotificationService() {
@@ -252,6 +256,20 @@ public class NotificationService implements EventListener, ConfigListener {
     }
 
     @Override
+    public void reconfigureNotifier(PayaraNotifierConfiguration configuration) {
+        if (!enabled || configuration == null) {
+            return;
+        }
+        for (NotifierHandler handler : notifiers) {
+            final PayaraNotifierConfiguration notifierConfig = handler.getConfig();
+            if (notifierConfig != null && notifierConfig.getClass().isAssignableFrom(configuration.getClass())) {
+                handler.reconfigure();
+                return;
+            }
+        }
+    }
+
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         boolean isCurrentInstanceMatchTarget = false;
         if (isInstance) {
@@ -275,7 +293,7 @@ public class NotificationService implements EventListener, ConfigListener {
                 @Override
                 public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
 
-                    if(changedType.equals(NotificationServiceConfiguration.class)) {
+                    if (changedType.equals(NotificationServiceConfiguration.class)) {
                         configuration = (NotificationServiceConfiguration) changedInstance;
                     }
                     return null;
@@ -285,8 +303,8 @@ public class NotificationService implements EventListener, ConfigListener {
         return null;
     }
 
-    private PayaraNotifierConfiguration getOrCreateNotifierConfiguration(ServiceHandle<PayaraConfiguredNotifier<?>> handle) {
-        final Class<PayaraNotifierConfiguration> configClass = PayaraConfiguredNotifier.getConfigurationClass((Class<PayaraConfiguredNotifier>)handle.getActiveDescriptor().getImplementationClass());
+    private PayaraNotifierConfiguration getOrCreateNotifierConfiguration(ServiceHandle<?> handle) {
+        final Class<PayaraNotifierConfiguration> configClass = NotifierUtils.getConfigurationClass(handle.getActiveDescriptor().getImplementationClass());
         if (configuration.getNotifierConfigurationByType(configClass) == null) {
             try {
                 ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {

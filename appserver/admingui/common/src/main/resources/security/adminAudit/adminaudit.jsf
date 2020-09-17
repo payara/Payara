@@ -58,7 +58,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}/get-admin-audit-configuration?target=#{pageSession.configName}" method="GET" result="#{requestScope.resp}"); 
                 
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.adminauditConfiguration}");
-        setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
+        setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLogNotifier}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
                 
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
@@ -71,7 +71,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-notifiers" method="GET" result="#{requestScope.respAllNotifiers}");
         setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.availableServices}");
-        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
+        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.availableservices}"){
             convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.availableServices}" array="#{pageSession.allNotifiersArray}");
             gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
         }

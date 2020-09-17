@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.eventbus.core;
+package fish.payara.notification.example;
 
 import java.util.Map;
-
-import javax.inject.Inject;
 
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
@@ -53,14 +51,13 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.admin.BaseGetNotifierConfiguration;
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "get-cdieventbus-notifier-configuration")
+@Service(name = "get-example-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -68,32 +65,28 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "get-cdieventbus-notifier-configuration",
-                description = "Lists CDI Eventbus Notifier Configuration")
+                path = "get-example-notifier-configuration",
+                description = "Lists Example Notifier Configuration")
 })
-public class GetCDIEventbusNotifierConfiguration extends BaseGetNotifierConfiguration<CDIEventbusNotifierConfiguration> {
-
-    @Inject
-    private HazelcastCore hazelcast;
-
+public class GetExampleNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<ExampleNotifierConfiguration> {
+    
     @Override
-    protected Map<String, Object> getNotifierConfiguration(CDIEventbusNotifierConfiguration configuration) {
+    protected Map<String, Object> getNotifierConfiguration(ExampleNotifierConfiguration configuration) {
         Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
         if (configuration != null) {
-            map.put("Loopback", configuration.getLoopBack());
+            map.put("Test Value", configuration.getTestValue());
         }
 
         return map;
     }
 
     @Override
-    protected Map<String, Object> getNotifierProperties(CDIEventbusNotifierConfiguration configuration) {
-        Map<String, Object> map = super.getNotifierConfiguration(configuration);
+    protected Map<String, Object> getNotifierProperties(ExampleNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierProperties(configuration);
 
-        map.put("hazelcastEnabled", hazelcast.isEnabled());
         if (configuration != null) {
-            map.put("loopback", configuration.getLoopBack());
+            map.put("testValue", configuration.getTestValue());
         }
 
         return map;

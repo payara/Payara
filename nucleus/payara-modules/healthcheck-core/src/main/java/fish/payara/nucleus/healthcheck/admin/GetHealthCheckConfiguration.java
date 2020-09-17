@@ -189,6 +189,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             Properties extraProps = new Properties();
             for (ServiceHandle<PayaraNotifier> serviceHandle : allNotifierServiceHandles) {
 
+                final String notifierClassName = serviceHandle.getActiveDescriptor().getImplementationClass().getSimpleName();
                 final String notifierName = NotifierUtils.getNotifierName(serviceHandle.getActiveDescriptor());
 
                 Object values[] = new Object[2];
@@ -200,7 +201,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 map.put("notifierName", values[0]);
                 map.put("notifierEnabled", values[1]);
 
-                extraProps.put("notifierList" + notifierName.replaceAll("-", ""), map);
+                extraProps.put("notifierList" + notifierClassName, map);
             }
             mainActionReport.getExtraProperties().putAll(extraProps);
             mainActionReport.appendMessage(notifiersColumnFormatter.toString());

@@ -52,7 +52,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.admin.BaseSetNotifierConfiguration;
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
@@ -69,7 +69,7 @@ import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
                 path = "set-example-notifier-configuration",
                 description = "Configures Datadog Notification Service")
 })
-public class SetExampleNotifierConfiguration extends BaseSetNotifierConfiguration<ExampleNotifierConfiguration, ExampleNotifier> {
+public class SetExampleNotifierConfiguration extends BaseSetNotifierConfigurationCommand<ExampleNotifierConfiguration> {
 
     @Param(name = "testValue")
     private Integer testValue;

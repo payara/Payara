@@ -70,6 +70,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
+import fish.payara.internal.notification.NotifierUtils;
 import fish.payara.internal.notification.PayaraConfiguredNotifier;
 import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
@@ -92,7 +93,7 @@ import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
             path = "get-notification-configuration",
             description = "List New Notification Configuration")
 })
-public class GetNotificationConfiguration implements AdminCommand {
+public class GetNotificationConfigurationCommand implements AdminCommand {
 
     @Inject
     private Target targetUtil;
@@ -132,6 +133,8 @@ public class GetNotificationConfiguration implements AdminCommand {
 
         Properties extraProps = new Properties();
         for (ServiceHandle<PayaraNotifier> serviceHandle : notifierHandles) {
+            
+            final Class<?> notifierClass = serviceHandle.getActiveDescriptor().getImplementationClass();
 
             Object values[] = new Object[4];
             values[0] = getNotifierName(serviceHandle.getActiveDescriptor());
@@ -141,8 +144,7 @@ public class GetNotificationConfiguration implements AdminCommand {
             PayaraNotifierConfiguration notifierConfig = null;
             if (serviceHandle.getService() instanceof PayaraConfiguredNotifier) {
                 // Get the associated configuration
-                Class<?> notifierClass = serviceHandle.getActiveDescriptor().getImplementationClass();
-                notifierConfig = configuration.getNotifierConfigurationByType(PayaraConfiguredNotifier.getConfigurationClass(notifierClass));
+                notifierConfig = configuration.getNotifierConfigurationByType(NotifierUtils.getConfigurationClass(notifierClass));
             }
 
             if (notifierConfig == null) {
@@ -159,7 +161,7 @@ public class GetNotificationConfiguration implements AdminCommand {
             map.put("enabled", values[1]);
             map.put("notifierEnabled", values[2]);
             map.put("noisy", values[3]);
-            extraProps.put("getNotificationConfiguration" + values[0].toString().replaceAll("-", ""), map);
+            extraProps.put("getNotificationConfiguration" + notifierClass.getSimpleName(), map);
         }
 
         report.setMessage(columnFormatter.toString());

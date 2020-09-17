@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.eventbus.core;
+package fish.payara.notification.jms;
 
 import java.util.Map;
 
@@ -51,13 +51,13 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.admin.BaseGetNotifierConfiguration;
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "get-eventbus-notifier-configuration")
+@Service(name = "get-jms-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -65,30 +65,41 @@ import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "get-eventbus-notifier-configuration",
-                description = "Lists Eventbus Notifier Configuration")
+                path = "get-jms-notifier-configuration",
+                description = "Lists JMS Notifier Configuration")
 })
-public class GetEventbusNotifierConfiguration extends BaseGetNotifierConfiguration<EventbusNotifierConfiguration> {
+public class GetJmsNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<JmsNotifierConfiguration> {
 
     @Override
-    protected Map<String, Object> getNotifierConfiguration(EventbusNotifierConfiguration configuration) {
+    protected Map<String, Object> getNotifierConfiguration(JmsNotifierConfiguration configuration) {
         Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
         if (configuration != null) {
-            map.put("Topic Name", configuration.getTopicName());
+            map.put("Context Factory Class", configuration.getContextFactoryClass());
+            map.put("Connection Factory Name", configuration.getConnectionFactoryName());
+            map.put("Queue Name", configuration.getQueueName());
+            map.put("URL", configuration.getUrl());
+            map.put("Username", configuration.getUsername());
+            map.put("Password", configuration.getPassword());
         }
 
         return map;
     }
 
     @Override
-    protected Map<String, Object> getNotifierProperties(EventbusNotifierConfiguration configuration) {
-        Map<String, Object> map = super.getNotifierConfiguration(configuration);
+    protected Map<String, Object> getNotifierProperties(JmsNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierProperties(configuration);
 
         if (configuration != null) {
-            map.put("topicName", configuration.getTopicName());
+            map.put("contextFactoryClass", configuration.getContextFactoryClass());
+            map.put("connectionFactoryName", configuration.getConnectionFactoryName());
+            map.put("queueName", configuration.getQueueName());
+            map.put("url", configuration.getUrl());
+            map.put("username", configuration.getUsername());
+            map.put("password", configuration.getPassword());
         }
 
         return map;
     }
+
 }

@@ -170,7 +170,9 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
 
             Properties notifierProps = new Properties();
             for (ServiceHandle<PayaraNotifier> serviceHandle : allNotifierServiceHandles) {
+                final String notifierClassName = serviceHandle.getActiveDescriptor().getImplementationClass().getSimpleName();
                 final String notifierName = NotifierUtils.getNotifierName(serviceHandle.getActiveDescriptor());
+
                 Object values[] = new Object[2];
                 values[0] = notifierName;
                 values[1] = notifiers.contains(notifierName);
@@ -180,7 +182,7 @@ public class GetJMXMonitoringConfiguration implements AdminCommand {
                 mapNotifiers.put("notifierName", values[0]);
                 mapNotifiers.put("notifierEnabled", values[1]);
 
-                notifierProps.put("notifierList" + notifierName.replaceAll("-", ""), mapNotifiers);
+                notifierProps.put("notifierList" + notifierClassName, mapNotifiers);
             }
 
             actionReport.getExtraProperties().putAll(notifierProps);

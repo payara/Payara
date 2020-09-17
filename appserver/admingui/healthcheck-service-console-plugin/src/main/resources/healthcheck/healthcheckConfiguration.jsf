@@ -70,7 +70,7 @@ holder.
 
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-notifiers" method="GET" result="#{requestScope.respAllNotifiers}");
         setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.availableServices}");
-        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
+        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.availableServices}"){
             convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.availableServices}" array="#{pageSession.allNotifiersArray}");
             gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
         }

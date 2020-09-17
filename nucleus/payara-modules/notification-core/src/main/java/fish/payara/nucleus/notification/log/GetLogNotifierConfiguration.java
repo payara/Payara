@@ -51,7 +51,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.admin.BaseGetNotifierConfiguration;
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
@@ -68,7 +68,7 @@ import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
                 path = "get-log-notifier-configuration",
                 description = "Lists New Log Notifier Configuration")
 })
-public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<LogNotifierConfiguration> {
+public class GetLogNotifierConfiguration extends BaseGetNotifierConfigurationCommand<LogNotifierConfiguration> {
     
     @Override
     protected Map<String, Object> getNotifierConfiguration(LogNotifierConfiguration configuration) {

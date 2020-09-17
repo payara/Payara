@@ -61,34 +61,75 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     private static final Logger LOGGER = Logger.getLogger(NotifierHandler.class.getName());
 
     private final PayaraNotifier notifier;
+    private final PayaraNotifierConfiguration config;
     private final String notifierName;
 
     private final Queue<PayaraNotification> notificationQueue;
 
-    public NotifierHandler(ServiceHandle<PayaraNotifier> notifierHandle) {
+    public NotifierHandler(final ServiceHandle<PayaraNotifier> notifierHandle) {
         this(notifierHandle, null);
     }
 
-    public NotifierHandler(ServiceHandle<PayaraNotifier> notifierHandle, PayaraNotifierConfiguration config) {
+    public NotifierHandler(final ServiceHandle<PayaraNotifier> notifierHandle, final PayaraNotifierConfiguration config) {
         this.notifier = notifierHandle.getService();
         this.notifierName = getNotifierName(notifierHandle.getActiveDescriptor());
         this.notificationQueue = new ConcurrentLinkedQueue<>();
+        this.config = config;
+    }
+
+    protected PayaraNotifierConfiguration getConfig() {
+        return config;
     }
 
     protected String getName() {
         return notifierName;
     }
 
+    protected void reconfigure() {
+        // Get the current configuration
+        PayaraNotifierConfiguration currentConfig = null;
+        if (config != null) {
+            currentConfig = PayaraConfiguredNotifier.class.cast(notifier).getConfiguration();
+            if (currentConfig == null) {
+                currentConfig = config;
+            }
+        }
+
+        final boolean enabled = config != null && valueOf(config.getEnabled());
+        final boolean wasEnabled = config != null && valueOf(currentConfig.getEnabled());
+
+        if (!enabled) {
+            if (wasEnabled) {
+                // If the notifier isn't enabled but was before
+                destroy();
+            }
+        } else {
+            if (wasEnabled) {
+                // If the notifier is enabled and was before
+                destroy();
+                bootstrap();
+            } else {
+                // If the notifier is enabled and wasn't before
+                bootstrap();
+            }
+        }
+    }
+
     protected void destroy() {
         notifier.destroy();
     }
 
+    @SuppressWarnings("unchecked")
     protected void bootstrap() {
+        // Set the configuration before bootstrapping the notifier
+        if (config != null) {
+            PayaraConfiguredNotifier.class.cast(notifier).setConfiguration(config);
+        }
         notifier.bootstrap();
     }
 
     @Override
-    public void accept(PayaraNotification notification) {
+    public void accept(final PayaraNotification notification) {
         if (isEnabled() && !this.notificationQueue.offer(notification)) {
             LOGGER.warning(format("Notifier %s failed to accept the notification \"%s\".", notifierName, notification));
         }
@@ -102,15 +143,14 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
                 notifier.handleNotification(notification);
                 notificationQueue.remove();
             }
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             LOGGER.log(Level.WARNING,
                     format("Notifier %s failed to handle notification \"%s\".", notifierName, notification), ex);
         }
     }
 
     private boolean isEnabled() {
-        if (notifier instanceof PayaraConfiguredNotifier) {
-            PayaraNotifierConfiguration config = PayaraConfiguredNotifier.class.cast(notifier).getConfiguration();
+        if (config != null) {
             return valueOf(config.getEnabled());
         }
         return true;

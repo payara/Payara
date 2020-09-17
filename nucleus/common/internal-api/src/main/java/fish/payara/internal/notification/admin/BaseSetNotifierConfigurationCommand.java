@@ -38,8 +38,6 @@
  */
 package fish.payara.internal.notification.admin;
 
-import static java.lang.Boolean.valueOf;
-
 import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -60,8 +58,8 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import fish.payara.internal.notification.PayaraConfiguredNotifier;
-import fish.payara.internal.notification.PayaraNotifier;
+import fish.payara.internal.notification.NotifierManager;
+import fish.payara.internal.notification.NotifierUtils;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
@@ -72,7 +70,7 @@ import fish.payara.internal.notification.PayaraNotifierConfiguration;
  * @author Matthew Gill
  * @author mertcaliskan
  */
-public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConfiguration, N extends PayaraNotifier> implements AdminCommand {
+public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifierConfiguration> implements AdminCommand {
 
     @Inject
     protected Target targetUtil;
@@ -81,7 +79,7 @@ public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConf
     protected ServerEnvironment server;
 
     @Inject
-    private N service;
+    private NotifierManager notificationService;
 
     @Inject
     protected Logger logger;
@@ -109,26 +107,27 @@ public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConf
 
         Config configuration = targetUtil.getConfig(target);
         final NotificationServiceConfiguration notificationServiceConfiguration = configuration.getExtensionByType(NotificationServiceConfiguration.class);
-        Class<NC> notifierConfigurationClass = PayaraConfiguredNotifier.getConfigurationClass(service.getClass());
+        Class<C> notifierConfigurationClass = NotifierUtils.getConfigurationClass(getClass());
 
-        NC c = notificationServiceConfiguration.getNotifierConfigurationByType(notifierConfigurationClass);
+        C c = notificationServiceConfiguration.getNotifierConfigurationByType(notifierConfigurationClass);
 
         try {
-            ConfigSupport.apply(new SingleConfigCode<NC>() {
-                public Object run(NC cProxy) throws PropertyVetoException, TransactionFailure {
+            ConfigSupport.apply(new SingleConfigCode<C>() {
+                public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
                     applyValues(cProxy);
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return cProxy;
                 }
             }, c);
 
-            if (dynamic && valueOf(notificationServiceConfiguration.getEnabled())) {
+            // If the service is being changed dynamically
+            if (dynamic) {
                 if (server.isDas()) {
                     if (targetUtil.getConfig(target).isDas()) {
-                         configureDynamically();
+                         configureDynamically(c);
                     }
                 } else {
-                    configureDynamically();
+                    configureDynamically(c);
                 }
             }
         } catch (TransactionFailure ex) {
@@ -146,7 +145,7 @@ public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConf
      * @throws PropertyVetoException an exception thrown if the property doesn't
      *                               pass the configured validation.
      */
-    protected void applyValues(NC configuration) throws PropertyVetoException {
+    protected void applyValues(C configuration) throws PropertyVetoException {
         if (this.enabled != null) {
             configuration.enabled(this.enabled);
         }
@@ -159,8 +158,7 @@ public abstract class BaseSetNotifierConfiguration<NC extends PayaraNotifierConf
      * Called after static configuration if the dynamic field is enabled and this
      * instance is the one selected.
      */
-    protected void configureDynamically() {
-        service.destroy();
-        service.bootstrap();
+    protected void configureDynamically(C configuration) {
+        notificationService.reconfigureNotifier(configuration);
     }
 }

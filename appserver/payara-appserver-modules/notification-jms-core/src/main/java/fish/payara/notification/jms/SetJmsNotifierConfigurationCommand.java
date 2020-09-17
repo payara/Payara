@@ -35,9 +35,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.eventbus.core;
+package fish.payara.notification.jms;
 
 import java.beans.PropertyVetoException;
+
+import com.sun.enterprise.util.StringUtils;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandLock;
@@ -50,13 +52,13 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.admin.BaseSetNotifierConfiguration;
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "set-eventbus-notifier-configuration")
+@Service(name = "set-jms-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -64,20 +66,55 @@ import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
-                path = "set-eventbus-notifier-configuration",
-                description = "Configures Eventbus Notification Service")
+                path = "set-jms-notifier-configuration",
+                description = "Configures JMS Notification Service")
 })
-public class SetEventbusNotifierConfiguration extends BaseSetNotifierConfiguration<EventbusNotifierConfiguration, EventbusNotifierService> {
+public class SetJmsNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<JmsNotifierConfiguration> {
 
-    @Param(name = "topicName", defaultValue = "payara.notification.event", optional = true)
-    private String topicName;
+    @Param(name = "contextFactoryClass")
+    private String contextFactoryClass;
+
+    @Param(name = "connectionFactoryName")
+    private String connectionFactoryName;
+
+    @Param(name = "queueName")
+    private String queueName;
+
+    @Param(name = "url")
+    private String url;
+
+    @Param(name = "username", optional = true)
+    private String username;
+
+    @Param(name = "password", optional = true)
+    private String password;
 
     @Override
-    protected void applyValues(EventbusNotifierConfiguration configuration) throws PropertyVetoException {
+    protected void applyValues(JmsNotifierConfiguration configuration) throws PropertyVetoException {
         super.applyValues(configuration);
-        if (this.topicName != null) {
-            configuration.setTopicName(this.topicName);
+        if (this.enabled != null) {
+            configuration.enabled(this.enabled);
+        }
+        if (this.noisy != null) {
+            configuration.noisy(this.noisy);
+        }
+        if (StringUtils.ok(contextFactoryClass)) {
+            configuration.setContextFactoryClass(contextFactoryClass);
+        }
+        if (StringUtils.ok(connectionFactoryName)) {
+            configuration.setConnectionFactoryName(connectionFactoryName);
+        }
+        if (StringUtils.ok(queueName)) {
+            configuration.setQueueName(queueName);
+        }
+        if (StringUtils.ok(url)) {
+            configuration.setUrl(url);
+        }
+        if (StringUtils.ok(username)) {
+            configuration.setUsername(username);
+        }
+        if (StringUtils.ok(password)) {
+            configuration.setPassword(password);
         }
     }
-
 }
