@@ -1,26 +1,36 @@
 package fish.payara.samples.jaxws.test;
 
-import static fish.payara.samples.CliCommands.payaraGlassFish;
+import fish.payara.samples.PayaraTestShrinkWrap;
+import fish.payara.samples.jaxws.endpoint.TraceMonitor;
 
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.xml.ws.Service;
 
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
-import fish.payara.samples.PayaraTestShrinkWrap;
-import fish.payara.samples.jaxws.endpoint.TraceMonitor;
+import static fish.payara.samples.CliCommands.payaraGlassFish;
 
 public abstract class JAXWSEndpointTest {
+    private static final Logger LOG = Logger.getLogger(JAXWSEndpointTest.class.getName());
 
     protected Service jaxwsEndPointService;
 
     @Inject
     private TraceMonitor traceMonitor;
+
+    @Rule
+    public TestName name = new TestName();
 
     @ArquillianResource
     protected URL url;
@@ -54,6 +64,16 @@ public abstract class JAXWSEndpointTest {
             "--enabled=true",
             "--hazelcastEnabled=true"
         );
+    }
+
+    @Before
+    public void logStart() {
+        LOG.log(Level.INFO, "Test method {0} started.", name.getMethodName());
+    }
+
+    @After
+    public void logEnd() {
+        LOG.log(Level.INFO, "Test method {0} finished.", name.getMethodName());
     }
 
     @AfterClass

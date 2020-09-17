@@ -59,14 +59,17 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 @RunWith(PayaraArquillianTestRunner.class)
+@FixMethodOrder(NAME_ASCENDING)
 @NotMicroCompatible("JAX-WS is not supported on Micro")
 @SincePayara("5.193")
 @Category(Unstable.class)
@@ -81,6 +84,7 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
     }
 
     private Service jaxwsEndPointService;
+
 
     @Before
     public void setupClass() throws MalformedURLException {
@@ -103,6 +107,6 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
     // Runs on Server
     @Test
     public void test2ServerCheck() throws MalformedURLException {
-        assertTrue(isTraceMonitorTriggered());
+        assertTrue("TraceMonitor wasn't triggered!", isTraceMonitorTriggered());
     }
 }
