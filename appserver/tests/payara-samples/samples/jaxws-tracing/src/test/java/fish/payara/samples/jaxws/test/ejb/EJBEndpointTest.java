@@ -56,9 +56,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -67,6 +69,7 @@ import static org.junit.Assert.assertTrue;
  * @author Arjan Tijms
  */
 @RunWith(PayaraArquillianTestRunner.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @NotMicroCompatible("JAX-WS is not supported on Micro")
 @SincePayara("5.193")
 @Category(Unstable.class)
@@ -103,7 +106,7 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
     // Runs on Server
     @Test
     public void test2ServerCheck() throws Exception {
-        assertTrue(isTraceMonitorTriggered());
+        assertTrue("TraceMonitor wasn't triggered!", isTraceMonitorTriggered());
     }
 
 }
