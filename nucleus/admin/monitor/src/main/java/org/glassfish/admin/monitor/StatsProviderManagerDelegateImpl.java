@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.monitor;
 
@@ -496,8 +496,14 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         List<String> childNodeNames = spre.getChildTreeNodeNames();
         TreeNode rootNode = mrdr.get(instanceName);
         if (rootNode != null) {
-            // This has to return one node
             List<TreeNode> nodeList = rootNode.getNodes(parentNodePath, false, true);
+            if (nodeList.isEmpty()) {
+                // In rare conditions, it might be that registration of stats provider did not happen yet
+                // Show warning (instead of IndexOutOfBoundsException
+                LOGGER.warning(String.format("MonitoringRuntimeData not found for %s. Unable to set to '%s'", parentNodePath, enable ? "Enabled": "Disabled"));
+                return;
+            }
+            // This has to return one node
             TreeNode parentNode = nodeList.get(0);
             //For each child Node, enable it
             Collection<TreeNode> childNodes = parentNode.getChildNodes();
