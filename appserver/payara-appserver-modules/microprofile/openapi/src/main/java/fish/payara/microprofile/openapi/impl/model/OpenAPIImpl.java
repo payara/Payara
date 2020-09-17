@@ -70,9 +70,12 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
     protected List<Tag> tags = new ArrayList<>();
     protected Paths paths = new PathsImpl();
     protected Components components = new ComponentsImpl();
+    
+    private ApiContext context;
 
     public static OpenAPI createInstance(AnnotationModel annotation, ApiContext context) {
-        OpenAPI from = new OpenAPIImpl();
+        OpenAPIImpl from = new OpenAPIImpl();
+        from.context = context;
         AnnotationModel info = annotation.getValue("info", AnnotationModel.class);
         if (info != null) {
             from.setInfo(InfoImpl.createInstance(info));
@@ -89,6 +92,10 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
             from.setComponents(ComponentsImpl.createInstance(components, context));
         }
         return from;
+    }
+    
+    public final ApiContext getContext() {
+        return context;
     }
 
     @Override

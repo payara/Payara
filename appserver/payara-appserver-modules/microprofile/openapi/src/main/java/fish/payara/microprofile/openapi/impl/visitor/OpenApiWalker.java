@@ -42,7 +42,7 @@ package fish.payara.microprofile.openapi.impl.visitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
 import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
-import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
+import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import java.lang.annotation.Annotation;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -86,6 +86,7 @@ import org.eclipse.microprofile.openapi.annotations.servers.Servers;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.openapi.annotations.tags.Tags;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.PathItem;
 import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.ClassModel;
@@ -119,10 +120,11 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                 processAnnotation((ClassModel) type, visitor);
             }
         }
+        addSchemasToPaths();
     }
 
     public final void processAnnotation(ClassModel annotatedClass, ApiVisitor visitor) {
-        AnnotationInfo annotations = AnnotationInfo.valueOf(annotatedClass);
+        AnnotationInfo annotations = context.getAnnotationInfo(annotatedClass);
         processAnnotation((E) annotatedClass, annotations, visitor, new OpenApiContext(context, annotatedClass));
 
         for (final MethodModel method : annotatedClass.getMethods()) {
@@ -250,6 +252,26 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
             annotationAlternatives.put(SecurityRequirements.class, SecurityRequirement.class);
         }
         return annotationAlternatives;
+    }
+    
+    private void addSchemasToPaths() {
+        OpenAPI api = context.getApi();
+        api.getPaths().getPathItems().forEach((String s, PathItem t) -> {
+            t.getOperations().forEach((PathItem.HttpMethod u, org.eclipse.microprofile.openapi.models.Operation v) -> {
+                v.getResponses().getAPIResponses().forEach((String w, org.eclipse.microprofile.openapi.models.responses.APIResponse x) -> {
+                    if (x.getContent() != null) {
+                        x.getContent().getMediaTypes().forEach((y, z) -> {
+                            SchemaImpl.merge(z.getSchema(), z.getSchema(), true, context);
+                            if (z.getSchema() instanceof SchemaImpl) {
+                                SchemaImpl schema = (SchemaImpl) z.getSchema();
+                                schema.setImplementation(null);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+        
     }
 
 }

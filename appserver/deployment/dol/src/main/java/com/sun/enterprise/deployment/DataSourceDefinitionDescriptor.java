@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -164,7 +164,12 @@ public class DataSourceDefinitionDescriptor extends ResourceDescriptor {
 
     public void setServerName(String serverName) {
         this.serverName = serverName;
-        setServerNameSet(true);
+        if (serverName == null) {
+            setServerNameSet(false);
+        } else {
+            setServerNameSet(true);
+        }
+        
     }
 
     public String getUser() {

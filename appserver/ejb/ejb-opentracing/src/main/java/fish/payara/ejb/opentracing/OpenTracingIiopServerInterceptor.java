@@ -71,12 +71,8 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
     public OpenTracingIiopServerInterceptor(OpenTracingService openTracingService) {
         this.openTracingService = openTracingService;
 
-        if (openTracingService == null) {
-            return;
-        }
-        this.tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
-        if (tracer == null) {
-            return;
+        if (openTracingService != null && openTracingService.isEnabled()) {
+            this.tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);
         }
     }
 
@@ -100,7 +96,7 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
 
         OpenTracingIiopTextMap openTracingIiopTextMap = null;
         try (ByteArrayInputStream bis = new ByteArrayInputStream(serviceContext.context_data);
-                ObjectInput in = new OpenTracingIiopObjectInputStream(bis)) {
+             ObjectInput in = new OpenTracingIiopObjectInputStream(bis)) {
             openTracingIiopTextMap = (OpenTracingIiopTextMap) in.readObject();
         } catch (IOException | ClassNotFoundException exception) {
             throw new ForwardRequest(exception.getMessage(), serverRequestInfo);
@@ -150,6 +146,9 @@ public class OpenTracingIiopServerInterceptor extends LocalObject implements Ser
     private boolean tracerAvailable() {
         if (tracer == null) {
             if (openTracingService == null) {
+                return false;
+            }
+            if (!openTracingService.isEnabled()) {
                 return false;
             }
             this.tracer = openTracingService.getTracer(PAYARA_CORBA_RMI_TRACER_NAME);

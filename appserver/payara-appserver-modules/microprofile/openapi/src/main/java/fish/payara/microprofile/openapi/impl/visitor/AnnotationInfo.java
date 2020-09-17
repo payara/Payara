@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi.impl.model.util;
+package fish.payara.microprofile.openapi.impl.visitor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -61,20 +61,13 @@ import org.glassfish.hk2.classmodel.reflect.Parameter;
  */
 public final class AnnotationInfo {
 
-    private static final Map<ExtensibleType<? extends ExtensibleType>, AnnotationInfo> TYPES = new ConcurrentHashMap<>();
-
-    @SuppressWarnings("unchecked")
-    public static AnnotationInfo valueOf(ExtensibleType<? extends ExtensibleType> type) {
-        return (AnnotationInfo) TYPES.computeIfAbsent(type, key -> new AnnotationInfo(key));
-    }
-
     private final ExtensibleType<? extends ExtensibleType> type;
     private final Map<String, AnnotationModel> typeAnnotations = new ConcurrentHashMap<>();
     private final Map<String, Map<String, AnnotationModel>> fieldAnnotations = new ConcurrentHashMap<>();
     private final Map<String, Map<String, AnnotationModel>> methodAnnotations = new ConcurrentHashMap<>();
     private final Map<String, Map<String, AnnotationModel>> methodParameterAnnotations = new ConcurrentHashMap<>();
 
-    private AnnotationInfo(ExtensibleType<? extends ExtensibleType> type) {
+    AnnotationInfo(ExtensibleType<? extends ExtensibleType> type) {
         this.type = type;
         init(type);
     }
@@ -267,8 +260,8 @@ public final class AnnotationInfo {
               init(supertype);
           }
           for (InterfaceModel implementedInterface : type.getInterfaces()) {
-              if (implementedInterface != null) {
-                  init(implementedInterface);
+              if (implementedInterface != null && implementedInterface != type) {
+                    init(implementedInterface);
               }
           }
 

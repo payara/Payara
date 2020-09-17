@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation]
 
 package org.glassfish.deployment.admin;
 
@@ -385,7 +385,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
             // SHOULD CHECK THAT WE ARE THE CORRECT TARGET BEFORE DISABLING 
             String serverName = server.getName();
-            if (serverName.equals(target) || isTargetCluster() || isTargetDeploymentGroup()) {
+            if (serverName.equals(target) || isTargetCluster() || isTargetDeploymentGroup() || isTargetInstanceInDeploymentGroup()) {
                 // wait until all applications are loaded. Otherwise we get "Application not registered"
                 startupProvider.get();
                 ApplicationInfo appInfo = deployment.get(appName);
@@ -437,13 +437,22 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
     }
 
     private boolean isTargetDeploymentGroup() {
-        List<DeploymentGroup> deploymentGroups = server.getDeploymentGroup();
-            for (DeploymentGroup deploymentGroup : deploymentGroups) {
-                if (deploymentGroup.getName().equals(target)) {
+        if (domain.getDeploymentGroupNamed(target) != null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isTargetInstanceInDeploymentGroup() {
+        for (DeploymentGroup deploymentGroup : domain.getDeploymentGroups().getDeploymentGroup()) {
+
+            for (Server instance : deploymentGroup.getInstances()) {
+                if (instance.getName().equals(target)) {
                     return true;
                 }
             }
-        
+        }
         return false;
     }
 

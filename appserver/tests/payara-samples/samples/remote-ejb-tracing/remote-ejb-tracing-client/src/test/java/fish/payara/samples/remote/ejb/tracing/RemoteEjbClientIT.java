@@ -76,7 +76,7 @@ public class RemoteEjbClientIT {
                 span.setBaggageItem("Wibbles", "Wobbles");
                 String baggageItems = ejb.annotatedMethod();
                 Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.equals("\nWibbles : Wobbles\n"));
+                        baggageItems.contains("\nWibbles : Wobbles\n"));
 
                 span.setBaggageItem("Nibbles", "Nobbles");
                 baggageItems = ejb.nonAnnotatedMethod();
@@ -96,6 +96,29 @@ public class RemoteEjbClientIT {
                         baggageItems.contains("Wibbles : Wabbles")
                         && baggageItems.contains("Nibbles : Nabbles")
                         && baggageItems.contains("Bibbles : Babbles"));
+            }
+        } catch (NamingException ne) {
+            Assert.fail("Failed performing lookup:\n" + ne.getMessage());
+        }
+    }
+
+    @Test
+    public void transactionIdAddedAsBaggageIT() {
+        Properties contextProperties = new Properties();
+        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
+        contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
+        contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
+
+        try {
+            Context context = new InitialContext(contextProperties);
+            EjbRemote ejb = (EjbRemote) context.lookup("java:global/remote-ejb-tracing-server/Ejb");
+
+            Tracer tracer = GlobalTracer.get();
+
+            try (Scope scope = tracer.buildSpan("ExecuteEjb").startActive(true)) {
+                String baggageItems = ejb.annotatedMethod();
+                Assert.assertTrue("Baggage items didn't contain transaction ID, received: " + baggageItems,
+                        baggageItems.contains("TX-ID"));
             }
         } catch (NamingException ne) {
             Assert.fail("Failed performing lookup:\n" + ne.getMessage());
