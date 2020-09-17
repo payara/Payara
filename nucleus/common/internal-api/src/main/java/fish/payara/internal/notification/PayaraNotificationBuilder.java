@@ -78,23 +78,23 @@ public class PayaraNotificationBuilder {
 
     public PayaraNotificationBuilder whitelist(String... notifierNames) {
         for (int i = 0; i < notifierNames.length; i++) {
-            if (notification.getWhitelist() == null) {
-                notification.setWhitelist(new ArrayList<>());
+            if (notification.getNotifierWhitelist() == null) {
+                notification.setNotifierWhitelist(new ArrayList<>());
             }
-            notification.getWhitelist().add(notifierNames[i]);
+            notification.getNotifierWhitelist().add(notifierNames[i]);
         }
         if (notifierNames.length == 0){
-            notification.setWhitelist(null);
+            notification.setNotifierWhitelist(null);
         }
         return this;
     }
 
     public PayaraNotificationBuilder blacklist(String... notifierNames) {
         for (int i = 0; i < notifierNames.length; i++) {
-            if (notification.getBlacklist() == null) {
-                notification.setBlacklist(new ArrayList<>());
+            if (notification.getNotifierBlacklist() == null) {
+                notification.setNotifierBlacklist(new ArrayList<>());
             }
-            notification.getBlacklist().add(notifierNames[i]);
+            notification.getNotifierBlacklist().add(notifierNames[i]);
         }
         return this;
     }

@@ -58,8 +58,8 @@ public class PayaraNotification implements Serializable {
     private String message;
     private Serializable data;
 
-    private List<String> whitelist;
-    private List<String> blacklist;
+    private List<String> notifierWhitelist;
+    private List<String> notifierBlacklist;
 
     public String getEventType() {
         return eventType;
@@ -117,20 +117,20 @@ public class PayaraNotification implements Serializable {
         this.message = message;
     }
 
-    public List<String> getWhitelist() {
-        return whitelist;
+    public List<String> getNotifierWhitelist() {
+        return notifierWhitelist;
     }
 
-    protected void setWhitelist(List<String> whitelist) {
-        this.whitelist = whitelist;
+    protected void setNotifierWhitelist(List<String> whitelist) {
+        this.notifierWhitelist = whitelist;
     }
 
-    public List<String> getBlacklist() {
-        return blacklist;
+    public List<String> getNotifierBlacklist() {
+        return notifierBlacklist;
     }
 
-    protected void setBlacklist(List<String> blacklist) {
-        this.blacklist = blacklist;
+    protected void setNotifierBlacklist(List<String> blacklist) {
+        this.notifierBlacklist = blacklist;
     }
 
     public Serializable getData() {

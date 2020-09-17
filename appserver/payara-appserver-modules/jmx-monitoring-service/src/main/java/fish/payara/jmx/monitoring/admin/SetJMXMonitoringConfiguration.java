@@ -135,13 +135,13 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
 
-    @Param(name = "enableNotifiers", optional = true)
+    @Param(name = "enableNotifiers", alias = "enable-notifiers", optional = true)
     private List<String> enableNotifiers;
 
-    @Param(name = "disableNotifiers", optional = true)
+    @Param(name = "disableNotifiers", alias = "disable-notifiers", optional = true)
     private List<String> disableNotifiers;
 
-    @Param(name = "setNotifiers", optional = true)
+    @Param(name = "setNotifiers", alias = "set-notifiers", optional = true)
     private List<String> setNotifiers;
 
     @Inject

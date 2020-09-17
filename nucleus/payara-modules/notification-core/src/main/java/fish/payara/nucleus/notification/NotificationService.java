@@ -237,8 +237,8 @@ public class NotificationService implements NotifierManager, EventListener, Conf
 
     public void notify(@SubscribeTo PayaraNotification event) {
         if (enabled) {
-            final List<String> blacklist = event.getBlacklist();
-            final List<String> whitelist = event.getWhitelist();
+            final List<String> blacklist = event.getNotifierBlacklist();
+            final List<String> whitelist = event.getNotifierWhitelist();
 
             for (NotifierHandler handler : notifiers) {
                 final String notifierName = handler.getName();
