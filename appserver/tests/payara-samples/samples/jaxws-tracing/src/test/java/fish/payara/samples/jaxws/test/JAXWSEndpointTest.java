@@ -1,4 +1,4 @@
-package fish.payara.samples.jaxws.endpoint;
+package fish.payara.samples.jaxws.test;
 
 import static fish.payara.samples.CliCommands.payaraGlassFish;
 
@@ -13,11 +13,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import fish.payara.samples.PayaraTestShrinkWrap;
+import fish.payara.samples.jaxws.endpoint.TraceMonitor;
 
 public abstract class JAXWSEndpointTest {
 
     protected Service jaxwsEndPointService;
-    
+
     @Inject
     private TraceMonitor traceMonitor;
 
@@ -27,7 +28,8 @@ public abstract class JAXWSEndpointTest {
     public static WebArchive createBaseDeployment() {
         return PayaraTestShrinkWrap
                 .getWebArchive()
-                .addPackage(JAXWSEndpointTest.class.getPackage());
+                .addPackage(TraceMonitor.class.getPackage())
+                .addClass(JAXWSEndpointTest.class);
     }
 
     public boolean isTraceMonitorTriggered() {
@@ -35,7 +37,7 @@ public abstract class JAXWSEndpointTest {
     }
 
     @BeforeClass
-    public static void enableRequesttracing() {
+    public static void enableRequesttracing() throws Exception {
         payaraGlassFish(
             "set-requesttracing-configuration",
             "--thresholdValue=25",
@@ -44,7 +46,7 @@ public abstract class JAXWSEndpointTest {
             "--thresholdUnit=MICROSECONDS",
             "--dynamic=true"
         );
-        
+
         payaraGlassFish(
             "notification-cdieventbus-configure",
             "--loopBack=true",
@@ -53,7 +55,7 @@ public abstract class JAXWSEndpointTest {
             "--hazelcastEnabled=true"
         );
     }
-    
+
     @AfterClass
     public static void disableRequestTracing() {
         payaraGlassFish(

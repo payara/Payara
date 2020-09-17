@@ -39,6 +39,9 @@
  */
 package fish.payara.samples.jaxws.endpoint.ejb;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.ejb.Stateless;
 import javax.jws.WebService;
 
@@ -48,10 +51,12 @@ import org.eclipse.microprofile.opentracing.Traced;
 @Stateless
 @WebService(endpointInterface = "fish.payara.samples.jaxws.endpoint.ejb.JAXWSEndPointInterface")
 public class JAXWSEndPointImplementation implements JAXWSEndPointInterface {
+    private static final Logger LOG = Logger.getLogger(JAXWSEndPointImplementation.class.getName());
 
     @Override
     @Traced(operationName = "customOperation")
     public String sayHi(String name) {
+        LOG.log(Level.INFO, "sayHi(name={0})", name);
         return "Hi " + name;
     }
 

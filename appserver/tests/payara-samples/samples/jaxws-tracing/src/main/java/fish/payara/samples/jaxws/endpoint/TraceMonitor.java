@@ -52,31 +52,28 @@ import fish.payara.notification.requesttracing.RequestTracingNotificationData;
 
 @ApplicationScoped
 public class TraceMonitor {
-    
+
     private boolean observerCalled;
-    
+
     private static final Logger logger = Logger.getLogger(TraceMonitor.class.getName());
 
     public void observe(@Observes @Inbound EventbusMessage event) {
-        
+        logger.info("CDI notifier: " + event.getMessage());
         if (event.getData() instanceof RequestTracingNotificationData) {
             RequestTracingNotificationData notificationData = (RequestTracingNotificationData) event.getData();
-            
+
             List<RequestTraceSpan> spans = notificationData.getRequestTrace().getTraceSpans();
-            
-            for (int i = 0; i < spans.size(); i++) {
-                if ("customOperation".equals(spans.get(i).getEventName())) {
+
+            for (RequestTraceSpan span : spans) {
+                if ("customOperation".equals(span.getEventName())) {
                     observerCalled = true;
                 }
             }
-           
         }
-        
-        logger.info("CDI notifier: " + event.getMessage());
     }
-    
+
     public boolean isObserverCalled() {
         return observerCalled;
     }
-    
+
 }

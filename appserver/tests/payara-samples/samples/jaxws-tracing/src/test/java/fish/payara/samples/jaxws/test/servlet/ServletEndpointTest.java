@@ -37,13 +37,15 @@
  *    only if the new code is made subject to such option by the copyright
  *    holder.
  */
-package fish.payara.samples.jaxws.endpoint.ejb;
+package fish.payara.samples.jaxws.test.servlet;
 
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.SincePayara;
 import fish.payara.samples.Unstable;
-import fish.payara.samples.jaxws.endpoint.JAXWSEndpointTest;
+import fish.payara.samples.jaxws.endpoint.servlet.JAXWSEndPointImplementation;
+import fish.payara.samples.jaxws.endpoint.servlet.JAXWSEndPointInterface;
+import fish.payara.samples.jaxws.test.JAXWSEndpointTest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -53,44 +55,41 @@ import javax.xml.ws.Service;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
-/**
- * @author Arjan Tijms
- */
 @RunWith(PayaraArquillianTestRunner.class)
 @NotMicroCompatible("JAX-WS is not supported on Micro")
-@FixMethodOrder(NAME_ASCENDING)
 @SincePayara("5.193")
 @Category(Unstable.class)
-// fails from unknown reasons
-public class EJBEndpointTest extends JAXWSEndpointTest {
-
-    private Service jaxwsEndPointService;
+public class ServletEndpointTest extends JAXWSEndpointTest {
 
     @Deployment
     public static WebArchive createDeployment() {
-        return createBaseDeployment().addPackage(EJBEndpointTest.class.getPackage());
+        return createBaseDeployment()
+                .addPackage(JAXWSEndPointImplementation.class.getPackage())
+                .addClass(ServletEndpointTest.class)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
     }
+
+    private Service jaxwsEndPointService;
 
     @Before
     public void setupClass() throws MalformedURLException {
-        URL rootUrl = new URL(url.getProtocol(), url.getHost(), url.getPort(), "");
-
         jaxwsEndPointService = Service.create(
             // The WSDL file used to create this service is fetched from the application we deployed
             // above using the createDeployment() method.
-            new URL(rootUrl, "JAXWSEndPointImplementationService/JAXWSEndPointImplementation?wsdl"),
-            new QName("http://ejb.endpoint.jaxws.samples.payara.fish/", "JAXWSEndPointImplementationService"));
+
+            new URL(url, "JAXWSEndPointImplementationService?wsdl"),
+            new QName("http://servlet.endpoint.jaxws.samples.payara.fish/", "JAXWSEndPointImplementationService"));
     }
 
     @Test
@@ -101,10 +100,9 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
                 .sayHi("Payara!"));
     }
 
-    @Test
     // Runs on Server
+    @Test
     public void test2ServerCheck() throws MalformedURLException {
         assertTrue(isTraceMonitorTriggered());
     }
-
 }
