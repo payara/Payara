@@ -9,7 +9,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 /**
  * Utility class used to generate shrinkwrap archives that will be safe to run
  * on the server side by including all potentially required dependent classes.
- * 
+ *
  * @author Matt Gill
  */
 public final class PayaraTestShrinkWrap {
@@ -27,10 +27,9 @@ public final class PayaraTestShrinkWrap {
 
     private static <T extends Archive<T> & ClassContainer<T>> T getArchive(Class<T> archiveType) {
         return ShrinkWrap.create(archiveType)
-                .addClass(PayaraArquillianTestRunner.class)
-                .addClass(PayaraTestRunnerDelegate.class)
-                .addClass(SincePayara.class)
-                .addClass(NotMicroCompatible.class)
-                .addClass(PayaraVersion.class);
+                .addClasses(PayaraArquillianTestRunner.class, PayaraTestRunnerDelegate.class, PayaraVersion.class)
+                .addClasses(SincePayara.class, NotMicroCompatible.class)
+                .addClasses(Unstable.class)
+            ;
     }
 }
