@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -66,23 +66,24 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
     /**
      * Indicates whether or not this data source supports the SQL <code>ROWID</code> type,
      * and if so  the lifetime for which a <code>RowId</code> object remains valid.
-     * <p/>
+     * <p>
      * The returned int values have the following relationship:
      * <pre>
-     *     ROWID_UNSUPPORTED < ROWID_VALID_OTHER < ROWID_VALID_TRANSACTION
-     *         < ROWID_VALID_SESSION < ROWID_VALID_FOREVER
+     *     ROWID_UNSUPPORTED <&lty; ROWID_VALID_OTHER &lt; ROWID_VALID_TRANSACTION
+     *         &lt; ROWID_VALID_SESSION &lt; ROWID_VALID_FOREVER
      * </pre>
      * so conditional logic such as
      * <pre>
-     *     if (metadata.getRowIdLifetime() > DatabaseMetaData.ROWID_VALID_TRANSACTION)
+     *     if (metadata.getRowIdLifetime() &gt; DatabaseMetaData.ROWID_VALID_TRANSACTION)
      * </pre>
      * can be used. Valid Forever means valid across all Sessions, and valid for
      * a Session means valid across all its contained Transactions.
-     *
+     * </p>
      * @return the status indicating the lifetime of a <code>RowId</code>
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public RowIdLifetime getRowIdLifetime() throws SQLException {
         return databaseMetaData.getRowIdLifetime();
     }
@@ -91,11 +92,10 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * Retrieves the schema names available in this database.  The results
      * are ordered by <code>TABLE_CATALOG</code> and
      * <code>TABLE_SCHEM</code>.
-     * <p/>
      * <P>The schema columns are:
      * <OL>
-     * <LI><B>TABLE_SCHEM</B> String => schema name
-     * <LI><B>TABLE_CATALOG</B> String => catalog name (may be <code>null</code>)
+     * <LI><B>TABLE_SCHEM</B> String =&gt; schema name
+     * <LI><B>TABLE_CATALOG</B> String =&gt; catalog name (may be <code>null</code>)
      * </OL>
      *
      * @param catalog       a catalog name; must match the catalog name as it is stored
@@ -110,6 +110,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @see #getSearchStringEscape
      * @since 1.6
      */
+    @Override
     public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
         return databaseMetaData.getSchemas(catalog, schemaPattern);
     }
@@ -122,12 +123,13 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException {
         return databaseMetaData.supportsStoredFunctionsUsingCallSyntax();
     }
 
     /**
-     * Retrieves whether a <code>SQLException</code> while autoCommit is <code>true</code> inidcates
+     * Retrieves whether a <code>SQLException</code> while autoCommit is <code>true</code> indicates
      * that all open ResultSets are closed, even ones that are holdable.  When a <code>SQLException</code> occurs while
      * autocommit is <code>true</code>, it is vendor specific whether the JDBC driver responds with a commit operation, a
      * rollback operation, or by doing neither a commit nor a rollback.  A potential result of this difference
@@ -137,6 +139,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public boolean autoCommitFailureClosesAllResultSets() throws SQLException {
         return databaseMetaData.autoCommitFailureClosesAllResultSets();
     }
@@ -144,7 +147,6 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
     /**
      * Retrieves a list of the client info properties
      * that the driver supports.  The result set contains the following columns
-     * <p/>
      * <ol>
      * <li><b>NAME</b> String=> The name of the client info property<br>
      * <li><b>MAX_LEN</b> int=> The maximum length of the value for the property<br>
@@ -153,17 +155,14 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * contain information as to where this property is
      * stored in the database.
      * </ol>
-     * <p/>
      * The <code>ResultSet</code> is sorted by the NAME column
-     * <p/>
      *
      * @throws SQLException if a database access error occurs
-     *                      <p/>
      * @return A <code>ResultSet</code> object; each row is a supported client info
      * property
-     * <p/>
      * @since 1.6
      */
+    @Override
     public ResultSet getClientInfoProperties() throws SQLException {
         return databaseMetaData.getClientInfoProperties();
     }
@@ -171,13 +170,13 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
     /**
      * Retrieves a description of the  system and user functions available
      * in the given catalog.
-     * <p/>
+     * <p>
      * Only system and user function descriptions matching the schema and
      * function name criteria are returned.  They are ordered by
      * <code>FUNCTION_CAT</code>, <code>FUNCTION_SCHEM</code>,
      * <code>FUNCTION_NAME</code> and
      * <code>SPECIFIC_ NAME</code>.
-     * <p/>
+     * </p>
      * <P>Each function description has the the following columns:
      * <OL>
      * <LI><B>FUNCTION_CAT</B> String => function catalog (may be <code>null</code>)
@@ -197,7 +196,6 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * generated, name that may be different then the <code>FUNCTION_NAME</code>
      * for example with overload functions
      * </OL>
-     * <p/>
      * A user may not have permission to execute any of the functions that are
      * returned by <code>getFunctions</code>
      *
@@ -216,6 +214,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @see #getSearchStringEscape
      * @since 1.6
      */
+    @Override
     public ResultSet getFunctions(String catalog, String schemaPattern, String functionNamePattern) throws SQLException {
         return databaseMetaData.getFunctions(catalog, schemaPattern, functionNamePattern);
     }
@@ -223,15 +222,14 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
     /**
      * Retrieves a description of the given catalog's system or user
      * function parameters and return type.
-     * <p/>
-     * <P>Only descriptions matching the schema,  function and
+     * <p>Only descriptions matching the schema,  function and
      * parameter name criteria are returned. They are ordered by
      * <code>FUNCTION_CAT</code>, <code>FUNCTION_SCHEM</code>,
      * <code>FUNCTION_NAME</code> and
      * <code>SPECIFIC_ NAME</code>. Within this, the return value,
      * if any, is first. Next are the parameter descriptions in call
      * order. The column descriptions follow in column number order.
-     * <p/>
+     * </p>
      * <P>Each row in the <code>ResultSet</code>
      * is a parameter description, column description or
      * return type description with the following fields:
@@ -287,7 +285,6 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * generated, name that may be different then the <code>FUNCTION_NAME</code>
      * for example with overload functions
      * </OL>
-     * <p/>
      * <p>The PRECISION column represents the specified column size for the given
      * parameter or column.
      * For numeric data, this is the maximum precision.  For character data, this is the length in characters.
@@ -295,7 +292,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * maximum allowed precision of the fractional seconds component). For binary data, this is the length in bytes.  For the ROWID datatype,
      * this is the length in bytes. Null is returned for data types where the
      * column size is not applicable.
-     *
+     * </p>
      * @param catalog             a catalog name; must match the catalog name as it
      *                            is stored in the database; "" retrieves those without a catalog;
      *                            <code>null</code> means that the catalog name should not be used to narrow
@@ -314,6 +311,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * @see #getSearchStringEscape
      * @since 1.6
      */
+    @Override
     public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern) throws SQLException {
         return databaseMetaData.getFunctionColumns(catalog, schemaPattern, functionNamePattern, columnNamePattern);
     }
@@ -321,7 +319,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
     /**
      * Returns an object that implements the given interface to allow access to
      * non-standard methods, or standard methods not exposed by the proxy.
-     * <p/>
+     * <p>
      * If the receiver implements the interface then the result is the receiver
      * or a proxy for the receiver. If the receiver is a wrapper
      * and the wrapped object implements the interface then the result is the
@@ -329,12 +327,13 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      * the result of calling <code>unwrap</code> recursively on the wrapped object
      * or a proxy for that result. If the receiver is not a
      * wrapper and does not implement the interface, then an <code>SQLException</code> is thrown.
-     *
+     * </p>
      * @param iface A Class defining an interface that the result must implement.
      * @return an object that implements the interface. May be a proxy for the actual implementing object.
      * @throws java.sql.SQLException If no object found that implements the interface
      * @since 1.6
      */
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         T result;
         if (iface.isInstance(this)) {
@@ -360,6 +359,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
      *                               for an object with the given interface.
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         boolean result;
         if (iface.isInstance(this)) {
@@ -370,6 +370,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
         return result;
     }
 
+    @Override
     public ResultSet getPseudoColumns(String catalog, String schemaPattern,
             String tableNamePattern, String columnNamePattern) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
@@ -387,6 +388,7 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public boolean generatedKeyAlwaysReturned() throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             try {
