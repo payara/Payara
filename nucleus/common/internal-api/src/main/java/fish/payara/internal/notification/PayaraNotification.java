@@ -73,8 +73,8 @@ public class PayaraNotification implements Serializable {
         this.subject = subject;
         this.message = message;
         this.data = data;
-        this.notifierWhitelist = Collections.unmodifiableList(notifierWhitelist);
-        this.notifierBlacklist = Collections.unmodifiableList(notifierBlacklist);
+        this.notifierWhitelist = (notifierWhitelist == null) ? null : Collections.unmodifiableList(notifierWhitelist);
+        this.notifierBlacklist = (notifierBlacklist == null) ? null : Collections.unmodifiableList(notifierBlacklist);
     }
 
     public String getEventType() {
