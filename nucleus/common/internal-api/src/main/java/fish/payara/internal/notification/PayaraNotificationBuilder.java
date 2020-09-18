@@ -41,6 +41,7 @@ package fish.payara.internal.notification;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A builder object created by a {@link PayaraNotificationFactory} used to
@@ -50,56 +51,93 @@ import java.util.ArrayList;
  */
 public class PayaraNotificationBuilder {
 
-    private final PayaraNotification notification;
-    
-    protected PayaraNotificationBuilder(PayaraNotification notification) {
-        this.notification = notification;
+    private final String hostName;
+    private final String domainName;
+    private final String instanceName;
+    private final String serverName;
+
+    private String subject;
+    private String eventType;
+
+    private List<String> notifierWhitelist;
+    private List<String> notifierBlacklist;
+
+    private String message;
+    private Serializable data;
+
+    protected PayaraNotificationBuilder(String hostName, String domainName, String instanceName, String serverName) {
+        this.hostName = hostName;
+        this.domainName = domainName;
+        this.instanceName = instanceName;
+        this.serverName = serverName;
     }
 
     public PayaraNotificationBuilder subject(String subject) {
-        notification.setSubject(subject);
+        this.subject = subject;
         return this;
     }
 
     public PayaraNotificationBuilder message(String message) {
-        notification.setMessage(message);
+        this.message = message;
+        if (this.data == null) {
+            this.data = message;
+        }
         return this;
     }
 
     public PayaraNotificationBuilder data(Serializable data) {
-        notification.setData(data);
+        this.data = data;
+        if (this.message == null) {
+            this.message = data.toString();
+        }
         return this;
     }
 
     public PayaraNotificationBuilder eventType(String eventType) {
-        notification.setEventType(eventType);
+        this.eventType = eventType;
         return this;
     }
 
+    /**
+     * Add a list of notifiers to the receiver list for this notification. Calling
+     * this method with an empty list will mean that no notifier receives the
+     * message.
+     * 
+     * @param notifierNames a list of notifiers to receive this notification
+     * @return the builder object
+     */
     public PayaraNotificationBuilder whitelist(String... notifierNames) {
         for (int i = 0; i < notifierNames.length; i++) {
-            if (notification.getNotifierWhitelist() == null) {
-                notification.setNotifierWhitelist(new ArrayList<>());
+            if (notifierWhitelist == null) {
+                notifierWhitelist = new ArrayList<>();
             }
-            notification.getNotifierWhitelist().add(notifierNames[i]);
+            notifierWhitelist.add(notifierNames[i]);
         }
-        if (notifierNames.length == 0){
-            notification.setNotifierWhitelist(null);
+        if (notifierNames.length == 0) {
+            notifierWhitelist = new ArrayList<>();
         }
         return this;
     }
 
+    /**
+     * Add a list of notifiers to the non-receiver list for this notification. Calling
+     * this method with an empty list will have no effect.
+     * 
+     * @param notifierNames a list of notifiers to receive this notification
+     * @return the builder object
+     */
     public PayaraNotificationBuilder blacklist(String... notifierNames) {
         for (int i = 0; i < notifierNames.length; i++) {
-            if (notification.getNotifierBlacklist() == null) {
-                notification.setNotifierBlacklist(new ArrayList<>());
+            if (notifierBlacklist == null) {
+                notifierBlacklist = new ArrayList<>();
             }
-            notification.getNotifierBlacklist().add(notifierNames[i]);
+            notifierBlacklist.add(notifierNames[i]);
         }
         return this;
     }
 
     public PayaraNotification build() {
-        return notification;
+        return new PayaraNotification(eventType, serverName, hostName, domainName, instanceName, subject, message, data,
+                notifierWhitelist, notifierBlacklist);
     }
 }

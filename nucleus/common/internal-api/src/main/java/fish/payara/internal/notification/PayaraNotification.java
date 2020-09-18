@@ -40,6 +40,7 @@
 package fish.payara.internal.notification;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -49,95 +50,71 @@ public class PayaraNotification implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String eventType;
-    private String serverName;
-    private String hostName;
-    private String domainName;
-    private String instanceName;
-    private String subject;
-    private String message;
-    private Serializable data;
+    private final String eventType;
+    private final String serverName;
+    private final String hostName;
+    private final String domainName;
+    private final String instanceName;
+    private final String subject;
+    private final String message;
+    private final Serializable data;
 
-    private List<String> notifierWhitelist;
-    private List<String> notifierBlacklist;
+    private final List<String> notifierWhitelist;
+    private final List<String> notifierBlacklist;
+
+    public PayaraNotification(String eventType, String serverName, String hostName, String domainName,
+            String instanceName, String subject, String message, Serializable data, List<String> notifierWhitelist,
+            List<String> notifierBlacklist) {
+        this.eventType = eventType;
+        this.serverName = serverName;
+        this.hostName = hostName;
+        this.domainName = domainName;
+        this.instanceName = instanceName;
+        this.subject = subject;
+        this.message = message;
+        this.data = data;
+        this.notifierWhitelist = Collections.unmodifiableList(notifierWhitelist);
+        this.notifierBlacklist = Collections.unmodifiableList(notifierBlacklist);
+    }
 
     public String getEventType() {
         return eventType;
-    }
-
-    protected void setEventType(String eventType) {
-        this.eventType = eventType;
     }
 
     public String getServerName() {
         return serverName;
     }
 
-    protected void setServerName(String serverName) {
-        this.serverName = serverName;
-    }
-
     public String getHostName() {
         return hostName;
-    }
-
-    protected void setHostName(String hostName) {
-        this.hostName = hostName;
     }
 
     public String getDomainName() {
         return domainName;
     }
 
-    protected void setDomainName(String domainName) {
-        this.domainName = domainName;
-    }
-
     public String getInstanceName() {
         return instanceName;
-    }
-
-    protected void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
     }
 
     public String getSubject() {
         return subject;
     }
 
-    protected void setSubject(String subject) {
-        this.subject = subject;
-    }
-
     public String getMessage() {
         return message;
-    }
-
-    protected void setMessage(String message) {
-        this.message = message;
     }
 
     public List<String> getNotifierWhitelist() {
         return notifierWhitelist;
     }
 
-    protected void setNotifierWhitelist(List<String> whitelist) {
-        this.notifierWhitelist = whitelist;
-    }
-
     public List<String> getNotifierBlacklist() {
         return notifierBlacklist;
-    }
-
-    protected void setNotifierBlacklist(List<String> blacklist) {
-        this.notifierBlacklist = blacklist;
     }
 
     public Serializable getData() {
         return data;
     }
 
-    protected void setData(Serializable data) {
-        this.data = data;
-    }
 }

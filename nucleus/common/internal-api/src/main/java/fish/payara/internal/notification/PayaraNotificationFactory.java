@@ -43,6 +43,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
@@ -61,6 +62,8 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 public class PayaraNotificationFactory {
 
+    private static final Logger LOGGER = Logger.getLogger(PayaraNotificationFactory.class.getName());
+
     @Inject
     private ServerEnvironment environment;
 
@@ -75,11 +78,10 @@ public class PayaraNotificationFactory {
      * @return the resulting {@link NotificationEvent}
      */
     public PayaraNotification buildNotificationEvent(String subject, String message) {
-        PayaraNotification event = createEvent();
-        event.setSubject(subject);
-        event.setMessage(message);
-
-        return event;
+        return newBuilder()
+                .subject(subject)
+                .message(message)
+                .build();
     }
     
     /**
@@ -92,33 +94,32 @@ public class PayaraNotificationFactory {
      * @return the resulting {@link NotificationEvent}
      */
     public PayaraNotification buildNotificationEvent(Level level, String subject, String message, Object[] parameters) {
-        PayaraNotification event = buildNotificationEvent(subject, message);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }
-        event.setEventType(level.getName());
-        return event;
+        return newBuilder()
+                .subject(subject)
+                .message(message)
+                .eventType(level.getName())
+                .build();
     }
 
     /**
      * @return a builder object used to configure notifiers
      */
     public PayaraNotificationBuilder newBuilder() {
-        return new PayaraNotificationBuilder(createEvent());
-    }
-
-    protected PayaraNotification createEvent() {
-        PayaraNotification event = new PayaraNotification();
+        String hostName;
         try {
-            event.setHostName(InetAddress.getLocalHost().getHostName());
+            hostName = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException ex) {
-            //No-op
+            LOGGER.log(Level.WARNING, "Unable to resolve local hostname", ex);
+            hostName = "?.?.?.?";
         }
-        event.setDomainName(environment.getDomainName());
-        event.setInstanceName(environment.getInstanceName());
-        Server server = habitat.getService(Server.class, environment.getInstanceName());
-        event.setServerName(server.getName());
-
-        return event;
+        final String domainName = environment.getDomainName();
+        final String instanceName = environment.getInstanceName();
+        final Server server = habitat.getService(Server.class, environment.getInstanceName());
+        final String serverName = server.getName();
+        return new PayaraNotificationBuilder(hostName, domainName, instanceName, serverName);
     }
+
 }
