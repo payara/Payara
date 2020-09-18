@@ -211,7 +211,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
             }
             ComponentInvocation newInvocation = ensureCached(true).clone();
             invocationManager.preInvoke(newInvocation);
-            return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr, 
+            return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr,
                     Utility.setContextClassLoader(getInvocationClassLoader()));
         }
 
@@ -229,7 +229,12 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
             if (!isValidAndNotEmpty()) {
                 return rootCtx;
             }
-            BoundRequestContext brc = CDI.current().select(BoundRequestContext.class).get();
+            BoundRequestContext brc;
+            try {
+                 brc = CDI.current().select(BoundRequestContext.class).get();
+            } catch (Throwable ex) {
+                return rootCtx;
+            }
             ContextImpl.RequestContext context = new ContextImpl.RequestContext(rootCtx, brc.isActive() ? null : brc, new HashMap<>());
             if (context.ctx != null) {
                 context.ctx.associate(context.storage);
