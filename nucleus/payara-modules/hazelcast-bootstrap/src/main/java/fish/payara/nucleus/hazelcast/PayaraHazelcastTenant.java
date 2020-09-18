@@ -44,14 +44,12 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.spi.impl.operationservice.Operation;
-import com.hazelcast.spi.tenantcontrol.BypassClassCaching;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -74,7 +72,7 @@ import org.glassfish.internal.deployment.Deployment;
  *
  * @author lprimak
  */
-public class PayaraHazelcastTenant implements TenantControl, DataSerializable, BypassClassCaching {
+public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     private final Events events = Globals.getDefaultHabitat().getService(Events.class);
     private final InvocationManager invMgr = Globals.getDefaultHabitat().getService(InvocationManager.class);
@@ -82,8 +80,8 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable, B
     private final Condition condition = lock.newCondition();
     private static final Logger log = Logger.getLogger(PayaraHazelcastTenant.class.getName());
     private static final Map<String, Integer> blockedCounts = new ConcurrentHashMap<>();
-    private static final Set<String> disabledTenants = new ConcurrentSkipListSet<>();
-    private static final Set<Class<?>> filteredClasses = new ConcurrentSkipListSet<>();
+    private static final Set<String> disabledTenants = ConcurrentHashMap.newKeySet();
+    private static final Set<Class<?>> filteredClasses = ConcurrentHashMap.newKeySet();
 
     // transient fields
     private EventListenerImpl destroyEventListener;
