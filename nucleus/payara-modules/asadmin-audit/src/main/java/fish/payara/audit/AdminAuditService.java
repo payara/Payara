@@ -74,7 +74,7 @@ import fish.payara.internal.notification.PayaraNotificationFactory;
 @RunLevel(StartupRunLevel.VAL)
 public class AdminAuditService {
     
-    private static final String AUDIT_MESSAGE = "AUDIT";
+    private static final String AUDIT_MESSAGE = "Admin Command Audit";
     private static final List<String> ACCESSOR_COMMAND_START = Arrays.asList("_", "get", "list", "help", "version");
     
     private boolean enabled;
@@ -142,7 +142,7 @@ public class AdminAuditService {
 
             PayaraNotification notification = notificationFactory.newBuilder()
                 .whitelist(enabledNotifiers.toArray(new String[0]))
-                .subject("Admin Command Audit")
+                .subject(AUDIT_MESSAGE)
                 .message(name + " issued command " + command + " with parameters " + parameters.toString())
                 .build();
 
