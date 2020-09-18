@@ -49,6 +49,12 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface NotifierManager {
 
+    /**
+     * Alert the notification service that a notifier configuration has been updated
+     * with the --dynamic flag, so the notifier needs updating dynamically.
+     * 
+     * @param configuration the configuration that was updated
+     */
     void reconfigureNotifier(PayaraNotifierConfiguration configuration);
 
 }
