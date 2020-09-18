@@ -153,7 +153,7 @@ public class GetAdminAuditServiceConfiguration implements AdminCommand {
             }
         }
         notifiersReport.setMessage(notifiersColumnFormatter.toString());
-        extraProperties.put("notifiers", notifierProps);
+        extraProperties.putAll(notifierProps);
         
         actionReport.setExtraProperties(extraProperties);
         
