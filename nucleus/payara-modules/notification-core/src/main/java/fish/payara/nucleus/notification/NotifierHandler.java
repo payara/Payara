@@ -116,6 +116,10 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     }
 
     protected void destroy() {
+        // Set the configuration before destroying the notifier so that isEnabled() returns false
+        if (config != null) {
+            PayaraConfiguredNotifier.class.cast(notifier).setConfiguration(config);
+        }
         notifier.destroy();
     }
 
@@ -125,7 +129,9 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
         if (config != null) {
             PayaraConfiguredNotifier.class.cast(notifier).setConfiguration(config);
         }
-        notifier.bootstrap();
+        if (isEnabled()) {
+            notifier.bootstrap();
+        }
     }
 
     @Override
@@ -149,9 +155,12 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
         }
     }
 
+    /**
+     * @return true if the current notifier is enabled, or false otherwise
+     */
     private boolean isEnabled() {
         if (config != null) {
-            return valueOf(config.getEnabled());
+            return valueOf(PayaraConfiguredNotifier.class.cast(notifier).getConfiguration().getEnabled());
         }
         return true;
     }
