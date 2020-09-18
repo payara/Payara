@@ -78,8 +78,7 @@ Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
             <cdi-service enable-concurrent-deployment="true" pre-loader-thread-pool-size="2"></cdi-service>
             <hazelcast-config-specific-configuration enabled="true"></hazelcast-config-specific-configuration>
             <health-check-service-configuration enabled="false">
-                <log-notifier enabled="true" />
-                <eventbus-notifier enabled="false" />
+                <notifier>log-notifier</notifier>
                 <cpu-usage-checker unit="MINUTES" name="CPU" time="1" enabled="true" />
                 <machine-memory-usage-checker unit="MINUTES" name="MMEM" time="3" enabled="true" />
                 <heap-memory-usage-checker unit="MINUTES" name="HEAP" time="3" enabled="true" />
@@ -102,7 +101,7 @@ Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
                 <module-log-levels />
             </log-service>
             <monitoring-service-configuration amx="false" enabled="false" log-frequency="30">
-                <log-notifier></log-notifier>
+                <notifier>log-notifier</notifier>
                 <eventbus-notifier></eventbus-notifier>
             </monitoring-service-configuration>
             <microprofile-metrics-configuration></microprofile-metrics-configuration>
@@ -163,11 +162,10 @@ Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
             <java-config></java-config>
             <phone-home-runtime-configuration></phone-home-runtime-configuration>
             <request-tracing-service-configuration>
-                <log-notifier enabled="true"></log-notifier>
+                <notifier>log-notifier</notifier>
             </request-tracing-service-configuration>
             <notification-service-configuration enabled="false">
                 <log-notifier-configuration enabled="true"></log-notifier-configuration>
-                <eventbus-notifier-configuration enabled="false"></eventbus-notifier-configuration>
             </notification-service-configuration>
             <batch-runtime-configuration table-prefix="jbatch" data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
             <availability-service availability-enabled="true">

@@ -120,14 +120,22 @@
       </ejb-container>
       <asadmin-recorder-configuration></asadmin-recorder-configuration>
       <request-tracing-service-configuration>
-        <log-notifier></log-notifier>
+        <notifier>log-notifier</notifier>
       </request-tracing-service-configuration>
       <notification-service-configuration enabled="true">
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
       <batch-runtime-configuration data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
-      <monitoring-service-configuration></monitoring-service-configuration>
+      <monitoring-service-configuration>
+        <notifier>log-notifier</notifier>
+      </monitoring-service-configuration>
       <microprofile-metrics-configuration></microprofile-metrics-configuration>
+      <health-check-service-configuration>
+        <notifier>log-notifier</notifier>
+      </health-check-service-configuration>
+      <admin-audit-configuration>
+        <notifier>log-notifier</notifier>
+      </admin-audit-configuration>
       <diagnostic-service />
       <security-service activate-default-principal-to-role-mapping="true">
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -382,13 +390,21 @@
       </transaction-service>
       <hazelcast-config-specific-configuration config-specific-data-grid-start-port="${HZ_LISTENER_PORT}"></hazelcast-config-specific-configuration>
       <request-tracing-service-configuration>
-        <log-notifier></log-notifier>
+        <notifier>log-notifier</notifier>
       </request-tracing-service-configuration>
       <notification-service-configuration enabled="true">
         <log-notifier-configuration enabled="true"></log-notifier-configuration>
       </notification-service-configuration>
-      <monitoring-service-configuration></monitoring-service-configuration>
+      <monitoring-service-configuration>
+        <notifier>log-notifier</notifier>
+      </monitoring-service-configuration>
       <microprofile-metrics-configuration></microprofile-metrics-configuration>
+      <health-check-service-configuration>
+        <notifier>log-notifier</notifier>
+      </health-check-service-configuration>
+      <admin-audit-configuration>
+        <notifier>log-notifier</notifier>
+      </admin-audit-configuration>
       <diagnostic-service />
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>[9|]--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED</jvm-options>
