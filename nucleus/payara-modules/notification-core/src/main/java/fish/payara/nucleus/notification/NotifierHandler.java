@@ -116,11 +116,16 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     }
 
     protected void destroy() {
-        // Set the configuration before destroying the notifier so that isEnabled() returns false
+        // Should only destroy a notifier if it's enabled before any configuration change
+        final boolean wasEnabled = isEnabled();
+
+        // Set the configuration before destroying the notifier
         if (config != null) {
             PayaraConfiguredNotifier.class.cast(notifier).setConfiguration(config);
         }
-        notifier.destroy();
+        if (wasEnabled) {
+            notifier.destroy();
+        }
     }
 
     @SuppressWarnings("unchecked")

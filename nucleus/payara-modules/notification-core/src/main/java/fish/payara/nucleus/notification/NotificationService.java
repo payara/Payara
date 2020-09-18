@@ -192,13 +192,12 @@ public class NotificationService implements NotifierManager, EventListener, Conf
         if (execution != null) {
             execution.cancel(true);
         }
-        if (enabled) {
-            notifiers.forEach(NotifierHandler::destroy);
-        }
+        notifiers.forEach(NotifierHandler::destroy);
     }
 
     public void bootstrapNotificationService() {
         if (configuration != null) {
+            final boolean wasEnabled = this.enabled;
             this.enabled = Boolean.valueOf(configuration.getEnabled());
 
             if (this.enabled) {
@@ -231,6 +230,8 @@ public class NotificationService implements NotifierManager, EventListener, Conf
                 }, 0, 500, TimeUnit.MILLISECONDS);
     
                 logger.info("Payara Notification Service bootstrapped.");
+            } else if (wasEnabled) {
+                shutdownNotificationService();
             }
         }
     }
