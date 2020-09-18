@@ -39,6 +39,9 @@
  */
 package fish.payara.nucleus.notification.log;
 
+import static java.lang.Boolean.valueOf;
+import static java.lang.String.format;
+
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
@@ -99,8 +102,12 @@ public class LogNotifier extends PayaraConfiguredNotifier<LogNotifierConfigurati
 
     @Override
     public void handleNotification(PayaraNotification event) {
-        if (Boolean.valueOf(configuration.getEnabled())) {
-            logger.info(event.getMessage());
+        if (valueOf(configuration.getEnabled())) {
+            if (event.getSubject() != null) {
+                logger.info(format("%s - %s", event.getSubject(), event.getMessage()));
+            } else {
+                logger.info(event.getMessage());
+            }
         }
     }
 
