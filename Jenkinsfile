@@ -42,7 +42,7 @@ pipeline {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
-                    sh """mvn -B -V -ff -e clean install -PQuickBuild \
+                    sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
                     -Dsurefire.rerunFailingTestsCount=2"""
@@ -66,7 +66,7 @@ pipeline {
         stage('Run Quicklook Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean test -Pall \
+                sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
@@ -89,7 +89,7 @@ pipeline {
         stage('Run Payara Samples Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -V -B -ff clean install -Ppayara-server-managed \
+                sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-managed \
                 -Dpayara.version=${pom.version} \
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
                 -Dpayara_domain=${DOMAIN_NAME} \
@@ -117,7 +117,7 @@ pipeline {
         stage('Run MP TCK Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean verify \
+                sh """mvn -B -V -ff -e clean verify --strict-checksums \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
@@ -148,7 +148,7 @@ pipeline {
         stage('Run EE8 Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh "mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-remote,stable"
@@ -181,7 +181,7 @@ pipeline {
                 sh "rm -rf /tmp/cargo*"
 
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dsurefire.rerunFailingTestsCount=2 -Ppayara-server-managed,payara5"""
@@ -211,7 +211,7 @@ pipeline {
         stage('Run EE7 Tests') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install -Dsurefire.useFile=false \
+                sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                 -Dpayara_domain=${DOMAIN_NAME} -Duse.cnHost=true \
