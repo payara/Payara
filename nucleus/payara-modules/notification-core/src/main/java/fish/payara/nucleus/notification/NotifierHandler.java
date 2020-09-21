@@ -43,8 +43,13 @@ import static fish.payara.internal.notification.NotifierUtils.getNotifierName;
 import static java.lang.Boolean.valueOf;
 import static java.lang.String.format;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +61,7 @@ import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
-public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
+public class NotifierHandler implements Consumer<PayaraNotification> {
 
     private static final Logger LOGGER = Logger.getLogger(NotifierHandler.class.getName());
 
@@ -64,7 +69,11 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     private final PayaraNotifierConfiguration config;
     private final String notifierName;
 
-    private final Queue<PayaraNotification> notificationQueue;
+    private final BlockingQueue<PayaraNotification> notificationQueue;
+    
+    private final ScheduledExecutorService executor;
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private ScheduledFuture<?> taskResult;
 
     public NotifierHandler(final ServiceHandle<PayaraNotifier> notifierHandle) {
         this(notifierHandle, null);
@@ -73,8 +82,11 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
     public NotifierHandler(final ServiceHandle<PayaraNotifier> notifierHandle, final PayaraNotifierConfiguration config) {
         this.notifier = notifierHandle.getService();
         this.notifierName = getNotifierName(notifierHandle.getActiveDescriptor());
-        this.notificationQueue = new ConcurrentLinkedQueue<>();
         this.config = config;
+
+        this.notificationQueue = new LinkedBlockingDeque<>();
+        this.executor = Executors.newScheduledThreadPool(1,
+                r -> new Thread(r, notifierName + "-" + threadNumber.getAndIncrement()));
     }
 
     protected PayaraNotifierConfiguration getConfig() {
@@ -115,7 +127,7 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
         }
     }
 
-    protected void destroy() {
+    protected synchronized void destroy() {
         // Should only destroy a notifier if it's enabled before any configuration change
         final boolean wasEnabled = isEnabled();
 
@@ -123,19 +135,23 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
         if (config != null) {
             PayaraConfiguredNotifier.class.cast(notifier).setConfiguration(config);
         }
+        if (taskResult != null) {
+            taskResult.cancel(true);
+        }
         if (wasEnabled) {
             notifier.destroy();
         }
     }
 
     @SuppressWarnings("unchecked")
-    protected void bootstrap() {
+    protected synchronized void bootstrap() {
         // Set the configuration before bootstrapping the notifier
         if (config != null) {
             PayaraConfiguredNotifier.class.cast(notifier).setConfiguration(config);
         }
         if (isEnabled()) {
             notifier.bootstrap();
+            taskResult = executor.scheduleWithFixedDelay(this::run, 0, 5, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -146,17 +162,20 @@ public class NotifierHandler implements Runnable, Consumer<PayaraNotification> {
         }
     }
 
-    @Override
-    public void run() {
-        final PayaraNotification notification = notificationQueue.peek();
+    private void run() {
+        assert isEnabled();
         try {
-            if (notification != null && isEnabled()) {
-                notifier.handleNotification(notification);
-                notificationQueue.remove();
+            final PayaraNotification notification = notificationQueue.take();
+            try {
+                if (notification != null) {
+                    notifier.handleNotification(notification);
+                }
+            } catch (final Exception ex) {
+                LOGGER.log(Level.WARNING,
+                        format("Notifier %s failed to handle notification \"%s\".", notifierName, notification), ex);
             }
-        } catch (final Exception ex) {
-            LOGGER.log(Level.WARNING,
-                    format("Notifier %s failed to handle notification \"%s\".", notifierName, notification), ex);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, format("Cancelled waiting on queue for notifier \"%s\".", notifierName), ex);
         }
     }
 

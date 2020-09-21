@@ -44,8 +44,6 @@ import java.beans.PropertyVetoException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -87,7 +85,6 @@ import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 
 /**
@@ -117,10 +114,6 @@ public class NotificationService implements NotifierManager, EventListener, Conf
 
     @Inject
     private Transactions transactions;
-
-    @Inject
-    private PayaraExecutorService executor;
-    private ScheduledFuture<?> execution;
 
     private final Set<NotifierHandler> notifiers;
 
@@ -189,9 +182,6 @@ public class NotificationService implements NotifierManager, EventListener, Conf
     }
 
     public void shutdownNotificationService() {
-        if (execution != null) {
-            execution.cancel(true);
-        }
         notifiers.forEach(NotifierHandler::destroy);
     }
 
@@ -223,11 +213,6 @@ public class NotificationService implements NotifierManager, EventListener, Conf
 
                 // Bootstrap each notifier
                 notifiers.forEach(NotifierHandler::bootstrap);
-
-                // Start flushing notifiers as a background task
-                execution = executor.scheduleWithFixedDelay(() -> {
-                    notifiers.forEach(NotifierHandler::run);
-                }, 0, 500, TimeUnit.MILLISECONDS);
     
                 logger.info("Payara Notification Service bootstrapped.");
             } else if (wasEnabled) {
