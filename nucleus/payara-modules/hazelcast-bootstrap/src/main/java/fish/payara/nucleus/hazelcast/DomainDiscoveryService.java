@@ -43,6 +43,7 @@ import com.hazelcast.cluster.Address;
 import com.hazelcast.spi.discovery.DiscoveryNode;
 import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
 import com.hazelcast.spi.discovery.integration.DiscoveryService;
+import com.hazelcast.spi.discovery.integration.DiscoveryServiceSettings;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.io.InstanceDirs;
@@ -67,14 +68,16 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 
 /**
- * Provides a Discovery SPI implementation for Hazelcast that uses knowledge 
+ * Provides a Discovery SPI implementation for Hazelcast that uses knowledge
  * of the domain topology to build out the cluster and discover members
  * @since 5.0
  * @author steve
  */
 public class DomainDiscoveryService implements DiscoveryService {
-    
     private static Logger logger = Logger.getLogger(DomainDiscoveryService.class.getName());
+
+    public DomainDiscoveryService(DiscoveryServiceSettings settings) {
+    }
 
     @Override
     public void start() {
@@ -99,7 +102,7 @@ public class DomainDiscoveryService implements DiscoveryService {
                 if (dasHost == null || dasHost.isEmpty()) {
                     dasHost = hzConfig.getDASBindAddress();
                 }
-                
+
                 if (dasHost.isEmpty()) {
                     // ok drag it off the properties file
                     logger.fine("Neither DAS Public Address or Bind Address is set in the configuration");
@@ -112,7 +115,7 @@ public class DomainDiscoveryService implements DiscoveryService {
                     dasHost = InetAddress.getByName(dasHost).getHostAddress();
                     logger.log(Level.FINE, "Loaded the das.properties file from the agent directory and found DAS IP {0}", dasHost);
                 }
-                    
+
                 if (dasHost.isEmpty() || dasHost.equals("127.0.0.1") || dasHost.equals("localhost")) {
                     logger.fine("Looks like the DAS IP is loopback or empty let's find the actual IP of this machine as that is where the DAS is");
                     addLocalNodes(nodes, Integer.valueOf(hzConfig.getDasPort()));
@@ -133,7 +136,7 @@ public class DomainDiscoveryService implements DiscoveryService {
             } catch (IOException ex) {
                 Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+
         } else if (env.isMicro()) {
             try {
                 logger.log(Level.FINE, "We are Payara Micro therefore adding DAS {0}", hzConfig.getDASPublicAddress());
@@ -153,7 +156,7 @@ public class DomainDiscoveryService implements DiscoveryService {
         } else {
             // ok this is the DAS
             logger.fine("We are the DAS therefore we will add all known nodes with start port as IP addresses to connect to");
-            
+
             // Embedded runtimese don't have nodes
             if (domain.getNodes() == null) {
                 try {
@@ -167,7 +170,7 @@ public class DomainDiscoveryService implements DiscoveryService {
                         InetAddress address = InetAddress.getByName(node.getNodeHost());
                         if (!address.isLoopbackAddress()) {
                             logger.log(Level.FINE, "Adding Node {0}", address);
-                            nodes.add(new SimpleDiscoveryNode(new Address(address.getHostAddress(), 
+                            nodes.add(new SimpleDiscoveryNode(new Address(address.getHostAddress(),
                                     Integer.valueOf(hzConfig.getStartPort()))));
                         } else {
                             // we need to add our IP address so add each interface address with the start port
@@ -179,7 +182,7 @@ public class DomainDiscoveryService implements DiscoveryService {
                 }
             }
         }
-        
+
         return nodes;
     }
 
@@ -207,5 +210,5 @@ public class DomainDiscoveryService implements DiscoveryService {
     public Map<String, String> discoverLocalMetadata() {
         return Collections.emptyMap();
     }
-    
+
 }

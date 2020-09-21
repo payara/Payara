@@ -59,6 +59,7 @@ import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.map.IMap;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import static com.hazelcast.spi.properties.ClusterProperty.WAIT_SECONDS_BEFORE_JOIN;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import org.glassfish.api.StartupRunLevel;
@@ -131,13 +132,13 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     @Inject
     ServerContext context;
-    
+
     @Inject
     ServerEnvironment env;
 
     @Inject
     HazelcastRuntimeConfiguration configuration;
-    
+
     @Inject
     HazelcastConfigSpecificConfiguration nodeConfig;
 
@@ -146,7 +147,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     @Inject @Optional
     private JavaEEContextUtil ctxUtil;
-    
+
     // Provides ability to register a configuration listener
     @Inject
     Transactions transactions;
@@ -166,7 +167,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         enabled = Boolean.valueOf(nodeConfig.getEnabled());
         transactions.addListenerForType(HazelcastConfigSpecificConfiguration.class, this);
         transactions.addListenerForType(HazelcastRuntimeConfiguration.class, this);
-        
+
         if (env.isMicro()) {
             memberName = nodeConfig.getMemberName();
             memberGroup = nodeConfig.getMemberGroup();
@@ -191,7 +192,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
     public String getMemberName() {
         return memberName;
     }
-    
+
     /**
      * Gets the name of the member group that this instance belongs to
      * @return {@code MicroShoal} by default
@@ -200,7 +201,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
     public String getMemberGroup() {
         return memberGroup;
     }
-    
+
     /**
      * Returns the UUID of the instance.
      * If Hazelcast is not enabled then a new random one will be returned.
@@ -211,10 +212,10 @@ public class HazelcastCore implements EventListener, ConfigListener {
         bootstrapHazelcast();
         if (!enabled) {
             return UUID.randomUUID();
-        }        
+        }
         return theInstance.getCluster().getLocalMember().getUuid();
     }
-    
+
     /**
      * Returns true if this instance is a Hazelcast Lite instance
      * @return
@@ -250,7 +251,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
     }
 
     /**
-     * 
+     *
      * @return Whether Hazelcast is currently enabled
      */
     public boolean isEnabled() {
@@ -341,17 +342,23 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 }
             } else { // there is no config override
                 config.setClassLoader(clh.getCommonClassLoader());
+//                config.setProperty(MAX_NO_HEARTBEAT_SECONDS.getName(), "5");
+//                config.setProperty(HEARTBEAT_INTERVAL_SECONDS.getName(), "1");
+//                config.setProperty(MERGE_FIRST_RUN_DELAY_SECONDS.getName(), "5");
+//                config.setProperty(MERGE_NEXT_RUN_DELAY_SECONDS.getName(), "5");
+                config.setProperty(WAIT_SECONDS_BEFORE_JOIN.getName(), "0");
+
                 if(ctxUtil != null) {
                     SerializationConfig serializationConfig = new SerializationConfig();
                     setPayaraSerializerConfig(serializationConfig);
                     config.setSerializationConfig(serializationConfig);
                 }
-                
+
                 buildNetworkConfiguration(config);
-               
+
                 config.setLicenseKey(configuration.getLicenseKey());
                 config.setLiteMember(Boolean.parseBoolean(nodeConfig.getLite()));
-                
+
 
                 config.setClusterName(configuration.getClusterGroupName());
 
@@ -361,18 +368,18 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     partitionGroupConfig.setEnabled(enabled);
                     partitionGroupConfig.setGroupType(PartitionGroupConfig.MemberGroupType.HOST_AWARE);
                 }
-                
+
                 // build the executor config
                 ExecutorConfig executorConfig = config.getExecutorConfig(CLUSTER_EXECUTOR_SERVICE_NAME);
                 executorConfig.setStatisticsEnabled(true);
                 executorConfig.setPoolSize(Integer.valueOf(nodeConfig.getExecutorPoolSize()));
                 executorConfig.setQueueCapacity(Integer.valueOf(nodeConfig.getExecutorQueueCapacity()));
-                
+
                 ScheduledExecutorConfig scheduledExecutorConfig = config.getScheduledExecutorConfig(SCHEDULED_CLUSTER_EXECUTOR_SERVICE_NAME);
                 scheduledExecutorConfig.setDurability(1);
                 scheduledExecutorConfig.setCapacity(Integer.valueOf(nodeConfig.getScheduledExecutorQueueCapacity()));
                 scheduledExecutorConfig.setPoolSize(Integer.valueOf(nodeConfig.getScheduledExecutorPoolSize()));
-                            
+
                 config.setProperty("hazelcast.jmx", "true");
             }
             if (config.getCPSubsystemConfig().getCPMemberCount() == 0) {
@@ -413,7 +420,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             memberAddressProviderConfig.setEnabled(enabled);
             memberAddressProviderConfig.setImplementation(new MemberAddressPicker(env, configuration, nodeConfig));
         }
-        
+
         int port = Integer.valueOf(configuration.getStartPort());
 
         String configSpecificPort = nodeConfig.getConfigSpecificDataGridStartPort();
@@ -424,23 +431,23 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 port = configSpecificPortInt;
             }
         }
-        
+
         String discoveryMode = configuration.getDiscoveryMode();
         if (discoveryMode.startsWith("tcpip")) {
             TcpIpConfig tConfig = config.getNetworkConfig().getJoin().getTcpIpConfig();
             tConfig.setEnabled(true);
             tConfig.addMember(configuration.getTcpipMembers());
-            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);   
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
         } else if (discoveryMode.startsWith("dns")) {
             config.setProperty("hazelcast.discovery.enabled", "true");
             config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DnsDiscoveryServiceProvider(configuration.getDnsMembers()));
-            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false); 
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
         } else if (discoveryMode.startsWith("multicast")) {
             // build networking
             MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
-            mcConfig.setEnabled(true);                       
+            mcConfig.setEnabled(true);
             mcConfig.setMulticastGroup(configuration.getMulticastGroup());
-            mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));      
+            mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
         } else if (discoveryMode.startsWith("kubernetes")) {
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             config.getNetworkConfig().getJoin().getKubernetesConfig().setEnabled(true)
@@ -450,14 +457,14 @@ public class HazelcastCore implements EventListener, ConfigListener {
         } else {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");
-            config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());            
-            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);            
+            config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(DomainDiscoveryService::new);
+            config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
         }
-               
+
         if (env.isDas() && !env.isMicro()) {
             port = Integer.valueOf(configuration.getDasPort());
         }
-        
+
         config.getNetworkConfig().setPort(port);
         config.getNetworkConfig().setPortAutoIncrement("true".equalsIgnoreCase(configuration.getAutoIncrementPort()));
     }
@@ -488,7 +495,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     memberName = PayaraMicroNameGenerator.generateName();
                     Set<com.hazelcast.cluster.Member> clusterMembers = theInstance.getCluster().getMembers();
 
-                    // If the instance name was generated, we need to compile a list of all the instance names in use within 
+                    // If the instance name was generated, we need to compile a list of all the instance names in use within
                     // the instance group, excluding this local instance
                     List<String> takenNames = new ArrayList<>();
                     for (com.hazelcast.cluster.Member member : clusterMembers) {
@@ -500,7 +507,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
                         }
                     }
 
-                    // If our generated name is already in use within the instance group, either generate a new one or set the 
+                    // If our generated name is already in use within the instance group, either generate a new one or set the
                     // name to this instance's UUID if there are no more unique generated options left
                     if (takenNames.contains(memberName)) {
                         memberName = PayaraMicroNameGenerator.generateUniqueName(takenNames,
