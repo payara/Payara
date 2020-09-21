@@ -55,12 +55,12 @@
                 method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.notifierConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "noisy", "dynamic", "loopBack"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "noisy", "dynamic", "loopback"});
 
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        if (#{pageSession.valueMap['loopBack']}=true) {
+        if (#{pageSession.valueMap['loopback']}=true) {
             setPageSessionAttribute(key="loopBackSelected", value="true");
         }
         if (#{pageSession.valueMap['hazelcastEnabled']}=true) {

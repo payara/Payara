@@ -104,7 +104,7 @@ public class TestNotifier implements AdminCommand {
                 .message(MESSAGE);
 
         if (all == null || !all) {
-            if (notifiers.isEmpty()) {
+            if (notifiers == null || notifiers.isEmpty()) {
                 report.setMessage("Must either specify all notifiers or a select list");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;

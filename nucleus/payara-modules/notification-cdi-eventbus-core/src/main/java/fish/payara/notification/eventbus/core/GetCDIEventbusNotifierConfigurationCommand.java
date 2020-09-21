@@ -89,12 +89,10 @@ public class GetCDIEventbusNotifierConfigurationCommand extends BaseGetNotifierC
 
     @Override
     protected Map<String, Object> getNotifierProperties(CDIEventbusNotifierConfiguration configuration) {
-        Map<String, Object> map = super.getNotifierConfiguration(configuration);
+        Map<String, Object> map = super.getNotifierProperties(configuration);
 
+        // Required, regardless of configuration
         map.put("hazelcastEnabled", hazelcast.isEnabled());
-        if (configuration != null) {
-            map.put("loopback", configuration.getLoopBack());
-        }
 
         return map;
     }

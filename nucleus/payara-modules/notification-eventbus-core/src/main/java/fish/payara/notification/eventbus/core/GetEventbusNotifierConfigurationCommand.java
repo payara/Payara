@@ -81,14 +81,4 @@ public class GetEventbusNotifierConfigurationCommand extends BaseGetNotifierConf
         return map;
     }
 
-    @Override
-    protected Map<String, Object> getNotifierProperties(EventbusNotifierConfiguration configuration) {
-        Map<String, Object> map = super.getNotifierConfiguration(configuration);
-
-        if (configuration != null) {
-            map.put("topicName", configuration.getTopicName());
-        }
-
-        return map;
-    }
 }

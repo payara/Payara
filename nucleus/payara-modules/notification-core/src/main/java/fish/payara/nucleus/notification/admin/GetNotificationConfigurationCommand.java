@@ -75,6 +75,7 @@ import fish.payara.internal.notification.PayaraConfiguredNotifier;
 import fish.payara.internal.notification.PayaraNotifier;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
+import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 
 /**
  * Admin command to list Notification Configuration
@@ -161,6 +162,9 @@ public class GetNotificationConfigurationCommand implements AdminCommand {
             map.put("enabled", values[1]);
             map.put("notifierEnabled", values[2]);
             map.put("noisy", values[3]);
+            if (notifierConfig != null && notifierConfig instanceof LogNotifierConfiguration) {
+                map.put("useSeparateLogFile", ((LogNotifierConfiguration) notifierConfig).getUseSeparateLogFile());
+            }
             extraProps.put("getNotificationConfiguration" + notifierClass.getSimpleName(), map);
         }
 

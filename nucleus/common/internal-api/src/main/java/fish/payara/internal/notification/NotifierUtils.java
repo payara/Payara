@@ -42,6 +42,7 @@ package fish.payara.internal.notification;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -94,5 +95,31 @@ public final class NotifierUtils {
     public static <C extends PayaraNotifierConfiguration> Class<C> getConfigurationClass(Class<?> notifierClass) {
         final ParameterizedType genericSuperclass = (ParameterizedType) notifierClass.getGenericSuperclass();
         return (Class<C>) genericSuperclass.getActualTypeArguments()[0];
+    }
+
+    /**
+     * @return a camel cased string representing the result
+     */
+    public static String convertToCamelCase(String string) {
+        if (string == null || string.isEmpty()) {
+            return string;
+        }
+
+        String result = "";
+        // Make sure the string has no leading or trailing whitespace
+        string = string.trim();
+
+        // Count through each other character
+        for (int i = 0; i < string.length(); i++) {
+            char ch = string.charAt(i);
+
+            // If a space is found, ignore and convert the next letter to 
+            if (Character.isWhitespace(ch)) {
+                result += Character.toUpperCase(string.charAt(++i));
+            } else {
+                result += Character.toLowerCase(ch);
+            }
+        }
+        return result;
     }
 }

@@ -80,15 +80,5 @@ public class GetLogNotifierConfiguration extends BaseGetNotifierConfigurationCom
 
         return map;
     }
-    
-    @Override
-    protected Map<String, Object> getNotifierProperties(LogNotifierConfiguration configuration) {
-        Map<String, Object> map = super.getNotifierProperties(configuration);
 
-        if (configuration != null) {
-            map.put("useSeparateLogFile", configuration.getUseSeparateLogFile());
-        }
-
-        return map;
-    }
 }

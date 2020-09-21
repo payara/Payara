@@ -71,10 +71,8 @@ holder.
                helpText="$resource{i18njn.notifier.jms.configuration.pageHelpText}" >
         <sun:button id = "test" text="$resource{i18njn.notifier.jms.buttons.test}">
             <!command
-                mapCopy(source="#{pageSession.valueMap}" dest="#{pageSession.attrsMap}");
-                mapRemove(map="#{pageSession.attrsMap}" key="enabled");
-				mapRemove(map="#{pageSession.attrsMap}" key="noisy");
-                mapRemove(map="#{pageSession.attrsMap}" key="dynamic");
+                createMap(result="#{pageSession.attrsMap}");
+                mapPut(map="#{pageSession.attrsMap}" key="notifiers" value="jms-notifier");
                 gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-jms-notifier-configuration?target=#{pageSession.configName}" method="GET" 
                     attrs="#{pageSession.attrsMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {

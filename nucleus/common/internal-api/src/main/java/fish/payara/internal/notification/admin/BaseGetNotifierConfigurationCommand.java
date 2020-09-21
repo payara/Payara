@@ -54,8 +54,8 @@ import java.util.Properties;
 import javax.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.ColumnFormatter;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -64,6 +64,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 
+import fish.payara.internal.notification.NotifierUtils;
 import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
@@ -108,8 +109,7 @@ public abstract class BaseGetNotifierConfigurationCommand<C extends PayaraNotifi
 
         if (nc == null) {
             message = "Notifier Configuration is not defined";
-        }
-        else {
+        } else {
             message = listConfiguration(nc);
         }
         mainActionReport.setMessage(message);
@@ -163,20 +163,23 @@ public abstract class BaseGetNotifierConfigurationCommand<C extends PayaraNotifi
     }
 
     /**
+     * Get a camelcase version of
+     * {@link #getNotifierConfiguration(PayaraNotifierConfiguration)}. By default
+     * will call {@link #getNotifierConfiguration(PayaraNotifierConfiguration)} and
+     * convert the keys to camel casing. Override if the result of this method is
+     * wrong.
+     * 
      * @param configuration the configuration to get properties from
      * @return a map from camelcase attribute names to their values
      */
     protected Map<String, Object> getNotifierProperties(C configuration) {
-        Map<String, Object> map = new LinkedHashMap<>(2);
-
-        if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
-        } else {
-            map.put("enabled", FALSE.toString());
-            map.put("noisy", TRUE.toString());
+        Map<String, Object> configMap = getNotifierConfiguration(configuration);
+        Map<String, Object> result = new LinkedHashMap<>(2);
+        Iterator<Entry<String, Object>> iterator = configMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Entry<String, Object> entry = iterator.next();
+            result.put(NotifierUtils.convertToCamelCase(entry.getKey()), entry.getValue());
         }
-
-        return map;
+        return result;
     }
 }
