@@ -67,8 +67,7 @@ public class CmpRosterTestNG {
      *Each method can act as one test within one test suite
      */
 
-	@Ignore
-    @Test(groups ={ "pulse"} ) // test method
+    @Test(groups ={ "pulse"}, enabled = false ) // test method
     public void test() throws Exception{
         
         try{
