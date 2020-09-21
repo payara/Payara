@@ -85,8 +85,8 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>notification-core</artifactId>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

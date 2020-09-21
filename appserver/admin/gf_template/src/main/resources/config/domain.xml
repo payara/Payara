@@ -118,14 +118,22 @@
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
             <asadmin-recorder-configuration></asadmin-recorder-configuration>
             <request-tracing-service-configuration>
-                <log-notifier></log-notifier>
+                <notifier>log-notifier</notifier>
             </request-tracing-service-configuration>
             <notification-service-configuration enabled="true">
                 <log-notifier-configuration enabled="true"></log-notifier-configuration>
             </notification-service-configuration>
             <hazelcast-config-specific-configuration></hazelcast-config-specific-configuration>
-            <monitoring-service-configuration></monitoring-service-configuration>
+            <monitoring-service-configuration>
+              <notifier>log-notifier</notifier>
+            </monitoring-service-configuration>
             <microprofile-metrics-configuration></microprofile-metrics-configuration>
+            <health-check-service-configuration>
+              <notifier>log-notifier</notifier>
+            </health-check-service-configuration>
+            <admin-audit-configuration>
+              <notifier>log-notifier</notifier>
+            </admin-audit-configuration>
             <diagnostic-service />
             <security-service>
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -403,14 +411,22 @@
             </security-service>
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" />
             <request-tracing-service-configuration>
-                <log-notifier></log-notifier>
+                <notifier>log-notifier</notifier>
             </request-tracing-service-configuration>
             <notification-service-configuration enabled="true">
                 <log-notifier-configuration enabled="true"></log-notifier-configuration>
             </notification-service-configuration>
             <hazelcast-config-specific-configuration config-specific-data-grid-start-port="${HZ_LISTENER_PORT}"></hazelcast-config-specific-configuration>
-            <monitoring-service-configuration></monitoring-service-configuration>
+            <monitoring-service-configuration>
+              <notifier>log-notifier</notifier>
+            </monitoring-service-configuration>
             <microprofile-metrics-configuration></microprofile-metrics-configuration>
+            <health-check-service-configuration>
+              <notifier>log-notifier</notifier>
+            </health-check-service-configuration>
+            <admin-audit-configuration>
+              <notifier>log-notifier</notifier>
+            </admin-audit-configuration>
             <diagnostic-service />
             <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
                 <jvm-options>-server</jvm-options>

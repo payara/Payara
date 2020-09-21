@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,10 +50,6 @@ import org.junit.Test;
 
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
-import fish.payara.nucleus.notification.log.LogNotifier;
 
 /**
  * Verifies the correctness of the {@code SetHealthCheckConfiguration} command.
@@ -83,13 +79,11 @@ public class SetHealthCheckConfigurationTest extends AsadminTest {
         CommandResult result = asadmin("set-healthcheck-configuration", 
                 "--enabled", "true");
         assertSuccess(result);
-        assertEquals("log.enabled was false set to true\n", result.getOutput());
         assertTrue(config.getEnabled());
         assertUnchanged(enabled, service.isEnabled());
         result = asadmin("set-healthcheck-configuration", 
                 "--enabled", "false");
         assertSuccess(result);
-        assertEquals("log.enabled was true set to false\n", result.getOutput());
         assertFalse(config.getEnabled());
         assertUnchanged(enabled, service.isEnabled());
     }
@@ -109,36 +103,9 @@ public class SetHealthCheckConfigurationTest extends AsadminTest {
     }
 
     @Test
-    public void enabledAppliesToLogNotifier() {
-        boolean logEnabled = getLogNotifierOptions().isEnabled();
-        CommandResult result = asadmin("set-healthcheck-configuration", 
-                "--enabled", "false");
-        assertSuccess(result);
-        Notifier logNotifier = config.getNotifierByType(LogNotifier.class);
-        assertFalse(logNotifier.getEnabled());
-        assertUnchanged(logEnabled, getLogNotifierOptions().isEnabled());
-        result = asadmin("set-healthcheck-configuration", 
-                "--enabled", "true");
-        assertSuccess(result);
-        assertTrue(logNotifier.getEnabled());
-        assertUnchanged(logEnabled, getLogNotifierOptions().isEnabled());
-    }
-
-    @Test
-    public void enabledDynamicAppliesToLogNotifier() {
-        CommandResult result = asadmin("set-healthcheck-configuration", 
-                "--enabled", "false",
-                "--dynamic", "true");
-        assertSuccess(result);
-        Notifier logNotifier = config.getNotifierByType(LogNotifier.class);
-        assertFalse(logNotifier.getEnabled());
-        // can't verify the active options since disabled service will not update these
-        result = asadmin("set-healthcheck-configuration", 
-                "--enabled", "true",
-                "--dynamic", "true");
-        assertSuccess(result);
-        assertTrue(logNotifier.getEnabled());
-        assertTrue(getLogNotifierOptions().isEnabled());
+    public void logNotifierEnabledByDefault() {
+        assertTrue(config.getNotifierList().contains("log-notifier"));
+        assertTrue(service.getEnabledNotifiers().contains("log-notifier"));
     }
 
     @Test
@@ -238,12 +205,4 @@ public class SetHealthCheckConfigurationTest extends AsadminTest {
         }
     }
 
-    private NotifierExecutionOptions getLogNotifierOptions() {
-        for (NotifierExecutionOptions options : service.getNotifierExecutionOptionsList()) {
-            if (options.getNotifierType() == NotifierType.LOG) {
-                return options;
-            }
-        }
-        return null;
-    }
 }

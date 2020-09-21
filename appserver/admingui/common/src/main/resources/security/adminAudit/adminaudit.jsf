@@ -2,7 +2,7 @@
 
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-   Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         gf.restRequest(endpoint="#{pageSession.ADMIN_AUDIT_URL}/get-admin-audit-configuration?target=#{pageSession.configName}" method="GET" result="#{requestScope.resp}"); 
                 
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.adminauditConfiguration}");
-        setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLOG}");
+        setPageSessionAttribute(key="valueNotifierMap", value="#{requestScope.resp.data.extraProperties.notifierListLogNotifier}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
                 
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
@@ -69,13 +69,13 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         setPageSessionAttribute(key="dynamic", value="true");
         setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
         
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/notifier-list-services" method="GET" result="#{requestScope.respAllNotifiers}");
-        setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}");
-        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.avaliableservices}"){
-            convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.avaliableServices}" array="#{pageSession.allNotifiersArray}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-notifiers" method="GET" result="#{requestScope.respAllNotifiers}");
+        setPageSessionAttribute(key="allservices", value="#{requestScope.respAllNotifiers.data.extraProperties.availableServices}");
+        if (not empty "#{requestScope.respAllNotifiers.data.extraProperties.availableServices}"){
+            convertListToArray(list="#{requestScope.respAllNotifiers.data.extraProperties.availableServices}" array="#{pageSession.allNotifiersArray}");
             gf.convertListToOptionArray(list="#{pageSession.allservices}", optionArray="#{pageSession.allNotifiers}");
         }
-        py.sortHealthcheckEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.extraProperties}" avaliableNotifiers="#{pageSession.allservices}"
+        py.sortHealthcheckEnabledNotifierStatus(specifiedNotifiers="#{requestScope.resp.data.extraProperties}" availableNotifiers="#{pageSession.allservices}"
             enabled="#{pageSession.enabledNotifiersList}" disabled="#{pageSession.disabledNotifiersList}");
         convertListToArray(list="#{pageSession.enabledNotifiersList}" array="#{pageSession.enabledNotifiersArr}");
 
@@ -93,13 +93,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
                         <!command
                             mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                             mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                            convertArrayToCommaString(array="#{pageSession.enabledNotifiersArr}", commaString="#{requestScope.commaSeparatedNotifiers}");
+                            mapPut(map="#{pageSession.valueMap}" key="setNotifiers" value="#{requestScope.commaSeparatedNotifiers}");
                             mapRemove(map="#{pageSession.valueMap}" key="Audit Level");
                             prepareSuccessfulMsg();
                             gf.updateEntity(endpoint="#{pageSession.ADMIN_AUDIT_URL}/set-admin-audit-configuration?target=#{pageSession.configName}" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-
-                            py.updateNotifiers(endpoint="#{pageSession.ADMIN_AUDIT_URL}" dynamic="#{pageSession.dynamic}" target="#{pageSession.configName}" 
-                                selected="#{pageSession.enabledNotifiersArr}" notifiers="#{pageSession.allNotifiersArray}");
 
                         />
             </sun:button>
@@ -126,7 +125,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         </sun:propertySheetSection>
 
         <sun:propertySheetSection id="notifiers">
-            <sun:property id="avaliableNotifiers" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
+            <sun:property id="availableNotifiers" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}">
                 <sun:addRemove id="notifiersAddRemove"
                                selectAll="$boolean{true}"
                                items="#{pageSession.allNotifiers}"

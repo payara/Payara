@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,99 +37,126 @@
  */
 package fish.payara.notification.jms;
 
-import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.notification.configuration.JmsNotifier;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.NoInitialContextException;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.hk2.api.messaging.MessageReceiver;
-import org.glassfish.hk2.api.messaging.SubscribeTo;
+
+import com.sun.enterprise.util.StringUtils;
+
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.PayaraConfiguredNotifier;
+import fish.payara.internal.notification.PayaraNotification;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "service-jms")
+@Service(name = "jms-notifier")
 @RunLevel(StartupRunLevel.VAL)
-@MessageReceiver
-public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificationEvent,
-        JmsNotifier,
-        JmsNotifierConfiguration,
-        JmsMessageQueue> {
+public class JmsNotifierService extends PayaraConfiguredNotifier<JmsNotifierConfiguration> {
 
-    private static final Logger logger = Logger.getLogger(JmsNotifierService.class.getCanonicalName());
+    private static final Logger LOGGER = Logger.getLogger(JmsNotifierService.class.getCanonicalName());
 
-    private JmsNotifierConfigurationExecutionOptions executionOptions;
-
-    JmsNotifierService() {
-        super("jms-message-consumer-");
-    }
+    private Connection connection;
 
     @Override
     public void bootstrap() {
-        register(NotifierType.JMS, JmsNotifier.class, JmsNotifierConfiguration.class);
-
+        super.bootstrap();
         try {
-            executionOptions = (JmsNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+            final String contextFactoryClass = configuration.getContextFactoryClass();
+            final String connectionFactoryName = configuration.getConnectionFactoryName();
+            final String url = configuration.getUrl();
+            final String username = configuration.getUsername();
+            final String password = configuration.getPassword();
 
-            if (executionOptions != null && executionOptions.isEnabled()) {
-                initializeExecutor();
-
-                final Properties env = new Properties();
-                if (StringUtils.ok(executionOptions.getContextFactoryClass())) {
-                    env.put(Context.INITIAL_CONTEXT_FACTORY, executionOptions.getContextFactoryClass());
+            final Properties env = new Properties();
+            if (StringUtils.ok(contextFactoryClass)) {
+                env.put(Context.INITIAL_CONTEXT_FACTORY, contextFactoryClass);
+            }
+            if (StringUtils.ok(url)) {
+                env.put(Context.PROVIDER_URL, url);
+            }
+            if (StringUtils.ok(username)) {
+                env.put(Context.SECURITY_PRINCIPAL, username);
+            }
+            if (StringUtils.ok(password)) {
+                env.put(Context.SECURITY_CREDENTIALS, password);
+            }
+            if (StringUtils.ok(connectionFactoryName)) {
+                try {
+                    InitialContext ctx = new InitialContext(env);
+                    ConnectionFactory connectionFactory =
+                            (ConnectionFactory) ctx.lookup(connectionFactoryName);
+                    this.connection = connectionFactory.createConnection();
                 }
-                if (StringUtils.ok(executionOptions.getUrl())) {
-                    env.put(Context.PROVIDER_URL, executionOptions.getUrl());
-                }
-                if (StringUtils.ok(executionOptions.getUsername())) {
-                    env.put(Context.SECURITY_PRINCIPAL, executionOptions.getUsername());
-                }
-                if (StringUtils.ok(executionOptions.getPassword())) {
-                    env.put(Context.SECURITY_CREDENTIALS, executionOptions.getPassword());
-                }
-                if (StringUtils.ok(executionOptions.getConnectionFactoryName())) {
-                    try {
-                        InitialContext ctx = new InitialContext(env);
-                        ConnectionFactory connectionFactory =
-                                (ConnectionFactory) ctx.lookup(executionOptions.getConnectionFactoryName());
-                        Connection connection = connectionFactory.createConnection();
-                        scheduleExecutor(new JmsNotificationRunnable(queue, executionOptions, connection));
-                    }
-                    catch (NoInitialContextException e) {
-                        if (e.getRootCause() instanceof ClassNotFoundException) {
-                            logger.log(Level.SEVERE, "Context factory class cannot be found on classpath: " + executionOptions.getContextFactoryClass());
-                        }
+                catch (NoInitialContextException e) {
+                    if (e.getRootCause() instanceof ClassNotFoundException) {
+                        LOGGER.log(Level.SEVERE, "Context factory class cannot be found on classpath: " + configuration.getContextFactoryClass());
                     }
                 }
             }
-        }
-        catch (NamingException e) {
-            logger.log(Level.SEVERE, "Cannot lookup JMS resources", e);
+        } catch (NamingException e) {
+            LOGGER.log(Level.SEVERE, "Cannot lookup JMS resources", e);
         } catch (JMSException e) {
-            logger.log(Level.SEVERE, "Cannot create JMS connection", e);
-
+            LOGGER.log(Level.SEVERE, "Cannot create JMS connection", e);
         }
     }
 
     @Override
-    public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof JmsNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
-            JmsMessage message = new JmsMessage((JmsNotificationEvent) event, event.getSubject(), event.getMessage());
-            queue.addMessage(message);
+    public void destroy() {
+        super.destroy();
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (JMSException e) {
+                LOGGER.log(Level.SEVERE, "Could not close connection", e);
+            }
         }
+    }
+
+    @Override
+    public void handleNotification(PayaraNotification event) {
+        if (connection == null) {
+            LOGGER.log(Level.SEVERE, "Invalid connection");
+            return;
+        }
+
+        try (Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
+            Queue jmsQueue = session.createQueue(configuration.getQueueName());
+            MessageProducer producer = session.createProducer(jmsQueue);
+            TextMessage message = session.createTextMessage();
+            message.setText(getTextMessage(event));
+            producer.send(message);
+            LOGGER.log(Level.FINE, "Message successfully sent");
+        } catch (JMSException e) {
+            LOGGER.log(Level.SEVERE, "Error occurred while creating session", e);
+        }
+    }
+
+    private static String getTextMessage(PayaraNotification event) {
+        final String subject = event.getSubject();
+        final String message = event.getMessage();
+        String result = "";
+        if (subject != null) {
+            result += subject;
+        }
+        if (message != null) {
+            result += "\n" + message;
+        }
+        return result.trim();
     }
 }

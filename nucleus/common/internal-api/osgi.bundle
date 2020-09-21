@@ -37,10 +37,12 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright (c) 2019 Payara Foundation and/or its affiliates
+# Portions Copyright (c) [2019-2020] Payara Foundation and/or its affiliates
 
 -exportcontents: \
                         fish.payara.nucleus.hotdeploy; \
+                        fish.payara.internal.notification; \
+                        fish.payara.internal.notification.admin; \
                         org.glassfish.internal.api; \
                         org.glassfish.internal.data; \
                         org.glassfish.internal.config; \
