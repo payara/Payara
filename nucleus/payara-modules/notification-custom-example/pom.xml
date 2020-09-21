@@ -42,8 +42,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-        <artifactId>payara-appserver-modules</artifactId>
+        <groupId>fish.payara.server.internal.payara-modules</groupId>
+        <artifactId>payara-nucleus-modules</artifactId>
         <version>5.2020.5-SNAPSHOT</version>
     </parent>
 
@@ -57,10 +57,6 @@
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
         </dependency>
     </dependencies>
 </project>
