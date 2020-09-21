@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -37,13 +37,15 @@
  *    only if the new code is made subject to such option by the copyright
  *    holder.
  */
-package fish.payara.samples.jaxws.endpoint.servlet;
+package fish.payara.samples.jaxws.test.servlet;
 
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.SincePayara;
 import fish.payara.samples.Unstable;
-import fish.payara.samples.jaxws.endpoint.JAXWSEndpointTest;
+import fish.payara.samples.jaxws.endpoint.servlet.JAXWSEndPointImplementation;
+import fish.payara.samples.jaxws.endpoint.servlet.JAXWSEndPointInterface;
+import fish.payara.samples.jaxws.test.JAXWSEndpointTest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -67,21 +69,22 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 @RunWith(PayaraArquillianTestRunner.class)
-@NotMicroCompatible("JAX-WS is not supported on Micro")
 @FixMethodOrder(NAME_ASCENDING)
+@NotMicroCompatible("JAX-WS is not supported on Micro")
 @SincePayara("5.193")
 @Category(Unstable.class)
-// Due to bug in grizzly fails on JDK8u232 and newer
 public class ServletEndpointTest extends JAXWSEndpointTest {
 
     @Deployment
     public static WebArchive createDeployment() {
         return createBaseDeployment()
-                .addPackage(ServletEndpointTest.class.getPackage())
+                .addPackage(JAXWSEndPointImplementation.class.getPackage())
+                .addClass(ServletEndpointTest.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
     }
 
     private Service jaxwsEndPointService;
+
 
     @Before
     public void setupClass() throws MalformedURLException {
@@ -101,10 +104,9 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
                 .sayHi("Payara!"));
     }
 
-    @Test
     // Runs on Server
+    @Test
     public void test2ServerCheck() throws MalformedURLException {
-        assertTrue(isTraceMonitorTriggered());
+        assertTrue("TraceMonitor wasn't triggered!", isTraceMonitorTriggered());
     }
-
 }

@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -37,14 +37,15 @@
  *    only if the new code is made subject to such option by the copyright
  *    holder.
  */
-package fish.payara.samples.jaxws.endpoint.ejb;
+package fish.payara.samples.jaxws.test.ejb;
 
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.SincePayara;
 import fish.payara.samples.Unstable;
-import fish.payara.samples.jaxws.endpoint.JAXWSEndpointTest;
-
+import fish.payara.samples.jaxws.endpoint.ejb.JAXWSEndPointImplementation;
+import fish.payara.samples.jaxws.endpoint.ejb.JAXWSEndPointInterface;
+import fish.payara.samples.jaxws.test.JAXWSEndpointTest;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -59,27 +60,28 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 /**
  * @author Arjan Tijms
  */
 @RunWith(PayaraArquillianTestRunner.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @NotMicroCompatible("JAX-WS is not supported on Micro")
-@FixMethodOrder(NAME_ASCENDING)
 @SincePayara("5.193")
 @Category(Unstable.class)
-// fails from unknown reasons
 public class EJBEndpointTest extends JAXWSEndpointTest {
 
     private Service jaxwsEndPointService;
 
     @Deployment
     public static WebArchive createDeployment() {
-        return createBaseDeployment().addPackage(EJBEndpointTest.class.getPackage());
+        return createBaseDeployment()
+            .addPackage(JAXWSEndPointImplementation.class.getPackage())
+            .addClasses(EJBEndpointTest.class);
     }
 
     @Before
@@ -95,16 +97,16 @@ public class EJBEndpointTest extends JAXWSEndpointTest {
 
     @Test
     @RunAsClient
-    public void test1RequestFromClient() throws MalformedURLException {
+    public void test1RequestFromClient() throws Exception {
         assertEquals("Hi Payara!", jaxwsEndPointService
                 .getPort(JAXWSEndPointInterface.class)
                 .sayHi("Payara!"));
     }
 
-    @Test
     // Runs on Server
-    public void test2ServerCheck() throws MalformedURLException {
-        assertTrue(isTraceMonitorTriggered());
+    @Test
+    public void test2ServerCheck() throws Exception {
+        assertTrue("TraceMonitor wasn't triggered!", isTraceMonitorTriggered());
     }
 
 }
