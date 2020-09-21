@@ -59,6 +59,7 @@ import com.hazelcast.kubernetes.KubernetesProperties;
 import com.hazelcast.map.IMap;
 import com.hazelcast.nio.serialization.Serializer;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import static com.hazelcast.spi.properties.ClusterProperty.WAIT_SECONDS_BEFORE_JOIN;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
 import org.glassfish.api.StartupRunLevel;
@@ -211,7 +212,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         bootstrapHazelcast();
         if (!enabled) {
             return UUID.randomUUID();
-        }        
+        }
         return theInstance.getCluster().getLocalMember().getUuid();
     }
 
@@ -341,6 +342,12 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 }
             } else { // there is no config override
                 config.setClassLoader(clh.getCommonClassLoader());
+//                config.setProperty(MAX_NO_HEARTBEAT_SECONDS.getName(), "5");
+//                config.setProperty(HEARTBEAT_INTERVAL_SECONDS.getName(), "1");
+//                config.setProperty(MERGE_FIRST_RUN_DELAY_SECONDS.getName(), "5");
+//                config.setProperty(MERGE_NEXT_RUN_DELAY_SECONDS.getName(), "5");
+                config.setProperty(WAIT_SECONDS_BEFORE_JOIN.getName(), "0");
+
                 if(ctxUtil != null) {
                     SerializationConfig serializationConfig = new SerializationConfig();
                     setPayaraSerializerConfig(serializationConfig);
@@ -450,7 +457,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
         } else {
             //build the domain discovery config
             config.setProperty("hazelcast.discovery.enabled", "true");
-            config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(new DomainDiscoveryServiceProvider());
+            config.getNetworkConfig().getJoin().getDiscoveryConfig().setDiscoveryServiceProvider(DomainDiscoveryService::new);
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
         }
 
