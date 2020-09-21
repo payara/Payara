@@ -73,7 +73,7 @@ holder.
             <!command 
                 createMap(result="#{pageSession.attrsMap}");
                 mapPut(map="#{pageSession.attrsMap}" key="notifiers" value="eventbus-notifier");
-                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-notifier-configuration?target=#{pageSession.configName}" method="GET" 
+                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-notifier-configuration" method="GET" 
                     attrs="#{pageSession.attrsMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
                     prepareAlertMsg(summary="$resource{i18nebn.notifier.eventbus.msg.success}", type="success");

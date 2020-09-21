@@ -73,7 +73,7 @@ holder.
             <!command
                 createMap(result="#{pageSession.attrsMap}");
                 mapPut(map="#{pageSession.attrsMap}" key="notifiers" value="jms-notifier");
-                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-jms-notifier-configuration?target=#{pageSession.configName}" method="GET" 
+                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-jms-notifier-configuration" method="GET" 
                     attrs="#{pageSession.attrsMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
                     prepareAlertMsg(summary="$resource{i18njn.notifier.jms.msg.success}", type="success");
