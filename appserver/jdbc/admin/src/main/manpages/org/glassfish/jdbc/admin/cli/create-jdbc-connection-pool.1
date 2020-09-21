@@ -35,6 +35,7 @@ SYNOPSIS
            [--associatewiththread={false|true}]
            [--driverclassname=jdbcdriverclassname]
            [--matchconnections={false|true}]
+           [--logjdbccalls={false|true}]
            [--maxconnectionusagecount=maxconnectionusagecount]
            [--ping={false|true}]
            [--pooling={false|true}]
@@ -343,6 +344,17 @@ OPTIONS
            true
                A connection should be matched by the resource adaptor.
 
+       --logjdbccalls
+           Specifies whether all SQL calls made through a JDBC connection pool
+           are traced.
+
+           false
+               JDBC calls are not all logged (default)
+
+           true
+               Each call into the connection pool is timed and logged
+               to the server log at FINE level.
+
        --maxconnectionusagecount
            Specifies the maximum number of times that a connection can be
            reused. When this limit is reached, the connection is closed. By
@@ -540,4 +552,4 @@ SEE ALSO
 
        asadmin(1M)
 
-Java EE 8               18 Dec 2019         create-jdbc-connection-pool(1)
+Jakarta EE 8               16 Sep 2020         create-jdbc-connection-pool(1)

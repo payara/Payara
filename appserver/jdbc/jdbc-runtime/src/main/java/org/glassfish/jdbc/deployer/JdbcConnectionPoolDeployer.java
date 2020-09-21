@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
 
 package org.glassfish.jdbc.deployer;
 
@@ -298,7 +298,7 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
             JdbcConnectionPool adminPool,
             ConnectorConnectionPool conConnPool, ConnectorDescriptor connDesc) {
 
-        ArrayList propList = new ArrayList();
+        ArrayList<ConnectorConfigProperty> propList = new ArrayList<>();
 
         if (adminPool.getResType() != null) {
             if (ConnectorConstants.JAVA_SQL_DRIVER.equals(adminPool.getResType())) {
