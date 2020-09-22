@@ -372,6 +372,19 @@
 
     <profiles>
         <profile>
+            <id>deployinternals</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>jdk8</id>
             <activation>
                 <jdk>[1.8,)</jdk>
