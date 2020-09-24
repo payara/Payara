@@ -1,7 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,63 +35,60 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.email;
+package fish.payara.extras.notifiers.email;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import java.util.Map;
-import java.util.HashMap;
-import org.glassfish.api.admin.*;
+import java.beans.PropertyVetoException;
+
+import javax.validation.constraints.Pattern;
+
+import com.sun.enterprise.util.StringUtils;
+
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
+
 /**
  * @author mertcaliskan
  */
-@Service(name = "get-email-notifier-configuration")
+@Service(name = "set-email-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "get-email-notifier-configuration",
-                description = "Lists Email Notifier Configuration")
+                opType = RestEndpoint.OpType.POST,
+                path = "set-email-notifier-configuration",
+                description = "Configures Email Notification Service")
 })
-public class GetEmailNotifierConfiguration extends BaseGetNotifierConfiguration<EmailNotifierConfiguration> {
+public class SetEmailNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<EmailNotifierConfiguration> {
+
+    @Param(name = "jndiName")
+    private String jndiName;
+
+    @Param(name = "recipient")
+    @Pattern(regexp = "\\S+@\\S+")
+    private String recipient;
 
     @Override
-    protected String listConfiguration(EmailNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Noisy", "JNDI Name", "To"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[4];
-
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getNoisy();
-        values[2] = configuration.getJndiName();
-        values[3] = configuration.getTo();
-
-        columnFormatter.addRow(values);
-        return columnFormatter.toString();
-    }
-
-    @Override
-    protected Map<String, Object> getNotifierConfiguration(EmailNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(4);
-
-        if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
-            map.put("jndiName", configuration.getJndiName());
-            map.put("to", configuration.getTo());
-        } else {
-            map.put("noisy", Boolean.TRUE.toString());
+    protected void applyValues(EmailNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
+        if (StringUtils.ok(jndiName)) {
+            configuration.setJndiName(jndiName);
         }
-
-        return map;
+        if (StringUtils.ok(recipient)) {
+            configuration.setRecipient(recipient);
+        }
     }
+
 }

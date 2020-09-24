@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,39 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.email;
+package fish.payara.extras.notifiers.email;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
+import java.util.Map;
+
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
-import java.io.UnsupportedEncodingException;
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class EmailNotifierConfigurationExecutionOptionsFactory
-        extends NotifierConfigurationExecutionOptionsFactory<EmailNotifierConfiguration, EmailNotifierConfigurationExecutionOptions> {
-
-    @PostConstruct
-    void postConstruct() {
-        registerExecutionOptions(NotifierType.EMAIL, this);
-    }
+@Service(name = "get-email-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "get-email-notifier-configuration",
+                description = "Lists Email Notifier Configuration")
+})
+public class GetEmailNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<EmailNotifierConfiguration> {
 
     @Override
-    public EmailNotifierConfigurationExecutionOptions build(EmailNotifierConfiguration notifierConfiguration) throws UnsupportedEncodingException {
-        EmailNotifierConfigurationExecutionOptions executionOptions = new EmailNotifierConfigurationExecutionOptions();
+    protected Map<String, Object> getNotifierConfiguration(EmailNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
-        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
-        executionOptions.setJndiName(notifierConfiguration.getJndiName());
-        executionOptions.setTo(notifierConfiguration.getTo());
-        executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
+        if (configuration != null) {
+            map.put("JNDI Name", configuration.getJndiName());
+            map.put("Recipient", configuration.getRecipient());
+        }
 
-        return executionOptions;
+        return map;
     }
 }
