@@ -108,16 +108,23 @@ public final class NotifierUtils {
         String result = "";
         // Make sure the string has no leading or trailing whitespace or symbols
         string = string.trim()
-            .replaceAll("^[^a-zA-Z0-9]", "")
-            .replaceAll("[^a-zA-Z0-9]$", "");
+            .replaceAll("^[^a-zA-Z0-9]+", "")
+            .replaceAll("[^a-zA-Z0-9]+$", "");
+
+        // Track if a space or other character that requires an upper case character is encountered
+        boolean upperCaseNextCharacter = false;
 
         // Count through each other character
         for (int i = 0; i < string.length(); i++) {
             char ch = string.charAt(i);
 
-            // If a space is found, ignore and convert the next letter to 
+            // If a space is found, ignore and convert the next letter to upper case
             if (Character.isWhitespace(ch) || (!Character.isAlphabetic(ch) && !Character.isDigit(ch))) {
-                result += Character.toUpperCase(string.charAt(++i));
+                upperCaseNextCharacter = true;
+                continue;
+            } else if (upperCaseNextCharacter) {
+                upperCaseNextCharacter = false;
+                result += Character.toUpperCase(ch);
             } else {
                 result += Character.toLowerCase(ch);
             }

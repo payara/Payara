@@ -70,37 +70,29 @@ public class CamelCaseConversionTest {
     }
 
     @Test
-    public void if_leading_symbols_expect_removed() {
-        assertEquals("abc", convertToCamelCase("_abc"));
-        assertEquals("abc", convertToCamelCase("&abc"));
-        assertEquals("abc", convertToCamelCase("-abc"));
-    }
-
-    @Test
-    public void if_trailing_symbols_expect_removed() {
-        assertEquals("abc", convertToCamelCase("abc_"));
-        assertEquals("abc", convertToCamelCase("abc&"));
-        assertEquals("abc", convertToCamelCase("abc-"));
-    }
-
-    @Test
-    public void if_internal_symbols_expect_next_character_capitalised() {
-        assertEquals("aBc", convertToCamelCase("a_bc"));
-        assertEquals("aBc", convertToCamelCase("a-bc"));
-    }
-
-    @Test
-    public void if_surrounding_whitespace_expect_removed() {
-        assertEquals("abc", convertToCamelCase("abc "));
-        assertEquals("abc", convertToCamelCase("abc  "));
+    public void if_leading_non_alphanumeric_characters_expect_removed() {
         assertEquals("abc", convertToCamelCase(" abc"));
         assertEquals("abc", convertToCamelCase("  abc"));
+        assertEquals("abc", convertToCamelCase("-abc"));
+        assertEquals("abc", convertToCamelCase("_-abc"));
+        assertEquals("abc", convertToCamelCase(" -abc"));
     }
 
     @Test
-    public void if_internal_whitespace_expect_next_character_capitalised() {
+    public void if_trailing_non_alphanumeric_characters_expect_removed() {
+        assertEquals("abc", convertToCamelCase("abc "));
+        assertEquals("abc", convertToCamelCase("abc  "));
+        assertEquals("abc", convertToCamelCase("abc-"));
+        assertEquals("abc", convertToCamelCase("abc-_"));
+        assertEquals("abc", convertToCamelCase("abc- "));
+    }
+
+    @Test
+    public void if_internal_non_alphanumeric_characters_expect_next_character_capitalised() {
+        assertEquals("aBc", convertToCamelCase("a_bc"));
+        assertEquals("aBc", convertToCamelCase("a-_bc"));
         assertEquals("aBc", convertToCamelCase("a bc"));
-        assertEquals("abC", convertToCamelCase("ab c"));
+        assertEquals("aBc", convertToCamelCase("a  bc"));
     }
 
 }
