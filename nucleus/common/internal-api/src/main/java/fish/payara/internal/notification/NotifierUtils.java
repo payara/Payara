@@ -101,15 +101,20 @@ public final class NotifierUtils {
      * @return a camel cased string representing the result
      */
     public static String convertToCamelCase(String string) {
-        if (string == null || string.isEmpty()) {
-            return string;
+        if (string == null) {
+            return null;
         }
 
-        String result = "";
         // Make sure the string has no leading or trailing whitespace or symbols
         string = string.trim()
             .replaceAll("^[^a-zA-Z0-9]+", "")
             .replaceAll("[^a-zA-Z0-9]+$", "");
+
+        if (string.isEmpty()) {
+            return string;
+        }
+
+        String result = "";
 
         // Track if a space or other character that requires an upper case character is encountered
         boolean upperCaseNextCharacter = false;
