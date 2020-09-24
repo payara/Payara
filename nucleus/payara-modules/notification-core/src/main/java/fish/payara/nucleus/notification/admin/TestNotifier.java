@@ -81,7 +81,9 @@ import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 })
 public class TestNotifier implements AdminCommand {
     
-    private static final String MESSAGE = "Test Notification";
+    private static final String EVENT_TYPE = "TEST";
+    private static final String SUBJECT = "Test Notification";
+    private static final String MESSAGE = "This is a test notification";
     
     @Param(name = "all", shortName = "a", optional = true)
     private Boolean all;
@@ -101,6 +103,8 @@ public class TestNotifier implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         PayaraNotificationBuilder builder = factory.newBuilder()
+                .eventType(EVENT_TYPE)
+                .subject(SUBJECT)
                 .message(MESSAGE);
 
         if (all == null || !all) {

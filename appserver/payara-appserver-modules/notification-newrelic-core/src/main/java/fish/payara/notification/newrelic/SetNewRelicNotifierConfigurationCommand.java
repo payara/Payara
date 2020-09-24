@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,42 +37,55 @@
  */
 package fish.payara.notification.newrelic;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
+import java.beans.PropertyVetoException;
+
+import com.sun.enterprise.util.StringUtils;
+
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-public class NewRelicNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
+@Service(name = "set-newrelic-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "set-newrelic-notifier-configuration",
+                description = "Configures New Relic Notification Service")
+})
+public class SetNewRelicNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<NewRelicNotifierConfiguration> {
 
+    @Param(name = "key")
     private String key;
+
+    @Param(name = "accountId", alias = "accountid")
     private String accountId;
 
-    NewRelicNotifierConfigurationExecutionOptions() {
-        super(NotifierType.NEWRELIC);
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
     @Override
-    public String toString() {
-        return "NewRelicNotifierConfigurationExecutionOptions{" +
-                "key='" + key + '\'' +
-                ", accountId='" + accountId + '\'' +
-                "} " + super.toString();
+    protected void applyValues(NewRelicNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
+        if (StringUtils.ok(key)) {
+            configuration.setKey(key);
+        }
+        if (StringUtils.ok(accountId)) {
+            configuration.setAccountId(accountId);
+        }
     }
+
 }
