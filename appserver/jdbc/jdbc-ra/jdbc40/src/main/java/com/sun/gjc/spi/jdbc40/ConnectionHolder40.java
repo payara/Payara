@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2016-2017] [Payara Foundation]
+ * Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
  */
 
 package com.sun.gjc.spi.jdbc40;
@@ -90,6 +90,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @param con           Connection that is wrapped
      * @param mc            ManagedConnection
      * @param cxRequestInfo Connection Request Information
+     * @param jdbc30Connection If the connection is a JDBC version 3.0 connection
      */
     public ConnectionHolder40(Connection con, ManagedConnectionImpl mc,
                               javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
@@ -131,6 +132,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               this data type
      * @since 1.6
      */
+    @Override
     public Clob createClob() throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -152,6 +154,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               this data type
      * @since 1.6
      */
+    @Override
     public Blob createBlob() throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -173,6 +176,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               this data type
      * @since 1.6
      */
+    @Override
     public NClob createNClob() throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -194,6 +198,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               this data type
      * @since 1.6
      */
+    @Override
     public SQLXML createSQLXML() throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -205,24 +210,23 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * The driver shall submit a query on the connection or use some other
      * mechanism that positively verifies the connection is still valid when
      * this method is called.
-     * <p/>
+     * <p>
      * The query submitted by the driver to validate the connection shall be
      * executed in the context of the current transaction.
-     *
-     * @param timeout -		The time in seconds to wait for the database operation
+     * </p>
+     * @param timeout The time in seconds to wait for the database operation
      *                used to validate the connection to complete.  If
      *                the timeout period expires before the operation
      *                completes, this method returns false.  A value of
      *                0 indicates a timeout is not applied to the
      *                database operation.
-     *                <p/>
      * @return true if the connection is valid, false otherwise
      * @throws java.sql.SQLException if the value supplied for <code>timeout</code>
      *                               is less then 0
      * @see java.sql.DatabaseMetaData#getClientInfoProperties
      * @since 1.6
-     *        <p/>
      */
+    @Override
     public boolean isValid(int timeout) throws SQLException {
         checkValidity();
         return con.isValid(timeout);
@@ -231,11 +235,11 @@ public class ConnectionHolder40 extends ConnectionHolder {
     /**
      * Sets the value of the client info property specified by name to the
      * value specified by value.
-     * <p/>
+     * <p>
      * Applications may use the <code>DatabaseMetaData.getClientInfoProperties</code>
      * method to determine the client info properties supported by the driver
      * and the maximum length that may be specified for each property.
-     * <p/>
+     * </p>
      * The driver stores the value specified in a suitable location in the
      * database.  For example in a special register, session parameter, or
      * system table column.  For efficiency the driver may defer setting the
@@ -244,21 +248,21 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * place in the database, these methods shall not alter the behavior of
      * the connection in anyway.  The values supplied to these methods are
      * used for accounting, diagnostics and debugging purposes only.
-     * <p/>
+     * <p>
      * The driver shall generate a warning if the client info name specified
      * is not recognized by the driver.
-     * <p/>
+     * </p>
      * If the value specified to this method is greater than the maximum
      * length for the property the driver may either truncate the value and
      * generate a warning or generate a <code>SQLClientInfoException</code>.  If the driver
      * generates a <code>SQLClientInfoException</code>, the value specified was not set on the
      * connection.
-     * <p/>
+     * <p>
      * The following are standard client info properties.  Drivers are not
      * required to support these properties however if the driver supports a
      * client info property that can be described by one of the standard
      * properties, the standard property name should be used.
-     * <p/>
+     * </p>
      * <ul>
      * <li>ApplicationName	-	The name of the application currently utilizing
      * the connection</li>
@@ -269,20 +273,18 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * <li>ClientHostname	-	The hostname of the computer the application
      * using the connection is running on.</li>
      * </ul>
-     * <p/>
      *
      * @param name  The name of the client info property to set
      * @param value The value to set the client info property to.  If the
      *              value is null, the current value of the specified
      *              property is cleared.
-     *              <p/>
      * @throws java.sql.SQLClientInfoException
      *          if the database server returns an error while
      *          setting the client info value on the database server or this method
      *          is called on a closed connection
-     *          <p/>
      * @since 1.6
      */
+    @Override
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
         try {
             checkValidity();
@@ -304,7 +306,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * cleared.  Specifying an empty properties list will clear all of the
      * properties on the connection.  See <code>setClientInfo (String, String)</code> for
      * more information.
-     * <p/>
+     * <p>
      * If an error occurs in setting any of the client info properties, a
      * <code>SQLClientInfoException</code> is thrown. The <code>SQLClientInfoException</code>
      * contains information indicating which client info properties were not set.
@@ -312,19 +314,17 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * some databases do not allow multiple client info properties to be set
      * atomically.  For those databases, one or more properties may have been
      * set before the error occurred.
-     * <p/>
+     * </p>
      *
      * @param properties the list of client info properties to set
-     *                   <p/>
      * @throws java.sql.SQLClientInfoException
      *          if the database server returns an error while
      *          setting the clientInfo values on the database server or this method
      *          is called on a closed connection
-     *          <p/>
      * @see java.sql.Connection#setClientInfo(String,String) setClientInfo(String, String)
      * @since 1.6
-     *        <p/>
      */
+    @Override
     public void setClientInfo(Properties properties) throws SQLClientInfoException {
         try {
             checkValidity();
@@ -353,23 +353,20 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * been set and does not have a default value.  This method will also
      * return null if the specified client info property name is not supported
      * by the driver.
-     * <p/>
+     * <p>
      * Applications may use the <code>DatabaseMetaData.getClientInfoProperties</code>
      * method to determine the client info properties supported by the driver.
-     * <p/>
+     * </p>
      *
      * @param name The name of the client info property to retrieve
-     *             <p/>
      * @return The value of the client info property specified
-     *         <p/>
      * @throws java.sql.SQLException if the database server returns an error when
      *                               fetching the client info value from the database
      *                               or this method is called on a closed connection
-     *                               <p/>
      * @see java.sql.DatabaseMetaData#getClientInfoProperties
      * @since 1.6
-     *        <p/>
      */
+    @Override
     public String getClientInfo(String name) throws SQLException {
         checkValidity();
         return con.getClientInfo(name);
@@ -380,17 +377,14 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * property supported by the driver.  The value of a client info property
      * may be null if the property has not been set and does not have a
      * default value.
-     * <p/>
-     *
      * @return A <code>Properties</code> object that contains the name and current value of
      *         each of the client info properties supported by the driver.
-     *         <p/>
      * @throws java.sql.SQLException if the database server returns an error when
      *                               fetching the client info values from the database
      *                               or this method is called on a closed connection
-     *                               <p/>
      * @since 1.6
      */
+    @Override
     public Properties getClientInfo() throws SQLException {
         checkValidity();
         return con.getClientInfo();
@@ -450,6 +444,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               if the JDBC driver does not support this data type
      * @since 1.6
      */
+    @Override
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -470,6 +465,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               if the JDBC driver does not support this data type
      * @since 1.6
      */
+    @Override
     public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -567,6 +563,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *                               for an object with the given interface.
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         checkValidity();
         boolean result;
@@ -584,6 +581,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      *
      * @throws SQLException In case of a database error.
      */
+    @Override
     public void close() throws SQLException {
         if (isClosed) {
             if (_logger.isLoggable(Level.FINE)) {
@@ -608,6 +606,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         super.close();
     }
 
+    @Override
     public void setSchema(String schema) throws SQLException {
         if(DataSourceObjectBuilder.isJDBC41()) {
             checkValidity();
@@ -623,6 +622,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public String getSchema() throws SQLException {
         if(DataSourceObjectBuilder.isJDBC41()) {
             checkValidity();
@@ -636,6 +636,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public void setNetworkTimeout(Executor executorObj, int milliseconds)
             throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
@@ -652,6 +653,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public int getNetworkTimeout() throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             checkValidity();
@@ -675,6 +677,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @param executor
      * @throws SQLException
      */
+    @Override
     public void abort(Executor executor) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             getManagedConnection().markForRemoval(true);
