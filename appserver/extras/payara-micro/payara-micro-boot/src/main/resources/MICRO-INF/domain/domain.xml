@@ -102,7 +102,7 @@ Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
             </log-service>
             <monitoring-service-configuration amx="false" enabled="false" log-frequency="30">
                 <notifier>log-notifier</notifier>
-                <eventbus-notifier></eventbus-notifier>
+                <notifier>eventbus-notifier</notifier>
             </monitoring-service-configuration>
             <microprofile-metrics-configuration></microprofile-metrics-configuration>
             <security-service activate-default-principal-to-role-mapping="true" jacc="simple">
