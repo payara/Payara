@@ -131,7 +131,7 @@
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
         <servlet-api.version>4.0.2</servlet-api.version>
-        <grizzly.version>2.4.4.payara-p2</grizzly.version>
+        <grizzly.version>2.4.4.payara-p4</grizzly.version>
         <jax-rs-api.impl.version>2.1.6</jax-rs-api.impl.version>
         <jersey.version>2.30.payara-p2</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
@@ -159,7 +159,7 @@
         <jstl-impl.version>1.2.5</jstl-impl.version>
         <jakarta.faces-api.version>2.3.2</jakarta.faces-api.version>
         <mojarra.version>2.3.14.payara-p2</mojarra.version>
-        <tyrus.version>1.15</tyrus.version>
+        <tyrus.version>1.17</tyrus.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>1.0.2</json.bind-api.version>
         <yasson.version>1.0.6</yasson.version>
