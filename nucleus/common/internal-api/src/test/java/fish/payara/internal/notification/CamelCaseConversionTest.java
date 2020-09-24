@@ -53,6 +53,11 @@ public class CamelCaseConversionTest {
     }
 
     @Test
+    public void if_non_alphanumeric_string_expect_empty() {
+        assertEquals("", convertToCamelCase("!\"£$%|^&*():;[]{}'@#~/?\\|"));
+    }
+
+    @Test
     public void if_lower_case_expect_same() {
         assertEquals("accountid", convertToCamelCase("accountid"));
     }
