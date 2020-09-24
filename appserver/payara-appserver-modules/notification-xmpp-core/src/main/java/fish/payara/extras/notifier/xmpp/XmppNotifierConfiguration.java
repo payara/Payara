@@ -36,7 +36,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.xmpp;
+package fish.payara.extras.notifier.xmpp;
 
 import java.beans.PropertyVetoException;
 

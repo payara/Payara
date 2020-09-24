@@ -1,7 +1,6 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,11 +36,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.xmpp;
+package fish.payara.extras.notifier.xmpp;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.beans.PropertyVetoException;
 
+import com.sun.enterprise.util.StringUtils;
+
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
@@ -52,39 +53,70 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
 import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "get-xmpp-notifier-configuration")
+@Service(name = "set-xmpp-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "get-xmpp-notifier-configuration",
-                description = "Lists XMPP Notifier Configuration")
+                opType = RestEndpoint.OpType.POST,
+                path = "set-xmpp-notifier-configuration",
+                description = "Configures XMPP Notification Service")
 })
-public class GetXmppNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<XmppNotifierConfiguration> {
+public class SetXmppNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<XmppNotifierConfiguration> {
+
+    @Param(name = "hostName")
+    private String hostName;
+
+    @Param(name = "port", defaultValue = "5222", optional = true)
+    private Integer port;
+
+    @Param(name = "serviceName")
+    private String serviceName;
+
+    @Param(name = "username", optional = true)
+    private String username;
+
+    @Param(name = "password", optional = true)
+    private String password;
+
+    @Param(name = "securityDisabled", defaultValue = "false", optional = true)
+    private Boolean securityDisabled;
+
+    @Param(name = "roomId")
+    private String roomId;
 
     @Override
-    protected Map<String, Object> getNotifierConfiguration(XmppNotifierConfiguration configuration) {
-        Map<String, Object> map = super.getNotifierConfiguration(configuration);
+    protected void applyValues(XmppNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
 
-        if (configuration != null) {
-            map.put("Host Name", configuration.getHost());
-            map.put("Port", configuration.getPort());
-            map.put("Service Name", configuration.getServiceName());
-            map.put("Username", configuration.getUsername());
-            map.put("Password", configuration.getPassword());
-            map.put("Security Disabled", configuration.getSecurityDisabled());
-            map.put("Room ID", configuration.getRoomId());
+        if (StringUtils.ok(hostName)) {
+            configuration.host(hostName);
         }
-
-        return map;
+        if (port != null) {
+            configuration.port(String.valueOf(port));
+        }
+        if (StringUtils.ok(serviceName)) {
+            configuration.serviceName(serviceName);
+        }
+        if (StringUtils.ok(username)) {
+            configuration.username(username);
+        }
+        if (StringUtils.ok(password)) {
+            configuration.password(password);
+        }
+        if (securityDisabled != null) {
+            configuration.securityDisabled(String.valueOf(securityDisabled));
+        }
+        if (StringUtils.ok(roomId)) {
+            configuration.roomId(roomId);
+        }
     }
 }
