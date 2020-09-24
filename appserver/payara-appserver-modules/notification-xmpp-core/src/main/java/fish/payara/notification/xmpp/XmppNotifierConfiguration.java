@@ -38,13 +38,12 @@
  */
 package fish.payara.notification.xmpp;
 
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
+import java.beans.PropertyVetoException;
+
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
-import java.beans.PropertyVetoException;
+import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
  * Configuration class with the aim to configure XMPP notification specific parameters.
@@ -53,8 +52,7 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
-@NotifierConfigurationType(type = NotifierType.XMPP)
-public interface XmppNotifierConfiguration extends NotifierConfiguration {
+public interface XmppNotifierConfiguration extends PayaraNotifierConfiguration {
 
     @Attribute(required = true)
     String getHost();
@@ -82,4 +80,6 @@ public interface XmppNotifierConfiguration extends NotifierConfiguration {
 
     @Attribute(required = true)
     String getRoomId();
-    void roomId(String roomId) throws PropertyVetoException;}
+    void roomId(String roomId) throws PropertyVetoException;
+
+}

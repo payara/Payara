@@ -39,16 +39,21 @@
  */
 package fish.payara.notification.xmpp;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import java.util.HashMap;
 import java.util.Map;
-import org.glassfish.api.admin.*;
+
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
@@ -64,44 +69,20 @@ import org.jvnet.hk2.annotations.Service;
                 path = "get-xmpp-notifier-configuration",
                 description = "Lists XMPP Notifier Configuration")
 })
-public class GetXmppNotifierConfiguration extends BaseGetNotifierConfiguration<XmppNotifierConfiguration> {
-
-    @Override
-    protected String listConfiguration(XmppNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Noisy", "Host", "Port", "Service Name", "Username", "Password", "Security Disabled", "Room ID"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[9];
-
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getNoisy();
-        values[2] = configuration.getHost();
-        values[3] = configuration.getPort();
-        values[4] = configuration.getServiceName();
-        values[5] = configuration.getUsername();
-        values[6] = configuration.getPassword();
-        values[7] = configuration.getSecurityDisabled();
-        values[8] = configuration.getRoomId();
-
-        columnFormatter.addRow(values);
-        return columnFormatter.toString();
-    }
+public class GetXmppNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<XmppNotifierConfiguration> {
 
     @Override
     protected Map<String, Object> getNotifierConfiguration(XmppNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(9);
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
         if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
-            map.put("hostName", configuration.getHost());
-            map.put("port", configuration.getPort());
-            map.put("serviceName", configuration.getServiceName());
-            map.put("username", configuration.getUsername());
-            map.put("password", configuration.getPassword());
-            map.put("securityDisabled", configuration.getSecurityDisabled());
-            map.put("roomId", configuration.getRoomId());
-        } else {
-            map.put("noisy", Boolean.TRUE.toString());
+            map.put("Host Name", configuration.getHost());
+            map.put("Port", configuration.getPort());
+            map.put("Service Name", configuration.getServiceName());
+            map.put("Username", configuration.getUsername());
+            map.put("Password", configuration.getPassword());
+            map.put("Security Disabled", configuration.getSecurityDisabled());
+            map.put("Room ID", configuration.getRoomId());
         }
 
         return map;
