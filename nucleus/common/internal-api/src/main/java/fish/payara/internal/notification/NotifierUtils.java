@@ -42,7 +42,6 @@ package fish.payara.internal.notification;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -92,6 +91,7 @@ public final class NotifierUtils {
      * @param notifierClass the notifier of the class
      * @return the class used to configure the configured notifier
      */
+    @SuppressWarnings("unchecked")
     public static <C extends PayaraNotifierConfiguration> Class<C> getConfigurationClass(Class<?> notifierClass) {
         final ParameterizedType genericSuperclass = (ParameterizedType) notifierClass.getGenericSuperclass();
         return (Class<C>) genericSuperclass.getActualTypeArguments()[0];
@@ -106,15 +106,17 @@ public final class NotifierUtils {
         }
 
         String result = "";
-        // Make sure the string has no leading or trailing whitespace
-        string = string.trim();
+        // Make sure the string has no leading or trailing whitespace or symbols
+        string = string.trim()
+            .replaceAll("^[^a-zA-Z0-9]", "")
+            .replaceAll("[^a-zA-Z0-9]$", "");
 
         // Count through each other character
         for (int i = 0; i < string.length(); i++) {
             char ch = string.charAt(i);
 
             // If a space is found, ignore and convert the next letter to 
-            if (Character.isWhitespace(ch)) {
+            if (Character.isWhitespace(ch) || (!Character.isAlphabetic(ch) && !Character.isDigit(ch))) {
                 result += Character.toUpperCase(string.charAt(++i));
             } else {
                 result += Character.toLowerCase(ch);
