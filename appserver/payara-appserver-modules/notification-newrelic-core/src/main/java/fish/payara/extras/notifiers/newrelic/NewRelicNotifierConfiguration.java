@@ -35,57 +35,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.newrelic;
+package fish.payara.extras.notifiers.newrelic;
 
 import java.beans.PropertyVetoException;
 
-import com.sun.enterprise.util.StringUtils;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
 
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
-
-import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
-import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
+import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
+ * Configuration class with the aim to configure New Relic notification specific parameters.
+ * This configuration is only being used by notification services.
+ *
  * @author mertcaliskan
  */
-@Service(name = "set-newrelic-notifier-configuration")
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
-                path = "set-newrelic-notifier-configuration",
-                description = "Configures New Relic Notification Service")
-})
-public class SetNewRelicNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<NewRelicNotifierConfiguration> {
+@Configured
+public interface NewRelicNotifierConfiguration extends PayaraNotifierConfiguration {
 
-    @Param(name = "key")
-    private String key;
+    @Attribute(required = true)
+    String getKey();
+    void setKey(String value) throws PropertyVetoException;
 
-    @Param(name = "accountId", alias = "accountid")
-    private String accountId;
-
-    @Override
-    protected void applyValues(NewRelicNotifierConfiguration configuration) throws PropertyVetoException {
-        super.applyValues(configuration);
-        if (StringUtils.ok(key)) {
-            configuration.setKey(key);
-        }
-        if (StringUtils.ok(accountId)) {
-            configuration.setAccountId(accountId);
-        }
-    }
-
+    @Attribute(required = true)
+    String getAccountId();
+    void setAccountId(String value) throws PropertyVetoException;
 }

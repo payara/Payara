@@ -1,4 +1,4 @@
-package fish.payara.notification.newrelic;
+package fish.payara.extras.notifiers.newrelic;
 
 import java.io.IOException;
 
