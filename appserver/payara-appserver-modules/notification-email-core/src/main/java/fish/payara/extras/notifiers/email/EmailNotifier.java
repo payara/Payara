@@ -97,7 +97,7 @@ public class EmailNotifier extends PayaraConfiguredNotifier<EmailNotifierConfigu
             Transport.send(mime);
             LOGGER.log(Level.FINE, "Email successfully sent");
         } catch (IllegalArgumentException e) {
-            LOGGER.log(Level.SEVERE, "mail configuration properties are not provided carefully.", e);
+            LOGGER.log(Level.SEVERE, "Email configuration properties were not provided correctly.", e);
         } catch (AuthenticationFailedException e) {
             LOGGER.log(Level.SEVERE, "Username and Password not accepted.", e);
         } catch (SendFailedException e) {
