@@ -222,6 +222,7 @@
         <jvm-options>[1.8.0u191|1.8.0u250]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
         <jvm-options>[1.8.0u251|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
         <jvm-options>[Azul-1.8.0u222|1.8.0u260]-XX:+UseOpenJSSE</jvm-options>
+        <jvm-options>[9|]-Djava.class.path=${com.sun.aas.installRoot}/modules/glassfish.jar${path.separator}${com.sun.aas.installRoot}/modules/jakarta.jws-api.jar${path.separator}${com.sun.aas.installRoot}/modules/jakarta.xml.rpc-api.jar${path.separator}${com.sun.aas.installRoot}/modules/webservices-osgi.jar${path.separator}${com.sun.aas.installRoot}/modules/jaxb-osgi.jar${path.separator}${com.sun.aas.installRoot}/modules/jakarta.xml.ws-api.jar${path.separator}${com.sun.aas.installRoot}/modules/jakarta.activation-api.jar</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability />
@@ -435,6 +436,7 @@
         <jvm-options>[1.8.0u191|1.8.0u250]-Xbootclasspath/p:${com.sun.aas.installRoot}/lib/grizzly-npn-bootstrap-1.8.1.jar</jvm-options>
         <jvm-options>[1.8.0u251|]-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
         <jvm-options>[Azul-1.8.0u222|1.8.0u260]-XX:+UseOpenJSSE</jvm-options>
+        <jvm-options>[9|]-Djava.class.path=${com.sun.aas.installRoot}/modules/glassfish.jar${path.separator}${com.sun.aas.installRoot}/modules/jakarta.jws-api.jar${path.separator}${com.sun.aas.installRoot}/modules/jakarta.xml.rpc-api.jar${path.separator}${com.sun.aas.installRoot}/modules/webservices-osgi.jar${path.separator}${com.sun.aas.installRoot}/modules/jaxb-osgi.jar${path.separator}${com.sun.aas.installRoot}/modules/jakarta.xml.ws-api.jar${path.separator}${com.sun.aas.installRoot}/modules/jakarta.activation-api.jar</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability />
