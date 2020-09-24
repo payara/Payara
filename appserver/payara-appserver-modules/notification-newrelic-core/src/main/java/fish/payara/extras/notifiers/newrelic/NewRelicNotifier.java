@@ -70,9 +70,9 @@ import fish.payara.internal.notification.PayaraNotification;
  */
 @Service(name = "newrelic-notifier")
 @RunLevel(StartupRunLevel.VAL)
-public class NewRelicNotifierService extends PayaraConfiguredNotifier<NewRelicNotifierConfiguration> {
+public class NewRelicNotifier extends PayaraConfiguredNotifier<NewRelicNotifierConfiguration> {
 
-    private static final Logger LOGGER = Logger.getLogger(NewRelicNotifierService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(NewRelicNotifier.class.getName());
 
     private static final String HEADER_XINSERTKEY = "X-Insert-Key";
 
