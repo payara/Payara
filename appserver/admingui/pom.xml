@@ -141,8 +141,6 @@
         <module>payara-support</module>
         <module>slack-notifier-console-plugin</module>
         <module>slack-notifier-console-plugin-l10n</module>
-        <module>hipchat-notifier-console-plugin</module>
-        <module>hipchat-notifier-console-plugin-l10n</module>
         <module>eventbus-notifier-console-plugin</module>
         <module>eventbus-notifier-console-plugin-l10n</module>
         <module>cdieventbus-notifier-console-plugin</module>
