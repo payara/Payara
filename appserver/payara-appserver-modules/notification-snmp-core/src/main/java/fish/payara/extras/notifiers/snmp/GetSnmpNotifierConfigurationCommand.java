@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.snmp;
+package fish.payara.extras.notifiers.snmp;
 
 import java.util.Map;
 

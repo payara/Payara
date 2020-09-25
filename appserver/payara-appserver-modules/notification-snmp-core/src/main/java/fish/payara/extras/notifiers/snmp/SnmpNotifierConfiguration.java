@@ -1,6 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
  * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
@@ -37,16 +35,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.snmp.exception;
+package fish.payara.extras.notifiers.snmp;
+
+import java.beans.PropertyVetoException;
+
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+
+import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
+ * Configuration class with the aim to configure SNMP notification specific parameters.
+ * This configuration is only being used by notification services.
+ *
  * @author mertcaliskan
  */
-public class InvalidSnmpVersion extends Exception {
+@Configured
+public interface SnmpNotifierConfiguration extends PayaraNotifierConfiguration {
 
-    private static final long serialVersionUID = 1L;
+    @Attribute(defaultValue = "public")
+    String getCommunity();
+    void setCommunity(String value) throws PropertyVetoException;
 
-    public InvalidSnmpVersion(String version) {
-        super(version);
-    }
+    // SNMP Trap for sysLocation
+    @Attribute(defaultValue = ".1.3.6.1.2.1.1.8")
+    String getOid();
+    void setOid(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "v2c")
+    String getVersion();
+    void setVersion(String value) throws PropertyVetoException;
+
+    @Attribute(required = true)
+    String getHost();
+    void setHost(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "162", dataType = Integer.class)
+    String getPort();
+    void setPort(String value) throws PropertyVetoException;
 }

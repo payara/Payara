@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.snmp;
+package fish.payara.extras.notifiers.snmp;
 
 import java.io.IOException;
 import java.util.Date;
@@ -60,9 +60,9 @@ import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.snmp4j.util.DefaultPDUFactory;
 
+import fish.payara.extras.notifiers.snmp.exception.InvalidSnmpVersion;
 import fish.payara.internal.notification.PayaraConfiguredNotifier;
 import fish.payara.internal.notification.PayaraNotification;
-import fish.payara.notification.snmp.exception.InvalidSnmpVersion;
 
 /**
  * @author mertcaliskan
