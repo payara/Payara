@@ -147,8 +147,6 @@
         <module>eventbus-notifier-console-plugin-l10n</module>
         <module>cdieventbus-notifier-console-plugin</module>
         <module>cdieventbus-notifier-console-plugin-l10n</module>
-        <module>email-notifier-console-plugin</module>
-        <module>email-notifier-console-plugin-l10n</module>
         <module>snmp-notifier-console-plugin</module>
         <module>snmp-notifier-console-plugin-l10n</module>
         <module>xmpp-notifier-console-plugin</module>
