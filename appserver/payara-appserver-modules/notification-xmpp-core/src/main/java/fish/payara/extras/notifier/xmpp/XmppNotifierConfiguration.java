@@ -1,7 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,30 +35,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.xmpp;
+package fish.payara.extras.notifier.xmpp;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotificationEventFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
+import java.beans.PropertyVetoException;
 
-import javax.annotation.PostConstruct;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+
+import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
+ * Configuration class with the aim to configure XMPP notification specific parameters.
+ * This configuration is only being used by notification services.
+ *
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class XmppNotificationEventFactory extends NotificationEventFactory<XmppNotificationEvent> {
+@Configured
+public interface XmppNotifierConfiguration extends PayaraNotifierConfiguration {
 
-    @PostConstruct
-    void postConstruct() {
-        registerEventFactory(NotifierType.XMPP, this);
-    }
+    @Attribute(required = true)
+    String getHost();
+    void host(String host) throws PropertyVetoException;
 
-    @Override
-    protected XmppNotificationEvent createEventInstance() {
-        return new XmppNotificationEvent();
-    }
+    @Attribute(dataType = Integer.class, defaultValue = "5222")
+    String getPort();
+    void port(String port) throws PropertyVetoException;
+
+    @Attribute(required = true)
+    String getServiceName();
+    void serviceName(String serviceName) throws PropertyVetoException;
+
+    @Attribute()
+    String getUsername();
+    void username(String username) throws PropertyVetoException;
+
+    @Attribute()
+    String getPassword();
+    void password(String password) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "false")
+    String getSecurityDisabled();
+    void securityDisabled(String securityDisabled) throws PropertyVetoException;
+
+    @Attribute(required = true)
+    String getRoomId();
+    void roomId(String roomId) throws PropertyVetoException;
+
 }

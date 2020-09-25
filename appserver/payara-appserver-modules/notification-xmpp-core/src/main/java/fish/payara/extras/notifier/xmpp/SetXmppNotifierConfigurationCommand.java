@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,24 +35,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.xmpp;
+package fish.payara.extras.notifier.xmpp;
+
+import java.beans.PropertyVetoException;
 
 import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "notification-xmpp-configure")
+@Service(name = "set-xmpp-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -61,10 +66,10 @@ import java.beans.PropertyVetoException;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
-                path = "notification-xmpp-configure",
+                path = "set-xmpp-notifier-configuration",
                 description = "Configures XMPP Notification Service")
 })
-public class XmppNotificationConfigurer extends BaseNotificationConfigurer<XmppNotifierConfiguration, XmppNotifierService> {
+public class SetXmppNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<XmppNotifierConfiguration> {
 
     @Param(name = "hostName")
     private String hostName;
@@ -89,42 +94,28 @@ public class XmppNotificationConfigurer extends BaseNotificationConfigurer<XmppN
 
     @Override
     protected void applyValues(XmppNotifierConfiguration configuration) throws PropertyVetoException {
-        if(this.enabled != null) {
-            configuration.enabled(this.enabled);
-        }
-        if(this.noisy != null) {
-            configuration.noisy(this.noisy);
-        }
-        if(StringUtils.ok(hostName)) {
+        super.applyValues(configuration);
+
+        if (StringUtils.ok(hostName)) {
             configuration.host(hostName);
         }
-        if(port != null) {
+        if (port != null) {
             configuration.port(String.valueOf(port));
         }
-        if(StringUtils.ok(serviceName)) {
+        if (StringUtils.ok(serviceName)) {
             configuration.serviceName(serviceName);
         }
-        if(StringUtils.ok(username)) {
+        if (StringUtils.ok(username)) {
             configuration.username(username);
         }
-        if(StringUtils.ok(password)) {
+        if (StringUtils.ok(password)) {
             configuration.password(password);
         }
-        if(securityDisabled != null) {
+        if (securityDisabled != null) {
             configuration.securityDisabled(String.valueOf(securityDisabled));
         }
-        if(StringUtils.ok(roomId)) {
+        if (StringUtils.ok(roomId)) {
             configuration.roomId(roomId);
         }
-    }
-
-    @Override
-    protected String getHealthCheckNotifierCommandName() {
-        return "healthcheck-xmpp-notifier-configure";
-    }
-
-    @Override
-    protected String getRequestTracingNotifierCommandName() {
-        return "requesttracing-xmpp-notifier-configure";
     }
 }
