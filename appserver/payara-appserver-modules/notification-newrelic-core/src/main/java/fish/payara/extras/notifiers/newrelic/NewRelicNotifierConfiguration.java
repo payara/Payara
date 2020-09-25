@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,44 +35,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.newrelic;
+package fish.payara.extras.notifiers.newrelic;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
+import java.beans.PropertyVetoException;
+
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+
+import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
+ * Configuration class with the aim to configure New Relic notification specific parameters.
+ * This configuration is only being used by notification services.
+ *
  * @author mertcaliskan
  */
-public class NewRelicNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
+@Configured
+public interface NewRelicNotifierConfiguration extends PayaraNotifierConfiguration {
 
-    private String key;
-    private String accountId;
+    @Attribute(required = true)
+    String getKey();
+    void setKey(String value) throws PropertyVetoException;
 
-    NewRelicNotifierConfigurationExecutionOptions() {
-        super(NotifierType.NEWRELIC);
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
-    @Override
-    public String toString() {
-        return "NewRelicNotifierConfigurationExecutionOptions{" +
-                "key='" + key + '\'' +
-                ", accountId='" + accountId + '\'' +
-                "} " + super.toString();
-    }
+    @Attribute(required = true)
+    String getAccountId();
+    void setAccountId(String value) throws PropertyVetoException;
 }

@@ -1,7 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,63 +35,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.newrelic;
+package fish.payara.extras.notifiers.newrelic;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import java.util.HashMap;
-import java.util.Map;
-import org.glassfish.api.admin.*;
+import java.beans.PropertyVetoException;
+
+import com.sun.enterprise.util.StringUtils;
+
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
+
 /**
  * @author mertcaliskan
  */
-@Service(name = "get-newrelic-notifier-configuration")
+@Service(name = "set-newrelic-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "get-newrelic-notifier-configuration",
-                description = "Lists New Relic Notifier Configuration")
+                opType = RestEndpoint.OpType.POST,
+                path = "set-newrelic-notifier-configuration",
+                description = "Configures New Relic Notification Service")
 })
-public class GetNewRelicNotifierConfiguration extends BaseGetNotifierConfiguration<NewRelicNotifierConfiguration> {
+public class SetNewRelicNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<NewRelicNotifierConfiguration> {
+
+    @Param(name = "key")
+    private String key;
+
+    @Param(name = "accountId", alias = "accountid")
+    private String accountId;
 
     @Override
-    protected String listConfiguration(NewRelicNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Noisy", "Key", "Account Id"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[4];
-
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getNoisy();
-        values[2] = configuration.getKey();
-        values[3] = configuration.getAccountId();
-
-        columnFormatter.addRow(values);
-        return columnFormatter.toString();
+    protected void applyValues(NewRelicNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
+        if (StringUtils.ok(key)) {
+            configuration.setKey(key);
+        }
+        if (StringUtils.ok(accountId)) {
+            configuration.setAccountId(accountId);
+        }
     }
-    
-    @Override
-    protected Map<String, Object> getNotifierConfiguration(NewRelicNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(4);
 
-        if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
-            map.put("key", configuration.getKey());
-            map.put("accountId", configuration.getAccountId());
-        } else {
-            map.put("noisy", Boolean.TRUE.toString());
-       }
-
-        return map;
-    }
 }
