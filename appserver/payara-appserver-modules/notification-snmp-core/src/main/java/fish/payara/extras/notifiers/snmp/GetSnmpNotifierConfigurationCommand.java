@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,40 +37,51 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.snmp;
+package fish.payara.extras.notifiers.snmp;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
+import java.util.Map;
+
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class SnmpNotifierConfigurationExecutionOptionsFactory
-        extends NotifierConfigurationExecutionOptionsFactory<SnmpNotifierConfiguration, SnmpNotifierConfigurationExecutionOptions> {
-
-    @PostConstruct
-    void postConstruct() {
-        registerExecutionOptions(NotifierType.SNMP, this);
-    }
+@Service(name = "get-snmp-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "get-snmp-notifier-configuration",
+                description = "Lists SNMP Notifier Configuration")
+})
+public class GetSnmpNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<SnmpNotifierConfiguration> {
 
     @Override
-    public SnmpNotifierConfigurationExecutionOptions build(SnmpNotifierConfiguration notifierConfiguration) {
-        SnmpNotifierConfigurationExecutionOptions executionOptions = new SnmpNotifierConfigurationExecutionOptions();
-        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
-        executionOptions.setNoisy(Boolean.parseBoolean(notifierConfiguration.getNoisy()));
-        executionOptions.setCommunity(notifierConfiguration.getCommunity());
-        executionOptions.setOid(notifierConfiguration.getOid());
-        executionOptions.setVersion(notifierConfiguration.getVersion());
-        executionOptions.setHost(notifierConfiguration.getHost());
-        executionOptions.setPort(Integer.parseInt(notifierConfiguration.getPort()));
+    protected Map<String, Object> getNotifierConfiguration(SnmpNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
-        return executionOptions;
+        if (configuration != null) {
+            map.put("Community", configuration.getCommunity());
+            map.put("OID", configuration.getOid());
+            map.put("Version", configuration.getVersion());
+            map.put("Host Name", configuration.getHost());
+            map.put("Port", configuration.getPort());
+        }
+
+        return map;
     }
 }

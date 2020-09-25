@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,74 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.snmp;
-
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
+package fish.payara.extras.notifiers.snmp.exception;
 
 /**
  * @author mertcaliskan
  */
-public class SnmpNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
+public class InvalidSnmpVersion extends Exception {
 
-    private String community;
-    private String oid;
-    private String version;
-    private String host;
-    private Integer port;
+    private static final long serialVersionUID = 1L;
 
-    SnmpNotifierConfigurationExecutionOptions() {
-        super(NotifierType.SNMP);
-    }
-
-    public String getCommunity() {
-        return community;
-    }
-
-    public void setCommunity(String community) {
-        this.community = community;
-    }
-
-    public String getOid() {
-        return oid;
-    }
-
-    public void setOid(String oid) {
-        this.oid = oid;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setPort(Integer port) {
-        this.port = port;
-    }
-
-    @Override
-    public String toString() {
-        return "SnmpNotifierConfigurationExecutionOptions{" +
-                "COMMUNITY='" + community + '\'' +
-                ", oid='" + oid + '\'' +
-                ", version='" + version + '\'' +
-                ", host='" + host + '\'' +
-                ", PORT=" + port +
-                "} " + super.toString();
+    public InvalidSnmpVersion(String version) {
+        super(version);
     }
 }
