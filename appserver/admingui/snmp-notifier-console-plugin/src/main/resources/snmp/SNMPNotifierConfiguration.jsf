@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,7 @@ holder.
         if (#{pageSession.valueMap['noisy']}=true) {
 			setPageSessionAttribute(key="noisy", value="true");
 		}	
-        setPageSessionAttribute(key="dynamic", value="true");
+        setPageSessionAttribute(key="dynamicSelected", value="true");
     />
 </event>
 <sun:form id="propertyForm">
@@ -70,11 +70,9 @@ holder.
                helpText="$resource{i18nsnn.notifier.snmp.configuration.pageHelpText}" >
         <sun:button id = "test" text="$resource{i18nsnn.notifier.snmp.buttons.test}">
             <!command
-                mapCopy(source="#{pageSession.valueMap}" dest="#{pageSession.attrsMap}");
-                mapRemove(map="#{pageSession.attrsMap}" key="enabled");
-				mapRemove(map="#{pageSession.attrsMap}" key="noisy");
-                mapRemove(map="#{pageSession.attrsMap}" key="dynamic");
-                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-snmp-notifier-configuration?target=#{pageSession.configName}" method="GET" 
+                createMap(result="#{pageSession.attrsMap}");
+                mapPut(map="#{pageSession.attrsMap}" key="notifiers" value="snmp-notifier");
+                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-notifier-configuration" method="GET" 
                     attrs="#{pageSession.attrsMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
                     prepareAlertMsg(summary="$resource{i18nsnn.notifier.snmp.msg.success}", type="success");
@@ -88,9 +86,9 @@ holder.
                     <!command
                         mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
 						mapPut(map="#{pageSession.valueMap}" key="noisy" value="#{pageSession.noisy}");
-                        mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                        mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamicSelected}");
                 prepareSuccessfulMsg();
-                        gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-snmp-configure" 
+                        gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/set-snmp-notifier-configuration" 
                                 attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                         />
                 </sun:button>

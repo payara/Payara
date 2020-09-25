@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,9 @@ package fish.payara.notification.snmp.exception;
  * @author mertcaliskan
  */
 public class InvalidSnmpVersion extends Exception {
+
+    private static final long serialVersionUID = 1L;
+
     public InvalidSnmpVersion(String version) {
         super(version);
     }

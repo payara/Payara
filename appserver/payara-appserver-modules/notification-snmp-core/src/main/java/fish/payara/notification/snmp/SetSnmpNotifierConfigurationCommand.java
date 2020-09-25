@@ -1,7 +1,5 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,67 +37,74 @@
  */
 package fish.payara.notification.snmp;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import java.util.HashMap;
-import java.util.Map;
-import org.glassfish.api.admin.*;
+import java.beans.PropertyVetoException;
+
+import com.sun.enterprise.util.StringUtils;
+
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
+
 /**
  * @author mertcaliskan
  */
-@Service(name = "get-snmp-notifier-configuration")
+@Service(name = "set-snmp-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "get-snmp-notifier-configuration",
-                description = "Lists SNMP Notifier Configuration")
+                opType = RestEndpoint.OpType.POST,
+                path = "set-snmp-notifier-configuration",
+                description = "Configures SNMP Notification Service")
 })
-public class GetSnmpNotifierConfiguration extends BaseGetNotifierConfiguration<SnmpNotifierConfiguration> {
+public class SetSnmpNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<SnmpNotifierConfiguration> {
+
+    @Param(name = "community", defaultValue = "public", optional = true)
+    private String community;
+
+    @Param(name = "oid", defaultValue = ".1.3.6.1.2.1.1.8", optional = true)
+    private String oid;
+
+    @Param(name = "version", defaultValue = "v2c", optional = true, acceptableValues = "v1,v2c")
+    private String version;
+
+    @Param(name = "hostName")
+    private String hostName;
+
+    @Param(name = "port", defaultValue = "162", optional = true)
+    private Integer port;
 
     @Override
-    protected String listConfiguration(SnmpNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Noisy", "Community", "OID", "Version", "Host", "Port"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[7];
+    protected void applyValues(SnmpNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
 
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getNoisy();
-        values[2] = configuration.getCommunity();
-        values[3] = configuration.getOid();
-        values[4] = configuration.getVersion();
-        values[5] = configuration.getHost();
-        values[6] = configuration.getPort();
-
-        columnFormatter.addRow(values);
-        return columnFormatter.toString();
-    }
-
-    @Override
-    protected Map<String, Object> getNotifierConfiguration(SnmpNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(7);
-
-        if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
-            map.put("community", configuration.getCommunity());
-            map.put("oid", configuration.getOid());
-            map.put("version", configuration.getVersion());
-            map.put("hostName", configuration.getHost());
-            map.put("port", configuration.getPort());
-        } else {
-            map.put("noisy", Boolean.TRUE.toString());
+        if (StringUtils.ok(community)) {
+            configuration.setCommunity(community);
         }
-
-        return map;
+        if (StringUtils.ok(oid)) {
+            configuration.setOid(oid);
+        }
+        if (StringUtils.ok(version)) {
+            configuration.setVersion(version);
+        }
+        if (StringUtils.ok(hostName)) {
+            configuration.setHost(hostName);
+        }
+        if (port != null) {
+            configuration.setPort(String.valueOf(port));
+        }
     }
+
 }
