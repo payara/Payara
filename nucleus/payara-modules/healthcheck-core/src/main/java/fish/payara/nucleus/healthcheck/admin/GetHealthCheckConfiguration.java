@@ -425,9 +425,9 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
          extraPropsMap.put("enabled", microProfileMetricsChecker.getEnabled());
          extraPropsMap.put("time", microProfileMetricsChecker.getTime());
          extraPropsMap.put("unit", microProfileMetricsChecker.getUnit());
-         extraPropsMap.put("metricsScope", microProfileMetricsChecker.getMetricsScope());
-         extraPropsMap.put("metricsApplicationName", microProfileMetricsChecker.getMetricApplicationName());
-         extraPropsMap.put("metricsName", microProfileMetricsChecker.getMetricName());
+         extraPropsMap.put("metrics-scope", microProfileMetricsChecker.getMetricsScope());
+         extraPropsMap.put("metrics-application-name", microProfileMetricsChecker.getMetricApplicationName());
+         extraPropsMap.put("metrics-name", microProfileMetricsChecker.getMetricName());
         
         microProfileMetricsExtrasProps.put(microProfileMetricsPropertyName, extraPropsMap);
         

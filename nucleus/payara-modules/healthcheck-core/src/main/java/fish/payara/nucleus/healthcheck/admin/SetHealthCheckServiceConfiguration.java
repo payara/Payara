@@ -148,6 +148,8 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private boolean dynamic;
 
     // general properties params:
+    @Param(name = "checker-name", alias = "checkerName", optional = true)
+    private String checkerName;
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
@@ -156,7 +158,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "time-unit", optional = true,
+    @Param(name = "time-unit", alias = "unit", optional = true,
             acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String timeUnit;
 
@@ -375,6 +377,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         updateProperty(config, "enabled", config.getEnabled(), enabled.toString(), Checker::setEnabled);
         updateProperty(config, "time", config.getTime(), time, Checker::setTime);
         updateProperty(config, "time-unit", config.getUnit(), timeUnit, Checker::setUnit);
+        updateProperty(config, "checker-name", config.getName(), checkerName, Checker::setName);
         if (HoggingThreadsChecker.class.isAssignableFrom(type)) {
             HoggingThreadsChecker hoggingThreadsConfig = (HoggingThreadsChecker) config;
             updateProperty(hoggingThreadsConfig, "hogging-threads-threshold", hoggingThreadsConfig.getThresholdPercentage(), 

@@ -124,5 +124,14 @@
             gf.redirect(page="#{request.contextPath}/healthcheck/healthcheck/checkers/mphealthcheckConfiguration.jsf?configName=#{configName}");
 	/>
     </sun:tab>
+
+    <sun:tab id="healthcheckMicroprofileMetricsCheckerTab" immediate="true" 
+             text="$resource{i18nhx.healthcheck.configuration.microprofileMetricsCheckerTabTitle}"
+             toolTip="$resource{i18nhx.healthcheck.configuration.microprofileMetricsCheckerTabTitleToolTip}">
+	<!command
+            setSessionAttribute(key="metricsConfigTab" value="healthcheckMicroprofileMetricsCheckerTab");
+            gf.redirect(page="#{request.contextPath}/healthcheck/healthcheck/checkers/microProfileMetricsCheckerConfiguration.jsf?scope=Base&configName=#{configName}");
+	/>
+    </sun:tab>
 </sun:tabSet>
 
