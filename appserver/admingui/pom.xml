@@ -147,8 +147,6 @@
         <module>eventbus-notifier-console-plugin-l10n</module>
         <module>cdieventbus-notifier-console-plugin</module>
         <module>cdieventbus-notifier-console-plugin-l10n</module>
-        <module>snmp-notifier-console-plugin</module>
-        <module>snmp-notifier-console-plugin-l10n</module>
         <module>jms-notifier-console-plugin</module>
         <module>jms-notifier-console-plugin-l10n</module>
         <module>datadog-notifier-console-plugin</module>
