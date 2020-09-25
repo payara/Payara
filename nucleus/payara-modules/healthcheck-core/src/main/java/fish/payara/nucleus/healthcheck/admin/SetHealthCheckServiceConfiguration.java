@@ -38,6 +38,7 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import com.sun.enterprise.config.serverbeans.Application;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.Properties;
@@ -72,7 +73,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 import fish.payara.nucleus.healthcheck.HealthCheckConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
@@ -82,6 +85,7 @@ import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
 import fish.payara.nucleus.healthcheck.configuration.CheckerType;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
+import fish.payara.nucleus.healthcheck.configuration.MicroProfileMetricsChecker;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
@@ -126,10 +130,13 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
 
     @Inject
     private ServerEnvironment server;
+    
+    @Inject
+    private Domain domain;
 
     // target params:
 
-    @Param(name = "target", optional = true, defaultValue = "server-config")
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     private String target;
     private Config targetConfig;
 
@@ -190,6 +197,18 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     @Min(value = 0, message = "Good threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Good threshold is a percentage so must be less than 100")
     private String thresholdGood;
+    
+    // microprofile metrics properties params:
+    
+    @Param(name = "metrics-scope", optional = true,
+            acceptableValues = "Vendor,Base,Application")
+    private String metricsScope;
+    
+    @Param(name = "metrics-application-name", optional = true)
+    private String metricsApplicationName;
+    
+     @Param(name = "metrics-name", optional = true)
+    private String metricsName;
 
     private ActionReport report;
 
@@ -221,6 +240,35 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
                     "Service with name {0} could not be found.", serviceName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
+        }
+
+        if (metricsScope != null && metricsScope.equalsIgnoreCase("Application")) {
+            if (metricsApplicationName == null) {
+                report.setMessage("The metrics-application-name is a required parameter if the metrics-scope parameter is set to an application.");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+
+            boolean applicationPresentInTarget = false;
+            for (Application appplication : domain.getApplicationsInTarget(target)) {
+                if (appplication.getName().equals(metricsApplicationName)) {
+                    applicationPresentInTarget = true;
+                    break;
+                }
+            }
+
+            if (!applicationPresentInTarget) {
+                report.setMessage("Failed to set the metrics-application-name parameter. Please check the application named " + metricsApplicationName + " is in your domain.");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+
+        } else {
+            if (metricsApplicationName != null) {
+                report.setMessage("The metrics-application-name parameter is not required as the metrics-scope parameter is not set to an application.");
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
         }
         updateServiceConfiguration(service);
     }
@@ -340,6 +388,20 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
                     stuckThreadsThreshold, StuckThreadsChecker::setThreshold);
             updateProperty(stuckThreadsConfig, "stuck-threads-threshold-unit", stuckThreadsConfig.getThresholdTimeUnit(), 
                     stuckThreadsThresholdUnit, StuckThreadsChecker::setThresholdTimeUnit);
+        }
+        if (MicroProfileMetricsChecker.class.isAssignableFrom(type)) {
+            MicroProfileMetricsChecker microProfileMetricsConfig = (MicroProfileMetricsChecker) config;
+            updateProperty(microProfileMetricsConfig, "metrics-scope", microProfileMetricsConfig.getMetricsScope(),
+                    metricsScope, MicroProfileMetricsChecker::setMetricsScope);
+            updateProperty(microProfileMetricsConfig, "metric-application-name", microProfileMetricsConfig.getMetricApplicationName(),
+                    metricsApplicationName, MicroProfileMetricsChecker::setMetricApplicationName);
+
+            String currentMetricName = metricsName;
+            if (microProfileMetricsConfig.getMetricName() != null && metricsName == null) {
+                currentMetricName = "";
+            }
+            updateProperty(microProfileMetricsConfig, "metric-name", microProfileMetricsConfig.getMetricName(),
+                    currentMetricName, MicroProfileMetricsChecker::setMetricName);
         }
         return config;
     }
