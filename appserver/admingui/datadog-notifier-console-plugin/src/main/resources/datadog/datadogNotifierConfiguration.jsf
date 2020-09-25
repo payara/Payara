@@ -1,7 +1,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common Development
@@ -73,12 +73,9 @@ holder.
                helpText="$resource{i18ndn.notifier.datadog.configuration.pageHelpText}" >
         <sun:button id = "test" text="$resource{i18ndn.notifier.datadog.buttons.test}">
             <!command 
-                mapCopy(source="#{pageSession.valueMap}" dest="#{pageSession.attrsMap}");
-                mapRemove(map="#{pageSession.attrsMap}" key="enabled");
-				mapRemove(map="#{pageSession.attrsMap}" key="noisy");
-                mapRemove(map="#{pageSession.attrsMap}" key="noisy");
-                mapRemove(map="#{pageSession.attrsMap}" key="dynamic");
-                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-datadog-notifier-configuration?target=#{pageSession.configName}" method="GET" 
+                createMap(result="#{pageSession.attrsMap}");
+                mapPut(map="#{pageSession.attrsMap}" key="notifiers" value="datadog-notifier");
+                gf.restRequest(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/test-notifier-configuration" method="GET" 
                     attrs="#{pageSession.attrsMap}" result="#{requestScope.result}");
                 if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
                     prepareAlertMsg(summary="$resource{i18ndn.notifier.datadog.msg.success}", type="success");
@@ -95,7 +92,7 @@ holder.
                         mapPut(map="#{pageSession.valueMap}" key="noisy" value="#{pageSession.noisy}");
                         mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                         prepareSuccessfulMsg();
-                        gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/notification-datadog-configure"
+                        gf.updateEntity(endpoint="#{sessionScope.NOTIFICATION_CONFIG_URL}/set-datadog-notifier-configuration"
                                 attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                         />
                 </sun:button>

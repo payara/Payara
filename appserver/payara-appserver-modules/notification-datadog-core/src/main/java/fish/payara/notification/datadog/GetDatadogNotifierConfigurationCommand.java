@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,17 +39,20 @@
  */
 package fish.payara.notification.datadog;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import org.glassfish.api.admin.*;
+import java.util.Map;
+
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
@@ -65,32 +68,14 @@ import java.util.Map;
                 path = "get-datadog-notifier-configuration",
                 description = "Lists Datadog Notifier Configuration")
 })
-public class GetDatadogNotifierConfiguration extends BaseGetNotifierConfiguration<DatadogNotifierConfiguration> {
+public class GetDatadogNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<DatadogNotifierConfiguration> {
 
-    @Override
-    protected String listConfiguration(DatadogNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Noisy", "Key"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[3];
-
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getNoisy();
-        values[2] = configuration.getKey();
-
-        columnFormatter.addRow(values);
-        return columnFormatter.toString();
-    }
-    
     @Override
     protected Map<String, Object> getNotifierConfiguration(DatadogNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
         if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
-            map.put("key", configuration.getKey());
-        } else {
-            map.put("noisy", Boolean.TRUE.toString());
+            map.put("Key", configuration.getKey());
         }
 
         return map;
