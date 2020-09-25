@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,15 +39,47 @@
  */
 package fish.payara.notification.slack;
 
-import fish.payara.nucleus.notification.service.MessageQueue;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
+import java.io.IOException;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
+import fish.payara.internal.notification.PayaraNotification;
 
 /**
- * @author mertcaliskan
+ * A custom serializer that determines what to write to the slack endpoint
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class SlackMessageQueue extends MessageQueue<SlackMessage> {
+public class SlackSerializer extends StdSerializer<PayaraNotification> {
+
+    private static final long serialVersionUID = 1L;
+
+    private SlackSerializer() {
+        super((Class<PayaraNotification>) null);
+    }
+
+    @Override
+    public void serialize(PayaraNotification value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        gen.writeStartObject();
+        gen.writeObjectField("text", getDetailedSubject(value) + "\n" + value.getMessage());
+        gen.writeEndObject();
+    }
+
+    private static String getDetailedSubject(PayaraNotification event) {
+        return String.format("%s. (host: %s, server: %s, domain: %s, instance: %s)", 
+                event.getSubject(),
+                event.getHostName(),
+                event.getServerName(),
+                event.getDomainName(),
+                event.getInstanceName());
+    }
+
+    public static Module createModule() {
+        SimpleModule module = new SimpleModule("SlackModule");
+        module.addSerializer(PayaraNotification.class, new SlackSerializer());
+        return module;
+    }
+
 }
