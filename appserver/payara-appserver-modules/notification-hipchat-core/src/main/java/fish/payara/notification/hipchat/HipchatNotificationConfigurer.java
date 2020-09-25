@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,22 +37,28 @@
  */
 package fish.payara.notification.hipchat;
 
+import java.beans.PropertyVetoException;
+
 import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "notification-hipchat-configure")
+@Service(name = "set-hipchat-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -61,10 +66,10 @@ import java.beans.PropertyVetoException;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
-                path = "notification-hipchat-configure",
+                path = "set-hipchat-notifier-configuration",
                 description = "Configures Hipchat Notification Service")
 })
-public class HipchatNotificationConfigurer extends BaseNotificationConfigurer<HipchatNotifierConfiguration, HipchatNotifierService> {
+public class HipchatNotificationConfigurer extends BaseSetNotifierConfigurationCommand<HipchatNotifierConfiguration> {
 
     @Param(name = "roomName")
     private String roomName;
@@ -74,28 +79,14 @@ public class HipchatNotificationConfigurer extends BaseNotificationConfigurer<Hi
 
     @Override
     protected void applyValues(HipchatNotifierConfiguration configuration) throws PropertyVetoException {
-        if(this.enabled != null) {
-            configuration.enabled(this.enabled);
-        }
-        if(this.noisy != null) {
-            configuration.noisy(this.noisy);
-        }
-        if(StringUtils.ok(roomName)) {
+        super.applyValues(configuration);
+
+        if (StringUtils.ok(roomName)) {
             configuration.setRoomName(roomName);
         }
-
-        if(StringUtils.ok(token)) {
+        if (StringUtils.ok(token)) {
             configuration.setToken(token);
         }
     }
 
-    @Override
-    protected String getHealthCheckNotifierCommandName() {
-        return "healthcheck-hipchat-notifier-configure";
-    }
-
-    @Override
-    protected String getRequestTracingNotifierCommandName() {
-        return "requesttracing-hipchat-notifier-configure";
-    }
 }
