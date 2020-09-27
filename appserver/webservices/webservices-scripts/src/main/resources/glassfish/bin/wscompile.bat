@@ -39,7 +39,7 @@ REM  and therefore, elected the GPL Version 2 license, then the option applies
 REM  only if the new code is made subject to such option by the copyright
 REM  holder.
 REM
-REM Portions Copyright [2019-2020] Payara Foundation and/or affiliates
+REM Portions Copyright [2019] Payara Foundation and/or affiliates
 REM
 
 VERIFY OTHER 2>nul
@@ -63,5 +63,5 @@ CALL %~dp0jdkcheck.bat
 if %ENDORSED_AVAILABLE%==true (
     %JAVA% %WSCOMPILE_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\jakarta.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar;%~dp0..\modules\jakarta.mail.jar;%JAVA_HOME%/lib/tools.jar" com.sun.xml.rpc.tools.wscompile.Main %*
 ) else (
-    %JAVA% %WSCOMPILE_OPTS% -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\jakarta.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar;%~dp0..\modules\jakarta.mail.jar;%JAVA_HOME%/lib/tools.jar;%~dp0..\modules\jakarta.jws-api.jar;%~dp0..\modules\webservices-api-osgi.jar;%~dp0..\modules\jakarta.activation-api.jar" com.sun.xml.rpc.tools.wscompile.Main %*
+    %JAVA% %WSCOMPILE_OPTS% -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\jakarta.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar;%~dp0..\modules\jakarta.mail.jar;%JAVA_HOME%/lib/tools.jar" com.sun.xml.rpc.tools.wscompile.Main %*
 )

@@ -44,13 +44,13 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
         <version>5.2020.5-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>nucleus-grizzly</artifactId>
     <name>Nucleus Grizzly Package</name>
     <packaging>distribution-fragment</packaging>
@@ -92,10 +92,12 @@
                                 <artifactItem>
                                     <groupId>org.glassfish.grizzly</groupId>
                                     <artifactId>grizzly-npn-api</artifactId>
-				    <version>${grizzly.npn.version}</version>
+                                    <version>${grizzly.npn.api.version}</version>
                                     <destFileName>grizzly-npn-api.jar</destFileName>
                                 </artifactItem>
-                                <!-- Default NPN Bootstrap Jar for old domain.xml files -->
+                                <!-- NPN Bootstrap versions are referenced in domain.xml, real time version depends on JDK used -->
+                                <!-- Default NPN Bootstrap Jar for old domain.xml files without bootclasspath changes -->
+                                <!-- It is 1.8.1, compatible with JDK 8u191-8u250; newer JDK versions do not need bootstrap -->
                                 <artifactItem>
                                     <groupId>org.glassfish.grizzly</groupId>
                                     <artifactId>grizzly-npn-bootstrap</artifactId>
@@ -103,11 +105,6 @@
                                     <destFileName>grizzly-npn-bootstrap.jar</destFileName>
                                 </artifactItem>
                                 <!-- Other versioned NPN Bootstrap Jars referenced in new domain.xml (since 5.184) -->
-                                  <artifactItem>
-                                    <groupId>org.glassfish.grizzly</groupId>
-                                    <artifactId>grizzly-npn-bootstrap</artifactId>
-                                    <version>1.9.payara-p1</version>
-                                </artifactItem>
                                 <artifactItem>
                                     <groupId>org.glassfish.grizzly</groupId>
                                     <artifactId>grizzly-npn-bootstrap</artifactId>

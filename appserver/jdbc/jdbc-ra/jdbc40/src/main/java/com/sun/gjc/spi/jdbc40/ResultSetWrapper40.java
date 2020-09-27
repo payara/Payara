@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -87,6 +87,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public RowId getRowId(int columnIndex) throws SQLException {
         return resultSet.getRowId(columnIndex);
     }
@@ -108,10 +109,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public RowId getRowId(String columnLabel) throws SQLException {
         return resultSet.getRowId(columnLabel);
     }
 
+    @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             Class<?>[] valueTypes = new Class<?>[]{Integer.TYPE, Class.class};
@@ -125,6 +128,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
         throw new UnsupportedOperationException("Operation not supported in this runtime.");
     }
 
+    @Override
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             Class<?>[] valueTypes = new Class<?>[]{String.class, Class.class};
@@ -156,6 +160,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateRowId(int columnIndex, RowId x) throws SQLException {
         resultSet.updateRowId(columnIndex, x);
     }
@@ -179,6 +184,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateRowId(String columnLabel, RowId x) throws SQLException {
         resultSet.updateRowId(columnLabel, x);
     }
@@ -191,6 +197,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      or this method is called on a closed result set
      * @since 1.6
      */
+    @Override
     public int getHoldability() throws SQLException {
         return resultSet.getHoldability();
     }
@@ -203,6 +210,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * @throws SQLException if a database access error occurs
      * @since 1.6
      */
+    @Override
     public boolean isClosed() throws SQLException {
         return resultSet.isClosed();
     }
@@ -229,6 +237,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNString(int columnIndex, String nString) throws SQLException {
         resultSet.updateNString(columnIndex, nString);
     }
@@ -256,6 +265,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNString(String columnLabel, String nString) throws SQLException {
         resultSet.updateNString(columnLabel, nString);
     }
@@ -280,6 +290,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
         resultSet.updateNClob(columnIndex, nClob);
     }
@@ -305,6 +316,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(String columnLabel, NClob nClob) throws SQLException {
         resultSet.updateNClob(columnLabel, nClob);
     }
@@ -327,6 +339,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public NClob getNClob(int columnIndex) throws SQLException {
         return resultSet.getNClob(columnIndex);
     }
@@ -350,6 +363,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public NClob getNClob(String columnLabel) throws SQLException {
         return resultSet.getNClob(columnLabel);
     }
@@ -369,6 +383,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public SQLXML getSQLXML(int columnIndex) throws SQLException {
         return resultSet.getSQLXML(columnIndex);
     }
@@ -389,6 +404,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public SQLXML getSQLXML(String columnLabel) throws SQLException {
         return resultSet.getSQLXML(columnLabel);
     }
@@ -400,7 +416,6 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * row. The updater methods do not update the underlying database; instead
      * the <code>updateRow</code> or <code>insertRow</code> methods are called
      * to update the database.
-     * <p/>
      *
      * @param columnIndex the first column is 1, the second 2, ...
      * @param xmlObject   the value for the column to be updated
@@ -419,6 +434,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
         resultSet.updateSQLXML(columnIndex, xmlObject);
     }
@@ -430,7 +446,6 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * row. The updater methods do not update the underlying database; instead
      * the <code>updateRow</code> or <code>insertRow</code> methods are called
      * to update the database.
-     * <p/>
      *
      * @param columnLabel the label for the column specified with the SQL AS clause.  If the SQL AS clause was not
      *                    specified, then the label is the name of the column
@@ -450,6 +465,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {
         resultSet.updateSQLXML(columnLabel, xmlObject);
     }
@@ -473,6 +489,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public String getNString(int columnIndex) throws SQLException {
         return resultSet.getNString(columnIndex);
     }
@@ -497,6 +514,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public String getNString(String columnLabel) throws SQLException {
         return resultSet.getNString(columnLabel);
     }
@@ -521,6 +539,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public Reader getNCharacterStream(int columnIndex) throws SQLException {
         return resultSet.getNCharacterStream(columnIndex);
     }
@@ -546,6 +565,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public Reader getNCharacterStream(String columnLabel) throws SQLException {
         return resultSet.getNCharacterStream(columnLabel);
     }
@@ -558,12 +578,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * It is intended for use when
      * updating  <code>NCHAR</code>,<code>NVARCHAR</code>
      * and <code>LONGNVARCHAR</code> columns.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnIndex the first column is 1, the second is 2, ...
      * @param x           the new column value
      * @param length      the length of the stream
@@ -575,6 +595,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
         resultSet.updateNCharacterStream(columnIndex, x, length);
     }
@@ -587,12 +608,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * It is intended for use when
      * updating  <code>NCHAR</code>,<code>NVARCHAR</code>
      * and <code>LONGNVARCHAR</code> columns.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnLabel the label for the column specified with the SQL AS clause.  If the SQL AS clause was not
      *                    specified, then the label is the name of the column
      * @param reader      the <code>java.io.Reader</code> object containing
@@ -606,6 +627,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
         resultSet.updateNCharacterStream(columnLabel, reader, length);
     }
@@ -613,12 +635,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column with an ascii stream value, which will have
      * the specified number of bytes.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnIndex the first column is 1, the second is 2, ...
      * @param x           the new column value
      * @param length      the length of the stream
@@ -631,6 +653,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateAsciiStream(int columnIndex, InputStream x, long length) throws SQLException {
         resultSet.updateAsciiStream(columnIndex, x, length);
     }
@@ -638,12 +661,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column with a binary stream value, which will have
      * the specified number of bytes.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnIndex the first column is 1, the second is 2, ...
      * @param x           the new column value
      * @param length      the length of the stream
@@ -656,6 +679,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBinaryStream(int columnIndex, InputStream x, long length) throws SQLException {
         resultSet.updateBinaryStream(columnIndex, x, length);
     }
@@ -663,12 +687,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column with a character stream value, which will have
      * the specified number of bytes.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnIndex the first column is 1, the second is 2, ...
      * @param x           the new column value
      * @param length      the length of the stream
@@ -681,6 +705,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
         resultSet.updateCharacterStream(columnIndex, x, length);
     }
@@ -688,12 +713,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column with an ascii stream value, which will have
      * the specified number of bytes.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnLabel the label for the column specified with the SQL AS clause.  If the SQL AS clause was not
      *                    specified, then the label is the name of the column
      * @param x           the new column value
@@ -707,6 +732,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateAsciiStream(String columnLabel, InputStream x, long length) throws SQLException {
         resultSet.updateAsciiStream(columnLabel, x, length);
     }
@@ -714,12 +740,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column with a binary stream value, which will have
      * the specified number of bytes.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnLabel the label for the column specified with the SQL AS clause.  If the SQL AS clause was not
      *                    specified, then the label is the name of the column
      * @param x           the new column value
@@ -733,6 +759,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBinaryStream(String columnLabel, InputStream x, long length) throws SQLException {
         resultSet.updateBinaryStream(columnLabel, x, length);
     }
@@ -740,12 +767,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column with a character stream value, which will have
      * the specified number of bytes.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnLabel the label for the column specified with the SQL AS clause.  If the SQL AS clause was not
      *                    specified, then the label is the name of the column
      * @param reader      the <code>java.io.Reader</code> object containing
@@ -760,6 +787,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
         resultSet.updateCharacterStream(columnLabel, reader, length);
     }
@@ -767,13 +795,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column using the given input stream, which
      * will have the specified number of bytes.
-     * <p/>
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnIndex the first column is 1, the second is 2, ...
      * @param inputStream An object that contains the data to set the parameter
      *                    value to.
@@ -787,6 +814,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
         resultSet.updateBlob(columnIndex, inputStream, length);
     }
@@ -794,13 +822,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column using the given input stream, which
      * will have the specified number of bytes.
-     * <p/>
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnLabel the label for the column specified with the SQL AS clause.  If the SQL AS clause was not
      *                    specified, then the label is the name of the column
      * @param inputStream An object that contains the data to set the parameter
@@ -815,6 +842,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
         resultSet.updateBlob(columnLabel, inputStream, length);
     }
@@ -826,13 +854,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * parameter, it may be more practical to send it via a
      * <code>java.io.Reader</code> object. The JDBC driver will
      * do any necessary conversion from UNICODE to the database char format.
-     * <p/>
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnIndex the first column is 1, the second is 2, ...
      * @param reader      An object that contains the data to set the parameter value to.
      * @param length      the number of characters in the parameter data.
@@ -845,6 +872,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
         resultSet.updateClob(columnIndex, reader, length);
     }
@@ -856,13 +884,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * parameter, it may be more practical to send it via a
      * <code>java.io.Reader</code> object.  The JDBC driver will
      * do any necessary conversion from UNICODE to the database char format.
-     * <p/>
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnLabel the label for the column specified with the SQL AS clause.  If the SQL AS clause was
      *                    not specified, then the label is the name of the column
      * @param reader      An object that contains the data to set the parameter value to.
@@ -876,6 +903,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
         resultSet.updateClob(columnLabel, reader, length);
     }
@@ -887,13 +915,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * parameter, it may be more practical to send it via a
      * <code>java.io.Reader</code> object. The JDBC driver will
      * do any necessary conversion from UNICODE to the database char format.
-     * <p/>
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnIndex the first column is 1, the second 2, ...
      * @param reader      An object that contains the data to set the parameter value to.
      * @param length      the number of characters in the parameter data.
@@ -908,6 +935,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
         resultSet.updateNClob(columnIndex, reader, length);
     }
@@ -919,13 +947,12 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * parameter, it may be more practical to send it via a
      * <code>java.io.Reader</code> object. The JDBC driver will
      * do any necessary conversion from UNICODE to the database char format.
-     * <p/>
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     *
+     * </p>
      * @param columnLabel the label for the column specified with the SQL AS clause.  If the SQL AS clause was not
      *                    specified, then the label is the name of the column
      * @param reader      An object that contains the data to set the parameter value to.
@@ -941,6 +968,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
         resultSet.updateNClob(columnLabel, reader, length);
     }
@@ -954,13 +982,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * It is intended for use when
      * updating  <code>NCHAR</code>,<code>NVARCHAR</code>
      * and <code>LONGNVARCHAR</code> columns.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateNCharacterStream</code> which takes a length parameter.
      *
@@ -974,6 +1002,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
         resultSet.updateNCharacterStream(columnIndex, x);
     }
@@ -987,13 +1016,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * It is intended for use when
      * updating  <code>NCHAR</code>,<code>NVARCHAR</code>
      * and <code>LONGNVARCHAR</code> columns.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateNCharacterStream</code> which takes a length parameter.
      *
@@ -1009,6 +1038,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNCharacterStream(String columnLabel, Reader reader) throws SQLException {
         resultSet.updateNCharacterStream(columnLabel, reader);
     }
@@ -1017,13 +1047,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * Updates the designated column with an ascii stream value.
      * The data will be read from the stream
      * as needed until end-of-stream is reached.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateAsciiStream</code> which takes a length parameter.
      *
@@ -1038,6 +1068,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
         resultSet.updateAsciiStream(columnIndex, x);
     }
@@ -1046,13 +1077,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * Updates the designated column with a binary stream value.
      * The data will be read from the stream
      * as needed until end-of-stream is reached.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateBinaryStream</code> which takes a length parameter.
      *
@@ -1067,6 +1098,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBinaryStream(int columnIndex, InputStream x) throws SQLException {
         resultSet.updateBinaryStream(columnIndex, x);
     }
@@ -1075,13 +1107,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * Updates the designated column with a character stream value.
      * The data will be read from the stream
      * as needed until end-of-stream is reached.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateCharacterStream</code> which takes a length parameter.
      *
@@ -1096,6 +1128,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateCharacterStream(int columnIndex, Reader x) throws SQLException {
         resultSet.updateCharacterStream(columnIndex, x);
     }
@@ -1104,13 +1137,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * Updates the designated column with an ascii stream value.
      * The data will be read from the stream
      * as needed until end-of-stream is reached.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateAsciiStream</code> which takes a length parameter.
      *
@@ -1126,6 +1159,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateAsciiStream(String columnLabel, InputStream x) throws SQLException {
         resultSet.updateAsciiStream(columnLabel, x);
     }
@@ -1134,13 +1168,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * Updates the designated column with a binary stream value.
      * The data will be read from the stream
      * as needed until end-of-stream is reached.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateBinaryStream</code> which takes a length parameter.
      *
@@ -1156,6 +1190,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBinaryStream(String columnLabel, InputStream x) throws SQLException {
         resultSet.updateBinaryStream(columnLabel, x);
     }
@@ -1164,13 +1199,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * Updates the designated column with a character stream value.
      * The data will be read from the stream
      * as needed until end-of-stream is reached.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateCharacterStream</code> which takes a length parameter.
      *
@@ -1186,6 +1221,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateCharacterStream(String columnLabel, Reader reader) throws SQLException {
         resultSet.updateCharacterStream(columnLabel, reader);
     }
@@ -1193,13 +1229,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column using the given input stream. The data will be read from the stream
      * as needed until end-of-stream is reached.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateBlob</code> which takes a length parameter.
      *
@@ -1214,6 +1250,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
         resultSet.updateBlob(columnIndex, inputStream);
     }
@@ -1221,13 +1258,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Updates the designated column using the given input stream. The data will be read from the stream
      * as needed until end-of-stream is reached.
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateBlob</code> which takes a length parameter.
      *
@@ -1243,6 +1280,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
         resultSet.updateBlob(columnLabel, inputStream);
     }
@@ -1253,14 +1291,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * The data will be read from the stream
      * as needed until end-of-stream is reached.  The JDBC driver will
      * do any necessary conversion from UNICODE to the database char format.
-     * <p/>
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateClob</code> which takes a length parameter.
      *
@@ -1275,6 +1312,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateClob(int columnIndex, Reader reader) throws SQLException {
         resultSet.updateClob(columnIndex, reader);
     }
@@ -1285,14 +1323,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * The data will be read from the stream
      * as needed until end-of-stream is reached.  The JDBC driver will
      * do any necessary conversion from UNICODE to the database char format.
-     * <p/>
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateClob</code> which takes a length parameter.
      *
@@ -1307,27 +1344,27 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateClob(String columnLabel, Reader reader) throws SQLException {
         resultSet.updateClob(columnLabel, reader);
     }
 
     /**
      * Updates the designated column using the given <code>Reader</code>
-     * <p/>
+     * <p>
      * The data will be read from the stream
      * as needed until end-of-stream is reached.  The JDBC driver will
      * do any necessary conversion from UNICODE to the database char format.
-     * <p/>
-     * <p/>
+     * </p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * <p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateNClob</code> which takes a length parameter.
-     *
+     * </p>
      * @param columnIndex the first column is 1, the second 2, ...
      * @param reader      An object that contains the data to set the parameter value to.
      * @throws SQLException if the columnIndex is not valid;
@@ -1341,6 +1378,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(int columnIndex, Reader reader) throws SQLException {
         resultSet.updateNClob(columnIndex, reader);
     }
@@ -1351,14 +1389,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * The data will be read from the stream
      * as needed until end-of-stream is reached.  The JDBC driver will
      * do any necessary conversion from UNICODE to the database char format.
-     * <p/>
-     * <p/>
+     * <p>
      * The updater methods are used to update column values in the
      * current row or the insert row.  The updater methods do not
      * update the underlying database; instead the <code>updateRow</code> or
      * <code>insertRow</code> methods are called to update the database.
-     * <p/>
-     * <P><B>Note:</B> Consult your JDBC driver documentation to determine if
+     * </p>
+     * <B>Note:</B> Consult your JDBC driver documentation to determine if
      * it might be more efficient to use a version of
      * <code>updateNClob</code> which takes a length parameter.
      *
@@ -1375,6 +1412,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                      this method
      * @since 1.6
      */
+    @Override
     public void updateNClob(String columnLabel, Reader reader) throws SQLException {
         resultSet.updateNClob(columnLabel, reader);
     }
@@ -1382,7 +1420,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
     /**
      * Returns an object that implements the given interface to allow access to
      * non-standard methods, or standard methods not exposed by the proxy.
-     * <p/>
+     * <p>
      * If the receiver implements the interface then the result is the receiver
      * or a proxy for the receiver. If the receiver is a wrapper
      * and the wrapped object implements the interface then the result is the
@@ -1390,12 +1428,13 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      * the result of calling <code>unwrap</code> recursively on the wrapped object
      * or a proxy for that result. If the receiver is not a
      * wrapper and does not implement the interface, then an <code>SQLException</code> is thrown.
-     *
+     * </p>
      * @param iface A Class defining an interface that the result must implement.
      * @return an object that implements the interface. May be a proxy for the actual implementing object.
      * @throws java.sql.SQLException If no object found that implements the interface
      * @since 1.6
      */
+    @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
         T result;
         if (iface.isInstance(this)) {
@@ -1421,6 +1460,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
      *                               for an object with the given interface.
      * @since 1.6
      */
+    @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         boolean result;
         if (iface.isInstance(this)) {

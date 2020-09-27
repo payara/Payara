@@ -50,13 +50,11 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Tests to run against the server log
  */
-@Ignore
 public class ServerLogTest extends RestManagementTest {
 
     @Before

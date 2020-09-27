@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -40,13 +40,9 @@
 
 package fish.payara.microprofile.metrics.jmx;
 
-import java.util.ArrayList;
+import javax.xml.bind.annotation.*;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @XmlRootElement(name = "config")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -54,46 +50,36 @@ public class MBeanMetadataConfig {
 
     @XmlElementWrapper(name = "base")
     @XmlElement(name = "metadata")
-    private List<MBeanMetadata> baseMetadata;
+    private final List<MBeanMetadata> baseMetadata = new CopyOnWriteArrayList<>();
 
     @XmlElementWrapper(name = "vendor")
     @XmlElement(name = "metadata")
-    private List<MBeanMetadata> vendorMetadata;
+    private final List<MBeanMetadata> vendorMetadata = new CopyOnWriteArrayList<>();
 
     public List<MBeanMetadata> getBaseMetadata() {
-        if (baseMetadata == null) {
-            baseMetadata = new ArrayList<>();
-        }
         return baseMetadata;
     }
 
     public void setBaseMetadata(List<MBeanMetadata> baseMetadata) {
-        this.baseMetadata = baseMetadata;
+        this.baseMetadata.clear();
+        this.addBaseMetadata(baseMetadata);
     }
-    
+
     public void addBaseMetadata(List<MBeanMetadata> baseMetadata) {
-        if (this.baseMetadata == null) {
-            this.baseMetadata = new ArrayList<>();
-        }
         this.baseMetadata.addAll(baseMetadata);
     }
 
     public List<MBeanMetadata> getVendorMetadata() {
-        if (vendorMetadata == null) {
-            vendorMetadata = new ArrayList<>();
-        }
         return vendorMetadata;
     }
 
     public void setVendorMetadata(List<MBeanMetadata> vendorMetadata) {
-        this.vendorMetadata = vendorMetadata;
+        this.vendorMetadata.clear();
+        this.addVendorMetadata(vendorMetadata);
     }
-    
+
     public void addVendorMetadata(List<MBeanMetadata> vendorMetadata) {
-        if (this.vendorMetadata == null) {
-            this.vendorMetadata = new ArrayList<>();
-        }
         this.vendorMetadata.addAll(vendorMetadata);
     }
-    
+
 }

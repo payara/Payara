@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.jdbc40;
 
@@ -49,9 +50,7 @@ import com.sun.gjc.util.SQLTraceDelegator;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
-import java.sql.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -71,8 +70,10 @@ public class Jdbc40ObjectsFactory extends JdbcObjectsFactory {
      * @param mcObject          ManagedConnection
      * @param criObject         Connection Request Info
      * @param statementWrapping Whether to wrap statement objects or not.
+     * @param sqlTraceDelegator
      * @return ConnectionHolder
      */
+    @Override
     public ConnectionHolder getConnection(Connection conObject,
                                           ManagedConnectionImpl mcObject,
                                           javax.resource.spi.ConnectionRequestInfo criObject,
@@ -84,7 +85,7 @@ public class Jdbc40ObjectsFactory extends JdbcObjectsFactory {
         }
         if (statementWrapping) {
             if (sqlTraceDelegator != null) {
-                Class connIntf[] = new Class[]{java.sql.Connection.class};
+                Class<?> connIntf[] = new Class[]{java.sql.Connection.class};
                 Connection proxiedConn = getProxiedConnection(conObject, connIntf, sqlTraceDelegator);
                 connection = new ProfiledConnectionWrapper40(proxiedConn, mcObject,
                         criObject, jdbc30Connection, sqlTraceDelegator);
@@ -104,6 +105,7 @@ public class Jdbc40ObjectsFactory extends JdbcObjectsFactory {
      * @param cmObject  Connection Manager
      * @return DataSource
      */
+    @Override
     public javax.sql.DataSource getDataSourceInstance(ManagedConnectionFactoryImpl mcfObject,
                                                       javax.resource.spi.ConnectionManager cmObject) {
         return new DataSource40(mcfObject, cmObject);
@@ -129,14 +131,12 @@ public class Jdbc40ObjectsFactory extends JdbcObjectsFactory {
             initJDBC30Connection = true;
         } else {
             try {
-                Class paramClasses[] = new Class[]{Class.class};
+                Class<?> paramClasses[] = new Class[]{Class.class};
 
                 Method isWrapperMethod = con.getClass().getMethod("isWrapperFor", paramClasses);
                 int modifiers = isWrapperMethod.getModifiers();
                 setJdbc30Connection(Modifier.isAbstract(modifiers));
-            } catch (NoSuchMethodException e) {
-                setJdbc30Connection(true);
-            } catch (AbstractMethodError e) {
+            } catch (NoSuchMethodException | AbstractMethodError e) {
                 setJdbc30Connection(true);
             } catch (Throwable t) {
                 setJdbc30Connection(true);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,31 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.TimeUtil;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -61,12 +74,10 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
-import java.beans.PropertyVetoException;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.validation.constraints.Min;
+import fish.payara.internal.notification.NotifierUtils;
+import fish.payara.internal.notification.TimeUtil;
+import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 
 /**
  * Admin command to enable/disable all health check services defined in
@@ -130,6 +141,15 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Param(name = "historicalTraceStoreTimeout", optional = true)
     private String historicalTraceStoreTimeout;
 
+    @Param(name = "enableNotifiers", alias = "enable-notifiers", optional = true)
+    private List<String> enableNotifiers;
+
+    @Param(name = "disableNotifiers", alias = "disable-notifiers", optional = true)
+    private List<String> disableNotifiers;
+
+    @Param(name = "setNotifiers", alias = "set-notifiers", optional = true)
+    private List<String> setNotifiers;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -144,25 +164,61 @@ public class HealthCheckConfigurer implements AdminCommand {
         final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
         if (healthCheckServiceConfiguration != null) {
             try {
+                final Set<String> notifierNames = NotifierUtils.getNotifierNames(serviceLocator);
                 ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
                     @Override
-                    public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy) throws
+                    public Object run(final HealthCheckServiceConfiguration proxy) throws
                             PropertyVetoException, TransactionFailure {
                         if (enabled != null) {
-                            healthCheckServiceConfigurationProxy.enabled(enabled.toString());
+                            proxy.enabled(enabled.toString());
                         }
                         if (historicalTraceEnabled != null) {
-                            healthCheckServiceConfigurationProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
+                            proxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
                         }
                         if (historicalTraceStoreSize != null) {
-                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                            proxy.setHistoricalTraceStoreSize(historicalTraceStoreSize.toString());
+                        }
+                        if (historicalTraceStoreTimeout != null) {
+                            proxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
                         }
 
-                        if (historicalTraceStoreTimeout != null) {
-                            healthCheckServiceConfigurationProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
+                        List<String> notifiers = proxy.getNotifierList();
+                        if (enableNotifiers != null) {
+                            for (String notifier : enableNotifiers) {
+                                if (notifierNames.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                } else {
+                                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                            new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                                }
+                            }
                         }
+                        if (disableNotifiers != null) {
+                            for (String notifier : disableNotifiers) {
+                                if (notifierNames.contains(notifier)) {
+                                    notifiers.remove(notifier);
+                                } else {
+                                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                            new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                                }
+                            }
+                        }
+                        if (setNotifiers != null) {
+                            notifiers.clear();
+                            for (String notifier : setNotifiers) {
+                                if (notifierNames.contains(notifier)) {
+                                    if (!notifiers.contains(notifier)) {
+                                        notifiers.add(notifier);
+                                    }
+                                } else {
+                                    throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                            new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                                }
+                            }
+                        }
+
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return healthCheckServiceConfigurationProxy;
+                        return proxy;
                     }
 
                 }, healthCheckServiceConfiguration);
@@ -184,42 +240,6 @@ public class HealthCheckConfigurer implements AdminCommand {
                 configureDynamically();
             }
         }
-
-        enableLogNotifier(context);
-    }
-
-    private void enableLogNotifier(AdminCommandContext context) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-
-        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("healthcheck-log-notifier-configure", subReport, context.getSubject());
-
-        ParameterMap params = new ParameterMap();
-        params.add("dynamic", dynamic.toString());
-        params.add("target", target);
-        if (notifierEnabled != null) {
-            params.add("enabled", notifierEnabled.toString());
-        }
-        if (notifierEnabled == null && enabled != null) {
-            params.add("enabled", enabled.toString());
-        }
-        Config config = targetUtil.getConfig(target);
-        if (config == null) {
-            subReport.setMessage("No such config named: " + target);
-            subReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        String noisy = "true";
-        NotificationServiceConfiguration configuration = config.getExtensionByType(NotificationServiceConfiguration.class);
-        NotifierConfiguration notifierConfiguration = configuration.getNotifierConfigurationByType(LogNotifierConfiguration.class);
-        noisy = notifierConfiguration.getNoisy();
-        params.add("noisy", noisy);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
     }
 
     private void configureDynamically() {
@@ -234,6 +254,18 @@ public class HealthCheckConfigurer implements AdminCommand {
         if (historicalTraceStoreTimeout != null) {
             long timeout = TimeUtil.setStoreTimeLimit(this.historicalTraceStoreTimeout);
             service.setHistoricalTraceStoreTimeout(timeout);
+        }
+
+        Set<String> notifiers = service.getEnabledNotifiers();
+        if (enableNotifiers != null) {
+            enableNotifiers.forEach(notifiers::add);
+        }
+        if (disableNotifiers != null) {
+            disableNotifiers.forEach(notifiers::remove);
+        }
+        if (setNotifiers != null) {
+            notifiers.clear();
+            setNotifiers.forEach(notifiers::add);
         }
     }
 }
