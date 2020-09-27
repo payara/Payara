@@ -185,17 +185,17 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
 
     // threshold properties params:
 
-    @Param(name = "threshold-critical", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL)
+    @Param(name = "threshold-critical", alias = "thresholdCritical", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL)
     @Min(value = 0, message = "Critical threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Critical threshold is a percentage so must be less than 100")
     private String thresholdCritical;
 
-    @Param(name = "threshold-warning", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING)
+    @Param(name = "threshold-warning", alias = "thresholdWarning", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING)
     @Min(value = 0, message = "Warning threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Wanring threshold is a percentage so must be less than 100")
     private String thresholdWarning;
 
-    @Param(name = "threshold-good", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD)
+    @Param(name = "threshold-good", alias = "thresholdGood", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD)
     @Min(value = 0, message = "Good threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Good threshold is a percentage so must be less than 100")
     private String thresholdGood;
@@ -206,7 +206,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             acceptableValues = "Vendor,Base,Application")
     private String metricsScope;
     
-    @Param(name = "metrics-application-name", optional = true)
+    @Param(name = "metrics-application-name", optional = true, separator = ',')
     private String metricsApplicationName;
     
      @Param(name = "metrics-name", optional = true)
@@ -252,7 +252,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             }
 
             boolean applicationPresentInTarget = false;
-            for (Application appplication : domain.getApplicationsInTarget(target)) {
+            for (Application appplication : domain.getApplicationsInTarget(target.replace("-config", ""))) {
                 if (appplication.getName().equals(metricsApplicationName)) {
                     applicationPresentInTarget = true;
                     break;
@@ -260,17 +260,20 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             }
 
             if (!applicationPresentInTarget) {
-                report.setMessage("Failed to set the metrics-application-name parameter. Please check the application named " + metricsApplicationName + " is in your domain.");
+                report.setMessage("Failed to set the metrics-application-name parameter. Please check the application named " + metricsApplicationName + 
+                        " is deployed to " + target +  ".");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
 
         } else {
-            if (metricsApplicationName != null) {
+            if (metricsApplicationName.trim().isEmpty()) {
+                metricsApplicationName = null;
+            } else {
                 report.setMessage("The metrics-application-name parameter is not required as the metrics-scope parameter is not set to an application.");
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
-            }
+            }           
         }
         updateServiceConfiguration(service);
     }

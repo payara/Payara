@@ -50,6 +50,7 @@ import static fish.payara.notification.healthcheck.HealthCheckResultStatus.WARNI
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -101,26 +102,27 @@ public class MicroProfileMetricsCheck
     @Override
     protected HealthCheckResult doCheckInternal() {
         String registryName = options.getMetricsScope();
-        String metricName = options.getMetricName();
+        List<String> metricNames = new ArrayList<>(Arrays.asList(options.getMetricName().split(",")));
+        metricNames.removeAll(Arrays.asList("", null));
         MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
         if (registryName.equalsIgnoreCase("application")) {
             registryName = options.getMetricsApplicationName();
         }
 
         HealthCheckResult result = new HealthCheckResult();
-        List<String> k = collectMetrics(metricsService.getRegistry(registryName), metricName);
+        List<String> metrics = collectMetrics(metricsService.getRegistry(registryName), metricNames);
 
-        result.add(new HealthCheckResultEntry(k.isEmpty() ? WARNING : GOOD,
-                k.isEmpty() ? "The " + metricName + " metric doesn't exist" : k.stream().map(Object::toString).collect(Collectors.joining())));
+        result.add(new HealthCheckResultEntry(metrics.isEmpty() ? WARNING : GOOD,
+                metrics.isEmpty() ? "The metric you entered doesn't exist under " + registryName : metrics.stream().map(Object::toString).collect(Collectors.joining())));
 
         return result;
 
     }
 
-    private List<String> collectMetrics(MetricRegistry state, String metricName) {
+    private List<String> collectMetrics(MetricRegistry state, List<String> metricNames) {
         List<String> array = new ArrayList<>();
         String metricsInfos;
-        if (metricName == null || metricName.trim().isEmpty()) {
+        if (metricNames == null || metricNames.isEmpty()) {
             for (String name : state.getNames()) {
                 metricsInfos = getMetricInfos(name, state);
                 if (metricsInfos != null) {
@@ -129,12 +131,13 @@ public class MicroProfileMetricsCheck
 
             }
         } else {
-            metricsInfos = getMetricInfos(metricName, state);
-            if (metricsInfos != null) {
-                array.add(metricsInfos);
+            for (String metricName : metricNames) {
+                metricsInfos = getMetricInfos(metricName.trim(), state);
+                if (metricsInfos != null) {
+                    array.add(metricsInfos);
+                }
             }
         }
-
         return array;
     }
 
@@ -230,10 +233,6 @@ public class MicroProfileMetricsCheck
         if (name.indexOf(' ') >= 0) { // trying to avoid replace
             name = name.replace(' ', '_');
         } else {
-            int dotIndex = name.indexOf('.');
-            if (dotIndex > 0) {
-                name = name.substring(dotIndex + 1);
-            }
             if (name.indexOf('.') > 0) {
                 String[] words = name.split("\\.");
                 name = "";

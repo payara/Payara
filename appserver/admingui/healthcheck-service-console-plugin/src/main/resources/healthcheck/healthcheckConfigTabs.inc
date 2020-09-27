@@ -129,7 +129,7 @@
              text="$resource{i18nhx.healthcheck.configuration.microprofileMetricsCheckerTabTitle}"
              toolTip="$resource{i18nhx.healthcheck.configuration.microprofileMetricsCheckerTabTitleToolTip}">
 	<!command
-            setSessionAttribute(key="metricsConfigTab" value="healthcheckMicroprofileMetricsCheckerTab");
+            setSessionAttribute(key="healthcheckConfigTab" value="healthcheckMicroprofileMetricsCheckerTab");
             gf.redirect(page="#{request.contextPath}/healthcheck/healthcheck/checkers/microProfileMetricsCheckerConfiguration.jsf?scope=Base&configName=#{configName}");
 	/>
     </sun:tab>

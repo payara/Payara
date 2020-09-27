@@ -62,8 +62,11 @@
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
         
-         getRequestValue(key="scope" value=>$page{scope} default="Base");
+        getRequestValue(key="scope" value=>$page{scope} default="Base");
         urlencode(value="#{pageSession.scope}" encoding="UTF-8" result="#{pageSession.encodedScope}");
+        
+        getRequestValue(key="unit" value=>$page{unit} default="#{pageSession.valueMap['unit']}");
+        urlencode(value="#{pageSession.unit}" encoding="UTF-8" result="#{pageSession.encodedUnit}");
         
         setPageSessionAttribute(key="thisPage", value="#{request.contextPath}/healthcheck/healthcheck/checkers/microProfileMetricsCheckerConfiguration.jsf");
         setPageSessionAttribute(key="dynamic", value="true");
@@ -75,7 +78,7 @@
             setPageSessionAttribute(key="showApplicationName", value="#{false}");
         }
         
-         if(#{pageSession.encodedScope}=Vendor) {
+        if(#{pageSession.encodedScope}=Vendor) {
             setPageSessionAttribute(key="showApplicationName", value="#{false}");
         }
         
@@ -104,6 +107,16 @@
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="service" value="mp-metrics");
+                    mapPut(map="#{pageSession.valueMap}" key="metrics-scope" value="#{pageSession.encodedScope}");  
+                    mapPut(map="#{pageSession.valueMap}" key="unit" value="#{pageSession.encodedUnit}");
+                    
+                    if(#{pageSession.encodedScope}=Base) {
+                        mapPut(map="#{pageSession.valueMap}" key="metrics-application-name" value="");
+                    }
+
+                    if(#{pageSession.encodedScope}=Vendor) {
+                        mapPut(map="#{pageSession.valueMap}" key="metrics-application-name" value="");
+                    }
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/set-healthcheck-service-configuration" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
@@ -139,39 +152,53 @@
         <sun:property id="unitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.unitLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.unitLabelHelpText}">
-            <sun:dropDown id="unitDropdown" selected="#{pageSession.valueMap['time-unit']}" 
-                          labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
+            <sun:dropDown id="unitDropdown" 
+                          selected="#{pageSession.encodedUnit}" 
+                          labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"}         
+                          submitForm="#{true}"
+                          immediate="#{true}">
+                <!command
+                    setAttribute(key="configName" value="#{pageSession.configName}");
+                    setAttribute(key="click" value="$this{component}");
+                    setAttribute(key="time" value="#{pageSession.encodedTime}");
+                    setAttribute(key="unit" value="#{click.selected}");
+                    setAttribute(key="scope" value="#{pageSession.encodedScope}");
+                    setAttribute(key="enabledSelected" value="#{pageSession.enabledSelected}");                
+                    gf.navigate(page="#{pageSession.thisPage}");
+                />
+
+            </sun:dropDown>
         </sun:property>
         
         <sun:property id="metricsScopeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricsScopeLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricsScopeLabelHelpText}">
-            <sun:dropDown id="metricsScopeDropdown" selected="#{pageSession.valueMap['metrics-scope']}" 
+            <sun:dropDown id="metricsScopeDropdown" 
+                          selected="#{pageSession.encodedScope}" 
                           labels={"Base", "Vendor", "Application"} 
                           submitForm="#{true}"
                           immediate="#{true}"
-                          required="#{true}"            >
+                          required="#{true}">
                 <!command
+                    setAttribute(key="configName" value="#{pageSession.configName}");
+                    setAttribute(key="click" value="$this{component}");
+                    setAttribute(key="scope" value="#{click.selected}");
+                    setAttribute(key="enabledSelected" value="#{pageSession.enabledSelected}");
+                    setAttribute(key="time" value="#{pageSession.encodedTime}");
+                    setAttribute(key="unit" value="#{pageSession.encodedUnit}");
                     gf.navigate(page="#{pageSession.thisPage}");
                 />
 
             </sun:dropDown>
         </sun:property>
             <sun:property id="metricApplicationNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
-                      abel="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricApplicationNameLabel}"  
+                      label="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricApplicationNameLabel}"  
                       rendered="#{pageSession.showApplicationName}"
                      helpText="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricApplicationNameLabelHelpText}">
             <sun:dropDown id="metricApplicationNameDropDown"
                           labels="$pageSession{applicationNameList}"
-                          selected="#{pageSession.valueMap['metrics-application-name']}" 
-                          rendered="#{pageSession.showApplicationName}"
-                          submitForm="#{true}"
-                          immediate="#{true}"
-                         >
-                 <!command
-                    gf.navigate(page="#{pageSession.thisPage}");
-                />
-            </sun:dropDown>
+                          selected="#{pageSession.valueMap['metrics-application-name']}"
+                          rendered="#{pageSession.showApplicationName}" />
         </sun:property>
           <sun:property id="metricNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricNameLabel}"  
