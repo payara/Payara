@@ -74,8 +74,12 @@ public class GlassFishProperties {
      * for the plugged in {@link GlassFishRuntime} (if any)
      *
      * @param props Properties object which will back this GlassFishProperties object.
+     * @throws IllegalArgumentException if props is null
      */
     public GlassFishProperties(Properties props) {
+        if(props == null){
+            throw new IllegalArgumentException("Properties object is null");
+        }
         gfProperties = props;
     }
 
