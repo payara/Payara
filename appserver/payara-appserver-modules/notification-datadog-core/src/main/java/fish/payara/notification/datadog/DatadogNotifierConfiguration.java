@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,12 @@
  */
 package fish.payara.notification.datadog;
 
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
+import java.beans.PropertyVetoException;
+
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
-import java.beans.PropertyVetoException;
+import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
  * Configuration class with the aim to configure datadog notification specific parameters.
@@ -54,8 +53,7 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
-@NotifierConfigurationType(type = NotifierType.DATADOG)
-public interface DatadogNotifierConfiguration extends NotifierConfiguration {
+public interface DatadogNotifierConfiguration extends PayaraNotifierConfiguration {
 
     @Attribute(required = true)
     String getKey();

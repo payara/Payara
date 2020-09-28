@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,48 +39,49 @@
  */
 package fish.payara.notification.datadog;
 
-import fish.payara.nucleus.notification.configuration.DatadogNotifier;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.api.messaging.MessageReceiver;
-import org.glassfish.hk2.api.messaging.SubscribeTo;
-import org.glassfish.hk2.runlevel.RunLevel;
+import java.beans.PropertyVetoException;
+
+import com.sun.enterprise.util.StringUtils;
+
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "service-datadog")
-@RunLevel(StartupRunLevel.VAL)
-@MessageReceiver
-public class DatadogNotifierService extends QueueBasedNotifierService<DatadogNotificationEvent,
-        DatadogNotifier,
-        DatadogNotifierConfiguration,
-        DatadogMessageQueue> {
+@Service(name = "set-datadog-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "set-datadog-notifier-configuration",
+                description = "Configures Datadog Notification Service")
+})
+public class SetDatadogNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<DatadogNotifierConfiguration> {
 
-    private DatadogNotifierConfigurationExecutionOptions executionOptions;
-
-    DatadogNotifierService() {
-        super("datadog-message-consumer-");
-}
-
-    @Override
-    public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof DatadogNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
-            DatadogMessage message = new DatadogMessage((DatadogNotificationEvent) event, event.getSubject(), event.getMessage());
-            queue.addMessage(message);
-        }
-    }
+    @Param(name = "key")
+    private String key;
 
     @Override
-    public void bootstrap() {
-        register(NotifierType.DATADOG, DatadogNotifier.class, DatadogNotifierConfiguration.class);
-        executionOptions = (DatadogNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-        if (executionOptions != null && executionOptions.isEnabled()) {
-            initializeExecutor();
-            scheduleExecutor(new DatadogNotificationRunnable(queue, executionOptions));
+    protected void applyValues(DatadogNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
+
+        if (StringUtils.ok(key)) {
+            configuration.setKey(key);
         }
     }
 
