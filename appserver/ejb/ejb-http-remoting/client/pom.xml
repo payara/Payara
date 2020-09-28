@@ -59,6 +59,10 @@
         which will be sent via HTTP to Payara.
     </description>
 
+    <properties>
+        <deploy.skip>false</deploy.skip>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -123,29 +127,16 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
             </plugin>
-            
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>false</skip>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
     <profiles>
+        <!-- Don't deploy any distributions if only the internals are being deployed -->
         <profile>
-            <id>deployinternals</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            <id>deploy-internals</id>
+            <properties>
+                <deploy.skip>true</deploy.skip>
+            </properties>
         </profile>
     </profiles>
 
