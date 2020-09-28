@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
+import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
 import org.glassfish.internal.api.JavaEEContextUtil;
@@ -53,6 +54,7 @@ import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ModuleInfo;
@@ -65,13 +67,15 @@ import org.jvnet.hk2.annotations.Service;
  * @author lprimak
  */
 @Service
-public class JavaEEContextUtilImpl implements JavaEEContextUtil {
+public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
+    private static final long serialVersionUID = 2L;
+
     @Inject
-    private ComponentEnvManager compEnvMgr;
+    private transient ComponentEnvManager compEnvMgr;
     @Inject
-    private ApplicationRegistry appRegistry;
+    private transient ApplicationRegistry appRegistry;
     @Inject
-    private InvocationManager invocationManager;
+    private transient InvocationManager invocationManager;
 
 
     @Override
@@ -162,6 +166,11 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
             }
         }
         return false;
+    }
+
+    // deals with @Injected transient fields correctly
+    private Object readResolve() {
+        return Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     }
 
 
