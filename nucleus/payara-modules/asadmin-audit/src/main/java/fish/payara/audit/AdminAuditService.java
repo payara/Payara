@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,33 +42,26 @@
  */
 package fish.payara.audit;
 
-import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.domain.EventSource;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.domain.NotificationEventFactory;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
-import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
-import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
+
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.hk2.api.messaging.Topic;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfigView;
+
+import fish.payara.internal.notification.PayaraNotification;
+import fish.payara.internal.notification.PayaraNotificationFactory;
 
 /**
  * Audit Admin commands and sends them to the notification services.
@@ -81,26 +74,22 @@ import org.jvnet.hk2.config.ConfigView;
 @RunLevel(StartupRunLevel.VAL)
 public class AdminAuditService {
     
-    private static final String AUDIT_MESSAGE = "AUDIT";
+    private static final String AUDIT_MESSAGE = "Admin Command Audit";
     private static final List<String> ACCESSOR_COMMAND_START = Arrays.asList("_", "get", "list", "help", "version");
     
     private boolean enabled;
     private AuditLevel auditLevel = AuditLevel.MODIFIERS;
-    
+
     @Inject
-    NotificationService notificationSevice;
-    
+    private Topic<PayaraNotification> notificationEventBus;
+
     @Inject
-    private NotificationEventFactoryStore eventFactoryStore;
-    
-    @Inject
-    private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
+    private PayaraNotificationFactory notificationFactory;
     
     @Inject
     AdminAuditConfiguration configuration;
-    
-    
-    private List<NotifierExecutionOptions> notifierExecutionOptionsList;
+
+    private final Set<String> enabledNotifiers = new LinkedHashSet<>();
     
     @PostConstruct
     public void postConstruct() {
@@ -130,53 +119,34 @@ public class AdminAuditService {
     public void setAuditLevel(AuditLevel level){
         auditLevel = level;
     }
+
+    public Set<String> getEnabledNotifiers() {
+        return enabledNotifiers;
+    }
     
     /**
      * Starts all notifiers that have been enable with the admin audit service.
      */
     public synchronized void bootstrapNotifierList() {
-        notifierExecutionOptionsList = new ArrayList<>();
+        enabledNotifiers.clear();
         if (configuration.getNotifierList() != null) {
-            for (Notifier notifier : configuration.getNotifierList()) {
-                ConfigView view = ConfigSupport.getImpl(notifier);
-                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-                NotifierExecutionOptionsFactory<Notifier> factory = executionOptionsFactoryStore.get(annotation.type());
-                if (factory != null) {
-                    notifierExecutionOptionsList.add(factory.build(notifier));
-                }
-            }
-        }
-        if (notifierExecutionOptionsList.isEmpty()) {
-            // Add logging execution options by default
-            LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
-            logNotifierExecutionOptions.setEnabled(true);
-            notifierExecutionOptionsList.add(logNotifierExecutionOptions);
+            configuration.getNotifierList().forEach(enabledNotifiers::add);
         }
     }
-    
-    /**
-     * Gets a list of all the options of all notifiers configured with the asadmin audit service.
-     * @return 
-     */
-    public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
-        return notifierExecutionOptionsList;
-    }
-    
     
     public void recordAsadminCommand(String command, ParameterMap parameters, Subject subject) {
-        if (enabled && notifierExecutionOptionsList != null && checkAuditLevel(command)) {
-            
+        if (enabled && !enabledNotifiers.isEmpty() && checkAuditLevel(command)) {
+
             Set<Principal> principals = subject.getPrincipals();
             String name = principals.iterator().next().getName();
-            for (NotifierExecutionOptions notifierExecutionOptions : notifierExecutionOptionsList) {
-                
-                if (notifierExecutionOptions.isEnabled()) {
-                    NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                    NotificationEvent notificationEvent = notificationEventFactory
-                            .buildNotificationEvent(Level.WARNING, AUDIT_MESSAGE, name + " issued command " + command + " with parameters " + parameters.toString(), null);
-                    notificationSevice.notify(EventSource.AUDIT, notificationEvent);
-                }
-            }
+
+            PayaraNotification notification = notificationFactory.newBuilder()
+                .whitelist(enabledNotifiers.toArray(new String[0]))
+                .subject(AUDIT_MESSAGE)
+                .message(name + " issued command " + command + " with parameters " + parameters.toString())
+                .build();
+
+            notificationEventBus.publish(notification);
         }
     }
     

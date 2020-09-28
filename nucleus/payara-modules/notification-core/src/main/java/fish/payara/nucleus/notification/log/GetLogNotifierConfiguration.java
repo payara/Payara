@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,20 @@
  */
 package fish.payara.nucleus.notification.log;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import java.util.HashMap;
 import java.util.Map;
-import org.glassfish.api.admin.*;
+
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
@@ -62,36 +66,19 @@ import org.jvnet.hk2.annotations.Service;
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
                 path = "get-log-notifier-configuration",
-                description = "Lists Log Notifier Configuration")
+                description = "Lists New Log Notifier Configuration")
 })
-public class GetLogNotifierConfiguration extends BaseGetNotifierConfiguration<LogNotifierConfiguration> {
-
-    @Override
-    protected String listConfiguration(LogNotifierConfiguration configuration) {
-        String headers[] = { "Enabled", "Noisy", "Use Separate Log File" };
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[3];
-
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getNoisy();
-        values[2] = configuration.getUseSeparateLogFile();
-
-        columnFormatter.addRow(values);
-        return columnFormatter.toString();
-    }
-
+public class GetLogNotifierConfiguration extends BaseGetNotifierConfigurationCommand<LogNotifierConfiguration> {
+    
     @Override
     protected Map<String, Object> getNotifierConfiguration(LogNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
         if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
-            map.put("useSeparateLogFile", configuration.getUseSeparateLogFile());
-        } else {
-            map.put("noisy", Boolean.TRUE.toString());
+            map.put("Use Separate Log File", configuration.getUseSeparateLogFile());
         }
 
         return map;
     }
+
 }

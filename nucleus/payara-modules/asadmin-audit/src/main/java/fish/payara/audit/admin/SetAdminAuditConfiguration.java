@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -49,9 +49,14 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 
 import fish.payara.audit.AuditLevel;
+import fish.payara.internal.notification.NotifierUtils;
 import fish.payara.audit.AdminAuditConfiguration;
 import fish.payara.audit.AdminAuditService;
+
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -63,6 +68,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -103,6 +109,18 @@ public class SetAdminAuditConfiguration implements AdminCommand {
     private String target;
     private Config targetConfig;
 
+    @Param(name = "enableNotifiers", alias = "enable-notifiers", optional = true)
+    private List<String> enableNotifiers;
+
+    @Param(name = "disableNotifiers", alias = "disable-notifiers", optional = true)
+    private List<String> disableNotifiers;
+
+    @Param(name = "setNotifiers", alias = "set-notifiers", optional = true)
+    private List<String> setNotifiers;
+
+    @Inject
+    private ServiceLocator serviceLocator;
+
     @Inject
     private AdminAuditService auditService;
 
@@ -118,19 +136,68 @@ public class SetAdminAuditConfiguration implements AdminCommand {
         final AdminAuditConfiguration configuration = targetConfig.getExtensionByType(AdminAuditConfiguration.class);
 
         try {
+            final Set<String> notifierNames = NotifierUtils.getNotifierNames(serviceLocator);
             ConfigSupport.apply(new SingleConfigCode<AdminAuditConfiguration>() {
                 @Override
-                public Object run(AdminAuditConfiguration configurationProxy) throws PropertyVetoException, TransactionFailure {
+                public Object run(AdminAuditConfiguration proxy) throws PropertyVetoException, TransactionFailure {
+                    proxy.enabled(enabled.toString());
+                    proxy.setAuditLevel(auditLevel);
 
-                    configurationProxy.enabled(enabled.toString());
-                    configurationProxy.setAuditLevel(auditLevel);
+                    List<String> notifiers = proxy.getNotifierList();
+                    if (enableNotifiers != null) {
+                        for (String notifier : enableNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                if (!notifiers.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                }
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
+                    }
+                    if (disableNotifiers != null) {
+                        for (String notifier : disableNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                notifiers.remove(notifier);
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
+                    }
+                    if (setNotifiers != null) {
+                        notifiers.clear();
+                        for (String notifier : setNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                if (!notifiers.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                }
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(proxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
+                    }
                     return null;
                 }
             }, configuration);
 
-            if (dynamic && target.equals("server-config")) {
+            if (dynamic != null && dynamic && target.equals("server-config")) {
                 auditService.setEnabled(enabled);
                 auditService.setAuditLevel(AuditLevel.valueOf(auditLevel));
+
+                Set<String> notifiers = auditService.getEnabledNotifiers();
+                if (enableNotifiers != null) {
+                    enableNotifiers.forEach(notifiers::add);
+                }
+                if (disableNotifiers != null) {
+                    disableNotifiers.forEach(notifiers::remove);
+                }
+                if (setNotifiers != null) {
+                    notifiers.clear();
+                    setNotifiers.forEach(notifiers::add);
+                }
             }
         } catch (TransactionFailure ex) {
             LOGGER.log(Level.SEVERE, null, ex);

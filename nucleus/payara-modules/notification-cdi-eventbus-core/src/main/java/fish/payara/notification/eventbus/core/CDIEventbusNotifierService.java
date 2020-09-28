@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,65 +39,62 @@
  */
 package fish.payara.notification.eventbus.core;
 
-import com.sun.enterprise.util.Utility;
-import fish.payara.micro.cdi.Outbound;
-import fish.payara.nucleus.notification.configuration.CDIEventbusNotifier;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.service.BaseNotifierService;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.enterprise.inject.spi.CDI;
 import java.lang.annotation.Annotation;
 import java.util.logging.Logger;
+
+import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
+
+import com.sun.enterprise.util.Utility;
+
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.logging.LogLevel;
-import org.glassfish.hk2.api.messaging.MessageReceiver;
-import org.glassfish.hk2.api.messaging.SubscribeTo;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.PayaraConfiguredNotifier;
+import fish.payara.internal.notification.PayaraNotification;
+import fish.payara.micro.cdi.Outbound;
+import fish.payara.notification.eventbus.EventbusMessage;
+import fish.payara.notification.eventbus.core.model.CDIEventbusMessage;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "service-cdieventbus")
+@Service(name = "cdieventbus-notifier")
 @RunLevel(StartupRunLevel.VAL)
-@MessageReceiver
-public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusNotificationEvent,
-        CDIEventbusNotifier,
-        CDIEventbusNotifierConfiguration> {
+public class CDIEventbusNotifierService extends PayaraConfiguredNotifier<CDIEventbusNotifierConfiguration> {
 
-    private CDIEventbusNotifierConfigurationExecutionOptions executionOptions;
-    private @Inject ApplicationRegistry appRegistry;
-    private static final Logger log = Logger.getLogger(CDIEventbusNotifierService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CDIEventbusNotifierService.class.getName());
+
+    @Inject
+    private ApplicationRegistry appRegistry;
 
     @Override
-    public void handleNotification(@SubscribeTo NotificationEvent event) {
-        if (event instanceof CDIEventbusNotificationEvent && executionOptions != null && executionOptions.isEnabled()) {
-            CDIEventbusMessageImpl message = new CDIEventbusMessageImpl((CDIEventbusNotificationEvent) event, event.getSubject(), event.getMessage());
-            for(String appName : appRegistry.getAllApplicationNames()) {
-                ClassLoader oldCL = null;
-                try {
-                    ClassLoader appCl = appRegistry.get(appName).getAppClassLoader();
-                    if(appCl != null) {
-                        oldCL = Utility.setContextClassLoader(appCl);
-                        CDI.current();
-                        doHandleNotification((CDIEventbusNotificationEvent) event, message);
-                    }
+    public void handleNotification(PayaraNotification event) {
+        for(String appName : appRegistry.getAllApplicationNames()) {
+            ClassLoader oldCL = null;
+            try {
+                ClassLoader appCl = appRegistry.get(appName).getAppClassLoader();
+                if(appCl != null) {
+                    oldCL = Utility.setContextClassLoader(appCl);
+                    CDI.current();
+                    sendNotification(event);
                 }
-                catch(IllegalStateException e) {
-                    log.log(LogLevel.FINE, "CDIEventbusNotifierService.handleNotification: not a CDI application", e);
-                }
-                finally {
-                    Utility.setContextClassLoader(oldCL);
-                }
+            } catch (IllegalStateException e) {
+                LOGGER.log(LogLevel.FINE, "CDIEventbusNotifierService.handleNotification: not a CDI application", e);
+            } finally {
+                Utility.setContextClassLoader(oldCL);
             }
         }
     }
 
-    private void doHandleNotification(final CDIEventbusNotificationEvent event, CDIEventbusMessageImpl message) {
-        CDI.current().getBeanManager().fireEvent(message, new Outbound() {
+    private void sendNotification(final PayaraNotification notification) {
+
+        final EventbusMessage event = new CDIEventbusMessage(notification);
+
+        CDI.current().getBeanManager().fireEvent(event, new Outbound() {
             @Override
             public String eventName() {
                 return "";
@@ -105,12 +102,12 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
 
             @Override
             public boolean loopBack() {
-                return executionOptions.getLoopBack();
+                return Boolean.valueOf(configuration.getLoopBack());
             }
 
             @Override
             public String[] instanceName() {
-                return new String[] { event.getInstanceName() };
+                return new String[] { notification.getInstanceName() };
             }
 
             @Override
@@ -120,15 +117,4 @@ public class CDIEventbusNotifierService extends BaseNotifierService<CDIEventbusN
         });
     }
 
-    @Override
-    public void bootstrap() {
-        register(NotifierType.CDIEVENTBUS, CDIEventbusNotifier.class, CDIEventbusNotifierConfiguration.class);
-
-        executionOptions = (CDIEventbusNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-    }
-
-    @Override
-    public void shutdown() {
-        reset(this);
-    }
 }

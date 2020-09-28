@@ -121,7 +121,7 @@
 
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
-        <grizzly.npn.version>1.9.payara-p1</grizzly.npn.version>
+        <grizzly.npn.api.version>1.9.payara-p1</grizzly.npn.api.version>
         <grizzly.npn.osgi.version>1.9</grizzly.npn.osgi.version>
 
         <!-- Microprofile -->
@@ -158,7 +158,7 @@
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.6</commons-io.version>
-      
+
         <mimepull.version>1.9.12</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 6 framework specification. -->
@@ -180,10 +180,6 @@
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <l10n.version>3.1-b41</l10n.version>
         <ha-api.version>3.1.12</ha-api.version>
-        <smack.version>4.1.9</smack.version>
-        <jxmpp.version>0.4.2</jxmpp.version>
-        <xpp3.version>1.1.4c_7</xpp3.version>
-        <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
 
         <!-- Build -->
@@ -195,7 +191,7 @@
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <ant.version>1.10.5</ant.version>
+        <ant.version>1.10.8</ant.version>
         <ant-launcher.version>1.10.5</ant-launcher.version>
         <metainf-services.version>1.8</metainf-services.version>
 
@@ -203,7 +199,7 @@
         <findbugs.skip>true</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>
-        <findbugs.exclude />
+        <findbugs.exclude/>
         <findbugs-maven-plugin.version>3.0.5</findbugs-maven-plugin.version>
         <findbugs.version>1.7</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
@@ -714,7 +710,7 @@ Parent is ${project.parent}</echo>
                 <groupId>fish.payara.monitoring-console</groupId>
                 <artifactId>monitoring-console-api</artifactId>
                 <version>${monitoring-console-api.version}</version>
-            </dependency>            
+            </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>

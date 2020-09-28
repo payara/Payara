@@ -36,6 +36,7 @@
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
         <module>jakartaee-namespace-transformer</module>
+        <module>logging</module>
     </modules>
 
     <dependencyManagement>
@@ -127,6 +128,21 @@
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <GLASSFISH_HOME>${session.executionRootDirectory}/target/${payara.directory.name}</GLASSFISH_HOME>
+                            </environmentVariables>
+                            <!-- This needs tuning -->
+                            <systemPropertyVariables>
+                                <glassfishRemote_gfHome>${session.executionRootDirectory}/target/${payara.directory.name}</glassfishRemote_gfHome>
+                                <javaEEServer>payara-remote</javaEEServer>
+                                <payara.domain.name>${payara.domain.name}</payara.domain.name>
+                                <arquillian.launch>payara</arquillian.launch>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -187,6 +203,14 @@
                             </environmentVariables>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <MICRO_JAR>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</MICRO_JAR>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -217,6 +241,15 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <javaEEServer>payara-remote</javaEEServer>
+                                <payara.domain.name>${payara.domain.name}</payara.domain.name>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <javaEEServer>payara-remote</javaEEServer>

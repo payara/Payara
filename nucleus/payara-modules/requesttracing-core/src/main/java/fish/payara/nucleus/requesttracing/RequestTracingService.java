@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,56 +39,9 @@
  */
 package fish.payara.nucleus.requesttracing;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import fish.payara.notification.requesttracing.RequestTrace;
-import fish.payara.nucleus.config.ClusteredConfig;
-import fish.payara.nucleus.eventbus.ClusterMessage;
-import fish.payara.nucleus.eventbus.EventBus;
-import fish.payara.nucleus.events.HazelcastEvents;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
-import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.TimeUtil;
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.domain.*;
-import fish.payara.nucleus.notification.log.LogNotifier;
-import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
-import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
-import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
-import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
-import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
-import fish.payara.monitoring.collect.MonitoringData;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.monitoring.collect.MonitoringWatchCollector;
-import fish.payara.monitoring.collect.MonitoringWatchSource;
-import fish.payara.notification.requesttracing.EventType;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import fish.payara.notification.requesttracing.RequestTraceSpanLog;
-import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
-import fish.payara.nucleus.requesttracing.events.RequestTracingEvents;
-import fish.payara.nucleus.requesttracing.sampling.AdaptiveSampleFilter;
-import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -99,6 +52,59 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.messaging.Topic;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Changed;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.NotProcessed;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import fish.payara.internal.notification.PayaraNotification;
+import fish.payara.internal.notification.PayaraNotificationFactory;
+import fish.payara.internal.notification.TimeUtil;
+import fish.payara.monitoring.collect.MonitoringData;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.monitoring.collect.MonitoringWatchCollector;
+import fish.payara.monitoring.collect.MonitoringWatchSource;
+import fish.payara.notification.requesttracing.EventType;
+import fish.payara.notification.requesttracing.RequestTrace;
+import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.notification.requesttracing.RequestTraceSpanLog;
+import fish.payara.notification.requesttracing.RequestTracingNotificationData;
+import fish.payara.nucleus.config.ClusteredConfig;
+import fish.payara.nucleus.eventbus.ClusterMessage;
+import fish.payara.nucleus.eventbus.EventBus;
+import fish.payara.nucleus.events.HazelcastEvents;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
+import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
+import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
+import fish.payara.nucleus.requesttracing.events.RequestTracingEvents;
+import fish.payara.nucleus.requesttracing.sampling.AdaptiveSampleFilter;
+import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
+import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
+import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
 
 /**
  * Main service class that provides methods used by interceptors for tracing
@@ -149,16 +155,13 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
     private ServiceLocator habitat;
 
     @Inject
-    NotificationService notificationService;
+    private Topic<PayaraNotification> notificationEventBus;
+
+    @Inject
+    private PayaraNotificationFactory notificationFactory;
 
     @Inject
     RequestTraceSpanStore requestEventStore;
-
-    @Inject
-    NotificationEventFactoryStore eventFactoryStore;
-
-    @Inject
-    private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
 
     @Inject
     private HazelcastCore hazelcast;
@@ -191,21 +194,6 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
         events.register(this);
         configuration = habitat.getService(RequestTracingServiceConfiguration.class);
         payaraExecutorService = habitat.getService(PayaraExecutorService.class);
-        if (configuration != null && configuration.getNotifierList() != null && configuration.getNotifierList().isEmpty()) {
-            try {
-                ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
-                    @Override
-                    public Object run(final RequestTracingServiceConfiguration configurationProxy)
-                            throws PropertyVetoException, TransactionFailure {
-                        LogNotifier notifier = configurationProxy.createChild(LogNotifier.class);
-                        configurationProxy.getNotifierList().add(notifier);
-                        return configurationProxy;
-                    }
-                }, configuration);
-            } catch (TransactionFailure e) {
-                logger.log(Level.SEVERE, "Error occurred while setting initial log notifier", e);
-            }
-        }
     }
 
     @Override
@@ -325,22 +313,9 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
      * @since 4.1.2.173
      */
     public void bootstrapNotifierList() {
-        executionOptions.resetNotifierExecutionOptions();
+        executionOptions.clearNotifiers();
         if (configuration.getNotifierList() != null) {
-            for (Notifier notifier : configuration.getNotifierList()) {
-                ConfigView view = ConfigSupport.getImpl(notifier);
-                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-                NotifierExecutionOptionsFactory<Notifier> notifierExecutionOptions = executionOptionsFactoryStore.get(annotation.type());
-                if (notifierExecutionOptions != null) {
-                    executionOptions.addNotifierExecutionOption(notifierExecutionOptions.build(notifier));
-                }
-            }
-        }
-        if (executionOptions.getNotifierExecutionOptionsList().isEmpty()) {
-            // Add logging execution options by default
-            LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
-            logNotifierExecutionOptions.setEnabled(true);
-            executionOptions.addNotifierExecutionOption(logNotifierExecutionOptions);
+            configuration.getNotifierList().forEach(executionOptions::enableNotifier);
         }
     }
 
@@ -536,14 +511,14 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
 
             payaraExecutorService.submit(addTask);
 
-            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
-                if (notifierExecutionOptions.isEnabled()) {
-                    NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                    String subject = "Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold";
-                    NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(subject, requestTrace);
-                    notificationService.notify(EventSource.REQUESTTRACING, notificationEvent);
-                }
-            }
+            Collection<String> enabledNotifiers = getExecutionOptions().getEnabledNotifiers();
+            PayaraNotification notification = notificationFactory.newBuilder()
+                .whitelist(enabledNotifiers.toArray(new String[0]))
+                .subject("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold")
+                .message(requestTrace.toString())
+                .data(new RequestTracingNotificationData(requestTrace))
+                .build();
+            notificationEventBus.publish(notification);
         }
         requestEventStore.flushStore();
     }

@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016 Payara Foundation
+// Portions Copyright [2016-2020] Payara Foundation and/or affiliates
+
 package com.sun.gjc.spi.jdbc40;
 
 import com.sun.gjc.spi.ManagedConnectionImpl;
@@ -72,6 +73,8 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @param con Connection that is wrapped
      * @param mc  Managed Connection
      * @param cxRequestInfo  Connection Request Info
+     * @param jdbc30Connection If trhe connection is of type JDBC 3.0
+     * @param delegator
      */
     public ProfiledConnectionWrapper40(Connection con, ManagedConnectionImpl mc,
             javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
@@ -86,12 +89,12 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @return <code>Statement</code> object.
      * @throws java.sql.SQLException In case of a database error.
      */
+    @Override
     public Statement createStatement() throws SQLException {
         Statement output = null;
         Class intf[] = new Class[]{java.sql.Statement.class};
         try {
-            output = (java.sql.Statement) getProxyObject(
-                    new StatementWrapper40(this, super.createStatement()), intf);
+            output = (java.sql.Statement) getProxyObject(new StatementWrapper40(this, super.createStatement()), intf);
         } catch (Exception e) {
             //TODO SQLexception or any other type?
             throw new SQLException(e);
@@ -107,6 +110,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @return <code>Statement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
         Statement output = null;
         Class intf[] = new Class[]{java.sql.Statement.class};
@@ -129,14 +133,14 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @return <code>Statement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency,
             int resultSetHoldability) throws SQLException {
         Statement output = null;
         Class intf[] = new Class[]{java.sql.Statement.class};
         try{
             output = (java.sql.Statement)getProxyObject(
-                    new StatementWrapper40(this, 
-                    super.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability)), 
+                    new StatementWrapper40(this, super.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability)), 
                     intf);
         }catch(Exception e){
             throw new SQLException(e);
@@ -151,6 +155,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @return <code>DatabaseMetaData</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public DatabaseMetaData getMetaData() throws SQLException {
         return new DatabaseMetaDataWrapper40(this, super.getMetaData());
     }
@@ -163,6 +168,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @return <code> CallableStatement</code> object.
      * @throws java.sql.SQLException In case of a database error.
      */
+    @Override
     public CallableStatement prepareCall(String sql) throws SQLException {
         CallableStatement output = null;
         Class intf[] = new Class[]{java.sql.CallableStatement.class};
@@ -186,6 +192,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @return <code> CallableStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public CallableStatement prepareCall(String sql, int resultSetType,
             int resultSetConcurrency) throws SQLException {
         CallableStatement output = null;
@@ -211,6 +218,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @return <code> CallableStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public CallableStatement prepareCall(String sql, int resultSetType,
             int resultSetConcurrency,
             int resultSetHoldability) throws SQLException {
@@ -228,12 +236,13 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
 
     /**
      * Creates a <code> PreparedStatement </code> object for sending
-     * paramterized SQL statements to database
+     * parameterized SQL statements to database
      *
      * @param sql SQL Statement
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
         PreparedStatement output = null;
         Class intf[] = new Class[]{java.sql.PreparedStatement.class};
@@ -251,13 +260,14 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
 
     /**
      * Creates a <code> PreparedStatement </code> object for sending
-     * paramterized SQL statements to database
+     * parameterized SQL statements to database
      *
      * @param sql               SQL Statement
      * @param autoGeneratedKeys a flag indicating AutoGeneratedKeys need to be returned.
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
         PreparedStatement output = null;
         Class intf[] = new Class[]{java.sql.PreparedStatement.class};
@@ -272,7 +282,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
 
     /**
      * Creates a <code> PreparedStatement </code> object for sending
-     * paramterized SQL statements to database
+     * parameterized SQL statements to database
      *
      * @param sql           SQL Statement
      * @param columnIndexes an array of column indexes indicating the columns that should be
@@ -280,6 +290,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
             PreparedStatement output = null;
         Class intf[] = new Class[]{java.sql.PreparedStatement.class};
@@ -294,7 +305,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
 
     /**
      * Creates a <code> PreparedStatement </code> object for sending
-     * paramterized SQL statements to database
+     * parameterized SQL statements to database
      *
      * @param sql                  SQL Statement
      * @param resultSetType        Type of the ResultSet
@@ -302,6 +313,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType,
             int resultSetConcurrency) throws SQLException {
         PreparedStatement output = null;
@@ -318,7 +330,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
 
     /**
      * Creates a <code> PreparedStatement </code> object for sending
-     * paramterized SQL statements to database
+     * parameterized SQL statements to database
      *
      * @param sql                  SQL Statement
      * @param resultSetType        Type of the ResultSet
@@ -344,13 +356,14 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
 
     /**
      * Creates a <code> PreparedStatement </code> object for sending
-     * paramterized SQL statements to database
+     * parameterized SQL statements to database
      *
      * @param sql         SQL Statement
      * @param columnNames Name of bound columns.
      * @return <code> PreparedStatement</code> object.
      * @throws SQLException In case of a database error.
      */
+    @Override
     public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
         checkValidity();
         jdbcPreInvoke();
@@ -366,6 +379,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
         
     }
 
+    @Override
     public PreparedStatementWrapper40 prepareCachedStatement(String sql,
             int resultSetType, int resultSetConcurrency, boolean enableCaching)
             throws SQLException {
@@ -373,6 +387,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
                 resultSetType, resultSetConcurrency), enableCaching);
     }
 
+    @Override
     public PreparedStatementWrapper40 prepareCachedStatement(String sql,
             String[] columnNames, boolean enableCaching)
             throws SQLException {
@@ -380,6 +395,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
                 super.prepareStatement(sql, columnNames), enableCaching);
     }
 
+    @Override
     public PreparedStatementWrapper40 prepareCachedStatement(String sql,
             int resultSetType, int resultSetConcurrency, int resultSetHoldability,
             boolean enableCaching) throws SQLException {
@@ -388,6 +404,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
                 enableCaching);
     }
 
+    @Override
     public PreparedStatementWrapper40 prepareCachedStatement(String sql,
             int[] columnIndexes, boolean enableCaching)
             throws SQLException {
@@ -395,6 +412,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
                 super.prepareStatement(sql, columnIndexes), enableCaching);
     }
 
+    @Override
     public PreparedStatementWrapper40 prepareCachedStatement(String sql,
             int autoGeneratedKeys, boolean enableCaching)
             throws SQLException {
@@ -402,6 +420,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
                 super.prepareStatement(sql, autoGeneratedKeys), enableCaching);
     }
 
+    @Override
     public CallableStatementWrapper40 callableCachedStatement(String sql,
             int resultSetType, int resultSetConcurrency, boolean enableCaching)
             throws SQLException {
@@ -409,6 +428,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
                 resultSetType, resultSetConcurrency), enableCaching);
     }
 
+    @Override
     public CallableStatementWrapper40 callableCachedStatement(String sql,
             int resultSetType, int resultSetConcurrency,
             int resultSetHoldability, boolean enableCaching)
@@ -423,7 +443,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
         
         T result;
         InvocationHandler ih = new InvocationHandler() {
-
+            @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 SQLTraceRecord record = new SQLTraceRecord();
                 record.setMethodName(method.getName());
