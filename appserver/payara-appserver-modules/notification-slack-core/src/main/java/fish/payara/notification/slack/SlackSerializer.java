@@ -1,5 +1,7 @@
 /*
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,31 +39,47 @@
  */
 package fish.payara.notification.slack;
 
-import java.beans.PropertyVetoException;
+import java.io.IOException;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import fish.payara.internal.notification.PayaraNotifierConfiguration;
+import fish.payara.internal.notification.PayaraNotification;
 
 /**
- * Configuration class with the aim to configure slack notification specific parameters.
- * This configuration is only being used by notification services.
- *
- * @author mertcaliskan
+ * A custom serializer that determines what to write to the slack endpoint
  */
-@Configured
-public interface SlackNotifierConfiguration extends PayaraNotifierConfiguration {
+public class SlackSerializer extends StdSerializer<PayaraNotification> {
 
-    @Attribute(required = true)
-    String getToken1();
-    void setToken1(String value) throws PropertyVetoException;
+    private static final long serialVersionUID = 1L;
 
-    @Attribute(required = true)
-    String getToken2();
-    void setToken2(String value) throws PropertyVetoException;
+    private SlackSerializer() {
+        super((Class<PayaraNotification>) null);
+    }
 
-    @Attribute(required = true)
-    String getToken3();
-    void setToken3(String value) throws PropertyVetoException;
+    @Override
+    public void serialize(PayaraNotification value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        gen.writeStartObject();
+        gen.writeObjectField("text", getDetailedSubject(value) + "\n" + value.getMessage());
+        gen.writeEndObject();
+    }
+
+    private static String getDetailedSubject(PayaraNotification event) {
+        return String.format("%s. (host: %s, server: %s, domain: %s, instance: %s)", 
+                event.getSubject(),
+                event.getHostName(),
+                event.getServerName(),
+                event.getDomainName(),
+                event.getInstanceName());
+    }
+
+    public static Module createModule() {
+        SimpleModule module = new SimpleModule("SlackModule");
+        module.addSerializer(PayaraNotification.class, new SlackSerializer());
+        return module;
+    }
+
 }

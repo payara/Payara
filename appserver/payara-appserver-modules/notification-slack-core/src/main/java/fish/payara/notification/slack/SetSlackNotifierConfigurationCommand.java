@@ -39,29 +39,60 @@ package fish.payara.notification.slack;
 
 import java.beans.PropertyVetoException;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import com.sun.enterprise.util.StringUtils;
 
-import fish.payara.internal.notification.PayaraNotifierConfiguration;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
- * Configuration class with the aim to configure slack notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-public interface SlackNotifierConfiguration extends PayaraNotifierConfiguration {
+@Service(name = "set-slack-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "set-slack-notifier-configuration",
+                description = "Configures Slack Notification Service")
+})
+public class SetSlackNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<SlackNotifierConfiguration> {
 
-    @Attribute(required = true)
-    String getToken1();
-    void setToken1(String value) throws PropertyVetoException;
+    @Param(name = "token1")
+    private String token1;
 
-    @Attribute(required = true)
-    String getToken2();
-    void setToken2(String value) throws PropertyVetoException;
+    @Param(name = "token2")
+    private String token2;
 
-    @Attribute(required = true)
-    String getToken3();
-    void setToken3(String value) throws PropertyVetoException;
+    @Param(name = "token3")
+    private String token3;
+
+    @Override
+    protected void applyValues(SlackNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
+
+        if (StringUtils.ok(token1)) {
+            configuration.setToken1(token1);
+        }
+        if (StringUtils.ok(token2)) {
+            configuration.setToken2(token2);
+        }
+        if (StringUtils.ok(token3)) {
+            configuration.setToken3(token3);
+        }
+    }
+
 }

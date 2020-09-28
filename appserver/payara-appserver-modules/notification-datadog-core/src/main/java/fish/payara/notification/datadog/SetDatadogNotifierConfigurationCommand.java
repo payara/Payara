@@ -1,5 +1,7 @@
 /*
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -35,33 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.slack;
+package fish.payara.notification.datadog;
 
 import java.beans.PropertyVetoException;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import com.sun.enterprise.util.StringUtils;
 
-import fish.payara.internal.notification.PayaraNotifierConfiguration;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
- * Configuration class with the aim to configure slack notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-public interface SlackNotifierConfiguration extends PayaraNotifierConfiguration {
+@Service(name = "set-datadog-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "set-datadog-notifier-configuration",
+                description = "Configures Datadog Notification Service")
+})
+public class SetDatadogNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<DatadogNotifierConfiguration> {
 
-    @Attribute(required = true)
-    String getToken1();
-    void setToken1(String value) throws PropertyVetoException;
+    @Param(name = "key")
+    private String key;
 
-    @Attribute(required = true)
-    String getToken2();
-    void setToken2(String value) throws PropertyVetoException;
+    @Override
+    protected void applyValues(DatadogNotifierConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
 
-    @Attribute(required = true)
-    String getToken3();
-    void setToken3(String value) throws PropertyVetoException;
+        if (StringUtils.ok(key)) {
+            configuration.setKey(key);
+        }
+    }
+
 }

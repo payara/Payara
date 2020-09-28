@@ -1,5 +1,7 @@
 /*
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,31 +39,47 @@
  */
 package fish.payara.notification.slack;
 
-import java.beans.PropertyVetoException;
+import java.util.Map;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.internal.notification.PayaraNotifierConfiguration;
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
- * Configuration class with the aim to configure slack notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-public interface SlackNotifierConfiguration extends PayaraNotifierConfiguration {
+@Service(name = "get-slack-notifier-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = NotificationServiceConfiguration.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "get-slack-notifier-configuration",
+                description = "Lists Slack Notifier Configuration")
+})
+public class GetSlackNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<SlackNotifierConfiguration> {
+    
+    @Override
+    protected Map<String, Object> getNotifierConfiguration(SlackNotifierConfiguration configuration) {
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
-    @Attribute(required = true)
-    String getToken1();
-    void setToken1(String value) throws PropertyVetoException;
+        if (configuration != null) {
+            map.put("Token 1", configuration.getToken1());
+            map.put("Token 2", configuration.getToken2());
+            map.put("Token 3", configuration.getToken3());
+        }
 
-    @Attribute(required = true)
-    String getToken2();
-    void setToken2(String value) throws PropertyVetoException;
-
-    @Attribute(required = true)
-    String getToken3();
-    void setToken3(String value) throws PropertyVetoException;
+        return map;
+    }
 }
