@@ -43,7 +43,6 @@ import com.hazelcast.cache.impl.operation.AddCacheConfigOperation;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
-import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
 import java.io.IOException;
@@ -105,13 +104,13 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     }
 
     @Override
-    public void distributedObjectCreated(DestroyEventContext destroyContext) {
+    public void registerObject(DestroyEventContext destroyContext) {
         destroyEventListener = new EventListenerImpl(destroyContext);
         events.register(destroyEventListener);
     }
 
     @Override
-    public void distributedObjectDestroyed() {
+    public void unregisterObject() {
         // Hazelcast object has been destroyed
         events.unregister(destroyEventListener);
         destroyEventListener = null;
@@ -128,21 +127,20 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
-        out.writeUTF(contextInstance.getInstanceComponentId());
+        out.writeObject(contextInstance);
         out.writeUTF(moduleName);
     }
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
-        String componentId = in.readUTF();
-        contextInstance = componentId == null ? ctxUtil.empty() : ctxUtil.fromComponentId(componentId);
+        contextInstance = in.readObject();
         moduleName = in.readUTF();
     }
 
     @Override
-    public boolean isAvailable(Operation op) {
+    public boolean isAvailable(Class<?> operationClass) {
         if (!contextInstance.isLoaded()) {
-            if (filter(op) || disabledTenants.contains(moduleName)) {
+            if (filter(operationClass) || disabledTenants.contains(moduleName)) {
                 return true;
             }
             lock.lock();
@@ -151,7 +149,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
                 int unavailableCount = blockedCounts.compute(componentId, (k, v) -> v == null ? 0 : ++v);
                 log.log(unavailableCount > 100 ? Level.INFO : Level.FINEST,
                         String.format("BLOCKED: tenant not available: %s, module %s, Operation: %s",
-                                componentId, moduleName, op.toString()));
+                                componentId, moduleName, operationClass.getName()));
                 if (unavailableCount > 100) {
                     blockedCounts.remove(componentId);
                 }
@@ -165,8 +163,8 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         return true;
     }
 
-    private boolean filter(Operation op) {
-        return filteredClasses.stream().anyMatch(cls -> cls.isInstance(op));
+    private boolean filter(Class<?> operationClass) {
+        return filteredClasses.stream().anyMatch(operationClass::equals);
     }
 
     @Override
