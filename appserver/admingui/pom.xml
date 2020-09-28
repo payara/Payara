@@ -147,8 +147,6 @@
         <module>cdieventbus-notifier-console-plugin-l10n</module>
         <module>jms-notifier-console-plugin</module>
         <module>jms-notifier-console-plugin-l10n</module>
-        <module>datadog-notifier-console-plugin</module>
-        <module>datadog-notifier-console-plugin-l10n</module>
         <module>healthcheck-service-console-plugin</module>
         <module>healthcheck-service-console-plugin-l10n</module>
         <module>jmx-monitoring-plugin</module>
