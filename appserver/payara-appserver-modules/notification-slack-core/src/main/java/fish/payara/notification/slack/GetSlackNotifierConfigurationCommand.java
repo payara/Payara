@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,20 @@
  */
 package fish.payara.notification.slack;
 
-import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.nucleus.notification.admin.BaseGetNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
-import java.util.HashMap;
 import java.util.Map;
-import org.glassfish.api.admin.*;
+
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.BaseGetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
@@ -64,37 +68,17 @@ import org.jvnet.hk2.annotations.Service;
                 path = "get-slack-notifier-configuration",
                 description = "Lists Slack Notifier Configuration")
 })
-public class GetSlackNotifierConfiguration extends BaseGetNotifierConfiguration<SlackNotifierConfiguration> {
-
-    @Override
-    protected String listConfiguration(SlackNotifierConfiguration configuration) {
-        String headers[] = {"Enabled", "Noisy", "Token 1", "Token 2", "Token 3"};
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[5];
-
-        values[0] = configuration.getEnabled();
-        values[1] = configuration.getNoisy();
-        values[2] = configuration.getToken1();
-        values[3] = configuration.getToken2();
-        values[4] = configuration.getToken3();
-
-        columnFormatter.addRow(values);
-        return columnFormatter.toString();
-    }
+public class GetSlackNotifierConfigurationCommand extends BaseGetNotifierConfigurationCommand<SlackNotifierConfiguration> {
     
     @Override
     protected Map<String, Object> getNotifierConfiguration(SlackNotifierConfiguration configuration) {
-        Map<String, Object> map = new HashMap<>(5);
+        Map<String, Object> map = super.getNotifierConfiguration(configuration);
 
         if (configuration != null) {
-            map.put("enabled", configuration.getEnabled());
-            map.put("noisy", configuration.getNoisy());
-            map.put("token1", configuration.getToken1());
-            map.put("token2", configuration.getToken2());
-            map.put("token3", configuration.getToken3());
-        } else {
-            map.put("noisy", Boolean.TRUE.toString());
-       }
+            map.put("Token 1", configuration.getToken1());
+            map.put("Token 2", configuration.getToken2());
+            map.put("Token 3", configuration.getToken3());
+        }
 
         return map;
     }

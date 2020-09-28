@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,22 +37,28 @@
  */
 package fish.payara.notification.slack;
 
+import java.beans.PropertyVetoException;
+
 import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.notification.admin.BaseNotificationConfigurer;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import fish.payara.internal.notification.admin.BaseSetNotifierConfigurationCommand;
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "notification-slack-configure")
+@Service(name = "set-slack-notifier-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -61,10 +66,10 @@ import java.beans.PropertyVetoException;
 @RestEndpoints({
         @RestEndpoint(configBean = NotificationServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
-                path = "notification-slack-configure",
+                path = "set-slack-notifier-configuration",
                 description = "Configures Slack Notification Service")
 })
-public class SlackNotificationConfigurer extends BaseNotificationConfigurer<SlackNotifierConfiguration, SlackNotifierService> {
+public class SetSlackNotifierConfigurationCommand extends BaseSetNotifierConfigurationCommand<SlackNotifierConfiguration> {
 
     @Param(name = "token1")
     private String token1;
@@ -77,30 +82,17 @@ public class SlackNotificationConfigurer extends BaseNotificationConfigurer<Slac
 
     @Override
     protected void applyValues(SlackNotifierConfiguration configuration) throws PropertyVetoException {
-        if(this.enabled != null) {
-            configuration.enabled(this.enabled);
-        }
-        if(this.noisy != null) {
-            configuration.noisy(this.noisy);
-        }
-        if(StringUtils.ok(token1)) {
+        super.applyValues(configuration);
+
+        if (StringUtils.ok(token1)) {
             configuration.setToken1(token1);
         }
-        if(StringUtils.ok(token2)) {
+        if (StringUtils.ok(token2)) {
             configuration.setToken2(token2);
         }
-        if(StringUtils.ok(token3)) {
+        if (StringUtils.ok(token3)) {
             configuration.setToken3(token3);
         }
     }
 
-    @Override
-    protected String getHealthCheckNotifierCommandName() {
-        return "healthcheck-slack-notifier-configure";
-    }
-
-    @Override
-    protected String getRequestTracingNotifierCommandName() {
-        return "requesttracing-slack-notifier-configure";
-    }
 }
