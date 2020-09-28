@@ -39,6 +39,8 @@
  */
 package fish.payara.context;
 
+import java.io.Serializable;
+
 /**
  * Utility to create / push Jakarta EE and CDI thread contexts
  *
@@ -103,7 +105,7 @@ public interface ContextProducer {
     /**
      * specific, immutable, thread-safe instance of the context
      */
-    interface Instance {
+    interface Instance extends Serializable {
         /**
          * pushes Java EE invocation context onto the invocation stack use
          * try-with-resources to pop the context

@@ -53,7 +53,6 @@ import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ModuleInfo;
@@ -67,8 +66,6 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public class JavaEEContextUtilImpl implements JavaEEContextUtil {
-    @Inject
-    private ServerContext serverContext;
     @Inject
     private ComponentEnvManager compEnvMgr;
     @Inject
@@ -169,9 +166,10 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
 
 
     public class InstanceImpl implements Instance {
+        private static final long serialVersionUID = 1L;
         private final String componentId;
-        private volatile ComponentInvocation cachedInvocation;
-        private volatile boolean loaded;
+        private volatile transient ComponentInvocation cachedInvocation;
+        private volatile transient boolean loaded;
 
 
         /**
