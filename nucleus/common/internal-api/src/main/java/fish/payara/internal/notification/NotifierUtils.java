@@ -42,7 +42,6 @@ package fish.payara.internal.notification;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -92,6 +91,7 @@ public final class NotifierUtils {
      * @param notifierClass the notifier of the class
      * @return the class used to configure the configured notifier
      */
+    @SuppressWarnings("unchecked")
     public static <C extends PayaraNotifierConfiguration> Class<C> getConfigurationClass(Class<?> notifierClass) {
         final ParameterizedType genericSuperclass = (ParameterizedType) notifierClass.getGenericSuperclass();
         return (Class<C>) genericSuperclass.getActualTypeArguments()[0];
@@ -101,21 +101,35 @@ public final class NotifierUtils {
      * @return a camel cased string representing the result
      */
     public static String convertToCamelCase(String string) {
-        if (string == null || string.isEmpty()) {
+        if (string == null) {
+            return null;
+        }
+
+        // Make sure the string has no leading or trailing whitespace or symbols
+        string = string.trim()
+            .replaceAll("^[^a-zA-Z0-9]+", "")
+            .replaceAll("[^a-zA-Z0-9]+$", "");
+
+        if (string.isEmpty()) {
             return string;
         }
 
         String result = "";
-        // Make sure the string has no leading or trailing whitespace
-        string = string.trim();
+
+        // Track if a space or other character that requires an upper case character is encountered
+        boolean upperCaseNextCharacter = false;
 
         // Count through each other character
         for (int i = 0; i < string.length(); i++) {
             char ch = string.charAt(i);
 
-            // If a space is found, ignore and convert the next letter to 
-            if (Character.isWhitespace(ch)) {
-                result += Character.toUpperCase(string.charAt(++i));
+            // If a space is found, ignore and convert the next letter to upper case
+            if (Character.isWhitespace(ch) || (!Character.isAlphabetic(ch) && !Character.isDigit(ch))) {
+                upperCaseNextCharacter = true;
+                continue;
+            } else if (upperCaseNextCharacter) {
+                upperCaseNextCharacter = false;
+                result += Character.toUpperCase(ch);
             } else {
                 result += Character.toLowerCase(ch);
             }
