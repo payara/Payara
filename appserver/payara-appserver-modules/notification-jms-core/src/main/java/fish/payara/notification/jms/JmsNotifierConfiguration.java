@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,20 +37,18 @@
  */
 package fish.payara.notification.jms;
 
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
+import java.beans.PropertyVetoException;
+
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
-import java.beans.PropertyVetoException;
+import fish.payara.internal.notification.PayaraNotifierConfiguration;
 
 /**
  * @author mertcaliskan
  */
 @Configured
-@NotifierConfigurationType(type = NotifierType.JMS)
-public interface JmsNotifierConfiguration extends NotifierConfiguration {
+public interface JmsNotifierConfiguration extends PayaraNotifierConfiguration {
 
     @Attribute(required = true)
     String getContextFactoryClass();

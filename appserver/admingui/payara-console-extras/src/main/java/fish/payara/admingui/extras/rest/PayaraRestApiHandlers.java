@@ -1,5 +1,5 @@
 /* 
- *     Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *     Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -354,7 +354,7 @@ public class PayaraRestApiHandlers {
     @Handler(id="py.sortRequestTracingEnabledNotifierStatus",
     	input={
             @HandlerInput(name="specifiedNotifiers", type=String.class, required=true),
-            @HandlerInput(name="avaliableNotifiers", type=List.class, required=true )},
+            @HandlerInput(name="availableNotifiers", type=List.class, required=true )},
         output={
             @HandlerOutput(name="enabled", type=List.class),
             @HandlerOutput(name="disabled", type=List.class)})
@@ -362,26 +362,29 @@ public class PayaraRestApiHandlers {
         List<String> enabled = new ArrayList<String>();
         List<String> disabled = new ArrayList<String>();
         
-        List<String> avaliable = (List) handlerctx.getInputValue("avaliableNotifiers");
+        List<String> avaliable = (List) handlerctx.getInputValue("availableNotifiers");
         
         String notifiersString = (String) handlerctx.getInputValue("specifiedNotifiers");
-        notifiersString = notifiersString.substring(1, notifiersString.length() - 2);
-        String[] notifiers = notifiersString.split("\\}\\,");
-        for (String notifier : notifiers){
-            String name = notifier.split("notifierName=", 2)[1];
-            if (notifier.contains("notifierEnabled=true")){
-                enabled.add(name);
-            } else {
-                disabled.add(name);
+        if (notifiersString == null) {
+            notifiersString = "";
+        } else {
+            notifiersString = notifiersString.substring(1, notifiersString.length() - 2);
+            String[] notifiers = notifiersString.split("\\}\\,");
+            for (String notifier : notifiers){
+                String name = notifier.split("notifierName=", 2)[1];
+                if (notifier.contains("notifierEnabled=true")){
+                    enabled.add(name);
+                } else {
+                    disabled.add(name);
+                }
+                avaliable.remove(name);
             }
-            avaliable.remove(name);
         }
         for (String unused : avaliable){
             disabled.add(unused);
         }        
         handlerctx.setOutputValue("disabled", disabled);
         handlerctx.setOutputValue("enabled", enabled);
-                
     }
     
     /**
@@ -506,7 +509,7 @@ public class PayaraRestApiHandlers {
         @Handler(id="py.sortHealthcheckEnabledNotifierStatus",
     	input={
             @HandlerInput(name="specifiedNotifiers", type=String.class, required=true),
-            @HandlerInput(name="avaliableNotifiers", type=List.class, required=true )},
+            @HandlerInput(name="availableNotifiers", type=List.class, required=true )},
         output={
             @HandlerOutput(name="enabled", type=List.class),
             @HandlerOutput(name="disabled", type=List.class)})
@@ -514,7 +517,7 @@ public class PayaraRestApiHandlers {
         List<String> enabled = new ArrayList<String>();
         List<String> disabled = new ArrayList<String>();
         
-        List<String> avaliable = (List) handlerctx.getInputValue("avaliableNotifiers");
+        List<String> avaliable = (List) handlerctx.getInputValue("availableNotifiers");
         
         String notifiersString = (String) handlerctx.getInputValue("specifiedNotifiers");
         notifiersString = notifiersString.substring(1, notifiersString.length() - 2);
@@ -527,7 +530,7 @@ public class PayaraRestApiHandlers {
                 continue;
             }
             
-            String name = "service-" + notifier.split("notifierName=", 2)[1].toLowerCase();
+            String name = notifier.split("notifierName=", 2)[1].toLowerCase();
             if (notifier.contains("notifierEnabled=true")){
                 enabled.add(name);
             } else {
@@ -543,94 +546,6 @@ public class PayaraRestApiHandlers {
                 
     }
     
-    /**
-     * Updates the request tracing notifiers to be enabled or disabled
-     * @param handlerCtx 
-     */
-    @Handler(id="py.updateNotifiers",
-            input={
-                @HandlerInput(name="endpoint", type=String.class, required=true),
-                @HandlerInput(name="selected", type=String[].class, required=true),
-                @HandlerInput(name="notifiers", type=String[].class, required=true),
-                @HandlerInput(name="dynamic", type=Boolean.class, required=true),
-                @HandlerInput(name="quiet", type=boolean.class, defaultValue="false"),
-                @HandlerInput(name="throwException", type=boolean.class, defaultValue="true"),
-                @HandlerInput(name="target", type=String.class, required=true)
-            })
-    public static void updateNotifiers(HandlerContext handlerCtx) {
-        String[] notifiers = (String[]) handlerCtx.getInputValue("notifiers");
-        String[] enabled = (String[]) handlerCtx.getInputValue("selected");
-        String endpoint = (String) handlerCtx.getInputValue("endpoint");
-        Boolean dynamic = (Boolean) handlerCtx.getInputValue("dynamic");
-        Boolean quiet = (Boolean) handlerCtx.getInputValue("quiet");
-        Boolean throwException = (Boolean) handlerCtx.getInputValue("throwException");
-        String target = (String) handlerCtx.getInputValue("target");
-        List<String> enabledNotifiers = Arrays.asList(enabled);
-        
-        if (dynamic == null) {
-            dynamic = false;
-        }
-
-        boolean forRequestTracing = false;
-        boolean forHealthCheck = false;
-        boolean forMonitoring = false;
-        boolean forAdminAudit = false;
-
-        for (String notifier : notifiers){
-            String name = notifier.split("-")[1];
-            String restEndpoint;
-            Map<String, Object> attributes = new HashMap<>();
-            if (endpoint.contains("request-tracing-service-configuration")){
-                restEndpoint = endpoint + "/requesttracing-" + name + "-notifier-configure";
-                forRequestTracing = true;
-            } else if (endpoint.contains("health-check-service-configuration")){
-                restEndpoint = endpoint + "/healthcheck-" + name + "-notifier-configure";
-                forHealthCheck = true;
-            } else if (endpoint.contains("monitoring-service-configuration")){
-                restEndpoint = endpoint + "/monitoring-" + name + "-notifier-configure";
-                forMonitoring = true;
-            } else if (endpoint.contains("admin-audit-configuration")) {
-                restEndpoint = endpoint + "/set-admin-audit-service-notifier-configuration";
-                attributes.put("notifier", name);
-                forAdminAudit = true;
-            } else {
-                //Unknown service being configured
-                throw new UnknownConfigurationException();
-            }
-            
-            
-            if (enabledNotifiers.contains(notifier)){
-                attributes.put("enabled", "true");                
-            } else {
-                attributes.put("enabled", "false");
-            }
-            if (!forAdminAudit) {
-                //PAYARA-1616 go silent, bootstrap will take place after iteration.
-                attributes.put("dynamic", "false");
-            } else {
-                attributes.put("dynamic", "true");
-            }
-            attributes.put("target", target);
-            RestUtil.restRequest(restEndpoint, attributes, "post", handlerCtx, quiet, throwException);
-        }
-        // PAYARA-1616
-        // manually bootstrap healthCheck and requestTracing services for once so that it doesn't get bootstrapped each time for enabled notifier.
-        if (dynamic){
-            if (forRequestTracing) {
-                String restEndpoint = endpoint + "/bootstrap-requesttracing";
-                RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
-            }
-            if (forHealthCheck) {
-                String restEndpoint = endpoint +  "/reboot-healthcheck";
-                RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
-            }
-            if (forMonitoring){
-                String restEndpoint = endpoint + "/bootstrap-monitoring";
-                RestUtil.restRequest(restEndpoint, null, "post", handlerCtx, quiet, throwException);
-            }
-        }
-    }
-  
     @Handler(id = "py.getHistoricHealthcheckMessages",
             input = @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
             output = @HandlerOutput(name = "result", type = java.util.List.class))

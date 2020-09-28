@@ -110,6 +110,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private Object additionalProperties;
     private Schema items;
+    @JsonIgnore
     private String implementation;
 
     public static Schema createInstance(AnnotationModel annotation, ApiContext context) {
@@ -826,8 +827,14 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
         if (from instanceof SchemaImpl
                 && ((SchemaImpl) from).getImplementation() != null
+                && context != null
                 && context.getApi().getComponents().getSchemas() != null) {
             String implementationClass = ((SchemaImpl) from).getImplementation();
+            
+            if (to instanceof SchemaImpl) {
+                ((SchemaImpl) to).setImplementation(mergeProperty(((SchemaImpl)to).getImplementation(), ((SchemaImpl) from).getImplementation(), override));
+            }
+            
             if (!implementationClass.equals("java.lang.Void")) {
                 Type type = context.getType(implementationClass);
                 String schemaName = null;

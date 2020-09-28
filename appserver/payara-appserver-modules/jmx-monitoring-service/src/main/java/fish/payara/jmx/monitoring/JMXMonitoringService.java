@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,20 +41,17 @@ package fish.payara.jmx.monitoring;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.admin.amx.config.AMXConfiguration;
+import fish.payara.internal.notification.PayaraNotification;
+import fish.payara.internal.notification.PayaraNotificationFactory;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
-import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
-import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,11 +70,10 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.messaging.Topic;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ConfigView;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 
@@ -108,13 +104,10 @@ public class JMXMonitoringService implements EventListener {
     private Events events;
 
     @Inject
-    private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
+    private Topic<PayaraNotification> notificationEventBus;
 
     @Inject
-    private NotificationEventFactoryStore eventStore;
-
-    @Inject
-    private NotificationService notificationService;
+    private PayaraNotificationFactory notificationFactory;
     
     @Inject
     PayaraExecutorService executor;
@@ -124,7 +117,7 @@ public class JMXMonitoringService implements EventListener {
     private boolean enabled;
     private int amxBootDelay = 10;
     private long monitoringDelay = amxBootDelay + 15;
-    private List<NotifierExecutionOptions> notifierExecutionOptionsList;
+    private final Set<String> enabledNotifiers = new LinkedHashSet<>();
     private ScheduledFuture<?> monitoringFuture;
 
     @PostConstruct
@@ -156,7 +149,7 @@ public class JMXMonitoringService implements EventListener {
 
             final MBeanServer server = getPlatformMBeanServer();
 
-            formatter = new JMXMonitoringFormatter(server, buildJobs(), this, eventStore, notificationService);
+            formatter = new JMXMonitoringFormatter(server, buildJobs(), this, notificationEventBus, notificationFactory, enabledNotifiers);
 
             Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.INFO, "JMX Monitoring Service will startup");
 
@@ -185,31 +178,20 @@ public class JMXMonitoringService implements EventListener {
      * @since 4.1.2.174
      */
     public void bootstrapNotifierList() {
-        notifierExecutionOptionsList = new ArrayList<>();
+        enabledNotifiers.clear();
         if (configuration.getNotifierList() != null) {
-            for (Notifier notifier : configuration.getNotifierList()) {
-                ConfigView view = ConfigSupport.getImpl(notifier);
-                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-                notifierExecutionOptionsList.add(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
-            }
-        }
-        if (notifierExecutionOptionsList.isEmpty()) {
-            // Add logging execution options by default
-            LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
-            logNotifierExecutionOptions.setEnabled(true);
-            notifierExecutionOptionsList.add(logNotifierExecutionOptions);
+            configuration.getNotifierList().forEach(enabledNotifiers::add);
         }
     }
 
     /**
-     * Returns the configuration of all the notifiers configured with the
-     * monitoring service
+     * Returns all notifiers configured with the monitoring service
      *
      * @since 4.1.2.174
      * @return
      */
-    public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
-        return notifierExecutionOptionsList;
+    public Set<String> getEnabledNotifiers() {
+        return enabledNotifiers;
     }
 
     /**

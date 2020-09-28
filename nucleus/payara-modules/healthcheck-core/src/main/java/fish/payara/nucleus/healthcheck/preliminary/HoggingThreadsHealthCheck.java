@@ -63,7 +63,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
+import static fish.payara.internal.notification.TimeUtil.prettyPrintDuration;
 
 /**
  * A "hogging thread" is a thread that uses most of the CPU during the measured period.
