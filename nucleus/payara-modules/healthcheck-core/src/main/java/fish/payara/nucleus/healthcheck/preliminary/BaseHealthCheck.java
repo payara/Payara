@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,31 +39,38 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
-import fish.payara.notification.healthcheck.HealthCheckResultStatus;
-import fish.payara.nucleus.healthcheck.*;
-import fish.payara.nucleus.healthcheck.configuration.Checker;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.domain.EventSource;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.domain.NotificationEventFactory;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
-import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Optional;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.messaging.Topic;
+import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Optional;
+
+import fish.payara.internal.notification.PayaraNotification;
+import fish.payara.internal.notification.PayaraNotificationFactory;
+import fish.payara.notification.healthcheck.HealthCheckNotificationData;
+import fish.payara.notification.healthcheck.HealthCheckResultEntry;
+import fish.payara.notification.healthcheck.HealthCheckResultStatus;
+import fish.payara.nucleus.healthcheck.HealthCheckConstants;
+import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
+import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.HistoricHealthCheckEventStore;
+import fish.payara.nucleus.healthcheck.configuration.Checker;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 
 /**
  * Base class for all health check services
@@ -84,10 +91,10 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     HealthCheckServiceConfiguration configuration;
 
     @Inject
-    NotificationService notificationService;
+    private Topic<PayaraNotification> notificationEventBus;
 
     @Inject
-    private NotificationEventFactoryStore eventFactoryStore;
+    private PayaraNotificationFactory notificationFactory;
 
     @Inject
     private HistoricHealthCheckEventStore healthCheckEventStore;
@@ -286,23 +293,34 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     public void sendNotification(String name, HealthCheckResult checkResult, Level level) {
         String message = "{0}:{1}";
         String subject = "Health Check notification with severity level: " + level.getName();
+        String messageFormatted = getMessageFormatted(new Object[]{name, getCumulativeMessages(checkResult.getEntries())});
 
-        if (healthCheckService.getNotifierExecutionOptionsList() != null) {
-            for (int i = 0; i < healthCheckService.getNotifierExecutionOptionsList().size(); i++) {
-                NotifierExecutionOptions notifierExecutionOptions = healthCheckService.getNotifierExecutionOptionsList().get(i);
-
-                if (notifierExecutionOptions.isEnabled(level)) {
-                    NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                    NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(name, checkResult.getEntries(), level);
-                    notificationService.notify(EventSource.HEALTHCHECK, notificationEvent);
-                }
-            }
-        }
+        Collection<String> enabledNotifiers = healthCheckService.getEnabledNotifiers();
+        PayaraNotification notification = notificationFactory.newBuilder()
+            .whitelist(enabledNotifiers.toArray(new String[0]))
+            .subject(name)
+            .message(messageFormatted)
+            .data(new HealthCheckNotificationData(checkResult.getEntries()))
+            .eventType(level.getName())
+            .build();
+        notificationEventBus.publish(notification);
 
         if (healthCheckService.isHistoricalTraceEnabled()) {
             healthCheckEventStore.addTrace(new Date().getTime(), level, subject, message,
                     new Object[]{name, checkResult.getEntries().toString()});
         }
+    }
+
+    private String getMessageFormatted(Object[] parameters) {
+        String formattedMessage = null;
+        if (parameters != null && parameters.length > 0) {
+            formattedMessage = MessageFormat.format("{0}:{1}", parameters);
+        }
+        return formattedMessage;
+    }
+
+    private String getCumulativeMessages(List<HealthCheckResultEntry> entries) {
+        return "Health Check Result:" + entries.toString();
     }
 
 }

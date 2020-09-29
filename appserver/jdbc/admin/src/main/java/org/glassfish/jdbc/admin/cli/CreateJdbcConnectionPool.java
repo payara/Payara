@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright (c) 2020 Payara Foundation and/or affiliates
 
 package org.glassfish.jdbc.admin.cli;
 
@@ -177,6 +178,9 @@ public class CreateJdbcConnectionPool implements AdminCommand {
     @Param(name = "wrapJdbcObjects",  optional=true, defaultValue="true")
     Boolean wrapjdbcobjects;
     
+    @Param(name="logjdbccalls", optional = true, defaultValue="false")
+    Boolean logJdbcCalls;
+    
     @Param(name="description", optional=true)
     String description;
     
@@ -201,10 +205,11 @@ public class CreateJdbcConnectionPool implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
        
-        HashMap attrList = new HashMap();
+        HashMap<String, String> attrList = new HashMap<>();
         attrList.put(ResourceConstants.CONNECTION_POOL_NAME, jdbc_connection_pool_id);
         attrList.put(ResourceConstants.DATASOURCE_CLASS, datasourceclassname);
         attrList.put(ServerTags.DESCRIPTION, description);
@@ -243,6 +248,7 @@ public class CreateJdbcConnectionPool implements AdminCommand {
         attrList.put(ResourceConstants.POOLING, pooling.toString());
         attrList.put(ResourceConstants.VALIDATION_CLASSNAME, validationclassname);
         attrList.put(ResourceConstants.WRAP_JDBC_OBJECTS, wrapjdbcobjects.toString());
+        attrList.put(ResourceConstants.LOG_JDBC_CALLS, logJdbcCalls.toString());
         
         ResourceStatus rs;
 

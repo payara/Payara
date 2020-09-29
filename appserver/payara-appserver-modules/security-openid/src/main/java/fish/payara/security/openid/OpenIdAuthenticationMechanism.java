@@ -43,17 +43,16 @@ import fish.payara.security.annotations.OpenIdAuthenticationDefinition;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_DESCRIPTION_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.ERROR_PARAM;
 import static fish.payara.security.openid.api.OpenIdConstant.EXPIRES_IN;
-import static fish.payara.security.openid.api.OpenIdConstant.ID_TOKEN_HINT;
 import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.STATE;
 import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
-import static fish.payara.security.openid.api.OpenIdConstant.POST_LOGOUT_REDIRECT_URI;
 import fish.payara.security.openid.api.OpenIdState;
 import fish.payara.security.openid.api.RefreshToken;
 import fish.payara.security.openid.controller.AuthenticationController;
 import fish.payara.security.openid.controller.ConfigurationController;
 import fish.payara.security.openid.controller.StateController;
 import fish.payara.security.openid.controller.TokenController;
+import fish.payara.security.openid.controller.OriginalRequestController;
 import fish.payara.security.openid.domain.LogoutConfiguration;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
@@ -81,19 +80,18 @@ import javax.security.enterprise.AuthenticationException;
 import javax.security.enterprise.AuthenticationStatus;
 import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
 import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
+
 import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.NOT_VALIDATED_RESULT;
 import javax.security.enterprise.identitystore.IdentityStoreHandler;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**
@@ -152,6 +150,9 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
 
     @Inject
     private StateController stateController;
+
+    @Inject
+    private OriginalRequestController originalRequestController;
 
     private static final Logger LOGGER = Logger.getLogger(OpenIdAuthenticationMechanism.class.getName());
 
@@ -255,6 +256,8 @@ public class OpenIdAuthenticationMechanism implements HttpAuthenticationMechanis
             HttpMessageContext httpContext) throws AuthenticationException {
 
         if (httpContext.isProtected() && isNull(request.getUserPrincipal())) {
+            // Store original Request URL.
+            originalRequestController.store(configuration, request, response);
             // (1) The End-User is not already authenticated
             return authenticationController.authenticateUser(configuration, request, response);
         }

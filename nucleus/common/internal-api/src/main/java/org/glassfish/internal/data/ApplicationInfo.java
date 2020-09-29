@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Engine;
 import com.sun.enterprise.config.serverbeans.Module;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -102,8 +103,6 @@ public class ApplicationInfo extends ModuleInfo {
 
     private ServiceLocator appServiceLocator;
     private DeploymentFailedListener deploymentFailedListener;
-
-    private Types types;
 
     /**
      * Creates a new instance of an ApplicationInfo
@@ -227,24 +226,6 @@ public class ApplicationInfo extends ModuleInfo {
      */
     public ServiceLocator getAppServiceLocator() {
         return appServiceLocator;
-    }
-
-    /**
-     * Returns the parsed application classes type
-     *
-     * @return The parsed application classes type
-     */
-    public Types getTypes() {
-        return types;
-    }
-
-    /**
-     * Sets the parsed application classes type for this application
-     *
-     * @param types
-     */
-    public void setTypes(Types types) {
-        this.types = types;
     }
 
     /**

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.admin.cli;
@@ -260,4 +260,6 @@ public final class ResourceConstants {
     public static final String TASK_QUEUE_CAPACITY = "task-queue-capacity";
 
     public static final String SYSTEM_ALL_REQ = "system-all-req";
+    
+    public static final String LOG_JDBC_CALLS = "log-jdbc-calls";
 }

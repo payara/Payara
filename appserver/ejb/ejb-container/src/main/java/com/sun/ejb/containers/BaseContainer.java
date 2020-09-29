@@ -89,7 +89,6 @@ import com.sun.enterprise.util.Utility;
 
 import fish.payara.cluster.DistributedLockType;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -122,6 +121,10 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
 
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -235,7 +238,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     protected ContainerType containerType;
 
-    private final RequestTracingService requestTracing;
+    private final RequestTracingService requestTracingService;
+    private final OpenTracingService openTracingService;
 
     // constants for EJB(Local)Home/EJB(Local)Object methods,
     // used in authorizeRemoteMethod and authorizeLocalMethod
@@ -570,7 +574,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     {
         this.containerType = type;
         this.securityManager = sm;
-        this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        this.requestTracingService = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        this.openTracingService = Globals.getDefaultHabitat().getService(OpenTracingService.class);
 
         try {
             this.loader = loader;
@@ -4159,11 +4164,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 callFlowInfo.getModuleName(),
                 callFlowInfo.getComponentName(),
                 method_sig);
-        if (requestTracing.isRequestTracingEnabled()) {
-            RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(callFlowInfo, true);
-            requestTracing.addSpanLog(spanLog);
-        }
-        //callFlowAgent.ejbMethodStart(callFlowInfo);
+
+        addEjbMethodTraceLog(callFlowInfo, true);
     }
 
     final void onEjbMethodEnd(String method_sig, Throwable th) {
@@ -4173,10 +4175,29 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 callFlowInfo.getComponentName(),
                 th,
                 method_sig);
-        //callFlowAgent.ejbMethodEnd(callFlowInfo);
-        if (requestTracing.isRequestTracingEnabled()) {
-            RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(callFlowInfo, false);
-            requestTracing.addSpanLog(spanLog);
+        addEjbMethodTraceLog(callFlowInfo, false);
+    }
+
+    private void addEjbMethodTraceLog(CallFlowInfo info, boolean callEnter) {
+        if (openTracingService.isEnabled()) {
+            Tracer tracer = openTracingService.getTracer(openTracingService.getApplicationName(invocationManager));
+            RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(info, callEnter);
+
+            if (tracer != null) {
+                Span span = tracer.activeSpan();
+
+                if (span != null) {
+                    span.log(spanLog.getTimeMillis(), spanLog.getLogEntries());
+                } else {
+                    // Traces started in the pre-OpenTracing style won't have an active span, so just attempt to add as
+                    // is to thread local trace if there is one
+                    requestTracingService.addSpanLog(spanLog);
+                }
+            } else {
+                // If we couldn't get a tracer here, it's because we couldn't get a name from the invocation manager.
+                // In such a case, just try to add the span log to the currently active thread local request trace
+                requestTracingService.addSpanLog(spanLog);
+            }
         }
     }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -912,13 +912,12 @@ public abstract class GFLauncher {
             Process p = r.exec(javaExePath + " -version");
             p.waitFor();
             try (BufferedReader b = new BufferedReader(new InputStreamReader(p.getErrorStream()))) {
-                String line = b.readLine();
-                if (line == null) {
-                    return Optional.empty();
-                }
-                Matcher m = JAVA_VERSION_PATTERN.matcher(line);
-                if (m.matches()) {
-                    return Optional.ofNullable(JDK.getVersion(m.group(1)));
+                String line;
+                while ((line = b.readLine()) != null) {
+                    Matcher m = JAVA_VERSION_PATTERN.matcher(line);
+                    if (m.matches()) {
+                        return Optional.ofNullable(JDK.getVersion(m.group(1)));
+                    }
                 }
             }
             return Optional.empty();

@@ -129,7 +129,7 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
                 }
                 return node;
             } catch (Exception e) {
-                LOGGER.warning("Failed to parse extension value: " + value);
+                LOGGER.log(Level.WARNING, "Failed to parse extension value: {0}", value);
                 return value;
             }
         }

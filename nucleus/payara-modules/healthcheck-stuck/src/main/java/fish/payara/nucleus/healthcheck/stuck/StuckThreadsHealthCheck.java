@@ -133,8 +133,10 @@ public class StuckThreadsHealthCheck extends
         if (options == null || !options.isEnabled()) {
             return;
         }
+        long thresholdInMillis = getThresholdInMillis();
         collector.watch("ns:health StuckThreadDuration", "Stuck Threads", "ms")
-            .red(getThresholdInMillis(), -30000L, false, null, null, false);
+            .red(thresholdInMillis, -30000L, false, null, null, false)
+            .green(-thresholdInMillis, 1, false, null, null, false);
     }
 
     private static String composeStateText(ThreadInfo info) {
@@ -147,7 +149,7 @@ public class StuckThreadsHealthCheck extends
 
     private static String composeActionText(Thread.State state) {
         switch(state) {
-        case BLOCKED: 
+        case BLOCKED:
             return "Blocked on ";
         case WAITING:
         case TIMED_WAITING:

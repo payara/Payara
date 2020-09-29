@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
@@ -377,6 +376,30 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             if (null != _delegate) {
                 _delegate.format(new StringBuilder()
                         .append(eventObject.toString()), level);
+            }
+
+            Object[] parameters = record.getParameters();
+            if (parameters != null) {
+                for (Object parameter : parameters) {
+                    if (parameter instanceof Map) {
+                        for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) parameter).entrySet()) {
+                            // there are implementations that allow <null> keys...
+                            String key;
+                            if (entry.getKey() != null) {
+                                key = entry.getKey().toString();
+                            } else {
+                                key = "null";
+                            }
+
+                            // also handle <null> values...
+                            if (entry.getValue() != null) {
+                                eventObject.add(key, entry.getValue().toString());
+                            } else {
+                                eventObject.add(key, "null");
+                            }
+                        }
+                    }
+                }
             }
 
             String logMessage = record.getMessage();
