@@ -50,9 +50,9 @@ public class HealthCheckWithThresholdExecutionOptions extends HealthCheckExecuti
     private int thresholdWarning;
     private int thresholdGood;
 
-    public HealthCheckWithThresholdExecutionOptions(boolean enabled, long time, TimeUnit unit, String
+    public HealthCheckWithThresholdExecutionOptions(boolean enabled, long time, TimeUnit unit, boolean displayOnHealthEndpoint, String
             thresholdCritical, String thresholdWarning, String thresholdGood) {
-        super(enabled, time, unit);
+        super(enabled, time, unit, displayOnHealthEndpoint);
         this.thresholdCritical = Integer.parseInt(thresholdCritical);
         this.thresholdWarning = Integer.parseInt(thresholdWarning);
         this.thresholdGood = Integer.parseInt(thresholdGood);

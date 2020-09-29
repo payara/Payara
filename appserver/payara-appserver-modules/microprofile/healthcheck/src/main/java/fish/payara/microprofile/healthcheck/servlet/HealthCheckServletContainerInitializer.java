@@ -63,6 +63,7 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import org.eclipse.microprofile.health.HealthCheck;
+import org.glassfish.api.invocation.InvocationManager;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -76,7 +77,7 @@ import org.glassfish.internal.api.Globals;
 public class HealthCheckServletContainerInitializer implements ServletContainerInitializer {
 
     private static final Logger LOGGER = Logger.getLogger(HealthCheckServletContainerInitializer.class.getName());
-    
+
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
         // Check if this context is the root one ("/")
@@ -84,7 +85,7 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             // Check if there is already a servlet for healthcheck
             Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
             MetricsHealthCheckConfiguration configuration = Globals.getDefaultHabitat().getService(MetricsHealthCheckConfiguration.class);
-             
+
             if (!Boolean.parseBoolean(configuration.getEnabled())) {
                 return; //MP Healthcheck disabled
             }
@@ -110,7 +111,7 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
                 ctx.declareRoles(roles);
             }
         }
-        
+
         // Get the BeanManager
         BeanManager beanManager = null;
         try {
@@ -119,13 +120,14 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             LOGGER.log(FINE, "Exception getting BeanManager; this probably isn't a CDI application. "
                     + "No HealthChecks will be registered", ex);
         }
-        
+
         // Check for any Beans annotated with @Readiness, @Liveness or @Health
         if (beanManager != null) {
             ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-            HealthCheckService healthCheckService = serviceLocator.getService(HealthCheckService.class);                    
-            String appName = healthCheckService.getApplicationName();
- 
+            HealthCheckService healthCheckService = serviceLocator.getService(HealthCheckService.class);
+            InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
+            String appName = invocationManager.getCurrentInvocation().getAppName();
+
             // For each bean annotated with @Readiness, @Liveness or @Health
             // and implementing the HealthCheck interface,
             // register it to the HealthCheckService along with the application name

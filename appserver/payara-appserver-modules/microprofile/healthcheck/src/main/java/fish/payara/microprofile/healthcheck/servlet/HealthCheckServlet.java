@@ -41,10 +41,6 @@ package fish.payara.microprofile.healthcheck.servlet;
 
 import fish.payara.microprofile.healthcheck.HealthCheckService;
 import fish.payara.microprofile.healthcheck.HealthCheckType;
-import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
-import fish.payara.microprofile.healthcheck.checks.PayaraHealthCheck;
-import fish.payara.nucleus.healthcheck.configuration.Checker;
-import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -58,7 +54,7 @@ import org.glassfish.internal.api.Globals;
  * @author Andrew Pielage
  */
 public class HealthCheckServlet extends HttpServlet {
-      
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      *
@@ -71,9 +67,7 @@ public class HealthCheckServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HealthCheckService healthCheckService = Globals.getDefaultBaseServiceLocator().getService(HealthCheckService.class);
-         fish.payara.nucleus.healthcheck.HealthCheckService payaraHealthCheckService
-                = Globals.getDefaultBaseServiceLocator().getService(fish.payara.nucleus.healthcheck.HealthCheckService.class);
-        
+
         // If we couldn't find the HealthCheckService, throw an exception
         if (healthCheckService == null) {
             throw new ServletException("Could not find Health Check Service");
@@ -83,28 +77,8 @@ public class HealthCheckServlet extends HttpServlet {
             return;
         }
 
-        for (Checker checker : payaraHealthCheckService.getConfiguration().getCheckerList()) {
-            String checkName = checker.getName();
-            System.out.println("Checker name = " + checkName);
-            if (Boolean.valueOf(checker.getEnabled()) && Boolean.valueOf(checker.getDisplayOnHealthEndpoint())) {
-                PayaraHealthCheck payaraHealthCheck = new PayaraHealthCheck();
-                payaraHealthCheck.setName(checkName);
-
-                BaseHealthCheck check = payaraHealthCheckService.getCheck(checkName);
-                check.doCheck();
-                
-                if (check.getChecksDone() > 0) {
-                    payaraHealthCheck.setHealthStatus(check.getMostRecentCumulativeStatus() == null ? "" : check.getMostRecentCumulativeStatus().name());
-                    payaraHealthCheck.setHealthCheckResult(check.getMostRecentCumulativeResult());
-                }
-
-                healthCheckService.registerHealthCheck(checkName, payaraHealthCheck, READINESS);
-            } else {
-                healthCheckService.unregisterHealthCheck(checkName);
-            }
-        }   
-
         healthCheckService.performHealthChecks(response, HealthCheckType.fromPath(request.getPathInfo()), request.getParameter("pretty"));
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

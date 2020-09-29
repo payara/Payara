@@ -40,6 +40,9 @@
 package fish.payara.microprofile.healthcheck;
 
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.microprofile.healthcheck.checks.PayaraHealthCheck;
+import fish.payara.nucleus.healthcheck.configuration.Checker;
+import fish.payara.nucleus.healthcheck.events.PayaraHealthCheckServiceEvents;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -78,7 +81,6 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
@@ -92,12 +94,12 @@ import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import java.io.StringWriter;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
+import java.util.logging.Level;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.joining;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
-import org.glassfish.api.invocation.InvocationManager;
 
 /**
  * Service that handles the registration, execution, and response of MicroProfile HealthChecks.
@@ -276,21 +278,31 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     @Override
     public void event(Event event) {
         // Remove healthchecks when the app is undeployed.
-        if (event.is(Deployment.APPLICATION_UNLOADED)) {
-            ApplicationInfo appInfo = Deployment.APPLICATION_UNLOADED.getHook(event);
-            if (appInfo != null) {
-                String appName = appInfo.getName();
-                unregisterHealthCheck(appName);
-            }
-        }
+        Deployment.APPLICATION_UNLOADED.onMatch(event, appInfo -> unregisterHealthCheck(appInfo.getName()));
 
         // Keep track of all deployed applications.
-        if (event.is(Deployment.APPLICATION_STARTED)) {
-            ApplicationInfo appInfo = Deployment.APPLICATION_STARTED.getHook(event);
-            if (appInfo != null) {
-                applicationsLoaded.add(appInfo.getName());
+        Deployment.APPLICATION_STARTED.onMatch(event, appInfo -> applicationsLoaded.add(appInfo.getName()));
+        
+        PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISPLAY_ON_HEALTH_ENDPOINT_STARTED.onMatch(event, healthChecker
+                ->  registerHealthCheck(healthChecker.getName(),
+                        new PayaraHealthCheck(healthChecker.getName(), healthChecker.getCheck()), READINESS));
+
+        PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISPLAY_ON_HEALTH_ENDPOINT_STOPED.onMatch(event, healthChecker
+                -> unregisterHealthCheck(healthChecker.getName()));
+        
+        if (event.is(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISABLED)) {
+            for (Checker checker : getHealthCheckerList()) {
+                if (Boolean.valueOf(checker.getDisplayOnHealthEndpoint())) {
+                    unregisterHealthCheck(checker.getName());
+                }
             }
         }
+    }
+    
+    private List<Checker> getHealthCheckerList() {
+        fish.payara.nucleus.healthcheck.HealthCheckService payaraHealthCheckService
+                    = Globals.getDefaultBaseServiceLocator().getService(fish.payara.nucleus.healthcheck.HealthCheckService.class);
+        return payaraHealthCheckService.getConfiguration().getCheckerList();       
     }
 
     public boolean isEnabled() {
@@ -302,32 +314,32 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     }
 
     /**
-     * Register a HealthCheck to the Set of HealthChecks based on appName to execute when
+     * Register a HealthCheck to the Set of HealthChecks to execute when
      * performHealthChecks is called.
      *
-     * @param appName The name of the application being deployed
+     * @param healthCheckName The name of the HealthCheck
      * @param healthCheck The HealthCheck to register
      */
-    public void registerHealthCheck(String appName, HealthCheck healthCheck, HealthCheckType type) {
+    public void registerHealthCheck(String healthCheckName, HealthCheck healthCheck, HealthCheckType type) {
         Map<String, Set<HealthCheck>> healthChecks = getHealthChecks(type);
 
-         // If we don't already have the app registered, we need to create a new Set for it
-        if (!healthChecks.containsKey(appName)) {
+        // If we don't already have the app registered, we need to create a new Set for it
+        if (!healthChecks.containsKey(healthCheckName)) {
             // Sync so that we don't get clashes
             synchronized (this) {
                 // Check again so that we don't overwrite
-                if (!healthChecks.containsKey(appName)) {
+                if (!healthChecks.containsKey(healthCheckName)) {
                     // Create a new Map entry and set for the Healthchecks.
-                    healthChecks.put(appName, ConcurrentHashMap.newKeySet());
+                    healthChecks.put(healthCheckName, ConcurrentHashMap.newKeySet());
                 }
             }
         }
 
-        Set<HealthCheck> currentApp = healthChecks.get(appName);
+        Set<HealthCheck> currentApp = healthChecks.get(healthCheckName);
         currentApp.clear();
-        
+
         // Add the healthcheck to the Set in the Map
-        healthChecks.get(appName).add(healthCheck);
+        healthChecks.get(healthCheckName).add(healthCheck);
     }
     
     public void unregisterHealthCheck(String appName) {
@@ -493,7 +505,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
         // Add all of the checks
         responseObject.add("checks", checksArray);
 
-        String prettyPrinting = enablePrettyPrint.equals("false") ? "" : JsonGenerator.PRETTY_PRINTING;
+        String prettyPrinting = enablePrettyPrint == null || enablePrettyPrint.equals("false") ? "" : JsonGenerator.PRETTY_PRINTING;
         JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(singletonMap(prettyPrinting, ""));
         StringWriter stringWriter = new StringWriter();
 
@@ -514,26 +526,5 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
         }
 
         return new UnprocessedChangeEvents(unchangedList);
-    }
-    
-      /**
-     * Gets the application name from the invocation manager.
-     *
-     * @return The application name
-     */
-    public String getApplicationName() {
-        InvocationManager invocationManager = Globals.getDefaultBaseServiceLocator()
-                .getService(InvocationManager.class);
-        if (invocationManager.getCurrentInvocation() == null) {
-            return invocationManager.peekAppEnvironment().getName();
-        }
-        String appName = invocationManager.getCurrentInvocation().getAppName();
-        if (appName == null) {
-            appName = invocationManager.getCurrentInvocation().getModuleName();
-        }
-        if (appName == null) {
-            appName = invocationManager.getCurrentInvocation().getComponentId();
-        }
-        return appName;
     }
 }

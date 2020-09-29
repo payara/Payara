@@ -46,7 +46,7 @@ import java.util.logging.Level;
 /**
  * @author steve
  */
-class HealthCheckTask implements Runnable {
+public class HealthCheckTask implements Runnable {
 
     private final String name;
     private final BaseHealthCheck check;
@@ -56,7 +56,7 @@ class HealthCheckTask implements Runnable {
         this.check = check;
     }
 
-    String getName() {
+    public String getName() {
         return name;
     }
 

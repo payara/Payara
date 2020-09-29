@@ -49,9 +49,9 @@ public class HealthCheckConnectionPoolExecutionOptions extends HealthCheckWithTh
 
     private String poolName;
 
-    public HealthCheckConnectionPoolExecutionOptions(boolean enabled, long time, TimeUnit unit, String
+    public HealthCheckConnectionPoolExecutionOptions(boolean enabled, long time, TimeUnit unit, boolean displayOnHealthEndpoint, String
             thresholdCritical, String thresholdWarning, String thresholdGood, String poolName) {
-        super(enabled, time, unit, thresholdCritical, thresholdWarning, thresholdGood);
+        super(enabled, time, unit, displayOnHealthEndpoint, thresholdCritical, thresholdWarning, thresholdGood);
         this.poolName = poolName;
     }
 

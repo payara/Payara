@@ -23,8 +23,8 @@ public class HealthCheckHoggingThreadsExecutionOptions extends HealthCheckExecut
     private Long thresholdPercentage;
     private int retryCount;
 
-    public HealthCheckHoggingThreadsExecutionOptions(boolean enabled, long time, TimeUnit unit, Long thresholdPercentage, int retryCount) {
-        super(enabled, time, unit);
+    public HealthCheckHoggingThreadsExecutionOptions(boolean enabled, long time, TimeUnit unit, boolean displayOnHealthEndpoint, Long thresholdPercentage, int retryCount) {
+        super(enabled, time, unit, displayOnHealthEndpoint);
         this.thresholdPercentage = thresholdPercentage;
         this.retryCount = retryCount;
     }

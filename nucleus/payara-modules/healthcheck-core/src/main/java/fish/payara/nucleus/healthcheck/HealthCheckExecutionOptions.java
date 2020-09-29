@@ -23,11 +23,13 @@ public class HealthCheckExecutionOptions {
     private boolean enabled;
     private long time;
     private TimeUnit unit;
+    private boolean displayOnHealthEndpoint;
 
-    public HealthCheckExecutionOptions(boolean enabled, long time, TimeUnit unit) {
+    public HealthCheckExecutionOptions(boolean enabled, long time, TimeUnit unit, boolean displayOnHealthEndpoint) {
         this.enabled = enabled;
         this.time = time;
         this.unit = unit;
+        this.displayOnHealthEndpoint = displayOnHealthEndpoint;
     }
 
     public boolean isEnabled() {
@@ -53,4 +55,12 @@ public class HealthCheckExecutionOptions {
     public void setUnit(TimeUnit unit) {
         this.unit = unit;
     }
+
+    public boolean isDisplayOnHealthEndpoint() {
+        return displayOnHealthEndpoint;
+    }
+
+    public void setDisplayOnHealthEndpoint(boolean displayOnHealthEndpoint) {
+        this.displayOnHealthEndpoint = displayOnHealthEndpoint;
+    }   
 }

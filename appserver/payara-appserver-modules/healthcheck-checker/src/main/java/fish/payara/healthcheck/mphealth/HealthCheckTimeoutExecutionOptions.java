@@ -56,8 +56,8 @@ public class HealthCheckTimeoutExecutionOptions extends HealthCheckExecutionOpti
     
     private final long timeout;
     
-    public HealthCheckTimeoutExecutionOptions(boolean enabled, long time, TimeUnit unit, long timeout) {
-        super(enabled, time, unit);
+    public HealthCheckTimeoutExecutionOptions(boolean enabled, long time, TimeUnit unit, boolean displayOnHealthEndpoint, long timeout) {
+        super(enabled, time, unit, displayOnHealthEndpoint);
         this.timeout = timeout;
     }
 

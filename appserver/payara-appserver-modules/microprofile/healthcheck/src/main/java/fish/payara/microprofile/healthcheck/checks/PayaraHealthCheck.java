@@ -40,7 +40,7 @@
 package fish.payara.microprofile.healthcheck.checks;
 
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
-import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
@@ -52,19 +52,15 @@ import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 public class PayaraHealthCheck implements HealthCheck {
 
     private String name;
-    private String healthStatus;
-    private HealthCheckResult healthCheckResult;
+    private BaseHealthCheck checker;
+
+    public PayaraHealthCheck(String name, BaseHealthCheck checker) {
+        this.name = name;
+        this.checker = checker;
+    }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setHealthStatus(String healthStatus) {
-        this.healthStatus = healthStatus;
-    }
-
-    public void setHealthCheckResult(HealthCheckResult healthCheckResult) {
-        this.healthCheckResult = healthCheckResult;
     }
 
     @Override
@@ -72,10 +68,12 @@ public class PayaraHealthCheck implements HealthCheck {
         HealthCheckResponseBuilder responseBuilder = HealthCheckResponse.named(name);
         boolean state = true;
 
-        for (HealthCheckResultEntry healthCheckResultEntry : healthCheckResult.getEntries()) {
+        checker.doCheck();
+        for (HealthCheckResultEntry healthCheckResultEntry : checker.getMostRecentResult().getEntries()) {
             responseBuilder.withData("Message", healthCheckResultEntry.getMessage());
         }
 
+        String healthStatus = checker.getMostRecentCumulativeStatus().name();
         if (!healthStatus.trim().isEmpty()) {
             responseBuilder.withData("HealthCheckStatus", healthStatus);
             if (healthStatus.equals("CRITICAL") || healthStatus.equals("CHECK_ERROR")) {

@@ -141,7 +141,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private boolean dynamic;
 
     // general properties params:
-    @Param(name = "checker-name", alias = "checkerName",  optional = true)
+    @Param(name = "checker-name", alias = "checkerName")
     private String checkerName;
     
     @Param(name = "display-on-health-endpoint", alias = "displayOnHealthEndpoint",

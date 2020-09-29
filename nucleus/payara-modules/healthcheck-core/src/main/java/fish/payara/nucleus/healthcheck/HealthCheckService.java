@@ -45,6 +45,7 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.healthcheck.events.PayaraHealthCheckServiceEvents;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.notification.TimeUtil;
 import fish.payara.nucleus.notification.configuration.Notifier;
@@ -218,7 +219,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 }
                 logger.info("Payara Health Check Service Started.");
             }
-
+            
             bootstrapNotifierList();
         }
     }
@@ -249,16 +250,27 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     private void executeTasks() {
         for (String registeredTaskKey : registeredTasks.keySet()) {
             HealthCheckTask registeredTask = registeredTasks.get(registeredTaskKey);
+            HealthCheckExecutionOptions healthCheckExecutionOptions = registeredTask.getCheck().getOptions();
             logger.info("Scheduling Health Check for task: " + registeredTask.getName());
 
-            if (registeredTask.getCheck().getOptions().isEnabled()) {
+            if (healthCheckExecutionOptions.isEnabled()) {
                 ScheduledFuture<?> checker = executor.scheduleAtFixedRate(registeredTask, 0,
-                        registeredTask.getCheck().getOptions().getTime(),
-                        registeredTask.getCheck().getOptions().getUnit());
+                        healthCheckExecutionOptions.getTime(),
+                        healthCheckExecutionOptions.getUnit());
                 if (scheduledCheckers != null) {
                     scheduledCheckers.add(checker);
                 }
             }
+
+            exposeToMicroProfileHealthEndPoint(healthCheckExecutionOptions, registeredTask);
+        }
+    }
+
+    private void exposeToMicroProfileHealthEndPoint(HealthCheckExecutionOptions healthCheckExecutionOptions, HealthCheckTask registeredTask) {
+        if (healthCheckExecutionOptions.isEnabled() && healthCheckExecutionOptions.isDisplayOnHealthEndpoint()) {
+            events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISPLAY_ON_HEALTH_ENDPOINT_STARTED, registeredTask));
+        } else {
+            events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISPLAY_ON_HEALTH_ENDPOINT_STOPED, registeredTask));
         }
     }
 
@@ -306,18 +318,19 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
      */
     public void shutdownHealthCheck() {
         Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
-        
+
         if (historicalTraceTask != null) {
             historicalTraceTask.cancel(false);
             historicalTraceTask = null;
         }
-        
+
         if (scheduledCheckers != null) {
             for (ScheduledFuture<?> scheduledChecker : scheduledCheckers) {
                 scheduledChecker.cancel(false);
             }
             scheduledCheckers.clear();
         }
+        events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISABLED));
     }
 
     public BaseHealthCheck getCheck(String serviceName) {

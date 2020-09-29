@@ -50,8 +50,8 @@ public class HealthCheckStuckThreadExecutionOptions extends HealthCheckExecution
     private long timeStuck;
     private TimeUnit unitStuck;
     
-    public HealthCheckStuckThreadExecutionOptions(boolean enabled, long time, TimeUnit unit, long timeStuck, TimeUnit unitStuck) {
-        super(enabled, time, unit);
+    public HealthCheckStuckThreadExecutionOptions(boolean enabled, long time, TimeUnit unit, boolean displayOnHealthEndpoint, long timeStuck, TimeUnit unitStuck) {
+        super(enabled, time, unit, displayOnHealthEndpoint);
         this.timeStuck = timeStuck;
         this.unitStuck = unitStuck;
     }

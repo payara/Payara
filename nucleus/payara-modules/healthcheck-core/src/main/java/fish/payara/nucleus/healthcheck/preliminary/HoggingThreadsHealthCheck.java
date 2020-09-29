@@ -131,6 +131,7 @@ public class HoggingThreadsHealthCheck
     public HealthCheckHoggingThreadsExecutionOptions constructOptions(HoggingThreadsChecker checker) {
         return new HealthCheckHoggingThreadsExecutionOptions(Boolean.valueOf(checker.getEnabled()),
                 Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), 
+                Boolean.valueOf(checker.getDisplayOnHealthEndpoint()),
                 Long.parseLong(checker.getThresholdPercentage()), 
                 Integer.parseInt(checker.getRetryCount()));
     }

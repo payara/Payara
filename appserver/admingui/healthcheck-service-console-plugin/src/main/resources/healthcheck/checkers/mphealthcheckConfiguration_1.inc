@@ -68,6 +68,8 @@
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
         
+        setPageSessionAttribute(key="dynamic", value="true");
+        
         if (#{pageSession.valueMap['displayOnHealthEndpoint']}=true) {
             setPageSessionAttribute(key="displayOnHealthEndpointSelected", value="true");
         }
