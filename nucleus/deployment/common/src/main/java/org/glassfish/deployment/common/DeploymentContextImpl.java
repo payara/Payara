@@ -69,6 +69,8 @@ import org.glassfish.hk2.api.PreDestroy;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.Closeable;
+import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -359,18 +361,26 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         return copy;
     }
 
+    @Override
     public Map<String, Object> getTransientAppMetadata() {
         HashMap<String, Object> copy = new HashMap<String, Object>();
         copy.putAll(transientAppMetaData);
         return copy;
     }
 
+    @Override
     public void addTransientAppMetaData(String metaDataKey, Object metaData) {
         if (metaData!=null) {
             transientAppMetaData.put(metaDataKey, metaData);
         }
     }
 
+    @Override
+    public void removeTransientAppMetaData(String metaDataKey) {
+        transientAppMetaData.remove(metaDataKey);
+    }
+
+    @Override
     public <T> T getTransientAppMetaData(String key, Class<T> metadataType) {
         Object metaData = transientAppMetaData.get(key);
         if (metaData != null) {

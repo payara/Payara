@@ -7,12 +7,12 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>5.2020.2-SNAPSHOT</version>
+        <version>5.2020.5-SNAPSHOT</version>
     </parent>
 
-    <artifactId>samples-programmatic</artifactId>
+    <artifactId>samples-micro-programmatic</artifactId>
 
-    <name>Payara Samples - Programmatic</name>
+    <name>Payara Samples - Micro Programmatic</name>
 
     <dependencies>
         <dependency>
@@ -29,4 +29,23 @@
             <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!-- This module starts micro on same ports which are already used by the remote server -->
+        <profile>
+            <id>payara-server-remote</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <skip>true</skip>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
 </project>

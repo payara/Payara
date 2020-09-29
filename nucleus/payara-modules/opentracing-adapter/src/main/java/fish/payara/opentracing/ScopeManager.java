@@ -39,6 +39,21 @@
  *  and therefore, elected the GPL Version 2 license, then the option applies
  *  only if the new code is made subject to such option by the copyright
  *  holder.
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 2016-2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package fish.payara.opentracing;
 
@@ -53,29 +68,17 @@ import io.opentracing.Span;
  * @see io.opentracing.ScopeManager
  */
 public class ScopeManager implements io.opentracing.ScopeManager {
-    
-    private ThreadLocal<OpenTracingScope> activeScope;
 
-    public ScopeManager(){
-        activeScope= new ThreadLocal<>();
-    }
-    
+    ThreadLocal<OpenTracingScope> activeScope = new ThreadLocal<>();
+
     @Override
     public Scope activate(Span span, boolean autoClose) {
-        if (activeScope.get() == null){
-            OpenTracingScope newscope = new OpenTracingScope();
-            newscope.setSpan(span, autoClose);
-            activeScope.set(newscope);
-        } else {
-            activeScope.get().setSpan(span, autoClose);
-        }
-        return activeScope.get();
+        return new OpenTracingScope(this, span, autoClose);
     }
 
     @Override
     public Scope active() {
-        OpenTracingScope currentScope = activeScope.get();
-        return currentScope != null && currentScope.span() != null ? currentScope : null;
+        return activeScope.get();
     }
     
 }

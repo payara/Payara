@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -34,10 +35,10 @@
 <p>The archive is in a file that resides on or is accessible from the client machine.</p>
 <p>The client machine is the host on which you are viewing the Administration Console through a browser.</p>
 </dd>
-<dt>Local Packaged File or Directory That Is Accessible From the GlassFish Server</dt>
+<dt>Local Packaged File or Directory That Is Accessible From the Payara Server</dt>
 <dd>
 <p>The archive is a file that resides on the server machine, or is an unpackaged application in an exploded directory.</p>
-<p>The server machine is the host that is running the GlassFish Server domain administration server.</p>
+<p>The server machine is the host that is running the Payara Server domain administration server.</p>
 </dd>
 </dl>
 </dd>
@@ -137,7 +138,7 @@
 <p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
 <p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
 <p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
-<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+<p>To preserve active state data, Payara Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
 </dd>
 <dt>Preserve Application Scoped Resources</dt>
 <dd>
@@ -195,7 +196,7 @@
 </dd>
 <dt>Compatibility</dt>
 <dd>
-<p>If checked, uses GlassFish Server v2 JAR visibility requirements for applications instead of the stricter Java EE 6 requirements implemented in GlassFish Server v3 releases, including 4.0. This option is not checked by default.</p>
+<p>If checked, uses Payara Server v2 JAR visibility requirements for applications instead of the stricter Java EE 6 requirements implemented in Payara Server v3 releases, including 4.0. This option is not checked by default.</p>
 <p>The Java EE 6 platform specification imposes stricter requirements than Java EE 5 did on which JAR files can be visible to various modules within an EAR file. In particular, application clients must not have access to EJB JAR files or other JAR files in the EAR file unless references use the standard Java SE mechanisms (extensions, for example) or the Java EE library-directory mechanism. Checking this box removes these Java EE 6 restrictions.</p>
 </dd>
 <dt>Force Redeploy</dt>
@@ -210,7 +211,7 @@
 <p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
 <p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
 <p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
-<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+<p>To preserve active state data, Payara Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
 </dd>
 <dt>Preserve Application Scoped Resources</dt>
 <dd>
@@ -323,7 +324,7 @@
 </dd>
 <dt>Compatibility</dt>
 <dd>
-<p>If checked, uses GlassFish Server v2 JAR visibility requirements for applications instead of the stricter Java EE 6 requirements implemented in GlassFish Server v3 releases, including 4.0. This option is not checked by default.</p>
+<p>If checked, uses Payara Server v2 JAR visibility requirements for applications instead of the stricter Java EE 6 requirements implemented in Payara Server v3 releases, including 4.0. This option is not checked by default.</p>
 <p>The Java EE 6 platform specification imposes stricter requirements than Java EE 5 did on which JAR files can be visible to various modules within an EAR file. In particular, application clients must not have access to EJB JAR files or other JAR files in the EAR file unless references use the standard Java SE mechanisms (extensions, for example) or the Java EE library-directory mechanism. Checking this box removes these Java EE 6 restrictions.</p>
 </dd>
 <dt>Force Redeploy</dt>
@@ -338,7 +339,7 @@
 <p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
 <p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
 <p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
-<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+<p>To preserve active state data, Payara Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
 </dd>
 <dt>Preserve Application Scoped Resources</dt>
 <dd>
@@ -406,7 +407,7 @@
 <p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
 <p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
 <p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
-<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+<p>To preserve active state data, Payara Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
 </dd>
 <dt>Deployment Order</dt>
 <dd>
@@ -490,3 +491,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

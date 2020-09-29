@@ -39,15 +39,17 @@
  */
 package fish.payara.nucleus.requesttracing.configuration;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.*;
-
 import java.beans.PropertyVetoException;
 import java.util.List;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
+
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
 
 /**
  * Configuration class that holds the configuration of the Request
@@ -56,7 +58,7 @@ import javax.validation.constraints.Pattern;
  * @author mertcaliskan
  */
 @Configured
-public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
+public interface RequestTracingServiceConfiguration extends ConfigExtension {
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getEnabled();
@@ -133,23 +135,7 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     String getHistoricTraceStoreTimeout();
     void setHistoricTraceStoreTimeout(String value) throws PropertyVetoException;
 
-    @Element("*")
-    List<Notifier> getNotifierList();
+    @Element("notifier")
+    List<String> getNotifierList();
 
-    @DuckTyped
-    <T extends Notifier> T getNotifierByType(Class type);
-
-    class Duck {
-
-        public static <T extends Notifier> T getNotifierByType(RequestTracingServiceConfiguration config, Class<T> type) {
-            for (Notifier notifier : config.getNotifierList()) {
-                try {
-                    return type.cast(notifier);
-                } catch (Exception e) {
-                    // ignore, not the right type.
-                }
-            }
-            return null;
-        }
-    }
 }

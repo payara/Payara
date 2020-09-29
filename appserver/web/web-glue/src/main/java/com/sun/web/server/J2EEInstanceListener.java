@@ -318,7 +318,11 @@ public final class J2EEInstanceListener implements InstanceListener {
         } catch (Exception ex) {
             String msg = _rb.getString(LogFacade.EXCEPTION_DURING_HANDLE_EVENT);
             msg = MessageFormat.format(msg, new Object[] { eventType, wm });
-            throw new RuntimeException(msg, ex);
+            RuntimeException rethrown = new RuntimeException(msg, ex);
+            if (event.getException() != null) {
+                rethrown.addSuppressed(event.getException());
+            }
+            throw rethrown;
         } finally {
             if (eventType == InstanceEvent.EventType.AFTER_DESTROY_EVENT) {
                 if (tm != null) {

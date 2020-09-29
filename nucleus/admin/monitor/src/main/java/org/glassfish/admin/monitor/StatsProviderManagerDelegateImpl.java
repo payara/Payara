@@ -37,60 +37,56 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.monitor;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.*;
-import javax.management.ObjectName;
-
-
+import com.sun.enterprise.config.serverbeans.MonitoringService;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.admin.monitor.StatsProviderRegistry.StatsProviderRegistryElement;
 import org.glassfish.api.monitoring.ContainerMonitoring;
-import org.glassfish.flashlight.datatree.TreeNode;
-import org.glassfish.flashlight.datatree.factory.TreeNodeFactory;
-import org.glassfish.gmbal.AMXMetadata;
-import org.glassfish.gmbal.ManagedObjectManager;
-import org.glassfish.gmbal.ManagedObjectManagerFactory;
-import org.glassfish.gmbal.ManagedAttribute;
+import org.glassfish.external.amx.AMXGlassfish;
+import org.glassfish.external.amx.MBeanListener;
 import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderInfo;
 import org.glassfish.external.probe.provider.StatsProviderManagerDelegate;
 import org.glassfish.external.statistics.Statistic;
-import org.glassfish.external.probe.provider.StatsProviderInfo;
 import org.glassfish.external.statistics.annotations.Reset;
 import org.glassfish.external.statistics.impl.StatisticImpl;
 import org.glassfish.external.statistics.impl.StatsImpl;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.StringUtils;
-import java.io.IOException;
-import java.text.MessageFormat;
-
 import org.glassfish.flashlight.client.ProbeClientMediator;
 import org.glassfish.flashlight.client.ProbeClientMethodHandle;
-
-import javax.inject.Singleton;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.TransactionFailure;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import javax.management.InstanceAlreadyExistsException;
-import org.glassfish.admin.monitor.StatsProviderRegistry.StatsProviderRegistryElement;
-
-import org.glassfish.external.amx.MBeanListener;
-import org.glassfish.external.amx.AMXGlassfish;
-import static org.glassfish.external.amx.AMX.*;
-
+import org.glassfish.flashlight.datatree.TreeNode;
+import org.glassfish.flashlight.datatree.factory.TreeNodeFactory;
 import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
+import org.glassfish.gmbal.AMXMetadata;
+import org.glassfish.gmbal.ManagedAttribute;
+import org.glassfish.gmbal.ManagedObjectManager;
+import org.glassfish.gmbal.ManagedObjectManagerFactory;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
+
+import javax.inject.Singleton;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.ObjectName;
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static org.glassfish.admin.monitor.MLogger.*;
+import static org.glassfish.external.amx.AMX.*;
 
 /**
  *
@@ -100,21 +96,17 @@ import static org.glassfish.admin.monitor.MLogger.*;
 public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl implements StatsProviderManagerDelegate {
 
     protected ProbeClientMediator pcm;
-    MonitoringService monitoringService = null;
+    MonitoringService monitoringService;
     private final MonitoringRuntimeDataRegistry mrdr;
     private final ProbeRegistry probeRegistry;
     private final String instanceName;
     private final TreeNode serverNode;
     private ObjectName monitoringServer;
-    private final String pp;
-    private final String type;
-    private final String name;
     private final String parentPath;
     private boolean AMXReady = false;
     private final StatsProviderRegistry statsProviderRegistry;
     private static final Logger LOGGER = getLogger();
     public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(StatsProviderManagerDelegateImpl.class);
-    boolean ddebug = false;
 
     StatsProviderManagerDelegateImpl(ProbeClientMediator pcm, ProbeRegistry probeRegistry,
             MonitoringRuntimeDataRegistry mrdr, String iName, MonitoringService monitoringService) {
@@ -131,9 +123,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
             LOGGER.log(Level.FINE, " In the ctor : MONITORING SERVER {0}", monitoringServer);
         }
         monitoringServer = AMXGlassfish.DEFAULT.serverMon(instanceName);
-        pp = monitoringServer.getKeyProperty(PARENT_PATH_KEY);
-        type = monitoringServer.getKeyProperty(TYPE_KEY);
-        name = monitoringServer.getKeyProperty(NAME_KEY);
+        String pp = monitoringServer.getKeyProperty(PARENT_PATH_KEY);
+        String type = monitoringServer.getKeyProperty(TYPE_KEY);
+        String name = monitoringServer.getKeyProperty(NAME_KEY);
         parentPath = pp + File.separatorChar + type + "[" + name + "]";
     }
 
@@ -166,8 +158,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         final String configElement = spInfo.getConfigElement();
         Object statsProvider = spInfo.getStatsProvider();
         // register the statsProvider
-        if (LOGGER.isLoggable(Level.FINE))
+        if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("registering a statsProvider");
+        }
         StatsProviderRegistryElement spre;
         // If configElement is null, create it
         if (monitoringService != null
@@ -178,8 +171,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
 
         // First check if the configElement associated for statsProvider is 'ON'
         if (getMonitoringEnabled() && getEnabledValue(configElement)) {
-            if (LOGGER.isLoggable(Level.FINE))
+            if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(" enabled is true ");
+            }
             spre = statsProviderRegistry.getStatsProviderRegistryElement(statsProvider);
 
             if (spre == null) {
@@ -193,8 +187,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
 
         }
         else {
-            if (LOGGER.isLoggable(Level.FINE))
+            if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(" enabled is false ");
+            }
             // Register with null values so to know that we need to register them individually and config is on
             statsProviderRegistry.registerStatsProvider(spInfo);
             spre = statsProviderRegistry.getStatsProviderRegistryElement(statsProvider);
@@ -253,8 +248,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
                             parentNode.removeChild(childNode);
                         }
                     }
-                    if (!parentNode.hasChildNodes())
+                    if (!parentNode.hasChildNodes()) {
                         removeParentNode(parentNode);
+                    }
                 }
             }
 
@@ -270,8 +266,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
             }
 
             //unregister the statsProvider from Gmbal
-            if (spre.getManagedObjectManager() != null)
+            if (spre.getManagedObjectManager() != null) {
                 unregisterGmbal(spre);
+            }
 
             //Unregister from the MonitoringDataTreeRegistry and the map entries
             statsProviderRegistry.unregisterStatsProvider(statsProvider);
@@ -287,8 +284,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         TreeNode superParentNode = parentNode.getParent();
         if (superParentNode != null) {
             superParentNode.removeChild(parentNode);
-            if (!superParentNode.hasChildNodes())
+            if (!superParentNode.hasChildNodes()) {
                 removeParentNode(superParentNode);
+            }
         }
     }
 
@@ -300,8 +298,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
                     statsProviderRegistry.getStatsProviderRegistryElement(configElement);
             boolean isConfigEnabled = getEnabledValue(configElement);
             //Continue with the next configElement if this is not enabled
-            if (!isConfigEnabled)
+            if (!isConfigEnabled) {
                 continue;
+            }
 
             for (StatsProviderRegistryElement spre : spreList) {
                 //Assuming the spre's are disabled to start with
@@ -338,11 +337,13 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         }
         String configLevel = getMonitoringLevel(configElement);
         //Enable all the StatsProviders for a given configElement
-        if (LOGGER.isLoggable(Level.FINE))
+        if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Enabling all the statsProviders for - {0}", configElement);
+        }
         List<StatsProviderRegistryElement> spreList = statsProviderRegistry.getStatsProviderRegistryElement(configElement);
-        if (spreList == null)
+        if (spreList == null) {
             return;
+        }
         for (StatsProviderRegistryElement spre : spreList) {
             //Check to see if the enable is allowed
             // Not allowed if statsProvider is registered for Low and configLevel is HIGH
@@ -393,8 +394,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
 
     private void enableStatsProvider(StatsProviderRegistryElement spre) {
         Object statsProvider = spre.getStatsProvider();
-        if (LOGGER.isLoggable(Level.FINE))
+        if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Enabling the statsProvider - {0}", statsProvider.getClass().getName());
+        }
 
         /* Step 1. Create the tree for the statsProvider */
         // Check if we already have TreeNodes created
@@ -452,8 +454,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
 
         /* Step 2. Disable flashlight handles (Ideally unregister them) */
         for (ProbeClientMethodHandle handle : spre.getHandles()) {
-            if (handle.isEnabled())
+            if (handle.isEnabled()) {
                 handle.disable();
+            }
         }
 
         /* Step 3. Unregister gmbal */
@@ -465,8 +468,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
     public void registerAllGmbal() {
         /* We do this when the mbean-enabled is turned on from off */
 
-        if (LOGGER.isLoggable(Level.FINE))
+        if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Registering all the statsProviders whose enabled flag is 'on' with Gmbal");
+        }
         for (StatsProviderRegistryElement spre : statsProviderRegistry.getSpreList()) {
             if (spre.isEnabled()) {
                 ManagedObjectManager mom = spre.getManagedObjectManager();
@@ -481,8 +485,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
     public void unregisterAllGmbal() {
         /* We do this when the mbean-enabled is turned off from on */
 
-        if (LOGGER.isLoggable(Level.FINE))
+        if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Unregistering all the statsProviders whose enabled flag is 'off' with Gmbal");
+        }
         for (StatsProviderRegistryElement spre : statsProviderRegistry.getSpreList()) {
             if (spre.isEnabled()) {
                 unregisterGmbal(spre);
@@ -496,8 +501,14 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         List<String> childNodeNames = spre.getChildTreeNodeNames();
         TreeNode rootNode = mrdr.get(instanceName);
         if (rootNode != null) {
-            // This has to return one node
             List<TreeNode> nodeList = rootNode.getNodes(parentNodePath, false, true);
+            if (nodeList.isEmpty()) {
+                // In rare conditions, it might be that registration of stats provider did not happen yet
+                // Show warning (instead of IndexOutOfBoundsException
+                LOGGER.warning(String.format("MonitoringRuntimeData not found for %s. Unable to set to '%s'", parentNodePath, enable ? "Enabled": "Disabled"));
+                return;
+            }
+            // This has to return one node
             TreeNode parentNode = nodeList.get(0);
             //For each child Node, enable it
             Collection<TreeNode> childNodes = parentNode.getChildNodes();
@@ -509,8 +520,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
                     hasUpdatedNode = true;
                 }
             }
-            if (!hasUpdatedNode)
+            if (!hasUpdatedNode) {
                 return;
+            }
             //Make sure the tree path is affected with the changes.
             if (enable) {
                 enableTreeNode(parentNode);
@@ -619,7 +631,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
 
     private List<String> createTreeForStatsProvider(TreeNode parentNode, Object statsProvider) {
         /* construct monitoring tree at PluginPoint using subTreePath */
-        List<String> childNodeNames = new ArrayList();
+        List<String> childNodeNames = new ArrayList<>();
 
         /* retrieve ManagedAttribute attribute id (v2 compatible) and method names */
         /* Check for custom reset method and store for later to be called instead of
@@ -634,7 +646,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
             if (ma != null) {
                 String methodName = m.getName();
                 String id = ma.id();
-                if ((id == null) || id.isEmpty()) { // if id not specified, derive from method name
+                if (id.isEmpty()) { // if id not specified, derive from method name
                     String methodNameLower = methodName.toLowerCase(Locale.ENGLISH);
                     if (methodNameLower.startsWith("get") && methodNameLower.length() > 3) {
                         id = methodNameLower.substring(3);
@@ -675,8 +687,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         enableTreeNode(parentNode);
 
         while (st.hasMoreTokens()) {
-            TreeNode subTreeNode = createSubTreeNode(parentNode, st.nextToken());
-            parentNode = subTreeNode;
+            parentNode = createSubTreeNode(parentNode, st.nextToken());
         }
         return parentNode;
     }
@@ -696,11 +707,11 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
 
     @Override
     public boolean hasListeners(String probeStr) {
-        boolean hasListeners = false;
         FlashlightProbe probe = probeRegistry.getProbe(probeStr);
-        if (probe != null)
+        if (probe != null) {
             return probe.isEnabled();
-        return hasListeners;
+        }
+        return false;
     }
 
     //Called when AMX DomainRoot is loaded (when jconsole or gui is started)
@@ -806,8 +817,9 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         // It is too risky & difficult to fix GMBL to support instances right now
         // so we deal with it, perfectly, below.
 
-        if (pp == PluginPoint.APPLICATIONS)
+        if (pp == PluginPoint.APPLICATIONS) {
             return createSubTree(serverNode, "applications");
+        }
 
         return serverNode;
     }
@@ -852,6 +864,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         for (StatsProviderRegistry.StatsProviderRegistryElement spre : spreList) {
             if (spre.getStatsProvider().equals(statsProvider) && spre.getMBeanName().equals(subTreePath)) {
                 isStatsProviderRegistered = true;
+                break;
             }
         }
         return isStatsProviderRegistered;

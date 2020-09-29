@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.resources.admin.cli;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -750,6 +751,7 @@ public class ResourcesXMLParser implements EntityResolver
                 attributes.getNamedItem(STATEMENT_TIMEOUT_IN_SECONDS);
         Node lazyConnectionEnlistmentNode =
                 attributes.getNamedItem(LAZY_CONNECTION_ENLISTMENT);
+        Node logJdbcCalls = attributes.getNamedItem(LOG_JDBC_CALLS);
         Node lazyConnectionAssociationNode =
                 attributes.getNamedItem(LAZY_CONNECTION_ASSOCIATION);
         Node associateWithThreadNode =
@@ -882,6 +884,9 @@ public class ResourcesXMLParser implements EntityResolver
         if (lazyConnectionAssociationNode != null) {
            jdbcConnPool.setAttribute(LAZY_CONNECTION_ASSOCIATION,
                                         lazyConnectionAssociationNode.getNodeValue());
+        }
+        if (logJdbcCalls != null) {
+            jdbcConnPool.setAttribute(LOG_JDBC_CALLS, logJdbcCalls.getNodeValue());
         }
         if (associateWithThreadNode != null) {
            jdbcConnPool.setAttribute(ASSOCIATE_WITH_THREAD,

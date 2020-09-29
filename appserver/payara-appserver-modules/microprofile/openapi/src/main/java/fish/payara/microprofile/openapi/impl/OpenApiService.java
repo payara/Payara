@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl;
 
+import com.sun.enterprise.v3.server.ApplicationLifecycle;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
 import fish.payara.microprofile.openapi.impl.admin.OpenApiServiceConfiguration;
@@ -50,6 +51,7 @@ import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -57,7 +59,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Logger;
@@ -65,7 +70,6 @@ import javax.inject.Inject;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -86,15 +90,21 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toSet;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.classmodel.reflect.Parser;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 
 @Service(name = "microprofile-openapi-service")
 @RunLevel(StartupRunLevel.VAL)
 public class OpenApiService implements PostConstruct, PreDestroy, EventListener, ConfigListener {
 
     private static final Logger LOGGER = Logger.getLogger(OpenApiService.class.getName());
+
+    private OpenAPI allDocuments;
 
     private Deque<OpenApiMapping> mappings;
 
@@ -109,6 +119,9 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
 
     @Inject
     private ServiceLocator habitat;
+
+    @Inject
+    private ApplicationLifecycle applicationLifecycle;
 
     @Override
     public void postConstruct() {
@@ -167,13 +180,16 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             // Create all the relevant resources
             if (isValidApp(appInfo)) {
                 // Store the application mapping in the list
-                mappings.add(new OpenApiMapping(appInfo));
+                OpenApiMapping mapping = new OpenApiMapping(appInfo);
+                mappings.add(mapping);
+                allDocuments = null;
             }
         } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo appInfo = (ApplicationInfo) event.hook();
             for (OpenApiMapping mapping : mappings) {
                 if (mapping.getAppInfo().equals(appInfo)) {
                     mappings.remove(mapping);
+                    allDocuments = null;
                     break;
                 }
             }
@@ -181,15 +197,35 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
     }
 
     /**
-     * @return the document for the most recently deployed application. Creates
-     * one if it hasn't already been created.
+     * @return the document If multiple application deployed then merge all the
+     * documents. Creates one if it hasn't already been created.
      * @throws OpenAPIBuildException if creating the document failed.
+     * @throws java.io.IOException if source archive not accessible
      */
-    public OpenAPI getDocument() throws OpenAPIBuildException {
+    public OpenAPI getDocument() throws OpenAPIBuildException, IOException {
         if (mappings.isEmpty() || !isEnabled()) {
             return null;
         }
-        return mappings.peekLast().getDocument();
+        if (mappings.size() == 1) {
+            OpenAPI document = mappings.peekLast().getDocument();
+            if (document == null) {
+                document = mappings.peekLast().buildDocument();
+            }
+            return document;
+        }
+        List<OpenAPI> docs = new ArrayList<>();
+        for (OpenApiMapping mapping : mappings) {
+            if (mapping.getDocument() == null) {
+                allDocuments = null;
+                mapping.buildDocument();
+            }
+            docs.add(mapping.getDocument());
+        }
+        if (allDocuments == null) {
+            allDocuments = new OpenAPIImpl();
+            OpenAPIImpl.merge(allDocuments, docs, true);
+        }
+        return allDocuments;
     }
 
     /**
@@ -218,44 +254,6 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
         return appInfo.getMetaData(WebBundleDescriptorImpl.class).getContextRoot();
     }
 
-    /**
-     * @param archive the archive to read from.
-     * @param appClassLoader the classloader to use to load the classes.
-     * @return a list of all loadable classes in the archive.
-     */
-    private static Set<Class<?>> getClassesFromArchive(ReadableArchive archive, ClassLoader appClassLoader) {
-        return Collections.list(archive.entries()).stream()
-                // Only use the classes
-                .filter(x -> x.endsWith(".class"))
-                // Remove the WEB-INF/classes and return the proper class name format
-                .map(x -> x.replaceAll("WEB-INF/classes/", "").replace("/", ".").replace(".class", ""))
-                // Attempt to load the classes
-                .map(x -> {
-                    Class<?> loadedClass = null;
-                    // Attempt to load the class, ignoring any errors
-                    try {
-                        loadedClass = appClassLoader.loadClass(x);
-                    } catch (Throwable t) {
-                    }
-                    try {
-                        loadedClass = Class.forName(x);
-                    } catch (Throwable t) {
-                    }
-                    // If the class can be loaded, check that everything in the class also can
-                    if (loadedClass != null) {
-                        try {
-                            loadedClass.getDeclaredFields();
-                            loadedClass.getDeclaredMethods();
-                        } catch (Throwable t) {
-                            return null;
-                        }
-                    }
-                    return loadedClass;
-                })
-                // Don't return null classes
-                .filter(x -> x != null).collect(toSet());
-    }
-
     private class OpenApiMapping {
 
         private final ApplicationInfo appInfo;
@@ -271,35 +269,102 @@ public class OpenApiService implements PostConstruct, PreDestroy, EventListener,
             return appInfo;
         }
 
-        private synchronized OpenAPI getDocument() throws OpenAPIBuildException {
-            if (document == null) {
-                document = buildDocument();
-            }
+        private OpenAPI getDocument() throws OpenAPIBuildException {
             return document;
         }
 
-        private OpenAPI buildDocument() throws OpenAPIBuildException {
-            OpenAPI openapi = new OpenAPIImpl();
+        private synchronized OpenAPI buildDocument() throws OpenAPIBuildException, IOException {
+            if (this.document != null) {
+                return this.document;
+            }
 
+            Parser parser = applicationLifecycle.getDeployableParser(
+                    appInfo.getSource(),
+                    true,
+                    true,
+                    StructuredDeploymentTracing.create(appInfo.getName()),
+                    LOGGER
+            );
+            Types types = parser.getContext().getTypes();
+
+            OpenAPI doc = new OpenAPIImpl();
             try {
                 String contextRoot = getContextRoot(appInfo);
                 List<URL> baseURLs = getServerURL(contextRoot);
-                ReadableArchive archive = appInfo.getSource();
-                Set<Class<?>> classes = getClassesFromArchive(archive, appInfo.getAppClassLoader());
-
-                openapi = new ModelReaderProcessor().process(openapi, appConfig);
-                openapi = new FileProcessor(appInfo.getAppClassLoader()).process(openapi, appConfig);
-                openapi = new ApplicationProcessor(classes).process(openapi, appConfig);
-                openapi = new BaseProcessor(baseURLs).process(openapi, appConfig);
-                openapi = new FilterProcessor().process(openapi, appConfig);
+                doc = new ModelReaderProcessor().process(doc, appConfig);
+                doc = new FileProcessor(appInfo.getAppClassLoader()).process(doc, appConfig);
+                doc = new ApplicationProcessor(
+                        types,
+                        filterTypes(appInfo, appConfig, types),
+                        appInfo.getAppClassLoader()
+                ).process(doc, appConfig);
+                doc = new BaseProcessor(baseURLs).process(doc, appConfig);
+                doc = new FilterProcessor().process(doc, appConfig);
             } catch (Throwable t) {
                 throw new OpenAPIBuildException(t);
+            } finally {
+                this.document = doc;
             }
 
             LOGGER.info("OpenAPI document created.");
-            return openapi;
+            return this.document;
         }
 
+    }
+
+    /**
+     * @return a list of all classes in the archive.
+     */
+    private Set<Type> filterTypes(ApplicationInfo appInfo, OpenApiConfiguration config, Types hk2Types) {
+        ReadableArchive archive = appInfo.getSource();
+        Set<Type> types = new HashSet<>(filterLibTypes(config, hk2Types, archive));
+        types.addAll(
+                Collections.list(archive.entries()).stream()
+                        // Only use the classes
+                        .filter(clazz -> clazz.endsWith(".class"))
+                        // Remove the WEB-INF/classes and return the proper class name format
+                        .map(clazz -> clazz.replaceAll("WEB-INF/classes/", "").replace("/", ".").replace(".class", ""))
+                        // Fetch class type
+                        .map(clazz -> hk2Types.getBy(clazz))
+                        // Don't return null classes
+                        .filter(Objects::nonNull)
+                        .collect(toSet())
+        );
+        return config == null ? types : config.getValidClasses(types);
+    }
+
+    private Set<Type> filterLibTypes(
+            OpenApiConfiguration config,
+            Types hk2Types,
+            ReadableArchive archive) {
+        Set<Type> types = new HashSet<>();
+        if (config != null && config.getScanLib()) {
+            Enumeration<String> subArchiveItr = archive.entries();
+            while (subArchiveItr.hasMoreElements()) {
+                String subArchiveName = subArchiveItr.nextElement();
+                if (subArchiveName.startsWith("WEB-INF/lib/") && subArchiveName.endsWith(".jar")) {
+                    try {
+                        ReadableArchive subArchive = archive.getSubArchive(subArchiveName);
+                        types.addAll(
+                                Collections.list(subArchive.entries())
+                                        .stream()
+                                        // Only use the classes
+                                        .filter(clazz -> clazz.endsWith(".class"))
+                                        // return the proper class name format
+                                        .map(clazz -> clazz.replace("/", ".").replace(".class", ""))
+                                        // Fetch class type
+                                        .map(clazz -> hk2Types.getBy(clazz))
+                                        // Don't return null classes
+                                        .filter(Objects::nonNull)
+                                        .collect(toSet())
+                        );
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                }
+            }
+        }
+        return types;
     }
 
     private List<URL> getServerURL(String contextRoot) {

@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -39,7 +40,7 @@
 <p>Click Browse to browse to the file, or type the full path to the file.</p>
 </li>
 <li>
-<p>If the application is an archive file that resides on the server machine, or is an unpackaged application from an exploded directory, select the option Local Packaged File or Directory That Is Accessible From the GlassFish Server.</p>
+<p>If the application is an archive file that resides on the server machine, or is an unpackaged application from an exploded directory, select the option Local Packaged File or Directory That Is Accessible From the Payara Server.</p>
 <p>The server machine is the host that is running the domain administration server (DAS).</p>
 <p>Click Browse Files to browse to a file, or Browse Folders to browse to a directory. Alternatively, type the full path name to the file or directory. Deploying from an exploded directory is for advanced developers and is not recommended for production environments.</p>
 </li>
@@ -47,7 +48,7 @@
 </li>
 <li>
 <p>From the Type drop-down list, select EJB Jar.</p>
-<p>If you specified either a Packaged File to Be Uploaded to the Server or a Local Packaged File That Is Accessible From the GlassFish Server, the application type is detected automatically. If you specified a Directory That Is Accessible From the GlassFish Server, you must specify the type manually.</p>
+<p>If you specified either a Packaged File to Be Uploaded to the Server or a Local Packaged File That Is Accessible From the Payara Server, the application type is detected automatically. If you specified a Directory That Is Accessible From the Payara Server, you must specify the type manually.</p>
 </li>
 <li>
 <p>In the Application Name field, retain the default name, which is the directory name or the prefix of the file name, or type another name.</p>
@@ -69,7 +70,7 @@
 <p>Verifier packages must be installed from the Update Tool or a warning is logged and this option is ignored.</p>
 </li>
 <li>
-<p>Select the Compatibility checkbox to use GlassFish Server v2 JAR visibility requirements for applications instead of the stricter Java EE 6 requirements implemented in GlassFish Server v3 releases, including 4.0.</p>
+<p>Select the Compatibility checkbox to use Payara Server v2 JAR visibility requirements for applications instead of the stricter Java EE 6 requirements implemented in Payara Server v3 releases, including 4.0.</p>
 <p>This option is disabled by default.</p>
 <p>The Java EE 6 platform specification imposes stricter requirements than Java EE 5 did on which JAR files can be visible to various modules within an EAR file. In particular, application clients must not have access to EJB JAR files or other JAR files in the EAR file unless references use the standard Java SE mechanisms (extensions, for example) or the Java EE library-directory mechanism. Checking this box removes these Java EE 6 restrictions.</p>
 </li>
@@ -84,7 +85,7 @@
 <p>For web applications, this feature is applicable only if in the <code>glassfish-web-app.xml</code> file the <code>persistence-type</code> attribute of the <code>session-manager</code> element is <code>file</code>.</p>
 <p>For stateful session bean instances, the persistence type without high availability is set in the server (the SFSB Persistence Type option) and must be set to <code>file</code>, which is the default and recommended value.</p>
 <p>If any active web session, SFSB instance, or EJB timer fails to be preserved or restored, <i>none</i> of these will be available when the redeployment is complete. However, the redeployment continues and a warning is logged.</p>
-<p>To preserve active state data, GlassFish Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
+<p>To preserve active state data, Payara Server serializes the data and saves it in memory. To restore the data, the class loader of the newly redeployed application deserializes the data that was previously saved.</p>
 </li>
 <li>
 <p>Select the Preserve Application Scoped Resources checkbox to preserve any application-scoped resources and restore them during redeployment.</p>
@@ -161,3 +162,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

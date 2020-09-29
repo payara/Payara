@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -21,7 +22,7 @@
 
 <h4><a id="sthref307" name="sthref307"></a>New Node</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the New Node page to create a GlassFish Server node. A node represents a host on which the GlassFish Server software is installed. A node must exist for every host on which GlassFish Server instances reside.</p>
+<p>Use the New Node page to create a Payara Server node. A node represents a host on which the Payara Server software is installed. A node must exist for every host on which Payara Server instances reside.</p>
 <p>The options that the New Node page contains depend on the type of the node.</p>
 <a id="sthref308" name="sthref308"></a>
 <h5>Options for All Types of Nodes</h5>
@@ -62,10 +63,10 @@
 </ul>
 </li>
 <li>
-<p>The name must be unique in the domain and must not be the name of another node, a cluster, a named configuration, or a GlassFish Server instance.</p>
+<p>The name must be unique in the domain and must not be the name of another node, a cluster, a named configuration, or a Payara Server instance.</p>
 </li>
 <li>
-<p>The name must not be <code>domain</code>, <code>server</code>, or any other keyword that is reserved by GlassFish Server.</p>
+<p>The name must not be <code>domain</code>, <code>server</code>, or any other keyword that is reserved by Payara Server.</p>
 </li>
 </ul>
 </dd>
@@ -97,27 +98,27 @@
 </dd>
 <dt>Node Directory</dt>
 <dd>
-<p>The path to the directory that is to contain GlassFish Server instances that are created on the node. If a relative path is specified, the path is relative to the <i>as-install</i> directory.</p>
+<p>The path to the directory that is to contain Payara Server instances that are created on the node. If a relative path is specified, the path is relative to the <i>as-install</i> directory.</p>
 <p>The default depends on the type of the node:</p>
 <ul>
 <li>
 <p>If the type of the node is CONFIG, no directory for instances is specified for the node in the domain administration server (DAS) configuration. The node directory can be determined when instances that reside on the node are created.</p>
 </li>
 <li>
-<p>If the type of the node is SSH, the default is <i>as-install</i><code>/nodes</code>, where <i>as-install</i> is the base installation directory of the GlassFish Server software on the host.</p>
+<p>If the type of the node is SSH, the default is <i>as-install</i><code>/nodes</code>, where <i>as-install</i> is the base installation directory of the Payara Server software on the host.</p>
 </li>
 </ul>
 </dd>
 <dt>Installation Directory</dt>
 <dd>
-<p>The full path to the <i>parent</i> of the base installation directory of the GlassFish Server software on the host, for example, <code>/export/glassfish3</code>.</p>
+<p>The full path to the <i>parent</i> of the base installation directory of the Payara Server software on the host, for example, <code>/export/glassfish3</code>.</p>
 <p>The default depends on the type of the node:</p>
 <ul>
 <li>
 <p>If the type of the node is CONFIG, no installation directory is specified for the node in the DAS configuration. The installation directory can be determined when instances that reside on the node are created.</p>
 </li>
 <li>
-<p>If the type of the node is SSH, the default is the parent of the default base installation directory of the GlassFish Server software for the DAS. This default is useful only if GlassFish Server is installed in the same location on all hosts.</p>
+<p>If the type of the node is SSH, the default is the parent of the default base installation directory of the Payara Server software for the DAS. This default is useful only if Payara Server is installed in the same location on all hosts.</p>
 </li>
 </ul>
 </dd>
@@ -126,9 +127,9 @@
 <h5>Additional Options for SSH Nodes</h5>
 <p>The following options are available only if the Type field is set to SSH:</p>
 <dl>
-<dt>Install GlassFish Server</dt>
+<dt>Install Payara Server</dt>
 <dd>
-<p>If the Enabled option is selected, the DAS will copy GlassFish Server software from the DAS host to the node host. To copy GlassFish Server software to the host, the DAS must be able to contact the host through SSH.</p>
+<p>If the Enabled option is selected, the DAS will copy Payara Server software from the DAS host to the node host. To copy Payara Server software to the host, the DAS must be able to contact the host through SSH.</p>
 </dd>
 <dt>Force</dt>
 <dd>
@@ -170,11 +171,11 @@
 </dd>
 <dt>Setup SSH</dt>
 <dd>
-<p>If the Enabled option is selected, GlassFish Server sets up an SSH key on the node host. GlassFish Server sets up the SSH key by copying existing key files from the DAS host or, if required, by generating the files before copying the files. This option is available only if the SSH User Authentication option is set to Key File.</p>
+<p>If the Enabled option is selected, Payara Server sets up an SSH key on the node host. Payara Server sets up the SSH key by copying existing key files from the DAS host or, if required, by generating the files before copying the files. This option is available only if the SSH User Authentication option is set to Key File.</p>
 </dd>
 <dt>Generate Key</dt>
 <dd>
-<p>If the Enabled option is selected, GlassFish Server generates the SSH key files before copying the files to the node host if the files do not exist. If the SSH key files exist, GlassFish Server does not generate the files, even if the Enabled option is selected.</p>
+<p>If the Enabled option is selected, Payara Server generates the SSH key files before copying the files to the node host if the files do not exist. If the SSH key files exist, Payara Server does not generate the files, even if the Enabled option is selected.</p>
 
 <hr>
 <p><b>Note:</b></p>
@@ -193,7 +194,7 @@
 </dd>
 <dt>Public Key File</dt>
 <dd>
-<p>The absolute path to the SSH public key file for user that the SSH User Name option specifies. The content of the public key file is appended to the user's <code>.ssh/authorized_keys</code> file on the node host. If the <code>.ssh/authorized_keys</code> file does not exist on the host, GlassFish Server creates the file.</p>
+<p>The absolute path to the SSH public key file for user that the SSH User Name option specifies. The content of the public key file is appended to the user's <code>.ssh/authorized_keys</code> file on the node host. If the <code>.ssh/authorized_keys</code> file does not exist on the host, Payara Server creates the file.</p>
 </dd>
 <dt>Key File</dt>
 <dd>
@@ -201,13 +202,13 @@
 
 <hr>
 <p><b>Note:</b></p>
-<p>GlassFish Server also supports password authentication through the <code>AS_ADMIN_SSHPASSWORD</code> entry in the password file. The password file is specified in the <code>--paswordfile</code> option of the <a href="/resource/reference/en/help/reference/asadmin"><code>asadmin</code>(1)</a> utility.</p>
+<p>Payara Server also supports password authentication through the <code>AS_ADMIN_SSHPASSWORD</code> entry in the password file. The password file is specified in the <code>--paswordfile</code> option of the <a href="/resource/reference/en/help/reference/asadmin"><code>asadmin</code>(1)</a> utility.</p>
 
 <hr>
 
 <p>If the SSH private key file is protected by a passphrase, the password file must contain the <code>AS_ADMIN_SSHKEYPASSPHRASE</code> entry.</p>
 <p>The path to the key file must be reachable by the DAS and the key file must be readable by the DAS.</p>
-<p>The default is a key file in the user's <code>.ssh</code> directory. If multiple key files are found, GlassFish Server uses the following order of preference:</p>
+<p>The default is a key file in the user's <code>.ssh</code> directory. If multiple key files are found, Payara Server uses the following order of preference:</p>
 <ol>
 <li>
 <p><code>id_rsa</code></p>
@@ -240,3 +241,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

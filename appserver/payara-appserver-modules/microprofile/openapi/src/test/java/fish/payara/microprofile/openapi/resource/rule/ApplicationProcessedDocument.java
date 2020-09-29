@@ -44,17 +44,27 @@ import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
 import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.resource.classloader.ApplicationClassLoader;
-import fish.payara.microprofile.openapi.test.app.TestApplication;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import static java.util.Arrays.asList;
+import java.util.Collections;
 import java.util.HashSet;
-
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.fail;
+import org.glassfish.hk2.classmodel.reflect.Parser;
+import org.glassfish.hk2.classmodel.reflect.ParsingContext;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.hk2.classmodel.reflect.util.ParsingConfig;
+import org.junit.Assert;
 
 public class ApplicationProcessedDocument {
+
+    private static Types allTypes = null;
+    private final static ApplicationProcessedDocument instance = new ApplicationProcessedDocument();
 
     public static OpenAPI createDocument(Class<?>... extraClasses) {
         return createDocument(null, extraClasses);
@@ -62,21 +72,79 @@ public class ApplicationProcessedDocument {
 
     public static OpenAPI createDocument(Class<? extends OASFilter> filter, Class<?>... extraClasses) {
         try {
-            ApplicationClassLoader appClassLoader = new ApplicationClassLoader(new TestApplication(), 
-                    new HashSet<>(asList(extraClasses)));
+            ApplicationClassLoader appClassLoader = new ApplicationClassLoader(new HashSet<>(asList(extraClasses)));
             OpenAPIImpl document = new OpenAPIImpl();
             // Apply base processor
             new BaseProcessor(asList(new URL("http://localhost:8080/testlocation_123"))).process(document, null);
 
             // Apply application processor
-            new ApplicationProcessor(appClassLoader.getApplicationClasses()).process(document, null);
+            new ApplicationProcessor(getTypes(), getApplicationTypes(extraClasses), appClassLoader).process(document, null);
             if (filter != null) {
                 new FilterProcessor(filter.newInstance()).process(document, null);
             }
             return document;
-        } catch (Exception ex) {
+        } catch (IOException | IllegalAccessException | InstantiationException | InterruptedException ex) {
             throw new AssertionError("Failed to build document.", ex);
         }
+    }
+
+    public static Types getTypes() throws IOException, InterruptedException {
+
+        synchronized (instance) {
+
+            if (allTypes == null) {
+                File userDir = new File(System.getProperty("user.dir"));
+                File modelDir = new File(userDir, "target" + File.separator + "test-classes");
+
+                if (modelDir.exists()) {
+                    ParsingContext pc = (new ParsingContext.Builder().config(new ParsingConfig() {
+                        @Override
+                        public Set<String> getAnnotationsOfInterest() {
+                            return Collections.emptySet();
+                        }
+
+                        @Override
+                        public Set<String> getTypesOfInterest() {
+                            return Collections.emptySet();
+                        }
+
+                        @Override
+                        public boolean modelUnAnnotatedMembers() {
+                            return true;
+                        }
+                    })).build();
+                    Parser parser = new Parser(pc);
+
+                    parser.parse(modelDir, null);
+                    Exception[] exceptions = parser.awaitTermination(100, TimeUnit.DAYS);
+                    if (exceptions!=null) {
+                        for (Exception e : exceptions) {
+                            System.out.println("Found Exception ! : " +e);
+                        }
+                        Assert.assertTrue("Exceptions returned", exceptions.length==0);
+                    }
+                    allTypes = pc.getTypes();
+                }
+            }
+        }
+        return allTypes;
+    }
+
+    public static Set<Type> getApplicationTypes(Class<?>... extraClasses) throws IOException, InterruptedException {
+        Set<Type> types = new HashSet<>();
+        for (Class<?> extraClass : extraClasses) {
+            Type type = getTypes().getBy(extraClass.getName());
+            if (type != null) {
+                types.add(type);
+            }
+            for (Class<?> declaredClass : extraClass.getDeclaredClasses()) {
+                type = getTypes().getBy(declaredClass.getName());
+                if (type != null) {
+                    types.add(type);
+                }
+            }
+        }
+        return types;
     }
 
 }

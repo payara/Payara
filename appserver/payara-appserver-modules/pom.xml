@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.2020.2-SNAPSHOT</version>
+        <version>5.2020.5-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>payara-appserver-modules</artifactId>
@@ -59,13 +59,6 @@
         <module>payara-micro-cdi</module>
         <module>jaspic-servlet-utils</module>
         <module>notification-jms-core</module>
-        <module>notification-hipchat-core</module>
-        <module>notification-slack-core</module>
-        <module>notification-email-core</module>
-        <module>notification-xmpp-core</module>
-        <module>notification-snmp-core</module>
-        <module>notification-newrelic-core</module>
-        <module>notification-datadog-core</module>
         <module>zendesk-support</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>

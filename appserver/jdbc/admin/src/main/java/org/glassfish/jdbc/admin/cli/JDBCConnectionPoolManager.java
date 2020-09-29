@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package org.glassfish.jdbc.admin.cli;
 
@@ -110,6 +111,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
     private String pooling = Boolean.TRUE.toString();
     private String validationclassname = null;
     private String wrapJDBCObjects = Boolean.TRUE.toString();
+    private String logJDBCCalls = Boolean.FALSE.toString();
 
     private String description = null;
     private String jdbcconnectionpoolid = null;
@@ -117,10 +119,12 @@ public class JDBCConnectionPoolManager implements ResourceManager {
     public JDBCConnectionPoolManager() {
     }
 
+    @Override
     public String getResourceType() {
         return ServerTags.JDBC_CONNECTION_POOL;
     }
 
+    @Override
     public ResourceStatus create(Resources resources, HashMap attributes, final Properties properties,
                                  String target) throws Exception {
         setAttributes(attributes);
@@ -132,7 +136,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
 
         try {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
-
+                @Override
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
                     return createResource(param, properties);
                 }
@@ -261,6 +265,9 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         if(ping != null){
             newResource.setPing(ping);
         }
+        if (logJDBCCalls != null) {
+            newResource.setLogJdbcCalls(logJDBCCalls);
+        }
         if (driverclassname != null) {
             newResource.setDriverClassname(driverclassname);
         }
@@ -317,6 +324,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         statementcachesize = (String) attrList.get(STATEMENT_CACHE_SIZE);
         validationclassname = (String) attrList.get(VALIDATION_CLASSNAME);
         initsql = (String) attrList.get(INIT_SQL);
+        logJDBCCalls = (String) attrList.get(LOG_JDBC_CALLS);
         
         // Can't be set to null as the default value is now the SilentSqlTraceListener class, which requires statement 
         // wrapping to be enabled
@@ -434,6 +442,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         }
     }
 
+    @Override
     public Resource createConfigBean(Resources resources, HashMap attributes, Properties properties, boolean validate)
             throws Exception {
         setAttributes(attributes);

@@ -58,7 +58,7 @@ import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
+import static fish.payara.internal.notification.TimeUtil.prettyPrintDuration;
 
 /**
  * -XX:+UseSerialGC                           --> <YOUNG_COPY, OLD_MARK_SWEEP_COMPACT>

@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -21,7 +22,7 @@
 
 <h4><a id="sthref2" name="sthref2"></a><a id="sthref3" name="sthref3"></a>To Create a JMS Connection Factory Resource</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>When you create a JMS connection factory, GlassFish Server creates a connector connection pool and a connector resource for the connection factory. You can view these objects under the Connectors node.</p>
+<p>When you create a JMS connection factory, Payara Server creates a connector connection pool and a connector resource for the connection factory. You can view these objects under the Connectors node.</p>
 <ol>
 <li>
 <p>In the navigation tree, expand the Resources node.</p>
@@ -39,7 +40,7 @@
 </li>
 <li>
 <p>In the Pool Name field, type the unique name of the connection factory.</p>
-<p>GlassFish Server sets the JNDI name of the connection factory to this value..</p>
+<p>Payara Server sets the JNDI name of the connection factory to this value..</p>
 </li>
 <li>
 <p>From the Resource Type drop-down list, select either <code>javax.jms.ConnectionFactory</code>, <code>javax.jms.QueueConnectionFactory</code>, or <code>javax.jms.TopicConnectionFactory</code>.</p>
@@ -72,7 +73,7 @@
 <p>The default value is 60000.</p>
 </li>
 <li>
-<p>Select the On Any Failure Close All Connections checkbox so GlassFish Server will close all connections in the pool and reestablish them if a single connection fails.</p>
+<p>Select the On Any Failure Close All Connections checkbox so Payara Server will close all connections in the pool and reestablish them if a single connection fails.</p>
 <p>If you do not select the checkbox, individual connections will be reestablished only when they are used. This option is disabled by default.</p>
 </li>
 <li>
@@ -139,3 +140,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

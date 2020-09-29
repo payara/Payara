@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.2020.2-SNAPSHOT</version>
+        <version>5.2020.5-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -317,55 +317,6 @@
 
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-email</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-hipchat</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-slack</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-snmp</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-xmpp</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-datadog</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>notification-newrelic</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>asadmin-recorder</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -397,14 +348,6 @@
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>payara-executor-service</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <!-- Yubikey Authentication -->
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>yubikey-authentication</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

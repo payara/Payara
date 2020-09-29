@@ -39,14 +39,6 @@
  */
 package fish.payara.nucleus.requesttracing;
 
-import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.EventSource;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
-import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
-import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
-import fish.payara.nucleus.notification.log.LogNotificationEvent;
-import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
 import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
 import org.junit.Test;
@@ -73,15 +65,6 @@ public class RequestTracingServiceMockTest {
     @Mock
     RequestTraceSpanStore eventStore;
 
-    @Mock
-    NotificationService notificationService;
-
-    @Mock
-    NotificationEventFactoryStore eventFactoryStore;
-
-    @Mock
-    NotifierExecutionOptionsFactoryStore execOptionsFactoryStore;
-
     @Spy
     RequestTracingExecutionOptions executionOptions;
     
@@ -91,8 +74,6 @@ public class RequestTracingServiceMockTest {
     @InjectMocks
     RequestTracingServiceMock requestTracingService = new RequestTracingServiceMock();
 
-    LogNotificationEventFactoryMock logNotificationEventFactoryMock = new LogNotificationEventFactoryMock();
-    
     @Before
     public void configureService() {
         executionOptions.setEnabled(false);
@@ -101,9 +82,6 @@ public class RequestTracingServiceMockTest {
         executionOptions.setThresholdValue(1000L);
         executionOptions.setThresholdUnit(TimeUnit.MILLISECONDS);
         executionOptions.setHistoricTraceStoreEnabled(false);
-        LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
-        logNotifierExecutionOptions.setEnabled(true);
-        executionOptions.getNotifierExecutionOptionsList().put(NotifierType.LOG, logNotifierExecutionOptions);
     }
 
     @Test
@@ -123,19 +101,5 @@ class RequestTracingServiceMock extends RequestTracingService {
     @Override
     public boolean isTraceInProgress() {
         return true;
-    }
-}
-
-class LogNotificationEventFactoryMock extends LogNotificationEventFactory {
-
-    @Override
-    public NotificationEventFactoryStore getStore() {
-        return mock(NotificationEventFactoryStore.class);
-    }
-
-
-    @Override
-    protected LogNotificationEvent initializeEvent(LogNotificationEvent logNotificationEvent) {
-        return new LogNotificationEvent();
     }
 }

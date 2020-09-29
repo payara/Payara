@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,9 @@ import static fish.payara.security.openid.api.OpenIdConstant.ACCESS_TOKEN;
 import static fish.payara.security.openid.api.OpenIdConstant.IDENTITY_TOKEN;
 import fish.payara.security.openid.api.AccessToken;
 import fish.payara.security.openid.api.IdentityToken;
+import static fish.payara.security.openid.api.OpenIdConstant.EXPIRES_IN;
+import static fish.payara.security.openid.api.OpenIdConstant.SCOPE;
+import static fish.payara.security.openid.api.OpenIdConstant.TOKEN_TYPE;
 import fish.payara.security.openid.domain.AccessTokenImpl;
 import fish.payara.security.openid.domain.IdentityTokenImpl;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
@@ -69,14 +72,14 @@ public class OpenIdCredential implements Credential {
         this.httpContext = httpContext;
         this.configuration = configuration;
 
-        this.identityToken = new IdentityTokenImpl(tokensObject.getString(IDENTITY_TOKEN));
+        this.identityToken = new IdentityTokenImpl(configuration, tokensObject.getString(IDENTITY_TOKEN));
         String accessTokenString = tokensObject.getString(ACCESS_TOKEN, null);
         Long expiresIn = null;
-        if(nonNull(tokensObject.getJsonNumber("expires_in"))){
-            expiresIn = tokensObject.getJsonNumber("expires_in").longValue();
+        if(nonNull(tokensObject.getJsonNumber(EXPIRES_IN))){
+            expiresIn = tokensObject.getJsonNumber(EXPIRES_IN).longValue();
         }
-        String tokenType = tokensObject.getString("token_type", null);
-        String scopeString = tokensObject.getString("scope", null);
+        String tokenType = tokensObject.getString(TOKEN_TYPE, null);
+        String scopeString = tokensObject.getString(SCOPE, null);
         if (nonNull(accessTokenString)) {
             accessToken = new AccessTokenImpl(configuration, tokenType, accessTokenString, expiresIn, scopeString);
         }

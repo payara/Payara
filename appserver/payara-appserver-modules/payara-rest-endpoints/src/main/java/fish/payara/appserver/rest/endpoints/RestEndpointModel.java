@@ -49,6 +49,7 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.Path;
 
 /**
@@ -153,6 +154,10 @@ public class RestEndpointModel {
         OPTIONS options = element.getAnnotation(OPTIONS.class);
         if (options != null) {
             return HttpMethod.OPTIONS;
+        }
+        PATCH patch = element.getAnnotation(PATCH.class);
+        if (patch != null) {
+            return HttpMethod.PATCH;
         }
         return null;
     }

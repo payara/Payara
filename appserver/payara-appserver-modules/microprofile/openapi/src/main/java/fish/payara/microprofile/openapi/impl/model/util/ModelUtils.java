@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,20 +39,22 @@
  */
 package fish.payara.microprofile.openapi.impl.model.util;
 
-import static java.util.logging.Level.WARNING;
-
+import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.OperationImpl;
+import fish.payara.microprofile.openapi.impl.visitor.OpenApiContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.function.BiFunction;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-
 import javax.inject.Inject;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.CookieParam;
@@ -70,7 +72,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.Provider;
-
 import org.eclipse.microprofile.openapi.models.Constructible;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -78,10 +79,9 @@ import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
-
-import fish.payara.microprofile.openapi.impl.model.OperationImpl;
-import java.lang.reflect.GenericDeclaration;
-import javax.ws.rs.Path;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.MethodModel;
+import org.glassfish.hk2.classmodel.reflect.ParameterizedType;
 
 public final class ModelUtils {
 
@@ -130,12 +130,13 @@ public final class ModelUtils {
     }
 
     /**
+     * @param context
      * @param method the method to analyse.
      * @return the {@link HttpMethod} applied to this method, or null if there is
      *         none.
      */
-    public static HttpMethod getHttpMethod(Method method) {
-        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(method.getDeclaringClass());
+    public static HttpMethod getHttpMethod(OpenApiContext context, MethodModel method) {
+        AnnotationInfo annotations = context.getAnnotationInfo(method.getDeclaringType());
         if (annotations.isAnnotationPresent(GET.class, method)) {
             return HttpMethod.GET;
         }
@@ -229,10 +230,10 @@ public final class ModelUtils {
         return operation;
     }
 
-    public static Operation findOperation(OpenAPI api, Method method, String path) {
+    public static Operation findOperation(OpenApiContext context, OpenAPI api, MethodModel method, String path) {
         Operation foundOperation = null;
         try {
-            return api.getPaths().getPathItem(path).getOperations().get(getHttpMethod(method));
+            return api.getPaths().getPathItem(path).getOperations().get(getHttpMethod(context, method));
         } catch (NullPointerException ex) {
             // Operation not found
         }
@@ -269,30 +270,66 @@ public final class ModelUtils {
         }
     }
 
+    public static SchemaType getSchemaType(ParameterizedType type, ApiContext context) {
+        if(type.isArray()) {
+            return SchemaType.ARRAY;
+        } else {
+            return getSchemaType(type.getTypeName(), context);
+        }
+    }
+
     /**
      * Finds the {@link SchemaType} that corresponds to a given class.
      * 
-     * @param type the class to map.
+     * @param typeName the class to map.
      * @return the schema type the class corresponds to.
      */
-    public static SchemaType getSchemaType(Class<?> type) {
-        if (Boolean.class.isAssignableFrom(type) || boolean.class.isAssignableFrom(type)) {
-            return SchemaType.BOOLEAN;
-        }
-        if (Integer.class.isAssignableFrom(type) || int.class.isAssignableFrom(type)) {
-            return SchemaType.INTEGER;
-        }
-        if (type == short.class || type == Short.class || type == long.class || type == Long.class
-                || type == float.class || type == Float.class || type == double.class || type == Double.class) {
-            return SchemaType.NUMBER;
-        }
-        if (type.isArray() || Iterable.class.isAssignableFrom(type)) {
-            return SchemaType.ARRAY;
-        }
-        if (String.class.isAssignableFrom(type)) {
+    public static SchemaType getSchemaType(String typeName, ApiContext context) {
+        if (String.class.getName().equals(typeName)) {
             return SchemaType.STRING;
         }
+        if ("boolean".equals(typeName) || Boolean.class.getName().equals(typeName)) {
+            return SchemaType.BOOLEAN;
+        }
+        if ("int".equals(typeName) || Integer.class.getName().equals(typeName)) {
+            return SchemaType.INTEGER;
+        }
+        if ("short".equals(typeName)
+                || "long".equals(typeName)
+                || "float".equals(typeName)
+                || "double".equals(typeName)
+                || Short.class.getName().equals(typeName)
+                || Long.class.getName().equals(typeName)
+                || Float.class.getName().equals(typeName)
+                || Double.class.getName().equals(typeName)) {
+            return SchemaType.NUMBER;
+        }
+        Class clazz = null;
+        try {
+            clazz = context.getApplicationClassLoader().loadClass(typeName);
+        } catch (Throwable app) {
+            try {
+                clazz = Class.forName(typeName);
+            } catch (Throwable t) {
+            }
+        }
+        if (clazz != null && (clazz.isArray() || Iterable.class.isAssignableFrom(clazz))) {
+            return SchemaType.ARRAY;
+        }
         return SchemaType.OBJECT;
+    }
+
+    public static boolean isMap(String typeName, ApiContext context) {
+        Class clazz = null;
+        try {
+            clazz = context.getApplicationClassLoader().loadClass(typeName);
+        } catch (Throwable app) {
+            try {
+                clazz = Class.forName(typeName);
+            } catch (Throwable t) {
+            }
+        }
+        return Map.class.isAssignableFrom(clazz);
     }
 
     /**
@@ -326,18 +363,20 @@ public final class ModelUtils {
         return type1;
     }
 
-    public static boolean isRequestBody(Parameter parameter) {
-        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(parameter.getDeclaringExecutable().getDeclaringClass());
+    public static boolean isRequestBody(ApiContext context, org.glassfish.hk2.classmodel.reflect.Parameter parameter) {
+        AnnotationInfo annotations = context.getAnnotationInfo(parameter.getMethod().getDeclaringType());
         if (annotations.getAnnotationCount(parameter) == 0) {
             return true;
         }
-        return !annotations.isAnyAnnotationPresent(parameter, FormParam.class, QueryParam.class, MatrixParam.class, 
-                BeanParam.class, HeaderParam.class, PathParam.class, CookieParam.class, Context.class, Inject.class, 
-                Provider.class);
+        return !annotations.isAnyAnnotationPresent(
+                parameter, FormParam.class, QueryParam.class, MatrixParam.class,
+                BeanParam.class, HeaderParam.class, PathParam.class,
+                CookieParam.class, Context.class, Inject.class, Provider.class
+        );
     }
 
-    public static In getParameterType(Parameter parameter) {
-        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(parameter.getDeclaringExecutable().getDeclaringClass());
+    public static In getParameterType(ApiContext context, org.glassfish.hk2.classmodel.reflect.Parameter parameter) {
+        AnnotationInfo annotations = context.getAnnotationInfo(parameter.getMethod().getDeclaringType());
         if (annotations.isAnnotationPresent(PathParam.class, parameter)) {
             return In.PATH;
         }
@@ -353,16 +392,16 @@ public final class ModelUtils {
         return null;
     }
 
-    public static String getParameterName(Parameter parameter) {
-        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(parameter.getDeclaringExecutable().getDeclaringClass());
+    public static String getParameterName(ApiContext context, org.glassfish.hk2.classmodel.reflect.Parameter parameter) {
+        AnnotationInfo annotations = context.getAnnotationInfo(parameter.getMethod().getDeclaringType());
         if (annotations.isAnnotationPresent(PathParam.class, parameter)) {
-            return annotations.getAnnotation(PathParam.class, parameter).value();
+            return annotations.getAnnotationValue(PathParam.class, parameter);
         } else if (annotations.isAnnotationPresent(QueryParam.class, parameter)) {
-            return annotations.getAnnotation(QueryParam.class, parameter).value();
+            return annotations.getAnnotationValue(QueryParam.class, parameter);
         } else if (annotations.isAnnotationPresent(HeaderParam.class, parameter)) {
-            return annotations.getAnnotation(HeaderParam.class, parameter).value();
+            return annotations.getAnnotationValue(HeaderParam.class, parameter);
         } else if (annotations.isAnnotationPresent(CookieParam.class, parameter)) {
-            return annotations.getAnnotation(CookieParam.class, parameter).value();
+            return annotations.getAnnotationValue(CookieParam.class, parameter);
         }
         return null;
     }
@@ -396,6 +435,48 @@ public final class ModelUtils {
             }
         }
         return true;
+    }
+
+    public static <T> void extractAnnotations(
+            AnnotationModel annotationModel,
+            ApiContext context,
+            String type,
+            String key,
+            BiFunction<AnnotationModel, ApiContext, T> factory,
+            Map<String, T> wrapper) {
+
+        if (wrapper == null) {
+            throw new IllegalArgumentException();
+        }
+        List<AnnotationModel> annotations = annotationModel.getValue(type, List.class);
+        if (annotations != null) {
+            for (AnnotationModel annotation : annotations) {
+                wrapper.put(
+                        annotation.getValue(key, String.class),
+                        factory.apply(annotation, context)
+                );
+            }
+        }
+    }
+
+    public static <T> void extractAnnotations(
+            AnnotationModel annotationModel,
+            ApiContext context,
+            String type,
+            BiFunction<AnnotationModel, ApiContext, T> factory,
+            List<T> wrapper) {
+
+        if (wrapper == null) {
+            throw new IllegalArgumentException();
+        }
+        List<AnnotationModel> annotations = annotationModel.getValue(type, List.class);
+        if (annotations != null) {
+            for (AnnotationModel annotation : annotations) {
+                wrapper.add(
+                        factory.apply(annotation, context)
+                );
+            }
+        }
     }
 
     public static Boolean mergeProperty(Boolean current, boolean offer, boolean override) {
@@ -529,53 +610,8 @@ public final class ModelUtils {
         }
     }
 
-    public static org.eclipse.microprofile.openapi.models.Operation getOperation(Method method,
-            OpenAPI api, Map<String, Set<Class<?>>> resourceMapping) {
-        String path = getResourcePath(method, resourceMapping);
-        if (path != null) {
-            PathItem pathItem = api.getPaths().getPathItem(path);
-            if (pathItem != null) {
-                PathItem.HttpMethod httpMethod = getHttpMethod(method);
-                return pathItem.getOperations().get(httpMethod);
-            }
-        }
-        return null;
-    }
-
-    public static String getResourcePath(GenericDeclaration declaration, Map<String, Set<Class<?>>> resourceMapping) {
-        if (declaration instanceof Method) {
-            return getResourcePath((Method) declaration, resourceMapping);
-        }
-        if (declaration instanceof Class) {
-            return getResourcePath((Class<?>) declaration, resourceMapping);
-        }
-        return null;
-    }
-
-    private static String getResourcePath(Class<?> clazz, Map<String, Set<Class<?>>> resourceMapping) {
-        // If the class is a resource and contains a mapping
-        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(clazz);
-        if (annotations.isAnnotationPresent(Path.class)) {
-            for (Map.Entry<String, Set<Class<?>>> entry : resourceMapping.entrySet()) {
-                if (entry.getValue() != null && entry.getValue().contains(clazz)) {
-                    return normaliseUrl(entry.getKey() + "/" + annotations.getAnnotation(Path.class).value());
-                }
-            }
-        }
-        return null;
-    }
-
-    private static String getResourcePath(Method method, Map<String, Set<Class<?>>> resourceMapping) {
-        AnnotationInfo<?> annotations = AnnotationInfo.valueOf(method.getDeclaringClass());
-        if (annotations.isAnyAnnotationPresent(method,
-                GET.class, POST.class, PUT.class, DELETE.class, HEAD.class, OPTIONS.class, PATCH.class)) {
-            if (annotations.isAnnotationPresent(Path.class, method)) {
-                // If the method is a valid resource
-                return normaliseUrl(getResourcePath(method.getDeclaringClass(), resourceMapping) + "/"
-                        + annotations.getAnnotation(Path.class, method).value());
-            }
-            return normaliseUrl(getResourcePath(method.getDeclaringClass(), resourceMapping));
-        }
-        return null;
+    public static String getSimpleName(String fqn) {
+        String simpleName = fqn.substring(fqn.lastIndexOf('.') + 1);
+        return simpleName.substring(simpleName.lastIndexOf('$') + 1);
     }
 }

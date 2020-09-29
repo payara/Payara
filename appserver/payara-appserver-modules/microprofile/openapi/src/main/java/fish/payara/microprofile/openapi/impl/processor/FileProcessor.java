@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,23 +39,19 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fish.payara.microprofile.openapi.api.processor.OASProcessor;
+import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
+import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.merge;
-import static java.util.logging.Level.WARNING;
-
+import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-
-import fish.payara.microprofile.openapi.api.processor.OASProcessor;
-import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
-import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
 
 /**
  * A processor to process a static document in the <code>META-INF</code>

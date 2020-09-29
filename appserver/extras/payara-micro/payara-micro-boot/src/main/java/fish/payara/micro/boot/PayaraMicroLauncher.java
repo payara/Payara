@@ -39,6 +39,7 @@
  */
 package fish.payara.micro.boot;
 
+import fish.payara.micro.PayaraMicro;
 import fish.payara.micro.boot.loader.ExecutableArchiveLauncher;
 import fish.payara.micro.boot.loader.archive.Archive;
 import java.lang.reflect.Method;
@@ -88,6 +89,14 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
     }
 
     /**
+     * Called by Payara Micro implementation, so it can be discovered when not started by this launcher.
+     * @param instance
+     */
+    public static void registerLaunchedInstance(PayaraMicroBoot instance) {
+        bootInstance = instance;
+    }
+
+    /**
      * Boot method via Micro.getInstance()
      * @return
      * @throws InstantiationException
@@ -123,7 +132,7 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
                 bootInstance = (PayaraMicroBoot) instanceMethod.invoke(null);
             }
         }
-	return bootInstance; 
+        return bootInstance;
     }
 
     @Override

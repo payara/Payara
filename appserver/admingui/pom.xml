@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.2020.2-SNAPSHOT</version>
+        <version>5.2020.5-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.admingui</groupId>
     <artifactId>admingui</artifactId>
@@ -139,28 +139,14 @@
         <module>payara-console-extras</module>
         <module>payara-console-extras-l10n</module>
         <module>payara-support</module>
-        <module>slack-notifier-console-plugin</module>
-        <module>slack-notifier-console-plugin-l10n</module>
-        <module>hipchat-notifier-console-plugin</module>
-        <module>hipchat-notifier-console-plugin-l10n</module>
         <module>eventbus-notifier-console-plugin</module>
         <module>eventbus-notifier-console-plugin-l10n</module>
         <module>cdieventbus-notifier-console-plugin</module>
         <module>cdieventbus-notifier-console-plugin-l10n</module>
-        <module>email-notifier-console-plugin</module>
-        <module>email-notifier-console-plugin-l10n</module>
-        <module>snmp-notifier-console-plugin</module>
-        <module>snmp-notifier-console-plugin-l10n</module>
-        <module>xmpp-notifier-console-plugin</module>
-        <module>xmpp-notifier-console-plugin-l10n</module>
         <module>jms-notifier-console-plugin</module>
         <module>jms-notifier-console-plugin-l10n</module>
-        <module>datadog-notifier-console-plugin</module>
-        <module>datadog-notifier-console-plugin-l10n</module>
         <module>healthcheck-service-console-plugin</module>
         <module>healthcheck-service-console-plugin-l10n</module>
-        <module>newrelic-notifier-console-plugin</module>
-        <module>newrelic-notifier-console-plugin-l10n</module>
         <module>jmx-monitoring-plugin</module>
         <module>jmx-monitoring-plugin-l10n</module>
         <module>rest-monitoring-plugin</module>
@@ -171,8 +157,8 @@
     <properties>
         <commons-fileupload.version>1.3.3</commons-fileupload.version>
         <woodstock-dojo-ajax-nodemo.version>0.4.4</woodstock-dojo-ajax-nodemo.version>
-        <woodstock-jsf.version>4.0.2.10.payara-p16</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>4.0.2.10.payara-p18</woodstock-jsf-suntheme.version>
+        <woodstock-jsf.version>4.0.2.10.payara-p17</woodstock-jsf.version>
+        <woodstock-jsf-suntheme.version>4.0.2.10.payara-p21</woodstock-jsf-suntheme.version>
         <woodstock-json.version>1.0</woodstock-json.version>
         <woodstock-prototype.version>1.7.3</woodstock-prototype.version>
     </properties>

@@ -273,7 +273,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
         if (needScanAnnotation) {
             classParser.parse(directory, null);
         }
-    } 
+    }
     
     @Override
     public ClassLoader getClassLoader() {

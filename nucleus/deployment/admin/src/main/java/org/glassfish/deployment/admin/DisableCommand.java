@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation]
 
 package org.glassfish.deployment.admin;
 
@@ -49,6 +49,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.v3.server.ApplicationLoaderService;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.glassfish.api.ActionReport;
@@ -384,12 +385,12 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
             // SHOULD CHECK THAT WE ARE THE CORRECT TARGET BEFORE DISABLING 
             String serverName = server.getName();
-            if (serverName.equals(target) || (server.getCluster() != null && server.getCluster().getName().equals(target)) ) {
+            if (serverName.equals(target) || isTargetCluster() || isTargetDeploymentGroup() || isTargetInstanceInDeploymentGroup()) {
                 // wait until all applications are loaded. Otherwise we get "Application not registered"
-                startupProvider.get();        
+                startupProvider.get();
                 ApplicationInfo appInfo = deployment.get(appName);
-                
-                final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);           
+
+                final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);
                 suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);  
             }
 
@@ -422,7 +423,38 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 }
             }
         }
-    }        
+    }
+ 
+    private boolean isTargetCluster() {
+        Cluster cluster = server.getCluster();
+        if (cluster != null) {
+            if (cluster.getName().equals(target)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    private boolean isTargetDeploymentGroup() {
+        if (domain.getDeploymentGroupNamed(target) != null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isTargetInstanceInDeploymentGroup() {
+        for (DeploymentGroup deploymentGroup : domain.getDeploymentGroups().getDeploymentGroup()) {
+
+            for (Server instance : deploymentGroup.getInstances()) {
+                if (instance.getName().equals(target)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public String getTarget(ParameterMap parameters) {
         return DeploymentCommandUtils.getTarget(parameters, origin, deployment);

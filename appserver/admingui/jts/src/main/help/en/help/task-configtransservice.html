@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -49,12 +50,12 @@
 <p>A value of 0 disables transaction timeouts. The default value is 0, meaning that the server waits indefinitely for a transaction to complete.</p>
 </li>
 <li>
-<p>In the Retry Timeout field, type the number of seconds the GlassFish Server tries to connect to an unreachable server.</p>
+<p>In the Retry Timeout field, type the number of seconds the Payara Server tries to connect to an unreachable server.</p>
 <p>The default value is 600 (10 minutes).</p>
 </li>
 <li>
 <p>In the Transaction Log Location field, type the directory where server logs are kept.</p>
-<p>Transaction logs are kept in the <code>tx</code> subdirectory of the directory specified by this field. The default value is the directory specified by the Log Root field of the Domain Attributes page, which is located under the Advanced tab of the GlassFish Server node.</p>
+<p>Transaction logs are kept in the <code>tx</code> subdirectory of the directory specified by this field. The default value is the directory specified by the Log Root field of the Domain Attributes page, which is located under the Advanced tab of the Payara Server node.</p>
 </li>
 <li>
 <p>From the Heuristic Decision drop-down list, select the policy to be followed if the outcome of a distributed transaction cannot be determined because other participants are unreachable.</p>
@@ -89,14 +90,14 @@
 
 </li>
 <li>
-<p>Restart the GlassFish Server.</p>
+<p>Restart the Payara Server.</p>
 </li>
 </ol>
 <a id="sthref3" name="sthref3"></a>
 <h5>See Also</h5>
 <ul>
 <li>
-<p><a href="task-configtransrecovery.html">To Configure How the GlassFish Server Recovers Transactions</a></p>
+<p><a href="task-configtransrecovery.html">To Configure How the Payara Server Recovers Transactions</a></p>
 </li>
 <li>
 <p><a href="task-settranstimeout.html">To Set a Transaction Timeout Value</a></p>
@@ -111,3 +112,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

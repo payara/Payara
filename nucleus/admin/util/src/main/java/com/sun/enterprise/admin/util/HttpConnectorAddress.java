@@ -38,24 +38,9 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.util;
-
-import com.sun.enterprise.util.JDK;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Base64;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS1;
@@ -63,16 +48,31 @@ import static org.glassfish.grizzly.config.dom.Ssl.TLS11;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS12;
 import static org.glassfish.grizzly.config.dom.Ssl.TLS13;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+
+import com.sun.enterprise.util.JDK;
+
 
 public final class HttpConnectorAddress {
+
     static final String HTTP_CONNECTOR = "http";
     static final String HTTPS_CONNECTOR = "https";
     public static final String  AUTHORIZATION_KEY     = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic ";
     private static final String DEFAULT_PROTOCOL = TLS12;
-    private static final String ZULU_JDK_VENDOR = "Azul";
-    private static final int MINIMUM_MAJOR_VERSION = 9;
-    private static final int MINIMUM_UPDATE_VERSION = 222;
 
     private String host;
     private int    port;
@@ -207,9 +207,8 @@ public final class HttpConnectorAddress {
                                         break;
 
                         case TLS13: protocol = TLS13;
-                                        if (JDK.getMajor() < MINIMUM_MAJOR_VERSION) {
-                                            if (JDK.getVendor().contains(ZULU_JDK_VENDOR) && 
-                                                    JDK.getUpdate() >= MINIMUM_UPDATE_VERSION) {
+                                        if (!JDK.isTls13Supported()) {
+                                            if (JDK.isOpenJSSEFlagRequired()) {
                                                 protocol = TLS13;
                                             } else {
                                                 protocol = DEFAULT_PROTOCOL;

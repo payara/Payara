@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -21,12 +22,12 @@
 
 <h4><a id="sthref2" name="sthref2"></a>To Create a Cluster</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>A cluster is a named collection of GlassFish Server instances that share the same applications, resources, and configuration information.</p>
-<p>A cluster provides high availability through scalability, load balancing, and failure protection. When an instance or a host in a cluster fails, GlassFish Server detects the failure, redirects requests from the failed instance to other instances in the cluster, and recovers the user session state. Because the same applications and resources are on all instances in the cluster, an instance can fail over to any other instance in the cluster.</p>
-<p>GlassFish Server enables you to administer all the instances in a cluster as a single unit from a single host, regardless of whether the instances reside on the same host or different hosts.</p>
+<p>A cluster is a named collection of Payara Server instances that share the same applications, resources, and configuration information.</p>
+<p>A cluster provides high availability through scalability, load balancing, and failure protection. When an instance or a host in a cluster fails, Payara Server detects the failure, redirects requests from the failed instance to other instances in the cluster, and recovers the user session state. Because the same applications and resources are on all instances in the cluster, an instance can fail over to any other instance in the cluster.</p>
+<p>Payara Server enables you to administer all the instances in a cluster as a single unit from a single host, regardless of whether the instances reside on the same host or different hosts.</p>
 <a id="sthref3" name="sthref3"></a>
 <h5>Before You Begin</h5>
-<p>If you plan to add GlassFish Server instances to the cluster that you are creating, ensure that the nodes on which the instances are to reside already exist.</p>
+<p>If you plan to add Payara Server instances to the cluster that you are creating, ensure that the nodes on which the instances are to reside already exist.</p>
 <ol>
 <li>
 <p>In the navigation tree, select the Clusters node.</p>
@@ -70,10 +71,10 @@
 </ul>
 </li>
 <li>
-<p>The name must be unique in the domain and must not be the name of a another cluster, a named configuration, a GlassFish Server instance, or a node.</p>
+<p>The name must be unique in the domain and must not be the name of a another cluster, a named configuration, a Payara Server instance, or a node.</p>
 </li>
 <li>
-<p>The name must not be <code>domain</code>, <code>server</code>, or any other keyword that is reserved by GlassFish Server.</p>
+<p>The name must not be <code>domain</code>, <code>server</code>, or any other keyword that is reserved by Payara Server.</p>
 </li>
 </ul>
 </li>
@@ -101,7 +102,7 @@
 </ul>
 </li>
 <li>
-<p><a id="sthref4" name="sthref4"></a>Add GlassFish Server instances to the cluster.</p>
+<p><a id="sthref4" name="sthref4"></a>Add Payara Server instances to the cluster.</p>
 
 <hr>
 <p><b>Note:</b></p>
@@ -109,7 +110,7 @@
 
 <hr>
 
-<p>You can also add instances after the cluster is created, as described in <a href="task-create-clustered-instance.html">To Add a GlassFish Server Instance to a Cluster</a>.</p>
+<p>You can also add instances after the cluster is created, as described in <a href="task-create-clustered-instance.html">To Add a Payara Server Instance to a Cluster</a>.</p>
 <p>Add each instance as follows:</p>
 <ol type="a">
 <li>
@@ -193,3 +194,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

@@ -39,7 +39,6 @@
 package fish.payara.nucleus.healthcheck;
 
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import fish.payara.nucleus.notification.domain.BoundedTreeSet;
 import fish.payara.nucleus.store.ClusteredStore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;

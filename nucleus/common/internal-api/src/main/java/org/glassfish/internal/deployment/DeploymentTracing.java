@@ -96,6 +96,12 @@ public class DeploymentTracing {
         OPENING_ARCHIVE,
 
         /**
+         * Activities related to transforming the contents of application
+         * archive from javax.* to jakarta.* and vice-versa.
+         */
+        TRANSFORM_ARCHIVE,
+
+        /**
          * Validate whether deployment is fit for specified target. Component {@code command} validates correctness of the command
          * parameter, component {@code registry} validates possibility of deployment to target instance(s).
          */

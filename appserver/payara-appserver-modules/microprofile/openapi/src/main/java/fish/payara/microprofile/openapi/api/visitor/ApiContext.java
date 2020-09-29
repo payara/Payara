@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,11 @@
  */
 package fish.payara.microprofile.openapi.api.visitor;
 
+import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
+import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
+import org.glassfish.hk2.classmodel.reflect.Type;
 
 /**
  * The context in which a class object is being visited. For example, if a
@@ -67,7 +70,34 @@ public interface ApiContext {
 
     /**
      * @param type any class, not null
-     * @return true, if the give type is a known type in this context, else false
+     * @return true, if the give type is a known type in this context, else
+     * false
      */
-    boolean isApplicationType(Class<?> type);
+    boolean isApplicationType(String type);
+
+    /**
+     * @param type any class, not null
+     * @return true, if the give type is a filtered class for OpenAPI metadata processing
+     * otherwise false
+     */
+    boolean isAllowedType(Type type);
+
+    /**
+     * @param type any class, not null
+     * @return type, if the give type is a known type in this context, else null
+     */
+    Type getType(String type);
+
+    /**
+     * @return the application class loader
+     */
+    ClassLoader getApplicationClassLoader();
+
+    /**
+     *
+     * @param type
+     * @return the aggregated annotation info of type
+     */
+    public AnnotationInfo getAnnotationInfo(ExtensibleType<? extends ExtensibleType> type);
+
 }

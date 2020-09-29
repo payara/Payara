@@ -175,7 +175,7 @@ public class InvocationManagerImpl implements InvocationManager {
 
         Iterator<ComponentInvocation> iter = frames.descendingIterator();
         if (!iter.hasNext()) {
-            throw new InvocationException();
+            throw new InvocationException("No invocation on invocation stack. Expected invocation: " + invocation);
         }
 
         ComponentInvocation current = iter.next(); // the last is the current is "invocation"

@@ -1,6 +1,5 @@
 /*
- *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,12 +37,18 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
+
+import com.sun.enterprise.config.serverbeans.Config;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -51,9 +56,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
@@ -67,13 +70,10 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import com.sun.enterprise.config.serverbeans.Config;
-
+import fish.payara.internal.notification.NotifierUtils;
+import fish.payara.internal.notification.TimeUtil;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.TimeUtil;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 
 /**
  * Service to configure the {@link HealthCheckServiceConfiguration} of the {@link Target}.
@@ -132,6 +132,15 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     @Param(name = "historical-trace-store-timeout", optional = true)
     private String historicalTraceStoreTimeout;
 
+    @Param(name = "enableNotifiers", alias = "enable-notifiers", optional = true)
+    private List<String> enableNotifiers;
+
+    @Param(name = "disableNotifiers", alias = "disable-notifiers", optional = true)
+    private List<String> disableNotifiers;
+
+    @Param(name = "setNotifiers", alias = "set-notifiers", optional = true)
+    private List<String> setNotifiers;
+
     @Override
     public void execute(AdminCommandContext context) {
         targetConfig = targetUtil.getConfig(target);
@@ -142,7 +151,6 @@ public class SetHealthCheckConfiguration implements AdminCommand {
         if (dynamic && (!server.isDas() || targetConfig.isDas())) {
             configureDynamically();
         }
-        updateLogNotifier(context);
     }
 
     private static ActionReport initActionReport(AdminCommandContext context) {
@@ -156,6 +164,7 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     private void updateConfig(HealthCheckServiceConfiguration config, AdminCommandContext context) {
         final ActionReport report = initActionReport(context);
         try {
+            final Set<String> notifierNames = NotifierUtils.getNotifierNames(serviceLocator);
             ConfigSupport.apply(configProxy -> {
                     configProxy.enabled(enabled.toString());
                     configProxy.setHistoricalTraceStoreSize(String.valueOf(historicalTraceStoreSize));
@@ -165,6 +174,43 @@ public class SetHealthCheckConfiguration implements AdminCommand {
                     if (historicalTraceStoreTimeout != null) {
                         configProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
                     }
+                    List<String> notifiers = configProxy.getNotifierList();
+                    if (enableNotifiers != null) {
+                        for (String notifier : enableNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                if (!notifiers.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                }
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(configProxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
+                    }
+                    if (disableNotifiers != null) {
+                        for (String notifier : disableNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                notifiers.remove(notifier);
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(configProxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
+                    }
+                    if (setNotifiers != null) {
+                        notifiers.clear();
+                        for (String notifier : setNotifiers) {
+                            if (notifierNames.contains(notifier)) {
+                                if (!notifiers.contains(notifier)) {
+                                    notifiers.add(notifier);
+                                }
+                            } else {
+                                throw new PropertyVetoException("Unrecognised notifier " + notifier,
+                                        new PropertyChangeEvent(configProxy, "notifiers", notifiers, notifiers));
+                            }
+                        }
+                    }
+
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return configProxy;
                 }, config);
@@ -176,24 +222,6 @@ public class SetHealthCheckConfiguration implements AdminCommand {
         }
     }
 
-    private void updateLogNotifier(AdminCommandContext context) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("set-healthcheck-service-notifier-configuration", subReport, context.getSubject());
-        ParameterMap params = new ParameterMap();
-        params.add("target", target);
-        params.add("dynamic", String.valueOf(dynamic));
-        params.add("enabled", enabled.toString());
-        params.add("notifier", NotifierType.LOG.name().toLowerCase());
-        // noisy will default to the notifier's config when not set so we do not set it as this is what we want
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-    }
-
     private void configureDynamically() {
         healthCheck.setEnabled(enabled);
         healthCheck.setHistoricalTraceStoreSize(historicalTraceStoreSize);
@@ -202,6 +230,18 @@ public class SetHealthCheckConfiguration implements AdminCommand {
         }
         if (historicalTraceStoreTimeout != null) {
             healthCheck.setHistoricalTraceStoreTimeout(TimeUtil.setStoreTimeLimit(this.historicalTraceStoreTimeout));
+        }
+
+        Set<String> notifiers = healthCheck.getEnabledNotifiers();
+        if (enableNotifiers != null) {
+            enableNotifiers.forEach(notifiers::add);
+        }
+        if (disableNotifiers != null) {
+            disableNotifiers.forEach(notifiers::remove);
+        }
+        if (setNotifiers != null) {
+            notifiers.clear();
+            setNotifiers.forEach(notifiers::add);
         }
     }
 }

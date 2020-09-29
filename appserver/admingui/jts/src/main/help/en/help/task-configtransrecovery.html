@@ -1,6 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
+    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -18,9 +19,9 @@
 
 <p><a id="task-configtransrecovery" name="task-configtransrecovery"></a><a id="GHJTS00005" name="GHJTS00005"></a></p>
 
-<h4><a id="sthref4" name="sthref4"></a>To Configure How the GlassFish Server Recovers Transactions</h4>
+<h4><a id="sthref4" name="sthref4"></a>To Configure How the Payara Server Recovers Transactions</h4>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Transactions might be incomplete either because the server crashed or because a resource manager crashed between phases of a 2-phase commit. It is essential to complete these stranded transactions and recover from the failures. GlassFish Server is designed to recover from these failures and complete the transactions upon server startup.</p>
+<p>Transactions might be incomplete either because the server crashed or because a resource manager crashed between phases of a 2-phase commit. It is essential to complete these stranded transactions and recover from the failures. Payara Server is designed to recover from these failures and complete the transactions upon server startup.</p>
 <p>Before performing the recovery, make sure all the resources involved are up and running.</p>
 <p>When the transaction spans across servers, the server that started the transaction can contact the other servers to get the outcome of the transactions. If the other servers are unreachable, the transaction uses the Heuristic Decision field to determine the outcome.</p>
 <ol>
@@ -47,7 +48,7 @@
 <p>By default, the Enabled checkbox is not selected.</p>
 </li>
 <li>
-<p>In the Retry Timeout field, type the number of seconds the GlassFish Server tries to connect to an unreachable server.</p>
+<p>In the Retry Timeout field, type the number of seconds the Payara Server tries to connect to an unreachable server.</p>
 <p>The default value is 600 (10 minutes).</p>
 </li>
 <li>
@@ -58,7 +59,7 @@
 <p>Click Save.</p>
 </li>
 <li>
-<p>Restart the GlassFish Server.</p>
+<p>Restart the Payara Server.</p>
 </li>
 </ol>
 <a id="sthref5" name="sthref5"></a>
@@ -80,3 +81,4 @@
 
 
 <small>Copyright &#169; 2005, 2017, Oracle and/or its affiliates. All rights reserved. <a href="docinfo.html">Legal Notices</a></small>
+<small>Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.</small>

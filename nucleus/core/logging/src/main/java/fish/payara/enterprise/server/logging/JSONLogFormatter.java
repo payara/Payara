@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package fish.payara.enterprise.server.logging;
 
 import com.sun.common.util.logging.GFLogRecord;
@@ -208,6 +207,8 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
                 builder.append(version.getMajorVersion());
                 builder.append('.');
                 builder.append(version.getMinorVersion());
+                builder.append('.');
+                builder.append(version.getUpdateVersion());
                 productId = builder.toString();
             }
         }
@@ -375,6 +376,30 @@ public class JSONLogFormatter extends Formatter implements LogEventBroadcaster {
             if (null != _delegate) {
                 _delegate.format(new StringBuilder()
                         .append(eventObject.toString()), level);
+            }
+
+            Object[] parameters = record.getParameters();
+            if (parameters != null) {
+                for (Object parameter : parameters) {
+                    if (parameter instanceof Map) {
+                        for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) parameter).entrySet()) {
+                            // there are implementations that allow <null> keys...
+                            String key;
+                            if (entry.getKey() != null) {
+                                key = entry.getKey().toString();
+                            } else {
+                                key = "null";
+                            }
+
+                            // also handle <null> values...
+                            if (entry.getValue() != null) {
+                                eventObject.add(key, entry.getValue().toString());
+                            } else {
+                                eventObject.add(key, "null");
+                            }
+                        }
+                    }
+                }
             }
 
             String logMessage = record.getMessage();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,10 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import java.util.Map;
-
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
-
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 public class PathsImpl extends ExtensibleTreeMap<PathItem, Paths> implements Paths {
 

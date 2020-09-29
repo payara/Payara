@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,26 +39,17 @@
  */
 package fish.payara.microprofile.openapi.impl.visitor;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOperation;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getResourcePath;
-import static java.util.logging.Level.WARNING;
-
+import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
+import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
+import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
+import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Comparator;
-import java.util.logging.Logger;
-
-import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
@@ -73,8 +64,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Application;
-
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -97,207 +86,192 @@ import org.eclipse.microprofile.openapi.annotations.servers.Servers;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.eclipse.microprofile.openapi.annotations.tags.Tags;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-
-import fish.payara.microprofile.openapi.api.visitor.ApiContext;
-import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
-import fish.payara.microprofile.openapi.api.visitor.ApiVisitor.VisitorFunction;
-import fish.payara.microprofile.openapi.api.visitor.ApiWalker;
-import fish.payara.microprofile.openapi.impl.model.util.AnnotationInfo;
+import org.eclipse.microprofile.openapi.models.PathItem;
+import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.ClassModel;
+import org.glassfish.hk2.classmodel.reflect.FieldModel;
+import org.glassfish.hk2.classmodel.reflect.MethodModel;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
 
 /**
- * A walker that visits each annotation and passes it to the visitor.
+ * A walker that visits each filtered class type & it's members, scans for
+ * OpenAPI annotations and passes it to the visitor.
  */
-public class OpenApiWalker implements ApiWalker {
+public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
 
-    private static final Logger LOGGER = Logger.getLogger(OpenApiWalker.class.getName());
+    private final Set<Type> allowedTypes;
+    private final OpenApiContext context;
 
-    private final OpenAPI api;
-    private final Set<Class<?>> classes;
-    private final Map<String, Set<Class<?>>> resourceMapping;
+    private Map<Class<? extends Annotation>, VisitorFunction<AnnotationModel, E>> annotationVisitor;
+    private Map<Class<? extends Annotation>, Class<? extends Annotation>> annotationAlternatives;
 
-    public OpenApiWalker(OpenAPI api, Set<Class<?>> allowedClasses) {
-        this.api = api;
-        this.classes = new TreeSet<>(Comparator.comparing(Class::getName, String::compareTo));
-        this.classes.addAll(allowedClasses);
-        addInnerClasses(); // must happen before generating the resource mapping
-        this.resourceMapping = generateResourceMapping(classes);
-    }
-
-    private void addInnerClasses() {
-        List<Class<?>> topLevelClasses = new ArrayList<>(classes);
-        for (Class<?> topLevelClass : topLevelClasses) {
-            addInnerClasses(topLevelClass);
-        }
-    }
-
-    private void addInnerClasses(Class<?> topLevelClass) {
-        if (topLevelClass != null) {
-            classes.addAll(Arrays.asList(topLevelClass.getDeclaredClasses()));
-            if (topLevelClass.getSuperclass() != Object.class) {
-                addInnerClasses(topLevelClass.getSuperclass());
-            }
-        }
+    public OpenApiWalker(OpenAPI api, Types allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
+        this.allowedTypes = new TreeSet<>(Comparator.comparing(Type::getName, String::compareTo));
+        this.allowedTypes.addAll(allowedTypes);
+        this.context = new OpenApiContext(allTypes, this.allowedTypes, appClassLoader, api);
     }
 
     @Override
     public void accept(ApiVisitor visitor) {
-        // OpenAPI necessary annotations
-        processAnnotations(OpenAPIDefinition.class, visitor::visitOpenAPI);
-
-        // JAX-RS methods
-        processAnnotations(GET.class, visitor::visitGET);
-        processAnnotations(POST.class, visitor::visitPOST);
-        processAnnotations(PUT.class, visitor::visitPUT);
-        processAnnotations(DELETE.class, visitor::visitDELETE);
-        processAnnotations(HEAD.class, visitor::visitHEAD);
-        processAnnotations(OPTIONS.class, visitor::visitOPTIONS);
-        processAnnotations(PATCH.class, visitor::visitPATCH);
-
-        // JAX-RS parameters
-        processAnnotations(QueryParam.class, visitor::visitQueryParam);
-        processAnnotations(PathParam.class, visitor::visitPathParam);
-        processAnnotations(HeaderParam.class, visitor::visitHeaderParam);
-        processAnnotations(CookieParam.class, visitor::visitCookieParam);
-        processAnnotations(FormParam.class, visitor::visitFormParam);
-
-        // All other OpenAPI annotations
-        processAnnotations(Schema.class, visitor::visitSchema);
-        processAnnotations(Server.class, visitor::visitServer, Servers.class);
-        processAnnotations(Servers.class, visitor::visitServers, Server.class);
-        processAnnotations(Extensions.class, visitor::visitExtensions, Extension.class);
-        processAnnotations(Extension.class, visitor::visitExtension, Extensions.class);
-        processAnnotations(Operation.class, visitor::visitOperation);
-        processAnnotations(Callback.class, visitor::visitCallback, Callbacks.class);
-        processAnnotations(Callbacks.class, visitor::visitCallbacks, Callback.class);
-        processAnnotations(APIResponse.class, visitor::visitAPIResponse, APIResponses.class);
-        processAnnotations(APIResponses.class, visitor::visitAPIResponses, APIResponse.class);
-        processAnnotations(Parameters.class, visitor::visitParameters, Parameter.class);
-        processAnnotations(Parameter.class, visitor::visitParameter, Parameters.class);
-        processAnnotations(ExternalDocumentation.class, visitor::visitExternalDocumentation);
-        processAnnotations(Tag.class, visitor::visitTag, Tags.class);
-        processAnnotations(Tags.class, visitor::visitTags, Tag.class);
-        processAnnotations(SecurityScheme.class, visitor::visitSecurityScheme, SecuritySchemes.class);
-        processAnnotations(SecuritySchemes.class, visitor::visitSecuritySchemes, SecurityScheme.class);
-        processAnnotations(SecurityRequirement.class, visitor::visitSecurityRequirement, SecurityRequirements.class);
-        processAnnotations(SecurityRequirements.class, visitor::visitSecurityRequirements, SecurityRequirement.class);
-
-        // JAX-RS response types
-        processAnnotations(Produces.class, visitor::visitProduces);
-        processAnnotations(Consumes.class, visitor::visitConsumes);
-
-        // OpenAPI response types
-        processAnnotations(RequestBody.class, visitor::visitRequestBody);
-        //redo schema, now all others have been to ensure sub-schemas work
-        processAnnotations(Schema.class, visitor::visitSchema);
-    }
-
-    @SafeVarargs
-    private final <A extends Annotation, E extends AnnotatedElement> void processAnnotations(
-            Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, 
-            Class<? extends Annotation>... alternatives) {
-        for (Class<?> clazz : classes) {
-            processAnnotation(clazz, annotationClass, annotationFunction, alternatives);
-        }
-    }
-
-    @SafeVarargs
-    private final <T, A extends Annotation, E extends AnnotatedElement> void processAnnotation(
-            Class<T> annotatedClass, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction,
-            Class<? extends Annotation>... alternatives) {
-        AnnotationInfo<T> annotations = AnnotationInfo.valueOf(annotatedClass);
-        processAnnotation(annotatedClass, annotationClass, annotationFunction, annotations,
-                new OpenApiContext(classes, api, getResourcePath(annotatedClass, resourceMapping)), alternatives);
-
-        for (Field field : annotatedClass.getDeclaredFields()) {
-            if (annotations.isAnnotationPresent(annotationClass, field)) {
-                if (   annotationClass == HeaderParam.class
-                    || annotationClass == CookieParam.class
-                    || annotationClass == PathParam.class
-                    || annotationClass == QueryParam.class) {
-                    // NB. if fields are annotated as Param all methods have it
-                    for (Method method : annotatedClass.getDeclaredMethods()) {
-                        OpenApiContext context = new OpenApiContext(classes, api,
-                                getResourcePath(method, resourceMapping),
-                                getOperation(method, api, resourceMapping));
-                        if (context.getWorkingOperation() != null) {
-                            processAnnotation(field, annotationClass, annotationFunction, annotations, context,
-                                    alternatives);
-                        }
-                    }
-                } else {
-                    processAnnotation(field, annotationClass, annotationFunction, annotations,
-                            new OpenApiContext(classes, api, null), alternatives);
-                }
+        for (Type type : allowedTypes) {
+            if (type instanceof ClassModel) {
+                processAnnotation((ClassModel) type, visitor);
             }
         }
+        addSchemasToPaths();
+    }
 
-        for (final Method method : annotatedClass.getDeclaredMethods()) {
-            OpenApiContext context = new OpenApiContext(classes, api,
-                    getResourcePath(method, resourceMapping),
-                    getOperation(method, api, resourceMapping));
-            processAnnotation(method, annotationClass, annotationFunction, annotations, context, alternatives);
+    public final void processAnnotation(ClassModel annotatedClass, ApiVisitor visitor) {
+        AnnotationInfo annotations = context.getAnnotationInfo(annotatedClass);
+        processAnnotation((E) annotatedClass, annotations, visitor, new OpenApiContext(context, annotatedClass));
 
-            for (java.lang.reflect.Parameter parameter : method.getParameters()) {
-                processAnnotation(parameter, annotationClass, annotationFunction, annotations, context, alternatives);
+        for (final MethodModel method : annotatedClass.getMethods()) {
+            processAnnotation((E) method, annotations, visitor, new OpenApiContext(context, method));
+        }
+
+        for (final FieldModel field : annotatedClass.getFields()) {
+            processAnnotation((E) field, annotations, visitor, new OpenApiContext(context, field));
+        }
+
+        for (final MethodModel method : annotatedClass.getMethods()) {
+            for (org.glassfish.hk2.classmodel.reflect.Parameter parameter : method.getParameters()) {
+                processAnnotation((E) parameter, annotations, visitor, new OpenApiContext(context, method));
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    @SafeVarargs
-    private static <A extends Annotation, E extends AnnotatedElement> void processAnnotation(
-            AnnotatedElement element, Class<A> annotationClass, VisitorFunction<A, E> annotationFunction, 
-            AnnotationInfo<?> annotations, ApiContext context, Class<? extends Annotation>... alternatives) {
-        // If it's just the one annotation class
-        // Check the element
-        if (annotations.isAnnotationPresent(annotationClass, element)) {
-            annotationFunction.apply(annotations.getAnnotation(annotationClass, element), (E) element, context);
-        } else if (element instanceof Method && annotations.isAnnotationPresent(annotationClass)
-                && !annotations.isAnyAnnotationPresent(element, alternatives)) {
-            // If the method isn't annotated, inherit the class annotation
-            if (context.getPath() != null) {
-                annotationFunction.apply(annotations.getAnnotation(annotationClass), (E) element, context);
-            }
-        }
-    }
+    private void processAnnotation(E element, AnnotationInfo annotations, ApiVisitor visitor, OpenApiContext context) {
 
-    /**
-     * Generates a map listing the location each resource class is mapped to.
-     */
-    private static Map<String, Set<Class<?>>> generateResourceMapping(Set<Class<?>> classList) {
-        Map<String, Set<Class<?>>> resourceMapping = new HashMap<>();
-        for (Class<?> clazz : classList) {
-            if (clazz.isAnnotationPresent(ApplicationPath.class) && Application.class.isAssignableFrom(clazz)) {
-                // Produce the mapping
-                String key = clazz.getDeclaredAnnotation(ApplicationPath.class).value();
-                Set<Class<?>> resourceClasses = new HashSet<>();
-                resourceMapping.put(key, resourceClasses);
-
-                try {
-                    Application app = (Application) clazz.newInstance();
-                    // Add all classes contained in the application
-                    resourceClasses.addAll(app.getClasses());
-                    // Remove all Jersey providers
-                    resourceClasses.removeIf(resource -> resource.getPackage().getName().contains("org.glassfish.jersey"));
-                } catch (InstantiationException | IllegalAccessException ex) {
-                    LOGGER.log(WARNING, "Unable to initialise application class.", ex);
+        for (Class<? extends Annotation> annotationClass : getAnnotationVisitor(visitor).keySet()) {
+            VisitorFunction<AnnotationModel, E> annotationFunction = getAnnotationVisitor(visitor).get(annotationClass);
+            Class<? extends Annotation> alternative = getAnnotationAlternatives().get(annotationClass);
+            // If it's just the one annotation class
+            // Check the element
+            if (annotations.isAnnotationPresent(annotationClass, element)) {
+                if (element instanceof FieldModel
+                        && (annotationClass == HeaderParam.class
+                        || annotationClass == CookieParam.class
+                        || annotationClass == PathParam.class
+                        || annotationClass == QueryParam.class)) {
+                    FieldModel field = (FieldModel) element;
+                    // NB. if fields are annotated as Param all methods have it
+                    for (MethodModel method : field.getDeclaringType().getMethods()) {
+                        OpenApiContext methodContext = new OpenApiContext(context, method);
+                        if (methodContext.getWorkingOperation() != null) {
+                            annotationFunction.apply(annotations.getAnnotation(annotationClass, element), element, methodContext);
+                        }
+                    }
+                } else {
+                    annotationFunction.apply(annotations.getAnnotation(annotationClass, element), element, context);
+                }
+            } else if (element instanceof MethodModel && annotations.isAnnotationPresent(annotationClass)
+                    && (alternative == null || !annotations.isAnnotationPresent(alternative, element))) {
+                // If the method isn't annotated, inherit the class annotation
+                if (context.getPath() != null) {
+                    annotationFunction.apply(annotations.getAnnotation(annotationClass), element, context);
                 }
             }
         }
-
-        // If there is one application and it's empty, add all classes
-        if (resourceMapping.keySet().size() == 1) {
-            Set<Class<?>> classes = resourceMapping.values().iterator().next();
-            if (classes.isEmpty()) {
-                classes.addAll(classList);
-            }
-        }
-
-        // If there is no application, add all classes to the context root.
-        if (resourceMapping.isEmpty()) {
-            resourceMapping.put("/", classList);
-        }
-
-        return resourceMapping;
     }
+
+    private Map<Class<? extends Annotation>, VisitorFunction<AnnotationModel, E>> getAnnotationVisitor(ApiVisitor visitor) {
+        if (annotationVisitor == null) {
+            annotationVisitor = new LinkedHashMap<>();
+
+            // OpenAPI necessary annotations
+            annotationVisitor.put(OpenAPIDefinition.class, visitor::visitOpenAPI);
+
+            // JAX-RS methods
+            annotationVisitor.put(GET.class, (annot, element, con) -> visitor.visitGET(annot, (MethodModel) element, con));
+            annotationVisitor.put(POST.class, (annot, element, con) -> visitor.visitPOST(annot, (MethodModel) element, con));
+            annotationVisitor.put(PUT.class, (annot, element, con) -> visitor.visitPUT(annot, (MethodModel) element, con));
+            annotationVisitor.put(DELETE.class, (annot, element, con) -> visitor.visitDELETE(annot, (MethodModel) element, con));
+            annotationVisitor.put(HEAD.class, (annot, element, con) -> visitor.visitHEAD(annot, (MethodModel) element, con));
+            annotationVisitor.put(OPTIONS.class, (annot, element, con) -> visitor.visitOPTIONS(annot, (MethodModel) element, con));
+            annotationVisitor.put(PATCH.class, (annot, element, con) -> visitor.visitPATCH(annot, (MethodModel) element, con));
+
+            // JAX-RS parameters
+            annotationVisitor.put(QueryParam.class, visitor::visitQueryParam);
+            annotationVisitor.put(PathParam.class, visitor::visitPathParam);
+            annotationVisitor.put(HeaderParam.class, visitor::visitHeaderParam);
+            annotationVisitor.put(CookieParam.class, visitor::visitCookieParam);
+            annotationVisitor.put(FormParam.class, visitor::visitFormParam);
+
+            // All other OpenAPI annotations
+            annotationVisitor.put(Schema.class, visitor::visitSchema);
+            annotationVisitor.put(Server.class, visitor::visitServer);
+            annotationVisitor.put(Servers.class, visitor::visitServers);
+            annotationVisitor.put(Extensions.class, visitor::visitExtensions);
+            annotationVisitor.put(Extension.class, visitor::visitExtension);
+            annotationVisitor.put(Operation.class, visitor::visitOperation);
+            annotationVisitor.put(Callback.class, visitor::visitCallback);
+            annotationVisitor.put(Callbacks.class, visitor::visitCallbacks);
+            annotationVisitor.put(APIResponse.class, visitor::visitAPIResponse);
+            annotationVisitor.put(APIResponses.class, visitor::visitAPIResponses);
+            annotationVisitor.put(Parameters.class, visitor::visitParameters);
+            annotationVisitor.put(Parameter.class, visitor::visitParameter);
+            annotationVisitor.put(ExternalDocumentation.class, visitor::visitExternalDocumentation);
+            annotationVisitor.put(Tag.class, visitor::visitTag);
+            annotationVisitor.put(Tags.class, visitor::visitTags);
+            annotationVisitor.put(SecurityScheme.class, visitor::visitSecurityScheme);
+            annotationVisitor.put(SecuritySchemes.class, visitor::visitSecuritySchemes);
+            annotationVisitor.put(SecurityRequirement.class, visitor::visitSecurityRequirement);
+            annotationVisitor.put(SecurityRequirements.class, visitor::visitSecurityRequirements);
+
+            // JAX-RS response
+            annotationVisitor.put(Produces.class, visitor::visitProduces);
+            annotationVisitor.put(Consumes.class, visitor::visitConsumes);
+
+            // OpenAPI response
+            annotationVisitor.put(RequestBody.class, visitor::visitRequestBody);
+        }
+        return annotationVisitor;
+    }
+
+    private Map<Class<? extends Annotation>, Class<? extends Annotation>> getAnnotationAlternatives() {
+        if (annotationAlternatives == null) {
+            annotationAlternatives = new HashMap<>();
+            annotationAlternatives.put(Server.class, Servers.class);
+            annotationAlternatives.put(Servers.class, Server.class);
+            annotationAlternatives.put(Extensions.class, Extension.class);
+            annotationAlternatives.put(Extension.class, Extensions.class);
+            annotationAlternatives.put(Callback.class, Callbacks.class);
+            annotationAlternatives.put(Callbacks.class, Callback.class);
+            annotationAlternatives.put(APIResponse.class, APIResponses.class);
+            annotationAlternatives.put(APIResponses.class, APIResponse.class);
+            annotationAlternatives.put(Parameters.class, Parameter.class);
+            annotationAlternatives.put(Parameter.class, Parameters.class);
+            annotationAlternatives.put(Tag.class, Tags.class);
+            annotationAlternatives.put(Tags.class, Tag.class);
+            annotationAlternatives.put(SecurityScheme.class, SecuritySchemes.class);
+            annotationAlternatives.put(SecuritySchemes.class, SecurityScheme.class);
+            annotationAlternatives.put(SecurityRequirement.class, SecurityRequirements.class);
+            annotationAlternatives.put(SecurityRequirements.class, SecurityRequirement.class);
+        }
+        return annotationAlternatives;
+    }
+    
+    private void addSchemasToPaths() {
+        OpenAPI api = context.getApi();
+        api.getPaths().getPathItems().forEach((String s, PathItem t) -> {
+            t.getOperations().forEach((PathItem.HttpMethod u, org.eclipse.microprofile.openapi.models.Operation v) -> {
+                v.getResponses().getAPIResponses().forEach((String w, org.eclipse.microprofile.openapi.models.responses.APIResponse x) -> {
+                    if (x.getContent() != null) {
+                        x.getContent().getMediaTypes().forEach((y, z) -> {
+                            SchemaImpl.merge(z.getSchema(), z.getSchema(), true, context);
+                            if (z.getSchema() instanceof SchemaImpl) {
+                                SchemaImpl schema = (SchemaImpl) z.getSchema();
+                                schema.setImplementation(null);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+        
+    }
+
 }

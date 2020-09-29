@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation]
+
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
@@ -56,6 +58,7 @@ import org.glassfish.config.support.CommandTarget;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.util.Collection;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -255,21 +258,24 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
             }
         }
 
-        try {
-            Application app = applications.getApplication(name()); 
-            ApplicationRef appRef = domain.getApplicationRefInServer(server.getName(), name());
-            
+        try {              
             // update enabled so anything that triggers an action during startup can see the 
             // application is enabled.
             try {
                 deployment.updateAppEnabledAttributeInDomainXML(name(), target, true);
             } catch(TransactionFailure e) {
-                    logger.log(Level.WARNING, "failed to set enable attribute for " + name(), e);
+                logger.log(Level.WARNING, "failed to set enable attribute for " + name(), e);
             }
-
-            DeploymentContext dc = deployment.enable(target, app, appRef, report, logger);
-            suppInfo.setDeploymentContext((ExtendedDeploymentContext)dc);
-
+            
+            // SHOULD CHECK THAT WE ARE THE CORRECT TARGET BEFORE ENABLING 
+            String serverName = server.getName();
+            if (serverName.equals(target) || isTargetCluster() || isTargetDeploymentGroup()) {
+                ApplicationRef appRef = domain.getApplicationRefInTarget(name(), target);
+                Application app = applications.getApplication(name()); 
+                DeploymentContext deploymentContext = deployment.enable(target, app, appRef, report, logger);
+                suppInfo.setDeploymentContext((ExtendedDeploymentContext) deploymentContext);
+            }
+            
             if (report.getActionExitCode().equals(ActionReport.ExitCode.FAILURE)) {
                 // update the domain.xml
                 try {
@@ -285,6 +291,28 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         } 
     }        
 
+     private boolean isTargetCluster() {
+        Cluster cluster = server.getCluster();
+        if (cluster != null) {
+            if (cluster.getName().equals(target)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    private boolean isTargetDeploymentGroup() {
+        List<DeploymentGroup> deploymentGroups = server.getDeploymentGroup();
+            for (DeploymentGroup deploymentGroup : deploymentGroups) {
+                if (deploymentGroup.getName().equals(target)) {
+                    return true;
+                }
+            }
+        
+        return false;
+    }
+    
     public String getTarget(ParameterMap parameters) {
         return DeploymentCommandUtils.getTarget(parameters, OpsParams.Origin.load, deployment);
     }
