@@ -56,6 +56,29 @@
         <module>payara-api</module>
         <module>payara-bom</module>
     </modules>
-    
 
+    <properties>
+        <deploy.skip>false</deploy.skip>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>deploy-internals</id>
+            <properties>
+                <deploy.skip>true</deploy.skip>
+	    </properties>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+                <inherited>false</inherited>
+            </plugin>
+        </plugins>
+    </build>
 </project>
