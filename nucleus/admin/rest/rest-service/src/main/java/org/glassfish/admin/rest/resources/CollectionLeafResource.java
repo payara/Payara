@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -74,6 +74,8 @@ import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
+import java.util.function.Function;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.jvnet.hk2.config.Dom;
@@ -98,6 +100,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
     
     private static final String MIN_VERSION = "minVersion";
     private static final String MAX_VERISON = "maxVersion";
+    private static final String VENDOR = "vendor";
     private static final String JVM_OPTION = "jvmOption";
 
     /** Creates a new instance of xxxResource */
@@ -259,8 +262,13 @@ public abstract class CollectionLeafResource extends AbstractResource {
     }
     
     private Map<String, String> optionToMap(JvmOption option){
-        Map<String, String> baseMap = new HashMap<>();
-        baseMap.put(MIN_VERSION, option.minVersion.map(JDK.Version::toString).orElse(""));
+        Map<String, String> baseMap = new HashMap<>();        
+        if (option.vendor.isPresent()) {
+            baseMap.put(MIN_VERSION, option.vendor.get() + "-" + option.minVersion.map(JDK.Version::toString).orElse(""));
+        } else {
+            baseMap.put(MIN_VERSION, option.minVersion.map(JDK.Version::toString).orElse(""));
+        }
+        
         baseMap.put(MAX_VERISON, option.maxVersion.map(JDK.Version::toString).orElse(""));
         baseMap.put(JVM_OPTION, option.option);
         
