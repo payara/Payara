@@ -349,6 +349,9 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
             case "MonitoredAttributeBagResource":
                 childClass = "fish/payara/admin/rest/resources/MonitoredAttributeBagResource";
                 break;
+            case "MonitoredMetricAttributeBagResource":
+                childClass = "fish/payara/admin/rest/resources/MonitoredMetricAttributeBagResource";
+                break;
             default:
                 childClass = generatedPath + childResourceClassName;
                 break;

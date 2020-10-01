@@ -43,7 +43,9 @@
 package fish.payara.healthcheck.microprofile.metrics;
 
 import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import fish.payara.nucleus.healthcheck.configuration.MonitoredMetric;
 
 /**
  * Execution Options for the Microprofile Metrics checker.
@@ -52,39 +54,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class HealthCheckMicroProfileMetricstExecutionOptions extends HealthCheckExecutionOptions {
 
-    private String metricsScope;
-    private String metricsApplicationName;
-    private String metricName;
+    private List<MonitoredMetric> monitoredMetrics;
 
-    public HealthCheckMicroProfileMetricstExecutionOptions(boolean enabled, long time, TimeUnit unit, String metricsSource, String metricsType, String metricName) {
+    public HealthCheckMicroProfileMetricstExecutionOptions(boolean enabled, long time, TimeUnit unit, List<MonitoredMetric> monitoredMetrics) {
         super(enabled, time, unit);
-        this.metricsScope = metricsSource;
-        this.metricsApplicationName = metricsType;
-        this.metricName = metricName;
+        this.monitoredMetrics = monitoredMetrics;
     }
 
-    public String getMetricsScope() {
-        return metricsScope;
+    public List<MonitoredMetric> getMonitoredMetrics() {
+        return monitoredMetrics;
     }
 
-    public void setMetricsScope(String metricsScope) {
-        this.metricsScope = metricsScope;
+    public void setMonitoredMetrics(List<MonitoredMetric> monitoredMetrics) {
+        this.monitoredMetrics = monitoredMetrics;
     }
-
-    public String getMetricsApplicationName() {
-        return metricsApplicationName;
-    }
-
-    public void setMetricsApplicationName(String metricsApplicationName) {
-        this.metricsApplicationName = metricsApplicationName;
-    }
-
-    public String getMetricName() {
-        return metricName;
-    }
-
-    public void setMetricName(String metricName) {
-        this.metricName = metricName;
-    }
-
 }

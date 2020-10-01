@@ -90,6 +90,8 @@ import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
+import java.util.List;
+import fish.payara.nucleus.healthcheck.configuration.MonitoredMetric;
 
 /**
  * Service to configure individual specific {@link BaseHealthCheck} service directly using dynamic or their
@@ -151,7 +153,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     @Param(name = "checker-name", alias = "checkerName", optional = true)
     private String checkerName;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
     @Param(name = "time", optional = true)
@@ -202,15 +204,11 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     
     // microprofile metrics properties params:
     
-    @Param(name = "metrics-scope", optional = true,
-            acceptableValues = "Vendor,Base,Application")
-    private String metricsScope;
-    
-    @Param(name = "metrics-application-name", optional = true, separator = ',')
-    private String metricsApplicationName;
-    
-     @Param(name = "metrics-name", optional = true)
-    private String metricsName;
+    @Param(name = "add-metric", optional = true, multiple = true, alias = "addMetric")
+    private List<String> metricsToAdd;
+
+    @Param(name = "delete-metric", optional = true, multiple = true, alias = "deleteMetric")
+    private List<String> metricsToRemove;
 
     private ActionReport report;
 
@@ -243,38 +241,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-
-        if (metricsScope != null && metricsScope.equalsIgnoreCase("Application")) {
-            if (metricsApplicationName == null) {
-                report.setMessage("The metrics-application-name is a required parameter if the metrics-scope parameter is set to an application.");
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-
-            boolean applicationPresentInTarget = false;
-            for (Application appplication : domain.getApplicationsInTarget(target.replace("-config", ""))) {
-                if (appplication.getName().equals(metricsApplicationName)) {
-                    applicationPresentInTarget = true;
-                    break;
-                }
-            }
-
-            if (!applicationPresentInTarget) {
-                report.setMessage("Failed to set the metrics-application-name parameter. Please check the application named " + metricsApplicationName + 
-                        " is deployed to " + target +  ".");
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-
-        } else {
-            if (metricsApplicationName.trim().isEmpty()) {
-                metricsApplicationName = null;
-            } else {
-                report.setMessage("The metrics-application-name parameter is not required as the metrics-scope parameter is not set to an application.");
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }           
-        }
+        
         updateServiceConfiguration(service);
     }
 
@@ -376,8 +343,10 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         }
     }
 
-    private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException {
-        updateProperty(config, "enabled", config.getEnabled(), enabled.toString(), Checker::setEnabled);
+    private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException, TransactionFailure {
+        if (enabled != null) {
+            updateProperty(config, "enabled", config.getEnabled(), enabled.toString(), Checker::setEnabled);
+        }
         updateProperty(config, "time", config.getTime(), time, Checker::setTime);
         updateProperty(config, "time-unit", config.getUnit(), timeUnit, Checker::setUnit);
         updateProperty(config, "checker-name", config.getName(), checkerName, Checker::setName);
@@ -396,22 +365,92 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
                     stuckThreadsThresholdUnit, StuckThreadsChecker::setThresholdTimeUnit);
         }
         if (MicroProfileMetricsChecker.class.isAssignableFrom(type)) {
-            MicroProfileMetricsChecker microProfileMetricsConfig = (MicroProfileMetricsChecker) config;
-            updateProperty(microProfileMetricsConfig, "metrics-scope", microProfileMetricsConfig.getMetricsScope(),
-                    metricsScope, MicroProfileMetricsChecker::setMetricsScope);
-            updateProperty(microProfileMetricsConfig, "metric-application-name", microProfileMetricsConfig.getMetricApplicationName(),
-                    metricsApplicationName, MicroProfileMetricsChecker::setMetricApplicationName);
+            MicroProfileMetricsChecker microProfileMetricsConfig = (MicroProfileMetricsChecker) config;           
+            // This is required as the child resources is not created if the name is not set.
+            microProfileMetricsConfig.setName(config.getName());
+            List<MonitoredMetric> metrics = microProfileMetricsConfig.getMonitoredMetrics();
+            if (metricsToRemove != null && !metricsToRemove.isEmpty()) {
+                for (String metricToRemove : metricsToRemove) {
+                    MonitoredMetric monitoredMetric = parseToMonitoredMetric(metricToRemove, microProfileMetricsConfig.createChild(MonitoredMetric.class));               
+                    boolean removed = false;
 
-            String currentMetricName = metricsName;
-            if (microProfileMetricsConfig.getMetricName() != null && metricsName == null) {
-                currentMetricName = "";
+                    for (MonitoredMetric metric : metrics) {
+                        if (metric.equals(monitoredMetric)) {
+                            metrics.remove(metric);
+                            report.appendMessage("Metric 'metricName=" + monitoredMetric.getMetricName() + "' successfully deleted." + "\n");
+                            removed = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!removed) {
+                        report.appendMessage("Metric 'metricName=" + monitoredMetric.getMetricName() + "' doesn't exist, so was ignored." + "\n");
+                    }
+                }
             }
-            updateProperty(microProfileMetricsConfig, "metric-name", microProfileMetricsConfig.getMetricName(),
-                    currentMetricName, MicroProfileMetricsChecker::setMetricName);
+            
+            if (metricsToAdd != null && !metricsToAdd.isEmpty()) {
+                for (String metricToAdd : metricsToAdd) {
+                    MonitoredMetric monitoredMetric = parseToMonitoredMetric(metricToAdd, microProfileMetricsConfig.createChild(MonitoredMetric.class));
+                    boolean metricExists = false;
+
+                    for (MonitoredMetric metric : metrics) {
+                        if (metric.equals(monitoredMetric)) {
+                            metricExists = true;
+                            report.appendMessage("Metric 'metricName=" + monitoredMetric.getMetricName() + "' already exists, so was ignored." + "\n");
+                            break;
+                        }
+                    }
+
+                    if (!metricExists) {
+                        metrics.add(monitoredMetric);
+                        report.appendMessage("Metric 'metricName=" + monitoredMetric.getMetricName() + "' successfully added." + "\n");
+                    }
+                }
+            }
         }
+        
         return config;
     }
 
+    private MonitoredMetric parseToMonitoredMetric(String input, MonitoredMetric monitoredMetric) throws PropertyVetoException {
+        String[] metricTokens = input.split("(?=metricName ?=)|(?=description ?=)");
+        String metricName = null;
+        String description = null;
+
+        if (metricTokens.length < 1) {
+            throw new IllegalArgumentException("No metric property was available. The required metric property is 'metricName'.");
+        }
+
+        for (String token : metricTokens) {
+            token = token.replaceAll("\\\\", "");
+            String[] param = token.split("=", 2);
+            if (param.length != 2) {
+                throw new IllegalArgumentException("Incorrectly formatted metric property. Correct format is 'metricName=MetricName'.");
+            }
+            switch (param[0]) {
+                case "metricName":
+                    metricName = param[1].trim();
+                    break;
+                case "description":
+                    description = param[1].trim();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown metric property: " + param[0] + ". Valid metric properties are: 'metricName' and 'description'.");
+            }
+        }
+        if (metricName == null || metricName.isEmpty()) {
+            throw new IllegalArgumentException("Invalid metric property: " + metricName);
+        }
+
+        monitoredMetric.setMetricName(metricName);
+        if (description != null) {
+            monitoredMetric.setDescription(description);
+        }
+
+        return monitoredMetric;
+    }
+    
     /**
      * Updates the named property in the given config with the given value. If the property does not exist it is
      * created.

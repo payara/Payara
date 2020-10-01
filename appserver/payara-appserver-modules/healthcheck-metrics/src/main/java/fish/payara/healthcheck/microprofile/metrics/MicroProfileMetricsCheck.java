@@ -48,6 +48,7 @@ import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import static fish.payara.notification.healthcheck.HealthCheckResultStatus.GOOD;
 import static fish.payara.notification.healthcheck.HealthCheckResultStatus.WARNING;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.nucleus.healthcheck.configuration.MonitoredMetric;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,6 +58,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
@@ -78,6 +80,9 @@ import org.jvnet.hk2.annotations.Service;
 public class MicroProfileMetricsCheck
         extends BaseHealthCheck<HealthCheckMicroProfileMetricstExecutionOptions, MicroProfileMetricsChecker> {
 
+    @Inject
+    private MetricsService metricsService;
+
     @PostConstruct
     public void postConstruct() {
         postConstruct(this, MicroProfileMetricsChecker.class);
@@ -89,9 +94,7 @@ public class MicroProfileMetricsCheck
                 checker.getEnabled()),
                 Long.parseLong(checker.getTime()),
                 asTimeUnit(checker.getUnit()),
-                checker.getMetricsScope(),
-                checker.getMetricApplicationName(),
-                checker.getMetricName());
+                checker.getMonitoredMetrics());
     }
 
     @Override
@@ -101,38 +104,24 @@ public class MicroProfileMetricsCheck
 
     @Override
     protected HealthCheckResult doCheckInternal() {
-        String registryName = options.getMetricsScope();
-        List<String> metricNames = new ArrayList<>(Arrays.asList(options.getMetricName().split(",")));
-        metricNames.removeAll(Arrays.asList("", null));
-        MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        if (registryName.equalsIgnoreCase("application")) {
-            registryName = options.getMetricsApplicationName();
-        }
-
         HealthCheckResult result = new HealthCheckResult();
-        List<String> metrics = collectMetrics(metricsService.getRegistry(registryName), metricNames);
+        metricsService.getAllRegistry();
+        List<String> metrics = collectMetrics();
 
         result.add(new HealthCheckResultEntry(metrics.isEmpty() ? WARNING : GOOD,
-                metrics.isEmpty() ? "The metric you entered doesn't exist under " + registryName : metrics.stream().map(Object::toString).collect(Collectors.joining())));
+                metrics.isEmpty() ? "The metrics you have entered to monitor doesn't exist" : metrics.stream().map(Object::toString).collect(Collectors.joining())));
 
         return result;
 
     }
 
-    private List<String> collectMetrics(MetricRegistry state, List<String> metricNames) {
+    private List<String> collectMetrics() {
+        MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
         List<String> array = new ArrayList<>();
         String metricsInfos;
-        if (metricNames == null || metricNames.isEmpty()) {
-            for (String name : state.getNames()) {
-                metricsInfos = getMetricInfos(name, state);
-                if (metricsInfos != null) {
-                    array.add(metricsInfos);
-                }
-
-            }
-        } else {
-            for (String metricName : metricNames) {
-                metricsInfos = getMetricInfos(metricName.trim(), state);
+        for (MonitoredMetric metric : options.getMonitoredMetrics()) {
+            for (MetricRegistry metricRegistry : metricsService.getAllRegistry()) {
+                metricsInfos = getMetricInfos(metric.getMetricName(), metricRegistry);
                 if (metricsInfos != null) {
                     array.add(metricsInfos);
                 }

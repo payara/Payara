@@ -47,50 +47,39 @@
 
 <event>
     <!beforeCreate
-        getRequestValue(key="configName" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="HEALTHCHECK_CONFIG_URL", 
-                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/health-check-service-configuration");
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="HEALTHCHECK_CONFIG_URL", value="#{pageSession.parentUrl}/health-check-service-configuration");
+        setPageSessionAttribute(key="MICROPROFILE_METRICS_CHECKER_URL", value="#{pageSession.HEALTHCHECK_CONFIG_URL}/micro-profile-metrics-checker");
 
-        gf.restRequest(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/get-healthcheck-configuration?target=#{pageSession.configName}"  
+        gf.restRequest(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/get-healthcheck-configuration?target=#{pageSession.encodedConfigName}"  
                 method="GET" result="#{requestScope.resp}");      
         setPageSessionAttribute(key="valueMap", 
                 value="#{requestScope.resp.data.subReports.get(5).extraProperties.microProfileMetrics}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-                
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.encodedConfigName}");
+                      
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
         
-        getRequestValue(key="scope" value=>$page{scope} default="Base");
-        urlencode(value="#{pageSession.scope}" encoding="UTF-8" result="#{pageSession.encodedScope}");
-        
-        getRequestValue(key="unit" value=>$page{unit} default="#{pageSession.valueMap['unit']}");
-        urlencode(value="#{pageSession.unit}" encoding="UTF-8" result="#{pageSession.encodedUnit}");
-        
-        setPageSessionAttribute(key="thisPage", value="#{request.contextPath}/healthcheck/healthcheck/checkers/microProfileMetricsCheckerConfiguration.jsf");
-        setPageSessionAttribute(key="dynamic", value="true");
-             
-        setAttribute(key="zero" value="$int{0}");
-        setPageSessionAttribute(key="showApplicationName", value="#{true}");
-        
-        if(#{pageSession.encodedScope}=Base) {
-            setPageSessionAttribute(key="showApplicationName", value="#{false}");
-        }
-        
-        if(#{pageSession.encodedScope}=Vendor) {
-            setPageSessionAttribute(key="showApplicationName", value="#{false}");
-        }
-        
-           if(#{pageSession.encodedScope}=Application) {
-            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application",
-                            result="#{pageSession.applicationNameList}");
+        setPageSessionAttribute(key="metricsMap", 
+        value="#{requestScope.resp.data.subReports.get(6).extraProperties.monitoredMetrics}");
 
-               setAttribute(key="applicationNameListSize" value="#{pageSession.applicationNameList.size()}");
-                if (#{requestScope.applicationNameListSize}>#{requestScope.zero}){
-                    listGet(list="#{pageSession.applicationNameList}" index="0" result="#{pageSession.application}");
-            }
+        if ("!(#{pageSession.metricsMap}=#{null})") {
+            urlencode(value="#{pageSession.valueMap['checkerName']}" encoding="UTF-8" result="#{pageSession.encodedCheckerName}");
+            gf.restRequest(endpoint="#{pageSession.MICROPROFILE_METRICS_CHECKER_URL}/#{pageSession.encodedCheckerName}/monitored-metric.json" 
+                method="GET" result="#{requestScope.propTable}")
+            setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.monitoredMetrics}");
         }
+        
+        if ("(#{pageSession.metricsMap}=#{null})") {
+              createList(size="0", result="#{pageSession.tableList}");
+        }
+                 
+        setPageSessionAttribute(key="dynamic", value="true");     
+        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
     />
 </event>
 
@@ -107,19 +96,17 @@
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="service" value="mp-metrics");
-                    mapPut(map="#{pageSession.valueMap}" key="metrics-scope" value="#{pageSession.encodedScope}");  
-                    mapPut(map="#{pageSession.valueMap}" key="unit" value="#{pageSession.encodedUnit}");
-                    
-                    if(#{pageSession.encodedScope}=Base) {
-                        mapPut(map="#{pageSession.valueMap}" key="metrics-application-name" value="");
-                    }
-
-                    if(#{pageSession.encodedScope}=Vendor) {
-                        mapPut(map="#{pageSession.valueMap}" key="metrics-application-name" value="");
-                    }
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/set-healthcheck-service-configuration" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+      
+                    if (#{pageSession.hasPropertyTable}) {
+                        urlencode(value="#{pageSession.valueMap['checkerName']}" encoding="UTF-8" result="#{pageSession.encodedCheckerName}");
+                        setPageSessionAttribute(key="MONITORED_METRICS_URL", value="#{pageSession.MICROPROFILE_METRICS_CHECKER_URL}/#{pageSession.encodedCheckerName}/monitored-metric.json");
+            
+                        javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                        gf.restRequest(endpoint="#{pageSession.MONITORED_METRICS_URL}", method="PUT", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+                     }
                     />
             </sun:button>
         </sun:panelGroup>
@@ -141,7 +128,7 @@
         <sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.nameLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.nameLabelHelpText}">
-            <sun:textField id="nameField" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['checker-name']}"/>
+            <sun:textField id="nameField" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['checkerName']}"/>
         </sun:property>
         <sun:property id="timeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.timeLabel}"  
@@ -153,60 +140,13 @@
                       label="$resource{i18nhx.healthcheck.checker.configuration.unitLabel}"  
                       helpText="$resource{i18nhx.healthcheck.checker.configuration.unitLabelHelpText}">
             <sun:dropDown id="unitDropdown" 
-                          selected="#{pageSession.encodedUnit}" 
+                          selected="#{pageSession.valueMap['unit']}" 
                           labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"}         
-                          submitForm="#{true}"
-                          immediate="#{true}">
-                <!command
-                    setAttribute(key="configName" value="#{pageSession.configName}");
-                    setAttribute(key="click" value="$this{component}");
-                    setAttribute(key="time" value="#{pageSession.encodedTime}");
-                    setAttribute(key="unit" value="#{click.selected}");
-                    setAttribute(key="scope" value="#{pageSession.encodedScope}");
-                    setAttribute(key="enabledSelected" value="#{pageSession.enabledSelected}");                
-                    gf.navigate(page="#{pageSession.thisPage}");
-                />
-
-            </sun:dropDown>
-        </sun:property>
-        
-        <sun:property id="metricsScopeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricsScopeLabel}"  
-                      helpText="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricsScopeLabelHelpText}">
-            <sun:dropDown id="metricsScopeDropdown" 
-                          selected="#{pageSession.encodedScope}" 
-                          labels={"Base", "Vendor", "Application"} 
-                          submitForm="#{true}"
-                          immediate="#{true}"
-                          required="#{true}">
-                <!command
-                    setAttribute(key="configName" value="#{pageSession.configName}");
-                    setAttribute(key="click" value="$this{component}");
-                    setAttribute(key="scope" value="#{click.selected}");
-                    setAttribute(key="enabledSelected" value="#{pageSession.enabledSelected}");
-                    setAttribute(key="time" value="#{pageSession.encodedTime}");
-                    setAttribute(key="unit" value="#{pageSession.encodedUnit}");
-                    gf.navigate(page="#{pageSession.thisPage}");
-                />
-
-            </sun:dropDown>
-        </sun:property>
-            <sun:property id="metricApplicationNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
-                      label="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricApplicationNameLabel}"  
-                      rendered="#{pageSession.showApplicationName}"
-                     helpText="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricApplicationNameLabelHelpText}">
-            <sun:dropDown id="metricApplicationNameDropDown"
-                          labels="$pageSession{applicationNameList}"
-                          selected="#{pageSession.valueMap['metrics-application-name']}"
-                          rendered="#{pageSession.showApplicationName}" />
-        </sun:property>
-          <sun:property id="metricNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricNameLabel}"  
-                      helpText="$resource{i18nhx.healthcheck.checker.configuration.microprofileMetricsChecker.metricNameLabelHelpText}">
-            <sun:textField id="nameField" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['metrics-name']}"/>
+                          />
         </sun:property>
     </sun:propertySheetSection>
 </sun:propertySheet>
+#include "/healthcheck/checkers/monitoredMetricsTable.inc"
 </sun:form>
 </define>
 </composition>

@@ -235,6 +235,8 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             classWriter.createGetChildResource("property", "PropertiesBagResource");
         } else if (beanName.equals("MonitoredAttribute")) {
             classWriter.createGetChildResource("monitored-attribute", "MonitoredAttributeBagResource");
+        } else if (beanName.equals("MonitoredMetric")) {
+            classWriter.createGetChildResource("monitored-metric", "MonitoredMetricAttributeBagResource");
         } else {
             String childResourceClassName = getClassName(beanName);
             if (childElement.isCollection()) {

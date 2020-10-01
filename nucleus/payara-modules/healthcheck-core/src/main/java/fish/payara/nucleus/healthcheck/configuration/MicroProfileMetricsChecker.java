@@ -44,6 +44,8 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
 import java.beans.PropertyVetoException;
+import java.util.List;
+import org.jvnet.hk2.config.Element;
 
 /**
  * @author mertcaliskan
@@ -51,20 +53,11 @@ import java.beans.PropertyVetoException;
 @Configured
 @CheckerConfigurationType(type = CheckerType.MP_METRICS)
 public interface MicroProfileMetricsChecker extends Checker {
-    
+
     @Attribute(defaultValue = DEFAULT_MICROPROFILE_METRICS_NAME)
     String getName();
     void setName(String value) throws PropertyVetoException;
 
-    @Attribute
-    String getMetricsScope();
-    void setMetricsScope(String metricsSource) throws PropertyVetoException;
-    
-    @Attribute
-    String getMetricApplicationName();
-    void setMetricApplicationName(String metricsType) throws PropertyVetoException;
-    
-    @Attribute
-    String getMetricName();
-    void setMetricName(String metricName) throws PropertyVetoException;
+    @Element
+    List<MonitoredMetric> getMonitoredMetrics();
 }
