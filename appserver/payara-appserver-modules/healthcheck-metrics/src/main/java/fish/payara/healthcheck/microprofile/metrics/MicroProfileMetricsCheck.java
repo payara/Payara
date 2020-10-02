@@ -45,18 +45,14 @@ package fish.payara.healthcheck.microprofile.metrics;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.nucleus.healthcheck.configuration.MicroProfileMetricsChecker;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
+import static fish.payara.notification.healthcheck.HealthCheckResultStatus.CRITICAL;
 import static fish.payara.notification.healthcheck.HealthCheckResultStatus.GOOD;
 import static fish.payara.notification.healthcheck.HealthCheckResultStatus.WARNING;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.configuration.MonitoredMetric;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
@@ -67,12 +63,10 @@ import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
 @Service(name = "healthcheck-mpmetrics")
@@ -104,118 +98,102 @@ public class MicroProfileMetricsCheck
 
     @Override
     protected HealthCheckResult doCheckInternal() {
+        List<MonitoredMetric> monitoredMetrics = options.getMonitoredMetrics();
         HealthCheckResult result = new HealthCheckResult();
-        metricsService.getAllRegistry();
-        List<String> metrics = collectMetrics();
 
-        result.add(new HealthCheckResultEntry(metrics.isEmpty() ? WARNING : GOOD,
-                metrics.isEmpty() ? "The metrics you have entered to monitor doesn't exist" : metrics.stream().map(Object::toString).collect(Collectors.joining())));
+        if (monitoredMetrics != null && !monitoredMetrics.isEmpty()) {
+            List<String> metrics = collectMetrics(monitoredMetrics);
+            StringBuilder metricsToDisplay = new StringBuilder();
+            metrics.forEach(metricsToDisplay::append);
+            result.add(new HealthCheckResultEntry(metrics.isEmpty() ? WARNING : GOOD,
+                    metrics.isEmpty() ? "The metrics you have added for monitoring doesn't exist" : metricsToDisplay.toString()));
+        }
 
+        result.add(new HealthCheckResultEntry(CRITICAL, "No metric has been added for monitoring."));
         return result;
-
     }
 
-    private List<String> collectMetrics() {
-        MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
-        List<String> array = new ArrayList<>();
+    private List<String> collectMetrics(List<MonitoredMetric> monitoredMetrics) {
+        List<String> metrics = new ArrayList<>();
         String metricsInfos;
-        for (MonitoredMetric metric : options.getMonitoredMetrics()) {
+        for (MonitoredMetric metric : monitoredMetrics) {
             for (MetricRegistry metricRegistry : metricsService.getAllRegistry()) {
-                metricsInfos = getMetricInfos(metric.getMetricName(), metricRegistry);
+                String metricName = metric.getMetricName();
+                metricsInfos = getMetricInfos(metricName, metricRegistry.getMetrics().get(new MetricID(metricName)));
                 if (metricsInfos != null) {
-                    array.add(metricsInfos);
+                    metrics.add(metricsInfos);
+                    break;
                 }
             }
         }
-        return array;
+        return metrics;
     }
 
-    private String getMetricInfos(String metricName, MetricRegistry state) {
-        Map<MetricID, Metric> metricInfos = state.getMetrics().entrySet().stream()
-                .filter(entry -> entry.getKey().getName().equals(metricName))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        for (Entry<MetricID, Metric> entry : metricInfos.entrySet()) {
-            MetricID metricID = entry.getKey();
-            Metric metric = entry.getValue();
-
-            if (metric instanceof Counter) {
-                return toName(metricID.getName(), "Count") + "=" + ((Counter) metric).getCount();
-            }
-            if (metric instanceof ConcurrentGauge) {
-                ConcurrentGauge concurrentGauge = ((ConcurrentGauge) metric);
-                return toName(metricID.getName(), "Count") + "=" + concurrentGauge.getCount()
-                        + toName(metricID.getName(), "Max") + "=" + concurrentGauge.getMax()
-                        + toName(metricID.getName(), "Min") + "=" + concurrentGauge.getMin();
-            }
-            if (metric instanceof Gauge) {
-                Object value = ((Gauge<?>) metric).getValue();
-                if (value instanceof Number) {
-                    return toName(metricID.getName(),
-                            getMetricUnitSuffix(state.getMetadata().get(metricID.getName()).getUnit())) + " = " + ((Number) value);
-                }
-            }
-            if (metric instanceof Histogram) {
-                Histogram histogram = ((Histogram) metric);
-                return toName(metricID.getName(), "Count") + "=" + histogram.getCount()
-                        + toName(metricID.getName(), "Max") + "=" + histogram.getSnapshot().getMax()
-                        + toName(metricID.getName(), "Mean") + "=" + histogram.getSnapshot().getMean()
-                        + toName(metricID.getName(), "Median") + "=" + histogram.getSnapshot().getMedian()
-                        + toName(metricID.getName(), "Min") + "=" + histogram.getSnapshot().getMin()
-                        + toName(metricID.getName(), "StdDev") + "=" + histogram.getSnapshot().getStdDev()
-                        + toName(metricID.getName(), "75thPercentile") + "=" + histogram.getSnapshot().get75thPercentile()
-                        + toName(metricID.getName(), "95thPercentile") + "=" + histogram.getSnapshot().get95thPercentile()
-                        + toName(metricID.getName(), "98thPercentile") + "=" + histogram.getSnapshot().get98thPercentile()
-                        + toName(metricID.getName(), "99thPercentile") + "=" + histogram.getSnapshot().get99thPercentile()
-                        + toName(metricID.getName(), "999thPercentile") + "=" + histogram.getSnapshot().get999thPercentile();
-            }
-
-            if (metric instanceof Meter) {
-                Meter meter = ((Meter) metric);
-                return toName(metricID.getName(), "Count") + "=" + meter.getCount()
-                        + toName(metricID.getName(), "FifteenMinuteRate") + "=" + meter.getFifteenMinuteRate()
-                        + toName(metricID.getName(), "FiveMinuteRate") + "=" + meter.getFiveMinuteRate()
-                        + toName(metricID.getName(), "OneMinuteRate") + "=" + meter.getOneMinuteRate()
-                        + toName(metricID.getName(), "MeanRate") + "=" + meter.getMeanRate();
-            }
-
-            if (metric instanceof SimpleTimer) {
-                SimpleTimer simpleTimer = ((SimpleTimer) metric);
-                return toName(metricID.getName(), "Count") + "=" + simpleTimer.getCount()
-                        + toName(metricID.getName(), "ElapsedTime") + "=" + simpleTimer.getElapsedTime().toMillis();
-            }
-            if (metric instanceof Timer) {
-                Timer timer = ((Timer) metric);
-                return toName(metricID.getName(), "Count") + "=" + timer.getCount()
-                        + toName(metricID.getName(), "FifteenMinuteRate") + "=" + timer.getFifteenMinuteRate()
-                        + toName(metricID.getName(), "FiveMinuteRate") + "=" + timer.getFiveMinuteRate()
-                        + toName(metricID.getName(), "OneMinuteRate") + "=" + timer.getOneMinuteRate()
-                        + toName(metricID.getName(), "MeanRate") + "=" + timer.getMeanRate()
-                        + toName(metricID.getName(), "Max") + "=" + timer.getSnapshot().getMax()
-                        + toName(metricID.getName(), "Mean") + "=" + timer.getSnapshot().getMean()
-                        + toName(metricID.getName(), "Median") + "=" + timer.getSnapshot().getMedian()
-                        + toName(metricID.getName(), "Min") + "=" + timer.getSnapshot().getMin()
-                        + toName(metricID.getName(), "StdDev") + "=" + timer.getSnapshot().getStdDev()
-                        + toName(metricID.getName(), "75thPercentile") + "=" + timer.getSnapshot().get75thPercentile()
-                        + toName(metricID.getName(), "95thPercentile") + "=" + timer.getSnapshot().get95thPercentile()
-                        + toName(metricID.getName(), "98thPercentile") + "=" + timer.getSnapshot().get98thPercentile()
-                        + toName(metricID.getName(), "99thPercentile") + "=" + timer.getSnapshot().get99thPercentile()
-                        + toName(metricID.getName(), "999thPercentile") + "=" + timer.getSnapshot().get999thPercentile();
-            }
-
+    private String getMetricInfos(String metricName, Metric metric) {
+        if (metric instanceof Counter) {
+            return toName(metricName, "Count") + "=" + ((Counter) metric).getCount();
         }
+        if (metric instanceof ConcurrentGauge) {
+            ConcurrentGauge concurrentGauge = ((ConcurrentGauge) metric);
+            return toName(metricName, "Count") + "=" + concurrentGauge.getCount()
+                    + toName(metricName, "Max") + "=" + concurrentGauge.getMax()
+                    + toName(metricName, "Min") + "=" + concurrentGauge.getMin();
+        }
+        if (metric instanceof Gauge) {
+            Object value = ((Gauge<?>) metric).getValue();
+            if (value instanceof Number) {
+                return toName(metricName, "") + " = " + ((Number) value);
+            }
+        }
+        if (metric instanceof Histogram) {
+            Histogram histogram = ((Histogram) metric);
+            return toName(metricName, "Count") + "=" + histogram.getCount()
+                    + toName(metricName, "Max") + "=" + histogram.getSnapshot().getMax()
+                    + toName(metricName, "Mean") + "=" + histogram.getSnapshot().getMean()
+                    + toName(metricName, "Median") + "=" + histogram.getSnapshot().getMedian()
+                    + toName(metricName, "Min") + "=" + histogram.getSnapshot().getMin()
+                    + toName(metricName, "StdDev") + "=" + histogram.getSnapshot().getStdDev()
+                    + toName(metricName, "75thPercentile") + "=" + histogram.getSnapshot().get75thPercentile()
+                    + toName(metricName, "95thPercentile") + "=" + histogram.getSnapshot().get95thPercentile()
+                    + toName(metricName, "98thPercentile") + "=" + histogram.getSnapshot().get98thPercentile()
+                    + toName(metricName, "99thPercentile") + "=" + histogram.getSnapshot().get99thPercentile()
+                    + toName(metricName, "999thPercentile") + "=" + histogram.getSnapshot().get999thPercentile();
+        }
+
+        if (metric instanceof Meter) {
+            Meter meter = ((Meter) metric);
+            return toName(metricName, "Count") + "=" + meter.getCount()
+                    + toName(metricName, "FifteenMinuteRate") + "=" + meter.getFifteenMinuteRate()
+                    + toName(metricName, "FiveMinuteRate") + "=" + meter.getFiveMinuteRate()
+                    + toName(metricName, "OneMinuteRate") + "=" + meter.getOneMinuteRate()
+                    + toName(metricName, "MeanRate") + "=" + meter.getMeanRate();
+        }
+
+        if (metric instanceof SimpleTimer) {
+            SimpleTimer simpleTimer = ((SimpleTimer) metric);
+            return toName(metricName, "Count") + "=" + simpleTimer.getCount()
+                    + toName(metricName, "ElapsedTime") + "=" + simpleTimer.getElapsedTime().toMillis();
+        }
+        if (metric instanceof Timer) {
+            Timer timer = ((Timer) metric);
+            return toName(metricName, "Count") + "=" + timer.getCount()
+                    + toName(metricName, "FifteenMinuteRate") + "=" + timer.getFifteenMinuteRate()
+                    + toName(metricName, "FiveMinuteRate") + "=" + timer.getFiveMinuteRate()
+                    + toName(metricName, "OneMinuteRate") + "=" + timer.getOneMinuteRate()
+                    + toName(metricName, "MeanRate") + "=" + timer.getMeanRate()
+                    + toName(metricName, "Max") + "=" + timer.getSnapshot().getMax()
+                    + toName(metricName, "Mean") + "=" + timer.getSnapshot().getMean()
+                    + toName(metricName, "Median") + "=" + timer.getSnapshot().getMedian()
+                    + toName(metricName, "Min") + "=" + timer.getSnapshot().getMin()
+                    + toName(metricName, "StdDev") + "=" + timer.getSnapshot().getStdDev()
+                    + toName(metricName, "75thPercentile") + "=" + timer.getSnapshot().get75thPercentile()
+                    + toName(metricName, "95thPercentile") + "=" + timer.getSnapshot().get95thPercentile()
+                    + toName(metricName, "98thPercentile") + "=" + timer.getSnapshot().get98thPercentile()
+                    + toName(metricName, "99thPercentile") + "=" + timer.getSnapshot().get99thPercentile()
+                    + toName(metricName, "999thPercentile") + "=" + timer.getSnapshot().get999thPercentile();
+        }
+
         return null;
-    }
-
-    private static String getMetricUnitSuffix(Optional<String> unit) {
-        if (!unit.isPresent()) {
-            return "";
-        }
-        String value = unit.get();
-        if (MetricUnits.NONE.equalsIgnoreCase(value) || value.isEmpty()) {
-            return "";
-        }
-        return toFirstLetterUpperCase(value);
     }
 
     private static String toName(String name, String suffix) {

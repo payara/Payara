@@ -581,9 +581,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         } else if (extraPropsMap.containsValue(DEFAULT_MICROPROFILE_HEALTHCHECK_NAME)) {
             extraPropsMap.put("timeout", DEFAULT_TIMEOUT);
         } else if (extraPropsMap.containsKey(DEFAULT_MICROPROFILE_METRICS_NAME)) {
-            extraPropsMap.put("metrics-scope", "");
-            extraPropsMap.put("metrics-application-name", "");
-            extraPropsMap.put("metrics-name", "");
+            return extraPropsMap;
         } else {
             extraPropsMap.put("thresholdCritical", THRESHOLD_DEFAULTVAL_CRITICAL);
             extraPropsMap.put("thresholdWarning", THRESHOLD_DEFAULTVAL_WARNING);

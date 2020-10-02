@@ -443,7 +443,6 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         registriesByName.values().forEach((entry) -> {
             metricRegistries.add(entry.registry);
         });
-
         return metricRegistries;
     }
 
