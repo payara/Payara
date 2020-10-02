@@ -272,4 +272,20 @@ public class MBeanMetadata implements Metadata {
                 Objects.equals(this.getTypeRaw(), that.getTypeRaw()) &&
                 Objects.equals(reusable, that.isReusable());
     }
+
+    @Override
+    public String toString() {
+        return "MBeanMetadata{" +
+            "\n\tmBean='" + mBean + '\'' +
+            ",\n\tdynamic=" + dynamic +
+            ",\n\tname='" + name + '\'' +
+            ",\n\tdisplayName='" + displayName + '\'' +
+            ",\n\tdescription='" + description + '\'' +
+            ",\n\tunit='" + unit + '\'' +
+            ",\n\ttype='" + type + '\'' +
+            ",\n\treusable=" + reusable +
+            ",\n\tvalid=" + valid +
+            ",\n\ttags=" + tags +
+            "\n}";
+    }
 }
