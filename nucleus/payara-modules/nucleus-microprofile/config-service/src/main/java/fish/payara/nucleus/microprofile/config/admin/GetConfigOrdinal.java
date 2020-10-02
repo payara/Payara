@@ -130,7 +130,10 @@ public class GetConfigOrdinal implements AdminCommand {
                     result = Integer.parseInt(serviceConfig.getPasswordOrdinality());
                     break;
                 }
-
+                case "aws": {
+                    result = Integer.parseInt(serviceConfig.getAwsOrdinality());
+                    break;
+                }
             }
             context.getActionReport().setMessage(source + " : " + result.toString());
 

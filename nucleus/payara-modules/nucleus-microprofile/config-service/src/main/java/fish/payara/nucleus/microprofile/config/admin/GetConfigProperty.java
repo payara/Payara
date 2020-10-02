@@ -39,16 +39,13 @@
  */
 package fish.payara.nucleus.microprofile.config.admin;
 
-import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
-import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
-import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
-import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import java.util.List;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
+import com.sun.enterprise.util.SystemPropertyConstants;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -57,7 +54,20 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
+import fish.payara.nucleus.microprofile.config.source.extension.ConfigSourceExtensions;
+import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 /**
  * asAdmin command to get the value of a configuration property
@@ -92,6 +102,9 @@ public class GetConfigProperty implements AdminCommand {
 
     @Param(optional = true)
     String moduleName;
+
+    @Inject
+    private ServiceLocator serviceLocator;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -148,6 +161,16 @@ public class GetConfigProperty implements AdminCommand {
                 JNDIConfigSource csource = new JNDIConfigSource();
                 result = csource.getValue(propertyName);
                 break;
+            }
+
+            default: {
+                List<ServiceHandle<ExtensionConfigSource>> extensionSources = serviceLocator.getAllServiceHandles(ExtensionConfigSource.class);
+                for (ServiceHandle<ExtensionConfigSource> handle : extensionSources) {
+                    final String extensionName = ConfigSourceExtensions.getName(handle);
+                    if (extensionName.equals(source)) {
+                        result = handle.getService().getValue(propertyName);
+                    }
+                }
             }
         }
         if (result != null) {

@@ -62,9 +62,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
-import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
-import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -75,6 +73,7 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -85,12 +84,14 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
+import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
 import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
 import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
 import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
 import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
 import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
 import fish.payara.nucleus.microprofile.config.converters.LongConverter;
+import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
 import fish.payara.nucleus.microprofile.config.converters.StringConverter;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
@@ -100,11 +101,13 @@ import fish.payara.nucleus.microprofile.config.source.EnvironmentConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
+import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
 import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
+import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSource;
 
 /**
  * This Service implements the Microprofile Config API and provides integration
@@ -145,6 +148,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     // a config used at the server level when there is no application associated with the thread
     private Config serverLevelConfig;
+
+    @Inject
+    private ServiceLocator serviceLocator;
 
     /**
      * Logs constructor as finest - may be useful to watch sequence of operations.
@@ -252,6 +258,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
+                sources.addAll(getExtensionSources());
                 converters.putAll(getDefaultConverters());
                 serverLevelConfig = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 result = serverLevelConfig;
@@ -264,6 +271,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources(appInfo));
+                sources.addAll(getExtensionSources());
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
@@ -345,6 +353,13 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             moduleName = currentInvocation.getModuleName();
         }
         return getDefaultSources(appName, moduleName);
+    }
+
+    private List<ExtensionConfigSource> getExtensionSources() {
+        List<ExtensionConfigSource> sources = serviceLocator.getAllServices(ExtensionConfigSource.class);
+        sources.forEach(ExtensionConfigSource::bootstrap);
+        sources.forEach(ExtensionConfigSource::getProperties);
+        return sources;
     }
 
     @Override

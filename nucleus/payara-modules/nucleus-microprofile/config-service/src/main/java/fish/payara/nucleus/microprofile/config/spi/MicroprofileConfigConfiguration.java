@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import java.util.List;
+
 import javax.validation.constraints.Min;
 
 import org.eclipse.microprofile.config.Config;
@@ -46,6 +48,8 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
 
 /**
  * The configuration that configures the semantics of the MP {@link Config} implementation.
@@ -103,6 +107,10 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
     String getPayaraExpressionPropertiesOrdinality();
     void setPayaraExpressionPropertiesOrdinality(String message);
 
+    @Attribute(defaultValue = "180", dataType = Integer.class)
+    String getAwsOrdinality();
+    void setAwsOrdinality(String value);
+
     /**
      * @return number of seconds any MP {@link Config} is cached. That means changes to value as provided by a
      *         {@link ConfigSource} do become visible after a maximum of this duration. When set to zero or less caching
@@ -112,4 +120,23 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
     @Attribute(defaultValue = "60", dataType = Integer.class)
     String getCacheDurationSeconds();
     void setCacheDurationSeconds(String cacheDurationSeconds);
+
+    @Element("*")
+    List<ConfigSourceConfiguration> getConfigSourceConfigurationList();
+
+    @DuckTyped
+    <T extends ConfigSourceConfiguration> T getConfigSourceConfigurationByType(Class<T> type);
+
+    class Duck {
+        public static <T extends ConfigSourceConfiguration> T getConfigSourceConfigurationByType(MicroprofileConfigConfiguration config, Class<T> type) {
+            for (ConfigSourceConfiguration configSourceConfiguration : config.getConfigSourceConfigurationList()) {
+                try {
+                    return type.cast(configSourceConfiguration);
+                } catch (Exception e) {
+                    // Do nothing
+                }
+            }
+            return null;
+        }
+    }
 }
