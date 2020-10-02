@@ -1,6 +1,7 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -100,13 +101,13 @@ import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 })
 public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckConstants {
 
-    final static String baseHeaders[] = {"Name", "Enabled", "Time", "Unit", "Display On Health Endpoint"};
-    final static String hoggingThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Display On Health Endpoint", "Threshold Percentage",
+    final static String baseHeaders[] = {"Name", "Enabled", "Time", "Unit", "Add to MicroProfile Health"};
+    final static String hoggingThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Add to MicroProfile Health", "Threshold Percentage",
             "Retry Count"};
-    final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Display On Health Endpoint", "Critical Threshold",
+    final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Add to MicroProfile Health", "Critical Threshold",
             "Warning Threshold", "Good Threshold"};
-    final static String stuckThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Display On Health Endpoint", "Threshold Time", "Threshold Unit"};
-    final static String MPHealthCheckHeaders[] = {"Name", "Enabled", "Time", "Unit", "Display On Health Endpoint", "Timeout"};
+    final static String stuckThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Add to MicroProfile Health", "Threshold Time", "Threshold Unit"};
+    final static String MPHealthCheckHeaders[] = {"Name", "Enabled", "Time", "Unit", "Add to MicroProfile Health", "Timeout"};
     final static String notifierHeaders[] = {"Name", "Notifier Enabled"};
     
     private final String garbageCollectorPropertyName = "garbageCollector";
@@ -228,7 +229,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[1] = hoggingThreadsChecker.getEnabled();
                 values[2] = hoggingThreadsChecker.getTime();
                 values[3] = hoggingThreadsChecker.getUnit();
-                values[4] = hoggingThreadsChecker.getDisplayOnHealthEndpoint();
+                values[4] = hoggingThreadsChecker.getAddToMicroProfileHealth();
                 values[5] = hoggingThreadsChecker.getThresholdPercentage();
                 values[6] = hoggingThreadsChecker.getRetryCount();
                 hoggingThreadsColumnFormatter.addRow(values);
@@ -243,7 +244,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[1] = thresholdDiagnosticsChecker.getEnabled();
                 values[2] = thresholdDiagnosticsChecker.getTime();
                 values[3] = thresholdDiagnosticsChecker.getUnit();
-                values[4] = thresholdDiagnosticsChecker.getDisplayOnHealthEndpoint();
+                values[4] = thresholdDiagnosticsChecker.getAddToMicroProfileHealth();
                 Property thresholdCriticalProperty = thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL);
                 values[5] = thresholdCriticalProperty != null ? thresholdCriticalProperty.getValue() : "-";
                 Property thresholdWarningProperty = thresholdDiagnosticsChecker.getProperty(THRESHOLD_WARNING);
@@ -263,7 +264,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[1] = stuckThreadsChecker.getEnabled();
                 values[2] = stuckThreadsChecker.getTime();
                 values[3] = stuckThreadsChecker.getUnit();
-                values[4] = stuckThreadsChecker.getDisplayOnHealthEndpoint();
+                values[4] = stuckThreadsChecker.getAddToMicroProfileHealth();
                 values[5] = stuckThreadsChecker.getThreshold();
                 values[6] = stuckThreadsChecker.getThresholdTimeUnit();
                 stuckThreadsColumnFormatter.addRow(values);
@@ -278,7 +279,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[1] = mpHealthcheckChecker.getEnabled();
                 values[2] = mpHealthcheckChecker.getTime();
                 values[3] = mpHealthcheckChecker.getUnit();
-                values[4] = mpHealthcheckChecker.getDisplayOnHealthEndpoint();
+                values[4] = mpHealthcheckChecker.getAddToMicroProfileHealth();
                 values[5] = mpHealthcheckChecker.getTimeout();
                 mpHealthCheckColumnFormatter.addRow(values);
                 
@@ -290,7 +291,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[1] = checker.getEnabled();
                 values[2] = checker.getTime();
                 values[3] = checker.getUnit();
-                values[4] = checker.getDisplayOnHealthEndpoint();
+                values[4] = checker.getAddToMicroProfileHealth();
                 baseColumnFormatter.addRow(values);
                 
                 // Create the extra props map for a base checker
@@ -351,7 +352,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", hoggingThreadsChecker.getEnabled());
         extraPropsMap.put("time", hoggingThreadsChecker.getTime());
         extraPropsMap.put("unit", hoggingThreadsChecker.getUnit());
-        extraPropsMap.put("displayOnHealthEndpoint", hoggingThreadsChecker.getDisplayOnHealthEndpoint());
+        extraPropsMap.put("addToMicroProfileHealth", hoggingThreadsChecker.getAddToMicroProfileHealth());
         extraPropsMap.put("threshold-percentage", hoggingThreadsChecker.getThresholdPercentage());
         extraPropsMap.put("retry-count", hoggingThreadsChecker.getRetryCount());
 
@@ -365,7 +366,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", stuckThreadsChecker.getEnabled());
         extraPropsMap.put("time", stuckThreadsChecker.getTime());
         extraPropsMap.put("unit", stuckThreadsChecker.getUnit());
-        extraPropsMap.put("displayOnHealthEndpoint", stuckThreadsChecker.getDisplayOnHealthEndpoint());
+        extraPropsMap.put("addToMicroProfileHealth", stuckThreadsChecker.getAddToMicroProfileHealth());
         Long thesholdInMillis = stuckThreadsThesholdInMillis(stuckThreadsChecker);
         if (thesholdInMillis != null && thesholdInMillis <= 0) {
             extraPropsMap.put("threshold", "1");
@@ -393,7 +394,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", mpHealthcheckCheck.getEnabled());
         extraPropsMap.put("time", mpHealthcheckCheck.getTime());
         extraPropsMap.put("unit", mpHealthcheckCheck.getUnit());
-        extraPropsMap.put("displayOnHealthEndpoint", mpHealthcheckCheck.getDisplayOnHealthEndpoint());
+        extraPropsMap.put("addToMicroProfileHealth", mpHealthcheckCheck.getAddToMicroProfileHealth());
         extraPropsMap.put("timeout", mpHealthcheckCheck.getTimeout());
         
         mpHealthcheckExtrasProps.put(mpHealthcheckPropertyName, extraPropsMap);
@@ -409,7 +410,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", thresholdDiagnosticsChecker.getEnabled());
         extraPropsMap.put("time", thresholdDiagnosticsChecker.getTime());
         extraPropsMap.put("unit", thresholdDiagnosticsChecker.getUnit());
-        extraPropsMap.put("displayOnHealthEndpoint", thresholdDiagnosticsChecker.getDisplayOnHealthEndpoint());
+        extraPropsMap.put("addToMicroProfileHealth", thresholdDiagnosticsChecker.getAddToMicroProfileHealth());
 
         if (thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL) != null) {
             extraPropsMap.put("thresholdCritical", thresholdDiagnosticsChecker.getProperty(THRESHOLD_CRITICAL).getValue());
@@ -457,7 +458,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", checker.getEnabled());
         extraPropsMap.put("time", checker.getTime());
         extraPropsMap.put("unit", checker.getUnit());
-        extraPropsMap.put("displayOnHealthEndpoint", checker.getDisplayOnHealthEndpoint());
+        extraPropsMap.put("addToMicroProfileHealth", checker.getAddToMicroProfileHealth());
     }
     
     private Properties checkCheckerPropertyPresence(Properties extraProps, String checkerName) {
@@ -516,7 +517,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("enabled", DEFAULT_ENABLED);
         extraPropsMap.put("time", DEFAULT_TIME);
         extraPropsMap.put("unit", DEFAULT_UNIT);
-        extraPropsMap.put("displayOnHealthEndpoint", DEFAULT_DISPLAY_ON_HEALTH_ENDPOINT);
+        extraPropsMap.put("addToMicroProfileHealth", DEFAULT_ADD_TO_MICROPROFILE_HEALTH);
         
         // Add default properties for hogging threads checker, or add default properties for a thresholdDiagnostics checker
         if (extraPropsMap.containsValue(DEFAULT_HOGGING_THREADS_NAME)) {

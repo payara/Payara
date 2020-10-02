@@ -144,9 +144,9 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     @Param(name = "checker-name", alias = "checkerName")
     private String checkerName;
     
-    @Param(name = "display-on-health-endpoint", alias = "displayOnHealthEndpoint",
+    @Param(name = "add-to-microprofile-health", alias = "addToMicroProfileHealth",
             optional = true, defaultValue = "false")
-    private Boolean displayOnHealthEndpoint;
+    private Boolean addToMicroProfileHealth;
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
@@ -334,8 +334,8 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
 
     private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException {
         updateProperty(config, "checker-name", config.getName(), checkerName, Checker::setName);
-        updateProperty(config, "display-on-health-endpoint", config.getDisplayOnHealthEndpoint(), 
-                displayOnHealthEndpoint.toString(), Checker::setDisplayOnHealthEndpoint);
+        updateProperty(config, "add-to-microprofile-health", config.getAddToMicroProfileHealth(), 
+                addToMicroProfileHealth.toString(), Checker::setAddToMicroProfileHealth);
         updateProperty(config, "enabled", config.getEnabled(), enabled.toString(), Checker::setEnabled);
         updateProperty(config, "time", config.getTime(), time, Checker::setTime);
         updateProperty(config, "time-unit", config.getUnit(), timeUnit, Checker::setUnit);

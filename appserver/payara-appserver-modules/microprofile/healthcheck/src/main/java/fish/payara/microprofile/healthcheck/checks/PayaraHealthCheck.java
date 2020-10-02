@@ -59,10 +59,6 @@ public class PayaraHealthCheck implements HealthCheck {
         this.checker = checker;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Override
     public HealthCheckResponse call() {
         HealthCheckResponseBuilder responseBuilder = HealthCheckResponse.named(name);

@@ -184,7 +184,7 @@ public class StuckThreadsHealthCheck extends
     @Override
     public HealthCheckStuckThreadExecutionOptions constructOptions(StuckThreadsChecker checker) {
         return new HealthCheckStuckThreadExecutionOptions(Boolean.valueOf(checker.getEnabled()),
-                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), Boolean.valueOf(checker.getDisplayOnHealthEndpoint()),
+                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), Boolean.valueOf(checker.getAddToMicroProfileHealth()),
                 Long.parseLong(checker.getThreshold()), asTimeUnit(checker.getThresholdTimeUnit()));
     }
 

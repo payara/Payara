@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -234,10 +234,10 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     }
 
     private void exposeToMicroProfileHealthEndPoint(HealthCheckExecutionOptions healthCheckExecutionOptions, HealthCheckTask registeredTask) {
-        if (healthCheckExecutionOptions.isEnabled() && healthCheckExecutionOptions.isDisplayOnHealthEndpoint()) {
-            events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISPLAY_ON_HEALTH_ENDPOINT_STARTED, registeredTask));
+        if (healthCheckExecutionOptions.isEnabled() && healthCheckExecutionOptions.isAddToMicroProfileHealthCheck()) {
+            events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_CHECKER_ADD_TO_MICROPROFILE_HEALTH, registeredTask));
         } else {
-            events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISPLAY_ON_HEALTH_ENDPOINT_STOPED, registeredTask));
+            events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_CHECKER_REMOVE_FROM_MICROPROFILE_HEALTH, registeredTask));
         }
     }
 

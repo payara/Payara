@@ -152,7 +152,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
         return !isInProgress() && options != null && options.isEnabled();
     }
     
-    public boolean isEnabled(){     
+    public boolean isEnabled(){ 
         return getOptions().isEnabled();
     }
 
@@ -176,7 +176,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
                 Boolean.valueOf(checker.getEnabled()),
                 Long.parseLong(checker.getTime()),
                 asTimeUnit(checker.getUnit()),
-                Boolean.valueOf(checker.getDisplayOnHealthEndpoint()));
+                Boolean.valueOf(checker.getAddToMicroProfileHealth()));
     }
 
     /**

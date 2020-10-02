@@ -94,7 +94,6 @@ import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import java.io.StringWriter;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
-import java.util.logging.Level;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.joining;
 import javax.json.JsonWriter;
@@ -283,16 +282,16 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
         // Keep track of all deployed applications.
         Deployment.APPLICATION_STARTED.onMatch(event, appInfo -> applicationsLoaded.add(appInfo.getName()));
         
-        PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISPLAY_ON_HEALTH_ENDPOINT_STARTED.onMatch(event, healthChecker
+        PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_CHECKER_ADD_TO_MICROPROFILE_HEALTH.onMatch(event, healthChecker
                 ->  registerHealthCheck(healthChecker.getName(),
                         new PayaraHealthCheck(healthChecker.getName(), healthChecker.getCheck()), READINESS));
 
-        PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISPLAY_ON_HEALTH_ENDPOINT_STOPED.onMatch(event, healthChecker
+        PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_CHECKER_REMOVE_FROM_MICROPROFILE_HEALTH.onMatch(event, healthChecker
                 -> unregisterHealthCheck(healthChecker.getName()));
         
         if (event.is(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISABLED)) {
             for (Checker checker : getHealthCheckerList()) {
-                if (Boolean.valueOf(checker.getDisplayOnHealthEndpoint())) {
+                if (Boolean.valueOf(checker.getAddToMicroProfileHealth())) {
                     unregisterHealthCheck(checker.getName());
                 }
             }
