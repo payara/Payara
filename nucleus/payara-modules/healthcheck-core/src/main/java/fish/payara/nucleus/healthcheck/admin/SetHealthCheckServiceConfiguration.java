@@ -314,8 +314,19 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private <C extends Checker, O extends HealthCheckExecutionOptions> void configureDynamically(
             BaseHealthCheck<O, C> service, C config) {
         service.setOptions(service.constructOptions(config));
-        healthCheckService.registerCheck(config.getName(), service);
-        healthCheckService.reboot();
+
+        boolean register = true;
+        //This prevents MicroProfileMetricsChecker for registering without monitored metrics
+        if (config instanceof MicroProfileMetricsChecker) {
+            MicroProfileMetricsChecker checker = (MicroProfileMetricsChecker) config;
+            if (checker.getMonitoredMetrics().isEmpty()) {
+                register = false;
+            }
+        }
+        if (register) {
+            healthCheckService.registerCheck(config.getName(), service);
+            healthCheckService.reboot();
+        }
         if (service instanceof BaseThresholdHealthCheck) {
             configureDynamically((BaseThresholdHealthCheck<?, ?>) service);
         }

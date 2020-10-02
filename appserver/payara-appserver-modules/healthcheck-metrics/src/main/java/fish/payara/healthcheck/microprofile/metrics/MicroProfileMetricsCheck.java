@@ -107,9 +107,9 @@ public class MicroProfileMetricsCheck
             metrics.forEach(metricsToDisplay::append);
             result.add(new HealthCheckResultEntry(metrics.isEmpty() ? WARNING : GOOD,
                     metrics.isEmpty() ? "The metrics you have added for monitoring doesn't exist" : metricsToDisplay.toString()));
+        } else {
+            result.add(new HealthCheckResultEntry(CRITICAL, "No metric has been added for monitoring."));
         }
-
-        result.add(new HealthCheckResultEntry(CRITICAL, "No metric has been added for monitoring."));
         return result;
     }
 
