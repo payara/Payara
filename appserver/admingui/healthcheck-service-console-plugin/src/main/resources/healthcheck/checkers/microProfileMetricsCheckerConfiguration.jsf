@@ -107,6 +107,12 @@
                         javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
                         gf.restRequest(endpoint="#{pageSession.MONITORED_METRICS_URL}", method="PUT", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
                      }
+                     
+                     // If the dynamic option is selected call the set command again to recognise changes in the Monitored Metrics Property table
+                     if (#{pageSession.dynamic}=true) {
+                            gf.updateEntity(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/set-healthcheck-service-configuration" 
+                            attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                      }
                     />
             </sun:button>
         </sun:panelGroup>
