@@ -43,6 +43,7 @@ package org.glassfish.kernel.embedded;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.v3.server.GFDomainXml;
 import org.glassfish.server.ServerEnvironmentImpl;
+
 import javax.inject.Inject;
 
 import java.io.File;
@@ -78,13 +79,12 @@ public class EmbeddedDomainXml extends GFDomainXml {
         if (domainXml.exists()) { // domain/config/domain.xml, if exists.
             return domainXml.toURI().toURL();
         }
-        return EmbeddedDomainXml.class.getClassLoader().getResource(
-                "org/glassfish/embed/domain.xml");
+
+        return EmbeddedDomainXml.class.getClassLoader().getResource("config/domain.xml");
     }
 
     @Override
     protected void upgrade() {
         // for now, we don't upgrade in embedded mode...
     }
-
 }
