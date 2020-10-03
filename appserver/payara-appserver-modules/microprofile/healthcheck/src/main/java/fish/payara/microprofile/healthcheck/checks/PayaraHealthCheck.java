@@ -41,6 +41,7 @@ package fish.payara.microprofile.healthcheck.checks;
 
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import java.util.List;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
@@ -65,7 +66,14 @@ public class PayaraHealthCheck implements HealthCheck {
         boolean state = true;
 
         checker.doCheck();
-        for (HealthCheckResultEntry healthCheckResultEntry : checker.getMostRecentResult().getEntries()) {
+        List<HealthCheckResultEntry> healthCheckResults = checker.getMostRecentResult().getEntries();
+
+        if (healthCheckResults.isEmpty()) {
+            responseBuilder.withData("Message", "No result to display");
+            return responseBuilder.state(state).build();
+        }
+        
+        for (HealthCheckResultEntry healthCheckResultEntry : healthCheckResults) {
             responseBuilder.withData("Message", healthCheckResultEntry.getMessage());
         }
 
@@ -79,5 +87,4 @@ public class PayaraHealthCheck implements HealthCheck {
 
         return responseBuilder.state(state).build();
     }
-
 }

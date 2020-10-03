@@ -141,7 +141,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private boolean dynamic;
 
     // general properties params:
-    @Param(name = "checker-name", alias = "checkerName")
+    @Param(name = "checker-name", alias = "checkerName", optional = true)
     private String checkerName;
     
     @Param(name = "add-to-microprofile-health", alias = "addToMicroProfileHealth",
