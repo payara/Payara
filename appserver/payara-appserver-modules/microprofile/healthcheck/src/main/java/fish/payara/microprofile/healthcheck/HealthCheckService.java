@@ -334,9 +334,6 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
             }
         }
 
-        Set<HealthCheck> currentApp = healthChecks.get(healthCheckName);
-        currentApp.clear();
-
         // Add the healthcheck to the Set in the Map
         healthChecks.get(healthCheckName).add(healthCheck);
     }
