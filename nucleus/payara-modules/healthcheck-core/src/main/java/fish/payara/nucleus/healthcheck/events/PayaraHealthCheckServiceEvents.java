@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck.configuration;
+package fish.payara.nucleus.healthcheck.events;
 
-import static fish.payara.nucleus.healthcheck.HealthCheckConstants.DEFAULT_MACHINE_MEMORY_USAGE_NAME;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+import fish.payara.nucleus.healthcheck.HealthCheckTask;
+import org.glassfish.api.event.EventTypes;
 
 /**
- * @author mertcaliskan
+ *
+ * @author Susan Rai
  */
-@Configured
-@CheckerConfigurationType(type = CheckerType.MACHINE_MEMORY_USAGE)
-public interface MachineMemoryUsageChecker extends Checker, ThresholdDiagnosticsChecker {
+public class PayaraHealthCheckServiceEvents {
 
-    @Attribute(defaultValue = DEFAULT_MACHINE_MEMORY_USAGE_NAME)
-    String getName();
-    void setName(String value) throws PropertyVetoException;
+    public static final EventTypes<HealthCheckTask> HEALTHCHECK_SERVICE_CHECKER_ADD_TO_MICROPROFILE_HEALTH
+            = EventTypes.create("healthcheck_service_checker_add_to_microprofile_health", HealthCheckTask.class);
+    public static final EventTypes<HealthCheckTask> HEALTHCHECK_SERVICE_CHECKER_REMOVE_FROM_MICROPROFILE_HEALTH
+            = EventTypes.create("healthcheck_service_checker_remove_from_microprofile_health", HealthCheckTask.class);
+    public static final EventTypes HEALTHCHECK_SERVICE_DISABLED = EventTypes.create("healthcheck_service_disabled");
 }

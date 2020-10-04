@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *     Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -107,6 +107,9 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
+    
+    @Param(name = "addToMicroProfileHealth", optional = true, defaultValue = "false")
+    private Boolean addToMicroProfileHealth;
 
     @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
@@ -160,6 +163,7 @@ public class HealthCheckServiceConfigureCheckerWithThresholdsCommand implements 
         ParameterMap checkerConfigureParameters = new ParameterMap();
         checkerConfigureParameters.add("enabled", enabled.toString());
         checkerConfigureParameters.add("dynamic", dynamic.toString());
+        checkerConfigureParameters.add("addToMicroProfileHealth", addToMicroProfileHealth.toString());
         checkerConfigureParameters.add("time", time);
         checkerConfigureParameters.add("unit", unit);
         checkerConfigureParameters.add("checkerName", checkerName);

@@ -261,7 +261,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
     @Override
     public HealthCheckTimeoutExecutionOptions constructOptions(MicroProfileHealthCheckerConfiguration c) {
         return new HealthCheckTimeoutExecutionOptions(Boolean.valueOf(c.getEnabled()), Long.parseLong(c.getTime()),
-                asTimeUnit(c.getUnit()), Long.parseLong(c.getTimeout()));
+                asTimeUnit(c.getUnit()), Boolean.valueOf(c.getAddToMicroProfileHealth()), Long.parseLong(c.getTimeout()));
     }
 
     @Override

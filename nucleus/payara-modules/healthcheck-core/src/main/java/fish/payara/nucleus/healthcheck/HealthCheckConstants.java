@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -68,14 +68,15 @@ public interface HealthCheckConstants {
     final String OLD_PS_MARKSWEEP = "PS MarkSweep";
     final String OLD_CONCURRENTMARKSWEEP = "ConcurrentMarkSweep";
     final String OLD_G1GC = "G1 Old Generation";
-    
+
     final String DEFAULT_ENABLED = "false";
+    final String DEFAULT_ADD_TO_MICROPROFILE_HEALTH = "false";
     final String DEFAULT_TIME = "5";
     final String DEFAULT_UNIT = "MINUTES";
     final String DEFAULT_RETRY_COUNT = "3";
     final String DEFAULT_THRESHOLD_PERCENTAGE = "95";
     final String DEFAULT_TIMEOUT = "30000";
-    
+
     final String DEFAULT_GARBAGE_COLLECTOR_NAME = "GBGC";
     final String DEFAULT_CONNECTION_POOL_NAME = "CONP";
     final String DEFAULT_CPU_USAGE_NAME = "CPUC";

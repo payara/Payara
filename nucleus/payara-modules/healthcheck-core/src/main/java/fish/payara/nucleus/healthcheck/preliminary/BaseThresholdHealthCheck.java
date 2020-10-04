@@ -65,6 +65,7 @@ public abstract class BaseThresholdHealthCheck<O extends HealthCheckWithThreshol
                 Boolean.valueOf(checker.getEnabled()),
                 Long.parseLong(checker.getTime()),
                 asTimeUnit(checker.getUnit()),
+                Boolean.valueOf(checker.getAddToMicroProfileHealth()),
                 checker.getPropertyValue(THRESHOLD_CRITICAL, THRESHOLD_DEFAULTVAL_CRITICAL),
                 checker.getPropertyValue(THRESHOLD_WARNING, THRESHOLD_DEFAULTVAL_WARNING),
                 checker.getPropertyValue(THRESHOLD_GOOD, THRESHOLD_DEFAULTVAL_GOOD));
