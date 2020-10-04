@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,53 +37,36 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.nucleus.healthcheck;
+package fish.payara.nucleus.healthcheck.configuration;
 
-/**
- * @author mertcaliskan
- */
-public interface HealthCheckConstants {
+import java.beans.PropertyVetoException;
+import javax.xml.bind.annotation.XmlAttribute;
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
 
-    final long ONE_KB = 1024;
-    final long ONE_MB = ONE_KB * ONE_KB;
-    final long ONE_GB = ONE_KB * ONE_MB;
+@Configured
+public interface MonitoredMetric extends ConfigBeanProxy, ConfigExtension {
 
-    final long ONE_SEC = 1000;
-    final long ONE_MIN = 60 * ONE_SEC;
-    final long FIVE_MIN = 5 * ONE_MIN;
+    @XmlAttribute(required = true)
+    @Attribute(required = true)
+    String getMetricName();
+    void setMetricName(String value) throws PropertyVetoException;
+    
+    @XmlAttribute(required = false)
+    @Attribute(required = false)
+    String getDescription();
+    void setDescription(String value) throws PropertyVetoException;
+    
+    @DuckTyped
+    boolean equals(MonitoredMetric metric);
 
-    final String THRESHOLD_CRITICAL = "threshold-critical";
-    final String THRESHOLD_WARNING = "threshold-warning";
-    final String THRESHOLD_GOOD = "threshold-good";
-    final String THRESHOLD_DEFAULTVAL_CRITICAL = "80";
-    final String THRESHOLD_DEFAULTVAL_WARNING = "50";
-    final String THRESHOLD_DEFAULTVAL_GOOD = "0";
+    public class Duck {
+        public static boolean equals(MonitoredMetric metric1, MonitoredMetric metric2) {
+            return metric1.getMetricName().equals(metric2.getMetricName());
+        }
+    }
 
-    final String YOUNG_COPY = "Copy";
-    final String YOUNG_PS_SCAVENGE = "PS Scavenge";
-    final String YOUNG_PARNEW = "ParNew";
-    final String YOUNG_G1GC = "G1 Young Generation";
-
-    final String OLD_MARK_SWEEP_COMPACT = "MarkSweepCompact";
-    final String OLD_PS_MARKSWEEP = "PS MarkSweep";
-    final String OLD_CONCURRENTMARKSWEEP = "ConcurrentMarkSweep";
-    final String OLD_G1GC = "G1 Old Generation";
-
-    final String DEFAULT_ENABLED = "false";
-    final String DEFAULT_ADD_TO_MICROPROFILE_HEALTH = "false";
-    final String DEFAULT_TIME = "5";
-    final String DEFAULT_UNIT = "MINUTES";
-    final String DEFAULT_RETRY_COUNT = "3";
-    final String DEFAULT_THRESHOLD_PERCENTAGE = "95";
-    final String DEFAULT_TIMEOUT = "30000";
-
-    final String DEFAULT_GARBAGE_COLLECTOR_NAME = "GBGC";
-    final String DEFAULT_CONNECTION_POOL_NAME = "CONP";
-    final String DEFAULT_CPU_USAGE_NAME = "CPUC";
-    final String DEFAULT_HEAP_MEMORY_USAGE_NAME = "HEAP";
-    final String DEFAULT_MACHINE_MEMORY_USAGE_NAME = "MEMM";
-    final String DEFAULT_HOGGING_THREADS_NAME = "HOGT";
-    final String DEFAULT_STUCK_THREAD_NAME = "STUCK";
-    final String DEFAULT_MICROPROFILE_HEALTHCHECK_NAME = "MP";
-    final String DEFAULT_MICROPROFILE_METRICS_NAME = "MPM";
 }

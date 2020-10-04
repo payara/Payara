@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,23 +52,23 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.TransactionFailure;
 
-public class MonitoredAttributeBagResource extends AbstractAttributeBagResource {
+public class MonitoredMetricAttributeBagResource extends AbstractAttributeBagResource {
 
-    public static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(MonitoredAttributeBagResource.class);
+    public static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(MonitoredMetricAttributeBagResource.class);
 
     @Override
     public String getDescriptionName() {
-        return "monitored-attribute";
+        return "monitored-metric";
     }
 
     @Override
     public String getPropertiesName() {
-        return "monitoredAttributes";
+        return "monitoredMetrics";
     }
 
     @Override
     public String getnodeElementName() {
-        return "monitored-attributes";
+        return "monitored-metrics";
     }
 
     @Override
@@ -78,8 +78,7 @@ public class MonitoredAttributeBagResource extends AbstractAttributeBagResource 
         for (Dom child : entity) {
             Map<String, String> entry = new HashMap<>();
 
-            entry.put("attributeName", child.attribute("attribute-name"));
-            entry.put("objectName", child.attribute("object-name"));
+            entry.put("metricName", child.attribute("metric-name"));
             String description = child.attribute("description");
             if (description != null) {
                 entry.put("description", description);
@@ -92,20 +91,23 @@ public class MonitoredAttributeBagResource extends AbstractAttributeBagResource 
     @Override
     public void excuteSetCommand(List<Map<String, String>> attributesToAdd, List<Map<String, String>> attributesToDelete) throws TransactionFailure {
         try {
-            // Add all required attributes
+            // Add all required metrics
             for (Map<String, String> attribute : attributesToAdd) {
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("addattribute", String.format("attributeName=%s objectName=%s description=%s", attribute.get("attributeName"), attribute.get("objectName"), attribute.get("description")));
-                RestActionReporter reporter = ResourceUtil.runCommand("set-jmx-monitoring-configuration", parameters, getSubject());
+                parameters.put("add-metric", String.format("metricName=%s description=%s", attribute.get("metricName"), attribute.get("description")));
+                parameters.put("service", "mp-metrics");
+                RestActionReporter reporter = ResourceUtil.runCommand("set-healthcheck-service-configuration", parameters, getSubject());
                 if (reporter.isFailure()) {
                     throw new TransactionFailure(reporter.getMessage());
                 }
             }
-            // Delete all unrequired attributes
+            // Delete all unrequired metrics
             for (Map<String, String> attribute : attributesToDelete) {
                 Map<String, String> parameters = new HashMap<>();
-                parameters.put("delattribute", String.format("attributeName=%s objectName=%s", attribute.get("attributeName"), attribute.get("objectName")));
-                RestActionReporter reporter = ResourceUtil.runCommand("set-jmx-monitoring-configuration", parameters, getSubject());
+                parameters.put("delete-metric", String.format("metricName=%s", attribute.get("metricName")));
+                parameters.put("service", "mp-metrics");
+
+                RestActionReporter reporter = ResourceUtil.runCommand("set-healthcheck-service-configuration", parameters, getSubject());
                 if (reporter.isFailure()) {
                     throw new TransactionFailure(reporter.getMessage());
                 }
@@ -117,7 +119,6 @@ public class MonitoredAttributeBagResource extends AbstractAttributeBagResource 
 
     @Override
     public boolean attributesAreEqual(Map<String, String> attribute1, Map<String, String> attribute2) {
-        return attribute1.get("attributeName").equals(attribute2.get("attributeName"))
-                && attribute1.get("objectName").equals(attribute2.get("objectName"));
+        return attribute1.get("metricName").equals(attribute2.get("metricName"));
     }
 }
