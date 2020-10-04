@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.xml;
 
@@ -288,8 +288,14 @@ public class MiniXmlParser {
 
         public JvmOption(String option, String minVersion, String maxVersion) {
             this.option = option;
-            this.vendor = Optional.empty();
-            this.minVersion = Optional.ofNullable(JDK.getVersion(minVersion));
+            if (minVersion != null && minVersion.contains("-")) {
+                String[] parts = minVersion.split("-");
+                this.vendor = Optional.ofNullable(parts[0]);
+                this.minVersion = Optional.ofNullable(JDK.getVersion(parts[1]));
+            } else {
+                this.vendor = Optional.empty();
+                this.minVersion = Optional.ofNullable(JDK.getVersion(minVersion));
+            }
             this.maxVersion = Optional.ofNullable(JDK.getVersion(maxVersion));
         }
 
@@ -324,7 +330,8 @@ public class MiniXmlParser {
             if (!minVersion.isPresent() && !maxVersion.isPresent()) {
                 return option;
             }
-            return String.format("[%s|%s]%s", minVersion.isPresent() ? minVersion.get() : "", maxVersion.isPresent() ? maxVersion.get() : "", option);
+            return String.format("[%s%s|%s]%s", vendor.isPresent() ? vendor.get() + "-" : "" ,minVersion.isPresent() ? minVersion.get() : "",
+                    maxVersion.isPresent() ? maxVersion.get() : "", option);
         }
     }
 

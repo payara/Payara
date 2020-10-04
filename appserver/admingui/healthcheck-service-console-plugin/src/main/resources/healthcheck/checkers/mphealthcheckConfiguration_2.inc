@@ -45,6 +45,7 @@
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    mapPut(map="#{pageSession.valueMap}" key="addToMicroProfileHealth" value="#{pageSession.addToMicroProfileHealthSelected}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{pageSession.HEALTHCHECK_CONFIG_URL}/healthcheck-mp-configure"
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
@@ -97,6 +98,11 @@
                       label="$resource{i18nhx.healthcheck.configuration.dynamicLabel}"  
                       helpText="$resource{i18nhx.healthcheck.configuration.dynamicLabelHelpText}">
             <sun:checkbox id="dynamicBox" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="addToMicroProfileHealthProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18nhx.healthcheck.checker.configuration.addToMicroProfileHealthLabel}"  
+                      helpText="$resource{i18nhx.healthcheck.checker.configuration.addToMicroProfileHealthHelpText}">
+            <sun:checkbox id="addToMicroProfileHealthBox" selected="#{pageSession.addToMicroProfileHealthSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18nhx.healthcheck.checker.configuration.nameLabel}"  

@@ -56,8 +56,9 @@ public class HealthCheckMicroProfileMetricstExecutionOptions extends HealthCheck
 
     private List<MonitoredMetric> monitoredMetrics;
 
-    public HealthCheckMicroProfileMetricstExecutionOptions(boolean enabled, long time, TimeUnit unit, List<MonitoredMetric> monitoredMetrics) {
-        super(enabled, time, unit);
+    public HealthCheckMicroProfileMetricstExecutionOptions(boolean enabled, long time, TimeUnit unit, boolean addToMicroProfileHealth,
+            List<MonitoredMetric> monitoredMetrics) {
+        super(enabled, time, unit, addToMicroProfileHealth);
         this.monitoredMetrics = monitoredMetrics;
     }
 

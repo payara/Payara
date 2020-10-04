@@ -53,9 +53,19 @@
     <artifactId>embedded</artifactId>
     <packaging>pom</packaging>
     <name>Payara Embedded modules</name>
+
     <modules>
         <module>all</module>
         <module>web</module>
         <module>tests</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>deploy-internals</id>
+            <properties>
+                <deploy.skip>true</deploy.skip>
+            </properties>
+        </profile>
+    </profiles>
 </project>

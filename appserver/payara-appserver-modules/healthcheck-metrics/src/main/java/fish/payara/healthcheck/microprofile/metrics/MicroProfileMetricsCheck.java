@@ -95,7 +95,8 @@ public class MicroProfileMetricsCheck
                 metricsService::getAllRegistryNames, metricsService::getRegistry);
 
         return new HealthCheckMicroProfileMetricstExecutionOptions(Boolean.valueOf(checker.getEnabled()),
-                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), checker.getMonitoredMetrics());
+                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), 
+                Boolean.valueOf(checker.getAddToMicroProfileHealth()), checker.getMonitoredMetrics());
     }
 
     @Override

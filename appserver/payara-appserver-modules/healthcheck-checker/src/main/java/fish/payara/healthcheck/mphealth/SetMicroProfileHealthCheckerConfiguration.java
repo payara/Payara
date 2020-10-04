@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -104,6 +104,10 @@ public class SetMicroProfileHealthCheckerConfiguration implements AdminCommand {
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
+  
+    @Param(name = "add-to-microprofile-health", alias = "addToMicroProfileHealth",
+            optional = true, defaultValue = "false")
+    private Boolean addToMicroProfileHealth;
 
     @Param(name = "time", optional = true)
     @Min(value = 1, message = "Time period must be 1 or more")
@@ -200,6 +204,10 @@ public class SetMicroProfileHealthCheckerConfiguration implements AdminCommand {
     private void applyValues(MicroProfileHealthCheckerConfiguration checkerProxy) throws PropertyVetoException {
         if (enabled != null) {
             checkerProxy.setEnabled(enabled.toString());
+        }
+        
+        if (addToMicroProfileHealth != null) {
+            checkerProxy.setAddToMicroProfileHealth(addToMicroProfileHealth.toString());
         }
         
         if (checkerName != null) {

@@ -65,12 +65,6 @@
         <tag>payara-server-5.2020.5-SNAPSHOT</tag>
     </scm>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
     <issueManagement>
         <system>Github</system>
         <url>https://github.com/payara/Payara/issues</url>
@@ -127,7 +121,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <javase.version>1.8</javase.version>
-        <deploy.skip>false</deploy.skip>
+        <deploy.skip>true</deploy.skip>
+
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
         <servlet-api.version>4.0.2</servlet-api.version>
@@ -164,7 +159,7 @@
         <json.bind-api.version>1.0.2</json.bind-api.version>
         <yasson.version>1.0.6</yasson.version>
         <jakarta-persistence-api.version>2.2.3</jakarta-persistence-api.version>
-        <eclipselink.version>2.7.6.payara-p1</eclipselink.version>
+        <eclipselink.version>2.7.7.payara-p1</eclipselink.version>
         <jakarta.transaction-api.version>1.3.3</jakarta.transaction-api.version>
         <jakarta.interceptor-api.version>1.2.5</jakarta.interceptor-api.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
@@ -347,18 +342,29 @@
             </build>
         </profile>
 
+        <profile>
+            <id>deploy-internals</id>
+
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <properties>
+                <deploy.skip>false</deploy.skip>
+            </properties>
+
+            <distributionManagement>
+                <repository>
+                    <id>payara-nexus</id>
+                    <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+
     </profiles>
 
     <build>
         <defaultGoal>install</defaultGoal>
-        <plugins>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
 
         <pluginManagement>
             <plugins>

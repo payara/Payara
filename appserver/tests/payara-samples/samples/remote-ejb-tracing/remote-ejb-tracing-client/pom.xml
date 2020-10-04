@@ -133,7 +133,7 @@
                     </execution>
                     <execution>
                         <id>disable-requesttracing</id>
-                        <phase>pre-integration-test</phase>
+                        <phase>post-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
