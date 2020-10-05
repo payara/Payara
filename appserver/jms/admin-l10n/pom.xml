@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.jms</groupId>
         <artifactId>jms</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.6-SNAPSHOT</version>
     </parent>
     <artifactId>jms-admin-l10n</artifactId>
     
