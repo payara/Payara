@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.5</version>
     </parent>
     <artifactId>console-common-full-plugin</artifactId>
     <packaging>glassfish-jar</packaging>

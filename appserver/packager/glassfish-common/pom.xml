@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.5</version>
     </parent>
     <artifactId>glassfish-common</artifactId>
     <name>Glassfish Commons Package</name>

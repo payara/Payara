@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.samples.remote-ejb-tracing</groupId>
         <artifactId>remote-ejb-tracing-parent</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
