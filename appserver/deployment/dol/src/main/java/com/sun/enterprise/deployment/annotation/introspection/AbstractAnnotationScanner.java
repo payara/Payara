@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.annotation.introspection;
@@ -81,7 +81,7 @@ public abstract class AbstractAnnotationScanner implements AnnotationScanner {
         if (annotations==null) {
             synchronized(this) {
                 if (annotations == null) {
-                    annotations = new HashSet();
+                    annotations = new HashSet<>();
                     init(annotations);
                 }
             }
@@ -103,7 +103,7 @@ public abstract class AbstractAnnotationScanner implements AnnotationScanner {
      */
     public static Set<String> constantPoolToFQCN(Set<String> annotations) {
         // for now I transform ConstantPoolInfo type in FQCN
-        Set<String> fqcns = new HashSet<String>();
+        Set<String> fqcns = new HashSet<>();
         for (String annotation : annotations) {
             String fqcn = annotation.substring(1, annotation.length()-1).replaceAll("/",".");
             fqcns.add(fqcn);

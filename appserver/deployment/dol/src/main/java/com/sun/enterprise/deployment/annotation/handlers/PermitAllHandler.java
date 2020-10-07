@@ -43,7 +43,6 @@ package com.sun.enterprise.deployment.annotation.handlers;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.MethodPermission;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.jvnet.hk2.annotations.Service;
 

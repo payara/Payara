@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -56,18 +57,13 @@ public class LicenseDescriptor extends Descriptor {
     /** get value for licenseRequired
     */
     public String getLicenseRequiredValue() {
-        if (licenseRequired.booleanValue() == true)
-            return "true";
-        else return "false";
+        return licenseRequired.toString();
     }
 
     /** set value for licenseRequired
     */
     public void setLicenseRequired(boolean licenseRequired) {
-        if(licenseRequired==true)
-            this.licenseRequired =Boolean.TRUE;
-        else if(licenseRequired==false)
-            this.licenseRequired =Boolean.FALSE;
+        this.licenseRequired = licenseRequired;
     }
 
     /** set value for licenseRequired

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions COpyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -63,27 +64,24 @@ public class OutboundResourceAdapter extends Descriptor
 {
 
     private int     transactionSupport = PoolManagerConstants.LOCAL_TRANSACTION;
-    private Set     authMechanisms;
+    private Set<AuthMechanism> authMechanisms;
     private boolean reauthenticationSupport = false;
-    private Set     connectionDefs;
+    private Set<ConnectionDefDescriptor> connectionDefs;
     
     /*Set variables indicates that a particular attribute is set by DD processing so that
       annotation processing need not (must not) set the values from annotation */
     private boolean reauthenticationSupportSet = false;
     private boolean transactionSupportSet = false;
 
-    public OutboundResourceAdapter () 
-    {
-    	this.authMechanisms      = new OrderedSet();
-	this.connectionDefs = new OrderedSet();
+    public OutboundResourceAdapter() {
+    	this.authMechanisms = new OrderedSet<>();
+	this.connectionDefs = new OrderedSet<>();
     }
 
     /** 
      * Gets the value of supportsReauthentication
      */
-    public boolean 
-    supportsReauthentication() 
-    {
+    public boolean supportsReauthentication() {
         return reauthenticationSupport;
     }
 
@@ -94,9 +92,7 @@ public class OutboundResourceAdapter extends Descriptor
     /** 
      * Sets the value of supportsReauthentication
      */
-    public void 
-    setReauthenticationSupport(boolean reauthenticationSupport) 
-    {
+    public void setReauthenticationSupport(boolean reauthenticationSupport) {
         this.reauthenticationSupportSet = true;
         this.reauthenticationSupport = reauthenticationSupport;
     }
@@ -105,8 +101,7 @@ public class OutboundResourceAdapter extends Descriptor
      * DOL rearchitecture
     */
     public void setReauthenticationSupport(String reauthSupport) {
-        this.reauthenticationSupport = 
-	    (Boolean.valueOf(reauthSupport)).booleanValue();
+        this.reauthenticationSupport = Boolean.valueOf(reauthSupport);
         this.reauthenticationSupportSet = true;
     }
 
@@ -115,20 +110,18 @@ public class OutboundResourceAdapter extends Descriptor
      * Returns NO_TRANSACTION, LOCAL_TRANSACTION, XA_TRANSACTION
      * as defined in PoolManagerConstants interface
      */
-    public String 
-    getTransSupport() 
-    {
-        if (transactionSupport == PoolManagerConstants.NO_TRANSACTION)
-	    return ConnectorTagNames.DD_NO_TRANSACTION;
-	else if (transactionSupport == PoolManagerConstants.LOCAL_TRANSACTION)
-            return ConnectorTagNames.DD_LOCAL_TRANSACTION;
-	else 
-            return ConnectorTagNames.DD_XA_TRANSACTION;
+    public String getTransSupport() {
+        switch (transactionSupport) {
+            case PoolManagerConstants.NO_TRANSACTION:
+                return ConnectorTagNames.DD_NO_TRANSACTION;
+            case PoolManagerConstants.LOCAL_TRANSACTION:
+                return ConnectorTagNames.DD_LOCAL_TRANSACTION;
+            default:
+                return ConnectorTagNames.DD_XA_TRANSACTION;
+        }
     }
 
-    public int 
-    getTransactionSupport() 
-    {
+    public int getTransactionSupport() {
         return transactionSupport;
     }
  
@@ -137,9 +130,7 @@ public class OutboundResourceAdapter extends Descriptor
      * LOCAL_TRANSACTION, XA_TRANSACTION as defined in 
      * PoolManagerConstants interface 
      */
-    public void 
-    setTransactionSupport(int transactionSupport) 
-    {
+    public void setTransactionSupport(int transactionSupport) {
         this.transactionSupport = transactionSupport;
         this.transactionSupportSet = true;
     }
@@ -149,20 +140,19 @@ public class OutboundResourceAdapter extends Descriptor
      * LOCAL_TRANSACTION, XA_TRANSACTION as defined in 
      * PoolManagerConstants interface 
      */
-    public void 
-    setTransactionSupport(String support) 
-    {
+    public void setTransactionSupport(String support) {
         //TODO V3 : should throw exception when the "support" is none of XA/NO/Local ?
-        try{
-        if (ConnectorTagNames.DD_XA_TRANSACTION.equals(support))
-            this.transactionSupport = PoolManagerConstants.XA_TRANSACTION;
-        else if (ConnectorTagNames.DD_LOCAL_TRANSACTION.equals(support))
-            this.transactionSupport = PoolManagerConstants.LOCAL_TRANSACTION;
-        else
-            this.transactionSupport = PoolManagerConstants.NO_TRANSACTION;
+        try {
+            if (ConnectorTagNames.DD_XA_TRANSACTION.equals(support)) {
+                this.transactionSupport = PoolManagerConstants.XA_TRANSACTION;
+            } else if (ConnectorTagNames.DD_LOCAL_TRANSACTION.equals(support)) {
+                this.transactionSupport = PoolManagerConstants.LOCAL_TRANSACTION;
+            } else {
+                this.transactionSupport = PoolManagerConstants.NO_TRANSACTION;
+            }
 
-        this.transactionSupportSet = true;
-        }catch(NumberFormatException nfe){
+            this.transactionSupportSet = true;
+        } catch (NumberFormatException nfe) {
             Logger.getAnonymousLogger().log(Level.WARNING, "Error occurred", nfe); 
         }
     }
@@ -170,11 +160,9 @@ public class OutboundResourceAdapter extends Descriptor
    /** 
     * Set of AuthMechanism objects 
     */
-    public Set 
-    getAuthMechanisms() 
-    {
+    public Set<AuthMechanism> getAuthMechanisms() {
         if (authMechanisms == null) {
-            authMechanisms = new OrderedSet();
+            authMechanisms = new OrderedSet<>();
         }
         return authMechanisms;
     }
@@ -184,18 +172,15 @@ public class OutboundResourceAdapter extends Descriptor
      *                 false = found 
      *                 true = not found 
      */
-    public boolean 
-    addAuthMechanism(AuthMechanism mech) 
-    {
+    public boolean addAuthMechanism(AuthMechanism mech) {
         boolean flag=false;
-        for (Iterator itr = authMechanisms.iterator(); itr.hasNext();){
-	    AuthMechanism next = (AuthMechanism) itr.next();
-	    if (next.getAuthMechVal()==mech.getAuthMechVal()) {  
-	        return(flag);
-	    }
-	}	    
-	flag=this.authMechanisms.add(mech);
-	return(flag);
+        for (AuthMechanism next : authMechanisms) {
+            if (next.getAuthMechVal()==mech.getAuthMechVal()) {
+                return(flag);
+            }
+        }	    
+	flag = this.authMechanisms.add(mech);
+	return flag;
     }
     
     /** 
@@ -203,18 +188,15 @@ public class OutboundResourceAdapter extends Descriptor
      * return value : false = found
      *                true = not found 
      */
-    public boolean 
-    removeAuthMechanism(AuthMechanism mech) 
-    {
+    public boolean removeAuthMechanism(AuthMechanism mech) {
         boolean flag=false;
-        for (Iterator itr = authMechanisms.iterator(); itr.hasNext();){
-	    AuthMechanism next = (AuthMechanism) itr.next();
-	    if (next.equals(mech)) {
-	        flag=this.authMechanisms.remove(mech);
-		return(flag);
-	    }
-	}
-	return(flag);
+        for (AuthMechanism next : authMechanisms) {
+            if (next.equals(mech)) {
+                flag = this.authMechanisms.remove(mech);
+                return flag;
+            }
+        }
+	return flag;
     }
 
 
@@ -223,15 +205,13 @@ public class OutboundResourceAdapter extends Descriptor
     * return value : false = found
     *                true = not found 
     */
-    public boolean 
-    addAuthMechanism(int mech) 
-    {
+    public boolean addAuthMechanism(int mech) {
         boolean flag = false;
-        for (Iterator itr = authMechanisms.iterator(); itr.hasNext();){
-	    AuthMechanism next = (AuthMechanism) itr.next();
-	    if (next.getAuthMechVal() == mech)
-	       return(flag);
-	}	    
+        for (AuthMechanism next : authMechanisms) {
+            if (next.getAuthMechVal() == mech) {
+                return flag;
+            }
+        }	    
         String credInf = null;
         if (mech == PoolManagerConstants.BASIC_PASSWORD) {
             credInf = PoolManagerConstants.PASSWORD_CREDENTIAL;
@@ -240,7 +220,7 @@ public class OutboundResourceAdapter extends Descriptor
         }
 	AuthMechanism auth = new AuthMechanism("",mech, credInf);
         flag = this.authMechanisms.add(auth);
-	return(flag);
+	return flag;
     }
     
 
@@ -249,18 +229,14 @@ public class OutboundResourceAdapter extends Descriptor
      *       return value : false = found
      *                      true = not found 
      */
-    public boolean 
-    removeAuthMechanism(int mech) 
-    {
+    public boolean removeAuthMechanism(int mech) {
         boolean flag = false;
-        for (Iterator itr = authMechanisms.iterator(); itr.hasNext();){
-	    AuthMechanism next = (AuthMechanism) itr.next();	   
-	    if (next.getAuthMechVal()==mech)
-	    {
-	        flag = this.authMechanisms.remove(next);
+        for (AuthMechanism next : authMechanisms) {
+            if (next.getAuthMechVal()==mech) {
+                flag = this.authMechanisms.remove(next);
                 return(flag);
-	    }
-	}
+            }
+        }
 	return(flag);
     }
 
@@ -272,8 +248,7 @@ public class OutboundResourceAdapter extends Descriptor
     }
 
     public boolean hasConnectionDefDescriptor(String connectionFactoryIntf){
-        for(Object o  : connectionDefs){
-            ConnectionDefDescriptor cdd = (ConnectionDefDescriptor)o;
+        for(ConnectionDefDescriptor cdd  : connectionDefs){
             if(cdd.getConnectionFactoryIntf().equals(connectionFactoryIntf)){
                 return true;
             }
@@ -291,7 +266,7 @@ public class OutboundResourceAdapter extends Descriptor
     /**
      * returns the set of connection definitions
      */
-    public Set getConnectionDefs() {
+    public Set<ConnectionDefDescriptor> getConnectionDefs() {
 	return connectionDefs;
     }
     
@@ -392,13 +367,13 @@ public class OutboundResourceAdapter extends Descriptor
 	 * For being able to read 1.0 and write 1.5
 	 */
 
-	public void setConnectionDef(ConnectionDefDescriptor conDef) {
-	    this.connectionDefs.add(conDef);
-	}
+    public void setConnectionDef(ConnectionDefDescriptor conDef) {
+        this.connectionDefs.add(conDef);
+    }
     
     public ConnectionDefDescriptor getConnectionDef() {
-	Iterator iter = connectionDefs.iterator(); 
-	ConnectionDefDescriptor conDef = (ConnectionDefDescriptor)iter.next();
+	Iterator<ConnectionDefDescriptor> iter = connectionDefs.iterator(); 
+	ConnectionDefDescriptor conDef = iter.next();
 	return conDef;
     }
     
@@ -413,97 +388,84 @@ public class OutboundResourceAdapter extends Descriptor
     /** 
      * Sets the value of ManagedconnectionFactoryImpl
      */
-    public void 
-    setManagedConnectionFactoryImpl(String managedConnectionFactoryImpl) 
-    {
+    public void setManagedConnectionFactoryImpl(String managedConnectionFactoryImpl) {
         getConnectionDef().setManagedConnectionFactoryImpl(managedConnectionFactoryImpl);
     }
 
     /** 
      * Set of EnvironmentProperty 
      */
-    public Set getConfigProperties() 
-    {
+    public Set getConfigProperties() {
         return getConnectionDef().getConfigProperties();
     }
       
     /** 
      * Add a configProperty to the set
      */
-    public void addConfigProperty(EnvironmentProperty configProperty) 
-    {
+    public void addConfigProperty(EnvironmentProperty configProperty) {
 	getConnectionDef().getConfigProperties().add(configProperty);
     }
 
     /** 
      * Add a configProperty to the set
      */ 
-    public void removeConfigProperty(EnvironmentProperty configProperty) 
-    {
+    public void removeConfigProperty(EnvironmentProperty configProperty) {
 	getConnectionDef().getConfigProperties().remove(configProperty);
     }
     
     /**
      * Get connection factory impl
      */
-    public String getConnectionFactoryImpl()
-    {
+    public String getConnectionFactoryImpl() {
         return getConnectionDef().getConnectionFactoryImpl();
     }
 
     /** 
      * set connection factory impl 
      */
-    public void setConnectionFactoryImpl(String cf) 
-    {
+    public void setConnectionFactoryImpl(String cf) {
 	getConnectionDef().setConnectionFactoryImpl(cf);
     }
 
     /**
      * Get connection factory intf
      */
-    public String getConnectionFactoryIntf()
-    {
+    public String getConnectionFactoryIntf() {
         return getConnectionDef().getConnectionFactoryIntf();
     }
 
     /** 
      * set connection factory intf
      */
-    public void setConnectionFactoryIntf(String cf) 
-    {
+    public void setConnectionFactoryIntf(String cf) {
 	getConnectionDef().setConnectionFactoryIntf(cf);
     }
 
     /**
      * Get connection intf
      */
-    public String getConnectionIntf()
-    {
+    public String getConnectionIntf() {
         return getConnectionDef().getConnectionIntf();
     }
 
     /** 
      * set connection intf
      */
-    public void setConnectionIntf(String con) 
-    {
+    public void setConnectionIntf(String con) {
 	getConnectionDef().setConnectionIntf(con);
     }
 
     /**
      * Get connection impl
      */
-    public String getConnectionImpl()
-    {
+    public String getConnectionImpl() {
         return getConnectionDef().getConnectionImpl();
     }
 
     /** 
      * set connection intf
      */
-    public void setConnectionImpl(String con) 
-    {
+    public void setConnectionImpl(String con) {
 	getConnectionDef().setConnectionImpl(con);
     }
 

@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
@@ -125,6 +127,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * @return the descriptor instance to associate with this XMLNode
      */
     @SuppressWarnings("unchecked")
+    @Override
     public T getDescriptor() {
         if (abstractDescriptor == null) {
             abstractDescriptor = createDescriptor();
@@ -142,6 +145,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object descriptor) {
         if (getParentNode() == null) {
             DOLUtils.getDefaultLogger().log(SEVERE, "enterprise.deployment.backend.addDescriptorFailure", new Object[] { descriptor, toString() });
@@ -210,6 +214,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     /**
      * @return the parent node of the current instance
      */
+    @Override
     public XMLNode getParentNode() {
         return parentNode;
     }
@@ -217,6 +222,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     /**
      * @return the root node of the current instance
      */
+    @Override
     public XMLNode getRootNode() {
         XMLNode parent = this;
 
@@ -235,7 +241,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      */
     protected void registerElementHandler(XMLElement element, Class handler) {
         if (handlers == null) {
-            handlers = new Hashtable<String, Class>();
+            handlers = new Hashtable<>();
         }
         
         handlers.put(element.getQName(), handler);
@@ -275,6 +281,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     /**
      * @return the handler registered for the subtag element of the curent XMLNode
      */
+    @Override
     public XMLNode getHandlerFor(XMLElement element) {
         if (handlers == null) {
             DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { this, "No handler registered" });
@@ -317,6 +324,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     /**
      * SAX Parser API implementation, we don't really care for now.
      */
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         // DOLUtils.getDefaultLogger().finer("STARTELEMENT : " + "in " + getXMLRootTag() + " Node, startElement " +
         // element.getQName());
@@ -362,6 +370,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * @param element the xml tag identification
      * @return true if this node is done processing the XML sub tree
      */
+    @Override
     public boolean endElement(XMLElement element) {
         // DOLUtils.getDefaultLogger().finer("ENDELEMENT : " + "in " + getXMLRootTag() + " Node, endElement " +
         // element.getQName());
@@ -384,6 +393,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     /**
      * @return true if the element tag can be handled by any registered sub nodes of the current XMLNode
      */
+    @Override
     public boolean handlesElement(XMLElement element) {
 
         // Let's iterator over all the statically registered handlers to
@@ -435,7 +445,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     public void setElementValue(XMLElement element, String value) {
         // DOLUtils.getDefaultLogger().finer("SETELEMENTVALUE : " + "in " + getXMLRootTag() + " Node, startElement " +
         // element.getQName());
-        Map dispatchTable = getDispatchTable();
+        Map<String, String> dispatchTable = getDispatchTable();
 
         if (dispatchTable != null) {
             if (dispatchTable.containsKey(element.getQName())) {
@@ -449,7 +459,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
                 try {
                     Object descriptor = getDescriptor();
                     if (descriptor != null) {
-                        setDescriptorInfo(descriptor, (String) dispatchTable.get(element.getQName()), value);
+                        setDescriptorInfo(descriptor, dispatchTable.get(element.getQName()), value);
                     } else {
                         DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { element.getQName(), value });
                     }
@@ -476,7 +486,6 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
         if (value.trim().length() != 0) {
             DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { element.getQName(), value });
         }
-        return;
     }
 
     /**
@@ -487,7 +496,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      */
     protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
-        Map<String, String> table = new HashMap<String, String>();
+        Map<String, String> table = new HashMap<>();
         table.put(TagNames.DESCRIPTION, "setDescription");
         return table;
     }
@@ -527,6 +536,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     /**
      * @return the XPath this XML Node is handling
      */
+    @Override
     public String getXMLPath() {
         if (getParentNode() != null) {
             return getParentNode().getXMLPath() + "/" + getXMLRootTag().getQName();
@@ -542,6 +552,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, T descriptor) {
         return writeDescriptor(parent, getXMLRootTag().getQName(), descriptor);
     }
@@ -782,16 +793,16 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * @param parentNode parent node for the DOM tree
      * @param refs the set of EjbReferenceDescriptor to write
      */
-    protected void writeEjbReferenceDescriptors(Node parentNode, Iterator refs) {
+    protected void writeEjbReferenceDescriptors(Node parentNode, Iterator<EjbReference> refs) {
 
         if (refs == null || !refs.hasNext())
             return;
 
         EjbReferenceNode subNode = new EjbReferenceNode();
         // ejb-ref*
-        Set localRefDescs = new HashSet();
+        Set<EjbReference> localRefDescs = new HashSet<>();
         for (; refs.hasNext();) {
-            EjbReference ejbRef = (EjbReference) refs.next();
+            EjbReference ejbRef = refs.next();
             if (ejbRef.isLocal()) {
                 localRefDescs.add(ejbRef);
             } else {
@@ -799,8 +810,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
             }
         }
         // ejb-local-ref*
-        for (Iterator e = localRefDescs.iterator(); e.hasNext();) {
-            EjbReference ejbRef = (EjbReference) e.next();
+        for (EjbReference ejbRef : localRefDescs) {
             subNode.writeDescriptor(parentNode, TagNames.EJB_LOCAL_REFERENCE, ejbRef);
         }
     }
@@ -843,14 +853,14 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * @param parentNode parent node for the DOM tree
      * @param resRefs the iterator over the descriptors to write
      */
-    protected void writeResourceEnvRefDescriptors(Node parentNode, Iterator resRefs) {
+    protected void writeResourceEnvRefDescriptors(Node parentNode, Iterator<ResourceEnvReferenceDescriptor> resRefs) {
 
         if (resRefs == null || !resRefs.hasNext())
             return;
 
         ResourceEnvRefNode subNode = new ResourceEnvRefNode();
         for (; resRefs.hasNext();) {
-            ResourceEnvReferenceDescriptor aResRef = (ResourceEnvReferenceDescriptor) resRefs.next();
+            ResourceEnvReferenceDescriptor aResRef = resRefs.next();
             subNode.writeDescriptor(parentNode, TagNames.RESOURCE_ENV_REFERENCE, aResRef);
         }
     }
@@ -861,7 +871,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * @param parentNode parent node for the DOM tree
      * @param msgDestRefs the iterator over the descriptors to write
      */
-    protected void writeMessageDestinationRefDescriptors(Node parentNode, Iterator msgDestRefs) {
+    protected void writeMessageDestinationRefDescriptors(Node parentNode, Iterator<? extends MessageDestinationReferencer> msgDestRefs) {
 
         if (msgDestRefs == null || !msgDestRefs.hasNext())
             return;
@@ -879,14 +889,14 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * @param parentNode parent node for the DOM tree
      * @param entityMgrRefs the iterator over the descriptors to write
      */
-    protected void writeEntityManagerReferenceDescriptors(Node parentNode, Iterator entityMgrRefs) {
+    protected void writeEntityManagerReferenceDescriptors(Node parentNode, Iterator<EntityManagerReferenceDescriptor> entityMgrRefs) {
 
         if (entityMgrRefs == null || !entityMgrRefs.hasNext())
             return;
 
         EntityManagerReferenceNode subNode = new EntityManagerReferenceNode();
         for (; entityMgrRefs.hasNext();) {
-            EntityManagerReferenceDescriptor aEntityMgrRef = (EntityManagerReferenceDescriptor) entityMgrRefs.next();
+            EntityManagerReferenceDescriptor aEntityMgrRef = entityMgrRefs.next();
             subNode.writeDescriptor(parentNode, TagNames.PERSISTENCE_CONTEXT_REF, aEntityMgrRef);
         }
     }
@@ -897,14 +907,14 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
      * @param parentNode parent node for the DOM tree
      * @param entityMgrFactoryRefs the iterator over the descriptors to write
      */
-    protected void writeEntityManagerFactoryReferenceDescriptors(Node parentNode, Iterator entityMgrFactoryRefs) {
+    protected void writeEntityManagerFactoryReferenceDescriptors(Node parentNode, Iterator<EntityManagerFactoryReferenceDescriptor> entityMgrFactoryRefs) {
 
         if (entityMgrFactoryRefs == null || !entityMgrFactoryRefs.hasNext())
             return;
 
         EntityManagerFactoryReferenceNode subNode = new EntityManagerFactoryReferenceNode();
         for (; entityMgrFactoryRefs.hasNext();) {
-            EntityManagerFactoryReferenceDescriptor aEntityMgrFactoryRef = (EntityManagerFactoryReferenceDescriptor) entityMgrFactoryRefs.next();
+            EntityManagerFactoryReferenceDescriptor aEntityMgrFactoryRef = entityMgrFactoryRefs.next();
             subNode.writeDescriptor(parentNode, TagNames.PERSISTENCE_UNIT_REF, aEntityMgrFactoryRef);
         }
     }
@@ -1065,6 +1075,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     /**
      * notify of a new prefix mapping used in this document
      */
+    @Override
     public void addPrefixMapping(String prefix, String uri) {
         Object o = getDescriptor();
         if (o instanceof Descriptor) {
@@ -1076,6 +1087,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
     /**
      * Resolve a QName prefix to its corresponding Namespace URI by searching up node chain starting with child.
      */
+    @Override
     public String resolvePrefix(XMLElement element, String prefix) {
         // If prefix is empty string, returned namespace URI
         // is the default namespace.

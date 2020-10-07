@@ -49,7 +49,6 @@ import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.xml.sax.SAXParseException;
 import org.jvnet.hk2.annotations.Contract;
 

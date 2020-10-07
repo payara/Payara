@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] PAyara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.node;
 
@@ -58,7 +59,7 @@ public abstract class ReplaceVersionUpgrade implements VersionUpgrade {
   public ReplaceVersionUpgrade(String oldName, String newName) {
     oldElementName = oldName;
     newElementName = newName;
-    matches = new HashMap<String,String>();
+    matches = new HashMap<>();
     init();
   }
 
@@ -66,6 +67,7 @@ public abstract class ReplaceVersionUpgrade implements VersionUpgrade {
    * Return the kind of processing to do
    * @return the kind of processing to do
    */
+  @Override
   public UpgradeType getUpgradeType() {
     return UpgradeType.REPLACE_ELEMENT;
   }
@@ -73,6 +75,7 @@ public abstract class ReplaceVersionUpgrade implements VersionUpgrade {
   /**
    * Initialize
    */
+  @Override
   public void init() {
     matches.put(oldElementName, null);
   }
@@ -81,6 +84,7 @@ public abstract class ReplaceVersionUpgrade implements VersionUpgrade {
    * Return the map of xml element to match
    * @return the map of xml element to match
    */
+  @Override
   public Map<String,String> getMatchXPath() {
     return matches;
   }
@@ -89,6 +93,7 @@ public abstract class ReplaceVersionUpgrade implements VersionUpgrade {
    * Return the replacement element name
    * @return the replacement element name
    */
+  @Override
   public String getReplacementElementName() {
     return newElementName;
   }
@@ -97,6 +102,7 @@ public abstract class ReplaceVersionUpgrade implements VersionUpgrade {
    * Return the replacement element value
    * @return the replacement element value
    */
+  @Override
   public String getReplacementElementValue() {
     return matches.get(oldElementName);
   }
@@ -105,6 +111,7 @@ public abstract class ReplaceVersionUpgrade implements VersionUpgrade {
    * Return whether the matched items are valid.
    * @return whether the matched items are valid.
    */
+  @Override
   public boolean isValid() {
     return true;
   }

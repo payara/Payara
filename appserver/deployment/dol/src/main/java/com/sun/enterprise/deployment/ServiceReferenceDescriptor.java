@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -51,13 +52,11 @@ import java.util.*;
 import java.lang.annotation.Annotation;
 
 /**
- * Information about a J2EE web service client.
+ * Information about a Jakarta EE web service client.
  *
  * @author Kenneth Saks
  */
-
-public class ServiceReferenceDescriptor extends EnvironmentProperty 
-        implements HandlerChainContainer {
+public class ServiceReferenceDescriptor extends EnvironmentProperty implements HandlerChainContainer {
 
     static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
 
@@ -81,59 +80,59 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
      */
     private File mappingFile;
 
-    // Optional service name.  Only required if service-ref has WSDL and
-    // the WSDL defines multiple services.
+    /** Optional service name.  Only required if service-ref has WSDL and
+     * the WSDL defines multiple services. */
     private String serviceNamespaceUri;
     private String serviceLocalPart;
     private String serviceNameNamespacePrefix;
 
-    // settings for both container-managed and client-managed ports
-    private Set portsInfo;
+    /** settings for both container-managed and client-managed ports */
+    private Set<ServiceRefPortInfo> portsInfo;
 
-    // module in which this reference is defined.
+    /** module in which this reference is defined. */
     private BundleDescriptor bundleDescriptor;
 
-    // List of handlers associated with this service reference. 
-    // Handler order is important and must be preserved.
-    private LinkedList handlers;
+    /** List of handlers associated with this service reference. 
+     * Handler order is important and must be preserved. */
+    private LinkedList<WebServiceHandler> handlers;
 
-    // The handler chains defined for this service ref (JAXWS service-ref)
-    private LinkedList handlerChain;
+    /** The handler chains defined for this service ref (JAXWS service-ref) */
+    private LinkedList<WebServiceHandlerChain> handlerChain;
     
     //
     // Runtime info 
     //
 
-    private Set callProperties;
+    private Set<NameValuePairDescriptor> callProperties;
 
-    // Name of generated service implementation class.
+    /** Name of generated service implementation class. */
     private String serviceImplClassName;
 
-    // Optional wsdl to be used at deployment instead of the wsdl packaged 
-    // in module and associated with the service-ref.
+    /** Optional wsdl to be used at deployment instead of the wsdl packaged 
+     * in module and associated with the service-ref. */
     private URL wsdlOverride;
     
-    // interface name of the expected injection recipient.
-    // because web service reference are a bit specific (you can inject
-    // the Service interface or the Port interface directly), you 
-    // may need to disambiguate when loading from XML DDs.
+    /** interface name of the expected injection recipient.
+     * because web service reference are a bit specific (you can inject
+     * the Service interface or the Port interface directly), you 
+     * may need to disambiguate when loading from XML DDs. */
     private String injectionTargetType=null; 
 
-    //Support for JAXWS 2.2 features
-    //@MTOM for WebserviceRef
-    // Boolean instead of boolean for tri-value - true/false/not-set
+    /** Support for JAXWS 2.2 features
+     *  @MTOM for WebserviceRef
+     *  Boolean instead of boolean for tri-value - true/false/not-set */
     private Boolean mtomEnabled ;
 
-    //Support for JAXWS 2.2 features
-    //@RespectBinding for WebserviceRef
+    /** Support for JAXWS 2.2 features
+     *  @RespectBinding for WebserviceRef */
     private RespectBinding respectBinding;
 
-    //Support for JAXWS 2.2 features
-    //@Addressing for WebserviceRef
+    /** Support for JAXWS 2.2 features
+     * @Addressing for WebserviceRef */
     private Addressing addressing;
 
-    //Support for JAXWS 2.2 features
-    //mtomThreshold
+    /** Support for JAXWS 2.2 features
+     *  mtomThreshold */
     private int mtomThreshold;
 
     public Map<Class<? extends Annotation>, Annotation> getOtherAnnotations() {
@@ -150,7 +149,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
      */
 
    private Map<Class<? extends Annotation>, Annotation> otherAnnotations =
-            new HashMap<Class<? extends Annotation>, Annotation>();
+            new HashMap<>();
 
     public boolean isRespectBindingEnabled() {
         return respectBinding.isEnabled();
@@ -173,11 +172,11 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     }
 
     public boolean isMtomEnabled() {
-        return mtomEnabled != null && mtomEnabled.booleanValue();
+        return mtomEnabled != null && mtomEnabled;
     }
 
     public void setMtomEnabled(boolean mtomEnabled) {
-        this.mtomEnabled = Boolean.valueOf(mtomEnabled);
+        this.mtomEnabled = mtomEnabled;
     }
 
     public boolean isAddressingEnabled() {
@@ -216,26 +215,24 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
         serviceLocalPart = other.serviceLocalPart;
         serviceNameNamespacePrefix = other.serviceNameNamespacePrefix;
         otherAnnotations = other.otherAnnotations;
-        portsInfo = new HashSet(); // ServiceRefPortInfo
+        portsInfo = new HashSet<>(); // ServiceRefPortInfo
         for (Iterator i = other.portsInfo.iterator(); i.hasNext();) {
             ServiceRefPortInfo port = new ServiceRefPortInfo(
                     (ServiceRefPortInfo)i.next());
             port.setServiceReference(this); // reset reference
             portsInfo.add(port);
         }
-        handlers = new LinkedList(); // WebServiceHandler
+        handlers = new LinkedList<>(); // WebServiceHandler
         for (Iterator i = other.handlers.iterator(); i.hasNext();) {
-            handlers.add(new WebServiceHandler
-                    ((WebServiceHandler)i.next()));
+            handlers.add(new WebServiceHandler((WebServiceHandler)i.next()));
         }
-        handlerChain = new LinkedList(); // WebServiceHandlerChain
+        handlerChain = new LinkedList<>(); // WebServiceHandlerChain
         for (Iterator i = other.handlerChain.iterator(); i.hasNext();) {
             handlerChain.add(new WebServiceHandlerChain((WebServiceHandlerChain)i.next()));
         }
-        callProperties = new HashSet(); // NameValuePairDescriptor
+        callProperties = new HashSet<>(); // NameValuePairDescriptor
         for (Iterator i = other.callProperties.iterator(); i.hasNext();) {
-            callProperties.add(new NameValuePairDescriptor(
-                    (NameValuePairDescriptor)i.next()));
+            callProperties.add(new NameValuePairDescriptor((NameValuePairDescriptor)i.next()));
         }
         serviceImplClassName = other.serviceImplClassName;
     }
@@ -243,24 +240,26 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     public ServiceReferenceDescriptor(String name, String description, 
                                       String service) {
         super(name, "", description);
-        handlers = new LinkedList();
-        handlerChain = new LinkedList();
-        portsInfo = new HashSet();
-        callProperties = new HashSet();
+        handlers = new LinkedList<>();
+        handlerChain = new LinkedList<>();
+        portsInfo = new HashSet<>();
+        callProperties = new HashSet<>();
         serviceInterface = service;
     }
     
     public ServiceReferenceDescriptor() {
-        handlers = new LinkedList();
-        handlerChain = new LinkedList();
-        portsInfo = new HashSet();
-        callProperties = new HashSet();
+        handlers = new LinkedList<>();
+        handlerChain = new LinkedList<>();
+        portsInfo = new HashSet<>();
+        callProperties = new HashSet<>();
     }
 
+    @Override
     public String getMappedName() {
         return mappedName;
     }
     
+    @Override
     public void setMappedName(String value) {
         mappedName = value;
     }
@@ -397,7 +396,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
                  new QName(serviceNamespaceUri, serviceLocalPart) : null );
     }
 
-    public Set getPortsInfo() {
+    public Set<ServiceRefPortInfo> getPortsInfo() {
         return portsInfo;
     }
 
@@ -420,9 +419,8 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     public void addRuntimePortInfo(ServiceRefPortInfo runtimePortInfo) {
         ServiceRefPortInfo existing = null;
 
-        if( runtimePortInfo.hasServiceEndpointInterface() ) {
-            existing = 
-                getPortInfoBySEI(runtimePortInfo.getServiceEndpointInterface());
+        if(runtimePortInfo.hasServiceEndpointInterface()) {
+            existing = getPortInfoBySEI(runtimePortInfo.getServiceEndpointInterface());
         } 
         if( (existing == null) && runtimePortInfo.hasWsdlPort() ) {
             existing = getPortInfoByPort(runtimePortInfo.getWsdlPort());
@@ -430,8 +428,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
 
         if( existing == null ) {
             if (portsInfo!=null && portsInfo.size()>0) {
-                LocalStringManagerImpl localStrings =
-                    new LocalStringManagerImpl(ServiceReferenceDescriptor.class);            
+                LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ServiceReferenceDescriptor.class);            
                 DOLUtils.getDefaultLogger().warning( 
                     localStrings.getLocalString("enterprise.deployment.unknownportforruntimeinfo",
                     "Runtime port info SEI {0} is not declared in standard service-ref " + 
@@ -447,17 +444,13 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
             if( !existing.hasWsdlPort() ) {
                 existing.setWsdlPort(runtimePortInfo.getWsdlPort());
             }
-            for(Iterator iter = runtimePortInfo.
-                    getStubProperties().iterator(); iter.hasNext();) {
-                NameValuePairDescriptor next = 
-                    (NameValuePairDescriptor) iter.next();
+            for(Iterator iter = runtimePortInfo.getStubProperties().iterator(); iter.hasNext();) {
+                NameValuePairDescriptor next = (NameValuePairDescriptor) iter.next();
                 // adds using name as key
                 existing.addStubProperty(next);
             }
-            for(Iterator iter = runtimePortInfo.getCallProperties()
-                    .iterator(); iter.hasNext();) {
-                NameValuePairDescriptor next = 
-                    (NameValuePairDescriptor) iter.next();
+            for(Iterator iter = runtimePortInfo.getCallProperties().iterator(); iter.hasNext();) {
+                NameValuePairDescriptor next = (NameValuePairDescriptor) iter.next();
                 // adds using name as key
                 existing.addCallProperty(next);
             }
@@ -481,9 +474,8 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
 
     public boolean hasContainerManagedPorts() {
         boolean containerManaged = false;
-        for(Iterator iter = portsInfo.iterator(); iter.hasNext();) {
-            ServiceRefPortInfo next = (ServiceRefPortInfo) iter.next();
-            if( next.isContainerManaged() ) {
+        for (ServiceRefPortInfo next : portsInfo) {
+            if (next.isContainerManaged()) {
                 containerManaged = true;
                 break;
             }
@@ -493,9 +485,8 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
 
     public boolean hasClientManagedPorts() {
         boolean clientManaged = false;
-        for(Iterator iter = portsInfo.iterator(); iter.hasNext();) {
-            ServiceRefPortInfo next = (ServiceRefPortInfo) iter.next();
-            if( next.isClientManaged() ) {
+        for (ServiceRefPortInfo next : portsInfo) {
+            if (next.isClientManaged()) {
                 clientManaged = true;
                 break;
             }
@@ -513,12 +504,9 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     /**
      * Lookup port info by service endpoint interface.
      */
-    public ServiceRefPortInfo getPortInfoBySEI(String serviceEndpointInterface)
-    {
-        for(Iterator iter = portsInfo.iterator(); iter.hasNext();) {
-            ServiceRefPortInfo next = (ServiceRefPortInfo) iter.next();
-            if( serviceEndpointInterface.equals
-                (next.getServiceEndpointInterface()) ) {
+    public ServiceRefPortInfo getPortInfoBySEI(String serviceEndpointInterface) {
+        for (ServiceRefPortInfo next : portsInfo) {
+            if( serviceEndpointInterface.equals(next.getServiceEndpointInterface()) ) {
                 return next;
             }
         }
@@ -529,8 +517,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
      * Lookup port info by wsdl port.  
      */
     public ServiceRefPortInfo getPortInfoByPort(QName wsdlPort) {
-        for(Iterator iter = portsInfo.iterator(); iter.hasNext();) {
-            ServiceRefPortInfo next = (ServiceRefPortInfo) iter.next();
+        for (ServiceRefPortInfo next : portsInfo) {
             if( next.hasWsdlPort() && wsdlPort.equals(next.getWsdlPort()) ) {
                 return next;
             }
@@ -552,8 +539,8 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     }
 
     public void removeHandlerByName(String handlerName) {
-        for(Iterator iter = handlers.iterator(); iter.hasNext();) {
-            WebServiceHandler next = (WebServiceHandler) iter.next();
+        for(Iterator<WebServiceHandler> iter = handlers.iterator(); iter.hasNext();) {
+            WebServiceHandler next = iter.next();
             if( next.getHandlerName().equals(handlerName) ) {
                 iter.remove();
 
@@ -569,13 +556,14 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     /**
      * Get ordered list of WebServiceHandler handlers for this endpoint.
      */
-    public LinkedList getHandlers() {
+    public LinkedList<WebServiceHandler> getHandlers() {
         return handlers;
     }
 
     /**
      * HandlerChain related setters, getters, adders, finders
      */
+    @Override
     public void addHandlerChain(WebServiceHandlerChain handler) {
         handlerChain.addLast(handler);
 
@@ -586,27 +574,26 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
 
     }
 
+    @Override
     public boolean hasHandlerChain() {
-        return (handlerChain.size() > 0);
+        return handlerChain.size() > 0;
     }
 
-    public LinkedList getHandlerChain() {
+    @Override
+    public LinkedList<WebServiceHandlerChain> getHandlerChain() {
         return handlerChain;
     }
 
     /**
      * Runtime information.
      */
-
-    public Set getCallProperties() {
+    public Set<NameValuePairDescriptor> getCallProperties() {
         return callProperties;
     }
 
     public NameValuePairDescriptor getCallPropertyByName(String name) {
         NameValuePairDescriptor prop = null;
-        for(Iterator iter = callProperties.iterator(); iter.hasNext();) {
-            NameValuePairDescriptor next = (NameValuePairDescriptor) 
-                iter.next();
+        for (NameValuePairDescriptor next : callProperties) {
             if( next.getName().equals(name) ) {
                 prop = next;
                 break;
@@ -621,8 +608,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
      * the same name.
      */ 
     public void addCallProperty(NameValuePairDescriptor property) {
-        NameValuePairDescriptor prop = 
-            getCallPropertyByName(property.getName());
+        NameValuePairDescriptor prop = getCallPropertyByName(property.getName());
         if( prop != null ) {
             prop.setValue(property.getValue());
         } else {
@@ -637,15 +623,14 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
      * the matching name.
      */ 
     public void removeCallProperty(NameValuePairDescriptor property) {
-        NameValuePairDescriptor prop = 
-            getCallPropertyByName(property.getName());
+        NameValuePairDescriptor prop = getCallPropertyByName(property.getName());
         if( prop != null ) {
             callProperties.remove(property);
         } 
     }
 
     public boolean hasServiceImplClassName() {
-        return (serviceImplClassName != null);
+        return serviceImplClassName != null;
     }
 
     public void setServiceImplClassName(String className) {
@@ -657,7 +642,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     }
 
     public boolean hasWsdlOverride() {
-        return (wsdlOverride != null);
+        return wsdlOverride != null;
     }
 
     public void setWsdlOverride(URL override) {
@@ -677,6 +662,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     }
 
     /* Equality on name. */
+    @Override
     public boolean equals(Object object) {
         if (object instanceof ServiceReferenceDescriptor) {
             ServiceReferenceDescriptor thatReference = 
@@ -686,6 +672,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
         return false;
     }
 
+    @Override
     public int hashCode() {
         int result = NULL_HASH_CODE;
         String name = getName();

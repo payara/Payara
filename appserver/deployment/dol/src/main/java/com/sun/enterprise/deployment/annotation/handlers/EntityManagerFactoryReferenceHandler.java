@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -51,7 +52,6 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.persistence.PersistenceUnit;
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -80,8 +80,8 @@ public class EntityManagerFactoryReferenceHandler
      * @param rcContexts an array of ResourceContainerContext
      * @param HandlerProcessingResult
      */
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
-            ResourceContainerContext[] rcContexts)
+    @Override
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
 
         PersistenceUnit emfRefAn = (PersistenceUnit)ainfo.getAnnotation();
@@ -190,19 +190,14 @@ public class EntityManagerFactoryReferenceHandler
      * if exists or a new one without name being set.
      */
     private EntityManagerFactoryReferenceDescriptor[] 
-        getEmfReferenceDescriptors(String logicalName, 
-                                   ResourceContainerContext[] rcContexts) {
+        getEmfReferenceDescriptors(String logicalName, ResourceContainerContext[] rcContexts) {
             
-        EntityManagerFactoryReferenceDescriptor emfRefs[] =
-                new EntityManagerFactoryReferenceDescriptor[rcContexts.length];
+        EntityManagerFactoryReferenceDescriptor emfRefs[] = new EntityManagerFactoryReferenceDescriptor[rcContexts.length];
         for (int i = 0; i < rcContexts.length; i++) {
-            EntityManagerFactoryReferenceDescriptor emfRef =
-                (EntityManagerFactoryReferenceDescriptor)rcContexts[i].
-                    getEntityManagerFactoryReference(logicalName);
+            EntityManagerFactoryReferenceDescriptor emfRef = rcContexts[i].getEntityManagerFactoryReference(logicalName);
             if (emfRef == null) {
                 emfRef = new EntityManagerFactoryReferenceDescriptor();
-                rcContexts[i].addEntityManagerFactoryReferenceDescriptor
-                    (emfRef);
+                rcContexts[i].addEntityManagerFactoryReferenceDescriptor(emfRef);
             }
             emfRefs[i] = emfRef;
         }
@@ -210,9 +205,7 @@ public class EntityManagerFactoryReferenceHandler
         return emfRefs;
     }
 
-    private void processNewEmfRefAnnotation
-        (EntityManagerFactoryReferenceDescriptor emfRef,
-         String logicalName, PersistenceUnit annotation) {
+    private void processNewEmfRefAnnotation(EntityManagerFactoryReferenceDescriptor emfRef, String logicalName, PersistenceUnit annotation) {
         
         emfRef.setName(logicalName);
         

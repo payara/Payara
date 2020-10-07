@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 /**
 *	This generated bean class MapElement matches the DTD element map-element
@@ -122,9 +123,8 @@ public class MapElement extends RuntimeDescriptor
     }
     
     // This attribute is mandatory
-    public void setBackendPrincipal(boolean value)
-    {
-	this.setValue(BACKEND_PRINCIPAL, Boolean.valueOf(value));
+    public void setBackendPrincipal(boolean value) {
+	this.setValue(BACKEND_PRINCIPAL, value);
     }
     
     //
@@ -133,7 +133,7 @@ public class MapElement extends RuntimeDescriptor
 	Boolean ret = (Boolean)this.getValue(BACKEND_PRINCIPAL);
 	if (ret == null)
 	    return false;
-	return ret.booleanValue();
+	return ret;
     }
     
     // This method verifies that the mandatory properties are set
