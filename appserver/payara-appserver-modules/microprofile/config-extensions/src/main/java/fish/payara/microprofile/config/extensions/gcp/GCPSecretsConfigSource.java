@@ -50,7 +50,7 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
     public void bootstrap() {
         final SignedJWT jwt = buildJwt(
                 // issuer
-                "test-account@payara-bingo.iam.gserviceaccount.com",
+                configuration.getClientEmail(),
                 // scope
                 "https://www.googleapis.com/auth/cloud-platform");
         try {
@@ -69,7 +69,7 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
         Map<String, String> results = new HashMap<>();
 
         final WebTarget secretsTarget = client
-                .target(String.format(LIST_SECRETS_ENDPOINT, "payara-bingo"));
+                .target(String.format(LIST_SECRETS_ENDPOINT, configuration.getProjectName()));
 
         final Response secretsResponse = secretsTarget.request()
                 .accept("application/json")
@@ -96,7 +96,7 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
         final String accessToken = authClient.getAccessToken();
 
         final WebTarget secretTarget = client
-                .target(String.format(GET_SECRETS_ENDPOINT, "payara-bingo", propertyName));
+                .target(String.format(GET_SECRETS_ENDPOINT, configuration.getProjectName(), propertyName));
 
         final Response secretResponse = secretTarget
                 .request()
