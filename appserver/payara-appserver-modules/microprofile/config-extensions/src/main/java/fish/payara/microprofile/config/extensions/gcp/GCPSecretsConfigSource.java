@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.json.JsonObject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -28,11 +30,11 @@ import com.nimbusds.jwt.SignedJWT;
 
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.config.extensions.OAuth2Client;
 import fish.payara.microprofile.config.extensions.gcp.model.Secret;
 import fish.payara.microprofile.config.extensions.gcp.model.SecretResponse;
 import fish.payara.microprofile.config.extensions.gcp.model.SecretsResponse;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
+import fish.payara.security.oauth2.OAuth2Client;
 
 @Service(name = "gcp-secrets-config-source")
 public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPSecretsConfigSourceConfiguration> {
@@ -55,16 +57,31 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
                 "https://www.googleapis.com/auth/cloud-platform");
         try {
             jwt.sign(new RSASSASigner(getPrivateKey()));
-            this.authClient = new OAuth2Client(AUTH_URL, jwt);
+
+            Map<String, String> data = new HashMap<>();
+            data.put("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
+            data.put("assertion", jwt.serialize());
+            this.authClient = new OAuth2Client(AUTH_URL, data);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | JOSEException e) {
             e.printStackTrace();
         }
     }
 
+    private String authenticate() {
+        Response response = authClient.authenticate();
+        if (response.getStatus() == 200) {
+            JsonObject data = response.readEntity(JsonObject.class);
+            Integer expirySeconds = data.getInt("expires_in");
+            authClient.expire(Duration.ofSeconds(expirySeconds));
+            return data.getString("access_token");
+        }
+        return null;
+    }
+
     @Override
     public Map<String, String> getProperties() {
 
-        final String accessToken = authClient.getAccessToken();
+        final String accessToken = authenticate();
 
         Map<String, String> results = new HashMap<>();
 
@@ -93,7 +110,7 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
 
     @Override
     public String getValue(String propertyName) {
-        final String accessToken = authClient.getAccessToken();
+        final String accessToken = authenticate();
 
         final WebTarget secretTarget = client
                 .target(String.format(GET_SECRETS_ENDPOINT, configuration.getProjectName(), propertyName));
@@ -113,7 +130,6 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
                 .getPayload()
                 .getData();
 
-        new Exception(propertyName + " = " + value).printStackTrace();
         return value;
     }
 
