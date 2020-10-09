@@ -16,27 +16,29 @@
 
     <modules>
         <!-- This module must run first, because it collides with some change made by other test(s) -->
-        <module>payara-expression-config-properties</module>
-        <module>asadmin</module>
+<!--        <module>payara-expression-config-properties</module>
+       <module>asadmin</module>
         <module>clustered-singleton</module>
         <module>custom-loginmodule-realm</module>
         <module>datagrid-encryption</module>
         <module>dynamic-roles</module>
         <module>ejb-invoker-secure-endpoint</module>
         <module>formauth</module>
+
         <module>jacc-per-app</module>
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
-        <module>jaxws-security</module>
+        <module>jaxws-security</module> 
         <module>jaxws-tracing</module>
-        <module>microprofile-endpoints</module>
+        <module>microprofile-endpoints</module> -->
+        <module>microprofile-healthcheck</module>
         <module>oauth2</module>
-        <module>openid</module>
+        <!-- <module>openid</module>
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
         <module>jakartaee-namespace-transformer</module>
-        <module>logging</module>
+        <module>logging</module> -->
     </modules>
 
     <dependencyManagement>
@@ -74,6 +76,7 @@
                     <groupId>fish.payara.distributions</groupId>
                     <artifactId>payara</artifactId>
                     <type>zip</type>
+                    <optional>true</optional>
                 </dependency>
 
                 <!-- The actual Arquillian connector -->
