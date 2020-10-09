@@ -73,7 +73,6 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -107,7 +106,7 @@ import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
-import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSourceService;
 
 /**
  * This Service implements the Microprofile Config API and provides integration
@@ -150,7 +149,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     private Config serverLevelConfig;
 
     @Inject
-    private ServiceLocator serviceLocator;
+    private ExtensionConfigSourceService extensionService;
 
     /**
      * Logs constructor as finest - may be useful to watch sequence of operations.
@@ -258,7 +257,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
-                sources.addAll(getExtensionSources());
+                sources.addAll(extensionService.getExtensionSources());
                 converters.putAll(getDefaultConverters());
                 serverLevelConfig = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 result = serverLevelConfig;
@@ -271,7 +270,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources(appInfo));
-                sources.addAll(getExtensionSources());
+                sources.addAll(extensionService.getExtensionSources());
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
@@ -353,13 +352,6 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             moduleName = currentInvocation.getModuleName();
         }
         return getDefaultSources(appName, moduleName);
-    }
-
-    private List<ExtensionConfigSource> getExtensionSources() {
-        List<ExtensionConfigSource> sources = serviceLocator.getAllServices(ExtensionConfigSource.class);
-        sources.forEach(ExtensionConfigSource::bootstrap);
-        sources.forEach(ExtensionConfigSource::getProperties);
-        return sources;
     }
 
     @Override

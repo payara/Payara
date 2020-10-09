@@ -121,10 +121,11 @@ public abstract class BaseSetConfigSourceConfigurationCommand<C extends ConfigSo
             if (c == null) {
                 ConfigSupport.apply(new SingleConfigCode<MicroprofileConfigConfiguration>() {
                     @Override
-                    public Object run(final MicroprofileConfigConfiguration notificationServiceConfigurationProxy)
+                    public Object run(final MicroprofileConfigConfiguration configurationProxy)
                             throws PropertyVetoException, TransactionFailure {
-                        C c = notificationServiceConfigurationProxy.createChild(configSourceConfigClass);
+                        C c = configurationProxy.createChild(configSourceConfigClass);
                         applyValues(c);
+                        configurationProxy.getConfigSourceConfigurationList().add(c);
                         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return c;
                     }

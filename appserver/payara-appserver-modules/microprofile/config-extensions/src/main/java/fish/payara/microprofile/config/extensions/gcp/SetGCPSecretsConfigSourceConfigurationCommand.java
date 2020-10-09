@@ -1,7 +1,16 @@
 package fish.payara.microprofile.config.extensions.gcp;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 import com.sun.enterprise.util.StringUtils;
 
@@ -11,6 +20,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -32,11 +42,16 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 })
 public class SetGCPSecretsConfigSourceConfigurationCommand extends BaseSetConfigSourceConfigurationCommand<GCPSecretsConfigSourceConfiguration> {
 
-    @Param(optional = true)
+    private static final Logger LOGGER = Logger.getLogger(SetGCPSecretsConfigSourceConfigurationCommand.class.getPackage().getName());
+
+    @Param
     protected String project;
 
-    @Param(name = "keyJsonFile", optional = false)
-    private File keyJsonFile;
+    @Param
+    private File jsonKeyFile;
+
+    @Inject
+    private ServerEnvironment env;
 
     @Override
     protected void applyValues(GCPSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
@@ -44,8 +59,21 @@ public class SetGCPSecretsConfigSourceConfigurationCommand extends BaseSetConfig
         if (StringUtils.ok(project)) {
             configuration.setProjectName(project);
         }
-        if (keyJsonFile != null && keyJsonFile.exists()) {
-            configuration.setClientEmail("test-account@payara-bingo.iam.gserviceaccount.com");
+        if (jsonKeyFile != null) {
+            if (!jsonKeyFile.exists() || !jsonKeyFile.isFile()) {
+                throw new PropertyVetoException("JSON Key file not found", new PropertyChangeEvent(configuration, "jsonKeyFile", null, jsonKeyFile));
+            }
+            try {
+                Path configDirPath = env.getConfigDirPath().toPath();
+                Path output = Files.copy(jsonKeyFile.toPath(), configDirPath.resolve(jsonKeyFile.getName()),
+                        StandardCopyOption.REPLACE_EXISTING);
+                configuration.setTokenFilePath(configDirPath.relativize(output).toString());
+                LOGGER.info("File copied to " + output);
+            } catch (IOException e) {
+                final String message = "Unable to find or access target file";
+                LOGGER.log(Level.WARNING, message, e);
+                throw new PropertyVetoException(message, new PropertyChangeEvent(configuration, "jsonKeyFile", null, jsonKeyFile));
+            }
         }
     }
 }

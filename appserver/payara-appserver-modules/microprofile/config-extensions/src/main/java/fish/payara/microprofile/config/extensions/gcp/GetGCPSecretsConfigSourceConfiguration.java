@@ -33,7 +33,7 @@ public class GetGCPSecretsConfigSourceConfiguration extends BaseGetConfigSourceC
         Map<String, Object> config = super.getConfigSourceConfiguration(configuration);
         if (config != null) {
             config.put("Project Name", configuration.getProjectName());
-            config.put("Client Email", configuration.getClientEmail());
+            config.put("Token File Path", configuration.getTokenFilePath());
         }
         return config;
     }

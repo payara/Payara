@@ -137,10 +137,6 @@ public class SetConfigOrdinal implements AdminCommand {
                                 config.setPasswordOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "aws" : {
-                                config.setAwsOrdinality(Integer.toString(ordinal));
-                                break;
-                            }
                         }
                         return null;
                     }

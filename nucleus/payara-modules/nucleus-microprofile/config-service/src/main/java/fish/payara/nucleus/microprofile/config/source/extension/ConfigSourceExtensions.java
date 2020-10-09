@@ -38,6 +38,9 @@ public class ConfigSourceExtensions {
     @SuppressWarnings("unchecked")
     public static <C extends ConfigSourceConfiguration> Class<C> getConfigurationClass(Class<?> configSourceClass) {
         final ParameterizedType genericSuperclass = (ParameterizedType) configSourceClass.getGenericSuperclass();
+        if (genericSuperclass == null) {
+            return null;
+        }
         return (Class<C>) genericSuperclass.getActualTypeArguments()[0];
     }
 

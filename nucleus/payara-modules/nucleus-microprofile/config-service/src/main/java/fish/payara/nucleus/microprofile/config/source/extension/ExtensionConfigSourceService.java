@@ -1,13 +1,11 @@
 package fish.payara.nucleus.microprofile.config.source.extension;
 
 import java.beans.PropertyChangeEvent;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import static java.lang.Boolean.valueOf;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -15,14 +13,12 @@ import javax.inject.Named;
 
 import com.sun.enterprise.config.serverbeans.Config;
 
-import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Changed;
@@ -37,7 +33,6 @@ import fish.payara.nucleus.microprofile.config.spi.ConfigSourceConfiguration;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 @Service(name = "config-source-extension-handler")
-@RunLevel(StartupRunLevel.VAL)
 public class ExtensionConfigSourceService implements EventListener, ConfigListener {
 
     private static final Logger logger = Logger.getLogger(ExtensionConfigSourceService.class.getName());
@@ -56,12 +51,12 @@ public class ExtensionConfigSourceService implements EventListener, ConfigListen
     @Inject
     private Transactions transactions;
 
-    private final Map<ServiceHandle<ExtensionConfigSource>, Class<ConfigSourceConfiguration>> configSources;
+    private final Set<ExtensionConfigSourceHandler> handlers;
 
     private boolean isInstance;
 
     public ExtensionConfigSourceService() {
-        this.configSources = new HashMap<>();
+        this.handlers = new HashSet<>();
     }
 
     @PostConstruct
@@ -83,14 +78,19 @@ public class ExtensionConfigSourceService implements EventListener, ConfigListen
         // Populate the config sources list
         List<ServiceHandle<ExtensionConfigSource>> configSourceHandles = locator.getAllServiceHandles(ExtensionConfigSource.class);
         for (ServiceHandle<ExtensionConfigSource> configSourceHandle : configSourceHandles) {
-            Class<ConfigSourceConfiguration> configClass = ConfigSourceExtensions.getConfigurationClass(configSourceHandle.getActiveDescriptor().getImplementationClass());
-            configSources.put(configSourceHandle, configClass);
+            Class<?> extensionClass = configSourceHandle.getActiveDescriptor().getImplementationClass();
+            Class<ConfigSourceConfiguration> configClass = ConfigSourceExtensions.getConfigurationClass(extensionClass);
+            if (configClass != null) {
+                handlers.add(new ExtensionConfigSourceHandler(configSourceHandle, configClass, configuration.getConfigSourceConfigurationByType(configClass)));
+            } else {
+                handlers.add(new ExtensionConfigSourceHandler(configSourceHandle));
+            }
         }
     }
 
     @PreDestroy
     void destroy() {
-        configSources.clear();
+        handlers.clear();
 
         if (events != null) {
             events.unregister(this);
@@ -108,22 +108,20 @@ public class ExtensionConfigSourceService implements EventListener, ConfigListen
         transactions.addListenerForType(MicroprofileConfigConfiguration.class, this);
     }
 
-    private void bootstrapConfigSources() {
-        for (Entry<ServiceHandle<ExtensionConfigSource>, Class<ConfigSourceConfiguration>> entry : configSources.entrySet()) {
-            ConfigSourceConfiguration config = configuration.getConfigSourceConfigurationByType(entry.getValue());
-            if (config != null && valueOf(config.getEnabled())) {
-                entry.getKey().getService().bootstrap();
-            }
+    public Set<ExtensionConfigSource> getExtensionSources() {
+        Set<ExtensionConfigSource> sources = new HashSet<>();
+        for (ExtensionConfigSourceHandler handler : handlers) {
+            sources.add(handler.getProxyConfigSource());
         }
+        return sources;
+    }
+
+    private void bootstrapConfigSources() {
+        handlers.forEach(ExtensionConfigSourceHandler::bootstrap);
     }
 
     private void shutdownConfigSources() {
-        for (Entry<ServiceHandle<ExtensionConfigSource>, Class<ConfigSourceConfiguration>> entry : configSources.entrySet()) {
-            ConfigSourceConfiguration config = configuration.getConfigSourceConfigurationByType(entry.getValue());
-            if (config != null && valueOf(config.getEnabled())) {
-                entry.getKey().getService().destroy();
-            }
-        }
+        handlers.forEach(ExtensionConfigSourceHandler::destroy);
     }
 
     @Override
@@ -161,34 +159,11 @@ public class ExtensionConfigSourceService implements EventListener, ConfigListen
     }
 
     public void reconfigure(ConfigSourceConfiguration config) {
-        final Class<? extends ConfigSourceConfiguration> configClass = config.getClass();
-        final boolean enabled = config != null && valueOf(config.getEnabled());
-
-        for (Entry<ServiceHandle<ExtensionConfigSource>, Class<ConfigSourceConfiguration>> entry : configSources.entrySet()) {
-            // If the discovered config source is configured by this configuration
-            if (entry.getValue().isAssignableFrom(configClass)) {
-
-                // Get the current configuration
-                ConfigSourceConfiguration currentConfig = configuration.getConfigSourceConfigurationByType(configClass);
-                final boolean wasEnabled = currentConfig != null && valueOf(currentConfig.getEnabled());
-
-                ExtensionConfigSource configSource = entry.getKey().getService();
-
-                if (!enabled) {
-                    if (wasEnabled) {
-                        // If the config source isn't enabled but was before
-                        configSource.destroy();
-                    }
-                } else {
-                    if (wasEnabled) {
-                        // If the config source is enabled and was before
-                        configSource.destroy();
-                        configSource.bootstrap();
-                    } else {
-                        // If the config source is enabled and wasn't before
-                        configSource.bootstrap();
-                    }
-                }
+        for (ExtensionConfigSourceHandler handler : handlers) {
+            Class<ConfigSourceConfiguration> configClass = handler.getConfigClass();
+            if (configClass.isAssignableFrom(config.getClass())) {
+                handler.reconfigure();
+                break;
             }
         }
     }

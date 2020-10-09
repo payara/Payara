@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.admin;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -54,8 +54,6 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.TransactionFailure;
 
@@ -66,8 +64,8 @@ import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
-import fish.payara.nucleus.microprofile.config.source.extension.ConfigSourceExtensions;
 import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSourceService;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 /**
@@ -89,7 +87,7 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 })
 public class DeleteConfigProperty implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster, jndi", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,custom", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
@@ -105,7 +103,7 @@ public class DeleteConfigProperty implements AdminCommand {
     String moduleName;
 
     @Inject
-    private ServiceLocator serviceLocator;
+    private ExtensionConfigSourceService extensionService;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -172,12 +170,11 @@ public class DeleteConfigProperty implements AdminCommand {
                     break;
                 }
 
-                default: {
-                    List<ServiceHandle<ExtensionConfigSource>> extensionSources = serviceLocator.getAllServiceHandles(ExtensionConfigSource.class);
-                    for (ServiceHandle<ExtensionConfigSource> handle : extensionSources) {
-                        final String extensionName = ConfigSourceExtensions.getName(handle);
-                        if (extensionName.equals(source)) {
-                            handle.getService().deleteValue(propertyName);
+                case "custom": {
+                    Collection<ExtensionConfigSource> extensionSources = extensionService.getExtensionSources();
+                    for (ExtensionConfigSource extension : extensionSources) {
+                        if (extension.getName().equals(sourceName)) {
+                            extension.deleteValue(propertyName);
                         }
                     }
                 }

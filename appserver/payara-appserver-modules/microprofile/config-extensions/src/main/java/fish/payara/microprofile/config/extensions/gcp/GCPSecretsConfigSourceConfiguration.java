@@ -13,7 +13,7 @@ public interface GCPSecretsConfigSourceConfiguration extends ConfigSourceConfigu
     void setProjectName(String project);
 
     @Attribute(required = true)
-    String getClientEmail();
-    void setClientEmail(String client);
+    String getTokenFilePath();
+    void setTokenFilePath(String path);
     
 }

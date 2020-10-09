@@ -39,6 +39,7 @@ public class OAuth2Client {
 
         // Build the request
         Builder requestBuilder = target.request()
+                .header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED)
                 .accept(MediaType.APPLICATION_JSON);
         if (referrer != null && !referrer.isEmpty()) {
             requestBuilder = requestBuilder.header("referrer", referrer);
@@ -64,6 +65,10 @@ public class OAuth2Client {
                 if (lastResponse == null || checkExpiry()) {
                     Response result = invocation.get();
                     lastResponseTime = Instant.now();
+                    if (result.getStatus() == 200) {
+                        lastResponse = result;
+                        lastResponse.bufferEntity();
+                    }
                     return result;
                 }
             }
