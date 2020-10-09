@@ -82,6 +82,12 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     }
 
     @Test
+    public void enabledIsMandatory() {
+        assertMissingParameter("enabled", asadmin("set-healthcheck-service-configuration",
+                "--service", "gc"));
+    }
+
+    @Test
     public void serviceIsMandatory() {
         assertMissingParameter("serviceName", asadmin("set-healthcheck-service-configuration",
                 "--enabled", "true"));
@@ -89,14 +95,14 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void shortNamesAreAccepted() {
-        String[] shortNames = { "cp", "cu", "gc", "hmu", "ht", "mmu", "st", "mh", "mm" };
+        String[] shortNames = { "cp", "cu", "gc", "hmu", "ht", "mmu", "st", "mh" };
         assertServiceNamesAreAccepted(shortNames);
     }
 
     @Test
     public void fullNamesAreAccepted() {
         String[] fullNames = { "CONNECTION_POOL", "CPU_USAGE", "GARBAGE_COLLECTOR", "HEAP_MEMORY_USAGE",
-                "HOGGING_THREADS", "MACHINE_MEMORY_USAGE", "STUCK_THREAD", "MP_HEALTH", "MP_METRICS" };
+                "HOGGING_THREADS", "MACHINE_MEMORY_USAGE", "STUCK_THREAD", "MP_HEALTH" };
         assertServiceNamesAreAccepted(fullNames);
     }
 
