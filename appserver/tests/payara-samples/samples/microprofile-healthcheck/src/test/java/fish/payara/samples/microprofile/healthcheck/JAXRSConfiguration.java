@@ -37,23 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.examples.healthcheck.war2;
+package fish.payara.samples.microprofile.healthcheck;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
 /**
- *
- * @author 
+ * Configures JAX-RS for the application.
+ * @author Juneau
  */
-@Path("jakarta")
-public class JakartaEE8Resource {
+@ApplicationPath("resources")
+public class JAXRSConfiguration extends Application {
     
-    @GET
-    public Response ping(){
-        return Response
-                .ok("ping")
-                .build();
-    }
 }

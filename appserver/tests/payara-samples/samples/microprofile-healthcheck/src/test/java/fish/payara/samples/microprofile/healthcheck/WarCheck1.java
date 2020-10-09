@@ -37,24 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.examples.healthcheck.ejb;
+package fish.payara.samples.microprofile.healthcheck;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Startup;
-import javax.enterprise.inject.Any;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import javax.enterprise.context.ApplicationScoped;
+import org.eclipse.microprofile.health.*;
 
-@Singleton
-@Startup
-public class StartupBean {
+@Liveness
+@ApplicationScoped
+public class WarCheck1 implements HealthCheck {
 
-    @Inject @Any
-    MemoryCheck check;
-    
-    @PostConstruct
-    public void postConstruct() {
-        check.call();
-    }
+  @Override
+  public HealthCheckResponse call() {
+    MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
+    long memUsed = memBean.getHeapMemoryUsage().getUsed();
+    long memMax = memBean.getHeapMemoryUsage().getMax();
 
+    return HealthCheckResponse.named(WarCheck1.class.getSimpleName() + " Liveness Check")
+                              .withData("memory used", memUsed)
+                              .withData("memory max", memMax)
+                              .state(memUsed < memMax * 0.9).build();
+  }
 }

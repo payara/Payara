@@ -37,26 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.examples.healthcheck.war1;
+package fish.payara.samples.microprofile.healthcheck;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import javax.enterprise.context.ApplicationScoped;
-import org.eclipse.microprofile.health.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
 
-@Liveness
-@ApplicationScoped
-public class WarCheck1 implements HealthCheck {
-
-  @Override
-  public HealthCheckResponse call() {
-    MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
-    long memUsed = memBean.getHeapMemoryUsage().getUsed();
-    long memMax = memBean.getHeapMemoryUsage().getMax();
-
-    return HealthCheckResponse.named(WarCheck1.class.getSimpleName() + " Liveness Check")
-                              .withData("memory used", memUsed)
-                              .withData("memory max", memMax)
-                              .state(memUsed < memMax * 0.9).build();
-  }
+/**
+ *
+ * @author 
+ */
+@Path("jakarta")
+public class JakartaEE8Resource {
+    
+    @GET
+    public Response ping(){
+        return Response
+                .ok("ping")
+                .build();
+    }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.examples.healthcheck.war1;
+package fish.payara.samples.microprofile.healthcheck;
 
 import java.io.IOException;
 import java.io.PrintWriter;

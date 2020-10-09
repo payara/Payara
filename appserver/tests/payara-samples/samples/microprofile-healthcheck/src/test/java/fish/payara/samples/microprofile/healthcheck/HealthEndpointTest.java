@@ -40,15 +40,14 @@
 
 package fish.payara.samples.microprofile.healthcheck;
 
-import com.gargoylesoftware.htmlunit.WebClient;
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
-import static org.junit.Assert.assertTrue;
 
 import fish.payara.samples.PayaraArquillianTestRunner;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.URL;
 
@@ -57,9 +56,14 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * This sample tests that an EAR application display all parts
@@ -75,15 +79,14 @@ public class HealthEndpointTest {
     
     @Before
     public void init() {
-        //webClient = new WebClient();
         System.out.println("Set up new WebClient");
     }
 
     @Deployment(testable = false)
     public static EnterpriseArchive createDeployment() {
         EnterpriseArchive archive =
-            create(EnterpriseArchive.class).addAsModule(
-                create(WebArchive.class).addClasses(NewServlet.class, WarCheck1.class))
+            create(EnterpriseArchive.class)
+                 .addAsModule(create(WebArchive.class).addClasses(NewServlet.class, WarCheck1.class))
                 .addAsModule(create(WebArchive.class).addClasses(JAXRSConfiguration.class, JakartaEE8Resource.class, SystemLivenessCheck.class));
 
         System.out.println("************************************************************");
@@ -92,25 +95,26 @@ public class HealthEndpointTest {
 
         return archive;
     }
+    
+    @Test
+    public void simpleTest() {
+        System.out.println("Run a test!");
+    }
 
     @Test
     @RunAsClient
     public void testHealthcheckResponse() throws IOException {
 
-        String response =
-                newClient()
-                     .target(
-                         URI.create(new URL(base, "health").toExternalForm()))
-                     .request(TEXT_PLAIN)
-                     .get(String.class);
+        String response = newClient().target(URI.create(new URL(base, "health").toExternalForm())).request(TEXT_PLAIN).get(String.class);
 
         System.out.println("-------------------------------------------------------------------------");
         System.out.println("Response: \n\n" + response);
         System.out.println("-------------------------------------------------------------------------");
 
-        assertTrue(
-            response.contains("UP")
-        );
+        JsonObject healthcheck = Json.createReader(new StringReader(response)).readObject();
+        
+        Assert.assertEquals("Wrong number of healthchecks", 2, healthcheck.getJsonArray("checks").size());
+        Assert.assertEquals("Healthchecks should all be UP", "UP", healthcheck.getString("status"));
     }
 
 }

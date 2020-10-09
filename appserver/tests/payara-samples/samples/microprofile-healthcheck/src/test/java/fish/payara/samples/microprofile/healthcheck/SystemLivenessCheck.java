@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.examples.healthcheck.ejb;
+package fish.payara.samples.microprofile.healthcheck;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -46,7 +46,7 @@ import org.eclipse.microprofile.health.*;
 
 @Liveness
 @ApplicationScoped
-public class MemoryCheck implements HealthCheck {
+public class SystemLivenessCheck implements HealthCheck {
 
   @Override
   public HealthCheckResponse call() {
@@ -54,7 +54,7 @@ public class MemoryCheck implements HealthCheck {
     long memUsed = memBean.getHeapMemoryUsage().getUsed();
     long memMax = memBean.getHeapMemoryUsage().getMax();
 
-    return HealthCheckResponse.named("Memory HealthCheck")
+    return HealthCheckResponse.named(SystemLivenessCheck.class.getSimpleName() + " Liveness Check")
                               .withData("memory used", memUsed)
                               .withData("memory max", memMax)
                               .state(memUsed < memMax * 0.9).build();
