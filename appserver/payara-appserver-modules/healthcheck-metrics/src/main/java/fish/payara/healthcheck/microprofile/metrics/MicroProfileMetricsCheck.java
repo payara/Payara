@@ -55,6 +55,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
@@ -73,11 +74,14 @@ import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 public class MicroProfileMetricsCheck
         extends BaseHealthCheck<HealthCheckMicroProfileMetricstExecutionOptions, MicroProfileMetricsChecker> {
 
-    @Inject
+    // Needs to be lazily loaded, to prevent starting up Metrics too early
     private MetricsService metricsService;
 
     private StringWriterProxy buffer;
     private MetricsWriter writer;
+
+    @Inject
+    private ServiceLocator locator;
 
     @PostConstruct
     public void postConstruct() {
@@ -91,8 +95,10 @@ public class MicroProfileMetricsCheck
             metricNames.add(metric.getMetricName());
         }
         this.buffer = new StringWriterProxy();
-        this.writer = new MetricsWriterImpl(new FilteredMetricsExporter(buffer, metricNames),
-                metricsService::getAllRegistryNames, metricsService::getRegistry);
+        this.writer = new MetricsWriterImpl(
+                new FilteredMetricsExporter(buffer, metricNames),
+                        () -> getMetricsService().getAllRegistryNames(),
+                        name -> getMetricsService().getRegistry(name));
 
         return new HealthCheckMicroProfileMetricstExecutionOptions(Boolean.valueOf(checker.getEnabled()),
                 Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), 
@@ -130,6 +136,13 @@ public class MicroProfileMetricsCheck
         final String result = buffer.toString().trim().replaceAll(",$", "");
         this.buffer.clear();
         return result;
+    }
+
+    private final MetricsService getMetricsService() {
+        if (metricsService == null) {
+            metricsService = locator.getService(MetricsService.class);
+        }
+        return metricsService;
     }
 
 }
