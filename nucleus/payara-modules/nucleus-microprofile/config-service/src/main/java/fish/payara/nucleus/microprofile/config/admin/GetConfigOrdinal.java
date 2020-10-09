@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,7 +78,7 @@ import org.glassfish.config.support.CommandTarget;
 })
 public class GetConfigOrdinal implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -130,7 +130,10 @@ public class GetConfigOrdinal implements AdminCommand {
                     result = Integer.parseInt(serviceConfig.getPasswordOrdinality());
                     break;
                 }
-
+                case "jdbc": {
+                    result = Integer.parseInt(serviceConfig.getJdbcOrdinality());
+                    break;
+                }
             }
             context.getActionReport().setMessage(source + " : " + result.toString());
 

@@ -58,10 +58,26 @@ import org.jvnet.hk2.config.Configured;
  */
 @Configured(name="microprofile-config")
 public interface MicroprofileConfigConfiguration extends ConfigExtension {
+    
+    @Attribute(defaultValue = "secrets", dataType = String.class)
+    String getSecretDir();
+    void setSecretDir(String directory);
+    
+    @Attribute(defaultValue = "90", dataType = Integer.class)
+    String getSecretDirOrdinality();
+    void setSecretDirOrdinality(String message);
 
+    @Attribute(defaultValue = "105", dataType = Integer.class)
+    String getPasswordOrdinality();
+    void setPasswordOrdinality(String message);
+    
     @Attribute(defaultValue = "110", dataType = Integer.class)
     String getDomainOrdinality();
     void setDomainOrdinality(String message);
+    
+    @Attribute(defaultValue = "115", dataType = Integer.class)
+    String getJNDIOrdinality();
+    void setJNDIOrdinality(String message);
 
     @Attribute(defaultValue = "120", dataType = Integer.class)
     String getConfigOrdinality();
@@ -83,25 +99,13 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
     String getClusterOrdinality();
     void setClusterOrdinality(String message);
     
-    @Attribute(defaultValue = "115", dataType = Integer.class)
-    String getJNDIOrdinality();
-    void setJNDIOrdinality(String message);
-    
-    @Attribute(defaultValue = "secrets", dataType = String.class)
-    String getSecretDir();
-    void setSecretDir(String directory);
-    
-    @Attribute(defaultValue = "90", dataType = Integer.class)
-    String getSecretDirOrdinality();
-    void setSecretDirOrdinality(String message);
-
-    @Attribute(defaultValue = "105", dataType = Integer.class)
-    String getPasswordOrdinality();
-    void setPasswordOrdinality(String message);
-
     @Attribute(defaultValue = "170", dataType = Integer.class)
     String getPayaraExpressionPropertiesOrdinality();
     void setPayaraExpressionPropertiesOrdinality(String message);
+    
+    @Attribute(defaultValue = "180", dataType = Integer.class)
+    String getJdbcOrdinality();
+    void setJdbcOrdinality(String message);
 
     /**
      * @return number of seconds any MP {@link Config} is cached. That means changes to value as provided by a

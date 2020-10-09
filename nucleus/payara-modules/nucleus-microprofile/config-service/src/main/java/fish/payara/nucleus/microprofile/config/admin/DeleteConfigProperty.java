@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
 import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
@@ -79,7 +80,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class DeleteConfigProperty implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster, jndi", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,jdbc", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
@@ -158,7 +159,18 @@ public class DeleteConfigProperty implements AdminCommand {
                     jsource.deleteValue(propertyName, target);
                     break;
                 }
-
+                
+                case "jdbc": {
+                    if (sourceName == null) {
+                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the JDBC resource if jdbc is the source");
+                    } else {
+                        JDBCConfigSource jdbcConfigSource = new JDBCConfigSource(sourceName);
+                        if (!jdbcConfigSource.deleteValue(propertyName)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to delete the Microprofile Config Value. Please check the JDBC resource named " + sourceName + " is in your domain");
+                        }
+                    }
+                    break;
+                }
             }
         } catch (TransactionFailure txFailure) {
             context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getCanonicalName()), "Failed to set config property", txFailure);
