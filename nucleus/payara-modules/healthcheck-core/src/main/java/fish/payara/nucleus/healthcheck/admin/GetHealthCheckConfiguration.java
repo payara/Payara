@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -49,8 +50,6 @@ import javax.inject.Inject;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
-import fish.payara.nucleus.healthcheck.configuration.MicroProfileMetricsChecker;
-import java.util.HashMap;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -84,7 +83,6 @@ import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerCo
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
-import fish.payara.nucleus.healthcheck.configuration.MonitoredMetric;
 
 /**
  * @author mertcaliskan
@@ -110,8 +108,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             "Warning Threshold", "Good Threshold"};
     final static String stuckThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Add to MicroProfile Health", "Threshold Time", "Threshold Unit"};
     final static String MPHealthCheckHeaders[] = {"Name", "Enabled", "Time", "Unit", "Add to MicroProfile Health", "Timeout"};
-    final static String microProfileMetricsCheckHeaders[] = {"Name", "Enabled", "Time", "Unit", "Add to MicroProfile Health"};
-    final static String monitoredMicroProfileMetricHeaders[] = {"Monitored Metric Name", "Description" };
     final static String notifierHeaders[] = {"Name", "Notifier Enabled"};
     
     private final String garbageCollectorPropertyName = "garbageCollector";
@@ -122,7 +118,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     private final String hoggingThreadsPropertyName = "hoggingThreads";
     private final String stuckThreadsPropertyName = "stuckThreads";
     private final String mpHealthcheckPropertyName = "mpHealth";
-    private final String microProfileMetricsPropertyName = "microProfileMetrics";
     
     @Inject
     ServiceLocator habitat;
@@ -149,16 +144,12 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         ActionReport thresholdDiagnosticsActionReport = mainActionReport.addSubActionsReport(); // subReport(2) 
         ActionReport stuckThreadsActionReport = mainActionReport.addSubActionsReport(); //subReport(3)
         ActionReport mpHealthcheckCheckerActionReport = mainActionReport.addSubActionsReport(); //subReport(4)
-        ActionReport microProfileMetricsActionReport = mainActionReport.addSubActionsReport(); //subReport(5)
-        ActionReport monitoredMicroProfileMetricsActionReport = mainActionReport.addSubActionsReport(); //subReport(6)
 
         ColumnFormatter baseColumnFormatter = new ColumnFormatter(baseHeaders);
         ColumnFormatter hoggingThreadsColumnFormatter = new ColumnFormatter(hoggingThreadsHeaders);
         ColumnFormatter stuckThreadsColumnFormatter = new ColumnFormatter(stuckThreadsHeaders);
         ColumnFormatter thresholdDiagnosticsColumnFormatter = new ColumnFormatter(thresholdDiagnosticsHeaders);
         ColumnFormatter mpHealthCheckColumnFormatter = new ColumnFormatter(MPHealthCheckHeaders);
-        ColumnFormatter microProfileMetricsColumnFormatter = new ColumnFormatter(microProfileMetricsCheckHeaders);
-        ColumnFormatter monitoredMicroProfileMetricsColumnFormatter = new ColumnFormatter(monitoredMicroProfileMetricHeaders);
         ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifierHeaders);
 
         HealthCheckServiceConfiguration configuration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
@@ -226,8 +217,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         Properties stuckThreadsExtrasProps = new Properties();
         Properties thresholdDiagnosticsExtraProps = new Properties();
         Properties mpHealthcheckExtrasProps = new Properties();
-        Properties microProfileMetricsExtrasProps = new Properties();
-        Properties monitoredMicroProfileMetricsExtrasProps = new Properties();
         
         for (ServiceHandle<BaseHealthCheck> serviceHandle : allServiceHandles) {
             Checker checker = configuration.getCheckerByType(serviceHandle.getService().getCheckerType());
@@ -293,34 +282,8 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[4] = mpHealthcheckChecker.getAddToMicroProfileHealth();
                 values[5] = mpHealthcheckChecker.getTimeout();
                 mpHealthCheckColumnFormatter.addRow(values);
-
-                addMPHealthcheckCheckerExtrasProps(mpHealthcheckExtrasProps, mpHealthcheckChecker);
                 
-            } else if (checker instanceof MicroProfileMetricsChecker) {
-                MicroProfileMetricsChecker microProfileMetricsChecker = (MicroProfileMetricsChecker) checker;
-
-                Object[] values = new Object[5];
-                values[0] = microProfileMetricsChecker.getName();
-                values[1] = microProfileMetricsChecker.getEnabled();
-                values[2] = microProfileMetricsChecker.getTime();
-                values[3] = microProfileMetricsChecker.getUnit();
-                values[4] = microProfileMetricsChecker.getAddToMicroProfileHealth();
-                microProfileMetricsColumnFormatter.addRow(values);
-
-                addMicroProfileMetricsCheckerExtrasProps(microProfileMetricsExtrasProps, microProfileMetricsChecker);
-
-                Map<String, String> monitoredAttributes = new HashMap<>();
-                List<MonitoredMetric> metrics = microProfileMetricsChecker.getMonitoredMetrics();
-                if (!metrics.isEmpty()) {
-                    for (MonitoredMetric monitoredBean : metrics) {
-                        Object metricValues[] = new Object[2];
-                        metricValues[0] = monitoredBean.getMetricName();
-                        metricValues[1] = monitoredBean.getDescription();
-                        monitoredMicroProfileMetricsColumnFormatter.addRow(metricValues);
-                        monitoredAttributes.put("MetricsName", monitoredBean.getMetricName());
-                    }
-                    monitoredMicroProfileMetricsExtrasProps.put("monitoredMetrics", monitoredAttributes);
-                } 
+                addMPHealthcheckCheckerExtrasProps(mpHealthcheckExtrasProps, mpHealthcheckChecker);
                 
             }else if (checker != null) {
                 Object values[] = new Object[5];
@@ -330,7 +293,7 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                 values[3] = checker.getUnit();
                 values[4] = checker.getAddToMicroProfileHealth();
                 baseColumnFormatter.addRow(values);
-
+                
                 // Create the extra props map for a base checker
                 addBaseCheckerExtraProps(baseExtraProps, checker);
             }
@@ -356,14 +319,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             mpHealthcheckCheckerActionReport.setMessage(mpHealthCheckColumnFormatter.toString());
             mpHealthcheckCheckerActionReport.appendMessage(StringUtils.EOL);
         }
-        if (!microProfileMetricsColumnFormatter.getContent().isEmpty()) {
-            microProfileMetricsActionReport.setMessage(microProfileMetricsColumnFormatter.toString());
-            microProfileMetricsActionReport.appendMessage(StringUtils.EOL);
-        }
-        if (!monitoredMicroProfileMetricsColumnFormatter.getContent().isEmpty()) {
-            monitoredMicroProfileMetricsActionReport.setMessage(monitoredMicroProfileMetricsColumnFormatter.toString());
-            monitoredMicroProfileMetricsActionReport.appendMessage(StringUtils.EOL);
-        }
         
         // Populate the extraProps with defaults for any checker that isn't present
         baseExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, garbageCollectorPropertyName);
@@ -378,8 +333,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         thresholdDiagnosticsExtraProps = checkCheckerPropertyPresence(thresholdDiagnosticsExtraProps, 
                 machineMemoryUsagePropertyName);
         mpHealthcheckExtrasProps = checkCheckerPropertyPresence(mpHealthcheckExtrasProps, mpHealthcheckPropertyName);
-        microProfileMetricsExtrasProps = checkCheckerPropertyPresence(microProfileMetricsExtrasProps, 
-                microProfileMetricsPropertyName);
         
         // Add the extra props to their respective action reports
         baseActionReport.setExtraProperties(baseExtraProps);
@@ -387,8 +340,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         thresholdDiagnosticsActionReport.setExtraProperties(thresholdDiagnosticsExtraProps);
         stuckThreadsActionReport.setExtraProperties(stuckThreadsExtrasProps);
         mpHealthcheckCheckerActionReport.setExtraProperties(mpHealthcheckExtrasProps);
-        microProfileMetricsActionReport.setExtraProperties(microProfileMetricsExtrasProps);
-        monitoredMicroProfileMetricsActionReport.setExtraProperties(monitoredMicroProfileMetricsExtrasProps);
         
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
@@ -447,17 +398,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         extraPropsMap.put("timeout", mpHealthcheckCheck.getTimeout());
         
         mpHealthcheckExtrasProps.put(mpHealthcheckPropertyName, extraPropsMap);
-        
-    }
-    
-     private void addMicroProfileMetricsCheckerExtrasProps(Properties microProfileMetricsExtrasProps, MicroProfileMetricsChecker microProfileMetricsChecker) {
-        Map<String, Object> extraPropsMap = new HashMap<>(4);
-         extraPropsMap.put("checkerName", microProfileMetricsChecker.getName());
-         extraPropsMap.put("enabled", microProfileMetricsChecker.getEnabled());
-         extraPropsMap.put("time", microProfileMetricsChecker.getTime());
-         extraPropsMap.put("unit", microProfileMetricsChecker.getUnit());
-        
-        microProfileMetricsExtrasProps.put(microProfileMetricsPropertyName, extraPropsMap);
         
     }
     
@@ -566,11 +506,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                     extraPropsMap.put("checkerName", DEFAULT_MICROPROFILE_HEALTHCHECK_NAME);
                     extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
                     break;
-                case microProfileMetricsPropertyName:
-                    extraPropsMap = new HashMap<>(7);
-                    extraPropsMap.put("checkerName", DEFAULT_MICROPROFILE_METRICS_NAME);
-                    extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
-                    break;
             }
         }
         
@@ -593,8 +528,6 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             extraPropsMap.put("thresholdUnit", DEFAULT_UNIT);
         } else if (extraPropsMap.containsValue(DEFAULT_MICROPROFILE_HEALTHCHECK_NAME)) {
             extraPropsMap.put("timeout", DEFAULT_TIMEOUT);
-        } else if (extraPropsMap.containsKey(DEFAULT_MICROPROFILE_METRICS_NAME)) {
-            return extraPropsMap;
         } else {
             extraPropsMap.put("thresholdCritical", THRESHOLD_DEFAULTVAL_CRITICAL);
             extraPropsMap.put("thresholdWarning", THRESHOLD_DEFAULTVAL_WARNING);

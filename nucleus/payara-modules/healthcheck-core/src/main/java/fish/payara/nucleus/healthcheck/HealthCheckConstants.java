@@ -85,5 +85,4 @@ public interface HealthCheckConstants {
     final String DEFAULT_HOGGING_THREADS_NAME = "HOGT";
     final String DEFAULT_STUCK_THREAD_NAME = "STUCK";
     final String DEFAULT_MICROPROFILE_HEALTHCHECK_NAME = "MP";
-    final String DEFAULT_MICROPROFILE_METRICS_NAME = "MPM";
 }
