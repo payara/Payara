@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
+import static fish.payara.nucleus.healthcheck.HealthCheckConstants.DEFAULT_MICROPROFILE_HEALTHCHECK_NAME;
 import java.beans.PropertyVetoException;
 import javax.validation.constraints.Min;
 import org.jvnet.hk2.config.Attribute;
@@ -56,7 +57,7 @@ import org.jvnet.hk2.config.Configured;
 @CheckerConfigurationType(type = CheckerType.MP_HEALTH)
 public interface MicroProfileHealthCheckerConfiguration extends Checker {
     
-    @Attribute(defaultValue = "MP")
+    @Attribute(defaultValue = DEFAULT_MICROPROFILE_HEALTHCHECK_NAME)
     String getName();
     void setName(String value) throws PropertyVetoException;
     

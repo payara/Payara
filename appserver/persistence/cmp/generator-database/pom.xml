@@ -47,7 +47,7 @@
     <parent>
 	<groupId>fish.payara.server.internal.persistence.cmp</groupId>
     	<artifactId>cmp</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.6-SNAPSHOT</version>
     </parent>
     <artifactId>cmp-generator-database</artifactId>
     <packaging>glassfish-jar</packaging>

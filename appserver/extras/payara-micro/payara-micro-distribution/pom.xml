@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.extras</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.6-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-micro</artifactId>
@@ -53,6 +53,7 @@
 
     <properties>
         <product.name>Payara Micro</product.name>
+        <deploy.skip>false</deploy.skip>
     </properties>
 
     <build>
@@ -123,12 +124,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>false</skip>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -521,6 +516,12 @@
             <id>enterprise</id>
             <properties>
                 <product.name>Payara Micro Enterprise</product.name>
+            </properties>
+        </profile>
+        <profile>
+            <id>deploy-internals</id>
+            <properties>
+                <deploy.skip>true</deploy.skip>
             </properties>
         </profile>
     </profiles>

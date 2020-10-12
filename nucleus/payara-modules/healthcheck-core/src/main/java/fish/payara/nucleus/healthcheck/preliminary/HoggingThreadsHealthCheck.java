@@ -67,7 +67,7 @@ import static fish.payara.internal.notification.TimeUtil.prettyPrintDuration;
 
 /**
  * A "hogging thread" is a thread that uses most of the CPU during the measured period.
- * 
+ *
  * @author mertcaliskan (initial version)
  * @author Jan Bernitt (consumer based and monitoring)
  */
@@ -106,7 +106,7 @@ public class HoggingThreadsHealthCheck
          */
         long startOfExceedingThresholdTimestamp;
         /**
-         * Number of times in a row the check has identified the thread as "hogging" 
+         * Number of times in a row the check has identified the thread as "hogging"
          */
         int identifiedAsHoggingCount;
         /**
@@ -126,12 +126,13 @@ public class HoggingThreadsHealthCheck
         postConstruct(this, HoggingThreadsChecker.class);
         supported = ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported();
     }
-
+    
     @Override
     public HealthCheckHoggingThreadsExecutionOptions constructOptions(HoggingThreadsChecker checker) {
         return new HealthCheckHoggingThreadsExecutionOptions(Boolean.valueOf(checker.getEnabled()),
-                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), 
-                Long.parseLong(checker.getThresholdPercentage()), 
+                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()),
+                Boolean.valueOf(checker.getAddToMicroProfileHealth()),
+                Long.parseLong(checker.getThresholdPercentage()),
                 Integer.parseInt(checker.getRetryCount()));
     }
 
@@ -148,7 +149,7 @@ public class HoggingThreadsHealthCheck
                     " not support getting CPU times"));
             return result;
         }
-        acceptHoggingThreads(checkRecordsByThreadId, 
+        acceptHoggingThreads(checkRecordsByThreadId,
                 (percentage, threshold, totalTimeHogging, initialMethod, info) ->
                     result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CRITICAL,
                             "Thread with <id-name>: " + info.getThreadId() + "-" + info.getThreadName() +
@@ -166,7 +167,7 @@ public class HoggingThreadsHealthCheck
         }
         AtomicInteger hoggingThreadCount = new AtomicInteger(0);
         AtomicLong hoggingThreadMaxDuration = new AtomicLong(0L);
-        acceptHoggingThreads(colletionRecordsByThreadId, 
+        acceptHoggingThreads(colletionRecordsByThreadId,
                 (percentage, threshold, totalTimeHogging, initialMethod, info) -> {
                     String thread = info.getThreadName();
                     if (thread == null || thread.isEmpty()) {
@@ -192,6 +193,7 @@ public class HoggingThreadsHealthCheck
             return;
         }
         collector.watch("ns:health HoggingThreadCount", "Hogging Threads", "count")
+            .green(-1, 1, false, null, null, false)
             .amber(0, -2, false, null, null, false)
             .red(1, -2, false, null, null, false);
     }
@@ -207,7 +209,7 @@ public class HoggingThreadsHealthCheck
                 final long cpuTimeInNanos = bean.getThreadCpuTime(threadId);
                 if (cpuTimeInNanos == -1)
                     continue;
-                long cpuTime = TimeUnit.NANOSECONDS.toMillis(cpuTimeInNanos); 
+                long cpuTime = TimeUnit.NANOSECONDS.toMillis(cpuTimeInNanos);
                 // from here all times are in millis
                 ThreadCpuTimeRecord record = recordsById.get(threadId);
                 if (record == null) {

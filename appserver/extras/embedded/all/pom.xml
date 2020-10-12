@@ -48,11 +48,16 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.6-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
+
     <artifactId>payara-embedded-all</artifactId>
     <name>Embedded Payara All-In-One</name>
+
+    <properties>
+        <deploy.skip>false</deploy.skip>
+    </properties>
 
     <build>
         <defaultGoal>install</defaultGoal>
@@ -111,12 +116,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>false</skip>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -467,6 +466,12 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>deploy-internals</id>
+            <properties>
+                <deploy.skip>true</deploy.skip>
+            </properties>
         </profile>
     </profiles>
 </project>

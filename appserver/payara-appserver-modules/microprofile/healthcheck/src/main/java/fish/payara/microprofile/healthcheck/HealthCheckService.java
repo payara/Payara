@@ -40,6 +40,9 @@
 package fish.payara.microprofile.healthcheck;
 
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.microprofile.healthcheck.checks.PayaraHealthCheck;
+import fish.payara.nucleus.healthcheck.configuration.Checker;
+import fish.payara.nucleus.healthcheck.events.PayaraHealthCheckServiceEvents;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -78,7 +81,6 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
@@ -89,9 +91,14 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.HEALTH;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
+import java.io.StringWriter;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonMap;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.joining;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 /**
  * Service that handles the registration, execution, and response of MicroProfile HealthChecks.
@@ -270,25 +277,31 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     @Override
     public void event(Event event) {
         // Remove healthchecks when the app is undeployed.
-        if (event.is(Deployment.APPLICATION_UNLOADED)) {
-            ApplicationInfo appInfo = Deployment.APPLICATION_UNLOADED.getHook(event);
-            if (appInfo != null) {
-                String appName = appInfo.getName();
-                readiness.remove(appName);
-                liveness.remove(appName);
-                health.remove(appName);
-                applicationClassLoaders.remove(appName);
-                applicationsLoaded.remove(appName);
-            }
-        }
+        Deployment.APPLICATION_UNLOADED.onMatch(event, appInfo -> unregisterHealthCheck(appInfo.getName()));
 
         // Keep track of all deployed applications.
-        if (event.is(Deployment.APPLICATION_STARTED)) {
-            ApplicationInfo appInfo = Deployment.APPLICATION_STARTED.getHook(event);
-            if (appInfo != null) {
-                applicationsLoaded.add(appInfo.getName());
+        Deployment.APPLICATION_STARTED.onMatch(event, appInfo -> applicationsLoaded.add(appInfo.getName()));
+        
+        PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_CHECKER_ADD_TO_MICROPROFILE_HEALTH.onMatch(event, healthChecker
+                ->  registerHealthCheck(healthChecker.getName(),
+                        new PayaraHealthCheck(healthChecker.getName(), healthChecker.getCheck()), READINESS));
+
+        PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_CHECKER_REMOVE_FROM_MICROPROFILE_HEALTH.onMatch(event, healthChecker
+                -> unregisterHealthCheck(healthChecker.getName()));
+        
+        if (event.is(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISABLED)) {
+            for (Checker checker : getHealthCheckerList()) {
+                if (Boolean.valueOf(checker.getAddToMicroProfileHealth())) {
+                    unregisterHealthCheck(checker.getName());
+                }
             }
         }
+    }
+    
+    private List<Checker> getHealthCheckerList() {
+        fish.payara.nucleus.healthcheck.HealthCheckService payaraHealthCheckService
+                    = Globals.getDefaultBaseServiceLocator().getService(fish.payara.nucleus.healthcheck.HealthCheckService.class);
+        return payaraHealthCheckService.getConfiguration().getCheckerList();       
     }
 
     public boolean isEnabled() {
@@ -300,29 +313,37 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     }
 
     /**
-     * Register a HealthCheck to the Set of HealthChecks based on appName to execute when
+     * Register a HealthCheck to the Set of HealthChecks to execute when
      * performHealthChecks is called.
      *
-     * @param appName The name of the application being deployed
+     * @param healthCheckName The name of the HealthCheck
      * @param healthCheck The HealthCheck to register
      */
-    public void registerHealthCheck(String appName, HealthCheck healthCheck, HealthCheckType type) {
+    public void registerHealthCheck(String healthCheckName, HealthCheck healthCheck, HealthCheckType type) {
         Map<String, Set<HealthCheck>> healthChecks = getHealthChecks(type);
 
-         // If we don't already have the app registered, we need to create a new Set for it
-        if (!healthChecks.containsKey(appName)) {
+        // If we don't already have the app registered, we need to create a new Set for it
+        if (!healthChecks.containsKey(healthCheckName)) {
             // Sync so that we don't get clashes
             synchronized (this) {
                 // Check again so that we don't overwrite
-                if (!healthChecks.containsKey(appName)) {
+                if (!healthChecks.containsKey(healthCheckName)) {
                     // Create a new Map entry and set for the Healthchecks.
-                    healthChecks.put(appName, ConcurrentHashMap.newKeySet());
+                    healthChecks.put(healthCheckName, ConcurrentHashMap.newKeySet());
                 }
             }
         }
 
         // Add the healthcheck to the Set in the Map
-        healthChecks.get(appName).add(healthCheck);
+        healthChecks.get(healthCheckName).add(healthCheck);
+    }
+    
+    public void unregisterHealthCheck(String appName) {
+        readiness.remove(appName);
+        liveness.remove(appName);
+        health.remove(appName);
+        applicationClassLoaders.remove(appName);
+        applicationsLoaded.remove(appName);
     }
 
     /**
@@ -384,7 +405,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
      * @param type the type of health check
      * @throws IOException If there's an issue writing the response
      */
-    public void performHealthChecks(HttpServletResponse response, HealthCheckType type) throws IOException {
+    public void performHealthChecks(HttpServletResponse response, HealthCheckType type, String enablePrettyPrint) throws IOException {
         Set<HealthCheckResponse> healthCheckResponses = new HashSet<>();
 
         // Iterate over every HealthCheck stored in the Map
@@ -416,7 +437,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
         // If we haven't encountered an exception, construct the JSON response
         if (response.getStatus() != 500) {
-            constructResponse(response, healthCheckResponses, type);
+            constructResponse(response, healthCheckResponses, type, enablePrettyPrint);
         }
     }
 
@@ -434,7 +455,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
     private void constructResponse(HttpServletResponse httpResponse,
             Set<HealthCheckResponse> healthCheckResponses,
-            HealthCheckType type) throws IOException {
+            HealthCheckType type, String enablePrettyPrint) throws IOException {
         httpResponse.setContentType("application/json");
 
         // For each HealthCheckResponse we got from executing the health checks...
@@ -467,7 +488,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 httpResponse.setStatus(503);
             }
         }
-
+       
         // Create the final aggregate object
         JsonObjectBuilder responseObject = Json.createObjectBuilder();
 
@@ -480,8 +501,16 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
         // Add all of the checks
         responseObject.add("checks", checksArray);
 
+        String prettyPrinting = enablePrettyPrint == null || enablePrettyPrint.equals("false") ? "" : JsonGenerator.PRETTY_PRINTING;
+        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(singletonMap(prettyPrinting, ""));
+        StringWriter stringWriter = new StringWriter();
+
+        try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
+            jsonWriter.writeObject(responseObject.build());
+        }
+        
         // Print the outcome
-        httpResponse.getOutputStream().print(responseObject.build().toString());
+        httpResponse.getOutputStream().print(stringWriter.toString());
     }
 
     @Override
@@ -494,5 +523,4 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
         return new UnprocessedChangeEvents(unchangedList);
     }
-
 }

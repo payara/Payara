@@ -81,20 +81,20 @@ import org.eclipse.microprofile.metrics.MetricRegistry.Type;
  */
 public class OpenMetricsExporter implements MetricExporter {
 
-    private enum OpenMetricsType {
+    protected enum OpenMetricsType {
         counter, gauge, summary
     }
 
-    private final Type scope;
-    private final PrintWriter out;
-    private final Set<String> typeWrittenByGlobalName;
-    private final Set<String> helpWrittenByGlobalName;
+    protected final Type scope;
+    protected final PrintWriter out;
+    protected final Set<String> typeWrittenByGlobalName;
+    protected final Set<String> helpWrittenByGlobalName;
 
     public OpenMetricsExporter(Writer out) {
         this(null, out instanceof PrintWriter ? (PrintWriter) out : new PrintWriter(out), new HashSet<>(), new HashSet<>());
     }
 
-    private OpenMetricsExporter(Type scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
+    protected OpenMetricsExporter(Type scope, PrintWriter out, Set<String> typeWrittenByGlobalName,
             Set<String> helpWrittenByGlobalName) {
         this.scope = scope;
         this.out = out;
@@ -231,7 +231,7 @@ public class OpenMetricsExporter implements MetricExporter {
         exportSampling(metricID, timer, timer::getCount, metadata);
     }
 
-    private void appendTYPE(String globalName, OpenMetricsType type) {
+    protected void appendTYPE(String globalName, OpenMetricsType type) {
         if (typeWrittenByGlobalName.contains(globalName)) {
             return;
         }
@@ -239,7 +239,7 @@ public class OpenMetricsExporter implements MetricExporter {
         out.append("# TYPE ").append(globalName).append(' ').append(type.name()).append('\n');
     }
 
-    private void appendHELP(String globalName, Metadata metadata) {
+    protected void appendHELP(String globalName, Metadata metadata) {
         if (helpWrittenByGlobalName.contains(globalName)) {
             return;
         }
@@ -255,20 +255,10 @@ public class OpenMetricsExporter implements MetricExporter {
         out.append("# HELP ").append(globalName).append(' ').append(text).append('\n');
     }
 
-    private void appendValue(String globalName, Tag[] tags, Number value) {
+    protected void appendValue(String globalName, Tag[] tags, Number value) {
         out.append(globalName);
-        appendTags(tags);
-        String valString = value.toString();
-        if (valString.endsWith(".0")) {
-            valString = valString.substring(0, valString.length() - 2); // avoid decimal NNN.0 => NNN
-        }
-        if (valString.endsWith("000000001")) {
-            valString = valString.substring(0, valString.length() - 9); // cut off double representation error
-        }
-        if (valString.contains("000000001E")) {
-            valString = valString.replace("000000001E", "E"); // cut off double representation error for exponential form
-        }
-        out.append(' ').append(valString).append('\n');
+        out.append(tagsToString(tags));
+        out.append(' ').append(roundValue(value)).append('\n');
     }
 
     private void appendValue(String globalName, Tag[] tags, long value) {
@@ -279,19 +269,37 @@ public class OpenMetricsExporter implements MetricExporter {
         appendValue(globalName, tags, Double.valueOf(value));
     }
 
-    private void appendTags(Tag[] tags) {
-        if (tags.length == 0) {
-            return;
+    protected String roundValue(Number value) {
+        String valString = value.toString();
+        if (valString.endsWith(".0")) {
+            valString = valString.substring(0, valString.length() - 2); // avoid decimal NNN.0 => NNN
         }
-        out.append('{');
+        if (valString.endsWith("000000001")) {
+            valString = valString.substring(0, valString.length() - 9); // cut off double representation error
+        }
+        if (valString.contains("000000001E")) {
+            valString = valString.replace("000000001E", "E"); // cut off double representation error for exponential form
+        }
+        return valString;
+    }
+
+    protected static String tagsToString(Tag[] tags) {
+        if (tags.length == 0) {
+            return "";
+        }
+        String result = "";
+        result += "{";
         for (int i = 0; i < tags.length; i++) {
             if (i > 0) {
-                out.append(",");
+                result += ",";
             }
-            out.append(sanitizeMetricName(tags[i].getTagName())).append("=\"")
-                .append(escapeTagValue(tags[i].getTagValue())).append('"');
+            result += sanitizeMetricName(tags[i].getTagName())
+                    + "=\""
+                    + escapeTagValue(tags[i].getTagValue())
+                    + '"';
         }
-        out.append('}');
+        result += "}";
+        return result;
     }
 
     private String globalName(MetricID metricID, Metadata unit) {
@@ -366,7 +374,7 @@ public class OpenMetricsExporter implements MetricExporter {
         return str;
     }
 
-    private static String sanitizeMetricName(String name) {
+    public static String sanitizeMetricName(String name) {
         //Translation rules :
         //All characters not in the range a-z A-Z or 0-9 are translated to underscore (_)
         //Double underscore is translated to single underscore

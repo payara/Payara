@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>jaxws-tracing</artifactId>

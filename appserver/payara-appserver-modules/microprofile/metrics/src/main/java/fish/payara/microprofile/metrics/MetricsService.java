@@ -437,6 +437,14 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         }
         return state.registry;
     }
+    
+    public List<MetricRegistry> getAllRegistry() {
+        List<MetricRegistry> metricRegistries = new ArrayList<>();
+        registriesByName.values().forEach((entry) -> {
+            metricRegistries.add(entry.registry);
+        });
+        return metricRegistries;
+    }
 
     public Set<String> getAllRegistryNames() {
         return registriesByName.keySet();
