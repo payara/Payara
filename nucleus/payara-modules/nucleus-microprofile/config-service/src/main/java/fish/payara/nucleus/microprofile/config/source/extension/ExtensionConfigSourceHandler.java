@@ -83,7 +83,7 @@ public class ExtensionConfigSourceHandler {
         ConfigSourceConfiguration currentConfig = ConfiguredExtensionConfigSource.class.cast(configSource).getConfiguration();
 
         final boolean enabled = config != null && valueOf(config.getEnabled());
-        final boolean wasEnabled = config != null && valueOf(currentConfig.getEnabled());
+        final boolean wasEnabled = currentConfig != null && valueOf(currentConfig.getEnabled());
 
         if (!enabled) {
             if (wasEnabled) {

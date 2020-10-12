@@ -129,6 +129,7 @@ public abstract class BaseSetConfigSourceConfigurationCommand<C extends ConfigSo
                         return c;
                     }
                 }, mpConfigConfiguration);
+                c = mpConfigConfiguration.getConfigSourceConfigurationByType(configSourceConfigClass);
             }
             else {
                 ConfigSupport.apply(new SingleConfigCode<C>() {
@@ -144,7 +145,7 @@ public abstract class BaseSetConfigSourceConfigurationCommand<C extends ConfigSo
             if (dynamic) {
                 if (server.isDas()) {
                     if (targetUtil.getConfig(target).isDas()) {
-                         configureDynamically(c);
+                        configureDynamically(c);
                     }
                 } else {
                     configureDynamically(c);

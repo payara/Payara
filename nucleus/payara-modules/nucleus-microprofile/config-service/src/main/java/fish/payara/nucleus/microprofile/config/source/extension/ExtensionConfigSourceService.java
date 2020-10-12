@@ -200,7 +200,7 @@ public class ExtensionConfigSourceService implements EventListener, ConfigListen
     public void reconfigure(ConfigSourceConfiguration config) {
         for (ExtensionConfigSourceHandler handler : handlers) {
             Class<ConfigSourceConfiguration> configClass = handler.getConfigClass();
-            if (configClass.isAssignableFrom(config.getClass())) {
+            if (configClass != null && configClass.isAssignableFrom(config.getClass())) {
                 handler.reconfigure(config);
                 break;
             }

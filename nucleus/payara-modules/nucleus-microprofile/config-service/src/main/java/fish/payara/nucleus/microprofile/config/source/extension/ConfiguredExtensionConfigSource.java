@@ -61,7 +61,9 @@ public abstract class ConfiguredExtensionConfigSource<C extends ConfigSourceConf
     }
 
     public final void setConfiguration(C configuration) {
-        this.configuration = GlassFishStubBean.cloneBean(configuration, configClass);
+        if (configuration != null) {
+            this.configuration = GlassFishStubBean.cloneBean(configuration, configClass);
+        }
     }
 
     public final C getConfiguration() {
