@@ -139,24 +139,28 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
             }
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Couldn't find or read the GCP key file, make sure it exists.", ex);
-            return;
         }
 
-        final SignedJWT jwt = buildJwt(
-                // issuer
-                clientEmail,
-                // scope
-                "https://www.googleapis.com/auth/cloud-platform");
-        try {
-            jwt.sign(new RSASSASigner(parsePrivateKey(privateKey)));
+        Map<String, String> data = new HashMap<>();
+        data.put("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
 
-            Map<String, String> data = new HashMap<>();
-            data.put("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
-            data.put("assertion", jwt.serialize());
-            this.authClient = new OAuth2Client(AUTH_URL, data);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | JOSEException e) {
-            LOGGER.log(Level.WARNING, "An error occurred while signing the GCP auth token", e);
+        if (clientEmail != null && privateKey != null) {
+            try {
+                final SignedJWT jwt = buildJwt(
+                        // issuer
+                        clientEmail,
+                        // scope
+                        "https://www.googleapis.com/auth/cloud-platform");
+    
+                jwt.sign(new RSASSASigner(parsePrivateKey(privateKey)));
+
+                data.put("assertion", jwt.serialize());
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | JOSEException e) {
+                LOGGER.log(Level.WARNING, "An error occurred while signing the GCP auth token", e);
+            }
         }
+
+        this.authClient = new OAuth2Client(AUTH_URL, data);
     }
 
     private String authenticate() {

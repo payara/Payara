@@ -83,10 +83,10 @@ public class SetGCPSecretsConfigSourceConfigurationCommand extends BaseSetConfig
 
     private static final Logger LOGGER = Logger.getLogger(SetGCPSecretsConfigSourceConfigurationCommand.class.getPackage().getName());
 
-    @Param
+    @Param(optional = true)
     protected String project;
 
-    @Param
+    @Param(optional = true)
     private File jsonKeyFile;
 
     @Inject
