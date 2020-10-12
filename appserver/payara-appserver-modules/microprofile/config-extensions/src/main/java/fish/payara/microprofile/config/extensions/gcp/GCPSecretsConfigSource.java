@@ -28,6 +28,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.nimbusds.jose.JOSEException;
@@ -43,7 +44,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.microprofile.config.extensions.gcp.model.Secret;
-import fish.payara.microprofile.config.extensions.gcp.model.SecretResponse;
+import fish.payara.microprofile.config.extensions.gcp.model.SecretHolder;
 import fish.payara.microprofile.config.extensions.gcp.model.SecretsResponse;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
 import fish.payara.security.oauth2.OAuth2Client;
@@ -148,7 +149,7 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
                 .target(String.format(LIST_SECRETS_ENDPOINT, configuration.getProjectName()));
 
         final Response secretsResponse = secretsTarget.request()
-                .accept("application/json")
+                .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + accessToken).get();
 
         if (secretsResponse.getStatus() != 200) {
@@ -180,16 +181,20 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
 
         final Response secretResponse = secretTarget
                 .request()
-                .accept("application/json")
+                .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + accessToken)
                 .get();
 
-        if (secretResponse.getStatus() != 200) {
+        final int status = secretResponse.getStatus();
+        if (status != 200) {
+            if (status != 400) {
+                LOGGER.log(Level.WARNING, "Failed to get GCP secret. {0}", secretResponse.readEntity(String.class));
+            }
             return null;
         }
 
         final String value = secretResponse
-                .readEntity(SecretResponse.class)
+                .readEntity(SecretHolder.class)
                 .getPayload()
                 .getData();
 
@@ -210,12 +215,14 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
         final Response secretResponse = secretTarget
                 .queryParam("secretId", name)
                 .request()
-                .accept("application/json")
-                .header("Content-Type", "application/json")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Content-Type", MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + accessToken)
-                .post(Entity.json("{\"replication\":{\"automatic\":{}}}"));
+                .post(Entity.entity(new Secret(), MediaType.APPLICATION_JSON));
 
-        if (secretResponse.getStatus() != 200 && secretResponse.getStatus() != 409) {
+        final int status = secretResponse.getStatus();
+        if (status != 200 && status != 409) {
+            LOGGER.log(Level.WARNING, "Failed to set GCP secret. {0}", secretResponse.readEntity(String.class));
             return false;
         }
 
@@ -224,12 +231,16 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
 
         final Response addSecretResponse = addSecretTarget
                 .request()
-                .accept("application/json")
-                .header("Content-Type", "application/json")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Content-Type", MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + accessToken)
-                .post(Entity.json("{\"payload\":{\"data\":\"" + Base64.encode(value).toString() + "\"}}"));
+                .post(Entity.entity(new SecretHolder(value), MediaType.APPLICATION_JSON));
 
-        return addSecretResponse.getStatus() == 200;
+        if (addSecretResponse.getStatus() == 200) {
+            return true;
+        }
+        LOGGER.log(Level.WARNING, "Failed to set GCP secret. {0}", addSecretResponse.readEntity(String.class));
+        return false;
     }
 
     @Override
@@ -245,11 +256,15 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
 
         final Response secretResponse = secretTarget
                 .request()
-                .accept("application/json")
+                .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + accessToken)
                 .delete();
 
-        return secretResponse.getStatus() == 200;
+        if (secretResponse.getStatus() == 200) {
+            return true;
+        }
+        LOGGER.log(Level.WARNING, "Failed to delete GCP secret. {0}", secretResponse.readEntity(String.class));
+        return false;
     }
 
     @Override
