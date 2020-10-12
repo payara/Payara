@@ -60,11 +60,12 @@
             //For resourceEditTabs.inc
             setSessionAttribute(key="resEditTabs" value="targetTab");
             getRequestValue(key="generalPage" value="#{pageSession.generalPage}");
-            setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedName}");
+            setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/jdbc/jdbcResourceEditTargets.jsf?name=#{pageSession.encodedName}");
+            setPageSessionAttribute(key="propsPage" value="#{request.contextPath}/jdbc/jdbcResourceEditProperties.jsf?name=#{pageSession.encodedName}");
             setPageSessionAttribute(key="updateEndpoint" value="#{sessionScope.REST_URL}/resources/update-resource-ref");           
         />
     </event>
 <sun:form id="propertyForm">
 
-#include "/common/resourceNode/resourceEditTabs.inc"
+#include "/jdbc/jdbcResourceEditTabs.inc"
 #include "/common/resourceNode/resourceTargets.inc"
