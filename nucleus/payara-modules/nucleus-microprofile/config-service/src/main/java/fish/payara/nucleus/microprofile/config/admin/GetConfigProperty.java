@@ -86,7 +86,7 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 })
 public class GetConfigProperty implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,custom", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,cloud", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
@@ -161,7 +161,7 @@ public class GetConfigProperty implements AdminCommand {
                 break;
             }
 
-            case "custom": {
+            case "cloud": {
                 Collection<ExtensionConfigSource> extensionSources = extensionService.getExtensionSources();
                 for (ExtensionConfigSource extension : extensionSources) {
                     if (extension.getName().equals(sourceName)) {
