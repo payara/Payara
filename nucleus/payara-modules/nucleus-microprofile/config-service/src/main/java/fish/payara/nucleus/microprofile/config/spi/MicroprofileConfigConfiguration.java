@@ -107,6 +107,10 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
     String getPayaraExpressionPropertiesOrdinality();
     void setPayaraExpressionPropertiesOrdinality(String message);
 
+    @Attribute(defaultValue = "180", dataType = Integer.class)
+    String getCloudOrdinality();
+    void setCloudOrdinality(String value);
+
     /**
      * @return number of seconds any MP {@link Config} is cached. That means changes to value as provided by a
      *         {@link ConfigSource} do become visible after a maximum of this duration. When set to zero or less caching
