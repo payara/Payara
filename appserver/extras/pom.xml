@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.6-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.extras</groupId>
@@ -62,6 +62,18 @@
         <module>appserv-rt</module>
         <module>payara-micro</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+                <inherited>false</inherited>
+            </plugin>
+        </plugins>
+    </build>
 
     <profiles>
         <profile>

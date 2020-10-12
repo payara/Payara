@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>5.2020.5-SNAPSHOT</version>
+    <version>5.2020.6-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -62,15 +62,9 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.2020.5-SNAPSHOT</tag>
+        <tag>payara-server-5.2020.6-SNAPSHOT</tag>
     </scm>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
     <issueManagement>
         <system>Github</system>
         <url>https://github.com/payara/Payara/issues</url>
@@ -127,13 +121,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <javase.version>1.8</javase.version>
-        <deploy.skip>false</deploy.skip>
+        <deploy.skip>true</deploy.skip>
+
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
         <servlet-api.version>4.0.2</servlet-api.version>
         <grizzly.version>2.4.4.payara-p4</grizzly.version>
         <jax-rs-api.impl.version>2.1.6</jax-rs-api.impl.version>
-        <jersey.version>2.30.payara-p2</jersey.version>
+        <jersey.version>2.30.payara-p3</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.1.2.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.1.2.Final</hibernate.validator-cdi.version>
@@ -347,18 +342,29 @@
             </build>
         </profile>
 
+        <profile>
+            <id>deploy-internals</id>
+
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <properties>
+                <deploy.skip>false</deploy.skip>
+            </properties>
+
+            <distributionManagement>
+                <repository>
+                    <id>payara-nexus</id>
+                    <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+
     </profiles>
 
     <build>
         <defaultGoal>install</defaultGoal>
-        <plugins>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
 
         <pluginManagement>
             <plugins>
