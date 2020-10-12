@@ -53,6 +53,7 @@ holder.
     
     <modules>
         <module>config</module>
+        <module>config-extensions</module>
         <module>fault-tolerance</module>
         <module>healthcheck</module>
         <module>jwt-auth</module>
