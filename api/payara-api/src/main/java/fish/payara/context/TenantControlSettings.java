@@ -47,7 +47,7 @@ import java.util.Set;
  * when wanting to fail fast instead of block until tenant becomes available.
  * Also, allows to filter classes by 'instanceof' that are considered available
  * no matter what.
- * 
+ *
  * Example:
  * @Inject TenantControlSettings tcs;
  * tcs.getDisabledTenants().add("my-application-SNAPSHOT-1.0");
@@ -65,14 +65,4 @@ public interface TenantControlSettings {
      * @return mutable set of disabled tenants
      */
     Set<String> getDisabledTenants();
-
-    /**
-     * allows adding / removing / getting classes or interfaces of Hazelcast's internal
-     * operations that are excluded from tenant control functionality.
-     * This is useful if there is an operation that is blocking but should not be depending
-     * on your application needs.
-     *
-     * @return mutable set of filtered classes
-     */
-    Set<Class<?>> getFilteredClasses();
 }

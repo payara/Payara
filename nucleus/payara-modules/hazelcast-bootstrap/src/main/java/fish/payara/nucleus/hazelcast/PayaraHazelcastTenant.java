@@ -39,12 +39,12 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import com.hazelcast.cache.impl.operation.AddCacheConfigOperation;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.spi.tenantcontrol.DestroyEventContext;
 import com.hazelcast.spi.tenantcontrol.TenantControl;
+import com.hazelcast.spi.tenantcontrol.Tenantable;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -80,7 +80,6 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     private static final Logger log = Logger.getLogger(PayaraHazelcastTenant.class.getName());
     private static final Map<String, Integer> blockedCounts = new ConcurrentHashMap<>();
     private static final Set<String> disabledTenants = ConcurrentHashMap.newKeySet();
-    private static final Set<Class<?>> filteredClasses = ConcurrentHashMap.newKeySet();
 
     // transient fields
     private EventListenerImpl destroyEventListener;
@@ -88,10 +87,6 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     // serialized fields
     private Instance contextInstance;
     private String moduleName;
-
-    static {
-        filteredClasses.add(AddCacheConfigOperation.class);
-    }
 
 
     PayaraHazelcastTenant() {
@@ -138,9 +133,9 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     }
 
     @Override
-    public boolean isAvailable(Class<?> operationClass) {
+    public boolean isAvailable(Tenantable tenantable) {
         if (!contextInstance.isLoaded()) {
-            if (filter(operationClass) || disabledTenants.contains(moduleName)) {
+            if (!tenantable.requiresTenantContext()) {
                 return true;
             }
             lock.lock();
@@ -149,7 +144,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
                 int unavailableCount = blockedCounts.compute(componentId, (k, v) -> v == null ? 0 : ++v);
                 log.log(unavailableCount > 100 ? Level.INFO : Level.FINEST,
                         String.format("BLOCKED: tenant not available: %s, module %s, Operation: %s",
-                                componentId, moduleName, operationClass.getName()));
+                                componentId, moduleName, tenantable.getClass().getName()));
                 if (unavailableCount > 100) {
                     blockedCounts.remove(componentId);
                 }
@@ -161,10 +156,6 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
             return false;
         }
         return true;
-    }
-
-    private boolean filter(Class<?> operationClass) {
-        return filteredClasses.stream().anyMatch(operationClass::equals);
     }
 
     @Override
@@ -185,10 +176,6 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     public static Set<String> getDisabledTenants() {
         return disabledTenants;
-    }
-
-    public static Set<Class<?>> getFilteredClasses() {
-        return filteredClasses;
     }
 
     private class EventListenerImpl implements EventListener {
