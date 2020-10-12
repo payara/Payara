@@ -61,7 +61,7 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
+                opType = RestEndpoint.OpType.GET,
                 path = "get-gcp-secrets-config-source-configuration",
                 description = "List GCP Secrets Config Source Configuration")
 })
