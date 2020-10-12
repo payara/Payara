@@ -42,6 +42,7 @@
 package com.sun.enterprise.web;
 
 import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.DasConfig;
@@ -143,6 +144,7 @@ import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.grizzly.ContextMapper;
 import org.glassfish.web.LogFacade;
@@ -190,6 +192,7 @@ import static org.glassfish.api.event.EventTypes.PREPARE_SHUTDOWN;
 import static org.glassfish.api.web.Constants.ADMIN_VS;
 import static org.glassfish.internal.deployment.Deployment.ALL_APPLICATIONS_PROCESSED;
 import static org.glassfish.internal.deployment.Deployment.DEPLOYMENT_FAILURE;
+import static org.glassfish.internal.deployment.Deployment.DISABLE_START;
 import static org.glassfish.internal.deployment.Deployment.UNDEPLOYMENT_FAILURE;
 import static org.glassfish.web.LogFacade.*;
 
@@ -626,6 +629,17 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             } catch (NamingException ex) {
                 logger.log(SEVERE, EXCEPTION_DURING_DESTROY, ex);
             }
+        } else if (event.is(DISABLE_START)) {
+            ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
+            String appName = applicationInfo.getName();
+            Applications applications = serviceLocator.getService(Applications.class);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            // The final comma gets stripped out in suspendWebModule
+            getVirtualServers().forEach(virtualServer -> stringBuilder.append(virtualServer.getID()).append(","));
+            // Just provide all virtual hosts, it'll only suspend the app on those where it's deployed
+            suspendWebModule(applications.getApplication(appName).getContextRoot(), appName, stringBuilder.toString(),
+                    true);
         }
     }
 
@@ -2079,10 +2093,25 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * virtual servers.
      *
      * @param contextRoot the context root
-     * @param appName the J2EE appname used at deployment time
-     * @param hosts the list of virtual servers
+     * @param appName     the J2EE appname used at deployment time
+     * @param hosts       the list of virtual servers
      */
     public boolean suspendWebModule(String contextRoot, String appName, String hosts) {
+        return suspendWebModule(contextRoot, appName, hosts, false);
+    }
+
+    /**
+     * Suspends the web application with the given appName that has been deployed at the given contextRoot on the given
+     * virtual servers.
+     *
+     * @param contextRoot           the context root
+     * @param appName               the J2EE appname used at deployment time
+     * @param hosts                 the list of virtual servers
+     * @param fromDisableStartEvent whether or not this invocation came from the disable_start event - used to determine
+     *                              a log level about failing to disable the web module due to an "acceptable" race
+     *                              condition (unloaded before we managed to reach this point - nothing to do)
+     */
+    public boolean suspendWebModule(String contextRoot, String appName, String hosts, boolean fromDisableStartEvent) {
         boolean hasBeenSuspended = false;
         List<String> hostList = StringUtils.parseStringList(hosts, " ,");
         if (hostList == null || hostList.isEmpty()) {
@@ -2111,7 +2140,14 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         }
 
         if (!hasBeenSuspended) {
-            logger.log(WARNING, DISABLE_WEB_MODULE_ERROR, contextRoot);
+            if (fromDisableStartEvent) {
+                // Presumably already unloaded - don't log as warning
+                logger.log(FINE, "Unable to disable web module at context root {0}, it may have already been unloaded",
+                        contextRoot);
+            } else {
+                // Original log message
+                logger.log(WARNING, DISABLE_WEB_MODULE_ERROR, contextRoot);
+            }
         }
 
         return hasBeenSuspended;
