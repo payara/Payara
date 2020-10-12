@@ -112,29 +112,34 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
         String clientEmail = null;
         String privateKey = null;
         try {
-            try (JsonParser parser = Json.createParser(new FileInputStream(getTokenFile()))) {
-                while (parser.hasNext()) {
-                    JsonParser.Event parseEvent = parser.next();
-                    if (parseEvent == Event.KEY_NAME) {
-                        final String keyName = parser.getString();
-    
-                        parser.next();
-                        switch (keyName) {
-                            case "client_email":
-                                clientEmail = parser.getString();
+            final File tokenFile = getTokenFile();
+            if (tokenFile == null) {
+                LOGGER.warning("Couldn't find token file, make sure it's configured.");
+            } else {
+                try (JsonParser parser = Json.createParser(new FileInputStream(getTokenFile()))) {
+                    while (parser.hasNext()) {
+                        JsonParser.Event parseEvent = parser.next();
+                        if (parseEvent == Event.KEY_NAME) {
+                            final String keyName = parser.getString();
+        
+                            parser.next();
+                            switch (keyName) {
+                                case "client_email":
+                                    clientEmail = parser.getString();
+                                    break;
+                                case "private_key":
+                                    privateKey = parser.getString();
+                                    break;
+                            }
+                            if (clientEmail != null && privateKey != null) {
                                 break;
-                            case "private_key":
-                                privateKey = parser.getString();
-                                break;
-                        }
-                        if (clientEmail != null && privateKey != null) {
-                            break;
+                            }
                         }
                     }
-                }
-    
-                if (clientEmail == null || privateKey == null) {
-                    throw new PropertyVetoException("Error reading JSON key file", new PropertyChangeEvent(configuration, "jsonKeyFile", null, null));
+        
+                    if (clientEmail == null || privateKey == null) {
+                        throw new PropertyVetoException("Error reading JSON key file", new PropertyChangeEvent(configuration, "jsonKeyFile", null, null));
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -349,7 +354,11 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
     }
 
     private File getTokenFile() {
-        return env.getConfigDirPath().toPath().resolve(configuration.getTokenFilePath()).toFile();
+        final String fileName = configuration.getTokenFilePath();
+        if (fileName != null) {
+            return env.getConfigDirPath().toPath().resolve(configuration.getTokenFilePath()).toFile();
+        }
+        return null;
     }
 
 }

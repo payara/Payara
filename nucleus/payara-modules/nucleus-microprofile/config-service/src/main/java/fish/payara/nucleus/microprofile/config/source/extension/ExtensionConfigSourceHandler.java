@@ -51,9 +51,10 @@ public class ExtensionConfigSourceHandler {
     private final ExtensionConfigSource configSource;
     private final ConfigSourceProxy proxyConfigSource;
     private final Class<ConfigSourceConfiguration> configClass;
-    private final ConfigSourceConfiguration config;
 
     private final String configSourceName;
+
+    private ConfigSourceConfiguration config;
 
     public ExtensionConfigSourceHandler(final ServiceHandle<ExtensionConfigSource> configSourceHandle) {
         this(configSourceHandle, null, null);
@@ -75,15 +76,11 @@ public class ExtensionConfigSourceHandler {
         return configSourceName;
     }
 
-    protected void reconfigure() {
+    protected void reconfigure(ConfigSourceConfiguration config) {
+        this.config = config;
+
         // Get the current configuration
-        ConfigSourceConfiguration currentConfig = null;
-        if (config != null) {
-            currentConfig = ConfiguredExtensionConfigSource.class.cast(configSource).getConfiguration();
-            if (currentConfig == null) {
-                currentConfig = config;
-            }
-        }
+        ConfigSourceConfiguration currentConfig = ConfiguredExtensionConfigSource.class.cast(configSource).getConfiguration();
 
         final boolean enabled = config != null && valueOf(config.getEnabled());
         final boolean wasEnabled = config != null && valueOf(currentConfig.getEnabled());
@@ -145,7 +142,7 @@ public class ExtensionConfigSourceHandler {
             if (config == null) {
                 return false;
             }
-            return valueOf(config.getEnabled());
+            return config != null && valueOf(config.getEnabled());
         }
         return true;
     }
