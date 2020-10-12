@@ -12,7 +12,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +26,7 @@ import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
@@ -35,6 +35,7 @@ import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
@@ -55,7 +56,9 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
     private static final String AUTH_URL = "https://www.googleapis.com/oauth2/v4/token";
 
     private static final String LIST_SECRETS_ENDPOINT = "https://secretmanager.googleapis.com/v1/projects/%s/secrets";
-    private static final String GET_SECRETS_ENDPOINT = LIST_SECRETS_ENDPOINT + "/%s/versions/latest:access";
+    private static final String SECRET_ENDPOINT = LIST_SECRETS_ENDPOINT + "/%s";
+    private static final String GET_SECRETS_VERSION_ENDPOINT = SECRET_ENDPOINT + "/versions/latest:access";
+    private static final String CREATE_SECRET_VERSION_ENDPOINT = SECRET_ENDPOINT + ":addVersion";
 
     private Client client = ClientBuilder.newClient();
 
@@ -173,7 +176,7 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
         }
 
         final WebTarget secretTarget = client
-                .target(String.format(GET_SECRETS_ENDPOINT, configuration.getProjectName(), propertyName));
+                .target(String.format(GET_SECRETS_VERSION_ENDPOINT, configuration.getProjectName(), propertyName));
 
         final Response secretResponse = secretTarget
                 .request()
@@ -195,12 +198,58 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
 
     @Override
     public boolean setValue(String name, String value) {
-        return false;
+        final String accessToken = authenticate();
+
+        if (accessToken == null) {
+            return false;
+        }
+
+        final WebTarget secretTarget = client
+                .target(String.format(LIST_SECRETS_ENDPOINT, configuration.getProjectName()));
+
+        final Response secretResponse = secretTarget
+                .queryParam("secretId", name)
+                .request()
+                .accept("application/json")
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + accessToken)
+                .post(Entity.json("{\"replication\":{\"automatic\":{}}}"));
+
+        if (secretResponse.getStatus() != 200 && secretResponse.getStatus() != 409) {
+            return false;
+        }
+
+        final WebTarget addSecretTarget = client
+                .target(String.format(CREATE_SECRET_VERSION_ENDPOINT, configuration.getProjectName(), name));
+
+        final Response addSecretResponse = addSecretTarget
+                .request()
+                .accept("application/json")
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + accessToken)
+                .post(Entity.json("{\"payload\":{\"data\":\"" + Base64.encode(value).toString() + "\"}}"));
+
+        return addSecretResponse.getStatus() == 200;
     }
 
     @Override
     public boolean deleteValue(String name) {
-        return false;
+        final String accessToken = authenticate();
+
+        if (accessToken == null) {
+            return false;
+        }
+
+        final WebTarget secretTarget = client
+                .target(String.format(SECRET_ENDPOINT, configuration.getProjectName(), name));
+
+        final Response secretResponse = secretTarget
+                .request()
+                .accept("application/json")
+                .header("Authorization", "Bearer " + accessToken)
+                .delete();
+
+        return secretResponse.getStatus() == 200;
     }
 
     @Override
@@ -237,7 +286,7 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
 
         KeyFactory kf = KeyFactory.getInstance("RSA");
 
-        PKCS8EncodedKeySpec keySpecPKCS8 = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyContent));
+        PKCS8EncodedKeySpec keySpecPKCS8 = new PKCS8EncodedKeySpec(new Base64(privateKeyContent).decode());
         return kf.generatePrivate(keySpecPKCS8);
     }
 
