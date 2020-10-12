@@ -111,5 +111,11 @@
               <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
                            text="#{pageSession.microprofileConfigMap['serverOrdinality']}"/>
         </sun:property>
+
+        <sun:property id="cloudOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.cloud}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['cloudOrdinality']}"/>
+        </sun:property>
     </sun:propertySheetSection>
    </sun:propertySheet>

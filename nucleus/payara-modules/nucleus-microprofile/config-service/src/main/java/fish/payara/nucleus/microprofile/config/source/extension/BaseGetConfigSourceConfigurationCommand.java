@@ -106,22 +106,18 @@ public abstract class BaseGetConfigSourceConfigurationCommand<C extends ConfigSo
 
         final MicroprofileConfigConfiguration mpConfigConfiguration = targetConfig.getExtensionByType(MicroprofileConfigConfiguration.class);
         Class<C> configSourceConfigurationClass = ConfigSourceExtensions.getConfigurationClass(getClass());
-
+        
         C c = mpConfigConfiguration.getConfigSourceConfigurationByType(configSourceConfigurationClass);
 
-        String message;
         Properties extraProps = new Properties();
-        Map<String, Object> configMap = getConfigSourceProperties(c);
-
         if (c == null) {
-            message = "ConfigSource Configuration is not defined";
+            report.setMessage("ConfigSource Configuration is not defined");
         } else {
-            message = listConfiguration(c);
+            report.setMessage(listConfiguration(c));
+            extraProps.put("configSourceConfiguration", getConfigSourceProperties(c));
         }
-        report.setMessage(message);
-        extraProps.put("configSourceConfiguration", configMap);
+
         report.setExtraProperties(extraProps);
-        
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
