@@ -39,6 +39,7 @@
  */
 package fish.payara.ejb.timer.hazelcast;
 
+import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.EJBTimerSchedule;
@@ -932,8 +933,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
                         // In this case, at least one expiration has occurred
                         // but that was less than one period ago so there were
                         // no missed expirations.                     
-                        expirationTime
-                                = calcNextFixedRateExpiration(timerState);
+                        expirationTime = calcNextFixedRateExpiration(timerState);
                     }
 
                 } else // single-action timer
@@ -1164,17 +1164,29 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
 
     @Override
     public void memberRemoved(MemberEvent event) {
-        Collection<HZTimer> allTimers = pkCache.values();
-        Collection<HZTimer> removedTimers = new HashSet<>();
-        for (HZTimer timer : allTimers ){
-            if (timer.getMemberName().equals(event.getServer())) {
-                removedTimers.add(timer);
+        ILock hazelcastLock = Globals.getDefaultBaseServiceLocator().getService(HazelcastCore.class).getInstance().getLock("EJB-TIMER-LOCK");
+        hazelcastLock.lock();
+        try {
+            Collection<HZTimer> allTimers = pkCache.values();
+            Collection<HZTimer> removedTimers = new HashSet<>();
+            for (HZTimer timer : allTimers) {
+                if (timer.getMemberName().equals(event.getServer())) {
+                    removedTimers.add(timer);
+                }
             }
-        }
-        
-        Collection<HZTimer> restored = _restoreTimers(removedTimers);
-        for (HZTimer timer : restored) {
-            pkCache.putAsync(timer.getKey().getTimerId(), timer);
+            
+            
+            
+            if (!removedTimers.isEmpty()) {
+                logger.log(Level.INFO, "==> Restoring Timers ... ");
+                Collection<HZTimer> restored = _restoreTimers(removedTimers);
+                for (HZTimer timer : restored) {
+                    pkCache.putAsync(timer.getKey().getTimerId(), timer);
+                }
+                logger.log(Level.INFO, "<== ... Timers Restored.");
+            }
+        } finally {
+            hazelcastLock.unlock();
         }
     }
 
