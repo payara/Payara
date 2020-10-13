@@ -67,8 +67,8 @@ import fish.payara.nucleus.microprofile.config.spi.ConfigSourceConfiguration;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 /**
- * The base admin command to get the configuration of a specified notifier.
- * Extend this class to fetch custom notifier configuration options.
+ * The base admin command to get the configuration of a specified config source.
+ * Extend this class to fetch custom config source configuration options.
  * 
  * @author mertcaliskan
  * @author Matthew Gill
@@ -178,6 +178,7 @@ public abstract class BaseGetConfigSourceConfigurationCommand<C extends ConfigSo
         Iterator<Entry<String, Object>> iterator = configMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Entry<String, Object> entry = iterator.next();
+            // TODO: This utility needs moving into generic Extension utilities
             result.put(NotifierUtils.convertToCamelCase(entry.getKey()), entry.getValue());
         }
         return result;

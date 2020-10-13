@@ -62,7 +62,7 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 
 /**
  * The base admin command to set the configuration of a specified config source.
- * Extend this class to configure custom notifier configuration options
+ * Extend this class to configure custom config source configuration options
  * from @Param injected fields.
  * 
  * @author Matthew Gill

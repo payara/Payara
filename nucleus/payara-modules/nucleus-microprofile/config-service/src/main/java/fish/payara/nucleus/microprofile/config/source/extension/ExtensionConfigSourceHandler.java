@@ -87,16 +87,16 @@ public class ExtensionConfigSourceHandler {
 
         if (!enabled) {
             if (wasEnabled) {
-                // If the notifier isn't enabled but was before
+                // If the config source isn't enabled but was before
                 destroy();
             }
         } else {
             if (wasEnabled) {
-                // If the notifier is enabled and was before
+                // If the config source is enabled and was before
                 destroy();
                 bootstrap();
             } else {
-                // If the notifier is enabled and wasn't before
+                // If the config source is enabled and wasn't before
                 bootstrap();
             }
         }
@@ -104,10 +104,10 @@ public class ExtensionConfigSourceHandler {
 
     @SuppressWarnings("unchecked")
     protected synchronized void destroy() {
-        // Should only destroy a notifier if it's enabled before any configuration change
+        // Should only destroy a config source if it's enabled before any configuration change
         final boolean wasEnabled = isEnabled();
 
-        // Set the configuration before destroying the notifier
+        // Set the configuration before destroying the config source
         if (configClass != null) {
             ConfiguredExtensionConfigSource.class.cast(configSource).setConfiguration(config);
         }
@@ -119,7 +119,7 @@ public class ExtensionConfigSourceHandler {
 
     @SuppressWarnings("unchecked")
     protected synchronized void bootstrap() {
-        // Set the configuration before bootstrapping the notifier
+        // Set the configuration before bootstrapping the config source
         if (configClass != null) {
             ConfiguredExtensionConfigSource.class.cast(configSource).setConfiguration(config);
         }
@@ -134,7 +134,7 @@ public class ExtensionConfigSourceHandler {
     }
 
     /**
-     * @return true if the current notifier is enabled, or false otherwise
+     * @return true if the current config source is enabled, or false otherwise
      */
     private boolean isEnabled() {
         if (configClass != null) {
