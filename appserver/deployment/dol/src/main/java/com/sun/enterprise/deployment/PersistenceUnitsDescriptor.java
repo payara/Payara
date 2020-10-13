@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -69,7 +70,7 @@ public class PersistenceUnitsDescriptor extends RootDeploymentDescriptor {
     private String puRoot;
 
     List<PersistenceUnitDescriptor> persistenceUnitDescriptors =
-            new ArrayList<PersistenceUnitDescriptor>();
+            new ArrayList<>();
 
     private static final String JPA_1_0 = "1.0";
 
@@ -92,22 +93,27 @@ public class PersistenceUnitsDescriptor extends RootDeploymentDescriptor {
         this.puRoot = puRoot;
     }
 
+    @Override
     public String getDefaultSpecVersion() {
         return JPA_1_0;
     }
 
+    @Override
     public String getModuleID() {
         throw new RuntimeException();
     }
 
+    @Override
     public ArchiveType getModuleType() {
         throw new RuntimeException();
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return parent.getClassLoader();
     }
 
+    @Override
     public boolean isApplication() {
         return false;
     }
@@ -143,8 +149,7 @@ public class PersistenceUnitsDescriptor extends RootDeploymentDescriptor {
         if(rootDD.isApplication()){
             return getPuRoot();
         } else {
-            ModuleDescriptor module = BundleDescriptor.class.cast(rootDD).
-                    getModuleDescriptor();
+            ModuleDescriptor module = BundleDescriptor.class.cast(rootDD).getModuleDescriptor();
             if(module.isStandalone()) {
                 return getPuRoot();
             } else {
@@ -155,6 +160,7 @@ public class PersistenceUnitsDescriptor extends RootDeploymentDescriptor {
     }
 
 
+    @Override
     public boolean isEmpty() {
         return persistenceUnitDescriptors.isEmpty();
     }

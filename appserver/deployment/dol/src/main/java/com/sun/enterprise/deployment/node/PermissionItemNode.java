@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.node;
 
@@ -65,7 +66,7 @@ public class PermissionItemNode extends DeploymentDescriptorNode {
     private void initDispatchTable() {
         assert(dispatchTable == null);
 
-        Map<String, String> table = new HashMap<String, String>();
+        Map<String, String> table = new HashMap<>();
         table.put(DeclaredPermissionsTagNames.PERM_CLASS_NAME, "setPermissionClassName");
         table.put(DeclaredPermissionsTagNames.PERM_TARGET_NAME, "setTargetName");
         table.put(DeclaredPermissionsTagNames.PERM_ACTIONS, "setActions");
@@ -82,7 +83,7 @@ public class PermissionItemNode extends DeploymentDescriptorNode {
     }
     
     @Override
-    protected Map getDispatchTable() {
+    protected Map<String, String> getDispatchTable() {
         return dispatchTable;
     }
 

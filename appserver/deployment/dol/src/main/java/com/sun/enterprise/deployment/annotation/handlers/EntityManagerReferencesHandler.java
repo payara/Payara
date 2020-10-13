@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -49,7 +50,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContexts;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,21 +60,19 @@ import java.util.List;
  */
 @Service
 @AnnotationHandlerFor(PersistenceContexts.class)
-public class EntityManagerReferencesHandler 
-    extends EntityManagerReferenceHandler {
+public class EntityManagerReferencesHandler extends EntityManagerReferenceHandler {
     
     public EntityManagerReferencesHandler() {
     }
 
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
-            ResourceContainerContext[] rcContexts)
+    @Override
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
 
-        PersistenceContexts annotation = (PersistenceContexts) 
-            ainfo.getAnnotation();
+        PersistenceContexts annotation = (PersistenceContexts) ainfo.getAnnotation();
         
         PersistenceContext[] emRefAnnotations = annotation.value();
-        List<HandlerProcessingResult> results = new ArrayList<HandlerProcessingResult>();
+        List<HandlerProcessingResult> results = new ArrayList<>();
 
         for(PersistenceContext emRef : emRefAnnotations) {
             results.add(processEmRef(ainfo, rcContexts, emRef));

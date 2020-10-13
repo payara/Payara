@@ -36,8 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+ * 
  */
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -98,7 +99,7 @@ public class InterceptorDescriptor extends JndiEnvironmentRefsGroupDescriptor
     public Set<LifecycleCallbackDescriptor> getAroundInvokeDescriptors() {
         if (aroundInvokeDescriptors == null) {
             aroundInvokeDescriptors =
-                new HashSet<LifecycleCallbackDescriptor>(); 
+                new HashSet<>(); 
         }
         return aroundInvokeDescriptors;
     }
@@ -117,7 +118,7 @@ public class InterceptorDescriptor extends JndiEnvironmentRefsGroupDescriptor
     public Set<LifecycleCallbackDescriptor> getAroundTimeoutDescriptors() {
         if (aroundTimeoutDescriptors == null) {
             aroundTimeoutDescriptors =
-                new HashSet<LifecycleCallbackDescriptor>(); 
+                new HashSet<>(); 
         }
         return aroundTimeoutDescriptors;
     }
@@ -229,10 +230,10 @@ public class InterceptorDescriptor extends JndiEnvironmentRefsGroupDescriptor
     {
 
         LinkedList<LifecycleCallbackDescriptor> orderedDescs =
-            new LinkedList<LifecycleCallbackDescriptor>();
+            new LinkedList<>();
 
         Map<String, LifecycleCallbackDescriptor> map =
-            new HashMap<String, LifecycleCallbackDescriptor>();
+            new HashMap<>();
 
         for(LifecycleCallbackDescriptor next : lcds) {
             map.put(next.getLifecycleCallbackClass(), next);
@@ -258,6 +259,7 @@ public class InterceptorDescriptor extends JndiEnvironmentRefsGroupDescriptor
 
     }
 
+    @Override
     public String toString() {
         return "InterceptorDescriptor class = " + getInterceptorClassName();
     }

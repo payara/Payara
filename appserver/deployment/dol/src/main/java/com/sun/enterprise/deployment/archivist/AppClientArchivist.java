@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.archivist;
 
@@ -147,9 +148,10 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
+    @Override
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
-            confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
+            confDDFiles = new ArrayList<>();
             confDDFiles.add(new GFAppClientRuntimeDDFile());
             confDDFiles.add(new AppClientRuntimeDDFile());
         }
@@ -235,8 +237,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
             manifest = new Manifest();
         }
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, MANIFEST_VERSION_VALUE);
-        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS,
-                ((ApplicationClientDescriptor) getDescriptor()).getMainClassName());
+        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, getDescriptor().getMainClassName());
 
         super.writeContents(in, out, entriesToSkip);
     }
@@ -262,6 +263,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
         return false;
     }
 
+    @Override
     protected String getArchiveExtension() {
         return APPCLIENT_EXTENSION;
     }

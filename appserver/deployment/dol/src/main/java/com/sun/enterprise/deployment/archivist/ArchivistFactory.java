@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.archivist;
@@ -126,11 +126,11 @@ public class ArchivistFactory {
      */
     @SuppressWarnings("unchecked")
     public List<ExtensionsArchivist> getExtensionsArchivists(Collection<Sniffer> sniffers, ArchiveType moduleType) {
-        Set<String> containerTypes = new HashSet<String>();
+        Set<String> containerTypes = new HashSet<>();
         for (Sniffer sniffer : sniffers) {
             containerTypes.add(sniffer.getModuleType());
         }
-        List<ExtensionsArchivist> archivists = new ArrayList<ExtensionsArchivist>();
+        List<ExtensionsArchivist> archivists = new ArrayList<>();
         for (String containerType : containerTypes) {
             List<ActiveDescriptor<?>> descriptors =
                     habitat.getDescriptors(
@@ -138,8 +138,7 @@ public class ArchivistFactory {
             
             for (ActiveDescriptor<?> item : descriptors) {
                 
-                ActiveDescriptor<ExtensionsArchivist> descriptor =
-                        (ActiveDescriptor<ExtensionsArchivist>) item;
+                ActiveDescriptor<ExtensionsArchivist> descriptor = (ActiveDescriptor<ExtensionsArchivist>) item;
             
                 ServiceHandle<ExtensionsArchivist> handle = habitat.getServiceHandle(descriptor);
                 ExtensionsArchivist ea = handle.getService();

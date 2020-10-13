@@ -37,20 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.types.*;
-
-import java.util.Iterator;
-import java.util.Set;
+import java.util.logging.Level;
 
 public class AppClientTracerVisitor extends TracerVisitor implements AppClientVisitor {
 
     public AppClientTracerVisitor() {
     }
 
+    @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof ApplicationClientDescriptor) {
             ApplicationClientDescriptor appClientDesc = (ApplicationClientDescriptor)descriptor;
@@ -64,13 +63,14 @@ public class AppClientTracerVisitor extends TracerVisitor implements AppClientVi
      * visits an app client descriptor
      * @param app client descriptor
      */
+    @Override
     public void accept(ApplicationClientDescriptor appclientDesc) {
         DOLUtils.getDefaultLogger().info("==================");
-        DOLUtils.getDefaultLogger().info("\tAppClient Description " + appclientDesc.getDescription());
-        DOLUtils.getDefaultLogger().info("\tAppClient Name " + appclientDesc.getName());
-        DOLUtils.getDefaultLogger().info("\tAppClient Small Icon " + appclientDesc.getSmallIconUri());
-        DOLUtils.getDefaultLogger().info("\tAppClient Large Icon " + appclientDesc.getLargeIconUri());
-        DOLUtils.getDefaultLogger().info("\tAppClient Callback Handler " + appclientDesc.getCallbackHandler());
+        DOLUtils.getDefaultLogger().log(Level.INFO, "\tAppClient Description {0}", appclientDesc.getDescription());
+        DOLUtils.getDefaultLogger().log(Level.INFO, "\tAppClient Name {0}", appclientDesc.getName());
+        DOLUtils.getDefaultLogger().log(Level.INFO, "\tAppClient Small Icon {0}", appclientDesc.getSmallIconUri());
+        DOLUtils.getDefaultLogger().log(Level.INFO, "\tAppClient Large Icon {0}", appclientDesc.getLargeIconUri());
+        DOLUtils.getDefaultLogger().log(Level.INFO, "\tAppClient Callback Handler {0}", appclientDesc.getCallbackHandler());
         //add rest of the tags
     }
 }

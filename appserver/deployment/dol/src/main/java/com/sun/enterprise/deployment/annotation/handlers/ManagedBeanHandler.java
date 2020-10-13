@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -45,15 +46,12 @@ import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext
 import com.sun.enterprise.deployment.annotation.context.ManagedBeanContext;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import org.glassfish.apf.*;
-import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.ManagedBean;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Method;
 
@@ -70,8 +68,8 @@ public class ManagedBeanHandler extends AbstractHandler {
     public ManagedBeanHandler() {
     }
 
-    public HandlerProcessingResult processAnnotation(AnnotationInfo element)
-        throws AnnotationProcessorException {
+    @Override
+    public HandlerProcessingResult processAnnotation(AnnotationInfo element) throws AnnotationProcessorException {
 
 
         AnnotatedElementHandler aeHandler = element.getProcessingContext().getHandler();
@@ -97,8 +95,8 @@ public class ManagedBeanHandler extends AbstractHandler {
 
 
         Class[] classInterceptors = null;
-        Map<AccessibleObject, Class[]> methodLevelInterceptors = new HashMap<AccessibleObject, Class[]>();
-        Map<String, InterceptorDescriptor> interceptorDescs = new HashMap<String, InterceptorDescriptor>();
+        Map<AccessibleObject, Class[]> methodLevelInterceptors = new HashMap<>();
+        Map<String, InterceptorDescriptor> interceptorDescs = new HashMap<>();
 
 
         // For now, just process the javax.interceptor related annotations directly instead
@@ -162,7 +160,7 @@ public class ManagedBeanHandler extends AbstractHandler {
             procContext.getProcessor().process(
                 procContext, new Class[] { managedBeanClass });
 
-            List<InterceptorDescriptor> classInterceptorChain = new LinkedList<InterceptorDescriptor>();
+            List<InterceptorDescriptor> classInterceptorChain = new LinkedList<>();
 
             if( classInterceptors != null ) {
 
@@ -192,8 +190,8 @@ public class ManagedBeanHandler extends AbstractHandler {
                             != null );
 
                 List<InterceptorDescriptor> methodInterceptorChain = excludeClassInterceptors ?
-                        new LinkedList<InterceptorDescriptor>() :
-                        new LinkedList<InterceptorDescriptor>(classInterceptorChain);
+                        new LinkedList<>() :
+                        new LinkedList<>(classInterceptorChain);
 
 
                 for(Class nextInterceptor : interceptors) {
@@ -241,7 +239,7 @@ public class ManagedBeanHandler extends AbstractHandler {
                 MethodDescriptor mDesc = getMethodDescriptor(o, managedBeanClass);
                 if (mDesc != null) {
                     managedBeanDesc.setMethodLevelInterceptorChain(mDesc,
-                            new LinkedList<InterceptorDescriptor>());
+                            new LinkedList<>());
                 }
             }
         }
