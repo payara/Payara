@@ -633,13 +633,17 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
             String appName = applicationInfo.getName();
             Applications applications = serviceLocator.getService(Applications.class);
+            String contextRoot = applications.getApplication(appName).getContextRoot();
 
-            StringBuilder stringBuilder = new StringBuilder();
-            // The final comma gets stripped out in suspendWebModule
-            getVirtualServers().forEach(virtualServer -> stringBuilder.append(virtualServer.getID()).append(","));
-            // Just provide all virtual hosts, it'll only suspend the app on those where it's deployed
-            suspendWebModule(applications.getApplication(appName).getContextRoot(), appName, stringBuilder.toString(),
-                    true);
+            // If no context root, nothing context to mark as unavailable
+            if (contextRoot != null) {
+                StringBuilder stringBuilder = new StringBuilder();
+                // The final comma gets stripped out in suspendWebModule
+                getVirtualServers().forEach(virtualServer -> stringBuilder.append(virtualServer.getID()).append(","));
+                // Just provide all virtual hosts, it'll only suspend the app on those where it's deployed
+                suspendWebModule(contextRoot, appName, stringBuilder.toString(),
+                        true);
+            }
         }
     }
 
