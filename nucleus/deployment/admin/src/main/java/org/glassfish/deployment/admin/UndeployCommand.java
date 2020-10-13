@@ -420,11 +420,11 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             if (info!=null) {
                 /**
                  * Send the disable start event for the DAS. Even though the disable command itself doesn't get called
-                 * against the DAS, the unload lifecycle method is still executed (calling the
-                 * ApplicationLifecycleListeners for the STOP event), so fire the alternative event here.
+                 * against the DAS when the target is specifically set to "server", the unload lifecycle method is still
+                 * executed (calling the ApplicationLifecycleListeners for the STOP event), so fire the alternative
+                 * event here.
                  */
-                if (env.isDas() && (DeploymentUtils.isDASTarget(target) || DeploymentUtils.isDomainTarget(target))
-                        && domain.getApplicationRefInTarget(appName, DeploymentUtils.DAS_TARGET_NAME) != null) {
+                if (env.isDas() && (DeploymentUtils.isDASTarget(target))) {
                     events.send(new EventListener.Event<>(Deployment.DISABLE_START, info), true);
                 }
 
