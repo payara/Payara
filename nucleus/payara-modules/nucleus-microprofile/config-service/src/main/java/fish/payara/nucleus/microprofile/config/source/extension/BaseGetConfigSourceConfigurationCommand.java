@@ -110,11 +110,11 @@ public abstract class BaseGetConfigSourceConfigurationCommand<C extends ConfigSo
         C c = mpConfigConfiguration.getConfigSourceConfigurationByType(configSourceConfigurationClass);
 
         Properties extraProps = new Properties();
+        extraProps.put("configSourceConfiguration", getConfigSourceProperties(c));
         if (c == null) {
             report.setMessage("ConfigSource Configuration is not defined");
         } else {
             report.setMessage(listConfiguration(c));
-            extraProps.put("configSourceConfiguration", getConfigSourceProperties(c));
         }
 
         report.setExtraProperties(extraProps);

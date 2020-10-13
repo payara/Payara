@@ -70,7 +70,7 @@ public class GetGCPSecretsConfigSourceConfiguration extends BaseGetConfigSourceC
     @Override
     protected Map<String, Object> getConfigSourceConfiguration(GCPSecretsConfigSourceConfiguration configuration) {
         Map<String, Object> config = super.getConfigSourceConfiguration(configuration);
-        if (config != null) {
+        if (configuration != null) {
             config.put("Project Name", configuration.getProjectName());
             config.put("Token File Path", configuration.getTokenFilePath());
         }
