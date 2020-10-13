@@ -52,7 +52,7 @@
         getRequestValue(key="configName" value="#{pageSession.configName}");
         setPageSessionAttribute(key="MICROPROFILE_CONFIG_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");
-        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/get-gcp-secrets-config-source-configuration?target=#{pageSession.configName}"  
+        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/get-gcp-config-source-configuration?target=#{pageSession.configName}"  
                 method="GET" result="#{requestScope.resp}");
         
         setPageSessionAttribute(key="valueMap", 
@@ -82,7 +82,7 @@
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     prepareSuccessfulMsg();
-                    gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-gcp-secrets-config-source-configuration" 
+                    gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-gcp-config-source-configuration" 
                     method="POST" attrs="#{pageSession.valueMap}");
                     /> 
             </sun:button>

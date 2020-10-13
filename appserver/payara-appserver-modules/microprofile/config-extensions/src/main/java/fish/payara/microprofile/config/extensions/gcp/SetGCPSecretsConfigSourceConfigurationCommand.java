@@ -68,7 +68,7 @@ import org.jvnet.hk2.annotations.Service;
 import fish.payara.nucleus.microprofile.config.source.extension.BaseSetConfigSourceConfigurationCommand;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
-@Service(name = "set-gcp-secrets-config-source-configuration")
+@Service(name = "set-gcp-config-source-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -76,7 +76,7 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 @RestEndpoints({
         @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
                 opType = RestEndpoint.OpType.POST,
-                path = "set-gcp-secrets-config-source-configuration",
+                path = "set-gcp-config-source-configuration",
                 description = "Configures GCP Secrets Config Source")
 })
 public class SetGCPSecretsConfigSourceConfigurationCommand extends BaseSetConfigSourceConfigurationCommand<GCPSecretsConfigSourceConfiguration> {
