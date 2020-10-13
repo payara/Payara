@@ -393,6 +393,12 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 events.send(new EventListener.Event<>(Deployment.DISABLE_START, appInfo), true);
                 final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);
                 suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);  
+            } else if (env.isDas() && DeploymentUtils.isDomainTarget(target)
+                    && domain.getApplicationRefInTarget(appName, DeploymentUtils.DAS_TARGET_NAME) != null) {
+                // We still want to send the Disable_Start event for the DAS, even if the target is "domain"
+                startupProvider.get();
+                ApplicationInfo appInfo = deployment.get(appName);
+                events.send(new EventListener.Event<>(Deployment.DISABLE_START, appInfo), true);
             }
 
 

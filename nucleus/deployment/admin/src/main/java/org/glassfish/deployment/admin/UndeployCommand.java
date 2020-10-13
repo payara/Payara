@@ -423,7 +423,8 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                  * against the DAS, the unload lifecycle method is still executed (calling the
                  * ApplicationLifecycleListeners for the STOP event), so fire the alternative event here.
                  */
-                if (env.isDas() && (DeploymentUtils.isDASTarget(target) || DeploymentUtils.isDomainTarget(target))) {
+                if (env.isDas() && (DeploymentUtils.isDASTarget(target) || DeploymentUtils.isDomainTarget(target))
+                        && domain.getApplicationRefInTarget(appName, DeploymentUtils.DAS_TARGET_NAME) != null) {
                     events.send(new EventListener.Event<>(Deployment.DISABLE_START, info), true);
                 }
 
