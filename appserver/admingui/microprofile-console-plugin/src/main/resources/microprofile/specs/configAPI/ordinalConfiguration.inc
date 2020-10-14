@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -110,6 +110,12 @@
                       label="$resource{i18n_microprofile.config.ordinal.configuration.server}">
               <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
                            text="#{pageSession.microprofileConfigMap['serverOrdinality']}"/>
+        </sun:property>
+      
+       <sun:property id="jdbcOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.jdbc}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['jdbcOrdinality']}"/>
         </sun:property>
     </sun:propertySheetSection>
    </sun:propertySheet>

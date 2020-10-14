@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
 import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
@@ -78,7 +79,7 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class GetConfigProperty implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster, jndi", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,jdbc", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
@@ -147,6 +148,11 @@ public class GetConfigProperty implements AdminCommand {
             case "jndi": {
                 JNDIConfigSource csource = new JNDIConfigSource();
                 result = csource.getValue(propertyName);
+                break;
+            }
+            case "jdbc": {
+                JDBCConfigSource jdbcConfigSource = new JDBCConfigSource();
+                result = jdbcConfigSource.getValue(propertyName);
                 break;
             }
         }
