@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>5.2020.5-SNAPSHOT</version>
+    <version>5.2020.6-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -62,7 +62,7 @@
         <connection>scm:git:git@github.com:payara/payara.git</connection>
         <url>scm:git:git@github.com:payara/payara.git</url>
         <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
-        <tag>payara-server-5.2020.5-SNAPSHOT</tag>
+        <tag>payara-server-5.2020.6-SNAPSHOT</tag>
     </scm>
 
     <issueManagement>
@@ -128,7 +128,7 @@
         <servlet-api.version>4.0.2</servlet-api.version>
         <grizzly.version>2.4.4.payara-p4</grizzly.version>
         <jax-rs-api.impl.version>2.1.6</jax-rs-api.impl.version>
-        <jersey.version>2.30.payara-p2</jersey.version>
+        <jersey.version>2.30.payara-p3</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.1.2.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.1.2.Final</hibernate.validator-cdi.version>

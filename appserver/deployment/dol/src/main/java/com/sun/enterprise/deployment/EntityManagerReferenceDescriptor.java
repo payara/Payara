@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -53,15 +54,14 @@ import java.util.Map;
  * to an EntityManager
  *
 */
-public class EntityManagerReferenceDescriptor extends 
-    EnvironmentProperty implements EntityManagerReference {
+public class EntityManagerReferenceDescriptor extends EnvironmentProperty implements EntityManagerReference {
 
     private String unitName = null;
     private PersistenceContextType contextType = PersistenceContextType.TRANSACTION;
     private SynchronizationType synchronizationType = SynchronizationType.SYNCHRONIZED;
     private BundleDescriptor referringBundle;
 
-    private Map<String, String> properties = new HashMap<String,String>();
+    private final Map<String, String> properties = new HashMap<>();
 
     public EntityManagerReferenceDescriptor(String name, 
                                             String unitName,
@@ -74,42 +74,42 @@ public class EntityManagerReferenceDescriptor extends
 
     public EntityManagerReferenceDescriptor() {}
 
+    @Override
     public void setUnitName(String unitName) {
-        
         this.unitName = unitName;
     }
 
+    @Override
     public String getUnitName() {
-
         return unitName;
-
     }
 
+    @Override
     public String getInjectResourceType() {
         return "javax.persistence.EntityManager";
     }
 
+    @Override
     public void setInjectResourceType(String resourceType) {
     }
 
+    @Override
     public void setPersistenceContextType(PersistenceContextType type) {
-
         contextType = type;
-
     }
 
+    @Override
     public PersistenceContextType getPersistenceContextType() {
-
         return contextType;
-
     }
 
 
+    @Override
     public SynchronizationType getSynchronizationType() {
         return synchronizationType;
     }
 
-
+    @Override
     public void setSynchronizationType(SynchronizationType synchronizationType) {
         this.synchronizationType = synchronizationType;
     }
@@ -118,17 +118,18 @@ public class EntityManagerReferenceDescriptor extends
         properties.put(name, value);
     }
 
+    @Override
     public Map<String,String> getProperties() {
-        return new HashMap<String,String>(properties);
+        return new HashMap<>(properties);
     }
 
-    public void setReferringBundleDescriptor(BundleDescriptor referringBundle)
-    {
+    @Override
+    public void setReferringBundleDescriptor(BundleDescriptor referringBundle) {
 	this.referringBundle = referringBundle;
     }
 
-    public BundleDescriptor getReferringBundleDescriptor()
-    {
+    @Override
+    public BundleDescriptor getReferringBundleDescriptor() {
 	return referringBundle;
     }  
 
@@ -142,4 +143,3 @@ public class EntityManagerReferenceDescriptor extends
             isConflictResourceGroup(other));
     }
 }
-

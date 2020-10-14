@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.node.runtime.application.wls;
 
@@ -64,8 +65,9 @@ public class ApplicationParamNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
-    protected Map getDispatchTable() {    
-        Map table = super.getDispatchTable();
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+        Map<String, String> table = super.getDispatchTable();
         table.put(RuntimeTagNames.PARAM_NAME, "setName");
         table.put(RuntimeTagNames.PARAM_VALUE, "setValue");                
         return table;

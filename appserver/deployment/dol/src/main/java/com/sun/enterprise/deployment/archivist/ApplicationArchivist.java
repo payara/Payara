@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.archivist;
 
 import static com.sun.enterprise.deployment.util.DOLUtils.getDefaultLogger;
 import static com.sun.enterprise.deployment.util.DOLUtils.readAlternativeRuntimeDescriptor;
 import static com.sun.enterprise.deployment.util.DOLUtils.setExtensionArchivistForSubArchivist;
-import static com.sun.enterprise.deployment.util.DOLUtils.warType;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 
@@ -130,7 +130,7 @@ public class ApplicationArchivist extends Archivist<Application> {
     @Override
     protected void writeContents(ReadableArchive in, WritableArchive out) throws IOException {
 
-        Vector filesToSkip = new Vector();
+        Vector<String> filesToSkip = new Vector<>();
 
         if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
             DOLUtils.getDefaultLogger().fine("Write " + out.getURI() + " with " + this);
@@ -225,7 +225,7 @@ public class ApplicationArchivist extends Archivist<Application> {
 
         setDescriptor(application);
 
-        Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions = new HashMap<ExtensionsArchivist, RootDeploymentDescriptor>();
+        Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions = new HashMap<>();
 
         if (extensionsArchivists != null) {
             for (ExtensionsArchivist extension : extensionsArchivists) {
@@ -310,7 +310,7 @@ public class ApplicationArchivist extends Archivist<Application> {
         String appName = appRoot.substring(appRoot.lastIndexOf(File.separatorChar) + 1);
         app.setName(appName);
 
-        List<ReadableArchive> unknowns = new ArrayList<ReadableArchive>();
+        List<ReadableArchive> unknowns = new ArrayList<>();
         File[] files = getEligibleEntries(new File(appRoot), directory);
         for (File subModule : files) {
             ReadableArchive subArchive = null;
@@ -330,7 +330,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                 String name = subModule.getName();
                 String uri = deriveArchiveUri(appRoot, subModule, directory);
                 if ((!directory && name.endsWith(".war")) || (directory && (name.endsWith("_war") || name.endsWith(".war")))) {
-                    ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
+                    ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<>();
                     md.setArchiveUri(uri);
                     md.setModuleType(DOLUtils.warType());
                     // the context root will be set later after
@@ -339,7 +339,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                 }
                 // Section EE.8.4.2.1.b
                 else if ((!directory && name.endsWith(".rar")) || (directory && (name.endsWith("_rar") || name.endsWith(".rar")))) {
-                    ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
+                    ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<>();
                     md.setArchiveUri(uri);
                     md.setModuleType(DOLUtils.rarType());
                     app.addModule(md);
@@ -351,7 +351,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                                 || acArchivist.hasRuntimeDeploymentDescriptor(subArchive)
                                 || acArchivist.getMainClassName(subArchive.getManifest()) != null) {
 
-                            ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
+                            ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<>();
                             md.setArchiveUri(uri);
                             md.setModuleType(DOLUtils.carType());
                             md.setManifest(subArchive.getManifest());
@@ -364,7 +364,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                         if (ejbArchivist.hasStandardDeploymentDescriptor(subArchive)
                                 || ejbArchivist.hasRuntimeDeploymentDescriptor(subArchive)) {
 
-                            ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
+                            ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<>();
                             md.setArchiveUri(uri);
                             md.setModuleType(DOLUtils.ejbType());
                             app.addModule(md);
@@ -404,7 +404,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                     if (detector.hasAnnotationInArchive(unknowns.get(i))) {
                         String uri = deriveArchiveUri(appRoot, jarFile, directory);
                         // Section EE.8.4.2.1.d.ii, alas EJB
-                        ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
+                        ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<>();
                         md.setArchiveUri(uri);
                         md.setModuleType(DOLUtils.ejbType());
                         app.addModule(md);
@@ -457,7 +457,7 @@ public class ApplicationArchivist extends Archivist<Application> {
         }
 
         // For archive deploy, recursively search the entire package
-        Vector<File> files = new Vector<File>();
+        Vector<File> files = new Vector<>();
         getListOfFiles(appRoot, files, new ArchiveIntrospectionFilter(appRoot.getAbsolutePath()));
         return files.toArray(new File[files.size()]);
     }
@@ -487,6 +487,7 @@ public class ApplicationArchivist extends Archivist<Application> {
             libDir = root + File.separator + "lib" + File.separator;
         }
 
+        @Override
         public boolean accept(File dir, String name) {
 
             File currentFile = new File(dir, name);
@@ -541,11 +542,11 @@ public class ApplicationArchivist extends Archivist<Application> {
      */
     public boolean readModulesDescriptors(Application app, ReadableArchive appArchive) throws IOException, SAXParseException {
 
-        List<ModuleDescriptor> nonexistentModules = new ArrayList<ModuleDescriptor>();
+        List<ModuleDescriptor> nonexistentModules = new ArrayList<>();
         List<ModuleDescriptor> sortedModules = sortModules(app);
 
         for (ModuleDescriptor aModule : sortedModules) {
-            if (aModule.getArchiveUri().indexOf(" ") != -1) {
+            if (aModule.getArchiveUri().indexOf(' ') != -1) {
                 throw new IllegalArgumentException(
                     localStrings.getLocalString(
                         "enterprise.deployment.unsupporturi", "Unsupported module URI {0}, it contains space(s)", 
@@ -591,7 +592,7 @@ public class ApplicationArchivist extends Archivist<Application> {
 
                 // TODO : JD need to be revisited for EAR files with Alternative descriptors, what does
                 // it mean for sub components.
-                Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions = new HashMap<ExtensionsArchivist, RootDeploymentDescriptor>();
+                Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions = new HashMap<>();
                 List<ExtensionsArchivist> extensionsArchivists = newArchivist.getExtensionArchivists();
                 if (extensionsArchivists != null) {
                     for (ExtensionsArchivist extension : extensionsArchivists) {
@@ -663,7 +664,7 @@ public class ApplicationArchivist extends Archivist<Application> {
     }
 
     private List<ModuleDescriptor> sortModules(Application app) {
-        List<ModuleDescriptor> sortedModules = new ArrayList<ModuleDescriptor>();
+        List<ModuleDescriptor> sortedModules = new ArrayList<>();
         sortedModules.addAll(app.getModuleDescriptorsByType(DOLUtils.rarType()));
         sortedModules.addAll(app.getModuleDescriptorsByType(DOLUtils.ejbType()));
         sortedModules.addAll(app.getModuleDescriptorsByType(DOLUtils.warType()));
@@ -738,6 +739,7 @@ public class ApplicationArchivist extends Archivist<Application> {
     /**
      * @return the list of the DeploymentDescriptorFile responsible for handling the configuration deployment descriptors
      */
+    @Override
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
             confDDFiles = DOLUtils.getConfigurationDeploymentDescriptorFiles(habitat, EarType.ARCHIVE_TYPE);
@@ -779,6 +781,7 @@ public class ApplicationArchivist extends Archivist<Application> {
      * @param target
      *            the new archive to use to copy our contents into
      */
+    @Override
     public void copyInto(ReadableArchive source, WritableArchive target) throws IOException {
         try {
             Application a = readStandardDeploymentDescriptor(source);
@@ -815,7 +818,7 @@ public class ApplicationArchivist extends Archivist<Application> {
      *            if true, the manifest in source archive overwrites the one in target
      */
     public void copyInto(Application a, ReadableArchive source, WritableArchive target, boolean overwriteManifest) throws IOException {
-        Vector entriesAdded = new Vector();
+        Vector<String> entriesAdded = new Vector<>();
         
         for (ModuleDescriptor aModule : a.getModules()) {
             entriesAdded.add(aModule.getArchiveUri());
@@ -831,8 +834,8 @@ public class ApplicationArchivist extends Archivist<Application> {
             
             if (subModulePath.startsWith(parentPath)) {
                 subModulePath = subModulePath.substring(parentPath.length() + File.separator.length());
-                for (Enumeration subEntries = subSource.entries(); subEntries.hasMoreElements();) {
-                    String anEntry = (String) subEntries.nextElement();
+                for (Enumeration<String> subEntries = subSource.entries(); subEntries.hasMoreElements();) {
+                    String anEntry = subEntries.nextElement();
                     entriesAdded.add(subModulePath + "/" + anEntry);
                 }
             }

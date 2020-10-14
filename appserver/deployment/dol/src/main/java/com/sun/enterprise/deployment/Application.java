@@ -125,7 +125,7 @@ public class Application extends CommonResourceBundleDescriptor
     private String generatedXMLDir;
 
     // Set of modules in this application
-    private Set<ModuleDescriptor<BundleDescriptor>> modules = new OrderedSet<ModuleDescriptor<BundleDescriptor>>();
+    private Set<ModuleDescriptor<BundleDescriptor>> modules = new OrderedSet<>();
 
     // True if unique id has been set.  Allows callers to avoid
     // applying unique ids to subcomponents multiple times.
@@ -195,49 +195,35 @@ public class Application extends CommonResourceBundleDescriptor
 
     // Physical entity manager factory corresponding to the unit name of
     // each application-level persistence unit.  Only available at runtime.
-    private transient Map<String, EntityManagerFactory> entityManagerFactories =
-            new HashMap<String, EntityManagerFactory>();
+    private final transient Map<String, EntityManagerFactory> entityManagerFactories = new HashMap<String, EntityManagerFactory>();
 
-    private Set<String> entityManagerFactoryUnitNames =
-            new HashSet<String>();
+    private final Set<String> entityManagerFactoryUnitNames = new HashSet<>();
 
     // the jndi environment entries
-    private Set<EnvironmentProperty> environmentProperties =
-            new HashSet<EnvironmentProperty>();
-    private Set<EjbReference> ejbReferences =
-            new HashSet<EjbReference>();
-    private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences =
-            new HashSet<ResourceEnvReferenceDescriptor>();
-    private Set<MessageDestinationReferenceDescriptor> messageDestReferences =
-            new HashSet<MessageDestinationReferenceDescriptor>();
-    private Set<ResourceReferenceDescriptor> resourceReferences =
-            new HashSet<ResourceReferenceDescriptor>();
-    private Set<ServiceReferenceDescriptor> serviceReferences =
-            new HashSet<ServiceReferenceDescriptor>();
-    private Set<EntityManagerFactoryReferenceDescriptor>
-            entityManagerFactoryReferences =
-            new HashSet<EntityManagerFactoryReferenceDescriptor>();
-    private Set<EntityManagerReferenceDescriptor>
-            entityManagerReferences =
-            new HashSet<EntityManagerReferenceDescriptor>();
+    private final Set<EnvironmentProperty> environmentProperties = new HashSet<>();
+    private final Set<EjbReference> ejbReferences = new HashSet<>();
+    private final Set<ResourceEnvReferenceDescriptor> resourceEnvReferences = new HashSet<>();
+    private final Set<MessageDestinationReferenceDescriptor> messageDestReferences = new HashSet<>();
+    private final Set<ResourceReferenceDescriptor> resourceReferences = new HashSet<>();
+    private final Set<ServiceReferenceDescriptor> serviceReferences = new HashSet<>();
+    private final Set<EntityManagerFactoryReferenceDescriptor> entityManagerFactoryReferences = new HashSet<>();
+    private final Set<EntityManagerReferenceDescriptor> entityManagerReferences = new HashSet<>();
 
     // for i18N
-    private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(Application.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Application.class);
 
     private Set<Role> appRoles;
 
     private String libraryDirectory;
 
-    private List<SecurityRoleMapping> roleMaps = new ArrayList<SecurityRoleMapping>();
-    private List<SecurityRoleAssignment> wlRoleAssignments = new ArrayList<SecurityRoleAssignment>();
+    private final List<SecurityRoleMapping> roleMaps = new ArrayList<>();
+    private final List<SecurityRoleAssignment> wlRoleAssignments = new ArrayList<>();
 
     private boolean loadedFromApplicationXml = true;
 
-    private Set<String> resourceAdapters = new HashSet<String>();
+    private final Set<String> resourceAdapters = new HashSet<>();
 
-    private Set<ApplicationParam> applicationParams =
-            new HashSet<ApplicationParam>();
+    private final Set<ApplicationParam> applicationParams = new HashSet<>();
 
     private static final ServiceLocator habitat = Globals.getDefaultHabitat();
 
@@ -325,7 +311,7 @@ public class Application extends CommonResourceBundleDescriptor
     }
 
     /**
-     * Returns the generated XML directory feturn the set of ejb references this ejb declares.
+     * Returns the generated XML directory return the set of ejb references this ejb declares.
      */
     @Override
     public Set<EjbReference> getEjbReferenceDescriptors() {
@@ -923,7 +909,7 @@ public class Application extends CommonResourceBundleDescriptor
     @Override
     public Set<EntityManagerFactory> getEntityManagerFactories() {
 
-        return new HashSet<EntityManagerFactory>
+        return new HashSet<>
                 (entityManagerFactories.values());
 
     }
@@ -936,7 +922,7 @@ public class Application extends CommonResourceBundleDescriptor
      */
     @Override
     public Set<Role> getRoles() {
-        Set<Role> roles = new HashSet<Role>();
+        Set<Role> roles = new HashSet<>();
         for (BundleDescriptor bd : getBundleDescriptors()) {
             if (bd != null) {
                 roles.addAll(bd.getRoles());
@@ -952,7 +938,7 @@ public class Application extends CommonResourceBundleDescriptor
      */
     public Set<Role> getAppRoles() {
         if (this.appRoles == null) {
-            this.appRoles = new HashSet<Role>();
+            this.appRoles = new HashSet<>();
         }
         return this.appRoles;
     }
@@ -1165,7 +1151,7 @@ public class Application extends CommonResourceBundleDescriptor
         if (type==null) {
             throw new IllegalArgumentException("type cannot be null");
         }
-        LinkedList<ModuleDescriptor<BundleDescriptor>> results = new LinkedList<ModuleDescriptor<BundleDescriptor>>();
+        LinkedList<ModuleDescriptor<BundleDescriptor>> results = new LinkedList<>();
         for (ModuleDescriptor<BundleDescriptor> aModule : getModules()) {
             if (type.equals(aModule.getModuleType())) {
                 results.add(aModule);
@@ -1273,7 +1259,7 @@ public class Application extends CommonResourceBundleDescriptor
         if (type == null) {
             return null;
         }
-        Set<T> bundleSet = new OrderedSet<T>();
+        Set<T> bundleSet = new OrderedSet<>();
         for (ModuleDescriptor aModule : getModules()) {
             try {
                 T descriptor = type.cast(aModule.getDescriptor());
@@ -1300,7 +1286,7 @@ public class Application extends CommonResourceBundleDescriptor
         if (bundleType == null) {
             return Collections.emptySet();
         }
-        Set<BundleDescriptor> bundleSet = new OrderedSet<BundleDescriptor>();
+        Set<BundleDescriptor> bundleSet = new OrderedSet<>();
         for (ModuleDescriptor aModule : getModules()) {
             if (aModule.getDescriptor().getModuleType()== bundleType) {
                 bundleSet.add((BundleDescriptor)aModule.getDescriptor());
@@ -1322,7 +1308,7 @@ public class Application extends CommonResourceBundleDescriptor
      * @return the set of bundle descriptors
      */
     public Set<BundleDescriptor> getBundleDescriptors() {
-        Set<BundleDescriptor> bundleSet = new OrderedSet<BundleDescriptor>();
+        Set<BundleDescriptor> bundleSet = new OrderedSet<>();
         for (ModuleDescriptor<BundleDescriptor> aModule :  getModules()) {
             BundleDescriptor bundleDesc = aModule.getDescriptor();
             if (bundleDesc != null) {
@@ -1365,7 +1351,7 @@ public class Application extends CommonResourceBundleDescriptor
      * Return the Vector of ejb deployment objects.
      */
     public Vector<EjbDescriptor> getEjbDescriptors() {
-        Vector<EjbDescriptor> ejbDescriptors = new Vector<EjbDescriptor>();
+        Vector<EjbDescriptor> ejbDescriptors = new Vector<>();
         for (EjbBundleDescriptor ejbBundleDescriptor : getBundleDescriptors(EjbBundleDescriptor.class)) {
             ejbDescriptors.addAll(ejbBundleDescriptor.getEjbs());
         }
@@ -1449,26 +1435,25 @@ public class Application extends CommonResourceBundleDescriptor
      * @param id unique id for this application
      */
     public void setUniqueId(long id) {
-        _logger.log(Level.FINE, "[Application] " + getName() + " , uid: " + id);
+        _logger.log(Level.FINE, "[Application] {0} , uid: {1}", new Object[]{getName(), id});
         this.uniqueId = id;
 
         EjbDescriptor[] descs = getSortedEjbDescriptors();
 
         Set<Long> uniqueIds = new TreeSet<>();
-        for (int i = 0; i < descs.length; i++) {
+        for (EjbDescriptor desc : descs) {
             // Maximum of 2^16 beans max per application
-            String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
-            long uid = Math.abs(UUID.nameUUIDFromBytes((module.replaceFirst(Pattern.quote(ROLLING_UPGRADES_ID_DELIMITER) + ".*$", "")
-                    + descs[i].getName()).getBytes()).getLeastSignificantBits() % 65536);
+            String module = desc.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
+            long uid = Math.abs(UUID.nameUUIDFromBytes((module.replaceFirst(Pattern.quote(ROLLING_UPGRADES_ID_DELIMITER) + ".*$", "") + desc.getName())
+                    .getBytes()).getLeastSignificantBits() % 65536);
             // in case of an id collision, increment until find empty slot
             while(uniqueIds.contains(uid)) {
                 uid = ++uid % 65536;
             }
             uniqueIds.add(uid);
-            descs[i].setUniqueId((id | uid));
+            desc.setUniqueId(id | uid);
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Ejb  " + module + ":" + descs[i].getName() + " id = " +
-                        descs[i].getUniqueId());
+                _logger.log(Level.FINE, "Ejb  " + module + ":" + desc.getName() + " id = " + desc.getUniqueId());
             }
         }
 
@@ -1500,7 +1485,7 @@ public class Application extends CommonResourceBundleDescriptor
      *                        false - application is pass-by-value
      */
     public void setPassByReference(boolean passByReference) {
-        this.passByReference = Boolean.valueOf(passByReference);
+        this.passByReference = passByReference;
     }
 
     /**
@@ -1517,7 +1502,7 @@ public class Application extends CommonResourceBundleDescriptor
         boolean passByReference = false;
 
         if (this.isPassByReferenceDefined()) {
-            passByReference = this.passByReference.booleanValue();
+            passByReference = this.passByReference;
         }
         return passByReference;
     }
@@ -1556,8 +1541,8 @@ public class Application extends CommonResourceBundleDescriptor
      * AppCLient JAR).
      * @return
      */
-    public Set getArchivableDescriptors() {
-        Set archivableDescriptors = new OrderedSet();
+    public Set<BundleDescriptor> getArchivableDescriptors() {
+        Set<BundleDescriptor> archivableDescriptors = new OrderedSet<>();
         archivableDescriptors.addAll(getBundleDescriptors());
         return archivableDescriptors;
     }

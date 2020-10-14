@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -137,7 +137,7 @@ public class WebService extends Descriptor {
         webServicesDesc = other.webServicesDesc; // copy as-is
         type = other.type;
         if (other.endpoints != null) {
-            endpoints = new HashMap<String, WebServiceEndpoint>();
+            endpoints = new HashMap<>();
             for (WebServiceEndpoint wsep : other.endpoints.values()) {
                 wsep.setWebService(this);
                 endpoints.put(wsep.getEndpointName(), wsep);
@@ -149,7 +149,7 @@ public class WebService extends Descriptor {
 
     public WebService(String name) {
         setName(name);
-        endpoints = new HashMap();
+        endpoints = new HashMap<>();
     }
 
     public void setWebServicesDescriptor(WebServicesDescriptor webServices) {
@@ -226,8 +226,7 @@ public class WebService extends Descriptor {
     }
 
     public void removeEndpointByName(String endpointName) {
-        WebServiceEndpoint endpoint = (WebServiceEndpoint)
-                endpoints.remove(endpointName);
+        WebServiceEndpoint endpoint = endpoints.remove(endpointName);
         endpoint.setWebService(null);
     }
 
@@ -241,7 +240,7 @@ public class WebService extends Descriptor {
     }
 
     public Collection<WebServiceEndpoint> getEndpoints() {
-        HashMap shallowCopy = new HashMap(endpoints);
+        HashMap<String, WebServiceEndpoint> shallowCopy = new HashMap<>(endpoints);
         return shallowCopy.values();
     }
 
@@ -262,8 +261,7 @@ public class WebService extends Descriptor {
     }
 
     public boolean hasFilePublishing() {
-        return (hasClientPublishUrl() &&
-                publishUrl.getProtocol().equals("file"));
+        return hasClientPublishUrl() && publishUrl.getProtocol().equals("file");
     }
 
     /**
@@ -287,6 +285,7 @@ public class WebService extends Descriptor {
     /**
      * Returns a formatted String of the attributes of this object.
      */
+    @Override
     public void print(StringBuilder toStringBuilder) {
         super.print(toStringBuilder);
         toStringBuilder.append( "\n wsdl file : ").append( wsdlFileUri);

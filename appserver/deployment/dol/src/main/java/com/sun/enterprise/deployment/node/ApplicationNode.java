@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.node;
 
 import static com.sun.enterprise.deployment.xml.ApplicationTagNames.APPLICATION_NAME;
@@ -62,7 +63,6 @@ import com.sun.enterprise.deployment.xml.ApplicationTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
@@ -100,7 +100,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     public final static XMLElement tag = new XMLElement(ApplicationTagNames.APPLICATION);
 
     private final static List<String> initSystemIDs() {
-        List<String> systemIDs = new ArrayList<String>();
+        List<String> systemIDs = new ArrayList<>();
         systemIDs.add(SCHEMA_ID);
         systemIDs.add(SCHEMA_ID_14);
         systemIDs.add(SCHEMA_ID_15);
@@ -126,7 +126,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
 
     @Override
     public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
-        Map<String,Class<?>> result = new HashMap<String,Class<?>>();
+        Map<String,Class<?>> result = new HashMap<>();
         
         for (ConfigurationDeploymentDescriptorFile confDD : DOLUtils.getConfigurationDeploymentDescriptorFiles(serviceLocator, EarType.ARCHIVE_TYPE)) {
           confDD.registerBundle(result, publicIDToDTD, versionUpgrades);
@@ -137,7 +137,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
 
     @Override
     public Collection<String> elementsAllowingEmptyValue() {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
         result.add(LIBRARY_DIRECTORY);
         
         return result;
@@ -189,6 +189,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return tag;
     }    
@@ -199,6 +200,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         Application application = getDescriptor();
         if (element.getQName().equals(
@@ -220,6 +222,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      *
      * @param newDescriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof BundleDescriptor) {
 	        if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
@@ -236,6 +239,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Application getDescriptor() {
         if (descriptor==null) {        	
             descriptor = Application.createApplication();
@@ -246,6 +250,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the DOCTYPE  of the XML file
      */    
+    @Override
     public String getDocType() {
         return null;
     }
@@ -253,6 +258,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -260,6 +266,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -271,6 +278,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      * @param application  to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, Application application) {
         Node appNode = super.writeDescriptor(parent, application);
 
@@ -330,6 +338,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return SPEC_VERSION;
     }

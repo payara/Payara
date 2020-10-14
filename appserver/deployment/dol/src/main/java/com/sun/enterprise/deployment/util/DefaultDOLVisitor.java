@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundatin and/or affiliates
+ * Portions Copyright [2017-2020] Payara Foundatin and/or affiliates
  */
 
 package com.sun.enterprise.deployment.util;
@@ -90,7 +90,7 @@ public class DefaultDOLVisitor implements DescriptorVisitor {
                 accept(itr.next());
             }
 
-            for (Iterator<MessageDestinationReferencer> itr = nameEnvironment.getMessageDestinationReferenceDescriptors().iterator();itr.hasNext();) {
+            for (Iterator<? extends MessageDestinationReferencer> itr = nameEnvironment.getMessageDestinationReferenceDescriptors().iterator();itr.hasNext();) {
                 accept(itr.next());
             }
 
