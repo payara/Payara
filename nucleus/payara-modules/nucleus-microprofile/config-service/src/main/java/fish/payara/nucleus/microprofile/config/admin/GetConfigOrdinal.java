@@ -78,7 +78,7 @@ import org.glassfish.config.support.CommandTarget;
 })
 public class GetConfigOrdinal implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc,cloud", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -132,6 +132,10 @@ public class GetConfigOrdinal implements AdminCommand {
                 }
                 case "jdbc": {
                     result = Integer.parseInt(serviceConfig.getJdbcOrdinality());
+                    break;
+                }
+                case "cloud": {
+                    result = Integer.parseInt(serviceConfig.getCloudOrdinality());
                     break;
                 }
             }

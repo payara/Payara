@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,68 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.admin;
+package fish.payara.microprofile.config.extensions.gcp;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
-import javax.inject.Inject;
-
-import com.sun.enterprise.config.serverbeans.Config;
-
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
+import fish.payara.nucleus.microprofile.config.source.extension.BaseGetConfigSourceConfigurationCommand;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
-/**
- * asAdmin command to the set the directory for the Secrets Dir Config Source
- *
- * @since 4.1.2.181
- * @author Steve Millidge (Payara Foundation)
- */
-@Service(name = "get-config-dir") // the name of the service is the asadmin command name
-@PerLookup // this means one instance is created every time the command is run
-@ExecuteOn(RuntimeType.DAS)
-@TargetType()
-@RestEndpoints({ // creates a REST endpoint needed for integration with the admin interface   
-    @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
-            opType = RestEndpoint.OpType.GET,
-            path = "get-config-dir",
-            description = "Gets the Directory for the Config Source")
+@Service(name = "get-gcp-config-source-configuration")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@RestEndpoints({
+        @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "get-gcp-config-source-configuration",
+                description = "List GCP Secrets Config Source Configuration")
 })
-public class GetConfigSecretsDirectory implements AdminCommand {
-
-    @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
-    String target;
-
-    @Inject
-    Target targetUtil;    
+public class GetGCPSecretsConfigSourceConfigurationCommand extends BaseGetConfigSourceConfigurationCommand<GCPSecretsConfigSourceConfiguration> {
 
     @Override
-    public void execute(AdminCommandContext context) {
-        String result = "Not Found";
-        Config configVal = targetUtil.getConfig(target);
-        MicroprofileConfigConfiguration serviceConfig = configVal.getExtensionByType(MicroprofileConfigConfiguration.class);
-        if (serviceConfig != null) {
-            result = serviceConfig.getSecretDir();
+    protected Map<String, Object> getConfigSourceConfiguration(GCPSecretsConfigSourceConfiguration configuration) {
+        Map<String, Object> config = super.getConfigSourceConfiguration(configuration);
+        if (configuration != null) {
+            config.put("Project Name", configuration.getProjectName());
+            config.put("Token File Path", configuration.getTokenFilePath());
         }
-        context.getActionReport().setMessage("Directory" + ": " + result);
-        Map<String, Object> extraPropertiesMap = new HashMap<>();
-        extraPropertiesMap.put("directory", result);
-
-        Properties extraProperties = new Properties();
-        extraProperties.put("secretsDirectoryConfiguration", extraPropertiesMap);
-        context.getActionReport().setExtraProperties(extraProperties);
+        return config;
     }
 }
