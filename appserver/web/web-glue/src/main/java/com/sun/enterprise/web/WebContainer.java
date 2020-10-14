@@ -633,7 +633,16 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
             String appName = applicationInfo.getName();
             Applications applications = serviceLocator.getService(Applications.class);
-            String contextRoot = applications.getApplication(appName).getContextRoot();
+            if (applications == null) {
+                return;
+            }
+
+            com.sun.enterprise.config.serverbeans.Application application = applications.getApplication(appName);
+            if (application == null) {
+                return;
+            }
+
+            String contextRoot = application.getContextRoot();
 
             // If no context root, no context to mark as unavailable
             if (contextRoot != null) {
