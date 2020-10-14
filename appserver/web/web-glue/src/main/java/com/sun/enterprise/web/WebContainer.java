@@ -635,7 +635,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             Applications applications = serviceLocator.getService(Applications.class);
             String contextRoot = applications.getApplication(appName).getContextRoot();
 
-            // If no context root, nothing context to mark as unavailable
+            // If no context root, no context to mark as unavailable
             if (contextRoot != null) {
                 StringBuilder stringBuilder = new StringBuilder();
                 // The final comma gets stripped out in suspendWebModule

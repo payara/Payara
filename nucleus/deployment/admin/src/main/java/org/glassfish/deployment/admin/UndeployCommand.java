@@ -378,7 +378,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 ActionReport subReport = report.addSubActionsReport();
 
                 // Disable the application first - note that even though the DAS may come under the target of "domain"
-                // it won't be disabled
+                // it won't be disabled by the disable command itself, but rather by an application config listener
                 CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("disable", subReport, context.getSubject());
                 try {
                     final ParameterMapExtractor extractor = new ParameterMapExtractor(this);

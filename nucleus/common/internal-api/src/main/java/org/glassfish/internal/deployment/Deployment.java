@@ -163,9 +163,11 @@ public interface Deployment {
      */
     public final EventTypes<DeploymentContext> UNDEPLOYMENT_VALIDATION = EventTypes.create("Undeployment_Validation", DeploymentContext.class);
 
-    // This event is thrown before the STOP deployment phase, specifically from the disable asadmin command
-    // It is used to mark the context unavailable before stopping the application and its engines, in cases where
-    // implementing the ApplicationLifecycleInterceptor interface will cause a circular dependency
+    /**
+     * This event is thrown before the STOP deployment phase, notably from the disable and undeploy asadmin commands.
+     * It is used to mark the context unavailable before stopping the application and its engines, in cases where
+     * implementing the ApplicationLifecycleInterceptor interface will cause a circular dependency
+     */
     EventTypes<ApplicationInfo> DISABLE_START = EventTypes.create("Disable_Start", ApplicationInfo.class);
 
 
