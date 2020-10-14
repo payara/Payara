@@ -60,6 +60,7 @@ import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
 import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
@@ -86,7 +87,7 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 })
 public class GetConfigProperty implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,cloud", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,jdbc,cloud", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
@@ -160,7 +161,11 @@ public class GetConfigProperty implements AdminCommand {
                 result = csource.getValue(propertyName);
                 break;
             }
-
+            case "jdbc": {
+                JDBCConfigSource jdbcConfigSource = new JDBCConfigSource();
+                result = jdbcConfigSource.getValue(propertyName);
+                break;
+            }
             case "cloud": {
                 Collection<ExtensionConfigSource> extensionSources = extensionService.getExtensionSources();
                 for (ExtensionConfigSource extension : extensionSources) {
@@ -168,6 +173,7 @@ public class GetConfigProperty implements AdminCommand {
                         result = extension.getValue(propertyName);
                     }
                 }
+                break;
             }
         }
         if (result != null) {

@@ -1,0 +1,179 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+-->
+#include "/common/shared/alertMsg_1.inc"
+ <sun:title id="propertyContentPage" title="$resource{i18n.resourceTargetListing.PageTitle}" helpText="$resource{i18n.resourceTargetListing.PageTitleHelp}"/>
+ "<br />
+#include "/common/resourceNode/resourceNameSection.inc"
+<sun:table id="targetTable" title="$resource{i18n.common.TargetTableTitle}" sortPanelToggleButton="#{false}"
+    deselectMultipleButton="$boolean{true}"
+    deselectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
+    selectMultipleButton="$boolean{true}"
+    selectMultipleButtonOnClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" > >
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{tableId});
+    />
+
+    <!facet actionsTop>
+         <sun:panelGroup id="topActionsGroup1">
+            <!afterCreate
+                getClientId(component="$this{component}" clientId=>$page{topActionGroup});
+            />
+            <sun:button id="manageTargetButton" text="$resource{i18n.button.ManageTarget}" >
+                <!command
+                        setAttribute(key="name" value="#{name}");
+                        setAttribute(key="targetPage" value="#{targetPage}");
+                        setAttribute(key="targetPageHelp" value="#{targetPageHelp}");
+                        gf.redirect(page="#{request.contextPath}/common/resourceNode/resourceManageTargets.jsf?resName=#{pageSession.encodedName}&generalPage=#{pageSession.generalPage}");
+                />
+            </sun:button>
+            <sun:button id="button2" text="$resource{i18n.button.Enable}" disabled="#{true}" primary="#{false}" >
+                <!command
+                    getUIComponent(clientId="$pageSession{targetTableRowGroupId}", component=>$attribute{tableRowGroup});
+                    getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
+                    foreach (var="row" list="#{requestScope.selectedRows}") {
+                       createMap(result="#{requestScope.attrsMap}");
+                       mapPut(map="#{requestScope.attrsMap}" key="id" value="#{pageSession.resourceName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="target" value="#{row.targetName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="enabled" value="true");
+                       gf.restRequest(endpoint="#{pageSession.updateEndpoint}"
+                                      attrs="#{requestScope.attrsMap}"
+                                      method="post");
+                    }                    
+                    setAttribute(key="selectedRows" value="${selectedRows}");
+                    prepareAlertMsg(summary="$resource{i18n.msg.enableResourceOnTargetsSuccessful}", type="success");
+                    gf.redirect(page="#{pageSession.targetPage}&generalPage=#{pageSession.generalPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+            <sun:button id="button3" text="$resource{i18n.button.Disable}" disabled="#{true}" primary="#{false}" >
+                <!command
+                    getUIComponent(clientId="$pageSession{targetTableRowGroupId}", component=>$attribute{tableRowGroup});
+                    getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
+                    foreach (var="row" list="#{requestScope.selectedRows}") {
+                       createMap(result="#{requestScope.attrsMap}");
+                       mapPut(map="#{requestScope.attrsMap}" key="id" value="#{pageSession.resourceName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="target" value="#{row.targetName}");
+                       mapPut(map="#{requestScope.attrsMap}" key="enabled" value="false");
+                       gf.restRequest(endpoint="#{pageSession.updateEndpoint}"
+                                      attrs="#{requestScope.attrsMap}"
+                                      method="post");
+                    }
+                    setAttribute(key="selectedRows" value="${selectedRows}");
+                    prepareAlertMsg(summary="$resource{i18n.msg.disableResourceOnTargetsSuccessful}", type="success");
+                    gf.redirect(page="#{pageSession.targetPage}&generalPage=#{pageSession.generalPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+         </sun:panelGroup>
+     </facet>
+
+    <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}"  data={"$attribute{listOfRows}"} sourceVar="td">
+        <!beforeCreate
+            //To get the targets of a resource in tabular form
+            setAttribute(key="listOfRows" value={});
+             foreach(var="targetName" list="#{pageSession.targetList}") {
+                 setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
+                 gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isCluster");
+                 if ("!#{requestScope.isCluster}") {
+                     setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
+                     gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isDG");       
+                     if("!#{requestScope.isDG}") {
+                        setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
+                        gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isServer");
+                        py.getAllSelectedTarget(targetList="#{pageSession.targetList}" resourceName="#{pageSession.encodedName}" selectedTarget="#{pageSession.selectedTargetList}");
+                        py.isInstanceInDeploymentGroupWithResource(selectedTarget="#{pageSession.selectedTargetList}" target="#{requestScope.targetName}" resourceName="#{pageSession.encodedName}" isPresent="isInstancePresentInDeployemntGroup");
+                        if ("!#{requestScope.isServer}") {
+                            setAttribute(key="endpoint" value="");
+                        } 
+                        
+                        if ("#{requestScope.isInstancePresentInDeployemntGroup}"){
+                            setAttribute(key="endpoint" value="");
+                        }
+                    }
+                 }
+                 if ("#{endpoint}") {
+                     gf.getEntityAttrs(endpoint="#{endpoint}" valueMap="#{requestScope.attrs}");
+                     if ("#{requestScope.attrs.enabled}=true") {
+                         setAttribute(key="status" value="/resource/images/enabled.png");
+                     }
+                     if ("!(#{requestScope.attrs.enabled}=true)") {
+                         setAttribute(key="status" value="/resource/images/disabled.png");
+                     }
+                     gf.createAttributeMap(keys={"selected", "endpoint", "targetName", "enabled"}
+                                        values={"$boolean{false}",
+                                                "$attribute{endpoint}",
+                                                "$attribute{targetName}",
+                                                "$attribute{status}"}
+                                        map="#{requestScope.oneRowMap}");
+                     listAdd(list="$attribute{listOfRows}" value="#{requestScope.oneRowMap}");
+                 }
+                 setAttribute(key="endpoint" value="");
+             }
+        />
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{targetTableRowGroupId});
+        />
+
+        <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col0">
+            <sun:checkbox id="select"
+                selected="#{td.value.selected}"
+                selectedValue="$boolean{true}"
+                onClick="setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
+            />
+        </sun:tableColumn>
+
+        <sun:tableColumn headerText="$resource{i18n.targetTable.colTargetName}" sort="targetName" rowHeader="$boolean{true}" id="col1">
+            <staticText id="nameCol" value="#{td.value.targetName}" />
+        </sun:tableColumn>
+
+        <sun:tableColumn headerText="$resource{i18n.deployTable.colEnabled}" sort="enabled" rowHeader="$boolean{true}" id="col2">
+            <sun:image id="statusCol" value="#{td.value.enabled}" />
+        </sun:tableColumn>
+
+    </sun:tableRowGroup>
+ </sun:table>
+
+	<sun:hidden id="helpKey" value="$resource{help_common.resourceTargetListing}" />
+            </sun:form>
+
+#include "/common/shared/changeButtonsJS.inc"
+</define>
+</composition>
