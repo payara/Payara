@@ -77,10 +77,6 @@ public class HealthEndpointTest {
     @ArquillianResource
     private URL base;
     
-    @Before
-    public void init() {
-        System.out.println("Set up new WebClient");
-    }
 
     @Deployment(testable = false)
     public static EnterpriseArchive createDeployment() {
