@@ -45,6 +45,7 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 
 import fish.payara.samples.PayaraArquillianTestRunner;
+import fish.payara.samples.NotMicroCompatible;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -72,6 +73,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  * @author Jonathan Coustick
  */
 @RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public class HealthEndpointTest {
 
     @ArquillianResource
