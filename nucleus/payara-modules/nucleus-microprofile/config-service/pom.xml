@@ -99,11 +99,6 @@
             <artifactId>resources-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
-         <dependency>
-            <groupId>fish.payara.server.internal.jdbc</groupId>
-            <artifactId>jdbc-config</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>

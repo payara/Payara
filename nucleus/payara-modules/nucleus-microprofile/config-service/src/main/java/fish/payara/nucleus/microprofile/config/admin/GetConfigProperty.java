@@ -43,8 +43,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
-import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
 import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
@@ -151,7 +151,7 @@ public class GetConfigProperty implements AdminCommand {
                 break;
             }
             case "jdbc": {
-                JDBCConfigSource jdbcConfigSource = new JDBCConfigSource(sourceName);
+                JDBCConfigSource jdbcConfigSource = new JDBCConfigSource();
                 result = jdbcConfigSource.getValue(propertyName);
                 break;
             }

@@ -37,8 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-    
-    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+
 -->
 
 <!-- resourceNode/resourceEditPageButtons.inc -->
@@ -89,14 +88,6 @@
                     getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
                     getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
                     removeEmptyProps(props="#{newList}" modifiedProps="#{newList}");
-                    if (#{pageSession.isMicroProfileProps}=true) {
-                        py.convertToMicroProfileProperties(props="#{newList}" convertedProps="#{newList}");
-                        py.mergeConfigProperties(newProps="#{newList}" currentPros="#{pageSession.modifiedProps}" 
-                                                 oldProps="#{pageSession.properties}" modifiedProps="#{newList}");
-                    }
-                     if (#{pageSession.isMicroProfileProps}=false) {
-                         py.mergeMicroProfileProperties(newProps="#{pageSession.tableList}" oldProps="#{pageSession.properties}" modifiedProps="#{newList}");
-                     }
                     javaToJSON(obj="#{newList}" json="#{requestScope.tmpJSON}");
                     gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="POST" data="#{requestScope.tmpJSON}" result="#{requestScope.restResponse}");
                     prepareSuccessfulMsg();                

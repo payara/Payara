@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -54,22 +55,17 @@ public class JDBCConfigSourceHelper {
 
     private static final Logger logger = Logger.getLogger(JDBCConfigSourceHelper.class.getName());
 
-    private static final String JDBC_JNDI_NAME = "jndi-name";
-    private static final String JDBC_TABLE_NAME = "table-name";
-    private static final String JDBC_KEY_COLUMN = "key-column";
-    private static final String JDBC_VALUE_COLUMN = "value-column";
-
     private PreparedStatement selectOne = null;
     private PreparedStatement selectAll = null;
 
-    public JDBCConfigSourceHelper(Map<String, String> config) {
-        String jdbcJNDIName = config.get(JDBC_JNDI_NAME);
+    public JDBCConfigSourceHelper(JDBCConfigSourceConfiguration configuration) {
+        String jdbcJNDIName = configuration.getJndiName();
         if (jdbcJNDIName != null && !jdbcJNDIName.trim().isEmpty()) {
             DataSource datasource = getDatasource(jdbcJNDIName);
             if (datasource != null) {
-                String table = config.get(JDBC_TABLE_NAME);
-                String keyColumn = config.get(JDBC_KEY_COLUMN);
-                String valueColumn = config.get(JDBC_VALUE_COLUMN);
+                String table = configuration.getTableName();
+                String keyColumn = configuration.getKeyColumnName();
+                String valueColumn = configuration.getValueColumnName();
                 String queryOne = "select " + valueColumn + " from " + table + " where " + keyColumn + " = ?";
                 String queryAll = "select " + keyColumn + ", " + valueColumn + " from " + table;
                 try {

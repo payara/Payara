@@ -312,7 +312,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         sources.add(new PayaraServerProperties());
         sources.add(new SecretsDirConfigSource());
         sources.add(new PasswordAliasConfigSource());
-        sources.add(new JDBCConfigSource(null));
+        sources.add(new JDBCConfigSource());
         if (appName != null) {
             sources.add(new ApplicationConfigSource(appName));
             sources.add(new ModuleConfigSource(appName, moduleName));

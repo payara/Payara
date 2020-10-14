@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
-import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
 import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
@@ -80,7 +79,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class SetConfigProperty implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,jdbc", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster, jndi", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
@@ -134,11 +133,11 @@ public class SetConfigProperty implements AdminCommand {
                     if (sourceName == null) {
                         context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the application if application is the source");
                     } else {
-                            ApplicationConfigSource csource = new ApplicationConfigSource(sourceName);
-                            if (!csource.setValue(propertyName, propertyValue)) {
-                                context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the application named " + sourceName + " is in your domain");
-                            }
+                        ApplicationConfigSource csource = new ApplicationConfigSource(sourceName);
+                        if (!csource.setValue(propertyName, propertyValue)) {
+                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the application named " + sourceName + " is in your domain");
                         }
+                    }
                     break;
                 }
                 case "module": {
@@ -165,19 +164,7 @@ public class SetConfigProperty implements AdminCommand {
                     }
                     break;
                 }
-                
-                case "jdbc": {
 
-                    if (sourceName == null) {
-                        context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the JDBC resource if JDBC is the source");
-                    } else {
-                        JDBCConfigSource jdbcConfigSource = new JDBCConfigSource(sourceName);
-                        if (!jdbcConfigSource.setValue(propertyName, propertyValue)) {
-                            context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "Failed to set the Microprofile Config Value. Please check the JDBC resource named " + sourceName + " is in your domain");
-                        }
-                    }
-                    break;
-                }
             }
 
         } catch (TransactionFailure txFailure) {

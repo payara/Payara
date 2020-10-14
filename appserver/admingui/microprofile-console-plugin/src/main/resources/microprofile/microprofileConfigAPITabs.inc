@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,14 @@
         <!command
           setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigSecretsDirectoryTab");
           gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/secretsDirectoryConfiguration.jsf?configName=#{configName}");
+        />
+    </sun:tab>
+    <sun:tab id="microProfileJdbcConfigSourceTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.jdbcConfigSourceTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.jdbcConfigSourceTab} Tab" >
+        <!command
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileJdbcConfigSourceTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/jdbcConfigSourceConfiguration.jsf?configName=#{configName}");
         />
     </sun:tab>
 </sun:tabSet>

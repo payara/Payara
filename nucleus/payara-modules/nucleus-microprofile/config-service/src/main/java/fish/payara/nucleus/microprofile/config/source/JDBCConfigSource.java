@@ -39,28 +39,17 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
 import java.util.Map;
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.glassfish.jdbc.config.JdbcResource;
-import org.jvnet.hk2.config.ConfigBean;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
+import org.glassfish.internal.api.Globals;
 
 public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource {
 
-    private static final String JDBC_CONFIG_PROPERTY_PREFIX = PROPERTY_PREFIX + "jdbc.";
-    private final JDBCConfigSourceHelper jdbcConfigHelper;
-    private final String jndiName;
+    private JDBCConfigSourceHelper jdbcConfigHelper;
 
-    public JDBCConfigSource(String jndiName) {
-        this.jndiName = jndiName;
-        this.jdbcConfigHelper = new JDBCConfigSourceHelper(getJDBCConfigProperties());
+    public JDBCConfigSource() {
+      init();
     }
 
     @Override
@@ -70,7 +59,7 @@ public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource
 
     @Override
     public int getOrdinal() {
-        return 400;
+        return Integer.parseInt(configService.getMPConfig().getJdbcOrdinality());
     }
 
     @Override
@@ -83,78 +72,9 @@ public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource
         return "JDBC";
     }
 
-    private Map<String, String> getJDBCConfigProperties() {
-        HashMap<String, String> result = new HashMap<>();
-
-        if (jndiName == null) {
-            Iterator<JdbcResource> jdbcResources = domainConfiguration.getResources().getResources(JdbcResource.class).iterator();
-            while (jdbcResources.hasNext()) {
-                JdbcResource resource = jdbcResources.next();
-                putJDBCConfigProperties(result, resource.getProperty());
-            }
-            return result;
+    private void init() {
+        if (jdbcConfigHelper == null) {
+            jdbcConfigHelper = new JDBCConfigSourceHelper(Globals.getDefaultHabitat().getService(JDBCConfigSourceConfiguration.class));
         }
-
-        JdbcResource resource = (JdbcResource) domainConfiguration.getResources().getResourceByName(JdbcResource.class, jndiName);
-        if (resource != null) {
-            putJDBCConfigProperties(result, resource.getProperty());
-        }
-        return result;
-    }
-
-    private void putJDBCConfigProperties(Map<String, String> result, List<Property> properties) {
-        for (Property property : properties) {
-            if (property.getName().startsWith(JDBC_CONFIG_PROPERTY_PREFIX)) {
-                result.put(property.getName().substring((JDBC_CONFIG_PROPERTY_PREFIX).length()), property.getValue());
-            }
-        }
-    }
-
-    public boolean setValue(final String propertyName, final String propertyValue) throws TransactionFailure {
-        boolean result = false;
-        JdbcResource resource = (JdbcResource) domainConfiguration.getResources().getResourceByName(JdbcResource.class, jndiName);
-        if (resource != null) {
-            // does the property exist
-            Property property = resource.getProperty(JDBC_CONFIG_PROPERTY_PREFIX + propertyName);
-            if (property == null) {
-                ConfigSupport.apply(new SingleConfigCode<JdbcResource>() {
-                    @Override
-                    public Object run(JdbcResource config) throws TransactionFailure, PropertyVetoException {
-                        Property prop = config.createChild(Property.class);
-                        prop.setName(JDBC_CONFIG_PROPERTY_PREFIX + propertyName);
-                        prop.setValue(propertyValue);
-                        config.getProperty().add(prop);
-                        return null;
-                    }
-                }, resource);
-            } else {
-                ConfigSupport.apply(new SingleConfigCode<Property>() {
-                    @Override
-                    public Object run(Property config) throws TransactionFailure, PropertyVetoException {
-                        config.setValue(propertyValue);
-                        return null;
-                    }
-                }, property);
-
-            }
-            result = true;
-        }
-        return result;
-    }
-
-    public boolean deleteValue(String propertyName) throws TransactionFailure {
-        boolean result = false;
-
-        JdbcResource resource = (JdbcResource) domainConfiguration.getResources().getResourceByName(JdbcResource.class, jndiName);
-        if (resource != null) {
-            for (Property property : resource.getProperty()) {
-                if ((JDBC_CONFIG_PROPERTY_PREFIX + propertyName).equals(property.getName())) {
-                    ConfigSupport.deleteChild((ConfigBean) ConfigBean.unwrap(resource), (ConfigBean) ConfigBean.unwrap(property));
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
     }
 }
