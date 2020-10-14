@@ -86,7 +86,7 @@ public class SetGCPSecretsConfigSourceConfigurationCommand extends BaseSetConfig
     @Param(optional = true)
     protected String project;
 
-    @Param(optional = true)
+    @Param(optional = true, alias = "json-key-file")
     private File jsonKeyFile;
 
     @Inject
