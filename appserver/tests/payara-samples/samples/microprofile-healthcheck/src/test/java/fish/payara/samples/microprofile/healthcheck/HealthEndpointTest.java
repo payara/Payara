@@ -96,10 +96,6 @@ public class HealthEndpointTest {
         return archive;
     }
     
-    @Test
-    public void simpleTest() {
-        System.out.println("Run a test!");
-    }
 
     @Test
     @RunAsClient
