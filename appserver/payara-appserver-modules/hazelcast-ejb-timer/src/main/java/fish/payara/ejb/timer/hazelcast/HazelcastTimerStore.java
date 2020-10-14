@@ -76,8 +76,9 @@ import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.internal.api.Globals;
 
 /**
- *
+ * Store for EJB timers that exist across a Hazelcast cluster.
  * @author steve
+ * @since 4.1.1.163
  */
 public class HazelcastTimerStore extends NonPersistentEJBTimerService implements ClusterListener {
 
@@ -95,13 +96,15 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
 
     static void init(HazelcastCore core) {
         try {
-                EJBTimerService.setPersistentTimerService(new HazelcastTimerStore(core));
+            HazelcastTimerStore store = new HazelcastTimerStore(core);
+            Globals.getDefaultBaseServiceLocator().getService(PayaraCluster.class).addClusterListener(store);
+            EJBTimerService.setPersistentTimerService(store);
+            
         } catch (Exception ex) {
             Logger.getLogger(HazelcastTimerStore.class.getName()).log(Level.WARNING, "Problem when initialising Timer Store", ex);
         }
     }
 
-    @SuppressWarnings("LeakingThisInConstructor")
     public HazelcastTimerStore(HazelcastCore core) throws Exception {
         
         if (!core.isEnabled()) {
@@ -114,7 +117,6 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
         this.ownerIdOfThisServer_ = serverName;
         this.domainName_ = core.getInstance().getConfig().getGroupConfig().getName();
         super.enableRescheduleTimers();
-        Globals.getDefaultBaseServiceLocator().getService(PayaraCluster.class).addClusterListener(this);
     }
 
     private void removeTimers(Set<TimerPrimaryKey> timerIdsToRemove) {
@@ -1181,7 +1183,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
                 logger.log(Level.INFO, "==> Restoring Timers ... ");
                 Collection<HZTimer> restored = _restoreTimers(removedTimers);
                 for (HZTimer timer : restored) {
-                    pkCache.putAsync(timer.getKey().getTimerId(), timer);
+                    pkCache.put(timer.getKey().getTimerId(), timer);
                 }
                 logger.log(Level.INFO, "<== ... Timers Restored.");
             }
