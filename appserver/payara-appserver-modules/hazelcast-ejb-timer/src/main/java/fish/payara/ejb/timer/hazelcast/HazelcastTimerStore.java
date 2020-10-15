@@ -39,6 +39,7 @@
  */
 package fish.payara.ejb.timer.hazelcast;
 
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.sun.ejb.containers.BaseContainer;
@@ -90,9 +91,9 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
     private final IMap<Long, Set<TimerPrimaryKey>> containerCache;
     private final IMap<Long, Set<TimerPrimaryKey>> applicationCache;
     private final String serverName;
+    private final HazelcastInstance hazelcast;
 
-    private static final Logger logger
-            = LogDomains.getLogger(HazelcastTimerStore.class, LogDomains.EJB_LOGGER);
+    private static final Logger logger = LogDomains.getLogger(HazelcastTimerStore.class, LogDomains.EJB_LOGGER);
 
     static void init(HazelcastCore core) {
         try {
@@ -110,10 +111,11 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
         if (!core.isEnabled()) {
             throw new Exception("Hazelcast MUST be enabled when using the HazelcastTimerStore");
         }
-        pkCache = core.getInstance().getMap(EJB_TIMER_CACHE_NAME);
-        containerCache = core.getInstance().getMap(EJB_TIMER_CONTAINER_CACHE_NAME);
-        applicationCache = core.getInstance().getMap(EJB_TIMER_APPLICAION_CACHE_NAME);
-        serverName = core.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        hazelcast = core.getInstance();
+        pkCache = hazelcast.getMap(EJB_TIMER_CACHE_NAME);
+        containerCache = hazelcast.getMap(EJB_TIMER_CONTAINER_CACHE_NAME);
+        applicationCache = hazelcast.getMap(EJB_TIMER_APPLICAION_CACHE_NAME);
+        serverName = hazelcast.getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
         this.ownerIdOfThisServer_ = serverName;
         this.domainName_ = core.getInstance().getConfig().getGroupConfig().getName();
         super.enableRescheduleTimers();
@@ -1166,7 +1168,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
 
     @Override
     public void memberRemoved(MemberEvent event) {
-        ILock hazelcastLock = Globals.getDefaultBaseServiceLocator().getService(HazelcastCore.class).getInstance().getLock("EJB-TIMER-LOCK");
+        ILock hazelcastLock = hazelcast.getLock("EJB-TIMER-LOCK");
         hazelcastLock.lock();
         try {
             Collection<HZTimer> allTimers = pkCache.values();
