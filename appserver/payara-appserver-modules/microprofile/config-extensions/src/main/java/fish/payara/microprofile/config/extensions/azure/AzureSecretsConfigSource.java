@@ -250,11 +250,6 @@ public class AzureSecretsConfigSource extends ConfiguredExtensionConfigSource<Az
     }
 
     @Override
-    public int getOrdinal() {
-        return super.getOrdinal(); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public String getName() {
         return "azure";
     }

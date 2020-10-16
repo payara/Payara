@@ -84,16 +84,16 @@ public class SetAzureSecretsConfigSourceConfigurationCommand extends BaseSetConf
 
     private static final Logger LOGGER = Logger.getLogger(SetAzureSecretsConfigSourceConfigurationCommand.class.getPackage().getName());
 
-    @Param(optional = true, name = "tenant-id")
+    @Param(optional = true, name = "tenant-id", alias = "tenantId")
     protected String tenantId;
 
-    @Param(optional = true, name = "client-id")
+    @Param(optional = true, name = "client-id", alias = "clientId")
     protected String clientId;
 
-    @Param(optional = true, name = "key-vault-name ")
+    @Param(optional = true, name = "key-vault-name", alias = "keyVaultname")
     protected String keyVaultName;
 
-    @Param(optional = true, name = "private-key-file")
+    @Param(optional = true, name = "private-key-file", alias = "privateKeyPath")
     private File privateKeyFile;
 
     @Param(optional = true)
