@@ -113,7 +113,7 @@
                     label="$resource{i18n_microprofile.config.gcp.configuration.tokenKeyFileLabel}"  
                     helpText="$resource{i18n_microprofile.config.gcp.configuration.tokenKeyFileHelpText}">
             <sun:textField id="tokenKeyFileField" columns="$int{75}" maxLength="255" 
-                        text="#{pageSession.valueMap['tokenKeyFile']}" styleClass="required"  
+                        text="#{pageSession.valueMap['jsonKeyFile']}" styleClass="required"  
                         required="#{true}"/>
         </sun:property>
     </sun:propertySheetSection>

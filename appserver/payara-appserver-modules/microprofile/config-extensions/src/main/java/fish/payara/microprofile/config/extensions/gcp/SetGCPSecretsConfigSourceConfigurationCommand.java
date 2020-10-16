@@ -83,8 +83,8 @@ public class SetGCPSecretsConfigSourceConfigurationCommand extends BaseSetConfig
 
     private static final Logger LOGGER = Logger.getLogger(SetGCPSecretsConfigSourceConfigurationCommand.class.getPackage().getName());
 
-    @Param(optional = true)
-    protected String project;
+    @Param(optional = true, alias = "project-name")
+    protected String projectName;
 
     @Param(optional = true, alias = "json-key-file")
     private File jsonKeyFile;
@@ -95,8 +95,8 @@ public class SetGCPSecretsConfigSourceConfigurationCommand extends BaseSetConfig
     @Override
     protected void applyValues(GCPSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
         super.applyValues(configuration);
-        if (StringUtils.ok(project)) {
-            configuration.setProjectName(project);
+        if (StringUtils.ok(projectName)) {
+            configuration.setProjectName(projectName);
         }
         if (jsonKeyFile != null) {
             if (!jsonKeyFile.exists() || !jsonKeyFile.isFile()) {

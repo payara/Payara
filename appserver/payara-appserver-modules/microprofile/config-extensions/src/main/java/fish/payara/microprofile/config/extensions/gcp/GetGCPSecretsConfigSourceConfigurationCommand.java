@@ -72,7 +72,7 @@ public class GetGCPSecretsConfigSourceConfigurationCommand extends BaseGetConfig
         Map<String, Object> config = super.getConfigSourceConfiguration(configuration);
         if (configuration != null) {
             config.put("Project Name", configuration.getProjectName());
-            config.put("Token File Path", configuration.getTokenFilePath());
+            config.put("Json Key File", configuration.getTokenFilePath());
         }
         return config;
     }
