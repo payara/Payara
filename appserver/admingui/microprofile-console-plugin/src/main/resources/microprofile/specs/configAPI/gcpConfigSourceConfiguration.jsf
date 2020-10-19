@@ -81,9 +81,10 @@
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     prepareSuccessfulMsg();
-                    gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-gcp-config-source-configuration" 
-                    method="POST" attrs="#{pageSession.valueMap}");
+                    gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-gcp-config-source-configuration" 
+                        attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     /> 
             </sun:button>
         </sun:panelGroup>
