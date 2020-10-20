@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.config.extensions.aws.client;
 
+import static javax.xml.bind.DatatypeConverter.printHexBinary;
+
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -53,8 +55,6 @@ import javax.crypto.spec.SecretKeySpec;
 import com.nimbusds.jose.util.StandardCharset;
 
 public abstract class AuthUtils {
-
-    protected static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
     private AuthUtils() {
 
@@ -80,21 +80,14 @@ public abstract class AuthUtils {
     }
 
     /**
-     * Convert byte array to Hex
+     * Convert byte array to Hex. This method is kept here to facilitate the unit test
      *
      * @param bytes
      * @return
      */
     protected static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars).toLowerCase();
+        return printHexBinary(bytes).toLowerCase();
     }
-    
 
     /**
      * Apply HmacSHA256 on data using given key.
