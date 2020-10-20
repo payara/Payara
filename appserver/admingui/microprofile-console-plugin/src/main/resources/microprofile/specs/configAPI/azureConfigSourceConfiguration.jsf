@@ -59,7 +59,7 @@
                 value="#{requestScope.resp.data.extraProperties.configSourceConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "noisy"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
         
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
@@ -81,9 +81,11 @@
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     prepareSuccessfulMsg();
-                    gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-azure-config-source-configuration" 
-                    method="POST" attrs="#{pageSession.valueMap}");
+                    gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-azure-config-source-configuration" 
+                         attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     /> 
             </sun:button>
         </sun:panelGroup>
