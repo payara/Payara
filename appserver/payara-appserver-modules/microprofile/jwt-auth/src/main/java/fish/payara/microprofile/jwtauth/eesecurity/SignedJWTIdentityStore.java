@@ -73,7 +73,7 @@ import static org.eclipse.microprofile.jwt.config.Names.*;
 
 /**
  * Identity store capable of asserting that a signed JWT token is valid
- * according to the MP-JWT 1.0 spec.
+ * according to the MP-JWT 1.1 spec.
  *
  * @author Arjan Tijms
  */
@@ -86,6 +86,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
     private final String acceptedIssuer;
     private final Optional<Boolean> enabledNamespace;
     private final Optional<String> customNamespace;
+    private final Optional<Boolean> disableTypeVerification;
 
     private final Config config;
 
@@ -99,10 +100,11 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
         enabledNamespace = readEnabledNamespace(properties);
         customNamespace = readCustomNamespace(properties);
+        disableTypeVerification = readDisableTypeVerification(properties);
     }
 
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
-        final JwtTokenParser jwtTokenParser = new JwtTokenParser(enabledNamespace, customNamespace);
+        final JwtTokenParser jwtTokenParser = new JwtTokenParser(enabledNamespace, customNamespace, disableTypeVerification);
         try {
             jwtTokenParser.parse(signedJWTCredential.getSignedJWT());
             String keyID = jwtTokenParser.getKeyID();
@@ -159,6 +161,10 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
     private Optional<String> readCustomNamespace(Optional<Properties> properties) {
         return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty("custom.namespace", null)) : Optional.empty();
+    }
+
+    private Optional<Boolean> readDisableTypeVerification(Optional<Properties> properties) {
+        return properties.isPresent() ? Optional.ofNullable(Boolean.valueOf(properties.get().getProperty("disable.type.verification", "false"))) : Optional.empty();
     }
 
     private Optional<PublicKey> readDefaultPublicKey() throws Exception {
@@ -280,5 +286,4 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
         throw new IllegalStateException("No matching JWK for KeyID.");
     }
-
 }

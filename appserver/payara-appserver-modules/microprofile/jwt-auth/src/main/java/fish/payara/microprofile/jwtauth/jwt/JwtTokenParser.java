@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.jwtauth.jwt;
 
+import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
@@ -69,20 +70,23 @@ public class JwtTokenParser {
     private final static String DEFAULT_NAMESPACE = "https://payara.fish/mp-jwt/";
     
     private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti, groups);
-    
+
     private final boolean enableNamespacedClaims;
+    private final boolean disableTypeVerification;
     private final Optional<String> customNamespace;
+
     
     private String rawToken;
     private SignedJWT signedJWT;
     
-    public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace) {
+    public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace, Optional<Boolean> disableTypeVerification) {
         this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
+        this.disableTypeVerification = disableTypeVerification.orElse(false);
         this.customNamespace = customNamespace;
     }
 
     public JwtTokenParser() {
-        this(Optional.empty(), Optional.empty());
+        this(Optional.empty(), Optional.empty(), Optional.empty());
     }
     
     public void parse(String bearerToken) throws Exception {
@@ -197,7 +201,10 @@ public class JwtTokenParser {
     }
 
     private boolean checkIsJWT(JWSHeader header) {
-        return header.getType().toString().equals("JWT");
+        return disableTypeVerification || Optional.ofNullable(header.getType())
+                                                    .map(JOSEObjectType::toString)
+                                                    .orElse("")
+                                                    .equals("JWT");
     }
 
     private String getCallerPrincipalName(Map<String, JsonValue> rawClaims) {
