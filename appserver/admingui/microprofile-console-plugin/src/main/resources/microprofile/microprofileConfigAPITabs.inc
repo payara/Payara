@@ -72,6 +72,14 @@
           gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/jdbcConfigSourceConfiguration.jsf?configName=#{configName}");
         />
     </sun:tab>
+    <sun:tab id="microProfileConfigAWSSecretsConfigSourceTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.awsSecretsConfigSourceTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.awsSecretsConfigSourceTab} Tab" >
+        <!command
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigAWSSecretsConfigSourceTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/awsConfigSourceConfiguration.jsf?configName=#{configName}");
+          />
+    </sun:tab>
     <sun:tab id="microProfileConfigGCPSecretsConfigSourceTab" immediate="$boolean{true}" 
              text="$resource{i18n_microprofile.microprofile.configuration.gcpSecretsConfigSourceTab}" 
              toolTip="$resource{i18n_microprofile.microprofile.configuration.gcpSecretsConfigSourceTab} Tab" >

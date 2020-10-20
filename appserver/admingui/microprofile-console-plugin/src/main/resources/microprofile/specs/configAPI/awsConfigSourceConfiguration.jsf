@@ -42,24 +42,24 @@
     setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
 />
 <!composition template="/templates/default.layout"  
-    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.gcpSecretsConfigSource.pageTitle}">
+    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.awsSecretsConfigSource.pageTitle}">
 
 <!define name="content">
 
 <event>
     <!beforeCreate
-        setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigGCPSecretsConfigSourceTab");
+        setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigAWSSecretsConfigSourceTab");
         getRequestValue(key="configName" value="#{pageSession.configName}");
         setPageSessionAttribute(key="MICROPROFILE_CONFIG_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");
-        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/get-gcp-config-source-configuration?target=#{pageSession.configName}"  
+        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/get-aws-config-source-configuration?target=#{pageSession.configName}"  
                 method="GET" result="#{requestScope.resp}");
         
         setPageSessionAttribute(key="valueMap", 
                 value="#{requestScope.resp.data.extraProperties.configSourceConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "noisy"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
         
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
@@ -73,19 +73,19 @@
 #include "/common/shared/alertMsg_1.inc"
 #include "/microprofile/microprofile/microprofileConfigTabs.inc"
 #include "/microprofile/microprofile/microprofileConfigAPITabs.inc"
-    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.gcpSecretsConfigSource.pageTitle}" 
-               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.gcpSecretsConfigSource.pageTitleHelpText}" >
+    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.awsSecretsConfigSource.pageTitle}" 
+               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.awsSecretsConfigSource.pageTitleHelpText}" >
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
-                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
-                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-gcp-config-source-configuration" 
-                        attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-aws-config-source-configuration" 
+                            attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     /> 
             </sun:button>
         </sun:panelGroup>
@@ -93,29 +93,29 @@
     </sun:title>
 <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-  <sun:propertySheetSection id="gcpSecretsConfigSourceProps">
+  <sun:propertySheetSection id="awsSecretsConfigSourceProps">
         <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                    label="$resource{i18n_microprofile.config.gcp.configuration.enabledLabel}"  
-                    helpText="$resource{i18n_microprofile.config.gcp.configuration.enabledHelpText}">
+                    label="$resource{i18n_microprofile.config.aws.configuration.enabledLabel}"  
+                    helpText="$resource{i18n_microprofile.config.aws.configuration.enabledHelpText}">
             <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                    label="$resource{i18n_microprofile.config.gcp.configuration.dynamicLabel}"  
-                    helpText="$resource{i18n_microprofile.config.gcp.configuration.dynamicHelpText}">
+                    label="$resource{i18n_microprofile.config.aws.configuration.dynamicLabel}"  
+                    helpText="$resource{i18n_microprofile.config.aws.configuration.dynamicHelpText}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
         </sun:property>
-        <sun:property id="projectName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                    label="$resource{i18n_microprofile.config.gcp.configuration.projectNameLabel}"  
-                    helpText="$resource{i18n_microprofile.config.gcp.configuration.projectNameHelpText}">
-            <sun:textField id="projectNameField" columns="$int{75}" maxLength="255" 
-                        text="#{pageSession.valueMap['projectName']}" styleClass="required"  
+        <sun:property id="regionName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                    label="$resource{i18n_microprofile.config.aws.configuration.regionNameLabel}"  
+                    helpText="$resource{i18n_microprofile.config.aws.configuration.regionNameHelpText}">
+            <sun:textField id="regionNameField" columns="$int{75}" maxLength="255"
+                        text="#{pageSession.valueMap['regionName']}" styleClass="required"  
                         required="#{true}"/>
         </sun:property>
-        <sun:property id="tokenKeyFile" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                    label="$resource{i18n_microprofile.config.gcp.configuration.tokenKeyFileLabel}"  
-                    helpText="$resource{i18n_microprofile.config.gcp.configuration.tokenKeyFileHelpText}">
-            <sun:textField id="tokenKeyFileField" columns="$int{75}" maxLength="255" 
-                        text="#{pageSession.valueMap['jsonKeyFile']}" styleClass="required"  
+        <sun:property id="secretName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                    label="$resource{i18n_microprofile.config.aws.configuration.secretNameLabel}"  
+                    helpText="$resource{i18n_microprofile.config.aws.configuration.secretNameHelpText}">
+            <sun:textField id="secretNameField" columns="$int{75}" maxLength="255" 
+                        text="#{pageSession.valueMap['secretName']}" styleClass="required"  
                         required="#{true}"/>
         </sun:property>
     </sun:propertySheetSection>
