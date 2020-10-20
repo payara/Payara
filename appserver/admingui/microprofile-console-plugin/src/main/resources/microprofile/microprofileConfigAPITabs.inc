@@ -88,4 +88,12 @@
           gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/gcpConfigSourceConfiguration.jsf?configName=#{configName}");
           />
     </sun:tab>
+    <sun:tab id="microProfileConfigAzureSecretsConfigSourceTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.azureSecretsConfigSourceTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.azureSecretsConfigSourceTab} Tab" >
+        <!command
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigAzureSecretsConfigSourceTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/azureConfigSourceConfiguration.jsf?configName=#{configName}");
+          />
+    </sun:tab>
 </sun:tabSet>
