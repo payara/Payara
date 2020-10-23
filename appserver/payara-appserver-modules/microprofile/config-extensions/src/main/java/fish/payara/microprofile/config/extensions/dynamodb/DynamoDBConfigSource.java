@@ -67,9 +67,12 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.jvnet.hk2.annotations.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.util.StandardCharset;
 
 import fish.payara.microprofile.config.extensions.aws.client.AwsRequestBuilder;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
+import java.math.BigInteger;
+import java.security.MessageDigest;
 
 @Service(name = "dynamodb-config-source")
 public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<DynamoDBConfigSourceConfiguration> {
@@ -108,10 +111,9 @@ public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<Dynamo
 
     @Override
     public Map<String, String> getProperties() {
-        Map<String, String> results = new HashMap<>();
         if (builder == null) {
             printMisconfigurationMessage();
-            return results;
+            return new HashMap<>();
         }
         final Response response = builder
                 .action("Scan")
@@ -122,36 +124,13 @@ public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<Dynamo
             LOGGER.log(Level.WARNING, "Failed to get data from DynamoDB. {0}", response.readEntity(String.class));
         } else {
             try {
-                final JsonArray items = getItems((InputStream) response.getEntity());
-                for (JsonValue itemsJsonValue : items) {
-                    JsonObject keyColumn = itemsJsonValue.asJsonObject().getJsonObject(configuration.getKeyColumnName());
-                    String keyColumnValue = "";
-                    for (String keyFieldName : keyColumn.keySet()) {
-                        if (SUPPORTED_DATA_TYPES.contains(keyFieldName)) {
-                            keyColumnValue = keyColumn.get(keyFieldName).toString();
-                        } else {
-                            printDataTypeNotSupportMessage();
-                            break;
-                        }
-                    }
-
-                    JsonObject valueColumn = itemsJsonValue.asJsonObject().getJsonObject(configuration.getValueColumnName());
-                    String valueColumnValue = "";
-                    for (String valueFieldName : valueColumn.keySet()) {
-                        if (SUPPORTED_DATA_TYPES.contains(valueFieldName)) {
-                            valueColumnValue = valueColumn.get(valueFieldName).toString();
-                        } else {
-                            printDataTypeNotSupportMessage();
-                            break;
-                        }
-                    }
-                    results.put(keyColumnValue.replaceAll("^\"|\"$", ""), valueColumnValue.replaceAll("^\"|\"$", ""));
-                }
+                final JsonArray items = readItems((InputStream) response.getEntity());
+                return readDataFromItems(items, configuration.getKeyColumnName(), configuration.getValueColumnName());
             } catch (ProcessingException | JsonException ex) {
                 LOGGER.log(Level.WARNING, "Failed to read the data retrived from your DynamoDB", ex);
             }
         }
-        return results;
+        return new HashMap<>();
     }
 
     @Override
@@ -163,7 +142,54 @@ public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<Dynamo
         return getProperties().get(propertyName);
     }
 
-    private static JsonArray getItems(InputStream input) {
+    public static Map<String, String> readDataFromItems(JsonArray items, String keyColumnName, String valueColumnName) {
+        Map<String, String> results = new HashMap<>();
+
+        for (JsonValue itemsJsonValue : items) {
+            JsonObject keyColumn = itemsJsonValue.asJsonObject().getJsonObject(keyColumnName);
+            if (keyColumn != null) {
+                boolean isKeyColumnValueValid = true;
+                String keyColumnValue = "";
+                for (String keyFieldName : keyColumn.keySet()) {
+                    if (SUPPORTED_DATA_TYPES.contains(keyFieldName)) {
+                        keyColumnValue = keyColumn.get(keyFieldName).toString();
+                    } else {
+                        isKeyColumnValueValid = false;
+                        printDataTypeNotSupportMessage();
+                        break;
+                    }
+                }
+
+                if (isKeyColumnValueValid) {
+                    JsonObject valueColumn = itemsJsonValue.asJsonObject().getJsonObject(valueColumnName);
+                    String valueColumnValue = "";
+                    for (String valueFieldName : valueColumn.keySet()) {
+                        if (SUPPORTED_DATA_TYPES.contains(valueFieldName)) {
+                            valueColumnValue = valueColumn.get(valueFieldName).toString();
+                        } else {
+                            printDataTypeNotSupportMessage();
+                            break;
+                        }
+                    }
+                    results.put(keyColumnValue.replaceAll("^\"|\"$", ""), valueColumnValue.replaceAll("^\"|\"$", ""));
+                }
+            }
+        }
+        return results;
+    }
+   protected static String generateHex(String data) {
+        MessageDigest messageDigest;
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-256");
+            messageDigest.update(data.getBytes(StandardCharset.UTF_8));
+            byte[] digest = messageDigest.digest();
+            return String.format("%064x", new BigInteger(1, digest));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    private static JsonArray readItems(InputStream input) {
         try (JsonParser parser = Json.createParser(input)) {
             while (parser.hasNext()) {
                 JsonParser.Event parseEvent = parser.next();
@@ -207,7 +233,7 @@ public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<Dynamo
     }
 
     private static void printDataTypeNotSupportMessage() {
-        LOGGER.warning("DynamoDB Config source currently only supports an attribute with the "
-                + "following types: String, Binary, Boolean, Number and Null.");
+        LOGGER.warning("The column you have configured with DynamoDB Config source has attributes that use a data type that is not currently supported. "
+                + "Only the following types are supported: String, Binary, Boolean, Number and Null.");
     }
 }
