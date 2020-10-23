@@ -64,6 +64,7 @@ public class AwsRequestBuilder {
     private String method;
     private String action;
     private String version;
+    private String contentType;
     private JsonObject data;
 
     public AwsRequestBuilder(String accessKey, String secretKey) {
@@ -97,6 +98,11 @@ public class AwsRequestBuilder {
         this.version = version;
         return this;
     }
+    
+    public AwsRequestBuilder ContentType(String contentType) {
+        this.contentType = contentType;
+        return this;
+    }
 
     public AwsRequestBuilder data(JsonObject data) {
         this.data = data;
@@ -107,10 +113,11 @@ public class AwsRequestBuilder {
         final Date creationTime = new Date();
         final String query = MessageFormat.format("Action={0}&Version={1}", action, version);
         final String payload = data.toString();
-        final String host = MessageFormat.format("{0}.{1}.amazonaws.com", serviceName, region);
+        final String host = MessageFormat.format("{0}.{1}.amazonaws.com", serviceName.toLowerCase(), region);
 
         final String endpoint = "https://" + host;
-        final String xAmzTarget = serviceName + "." + action;
+        final String serviceNameValue = serviceName.equals("DynamoDB") ? serviceName + "_20120810" : serviceName;
+        final String xAmzTarget = serviceNameValue + "." + action;
 
         final String xAmzContentSha256 = AuthUtils.generateHex(payload);
 
@@ -119,7 +126,7 @@ public class AwsRequestBuilder {
                 .header("X-Amz-Content-Sha256", xAmzContentSha256)
                 .header("X-Amz-Date", AuthUtils.getTimestamp(creationTime))
                 .header("X-Amz-Target", xAmzTarget)
-                .build(method, Entity.entity(payload, "application/x-amz-json-1.1"));
+                .build(method, Entity.entity(payload, contentType));
     }
 
     public static AwsRequestBuilder builder(String accessKey, String secretKey) {
