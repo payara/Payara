@@ -67,12 +67,9 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.jvnet.hk2.annotations.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.util.StandardCharset;
 
 import fish.payara.microprofile.config.extensions.aws.client.AwsRequestBuilder;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
-import java.math.BigInteger;
-import java.security.MessageDigest;
 
 @Service(name = "dynamodb-config-source")
 public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<DynamoDBConfigSourceConfiguration> {
@@ -177,18 +174,7 @@ public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<Dynamo
         }
         return results;
     }
-   protected static String generateHex(String data) {
-        MessageDigest messageDigest;
-        try {
-            messageDigest = MessageDigest.getInstance("SHA-256");
-            messageDigest.update(data.getBytes(StandardCharset.UTF_8));
-            byte[] digest = messageDigest.digest();
-            return String.format("%064x", new BigInteger(1, digest));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+
     private static JsonArray readItems(InputStream input) {
         try (JsonParser parser = Json.createParser(input)) {
             while (parser.hasNext()) {
