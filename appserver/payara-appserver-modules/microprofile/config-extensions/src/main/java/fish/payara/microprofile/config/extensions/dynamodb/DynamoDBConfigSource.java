@@ -123,7 +123,6 @@ public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<Dynamo
         } else {
             try {
                 final JsonArray items = getItems((InputStream) response.getEntity());
-                System.out.println(items);
                 for (JsonValue itemsJsonValue : items) {
                     JsonObject keyColumn = itemsJsonValue.asJsonObject().getJsonObject(configuration.getKeyColumnName());
                     String keyColumnValue = "";
