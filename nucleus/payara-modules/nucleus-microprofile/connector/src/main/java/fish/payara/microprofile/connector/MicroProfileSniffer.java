@@ -84,7 +84,7 @@ public abstract class MicroProfileSniffer implements Sniffer {
     }
 
     @Override
-    public final boolean handles(ReadableArchive archive) {
+    public boolean handles(ReadableArchive archive) {
         return false;
     }
 

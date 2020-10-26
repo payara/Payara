@@ -76,6 +76,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -151,6 +152,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     public static final String WELD_EXTENSION = "org.glassfish.weld";
     public static final String WELD_DEPLOYMENT = "org.glassfish.weld.WeldDeployment";
     /* package */ static final String WELD_BOOTSTRAP = "org.glassfish.weld.WeldBootstrap";
+    public static final String SNIFFER_EXTENSIONS = "org.glassfish.weld.sniffers";
     private static final String WELD_CONTEXT_LISTENER = "org.glassfish.weld.WeldContextListener";
 
     // Note...this constant is also defined in org.apache.catalina.connector.AsyncContextImpl. If it
@@ -406,6 +408,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         context.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
         applicationInfo.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
+        context.addTransientAppMetaData(SNIFFER_EXTENSIONS, new HashSet<Supplier<Extension>>());
 
         return new WeldApplicationContainer();
     }
