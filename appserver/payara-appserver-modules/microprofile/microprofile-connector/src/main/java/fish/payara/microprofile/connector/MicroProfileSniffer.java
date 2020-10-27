@@ -54,7 +54,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.web.WarType;
+import org.glassfish.web.sniffer.WarType;
 import org.jvnet.hk2.annotations.Contract;
 
 @Contract

@@ -70,6 +70,7 @@ public class OpenApiDeployer extends MicroProfileDeployer<OpenApiContainer, Open
             descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(OpenApiServletContextListener.class.getName()));
         } else {
             LOGGER.warning("Failed to find WebBundleDescriptorImpl. OpenAPI servlet won't be available");
+            return null;
         }
 
         return new OpenApiApplicationContainer(openapi, deploymentContext);

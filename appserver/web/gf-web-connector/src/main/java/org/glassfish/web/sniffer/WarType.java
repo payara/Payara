@@ -39,7 +39,7 @@
  */
 
 
-package org.glassfish.web;
+package org.glassfish.web.sniffer;
 
 import org.glassfish.api.deployment.archive.ArchiveType;
 
