@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.openapi;
 
+import java.util.logging.Logger;
+
 import javax.inject.Inject;
 
 import org.glassfish.api.deployment.DeploymentContext;
@@ -54,14 +56,22 @@ import fish.payara.microprofile.openapi.impl.OpenApiService;
 @PerLookup
 public class OpenApiDeployer extends MicroProfileDeployer<OpenApiContainer, OpenApiApplicationContainer> {
 
+    private static final Logger LOGGER = Logger.getLogger(OpenApiDeployer.class.getName());
+
     @Inject
     private OpenApiService openapi;
 
     @Override
     public OpenApiApplicationContainer load(OpenApiContainer container,
             DeploymentContext deploymentContext) {
+
         WebBundleDescriptorImpl descriptor = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class);
-        descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(OpenApiServletContextListener.class.getName()));
+        if (descriptor != null) {
+            descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(OpenApiServletContextListener.class.getName()));
+        } else {
+            LOGGER.warning("Failed to find WebBundleDescriptorImpl. OpenAPI servlet won't be available");
+        }
+
         return new OpenApiApplicationContainer(openapi, deploymentContext);
     }
 

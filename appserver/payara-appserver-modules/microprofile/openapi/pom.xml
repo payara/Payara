@@ -60,7 +60,7 @@
             <artifactId>microprofile-config-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>microprofile-connector</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -53,6 +53,5 @@ holder.
     
     <modules>
         <module>config-service</module>
-        <module>connector</module>
     </modules>
 </project>

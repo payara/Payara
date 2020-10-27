@@ -41,6 +41,7 @@ package fish.payara.microprofile.metrics;
 
 import java.util.Collection;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.Extension;
 import javax.inject.Inject;
@@ -59,16 +60,23 @@ import fish.payara.microprofile.metrics.cdi.extension.MetricCDIExtension;
 @PerLookup
 public class MetricsDeployer extends MicroProfileDeployer<MetricsContainer, MetricsApplicationContainer> {
 
+    private static final Logger LOGGER = Logger.getLogger(MetricsDeployer.class.getName());
+
     @Inject
     private MetricsService metricsService;
 
     @Override
+    @SuppressWarnings("unchecked")
     public MetricsApplicationContainer load(MetricsContainer container,
             DeploymentContext deploymentContext) {
 
         // Register the Metrics Servlet
         WebBundleDescriptorImpl descriptor = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class);
-        descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(MetricsServletContextListener.class.getName()));
+        if (descriptor != null) {
+            descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(MetricsServletContextListener.class.getName()));
+        } else {
+            LOGGER.warning("Failed to find WebBundleDescriptorImpl. Metrics servlet will not be available.");
+        }
 
         // Register the CDI extension
         Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);

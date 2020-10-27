@@ -41,6 +41,7 @@ package fish.payara.microprofile.jwtauth;
 
 import java.util.Collection;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.Extension;
 
@@ -58,6 +59,8 @@ import fish.payara.microprofile.jwtauth.cdi.CdiExtension;
 @PerLookup
 public class JwtAuthDeployer extends MicroProfileDeployer<JwtAuthContainer, JwtAuthApplicationContainer> {
 
+    private static final Logger LOGGER = Logger.getLogger(JwtAuthDeployer.class.getName());
+
     @Override
     @SuppressWarnings("unchecked")
     public JwtAuthApplicationContainer load(JwtAuthContainer container,
@@ -65,7 +68,11 @@ public class JwtAuthDeployer extends MicroProfileDeployer<JwtAuthContainer, JwtA
 
         // Register the JWTAuth Servlet
         WebBundleDescriptorImpl descriptor = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class);
-        descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(RolesDeclarationInitializer.class.getName()));
+        if (descriptor != null) {
+            descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(RolesDeclarationInitializer.class.getName()));
+        } else {
+            LOGGER.warning("Failed to find WebBundleDescriptorImpl. JWT Auth roles will not be declared");
+        }
 
         // Register the CDI extension
         Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);

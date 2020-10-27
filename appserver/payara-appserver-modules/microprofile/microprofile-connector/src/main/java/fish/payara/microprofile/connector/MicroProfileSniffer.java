@@ -44,12 +44,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+
 import com.sun.enterprise.module.HK2Module;
 
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.web.WarType;
 import org.jvnet.hk2.annotations.Contract;
 
 @Contract
@@ -57,9 +62,16 @@ public abstract class MicroProfileSniffer implements Sniffer {
 
     private static final Logger LOGGER = Logger.getLogger(MicroProfileSniffer.class.getName());
 
+    @Inject
+    private ServiceLocator serviceLocator;
+
+    @Inject
+    private WarType warType;
+
     @Override
     public final boolean handles(DeploymentContext context) {
         final ReadableArchive archive = context.getSource();
+
         final String archivePath = archive.getURI().getPath();
         // Ignore system applications
         if (archivePath.contains("glassfish/lib/install")) {
@@ -71,7 +83,13 @@ public abstract class MicroProfileSniffer implements Sniffer {
         if (archivePath.contains("mq/lib")) {
             return false;
         }
-        return true;
+
+        // Check archive type
+        final ArchiveType type = serviceLocator.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        if (type != null && !supportsArchiveType(type)) {
+            return false;
+        }
+        return DeploymentUtils.isArchiveOfType(archive, warType, context, serviceLocator);
     }
 
     protected abstract Class<?> getContainersClass();
@@ -123,7 +141,9 @@ public abstract class MicroProfileSniffer implements Sniffer {
 
     @Override
     public final String[] getIncompatibleSnifferTypes() {
-        return new String[0];
+        final String[] types = new String[1];
+        types[0] = "connector";
+        return types;
     }
     
     @Override
