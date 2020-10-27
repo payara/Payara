@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package org.glassfish.security.services.common;
 
@@ -203,9 +204,8 @@ public class SecurityAccessValidator implements Validator {
     }
     
     
-    //temporary alternative fixing to JIRA-HK2:116
-    private Class getServiceLookupCaller() {
-/*
+    private Class<?> getServiceLookupCaller() {
+
         StackTraceElement[] steArr = new Exception().getStackTrace();
         
         for (int i = 0; i < steArr.length; i++ ) {
@@ -228,16 +228,13 @@ public class SecurityAccessValidator implements Validator {
                 }
 
                 //after finding the 1st service locator, then look for the class which is not ServiceLocatorImpl
-                System.out.println("%%%%found the locator");
                 for (int j = i+1; j < steArr.length; j++ ) {
                     StackTraceElement elmj = steArr[j];
                     if (elmj.getClassName().startsWith("org.jvnet.hk2.internal."))  //by pass all hk2 classes to find the caller
                         continue;
                     else {
                         StackTraceElement caller = elmj;
-                        //found the caller class which is not ServiceLocatorImpl
-                        System.out.println("%%%caller Class name= " + caller.getClassName() + ", caller ste =" + caller + 
-                                ", method=" + caller.getMethodName());                
+                        //found the caller class which is not ServiceLocatorImpl               
                         try {
                             return Class.forName(caller.getClassName(), true, Thread.currentThread().getContextClassLoader());
                         } catch (ClassNotFoundException e) {
@@ -245,8 +242,6 @@ public class SecurityAccessValidator implements Validator {
                             try {
                                 return Class.forName(caller.getClassName());
                             } catch (ClassNotFoundException e1) {
-                                // TODO Auto-generated catch block
-                                //e1.printStackTrace();
                                 LOG.warning(localStrings.getLocalString("sec.validate.lookup.noclass",
                                         "Lookup Class not found in classpath: {0}", caller.getClassName()));
                                 throw new RuntimeException(e);
@@ -255,12 +250,17 @@ public class SecurityAccessValidator implements Validator {
                         }
                     }
                 }
+            } else {
+                try {
+                    return Class.forName(elm.getClassName());
+                } catch (ClassNotFoundException ex) {
+                    LOG.warning(localStrings.getLocalString("sec.validate.lookup.noclass", "Lookup Class not found in classpath: {0}", elm.getClassName()));
+                    throw new RuntimeException(ex);
+                }
             }
         }
 
-        System.out.println("%%%caller Class= null");
-        LOG.warning(localStrings.getLocalString("sec.validate.lookup.fail", "Cannot find the looup caller class"));
-*/
+        LOG.warning(localStrings.getLocalString("sec.validate.lookup.fail", "Cannot find the lookup caller class"));
         return null;
         
     }
