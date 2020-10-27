@@ -72,7 +72,6 @@ public class JwtAuthDeployer extends MicroProfileDeployer<JwtAuthContainer, JwtA
             descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(RolesDeclarationInitializer.class.getName()));
         } else {
             LOGGER.warning("Failed to find WebBundleDescriptorImpl. JWT Auth roles will not be declared");
-            return null;
         }
 
         // Register the CDI extension

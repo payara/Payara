@@ -76,7 +76,6 @@ public class MetricsDeployer extends MicroProfileDeployer<MetricsContainer, Metr
             descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(MetricsServletContextListener.class.getName()));
         } else {
             LOGGER.warning("Failed to find WebBundleDescriptorImpl. Metrics servlet will not be available.");
-            return null;
         }
 
         // Register the CDI extension

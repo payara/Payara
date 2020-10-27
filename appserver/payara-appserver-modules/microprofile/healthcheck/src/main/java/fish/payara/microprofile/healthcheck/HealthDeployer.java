@@ -76,7 +76,6 @@ public class HealthDeployer extends MicroProfileDeployer<HealthContainer, Health
             descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(HealthServletContextListener.class.getName()));
         } else {
             LOGGER.warning("Failed to find WebBundleDescriptorImpl. Health servlet won't be available");
-            return null;
         }
 
         // Register the CDI extension

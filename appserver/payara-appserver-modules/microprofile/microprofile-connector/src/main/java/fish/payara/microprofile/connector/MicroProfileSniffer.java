@@ -44,16 +44,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-
 import com.sun.enterprise.module.HK2Module;
 
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.sniffer.WarType;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -61,12 +57,6 @@ import org.jvnet.hk2.annotations.Contract;
 public abstract class MicroProfileSniffer implements Sniffer {
 
     private static final Logger LOGGER = Logger.getLogger(MicroProfileSniffer.class.getName());
-
-    @Inject
-    private ServiceLocator serviceLocator;
-
-    @Inject
-    private WarType warType;
 
     @Override
     public final boolean handles(DeploymentContext context) {
@@ -84,12 +74,7 @@ public abstract class MicroProfileSniffer implements Sniffer {
             return false;
         }
 
-        // Check archive type
-        final ArchiveType type = serviceLocator.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
-        if (type != null && !supportsArchiveType(type)) {
-            return false;
-        }
-        return DeploymentUtils.isArchiveOfType(archive, warType, context, serviceLocator);
+        return handles(archive);
     }
 
     protected abstract Class<?> getContainersClass();
@@ -132,7 +117,7 @@ public abstract class MicroProfileSniffer implements Sniffer {
 
     @Override
     public final boolean supportsArchiveType(ArchiveType type) {
-        final boolean result = type != null && "war".equals(type.getExtension());
+        final boolean result = type != null && WarType.ARCHIVE_EXTENSION.equals(type.getExtension());
         if (!result) {
             LOGGER.fine("Unsupported ArchiveType: " + type.getExtension());
         }
