@@ -53,17 +53,14 @@ public class FaultToleranceSniffer extends MicroProfileSniffer {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
-        Class<? extends Annotation>[] annotations = new Class[6];
-
-        // Search for fault tolerance annotations
-        annotations[0] = org.eclipse.microprofile.faulttolerance.Asynchronous.class;
-        annotations[1] = org.eclipse.microprofile.faulttolerance.Timeout.class;
-        annotations[2] = org.eclipse.microprofile.faulttolerance.Retry.class;
-        annotations[3] = org.eclipse.microprofile.faulttolerance.Bulkhead.class;
-        annotations[4] = org.eclipse.microprofile.faulttolerance.CircuitBreaker.class;
-        annotations[5] = org.eclipse.microprofile.faulttolerance.Fallback.class;
-
-        return annotations;
+        return new Class[] {
+            org.eclipse.microprofile.faulttolerance.Asynchronous.class,
+            org.eclipse.microprofile.faulttolerance.Timeout.class,
+            org.eclipse.microprofile.faulttolerance.Retry.class,
+            org.eclipse.microprofile.faulttolerance.Bulkhead.class,
+            org.eclipse.microprofile.faulttolerance.CircuitBreaker.class,
+            org.eclipse.microprofile.faulttolerance.Fallback.class
+        };
     }
 
     @Override

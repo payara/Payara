@@ -66,20 +66,19 @@ public class MetricsSniffer extends MicroProfileSniffer {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
-        Class<? extends Annotation>[] annotations = new Class[8];
+        return new Class[] {
+            // Search for Metrics annotations
+            org.eclipse.microprofile.metrics.annotation.Counted.class,
+            org.eclipse.microprofile.metrics.annotation.ConcurrentGauge.class,
+            org.eclipse.microprofile.metrics.annotation.Gauge.class,
+            org.eclipse.microprofile.metrics.annotation.Metered.class,
+            org.eclipse.microprofile.metrics.annotation.Metric.class,
+            org.eclipse.microprofile.metrics.annotation.Timed.class,
+            org.eclipse.microprofile.metrics.annotation.RegistryType.class,
 
-        // Search for metrics annotations
-        annotations[0] = org.eclipse.microprofile.metrics.annotation.Counted.class;
-        annotations[1] = org.eclipse.microprofile.metrics.annotation.ConcurrentGauge.class;
-        annotations[2] = org.eclipse.microprofile.metrics.annotation.Gauge.class;
-        annotations[3] = org.eclipse.microprofile.metrics.annotation.Metered.class;
-        annotations[4] = org.eclipse.microprofile.metrics.annotation.Metric.class;
-        annotations[5] = org.eclipse.microprofile.metrics.annotation.Timed.class;
-        annotations[6] = org.eclipse.microprofile.metrics.annotation.RegistryType.class;
-
-        // Also include all JAX-RS applications
-        annotations[7] = javax.ws.rs.Path.class;
-        return annotations;
+            // All JAX-RS applications are valid applications for Metrics
+            javax.ws.rs.Path.class
+        };
     }
 
     @Override

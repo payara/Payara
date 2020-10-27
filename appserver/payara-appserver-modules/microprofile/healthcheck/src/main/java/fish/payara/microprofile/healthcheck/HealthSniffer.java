@@ -53,16 +53,15 @@ public class HealthSniffer extends MicroProfileSniffer {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
-        Class<? extends Annotation>[] annotations = new Class[4];
+        return new Class[] {
+            // Search for Health annotations
+            org.eclipse.microprofile.health.Health.class,
+            org.eclipse.microprofile.health.Readiness.class,
+            org.eclipse.microprofile.health.Liveness.class,
 
-        // Search for health annotations
-        annotations[0] = org.eclipse.microprofile.health.Health.class;
-        annotations[1] = org.eclipse.microprofile.health.Readiness.class;
-        annotations[2] = org.eclipse.microprofile.health.Liveness.class;
-
-        // Also include all JAX-RS applications
-        annotations[3] = javax.ws.rs.Path.class;
-        return annotations;
+            // All JAX-RS applications are valid applications for Metrics
+            javax.ws.rs.Path.class
+        };
     }
 
     @Override

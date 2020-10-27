@@ -50,16 +50,13 @@ import fish.payara.microprofile.connector.MicroProfileSniffer;
 @PerLookup
 public class OpenApiSniffer extends MicroProfileSniffer {
 
-    /**
-     * Listens for a JAX-RS application, as openapi uses the JAX-RS annotations as a
-     * base.
-     */
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
-        Class<? extends Annotation>[] annotations = new Class[0];
-        annotations[0] = javax.ws.rs.Path.class;
-        return annotations;
+        return new Class[] {
+            // All JAX-RS applications are valid applications for OpenAPI
+            javax.ws.rs.Path.class
+        };
     }
 
     @Override

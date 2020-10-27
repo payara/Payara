@@ -53,12 +53,10 @@ public class ConfigSniffer extends MicroProfileSniffer {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
-        Class<? extends Annotation>[] annotations = new Class[1];
-
-        // Search for ConfigProperty annotation used in the CDI extension
-        annotations[0] = org.eclipse.microprofile.config.inject.ConfigProperty.class;
-
-        return annotations;
+        return new Class[] {
+            // Search for Config CDI injection
+            org.eclipse.microprofile.config.inject.ConfigProperty.class
+        };
     }
 
     @Override

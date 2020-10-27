@@ -53,12 +53,10 @@ public class JwtAuthSniffer extends MicroProfileSniffer {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
-        Class<? extends Annotation>[] annotations = new Class[1];
-
-        // Search for jwtauth activator annotation
-        annotations[0] = org.eclipse.microprofile.auth.LoginConfig.class;
-
-        return annotations;
+        return new Class[] {
+            // Search for jwtauth activator annotation
+            org.eclipse.microprofile.auth.LoginConfig.class
+        };
     }
 
     @Override
