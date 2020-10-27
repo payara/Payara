@@ -53,7 +53,7 @@ import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.microprofile.connector.MicroProfileDeployer;
-import fish.payara.microprofile.jwtauth.cdi.CdiExtension;
+import fish.payara.microprofile.jwtauth.cdi.JwtAuthCdiExtension;
 
 @Service
 @PerLookup
@@ -78,7 +78,7 @@ public class JwtAuthDeployer extends MicroProfileDeployer<JwtAuthContainer, JwtA
         // Register the CDI extension
         Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
         if (snifferExtensions != null) {
-            snifferExtensions.add(CdiExtension::new);
+            snifferExtensions.add(JwtAuthCdiExtension::new);
         }
 
         return new JwtAuthApplicationContainer(deploymentContext);

@@ -49,7 +49,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.config.cdi.CDIExtension;
+import fish.payara.microprofile.config.cdi.ConfigCdiExtension;
 import fish.payara.microprofile.connector.MicroProfileDeployer;
 
 @Service
@@ -64,7 +64,7 @@ public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, Config
         // Register the CDI extension
         Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
         if (snifferExtensions != null) {
-            snifferExtensions.add(CDIExtension::new);
+            snifferExtensions.add(ConfigCdiExtension::new);
         }
 
         return new ConfigApplicationContainer(deploymentContext);

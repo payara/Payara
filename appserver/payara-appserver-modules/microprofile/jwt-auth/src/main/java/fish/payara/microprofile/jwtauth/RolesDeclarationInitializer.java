@@ -51,7 +51,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import fish.payara.microprofile.jwtauth.cdi.CdiExtension;
+import fish.payara.microprofile.jwtauth.cdi.JwtAuthCdiExtension;
 
 /**
  * This servlet container initializer checks if CDI is active and if so obtains
@@ -79,10 +79,10 @@ public class RolesDeclarationInitializer implements ServletContextListener {
             CDI<Object> cdi = CDI.current();
             
             if (cdi != null) {
-                Instance<CdiExtension> extensionInstance = cdi.select(CdiExtension.class);
+                Instance<JwtAuthCdiExtension> extensionInstance = cdi.select(JwtAuthCdiExtension.class);
                 
                 if (extensionInstance != null && !extensionInstance.isUnsatisfied() && !extensionInstance.isAmbiguous()) {
-                    CdiExtension cdiExtension = extensionInstance.get();
+                    JwtAuthCdiExtension cdiExtension = extensionInstance.get();
                     
                     if (cdiExtension != null) {
                         roles = cdiExtension.getRoles();
