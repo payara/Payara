@@ -90,10 +90,10 @@ public class SetAzureSecretsConfigSourceConfigurationCommand extends BaseSetConf
     @Param(optional = true, name = "client-id", alias = "clientId")
     protected String clientId;
 
-    @Param(optional = true, name = "key-vault-name", alias = "keyVaultname")
+    @Param(optional = true, name = "key-vault-name", alias = "keyVaultName")
     protected String keyVaultName;
 
-    @Param(optional = true, name = "private-key-file", alias = "privateKeyPath")
+    @Param(optional = true, name = "private-key-file", alias = "privateKeyFile")
     private File privateKeyFile;
 
     @Param(optional = true)
