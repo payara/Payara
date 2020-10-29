@@ -143,8 +143,7 @@
                     label="$resource{i18n_microprofile.config.dynamodb.configuration.limitLabel}"  
                     helpText="$resource{i18n_microprofile.config.dynamodb.configuration.limitHelpText}">
             <sun:textField id="limitField" columns="$int{75}" maxLength="255" 
-                        text="#{pageSession.valueMap['limit']}" styleClass="required"  
-                        required="#{true}"/>
+                        text="#{pageSession.valueMap['limit']}"/>
         </sun:property>
     </sun:propertySheetSection>
    </sun:propertySheet>
