@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,12 @@
  */
 package fish.payara.nucleus.microprofile.config.admin;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.logging.Logger;
+
 import javax.inject.Inject;
+
+import com.sun.enterprise.config.serverbeans.Config;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -56,6 +58,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 /**
  * asAdmin command to the set the ordinal for one of the built in Config Sources
@@ -79,7 +83,7 @@ public class SetConfigOrdinal implements AdminCommand {
     @Param()
     int ordinal;
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc,cloud", defaultValue = "domain")
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -135,6 +139,14 @@ public class SetConfigOrdinal implements AdminCommand {
                             }
                             case "password" : {
                                 config.setPasswordOrdinality(Integer.toString(ordinal));
+                                break;
+                            }
+                            case "jdbc" : {
+                                config.setJdbcOrdinality(Integer.toString(ordinal));
+                                break;
+                            }
+                            case "cloud": {
+                                config.setCloudOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                         }

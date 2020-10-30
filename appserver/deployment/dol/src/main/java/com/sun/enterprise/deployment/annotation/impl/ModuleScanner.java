@@ -81,14 +81,14 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     protected ClassLoader classLoader = null;
     protected Parser classParser = null;
 
-    private Set<URI> scannedURI = new HashSet<URI>();
+    private Set<URI> scannedURI = new HashSet<>();
 
     private boolean needScanAnnotation = false;
 
     @Inject
     PayaraExecutorService executorService;
     
-    private Set<String> entries = new HashSet<String>();
+    private Set<String> entries = new HashSet<>();
 
     public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
 
@@ -182,8 +182,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
                                                           ae.getName(),
                                                           at.getName() });
                           } else {
-                            deplLogger.log(Level.FINE, "Adding " + t.getName()
-                                           + " since " + ae.getName() + " is annotated with " + at.getName());
+                            deplLogger.log(Level.FINE, "Adding {0} since {1} is annotated with {2}", new Object[]{t.getName(), ae.getName(), at.getName()});
                           }
                         }
                         entries.add(t.getName());
@@ -202,9 +201,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
                                        new Object[] { cm.getName(),
                                                       im.getName() });
                       } else {
-                        deplLogger.log(Level.FINE,
-                                       "Adding " + cm.getName()
-                                       + " since it is implementing " + im.getName());
+                        deplLogger.log(Level.FINE, "Adding {0} since it is implementing {1}", new Object[]{cm.getName(), im.getName()});
                       }
                     }
                     entries.add(cm.getName());
@@ -323,7 +320,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
      */
     protected void addLibraryJars(T bundleDesc, 
         ReadableArchive moduleArchive) {
-        List<URI> libraryURIs = new ArrayList<URI>(); 
+        List<URI> libraryURIs = new ArrayList<>(); 
         try {
             if (bundleDesc instanceof BundleDescriptor) {
                 libraryURIs = DOLUtils.getLibraryJarURIs((BundleDescriptor)bundleDesc, moduleArchive);

@@ -37,21 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
+import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import java.util.List;
 import java.util.Set;
 
-    /**
-    * Objects implementing this interface allow their
-    * environment properties, ejb references and resource
-    * references to be read.
-    * 
-    *@author Danny Coward
-    */
-
+/**
+ * Objects implementing this interface allow their environment properties, 
+ * ejb references and resource references to be read.
+ *
+ * @author Danny Coward
+ */
 public interface JndiNameEnvironment {
 
     /** 
@@ -59,7 +61,7 @@ public interface JndiNameEnvironment {
      *
      * @return java.util.Set of EnvironmentProperty objects
      */
-    public Set getEnvironmentProperties();
+    public Set<? extends EnvironmentEntry> getEnvironmentProperties();
 
 
     /** 
@@ -74,7 +76,7 @@ public interface JndiNameEnvironment {
      *
      * @return java.util.Set of EjbReferenceDescriptor objects
      */
-    public Set getEjbReferenceDescriptors();
+    public Set<EjbReference> getEjbReferenceDescriptors();
 
 /** 
      * Return a set of service reference descriptors.
@@ -82,7 +84,7 @@ public interface JndiNameEnvironment {
      * @return java.util.Set of ServiceReferenceDescriptor objects
      */
 	
-    public Set getServiceReferenceDescriptors();
+    public Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors();
     
      
     /** 
@@ -99,7 +101,7 @@ public interface JndiNameEnvironment {
      * @return java.util.Set of ResourceReferenceDescriptor objects
      */
 	
-    public Set getResourceReferenceDescriptors();
+    public Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors();
     
      
     /** 
@@ -108,7 +110,7 @@ public interface JndiNameEnvironment {
      * @return java.util.Set of ResourceEnvReferenceDescriptor objects
      */
 	
-    public Set getResourceEnvReferenceDescriptors();
+    public Set<ResourceEnvReferenceDescriptor> getResourceEnvReferenceDescriptors();
 
 
     /** 
@@ -125,7 +127,7 @@ public interface JndiNameEnvironment {
      * @return java.util.Set of MessageDestinationReferenceDescriptor objects
      */
 	
-    public Set getMessageDestinationReferenceDescriptors();
+    public Set<? extends MessageDestinationReferencer> getMessageDestinationReferenceDescriptors();
 
 
     /** 

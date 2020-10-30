@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -45,7 +46,6 @@ import javax.enterprise.inject.spi.Interceptor;
 /**
  * Contains information about 1 ejb interceptor.
  */ 
-
 public class EjbInterceptor extends InterceptorDescriptor {
 
     private EjbBundleDescriptor ejbBundleDescriptor;
@@ -81,6 +81,7 @@ public class EjbInterceptor extends InterceptorDescriptor {
         this.interceptor = interceptor;
     }
     
+    @Override
     public String toString() {
         return "EjbInterceptor class = " + getInterceptorClassName();
     }

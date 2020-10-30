@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -103,6 +103,7 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -121,8 +122,7 @@ public class DOLUtils {
     public final static String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
     public final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
 
-    private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(DOLUtils.class);
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DOLUtils.class);
 
     @LogMessagesResourceBundle
     private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
@@ -198,7 +198,7 @@ public class DOLUtils {
         if (bundleDesc == null) {
             return Collections.emptyList();
         }
-        ModuleDescriptor moduleDesc = ((BundleDescriptor)bundleDesc).getModuleDescriptor();
+        ModuleDescriptor moduleDesc = bundleDesc.getModuleDescriptor();
         Application app = ((BundleDescriptor)moduleDesc.getDescriptor()).getApplication();
         return getLibraryJarURIs(app, archive);
     }
@@ -236,8 +236,8 @@ public class DOLUtils {
      * @throws Exception 
      */
     public static List<URI> getLibraryJarURIs(Application app, ReadableArchive archive) throws Exception {
-        List<URL> libraryURLs = new ArrayList<URL>();
-        List<URI> libraryURIs = new ArrayList<URI>();
+        List<URL> libraryURLs = new ArrayList<>();
+        List<URI> libraryURIs = new ArrayList<>();
 
         // add libraries referenced through manifest
         libraryURLs.addAll(DeploymentUtils.getManifestLibraries(archive));
@@ -413,7 +413,7 @@ public class DOLUtils {
                 sunConfDD = ddFile;
             }
         }
-        List<ConfigurationDeploymentDescriptorFile> sortedConfDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>(); 
+        List<ConfigurationDeploymentDescriptorFile> sortedConfDDFiles = new ArrayList<>(); 
 
         // if there is external runtime alternate deployment descriptor 
         // specified, just use that
@@ -503,7 +503,7 @@ public class DOLUtils {
             // specified, the config DD files are already processed
             return sortConfigurationDDFiles(ddFiles, archiveType, archive);
         }
-        List<ConfigurationDeploymentDescriptorFile> processedConfDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
+        List<ConfigurationDeploymentDescriptorFile> processedConfDDFiles = new ArrayList<>();
         for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(ddFiles, archiveType, archive)) {
             if (archive.exists(ddFile.getDeploymentDescriptorPath())) {
                 processedConfDDFiles.add(ddFile);
@@ -546,18 +546,18 @@ public class DOLUtils {
 
         if (confDD != null && altRuntimeDDPath != null) {
             // found an alternative runtime DD file
-            InputStream is = appArchive.getEntry(altRuntimeDDPath); 
-            confDD.setXMLValidation(
-                archivist.getRuntimeXMLValidation());
-            confDD.setXMLValidationLevel(
-                archivist.getRuntimeXMLValidationLevel());
-            if (appArchive.getURI()!=null) {
-                confDD.setErrorReportingString(
-                    appArchive.getURI().getSchemeSpecificPart());
+            try (InputStream is = appArchive.getEntry(altRuntimeDDPath)) {
+                confDD.setXMLValidation(
+                        archivist.getRuntimeXMLValidation());
+                confDD.setXMLValidationLevel(
+                        archivist.getRuntimeXMLValidationLevel());
+                if (appArchive.getURI()!=null) {
+                    confDD.setErrorReportingString(
+                            appArchive.getURI().getSchemeSpecificPart());
+                }
+                
+                confDD.read(descriptor, is);
             }
-
-            confDD.read(descriptor, is);
-            is.close();
             archivist.postRuntimeDDsRead(descriptor, embeddedArchive);
         } else {
             archivist.readRuntimeDeploymentDescriptor(embeddedArchive,descriptor);
@@ -583,8 +583,7 @@ public class DOLUtils {
         ConfigurationDeploymentDescriptorFile confDD = confDDFiles.get(0);
         InputStream is = null;
         try {
-            File runtimeAltDDFile = archive.getArchiveMetaData(
-                DeploymentProperties.RUNTIME_ALT_DD, File.class);
+            File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
             if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
                 is = new FileInputStream(runtimeAltDDFile);
             } else {
@@ -679,7 +678,7 @@ public class DOLUtils {
         String [] incompatibleTypes = mainSniffer.getIncompatibleSnifferTypes();
         List<String> allIncompatTypes = addAdditionalIncompatTypes(mainSniffer, incompatibleTypes);
 
-        List<Sniffer> sniffersToRemove = new ArrayList<Sniffer>();
+        List<Sniffer> sniffersToRemove = new ArrayList<>();
         for (Sniffer sniffer : sniffers) {
             for (String incompatType : allIncompatTypes) {
                 if (sniffer.getModuleType().equals(incompatType)) {
@@ -724,10 +723,8 @@ public class DOLUtils {
     // this is to add additional incompatible sniffers at ear level where
     // we have information to determine what is the main sniffer
     private static List<String> addAdditionalIncompatTypes(Sniffer mainSniffer, String[] incompatTypes) {
-        List<String> allIncompatTypes = new ArrayList<String>();
-        for (String incompatType : incompatTypes) {
-            allIncompatTypes.add(incompatType);
-        }
+        List<String> allIncompatTypes = new ArrayList<>();
+        allIncompatTypes.addAll(Arrays.asList(incompatTypes));
         if (mainSniffer.getModuleType().equals("appclient")) {
             allIncompatTypes.add("ejb");
         } else if (mainSniffer.getModuleType().equals("ejb")) {
@@ -743,7 +740,7 @@ public class DOLUtils {
      * @return 
      */
     public static List<ConfigurationDeploymentDescriptorFile> getConfigurationDeploymentDescriptorFiles(ServiceLocator habitat, String containerType) {
-        List<ConfigurationDeploymentDescriptorFile> confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
+        List<ConfigurationDeploymentDescriptorFile> confDDFiles = new ArrayList<>();
         for (ServiceHandle<?> serviceHandle : habitat.getAllServiceHandles(ConfigurationDeploymentDescriptorFileFor.class)) {
             ActiveDescriptor<?> descriptor = serviceHandle.getActiveDescriptor();
             String indexedType = descriptor.getMetadata().get(ConfigurationDeploymentDescriptorFileFor.DESCRIPTOR_FOR).get(0);
@@ -810,7 +807,7 @@ public class DOLUtils {
      * @return 
    */
   public static List<String> getProprietarySchemaNamespaces() {
-    ArrayList<String> ns = new ArrayList<String>();
+    ArrayList<String> ns = new ArrayList<>();
     ns.add(DescriptorConstants.WLS_SCHEMA_NAMESPACE_BEA);
     ns.add(DescriptorConstants.WLS_SCHEMA_NAMESPACE_ORACLE);
     return ns;
@@ -821,7 +818,7 @@ public class DOLUtils {
      * @return 
    */
   public static List<String> getProprietaryDTDStart() {
-    ArrayList<String> ns = new ArrayList<String>();
+    ArrayList<String> ns = new ArrayList<>();
     ns.add(DescriptorConstants.WLS_DTD_SYSTEM_ID_BEA);
     return ns;
   }

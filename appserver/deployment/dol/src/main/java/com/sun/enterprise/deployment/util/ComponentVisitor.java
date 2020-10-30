@@ -37,31 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * ComponentVisitor.java
- *
- * Created on January 31, 2002, 11:29 AM
- */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import org.glassfish.deployment.common.DescriptorVisitor;
 
 /**
- * This class defines the protocol for visiting J2EE Component DOL  
+ * This class defines the protocol for visiting Jakarta EE Component DOL  
  * related classes 
  *
  * @author  Jerome Dochez
- * @version 
+ * @version
+ * @since January 31, 2002
  */
 public interface ComponentVisitor extends DescriptorVisitor {
 
     /**
-     * visits a J2EE component bundle descriptor.
+     * visits a Jakarta EE component bundle descriptor.
      */
     public void accept(BundleDescriptor bundleDesc);
 }

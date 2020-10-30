@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundationan and/or affiliates
 
  package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.ManagedBeanVisitor;
 import com.sun.enterprise.deployment.util.ApplicationValidator;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 
 import java.util.*;
@@ -71,12 +70,12 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
     private BundleDescriptor enclosingBundle;
 
     private Object interceptorBuilder = null;
-    private Collection beanInstances = new HashSet();
-    private Map<Object, Object> beanSupportingInfo = new HashMap<Object, Object>();
+    private final Collection<Object> beanInstances = new HashSet<>();
+    private final Map<Object, Object> beanSupportingInfo = new HashMap<>();
 
-    private List<InterceptorDescriptor> classInterceptorChain = new LinkedList<InterceptorDescriptor>();
+    private List<InterceptorDescriptor> classInterceptorChain = new LinkedList<>();
 
-    private Set<LifecycleCallbackDescriptor> aroundInvokeDescs = new HashSet<LifecycleCallbackDescriptor>();
+    private final Set<LifecycleCallbackDescriptor> aroundInvokeDescs = new HashSet<>();
 
     //
     // Interceptor info per business method.  If the map does not
@@ -89,18 +88,19 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
     // method.  An empty list would mean all the interceptors have been
     // disabled for that particular business method.
     //
-    private Map<MethodDescriptor, List<InterceptorDescriptor>> methodInterceptorsMap =
-            new HashMap<MethodDescriptor, List<InterceptorDescriptor>>();
+    private final Map<MethodDescriptor, List<InterceptorDescriptor>> methodInterceptorsMap = new HashMap<>();
 
 	/**
 	* Default constructor.
 	*/
     public ManagedBeanDescriptor() {}
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -151,8 +151,8 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
         }
     }
 
-    public Collection getBeanInstances() {
-        return new HashSet(beanInstances);
+    public Collection<Object> getBeanInstances() {
+        return new HashSet<>(beanInstances);
     }
 
     public Object getSupportingInfoForBeanInstance(Object o) {
@@ -173,15 +173,15 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
     }
 
     public Set<String> getAllInterceptorClasses() {
-        Set<String> classes = new HashSet<String>();
+        Set<String> classes = new HashSet<>();
 
         for(InterceptorDescriptor desc : classInterceptorChain) {
             classes.add(desc.getInterceptorClassName());
         }
 
-        for(List intList : methodInterceptorsMap.values()) {
-            for(Object o : intList) {
-                InterceptorDescriptor interceptor = (InterceptorDescriptor) o;
+        for(List<InterceptorDescriptor> intList : methodInterceptorsMap.values()) {
+            for(InterceptorDescriptor descriptor : intList) {
+                InterceptorDescriptor interceptor = descriptor;
                 classes.add(interceptor.getInterceptorClassName());
             }
         }
@@ -190,7 +190,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
     }
 
     public void setClassInterceptorChain(List<InterceptorDescriptor> chain) {
-        classInterceptorChain = new LinkedList<InterceptorDescriptor>(chain);
+        classInterceptorChain = new LinkedList<>(chain);
     }
 
     public void setMethodLevelInterceptorChain(MethodDescriptor m, List<InterceptorDescriptor> chain) {
@@ -203,8 +203,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
      * Return the ordered list of AroundConstruct interceptors
      */
     public List<InterceptorDescriptor> getAroundConstructCallbackInterceptors(Class clz, Constructor ctor) {
-        LinkedList<InterceptorDescriptor> callbackInterceptors =
-                new LinkedList<InterceptorDescriptor>();
+        LinkedList<InterceptorDescriptor> callbackInterceptors = new LinkedList<>();
 
         Class[] ctorParamTypes = ctor.getParameterTypes();
         String[] parameterClassNames = (new MethodDescriptor()).getParameterClassNamesFor(null, ctorParamTypes);
@@ -235,8 +234,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
      */
     public List<InterceptorDescriptor> getCallbackInterceptors(CallbackType type) {
 
-        LinkedList<InterceptorDescriptor> callbackInterceptors =
-                new LinkedList<InterceptorDescriptor>();
+        LinkedList<InterceptorDescriptor> callbackInterceptors = new LinkedList<>();
 
         for (InterceptorDescriptor next : classInterceptorChain) {
             if (next.getCallbackDescriptors(type).size() > 0) {
@@ -278,8 +276,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
         }
     }
 
-    public LifecycleCallbackDescriptor
-    getAroundInvokeDescriptorByClass(String className) {
+    public LifecycleCallbackDescriptor getAroundInvokeDescriptorByClass(String className) {
 
         for (LifecycleCallbackDescriptor next :
                 getAroundInvokeDescriptors()) {
@@ -311,7 +308,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
                 methodInterceptorsMap.get(mDesc);
 
         if( aroundInvokeInterceptors == null ) {
-            aroundInvokeInterceptors = new LinkedList<InterceptorDescriptor>();
+            aroundInvokeInterceptors = new LinkedList<>();
             for(InterceptorDescriptor desc : classInterceptorChain) {
                 if( desc.hasAroundInvokeDescriptor() ) {
                     aroundInvokeInterceptors.add(desc);
@@ -403,6 +400,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
 	/**
 	* Returns a formatted String of the attributes of this object.
 	*/
+    @Override
     public void print(StringBuilder toStringBuilder) {
 
 	// toStringBuilder.append("\n homeClassName ").append(homeClassName);
@@ -422,12 +420,9 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
     @Override
     public List<InjectionCapable> getInjectableResourcesByClass(String className) {
 
-        List<InjectionCapable> injectables = new LinkedList<InjectionCapable>();
+        List<InjectionCapable> injectables = new LinkedList<>();
 
-        for (Iterator envEntryItr = getEnvironmentProperties().iterator();
-             envEntryItr.hasNext();) {
-            EnvironmentProperty envEntry = (EnvironmentProperty)
-                    envEntryItr.next();
+        for (EnvironmentProperty envEntry : getEnvironmentProperties()) {
             // Only env-entries that have been assigned a value are
             // eligible for injection.
             if (envEntry.hasAValue()) {
@@ -444,8 +439,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
         injectables.addAll(getEntityManagerFactoryReferenceDescriptors());
         injectables.addAll(getEntityManagerReferenceDescriptors());
 
-        List<InjectionCapable> injectablesByClass =
-                new LinkedList<InjectionCapable>();
+        List<InjectionCapable> injectablesByClass = new LinkedList<>();
 
         for (InjectionCapable next : injectables ) {
             if (next.isInjectable()) {
@@ -467,17 +461,13 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
 
         String className = clazz.getName();
 
-        LifecycleCallbackDescriptor postConstructDesc =
-                getPostConstructDescriptorByClass(className);
+        LifecycleCallbackDescriptor postConstructDesc = getPostConstructDescriptorByClass(className);
         String postConstructMethodName = (postConstructDesc != null) ?
                 postConstructDesc.getLifecycleCallbackMethod() : null;
-        LifecycleCallbackDescriptor preDestroyDesc =
-                getPreDestroyDescriptorByClass(className);
+        LifecycleCallbackDescriptor preDestroyDesc = getPreDestroyDescriptorByClass(className);
         String preDestroyMethodName = (preDestroyDesc != null) ?
                 preDestroyDesc.getLifecycleCallbackMethod() : null;
-        InjectionInfo injectionInfo = new InjectionInfo(className,
-                postConstructMethodName, preDestroyMethodName,
-                getInjectableResourcesByClass(className));
+        InjectionInfo injectionInfo = new InjectionInfo(className, postConstructMethodName, preDestroyMethodName, getInjectableResourcesByClass(className));
 
         return injectionInfo;
     }

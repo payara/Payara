@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.util;
 
@@ -73,13 +73,13 @@ public class EnvEntriesValidator {
 
   private Map<AppModuleKey, Map> moduleNamespaces;
 
-  private Map globalNameSpace;
+  private Map<String, Map> globalNameSpace;
 
   public EnvEntriesValidator() {
-    componentNamespaces = new HashMap<String, Map>();
-    appNamespaces = new HashMap<String, Map>();
-    moduleNamespaces = new HashMap<AppModuleKey, Map>();
-    globalNameSpace = new HashMap();
+    componentNamespaces = new HashMap<>();
+    appNamespaces = new HashMap<>();
+    moduleNamespaces = new HashMap<>();
+    globalNameSpace = new HashMap<>();
   }
 
   /**
@@ -92,7 +92,7 @@ public class EnvEntriesValidator {
           .getEnvironmentEntries();
       validateSimpleEnvEntries(env, envEntries);
     } else {
-      Set<EnvironmentProperty> envProperties = env.getEnvironmentProperties();
+      Set<? extends EnvironmentEntry> envProperties = env.getEnvironmentProperties();
       validateSimpleEnvEntries(env, envProperties);
     }
     Set<EjbReference> ejbReferences = env.getEjbReferenceDescriptors();
@@ -106,8 +106,8 @@ public class EnvEntriesValidator {
   }
 
   private void validateSimpleEnvEntries(JndiNameEnvironment env,
-      Set<EnvironmentProperty> envEntries) {
-    for (EnvironmentProperty environmentProperty : envEntries) {
+      Set<? extends EnvironmentEntry> envEntries) {
+    for (EnvironmentEntry environmentProperty : envEntries) {
       SimpleEnvEntry simpleEnvEntry = new SimpleEnvEntry(environmentProperty);
       validateEnvEntry(env, simpleEnvEntry, simpleEnvEntry.getName());
     }
@@ -210,7 +210,7 @@ public class EnvEntriesValidator {
     Map namespace = null;
     if (logicalJndiName.startsWith(JAVA_COMP_PREFIX)) {
       String componentId = DOLUtils.getComponentEnvId(env);
-      namespace = (Map) componentNamespaces.get(componentId);
+      namespace = componentNamespaces.get(componentId);
       if (namespace == null) {
         namespace = new HashMap<String, Map>();
         componentNamespaces.put(componentId, namespace);
@@ -264,9 +264,8 @@ public class EnvEntriesValidator {
   }
 
   private static class AppModuleKey {
-    private String app;
-
-    private String module;
+    private final String app;
+    private final String module;
 
     public AppModuleKey(String appName, String moduleName) {
       app = appName;

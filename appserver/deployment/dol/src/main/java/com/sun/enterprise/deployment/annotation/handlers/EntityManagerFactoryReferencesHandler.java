@@ -49,7 +49,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.persistence.PersistenceUnit;
 import javax.persistence.PersistenceUnits;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +72,7 @@ public class EntityManagerFactoryReferencesHandler
         PersistenceUnits annotation = (PersistenceUnits) ainfo.getAnnotation();
         
         PersistenceUnit[] emfRefAnnotations = annotation.value();
-        List<HandlerProcessingResult> results = new ArrayList<HandlerProcessingResult>();
+        List<HandlerProcessingResult> results = new ArrayList<>();
 
         for(PersistenceUnit emfRef : emfRefAnnotations) {
             results.add(processEmfRef(ainfo, rcContexts, emfRef));
