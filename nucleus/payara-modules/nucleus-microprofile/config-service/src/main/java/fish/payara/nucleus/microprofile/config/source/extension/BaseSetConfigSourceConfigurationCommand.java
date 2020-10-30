@@ -124,8 +124,11 @@ public abstract class BaseSetConfigSourceConfigurationCommand<C extends ConfigSo
                             throws PropertyVetoException, TransactionFailure {
                         C c = configurationProxy.createChild(configSourceConfigClass);
                         applyValues(report, c);
-                        configurationProxy.getConfigSourceConfigurationList().add(c);
-                        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        if (report.getActionExitCode() != ActionReport.ExitCode.FAILURE) {
+                            configurationProxy.getConfigSourceConfigurationList().add(c);
+                        } else {
+                            c = null;
+                        }
                         return c;
                     }
                 }, mpConfigConfiguration);
@@ -135,7 +138,6 @@ public abstract class BaseSetConfigSourceConfigurationCommand<C extends ConfigSo
                 ConfigSupport.apply(new SingleConfigCode<C>() {
                     public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
                         applyValues(report, cProxy);
-                        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return cProxy;
                     }
                 }, c);

@@ -41,7 +41,7 @@
 
 <!initPage
     setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
-    />
+/>
 <!composition template="/templates/default.layout"  
     guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.ldapConfigSource.pageTitle}">
 
@@ -52,17 +52,17 @@
         setSessionAttribute(key="microprofileConfigTabs" value="microProfileLdapConfigSourceTab");
         getRequestValue(key="configName" value="#{pageSession.configName}");
         setPageSessionAttribute(key="MICROPROFILE_CONFIG_URL", 
-        value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");
+                value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");
         gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/get-ldap-config-source-configuration?target=#{pageSession.configName}"  
-        method="GET" result="#{requestScope.resp}");
-
+                method="GET" result="#{requestScope.resp}");
+        
         setPageSessionAttribute(key="valueMap", 
                 value="#{requestScope.resp.data.extraProperties.configSourceConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         
         setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "startTLS"});
         
-         if (#{pageSession.valueMap['enabled']}=true) {
+        if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
         if (#{pageSession.valueMap['dynamic']}=true) {
@@ -73,12 +73,12 @@
         }
         />
 </event>
-
-
+    
+    
 <sun:form id="propertyForm">
-    #include "/common/shared/alertMsg_1.inc"
-    #include "/microprofile/microprofile/microprofileConfigTabs.inc"
-    #include "/microprofile/microprofile/microprofileConfigAPITabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+#include "/microprofile/microprofile/microprofileConfigTabs.inc"
+#include "/microprofile/microprofile/microprofileConfigAPITabs.inc"
     <sun:title id="propertyContentPage"
                title="$resource{i18n_microprofile.microprofile.specs.configuration.config.ldapConfigSource.pageTitle}" 
                helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.ldapConfigSource.pageTitleHelpText}" >
@@ -88,19 +88,19 @@
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) 
                         submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
-                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamicSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="startTLSEnabled" value="#{pageSession.startTLSEnabledSelected}");
                     prepareSuccessfulMsg();
                     gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-ldap-config-source-configuration" 
-                        attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                            attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     /> 
             </sun:button>
         </sun:panelGroup>
     </facet>
-</sun:title>
+    </sun:title>
 <sun:propertySheet id="propertySheet">
-    #include "/common/shared/configNameSection.inc"
+#include "/common/shared/configNameSection.inc"
     <sun:propertySheetSection id="ldapConfigSourceProps">
         <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18n_microprofile.config.ldapConfigSource.configuration.enabled}"  
@@ -178,8 +178,8 @@
                            text="#{pageSession.valueMap['readTimeout']}"/>
         </sun:property>
     </sun:propertySheetSection>
-</sun:propertySheet>
+   </sun:propertySheet>
 
-</sun:form>
-</define>
+  </sun:form>
+ </define>
 </composition>
