@@ -62,6 +62,9 @@ public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource
     @Override
     public Map<String, String> getProperties() {
         JDBCConfigSourceHelper helper = getHelper();
+        if (helper == null) {
+            return null;
+        }
         try {
             return helper.getAllConfigValues();
         } finally {
@@ -81,6 +84,9 @@ public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource
     @Override
     public String getValue(String propertyName) {
         JDBCConfigSourceHelper helper = getHelper();
+        if (helper == null) {
+            return null;
+        }
         try {
             return helper.getConfigValue(propertyName);
         } finally {
@@ -98,7 +104,10 @@ public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource
     }
 
     private JDBCConfigSourceHelper getHelper() {
-        return new JDBCConfigSourceHelper(config);
+        if (config != null) {
+            return new JDBCConfigSourceHelper(config);
+        }
+        return null;
     }
 
 }

@@ -105,7 +105,7 @@ public class JDBCConfigSourceHelper implements Closeable {
                     return resultSet.getString(1);
                 }
             } catch (SQLException ex) {
-                // ignore the exception as another source may have the property
+                LOGGER.log(Level.WARNING, "Error in config source SQL execution", ex);
             }
         }
         return null;
@@ -120,7 +120,7 @@ public class JDBCConfigSourceHelper implements Closeable {
                     result.put(resultSet.getString(1), resultSet.getString(2));
                 }
             } catch (SQLException ex) {
-                // ignore it
+                LOGGER.log(Level.WARNING, "Error in config source SQL execution", ex);
             }
         }
         return result;
@@ -128,10 +128,12 @@ public class JDBCConfigSourceHelper implements Closeable {
 
     @Override
     public void close() throws IOException {
-        try {
-            connection.close();
-        } catch (SQLException e) {
-            throw new IOException("Error closing JDBC connection from config source", e);
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new IOException("Error closing JDBC connection from config source", e);
+            }
         }
     }
 
