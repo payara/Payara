@@ -39,22 +39,41 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
+import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
 
+import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
+
 public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource {
 
-    private JDBCConfigSourceHelper jdbcConfigHelper;
+    private static final Logger LOGGER = Logger.getLogger(JDBCConfigSource.class.getName());
+
+    private final JDBCConfigSourceConfiguration config;
 
     public JDBCConfigSource() {
-      init();
+        this.config = Globals.getDefaultHabitat().getService(JDBCConfigSourceConfiguration.class);
     }
 
     @Override
     public Map<String, String> getProperties() {
-        return jdbcConfigHelper.getAllConfigValues();
+        JDBCConfigSourceHelper helper = getHelper();
+        if (helper == null) {
+            return null;
+        }
+        try {
+            return helper.getAllConfigValues();
+        } finally {
+            try {
+                helper.close();
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Error closing JDBC connection", e);
+            }
+        }
     }
 
     @Override
@@ -64,7 +83,19 @@ public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource
 
     @Override
     public String getValue(String propertyName) {
-        return jdbcConfigHelper.getConfigValue(propertyName);
+        JDBCConfigSourceHelper helper = getHelper();
+        if (helper == null) {
+            return null;
+        }
+        try {
+            return helper.getConfigValue(propertyName);
+        } finally {
+            try {
+                helper.close();
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Error closing JDBC connection", e);
+            }
+        }
     }
 
     @Override
@@ -72,9 +103,11 @@ public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource
         return "JDBC";
     }
 
-    private void init() {
-        if (jdbcConfigHelper == null) {
-            jdbcConfigHelper = new JDBCConfigSourceHelper(Globals.getDefaultHabitat().getService(JDBCConfigSourceConfiguration.class));
+    private JDBCConfigSourceHelper getHelper() {
+        if (config != null) {
+            return new JDBCConfigSourceHelper(config);
         }
+        return null;
     }
+
 }
