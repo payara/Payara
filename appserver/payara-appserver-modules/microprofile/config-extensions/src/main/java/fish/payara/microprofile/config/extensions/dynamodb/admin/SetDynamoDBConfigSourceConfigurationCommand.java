@@ -37,22 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.extensions.azure.admin;
+package fish.payara.microprofile.config.extensions.dynamodb.admin;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.inject.Inject;
-
-import com.sun.enterprise.util.StringUtils;
-import fish.payara.microprofile.config.extensions.azure.AzureSecretsConfigSourceConfiguration;
+import javax.validation.constraints.Min;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandLock;
@@ -60,16 +49,18 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.enterprise.util.StringUtils;
+
+import fish.payara.microprofile.config.extensions.dynamodb.DynamoDBConfigSourceConfiguration;
 import fish.payara.nucleus.microprofile.config.source.extension.BaseSetConfigSourceConfigurationCommand;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
-@Service(name = "set-azure-config-source-configuration")
+@Service(name = "set-dynamodb-config-source-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -77,65 +68,45 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 @RestEndpoints({
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
             opType = RestEndpoint.OpType.POST,
-            path = "set-azure-config-source-configuration",
-            description = "Configures Azure Secrets Config Source")
+            path = "set-dynamodb-config-source-configuration",
+            description = "Configures DynamoDB Config Source")
 })
-public class SetAzureSecretsConfigSourceConfigurationCommand extends BaseSetConfigSourceConfigurationCommand<AzureSecretsConfigSourceConfiguration> {
+public class SetDynamoDBConfigSourceConfigurationCommand extends BaseSetConfigSourceConfigurationCommand<DynamoDBConfigSourceConfiguration> {
 
-    private static final Logger LOGGER = Logger.getLogger(SetAzureSecretsConfigSourceConfigurationCommand.class.getPackage().getName());
+    @Param(optional = true, name = "region-name", alias = "regionName")
+    protected String regionName;
 
-    @Param(optional = true, name = "tenant-id", alias = "tenantId")
-    protected String tenantId;
+    @Param(optional = true, name = "table-name", alias = "tableName")
+    protected String tableName;
 
-    @Param(optional = true, name = "client-id", alias = "clientId")
-    protected String clientId;
+    @Param(optional = true, name = "key-column-name", alias = "keyColumnName")
+    protected String keyColumnName;
 
-    @Param(optional = true, name = "key-vault-name", alias = "keyVaultName")
-    protected String keyVaultName;
+    @Param(optional = true, name = "value-column-name", alias = "valueColumnName")
+    protected String valueColumnName;
 
-    @Param(optional = true, name = "private-key-file", alias = "privateKeyFile")
-    private File privateKeyFile;
-
-    @Param(optional = true)
-    private String thumbprint;
-
-    @Inject
-    private ServerEnvironment env;
+    @Param(optional = true, defaultValue = "100")
+    @Min(value = 1, message = "Limit value must be 1 or more")
+    protected String limit;
 
     @Override
-    protected void applyValues(AzureSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
+    protected void applyValues(DynamoDBConfigSourceConfiguration configuration) throws PropertyVetoException {
         super.applyValues(configuration);
-        if (StringUtils.ok(tenantId)) {
-            configuration.setTenantId(tenantId);
+        if (StringUtils.ok(regionName)) {
+            configuration.setRegionName(regionName);
+        }
+        if (StringUtils.ok(tableName)) {
+            configuration.setTableName(tableName);
         }
 
-        if (StringUtils.ok(clientId)) {
-            configuration.setClientId(clientId);
+        if (StringUtils.ok(keyColumnName)) {
+            configuration.setKeyColumnName(keyColumnName);
         }
 
-        if (StringUtils.ok(keyVaultName)) {
-            configuration.setKeyVaultName(keyVaultName);
+        if (StringUtils.ok(valueColumnName)) {
+            configuration.setValueColumnName(valueColumnName);
         }
 
-        if (StringUtils.ok(thumbprint)) {
-            configuration.setThumbprint(thumbprint);
-        }
-
-        if (privateKeyFile != null) {
-            if (!privateKeyFile.exists() || !privateKeyFile.isFile()) {
-                throw new PropertyVetoException("Private Key file not found", new PropertyChangeEvent(configuration, "privateKeyFile", null, privateKeyFile));
-            }
-            try {
-                Path configDirPath = env.getConfigDirPath().toPath();
-                Path output = Files.copy(privateKeyFile.toPath(), configDirPath.resolve(privateKeyFile.getName()),
-                        StandardCopyOption.REPLACE_EXISTING);
-                configuration.setPrivateKeyFilePath(configDirPath.relativize(output).toString());
-                LOGGER.info("File copied to " + output);
-            } catch (IOException e) {
-                final String message = "Unable to find or access target file";
-                LOGGER.log(Level.WARNING, message, e);
-                throw new PropertyVetoException(message, new PropertyChangeEvent(configuration, "privateKeyFile", null, privateKeyFile));
-            }
-        }
+        configuration.setLimit(limit);
     }
 }

@@ -30,6 +30,7 @@
         <module>jaxws-security</module>
         <module>jaxws-tracing</module>
         <module>microprofile-endpoints</module>
+        <module>microprofile-healthcheck</module>
         <module>oauth2</module>
         <module>openid</module>
         <module>rest-management</module>
@@ -74,6 +75,7 @@
                     <groupId>fish.payara.distributions</groupId>
                     <artifactId>payara</artifactId>
                     <type>zip</type>
+                    <optional>true</optional>
                 </dependency>
 
                 <!-- The actual Arquillian connector -->

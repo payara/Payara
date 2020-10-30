@@ -106,14 +106,14 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
     @Attribute(defaultValue = "170", dataType = Integer.class)
     String getPayaraExpressionPropertiesOrdinality();
     void setPayaraExpressionPropertiesOrdinality(String message);
-    
-    @Attribute(defaultValue = "180", dataType = Integer.class)
-    String getJdbcOrdinality();
-    void setJdbcOrdinality(String message);
 
     @Attribute(defaultValue = "180", dataType = Integer.class)
     String getCloudOrdinality();
     void setCloudOrdinality(String value);
+    
+    @Attribute(defaultValue = "190", dataType = Integer.class)
+    String getJdbcOrdinality();
+    void setJdbcOrdinality(String message);
 
     /**
      * @return number of seconds any MP {@link Config} is cached. That means changes to value as provided by a

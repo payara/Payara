@@ -59,6 +59,7 @@ import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -389,9 +390,15 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 // wait until all applications are loaded. Otherwise we get "Application not registered"
                 startupProvider.get();
                 ApplicationInfo appInfo = deployment.get(appName);
-
+                events.send(new EventListener.Event<>(Deployment.DISABLE_START, appInfo), true);
                 final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);
                 suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);  
+            } else if (env.isDas() && DeploymentUtils.isDomainTarget(target)
+                    && domain.getApplicationRefInTarget(appName, DeploymentUtils.DAS_TARGET_NAME) != null) {
+                // We still want to send the Disable_Start event for the DAS, even if the target is "domain"
+                startupProvider.get();
+                ApplicationInfo appInfo = deployment.get(appName);
+                events.send(new EventListener.Event<>(Deployment.DISABLE_START, appInfo), true);
             }
 
 

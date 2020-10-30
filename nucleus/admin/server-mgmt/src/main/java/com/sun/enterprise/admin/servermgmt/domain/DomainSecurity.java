@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.admin.servermgmt.domain;
 
@@ -103,7 +103,7 @@ public class DomainSecurity extends MasterPasswordFileManager {
         createKeyStore(keyStore, config, masterPassword);
         changeKeyStorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, trustStore);
         copyCertificates(keyStore, trustStore, config, masterPassword);
-        copyCertificatesFromJdk(trustStore, masterPassword);
+        updateCertificates(trustStore, masterPassword);
     }
 
     /**
