@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.extensions.aws;
+package fish.payara.microprofile.config.extensions.ldap.admin;
 
-import java.beans.PropertyVetoException;
-
-import com.sun.enterprise.util.StringUtils;
-
-import org.glassfish.api.Param;
+import fish.payara.nucleus.microprofile.config.source.extension.BaseGetConfigSourceConfigurationCommand;
+import fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import java.util.Map;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
@@ -54,37 +53,35 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.nucleus.microprofile.config.source.extension.BaseSetConfigSourceConfigurationCommand;
-import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
-import org.glassfish.api.ActionReport;
-
-@Service(name = "set-aws-config-source-configuration")
+@Service(name = "get-ldap-config-source-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn(value = {RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
-        @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
-                opType = RestEndpoint.OpType.POST,
-                path = "set-aws-config-source-configuration",
-                description = "Configures AWS Secrets Config Source")
+    @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
+            opType = RestEndpoint.OpType.GET,
+            path = "get-ldap-config-source-configuration",
+            description = "List LDAP Config Source Configuration")
 })
-public class SetAWSSecretsConfigSourceConfigurationCommand extends BaseSetConfigSourceConfigurationCommand<AWSSecretsConfigSourceConfiguration> {
-
-    @Param(optional = true, alias = "region-name")
-    protected String regionName;
-
-    @Param(optional = true, alias = "secret-name")
-    private String secretName;
+public class GetLDAPConfigSourceConfiguration extends BaseGetConfigSourceConfigurationCommand<LDAPConfigSourceConfiguration> {
 
     @Override
-    protected void applyValues(ActionReport report, AWSSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
-        super.applyValues(report, configuration);
-        if (StringUtils.ok(regionName)) {
-            configuration.setRegionName(regionName);
+    protected Map<String, Object> getConfigSourceConfiguration(LDAPConfigSourceConfiguration configuration) {
+        Map<String, Object> config = super.getConfigSourceConfiguration(configuration);
+        if (configuration != null) {
+            config.put("Url", configuration.getUrl());
+            config.put("Auth Type", configuration.getAuthType());
+            config.put("Start TLS Enabled", configuration.getStartTLSEnabled());
+            config.put("BindDN", configuration.getBindDN());
+            config.put("BindDN Password", configuration.getBindDNPassword());
+            config.put("Search Base", configuration.getSearchBase());
+            config.put("Search Filter", configuration.getSearchFilter());
+            config.put("Search Scope", configuration.getSearchScope());
+            config.put("Connection Timeout", configuration.getConnectionTimeout());
+            config.put("Read Timeout", configuration.getReadTimeout());
         }
-        if (StringUtils.ok(secretName)) {
-            configuration.setSecretName(secretName);
-        }
+        return config;
     }
+
 }
