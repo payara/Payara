@@ -45,7 +45,6 @@ import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceCo
 import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.SEARCH_SCOPE_OBJECT;
 import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.SEARCH_SCOPE_ONELEVEL;
 import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.SEARCH_SCOPE_SUBTREE;
-import fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,6 +76,8 @@ import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.StartTlsRequest;
 import javax.naming.ldap.StartTlsResponse;
+import org.glassfish.config.support.TranslatedConfigView;
+import static org.glassfish.config.support.TranslatedConfigView.getAlias;
 
 /**
  *
@@ -210,10 +211,18 @@ public class LDAPConfigSourceHelper {
         LdapContext context = null;
         if (StringUtils.ok(configuration.getUrl())) {
             try {
+                String bindDNPassword = configuration.getBindDNPassword();
+                if (TranslatedConfigView.getAlias(bindDNPassword) != null) {
+                    try {
+                        bindDNPassword = TranslatedConfigView.getRealPasswordFromAlias(bindDNPassword);
+                    } catch (Exception iae) {
+                        logger.log(Level.WARNING, iae.getMessage(), iae);
+                    }
+                }
                 context = getContext(
                         configuration.getUrl(),
                         configuration.getBindDN(),
-                        configuration.getBindDNPassword(),
+                        bindDNPassword,
                         Boolean.valueOf(configuration.getStartTLSEnabled()),
                         configuration.getConnectionTimeout(),
                         configuration.getReadTimeout()
@@ -241,7 +250,15 @@ public class LDAPConfigSourceHelper {
                 context.addToEnvironment(SECURITY_AUTHENTICATION, configuration.getAuthType());
                 if (!AUTH_TYPE_NONE.equals(configuration.getAuthType())) {
                     context.addToEnvironment(SECURITY_PRINCIPAL, configuration.getBindDN());
-                    context.addToEnvironment(SECURITY_CREDENTIALS, configuration.getBindDNPassword().toCharArray());
+                    String bindDNPassword = configuration.getBindDNPassword();
+                    if (TranslatedConfigView.getAlias(bindDNPassword) != null) {
+                        try {
+                            bindDNPassword = TranslatedConfigView.getRealPasswordFromAlias(bindDNPassword);
+                        } catch (Exception iae) {
+                            logger.log(Level.WARNING, iae.getMessage(), iae);
+                        }
+                    }
+                    context.addToEnvironment(SECURITY_CREDENTIALS, bindDNPassword.toCharArray());
                 }
                 context.lookup("");
             } catch (NamingException ex) {
