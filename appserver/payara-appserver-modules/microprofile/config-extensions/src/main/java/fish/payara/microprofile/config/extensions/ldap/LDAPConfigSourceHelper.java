@@ -87,11 +87,10 @@ public class LDAPConfigSourceHelper {
 
     private static final Logger logger = Logger.getLogger(LDAPConfigSourceHelper.class.getName());
 
-
     public static final String USE_TRUSTSTORE_ALWAYS = "always";
     public static final String USE_TRUSTSTORE_NEVER = "never";
     public static final String USE_TRUSTSTORE_LDAPS_ONLY = "ldapsOnly";
-    
+
     private final LDAPConfigSourceConfiguration configuration;
 
     public LDAPConfigSourceHelper(LDAPConfigSourceConfiguration configuration) {
@@ -102,7 +101,7 @@ public class LDAPConfigSourceHelper {
         String propertyValue = null;
         StartTlsResponse tlsResponse = null;
         LdapContext context = getContext();
-        if(Boolean.valueOf(configuration.getStartTLSEnabled())) {
+        if (Boolean.valueOf(configuration.getStartTLSEnabled())) {
             tlsResponse = startTLSConnection(context);
         }
         try {
@@ -158,7 +157,7 @@ public class LDAPConfigSourceHelper {
         Map<String, String> configValues = new HashMap<>();
         StartTlsResponse tlsResponse = null;
         LdapContext context = getContext();
-        if(Boolean.valueOf(configuration.getStartTLSEnabled())) {
+        if (Boolean.valueOf(configuration.getStartTLSEnabled())) {
             tlsResponse = startTLSConnection(context);
         }
         try {
@@ -212,7 +211,8 @@ public class LDAPConfigSourceHelper {
         if (StringUtils.ok(configuration.getUrl())) {
             try {
                 String bindDNPassword = configuration.getBindDNPassword();
-                if (TranslatedConfigView.getAlias(bindDNPassword) != null) {
+                if (bindDNPassword != null
+                        && TranslatedConfigView.getAlias(bindDNPassword) != null) {
                     try {
                         bindDNPassword = TranslatedConfigView.getRealPasswordFromAlias(bindDNPassword);
                     } catch (Exception iae) {
@@ -251,7 +251,8 @@ public class LDAPConfigSourceHelper {
                 if (!AUTH_TYPE_NONE.equals(configuration.getAuthType())) {
                     context.addToEnvironment(SECURITY_PRINCIPAL, configuration.getBindDN());
                     String bindDNPassword = configuration.getBindDNPassword();
-                    if (TranslatedConfigView.getAlias(bindDNPassword) != null) {
+                    if (bindDNPassword != null
+                            && TranslatedConfigView.getAlias(bindDNPassword) != null) {
                         try {
                             bindDNPassword = TranslatedConfigView.getRealPasswordFromAlias(bindDNPassword);
                         } catch (Exception iae) {
@@ -268,8 +269,8 @@ public class LDAPConfigSourceHelper {
         return tlsResponse;
     }
 
-    private LdapContext getContext(String url, 
-            String bindDN, String bindDNPassword, 
+    private LdapContext getContext(String url,
+            String bindDN, String bindDNPassword,
             boolean startTLS, String connectionTimeout, String readTimeout) throws NamingException {
         Hashtable<String, Object> environment = new Hashtable<>();
         environment.put(INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");

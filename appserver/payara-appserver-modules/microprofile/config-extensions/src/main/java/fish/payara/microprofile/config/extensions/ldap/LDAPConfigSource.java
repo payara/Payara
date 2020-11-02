@@ -40,9 +40,11 @@
 package fish.payara.microprofile.config.extensions.ldap;
 
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -95,10 +97,24 @@ public class LDAPConfigSource extends ConfiguredExtensionConfigSource<LDAPConfig
     }
 
     @Override
-    public String getName() {
-        return "LDAP";
+    public String getSource() {
+        return "ldap";
     }
-    
+
+    @Override
+    public String getName() {
+        return "ldap";
+    }
+
+    @Override
+    public int getOrdinal() {
+        return Integer.parseInt(
+                Globals.getDefaultHabitat()
+                        .getService(ConfigProviderResolverImpl.class)
+                        .getMPConfig().getLdapOrdinality()
+        );
+    }
+
     private static void printMisconfigurationMessage() {
         LOGGER.warning("LDAP Config Source isn't configured correctly.");
     }

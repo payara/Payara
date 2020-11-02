@@ -37,73 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.source.extension.proxy;
+package fish.payara.nucleus.microprofile.config.admin;
 
-import java.util.HashMap;
-import java.util.Map;
+/**
+ *
+ * @author Gaurav Gupta
+ */
+public interface ConfigSourceConstants {
 
-import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSource;
+    String DOMAIN = "domain";
+    String CONFIG = "config";
+    String SERVER = "server";
+    String APPLICATION = "application";
+    String MODULE = "module";
+    String CLUSTER = "cluster";
+    String JNDI = "jndi";
+    String SECRETS = "secrets";
+    String PASSWORD = "password";
+    String JDBC = "jdbc";
+    String CLOUD = "cloud";
+    String LDAP = "ldap";
 
-public class ConfigSourceProxy implements ExtensionConfigSource {
-
-    private final String name;
-    private ExtensionConfigSource delegate;
-
-    public ConfigSourceProxy(String name) {
-        this.name = name;
-        this.delegate = null;
-    }
-
-    public void setDelegate(ExtensionConfigSource delegate) {
-        this.delegate = delegate;
-    }
-
-    @Override
-    public Map<String, String> getProperties() {
-        if (delegate != null) {
-            return delegate.getProperties();
-        }
-        return new HashMap<>();
-    }
-
-    @Override
-    public String getValue(String propertyName) {
-        if (delegate != null) {
-            return delegate.getValue(propertyName);
-        }
-        return null;
-    }
-
-    @Override
-    public String getSource() {
-        if (delegate != null) {
-            return delegate.getSource();
-        }
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        if (delegate != null) {
-            return delegate.getName();
-        }
-        return name;
-    }
-
-    @Override
-    public boolean setValue(String name, String value) {
-        if (delegate != null) {
-            return delegate.setValue(name, value);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean deleteValue(String name) {
-        if (delegate != null) {
-            return delegate.deleteValue(name);
-        }
-        return false;
-    }
-    
 }

@@ -115,6 +115,10 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
     String getJdbcOrdinality();
     void setJdbcOrdinality(String message);
 
+    @Attribute(defaultValue = "200", dataType = Integer.class)
+    String getLdapOrdinality();
+    void setLdapOrdinality(String message);
+
     /**
      * @return number of seconds any MP {@link Config} is cached. That means changes to value as provided by a
      *         {@link ConfigSource} do become visible after a maximum of this duration. When set to zero or less caching
