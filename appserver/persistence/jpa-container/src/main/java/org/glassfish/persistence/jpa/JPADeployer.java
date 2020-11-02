@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.jpa;
 
@@ -204,6 +204,14 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
             @Override void visitPUD(PersistenceUnitDescriptor pud, DeploymentContext context) {
                 if(referencedPus.contains(pud)) {
                     boolean isDas = isDas();
+                    if (isDas && !isTargetDas(context.getCommandParameters(DeployCommandParameters.class))) {
+                        //If on DAS and not generating schema for remotes then return here
+                        String jpaScemaGeneration = pud.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
+                        String eclipselinkSchemaGeneration = pud.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
+                        if ("none".equals(jpaScemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
+                            return;
+                        }
+                    }
 
                     // While running in embedded mode, it is not possible to guarantee that entity classes are not loaded by the app classloader before transformers are installed
                     // If that happens, weaving will not take place and EclipseLink will throw up. Provide users an option to disable weaving by passing the flag.
