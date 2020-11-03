@@ -44,8 +44,11 @@ import java.util.function.Supplier;
 
 import javax.enterprise.inject.spi.Extension;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 
@@ -61,10 +64,19 @@ public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, Config
     public ConfigApplicationContainer load(ConfigContainer container,
             DeploymentContext deploymentContext) {
 
-        // Register the CDI extension
-        Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
-        if (snifferExtensions != null) {
-            snifferExtensions.add(ConfigCdiExtension::new);
+        // Perform annotation scanning to see if CDI extension is required here
+        // This is performed here so that the ApplicationContainer executes regardless of CDI extension state
+        final Types types = deploymentContext.getTransientAppMetaData(Types.class.getName(), Types.class);
+
+        final Type annotationType = types.getBy(ConfigProperty.class.getName());
+        final boolean annotationFound = annotationType != null;
+
+        if (annotationFound) {
+            // Register the CDI extension
+            final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
+            if (snifferExtensions != null) {
+                snifferExtensions.add(ConfigCdiExtension::new);
+            }
         }
 
         return new ConfigApplicationContainer(deploymentContext);

@@ -99,6 +99,9 @@ public abstract class MicroProfileSniffer implements Sniffer {
     @Override
     public final String[] getAnnotationNames(DeploymentContext ctx) {
         final Class<?>[] types = getAnnotationTypes();
+        if (types == null) {
+            return null;
+        }
         final String[] names = new String[types.length];
         for (int i = 0; i < names.length; i++) {
             names[i] = types[i].getName();

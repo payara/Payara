@@ -41,6 +41,7 @@ package fish.payara.microprofile.config;
 
 import java.lang.annotation.Annotation;
 
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -51,12 +52,13 @@ import fish.payara.microprofile.connector.MicroProfileSniffer;
 public class ConfigSniffer extends MicroProfileSniffer {
 
     @Override
-    @SuppressWarnings("unchecked")
+    public boolean handles(ReadableArchive archive) {
+        return true;
+    }
+
+    @Override
     public Class<? extends Annotation>[] getAnnotationTypes() {
-        return new Class[] {
-            // Search for Config CDI injection
-            org.eclipse.microprofile.config.inject.ConfigProperty.class
-        };
+        return null;
     }
 
     @Override

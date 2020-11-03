@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.config;
 
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
 
@@ -52,6 +53,8 @@ public class ConfigApplicationContainer extends MicroProfileApplicationContainer
 
     @Override
     public boolean start(ApplicationContext ctx) throws Exception {
+        // Needed to make sure that the Config Sources are created at the right stage during deployment
+        ConfigProvider.getConfig();
         return true;
     }
 
