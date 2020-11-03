@@ -37,48 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.extensions.aws;
+package fish.payara.microprofile.config.extensions.dynamodb;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.glassfish.config.support.TranslatedConfigView;
 import org.jvnet.hk2.annotations.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fish.payara.microprofile.config.extensions.aws.client.AwsRequestBuilder;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
 
-@Service(name = "aws-secrets-config-source")
-public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSSecretsConfigSourceConfiguration> {
-
-    private static final Logger LOGGER = Logger.getLogger(AWSSecretsConfigSource.class.getName());
+@Service(name = "dynamodb-config-source")
+public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<DynamoDBConfigSourceConfiguration> {
 
     private final ObjectMapper mapper = new ObjectMapper();
-
+    public static final Set<String> SUPPORTED_DATA_TYPES = new HashSet<>(Arrays.asList("S", "N", "B", "BOOL", "NULL"));
+    private static final Logger LOGGER = Logger.getLogger(DynamoDBConfigSource.class.getName());
     private AwsRequestBuilder builder;
 
     @Override
@@ -90,11 +88,14 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
 
             this.builder = AwsRequestBuilder.builder(accessKeyId, secretAccessKey)
                     .region(configuration.getRegionName())
-                    .serviceName("secretsmanager")
-                    .version("2017-10-17")
-                    .ContentType("application/x-amz-json-1.1")
+                    .serviceName("DynamoDB")
                     .method(HttpMethod.POST)
-                    .data(Json.createObjectBuilder().add("SecretId", configuration.getSecretName()).build());
+                    .ContentType("application/json")
+                    .data(Json.createObjectBuilder()
+                            .add("TableName", configuration.getTableName())
+                            .add("ProjectionExpression", configuration.getKeyColumnName() + "," + configuration.getValueColumnName())
+                            .add("Limit", Integer.parseInt(configuration.getLimit()))
+                            .build());
 
         } catch (IllegalArgumentException ex) {
             printMisconfigurationMessage();
@@ -102,11 +103,7 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
                 | IOException ex) {
             LOGGER.log(Level.WARNING, "Unable to get value from password aliases", ex);
         }
-    }
 
-    @Override
-    public void destroy() {
-        this.builder = null;
     }
 
     @Override
@@ -116,21 +113,18 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
             return new HashMap<>();
         }
         final Response response = builder
-                .action("GetSecretValue")
+                .action("Scan")
                 .build()
                 .invoke();
 
         if (response.getStatus() != 200) {
-            LOGGER.log(Level.WARNING, "Failed to get AWS secret. {0}", response.readEntity(String.class));
+            LOGGER.log(Level.WARNING, "Failed to get data from DynamoDB. {0}", response.readEntity(String.class));
         } else {
             try {
-                final String secretString = readSecretString((InputStream) response.getEntity());
-
-                try (final StringReader reader = new StringReader(secretString)) {
-                    return readMap(reader);
-                }
-            } catch (ProcessingException | JsonException | IOException ex) {
-                LOGGER.log(Level.WARNING, "Unable to read secret value", ex);
+                final JsonArray items = readItems((InputStream) response.getEntity());
+                return readDataFromItems(items, configuration.getKeyColumnName(), configuration.getValueColumnName());
+            } catch (ProcessingException | JsonException ex) {
+                LOGGER.log(Level.WARNING, "Failed to read the data retrived from your DynamoDB", ex);
             }
         }
         return new HashMap<>();
@@ -145,69 +139,51 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
         return getProperties().get(propertyName);
     }
 
-    @Override
-    public boolean deleteValue(String value) {
-        return modifySecret(HttpMethod.DELETE, value, null);
-    }
+    public static Map<String, String> readDataFromItems(JsonArray items, String keyColumnName, String valueColumnName) {
+        Map<String, String> results = new HashMap<>();
 
-    @Override
-    public boolean setValue(String key, String value) {
-        return modifySecret(HttpMethod.POST, key, value);
-    }
-
-    @Override
-    public String getName() {
-        return "aws";
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private boolean modifySecret(String method, String key, String value) {
-        if (builder == null) {
-            printMisconfigurationMessage();
-            return false;
-        }
-
-        Map<String, Object> properties = (Map) getProperties();
-        switch (method) {
-            case HttpMethod.POST:
-                properties.put(key, value);
-                break;
-            case HttpMethod.DELETE:
-                if (properties.remove(key) == null) {
-                    return false;
+        for (JsonValue itemsJsonValue : items) {
+            JsonObject keyColumn = itemsJsonValue.asJsonObject().getJsonObject(keyColumnName);
+            if (keyColumn != null) {
+                boolean isKeyColumnValueValid = true;
+                String keyColumnValue = "";
+                for (String keyFieldName : keyColumn.keySet()) {
+                    if (SUPPORTED_DATA_TYPES.contains(keyFieldName)) {
+                        keyColumnValue = keyColumn.get(keyFieldName).toString();
+                    } else {
+                        isKeyColumnValueValid = false;
+                        printDataTypeNotSupportMessage();
+                        break;
+                    }
                 }
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported HTTP method");
-        }
 
-        final Response response = builder
-                .action("UpdateSecret")
-                .data(Json.createObjectBuilder()
-                    .add("ClientRequestToken", UUID.randomUUID().toString())
-                    .add("SecretId", configuration.getSecretName())
-                    .add("SecretString", Json.createObjectBuilder(properties).build().toString())
-                    .build())
-                .build()
-                .invoke();
-        
-        if (response.getStatus() != 200) {
-            LOGGER.log(Level.WARNING, "Failed to modify AWS secret. {0}", response.readEntity(String.class));
-            return false;
+                if (isKeyColumnValueValid) {
+                    JsonObject valueColumn = itemsJsonValue.asJsonObject().getJsonObject(valueColumnName);
+                    String valueColumnValue = "";
+                    for (String valueFieldName : valueColumn.keySet()) {
+                        if (SUPPORTED_DATA_TYPES.contains(valueFieldName)) {
+                            valueColumnValue = valueColumn.get(valueFieldName).toString();
+                        } else {
+                            printDataTypeNotSupportMessage();
+                            break;
+                        }
+                    }
+                    results.put(keyColumnValue.replaceAll("^\"|\"$", ""), valueColumnValue.replaceAll("^\"|\"$", ""));
+                }
+            }
         }
-        return true;
+        return results;
     }
 
-    private static String readSecretString(InputStream input) {
+    private static JsonArray readItems(InputStream input) {
         try (JsonParser parser = Json.createParser(input)) {
             while (parser.hasNext()) {
                 JsonParser.Event parseEvent = parser.next();
-                if (parseEvent == Event.KEY_NAME) {
+                if (parseEvent == JsonParser.Event.KEY_NAME) {
                     final String keyName = parser.getString();
-
                     parser.next();
-                    if ("SecretString".equals(keyName)) {
-                        return parser.getString();
+                    if ("Items".equals(keyName)) {
+                        return parser.getArray();
                     }
                 }
             }
@@ -215,13 +191,35 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
         return null;
     }
 
-    private Map<String, String> readMap(Reader input) throws JsonParseException, JsonMappingException, IOException {
-        return mapper.readValue(input, new TypeReference<Map<String, String>>() {});
+    @Override
+    public String getName() {
+        return "dynamodb";
+    }
+
+    @Override
+    public void destroy() {
+        this.builder = null;
+    }
+
+    @Override
+    public boolean setValue(String name, String value) {
+        LOGGER.warning("DynamoDB Config source currently doesn't support setting config property");
+        return false;
+    }
+
+    @Override
+    public boolean deleteValue(String name) {
+        LOGGER.warning("DynamoDB Config source currently doesn't support deleting config property");
+        return false;
     }
 
     private static void printMisconfigurationMessage() {
-        LOGGER.warning("AWS Secrets Config Source isn't configured correctly. "
+        LOGGER.warning("DynamoDB Config Source isn't configured correctly. "
                 + "Make sure that the password aliases AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY exist.");
     }
 
+    private static void printDataTypeNotSupportMessage() {
+        LOGGER.warning("The column you have configured with DynamoDB Config source has attributes that use a data type that is not currently supported. "
+                + "Only the following types are supported: String, Binary, Boolean, Number and Null.");
+    }
 }

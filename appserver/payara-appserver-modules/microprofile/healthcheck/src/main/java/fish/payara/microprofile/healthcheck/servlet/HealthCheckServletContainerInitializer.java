@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -46,15 +46,14 @@ import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import static java.util.Arrays.asList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import java.util.logging.Logger;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
@@ -67,6 +66,10 @@ import org.glassfish.api.invocation.InvocationManager;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.weld.RootBeanDeploymentArchive;
+import org.jboss.weld.Container;
+import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
  * Servlet Container Initializer that registers the HealthCheckServlet, as well
@@ -112,17 +115,11 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
             }
         }
 
-        // Get the BeanManager
-        BeanManager beanManager = null;
-        try {
-            beanManager = CDI.current().getBeanManager();
-        } catch (Exception ex) {
-            LOGGER.log(FINE, "Exception getting BeanManager; this probably isn't a CDI application. "
-                    + "No HealthChecks will be registered", ex);
-        }
+        // Get all BeanManagers for archives
+        Collection<BeanManager> beanManagers = getBeanManagers();
 
         // Check for any Beans annotated with @Readiness, @Liveness or @Health
-        if (beanManager != null) {
+        for (BeanManager beanManager : beanManagers) {
             ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
             HealthCheckService healthCheckService = serviceLocator.getService(HealthCheckService.class);
             InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
@@ -160,6 +157,32 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
                 );
             }
         }
+    }
+    
+    /**
+     * Gets all CDI bean managers that are load beans from the application.
+     * @return an empty set if this is not a CDI application. A single entry for
+     * a war or multiple if it is an ear.
+     */
+    private Collection<BeanManager> getBeanManagers() {
+        Collection<BeanManager> beanManagers = new HashSet<>();
+        try {
+            Map<BeanDeploymentArchive, BeanManagerImpl> beanDeploymentArchives = Container.instance().beanDeploymentArchives();
+            for (Map.Entry<BeanDeploymentArchive, BeanManagerImpl> entry : beanDeploymentArchives.entrySet()) {
+                BeanDeploymentArchive beanDeploymentArchive = entry.getKey();
+                if (beanDeploymentArchive instanceof RootBeanDeploymentArchive) {
+                    RootBeanDeploymentArchive rootBeanDeploymentArchive = (RootBeanDeploymentArchive) beanDeploymentArchive;
+                    ClassLoader moduleClassLoaderForBDA = rootBeanDeploymentArchive.getModuleClassLoaderForBDA();
+                    //Get the bean managers that are used for a module, 
+                    if (moduleClassLoaderForBDA.equals(Thread.currentThread().getContextClassLoader())) {
+                        beanManagers.add(entry.getValue());
+                    }
+                }
+            }
+        } catch (IllegalStateException ignored) {
+            //Not a CDI context
+        }
+        return beanManagers;
     }
 
 }

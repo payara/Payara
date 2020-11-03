@@ -64,28 +64,12 @@
           gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/secretsDirectoryConfiguration.jsf?configName=#{configName}");
         />
     </sun:tab>
-    <sun:tab id="microProfileJdbcConfigSourceTab" immediate="$boolean{true}" 
-             text="$resource{i18n_microprofile.microprofile.configuration.jdbcConfigSourceTab}" 
-             toolTip="$resource{i18n_microprofile.microprofile.configuration.jdbcConfigSourceTab} Tab" >
-        <!command
-          setSessionAttribute(key="microprofileConfigTabs" value="microProfileJdbcConfigSourceTab");
-          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/jdbcConfigSourceConfiguration.jsf?configName=#{configName}");
-        />
-    </sun:tab>
     <sun:tab id="microProfileConfigAWSSecretsConfigSourceTab" immediate="$boolean{true}" 
              text="$resource{i18n_microprofile.microprofile.configuration.awsSecretsConfigSourceTab}" 
              toolTip="$resource{i18n_microprofile.microprofile.configuration.awsSecretsConfigSourceTab} Tab" >
         <!command
           setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigAWSSecretsConfigSourceTab");
           gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/awsConfigSourceConfiguration.jsf?configName=#{configName}");
-          />
-    </sun:tab>
-    <sun:tab id="microProfileConfigGCPSecretsConfigSourceTab" immediate="$boolean{true}" 
-             text="$resource{i18n_microprofile.microprofile.configuration.gcpSecretsConfigSourceTab}" 
-             toolTip="$resource{i18n_microprofile.microprofile.configuration.gcpSecretsConfigSourceTab} Tab" >
-        <!command
-          setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigGCPSecretsConfigSourceTab");
-          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/gcpConfigSourceConfiguration.jsf?configName=#{configName}");
           />
     </sun:tab>
     <sun:tab id="microProfileConfigAzureSecretsConfigSourceTab" immediate="$boolean{true}" 
@@ -95,5 +79,29 @@
           setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigAzureSecretsConfigSourceTab");
           gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/azureConfigSourceConfiguration.jsf?configName=#{configName}");
           />
+    </sun:tab>
+     <sun:tab id="microProfileConfigDynamoDBConfigSourceTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.dynamodbConfigSourceTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.dynamodbConfigSourceTab} Tab" >
+        <!command
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigDynamoDBConfigSourceTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/dynamoDBConfigSourceConfiguration.jsf?configName=#{configName}");
+        />
+    </sun:tab>
+    <sun:tab id="microProfileConfigGCPSecretsConfigSourceTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.gcpSecretsConfigSourceTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.gcpSecretsConfigSourceTab} Tab" >
+        <!command
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigGCPSecretsConfigSourceTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/gcpConfigSourceConfiguration.jsf?configName=#{configName}");
+          />
+    </sun:tab>
+    <sun:tab id="microProfileJdbcConfigSourceTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.jdbcConfigSourceTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.jdbcConfigSourceTab} Tab" >
+        <!command
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileJdbcConfigSourceTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/jdbcConfigSourceConfiguration.jsf?configName=#{configName}");
+        />
     </sun:tab>
 </sun:tabSet>
