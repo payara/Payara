@@ -58,19 +58,4 @@ public class ConfigApplicationContainer extends MicroProfileApplicationContainer
         return true;
     }
 
-    @Override
-    public boolean stop(ApplicationContext ctx) {
-        return true;
-    }
-
-    @Override
-    public boolean resume() throws Exception {
-        return true;
-    }
-
-    @Override
-    public boolean suspend() {
-        return true;
-    }
-
 }

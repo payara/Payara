@@ -40,6 +40,7 @@
 package fish.payara.microprofile.connector;
 
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
 
 public abstract class MicroProfileApplicationContainer implements ApplicationContainer<Object> {
@@ -58,6 +59,26 @@ public abstract class MicroProfileApplicationContainer implements ApplicationCon
     @Override
     public Object getDescriptor() {
         return ctx.getModuleMetaData(Object.class);
+    }
+
+    @Override
+    public boolean start(ApplicationContext ctx) throws Exception {
+        return true;
+    }
+
+    @Override
+    public boolean stop(ApplicationContext ctx) {
+        return true;
+    }
+
+    @Override
+    public boolean resume() throws Exception {
+        return true;
+    }
+
+    @Override
+    public boolean suspend() {
+        return true;
     }
     
 }

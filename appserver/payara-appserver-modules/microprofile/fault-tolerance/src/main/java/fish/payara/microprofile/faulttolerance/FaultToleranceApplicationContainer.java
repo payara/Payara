@@ -39,7 +39,6 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
-import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
 
 import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
@@ -48,26 +47,6 @@ public class FaultToleranceApplicationContainer extends MicroProfileApplicationC
 
     protected FaultToleranceApplicationContainer(DeploymentContext deploymentContext) {
         super(deploymentContext);
-    }
-
-    @Override
-    public boolean start(ApplicationContext ctx) throws Exception {
-        return true;
-    }
-
-    @Override
-    public boolean stop(ApplicationContext ctx) {
-        return true;
-    }
-
-    @Override
-    public boolean resume() throws Exception {
-        return true;
-    }
-
-    @Override
-    public boolean suspend() {
-        return true;
     }
 
 }

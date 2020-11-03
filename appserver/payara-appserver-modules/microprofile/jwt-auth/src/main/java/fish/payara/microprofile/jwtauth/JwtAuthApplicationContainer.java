@@ -39,7 +39,6 @@
  */
 package fish.payara.microprofile.jwtauth;
 
-import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
 
 import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
@@ -48,26 +47,6 @@ public class JwtAuthApplicationContainer extends MicroProfileApplicationContaine
 
     protected JwtAuthApplicationContainer(DeploymentContext deploymentContext) {
         super(deploymentContext);
-    }
-
-    @Override
-    public boolean start(ApplicationContext ctx) throws Exception {
-        return true;
-    }
-
-    @Override
-    public boolean stop(ApplicationContext ctx) {
-        return true;
-    }
-
-    @Override
-    public boolean resume() throws Exception {
-        return true;
-    }
-
-    @Override
-    public boolean suspend() {
-        return true;
     }
 
 }

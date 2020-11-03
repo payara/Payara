@@ -53,6 +53,7 @@ public class ConfigSniffer extends MicroProfileSniffer {
 
     @Override
     public boolean handles(ReadableArchive archive) {
+        // Defer annotation processing to the deployer to make sure the ConfigProvider is started correctly
         return true;
     }
 
