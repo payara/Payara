@@ -134,6 +134,9 @@
         </delete>
 	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="${product.name}"/>
 	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@BUILD_NUMBER@@@" value="${build.number}"/>
+	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@MAJOR_VERSION@@@" value="${major_version}"/>
+	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@MINOR_VERSION@@@" value="${minor_version}"/>
+	<replace file="${domaindir}/branding/glassfish-version.properties" token="@@@UPDATE_VERSION@@@" value="${update_version}"/>
      </target>
      
     <target name="addSchemas" >
