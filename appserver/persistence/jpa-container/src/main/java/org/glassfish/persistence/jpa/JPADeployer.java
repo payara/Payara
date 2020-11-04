@@ -42,6 +42,11 @@
 package org.glassfish.persistence.jpa;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.enterprise.admin.cli.Environment;
+import com.sun.enterprise.admin.cli.ProgramOptions;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.module.bootstrap.StartupContext;
@@ -73,6 +78,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.internal.api.Globals;
 
 
 /**
@@ -205,11 +212,45 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                 if(referencedPus.contains(pud)) {
                     boolean isDas = isDas();
                     if (isDas && !isTargetDas(context.getCommandParameters(DeployCommandParameters.class))) {
-                        //If on DAS and not generating schema for remotes then return here
-                        String jpaScemaGeneration = pud.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
-                        String eclipselinkSchemaGeneration = pud.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
-                        if ("none".equals(jpaScemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
-                            return;
+                        
+                        DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
+                        
+                        if (!isTargetDas(deployParams)) {
+
+                            //If on DAS and not generating schema for remotes then return here
+                            String jpaScemaGeneration = pud.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
+                            String eclipselinkSchemaGeneration = pud.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
+                            if ("none".equals(jpaScemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
+                                return;
+                            } else {
+                                RemoteInstanceCommandHelper remoteHelper = new RemoteInstanceCommandHelper(Globals.getDefaultHabitat());
+                                
+                                String host = remoteHelper.getHost(deployParams.target);
+                                //host will be null if target is not a config, e.g. if the target is a deployment group
+                                //in that case try using the DAS to check if the resource is valid.
+                                if (host != null) {
+                                    int port = remoteHelper.getAdminPort(deployParams.target);
+                                    try {
+                                        Environment commandEnv = new Environment();
+                                        ProgramOptions options = new ProgramOptions(commandEnv);
+                                        options.setSecure(true);
+                                        options.setPort(port);
+                                        options.setHost(host);
+                                        options.setCommandName("_get-translated-config-value");
+                                        
+                                        RemoteCLICommand getTranslatedValueCommand = new RemoteCLICommand("_get-translated-config-value",
+                                                options, commandEnv);
+                                        
+                                        String translatedValue = getTranslatedValueCommand.executeAndReturnOutput("_get-translated-config-value",
+                                                "--propertyName=" + deployParams.target);
+                                        pud.setJtaDataSource(translatedValue);
+
+                                    } catch (CommandException ex) {
+                                        Logger.getLogger(JPADeployer.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
+                                }
+
+                            }
                         }
                     }
 
@@ -239,6 +280,10 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                         if (dcp.isSkipDSFailure() && ExceptionUtil.isDSFailure(e)) {
                             logger.log(Level.WARNING, "Resource communication failure exception skipped while loading the pu " + pud.getName(), e);
                         } else {
+                            if (e.getCause() instanceof ConnectorRuntimeException) {
+                               logger.log(Level.SEVERE, "{0} is not a valid data source. If you are using variable replacement then"
+                                       + "ensure that is available on the DAS.");
+                            }
                             throw e;
                         }
                     }
