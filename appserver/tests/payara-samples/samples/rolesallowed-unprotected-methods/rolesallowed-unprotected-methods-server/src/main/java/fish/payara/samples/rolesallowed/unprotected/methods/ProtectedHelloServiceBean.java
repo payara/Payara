@@ -40,12 +40,22 @@
 
 package fish.payara.samples.rolesallowed.unprotected.methods;
 
-import javax.ejb.Local;
+import javax.annotation.Resource;
+import javax.annotation.security.DeclareRoles;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
 
-@Local
-public interface HelloServiceLocal {
+@Stateless
+@DeclareRoles("user")
+public class ProtectedHelloServiceBean implements ProtectedHelloServiceLocal, ProtectedHelloServiceRemote {
 
-    String sayHello();
+    @Resource
+    private SessionContext sc;
 
-    String secureSayHello();
+    @RolesAllowed("user")
+    @Override
+    public String secureSayHello() {
+        return "Hello " + sc.getCallerPrincipal().getName() + "!";
+    }
 }

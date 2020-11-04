@@ -40,12 +40,11 @@
 
 package fish.payara.samples.rolesallowed.unprotected.methods;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
-@Local
-public interface HelloServiceLocal {
-
-    String sayHello();
+@Remote
+public interface ProtectedHelloServiceRemote {
 
     String secureSayHello();
+
 }

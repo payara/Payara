@@ -56,7 +56,7 @@ import java.util.Properties;
 public class RemoteEjbClientIT {
 
     @Test
-    public void executeRemoteEjbPermitAllMethodWithoutAuthIT() {
+    public void executeHelloServiceBeanPermitAllMethodWithoutAuthIT() {
         Properties contextProperties = new Properties();
         contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
@@ -75,7 +75,7 @@ public class RemoteEjbClientIT {
     }
 
     @Test
-    public void executeRemoteEjbRolesAllowedMethodWithoutAuthIT() {
+    public void executeHelloServiceBeanRolesAllowedMethodWithoutAuthIT() {
         Properties contextProperties = new Properties();
         contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
@@ -95,6 +95,27 @@ public class RemoteEjbClientIT {
             }
         } catch (NamingException ne) {
             Assert.fail("Failed performing lookup:\n" + ne.getCause());
+        }
+    }
+
+    @Test
+    public void lookupProtectedHelloServiceBeanWithoutAuthIT() {
+        Properties contextProperties = new Properties();
+        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
+        contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
+        contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
+
+        try {
+            Context context = new InitialContext(contextProperties);
+
+            // Should fail
+            ProtectedHelloServiceRemote ejb = (ProtectedHelloServiceRemote) context.lookup(
+                    "java:global/rolesallowed-unprotected-methods-server/ProtectedHelloServiceBean!fish.payara.samples.rolesallowed.unprotected.methods.ProtectedHelloServiceRemote");
+            Assert.fail("Managed to access fully-secured EJB without being authenticated");
+        } catch (NamingException ne) {
+            Assert.assertTrue("Lookup seems to have failed for an unexpected reason. " +
+                            "Expected message to contain \"CORBA NO_PERMISSION\"",
+                    ne.toString().contains("CORBA NO_PERMISSION"));
         }
     }
 
