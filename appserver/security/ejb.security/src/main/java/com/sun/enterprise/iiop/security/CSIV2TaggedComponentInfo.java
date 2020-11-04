@@ -292,6 +292,9 @@ public final class CSIV2TaggedComponentInfo {
 
                 iorDescriptor.setRealmName(realmName);
 
+                // If the EJB contains some methods that don't require authentication, add a descriptor that
+                // doesn't require authentication so that lookup can be performed (access checks on protected
+                // methods should still happen later, this is simply to allow lookup)
                 for (MethodPermission methodPermission : ejbDescriptor.getMethodPermissionsFromDD().keySet()) {
                     if (methodPermission.isUnchecked()) {
                         EjbIORConfigurationDescriptor uncheckedDescriptor = new EjbIORConfigurationDescriptor();
