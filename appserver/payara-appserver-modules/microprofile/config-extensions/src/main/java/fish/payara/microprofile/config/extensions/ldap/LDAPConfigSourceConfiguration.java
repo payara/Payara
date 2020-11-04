@@ -57,6 +57,10 @@ public interface LDAPConfigSourceConfiguration extends ConfigSourceConfiguration
     String SEARCH_SCOPE_ONELEVEL = "onelevel";
     String SEARCH_SCOPE_OBJECT = "object";
 
+    String LDAP_CONTEXT_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
+    String LDAP_CONNECT_TIMEOUT = "com.sun.jndi.ldap.connect.timeout";
+    String LDAP_READ_TIMEOUT = "com.sun.jndi.ldap.read.timeout";
+
     @Attribute(required = true)
     String getUrl();
     void setUrl(String url);

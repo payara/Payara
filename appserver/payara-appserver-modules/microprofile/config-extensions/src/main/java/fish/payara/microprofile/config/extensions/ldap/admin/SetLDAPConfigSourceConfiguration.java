@@ -83,7 +83,7 @@ public class SetLDAPConfigSourceConfiguration extends BaseSetConfigSourceConfigu
     @Param(name = "bindDN", optional = true)
     private String bindDN;
 
-    @Param(name = "bindDNPassword", optional = true, password = true)
+    @Param(name = "bindDNPassword", optional = true)
     private String bindDNPassword;
 
     @Param(name = "searchBase", optional = true)
@@ -92,7 +92,7 @@ public class SetLDAPConfigSourceConfiguration extends BaseSetConfigSourceConfigu
     @Param(name = "searchFilter", optional = true)
     private String searchFilter;
 
-    @Param(name = "searchScope", optional = true)
+    @Param(name = "searchScope", acceptableValues = "subtree,onelevel,object", optional = true)
     private String searchScope;
 
     @Param(name = "connectionTimeout", optional = true)

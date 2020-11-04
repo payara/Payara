@@ -42,6 +42,9 @@ package fish.payara.microprofile.config.extensions.ldap;
 import com.sun.enterprise.util.StringUtils;
 import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.AUTH_TYPE_NONE;
 import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.AUTH_TYPE_SIMPLE;
+import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.LDAP_CONNECT_TIMEOUT;
+import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.LDAP_CONTEXT_FACTORY;
+import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.LDAP_READ_TIMEOUT;
 import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.SEARCH_SCOPE_OBJECT;
 import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.SEARCH_SCOPE_ONELEVEL;
 import static fish.payara.microprofile.config.extensions.ldap.LDAPConfigSourceConfiguration.SEARCH_SCOPE_SUBTREE;
@@ -86,10 +89,6 @@ import static org.glassfish.config.support.TranslatedConfigView.getAlias;
 public class LDAPConfigSourceHelper {
 
     private static final Logger logger = Logger.getLogger(LDAPConfigSourceHelper.class.getName());
-
-    public static final String USE_TRUSTSTORE_ALWAYS = "always";
-    public static final String USE_TRUSTSTORE_NEVER = "never";
-    public static final String USE_TRUSTSTORE_LDAPS_ONLY = "ldapsOnly";
 
     private final LDAPConfigSourceConfiguration configuration;
 
@@ -210,19 +209,10 @@ public class LDAPConfigSourceHelper {
         LdapContext context = null;
         if (StringUtils.ok(configuration.getUrl())) {
             try {
-                String bindDNPassword = configuration.getBindDNPassword();
-                if (bindDNPassword != null
-                        && TranslatedConfigView.getAlias(bindDNPassword) != null) {
-                    try {
-                        bindDNPassword = TranslatedConfigView.getRealPasswordFromAlias(bindDNPassword);
-                    } catch (Exception iae) {
-                        logger.log(Level.WARNING, iae.getMessage(), iae);
-                    }
-                }
                 context = getContext(
                         configuration.getUrl(),
                         configuration.getBindDN(),
-                        bindDNPassword,
+                        configuration.getBindDNPassword(),
                         Boolean.valueOf(configuration.getStartTLSEnabled()),
                         configuration.getConnectionTimeout(),
                         configuration.getReadTimeout()
@@ -250,16 +240,7 @@ public class LDAPConfigSourceHelper {
                 context.addToEnvironment(SECURITY_AUTHENTICATION, configuration.getAuthType());
                 if (!AUTH_TYPE_NONE.equals(configuration.getAuthType())) {
                     context.addToEnvironment(SECURITY_PRINCIPAL, configuration.getBindDN());
-                    String bindDNPassword = configuration.getBindDNPassword();
-                    if (bindDNPassword != null
-                            && TranslatedConfigView.getAlias(bindDNPassword) != null) {
-                        try {
-                            bindDNPassword = TranslatedConfigView.getRealPasswordFromAlias(bindDNPassword);
-                        } catch (Exception iae) {
-                            logger.log(Level.WARNING, iae.getMessage(), iae);
-                        }
-                    }
-                    context.addToEnvironment(SECURITY_CREDENTIALS, bindDNPassword.toCharArray());
+                    context.addToEnvironment(SECURITY_CREDENTIALS, translatePassword(configuration.getBindDNPassword()));
                 }
                 context.lookup("");
             } catch (NamingException ex) {
@@ -273,24 +254,34 @@ public class LDAPConfigSourceHelper {
             String bindDN, String bindDNPassword,
             boolean startTLS, String connectionTimeout, String readTimeout) throws NamingException {
         Hashtable<String, Object> environment = new Hashtable<>();
-        environment.put(INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        environment.put(INITIAL_CONTEXT_FACTORY, LDAP_CONTEXT_FACTORY);
         environment.put(PROVIDER_URL, url);
         if (!startTLS) {
             environment.put(SECURITY_AUTHENTICATION, configuration.getAuthType());
-            if (AUTH_TYPE_SIMPLE.equals(configuration.getAuthType())) {
+            if (!AUTH_TYPE_NONE.equals(configuration.getAuthType())) {
                 environment.put(SECURITY_PRINCIPAL, bindDN);
-                if (bindDNPassword != null && !startTLS) {
-                    environment.put(SECURITY_CREDENTIALS, bindDNPassword.toCharArray());
-                }
+                environment.put(SECURITY_CREDENTIALS, translatePassword(bindDNPassword));
             }
         }
         if (StringUtils.ok(connectionTimeout)) {
-            environment.put("com.sun.jndi.ldap.connect.timeout", connectionTimeout);
+            environment.put(LDAP_CONNECT_TIMEOUT, connectionTimeout);
         }
         if (StringUtils.ok(readTimeout)) {
-            environment.put("com.sun.jndi.ldap.read.timeout", readTimeout);
+            environment.put(LDAP_READ_TIMEOUT, readTimeout);
         }
         return new InitialLdapContext(environment, null);
+    }
+
+    private char[] translatePassword(String bindDNPassword) {
+        if (bindDNPassword != null
+                && TranslatedConfigView.getAlias(bindDNPassword) != null) {
+            try {
+                bindDNPassword = TranslatedConfigView.getRealPasswordFromAlias(bindDNPassword);
+            } catch (Exception iae) {
+                logger.log(Level.WARNING, iae.getMessage(), iae);
+            }
+        }
+        return bindDNPassword != null ? bindDNPassword.toCharArray() : null;
     }
 
     private static void closeConnection(LdapContext context, StartTlsResponse response) {
