@@ -133,13 +133,11 @@ public class MemberAddressPicker implements MemberAddressProvider {
                 setPublicAddressIfNecessary(chosenAddress, port);
                 return;
             }
-
-            if (chosenAddress != null) {
-                bindAddress = new InetSocketAddress(chosenAddress, port);
-            }
         }
 
-        if (bindAddress == null) {
+        if (chosenAddress != null && bindAddress == null) {
+            bindAddress = new InetSocketAddress(chosenAddress, port);
+        } else if (bindAddress == null) {
             bindAddress = tryLocalHostOrLoopback(port);
         }
 
@@ -148,10 +146,10 @@ public class MemberAddressPicker implements MemberAddressProvider {
 
     private void setPublicAddressIfNecessary(InetAddress chosenAddress, int port) {
         if (publicAddress == null) {
-            if (chosenAddress != null) {
-                publicAddress = new InetSocketAddress(chosenAddress, port);
-            } else if (!bindAddress.getAddress().isAnyLocalAddress()) {
+            if (!bindAddress.getAddress().isAnyLocalAddress()) {
                 publicAddress = bindAddress;
+            } else if (chosenAddress != null) {
+                publicAddress = new InetSocketAddress(chosenAddress, port);
             } else {
                 publicAddress = tryLocalHostOrLoopback(port);
             }
@@ -191,7 +189,8 @@ public class MemberAddressPicker implements MemberAddressProvider {
                 NetworkInterface intf = interfaces.nextElement();
                 logger.log(Level.FINE, "Found Network Interface {0}", new Object[]{intf.getName()});
 
-                if (intf.isUp() && !intf.isLoopback() && !intf.isVirtual() && !intf.getName().contains("docker0") && !intf.getDisplayName().contains("Teredo") && intf.getInterfaceAddresses().size() > 0) {
+                if (intf.isUp() && !intf.isLoopback() && !intf.isVirtual() && !intf.isPointToPoint() && !intf.getName().contains("docker0") &&
+                        !intf.getDisplayName().contains("Teredo") && intf.getInterfaceAddresses().size() > 0) {
                     logger.log(Level.FINE, "Adding interface {0} as a possible interface", intf.getName());
                     possibleInterfaces.add(intf);
                 } else {
