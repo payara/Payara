@@ -37,35 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.metrics;
-
-import static java.util.Arrays.asList;
-import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
-import static org.glassfish.common.util.StringHelper.isEmpty;
-
-import javax.servlet.HttpConstraintElement;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletSecurityElement;
-
-import org.glassfish.internal.api.Globals;
+package fish.payara.microprofile.metrics.rest;
 
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
-import fish.payara.microprofile.metrics.rest.MetricsResource;
+import static java.util.Arrays.asList;
+import java.util.Map;
+import java.util.Set;
+import javax.servlet.HttpConstraintElement;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
+import static org.glassfish.common.util.StringHelper.isEmpty;
+import org.glassfish.internal.api.Globals;
 
-public class MetricsServletContextListener implements ServletContextListener {
-
-    private final MetricsServiceConfiguration configuration;
-
-    public MetricsServletContextListener() {
-        this.configuration = Globals.getDefaultHabitat().getService(MetricsServiceConfiguration.class);
-    }
+public class MetricsServletContainerInitializer implements ServletContainerInitializer {
 
     @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        final ServletContext ctx = sce.getServletContext();
+    public void onStartup(Set<Class<?>> set, ServletContext ctx) throws ServletException {
+
+        MetricsServiceConfiguration configuration = Globals.getDefaultBaseServiceLocator()
+                .getService(MetricsServiceConfiguration.class);
+        if (!"".equals(ctx.getContextPath())) {
+            return;
+        }
+
+        // Check if there is already a servlet for metrics
+        Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
+        for (ServletRegistration reg : registrations.values()) {
+            if (reg.getClass().equals(MetricsResource.class)) {
+                return;
+            }
+        }
 
         String virtualServers = configuration.getVirtualServers();
         if (!isEmpty(virtualServers)
