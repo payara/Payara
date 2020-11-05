@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth;
+package fish.payara.microprofile.healthcheck.activation;
 
 import java.lang.annotation.Annotation;
 
@@ -48,25 +48,30 @@ import fish.payara.microprofile.connector.MicroProfileSniffer;
 
 @Service
 @PerLookup
-public class JwtAuthSniffer extends MicroProfileSniffer {
+public class HealthSniffer extends MicroProfileSniffer {
 
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return new Class[] {
-            // Search for jwtauth activator annotation
-            org.eclipse.microprofile.auth.LoginConfig.class
+            // Search for Health annotations
+            org.eclipse.microprofile.health.Health.class,
+            org.eclipse.microprofile.health.Readiness.class,
+            org.eclipse.microprofile.health.Liveness.class,
+
+            // All JAX-RS applications are valid applications for Metrics
+            javax.ws.rs.Path.class
         };
     }
 
     @Override
     protected Class<?> getContainersClass() {
-        return JwtAuthContainer.class;
+        return HealthContainer.class;
     }
 
     @Override
     public String getModuleType() {
-        return "jwtauth";
+        return "health";
     }
     
 }

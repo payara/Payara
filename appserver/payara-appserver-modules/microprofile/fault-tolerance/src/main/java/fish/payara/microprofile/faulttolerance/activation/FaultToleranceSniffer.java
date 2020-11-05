@@ -37,18 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.metrics;
+package fish.payara.microprofile.faulttolerance.activation;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.inject.Inject;
-
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -56,58 +48,29 @@ import fish.payara.microprofile.connector.MicroProfileSniffer;
 
 @Service
 @PerLookup
-public class MetricsSniffer extends MicroProfileSniffer {
-
-    private static final Logger LOGGER = Logger.getLogger(MetricsSniffer.class.getName());
-
-    @Inject
-    private ServerEnvironment serverEnv;
+public class FaultToleranceSniffer extends MicroProfileSniffer {
 
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return new Class[] {
-            // Search for Metrics annotations
-            org.eclipse.microprofile.metrics.annotation.Counted.class,
-            org.eclipse.microprofile.metrics.annotation.ConcurrentGauge.class,
-            org.eclipse.microprofile.metrics.annotation.Gauge.class,
-            org.eclipse.microprofile.metrics.annotation.Metered.class,
-            org.eclipse.microprofile.metrics.annotation.Metric.class,
-            org.eclipse.microprofile.metrics.annotation.Timed.class,
-            org.eclipse.microprofile.metrics.annotation.RegistryType.class,
-
-            // All JAX-RS applications are valid applications for Metrics
-            javax.ws.rs.Path.class
+            org.eclipse.microprofile.faulttolerance.Asynchronous.class,
+            org.eclipse.microprofile.faulttolerance.Timeout.class,
+            org.eclipse.microprofile.faulttolerance.Retry.class,
+            org.eclipse.microprofile.faulttolerance.Bulkhead.class,
+            org.eclipse.microprofile.faulttolerance.CircuitBreaker.class,
+            org.eclipse.microprofile.faulttolerance.Fallback.class
         };
     }
 
     @Override
-    public boolean handles(ReadableArchive archive) {
-        // Check for metrics.xml files
-        try {
-            if (archive.exists("metrics.xml")) {
-                return true;
-            }
-            File metricsResource = new File(serverEnv.getConfigDirPath(), "metrics.xml");
-            if (metricsResource.exists()) {
-                return true;
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Error reading archive", e);
-            return false;
-        }
-
-        return super.handles(archive);
-    }
-
-    @Override
     protected Class<?> getContainersClass() {
-        return MetricsContainer.class;
+        return FaultToleranceContainer.class;
     }
 
     @Override
     public String getModuleType() {
-        return "metrics";
+        return "faulttolerance";
     }
     
 }

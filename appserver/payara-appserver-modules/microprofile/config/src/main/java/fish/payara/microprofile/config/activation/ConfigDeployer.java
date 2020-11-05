@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config;
+package fish.payara.microprofile.config.activation;
 
 import java.util.Collection;
 import java.util.function.Supplier;

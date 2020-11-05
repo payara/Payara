@@ -37,49 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.healthcheck;
+package fish.payara.microprofile.faulttolerance.activation;
 
-import org.glassfish.api.deployment.ApplicationContext;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
+import org.glassfish.api.deployment.Deployer;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
+import fish.payara.microprofile.connector.MicroProfileContainer;
 
-public class HealthApplicationContainer extends MicroProfileApplicationContainer {
+@Service(name = "fish.payara.microprofile.faulttolerance.activation.FaultToleranceContainer")
+@PerLookup
+public class FaultToleranceContainer extends MicroProfileContainer {
 
-    private final HealthCheckService healthService;
-    private final String appName;
-    private final ClassLoader appClassLoader;
-
-    protected HealthApplicationContainer(HealthCheckService healthService, DeploymentContext deploymentContext) {
-        super(deploymentContext);
-        this.healthService = healthService;
-        this.appName = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class).getApplication().getAppName();
-        this.appClassLoader = deploymentContext.getClassLoader();
+    @Override
+    public Class<? extends Deployer<?, ?>> getDeployer() {
+        return FaultToleranceDeployer.class;
     }
 
     @Override
-    public boolean start(ApplicationContext ctx) throws Exception {
-        healthService.registerClassLoader(appName, appClassLoader);
-        return true;
-    }
-
-    @Override
-    public boolean stop(ApplicationContext ctx) {
-        healthService.unregisterHealthCheck(appName);
-        return true;
-    }
-
-    @Override
-    public boolean resume() throws Exception {
-        healthService.registerClassLoader(appName, appClassLoader);
-        return true;
-    }
-
-    @Override
-    public boolean suspend() {
-        healthService.unregisterHealthCheck(appName);
-        return true;
+    public String getName() {
+        return "FaultToleranceContainer";
     }
 
 }

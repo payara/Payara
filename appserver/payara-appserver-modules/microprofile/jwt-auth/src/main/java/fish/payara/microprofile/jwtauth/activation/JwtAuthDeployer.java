@@ -37,48 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi;
+package fish.payara.microprofile.jwtauth.activation;
 
-import org.glassfish.api.deployment.ApplicationContext;
+import java.util.Collection;
+import java.util.function.Supplier;
+import java.util.logging.Logger;
+
+import javax.enterprise.inject.spi.Extension;
+
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
+import org.glassfish.weld.WeldDeployer;
+import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
-import fish.payara.microprofile.openapi.impl.OpenApiService;
+import fish.payara.microprofile.connector.MicroProfileDeployer;
+import fish.payara.microprofile.jwtauth.RolesDeclarationInitializer;
+import fish.payara.microprofile.jwtauth.cdi.JwtAuthCdiExtension;
 
-public class OpenApiApplicationContainer extends MicroProfileApplicationContainer {
+@Service
+@PerLookup
+public class JwtAuthDeployer extends MicroProfileDeployer<JwtAuthContainer, JwtAuthApplicationContainer> {
 
-    private final OpenApiService openapi;
-    private final String appName;
+    private static final Logger LOGGER = Logger.getLogger(JwtAuthDeployer.class.getName());
 
-    protected OpenApiApplicationContainer(OpenApiService openapi, DeploymentContext deploymentContext) {
-        super(deploymentContext);
-        this.openapi = openapi;
-        this.appName = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class).getModuleID();
+    @Override
+    @SuppressWarnings("unchecked")
+    public JwtAuthApplicationContainer load(JwtAuthContainer container,
+            DeploymentContext deploymentContext) {
+
+        // Register the JWTAuth Servlet
+        WebBundleDescriptorImpl descriptor = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class);
+        if (descriptor != null) {
+            descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(RolesDeclarationInitializer.class.getName()));
+        } else {
+            LOGGER.warning("Failed to find WebBundleDescriptorImpl. JWT Auth roles will not be declared");
+        }
+
+        // Register the CDI extension
+        Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
+        if (snifferExtensions != null) {
+            snifferExtensions.add(JwtAuthCdiExtension::new);
+        }
+
+        return new JwtAuthApplicationContainer(deploymentContext);
     }
 
     @Override
-    public boolean start(ApplicationContext ctx) throws Exception {
-        openapi.registerApp(appName, this.ctx);
-        return true;
+    public void unload(JwtAuthApplicationContainer applicationContainer, DeploymentContext ctx) {
     }
-
-    @Override
-    public boolean stop(ApplicationContext ctx) {
-        openapi.deregisterApp(appName);
-        return true;
-    }
-
-    @Override
-    public boolean resume() throws Exception {
-        openapi.resumeApp(appName);
-        return true;
-    }
-
-    @Override
-    public boolean suspend() {
-        openapi.suspendApp(appName);
-        return true;
-    }
-
+    
 }

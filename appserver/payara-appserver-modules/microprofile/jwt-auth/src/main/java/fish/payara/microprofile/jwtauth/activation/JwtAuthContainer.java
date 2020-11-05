@@ -37,47 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.metrics;
+package fish.payara.microprofile.jwtauth.activation;
 
-import org.glassfish.api.deployment.ApplicationContext;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
+import org.glassfish.api.deployment.Deployer;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
+import fish.payara.microprofile.connector.MicroProfileContainer;
 
-public class MetricsApplicationContainer extends MicroProfileApplicationContainer {
+@Service(name = "fish.payara.microprofile.jwtauth.activation.JwtAuthContainer")
+@PerLookup
+public class JwtAuthContainer extends MicroProfileContainer {
 
-    private final MetricsService metricsService;
-    private final String appName;
-
-    protected MetricsApplicationContainer(MetricsService metricsService, DeploymentContext deploymentContext) {
-        super(deploymentContext);
-        this.metricsService = metricsService;
-        this.appName = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class).getApplication().getAppName();
+    @Override
+    public Class<? extends Deployer<?, ?>> getDeployer() {
+        return JwtAuthDeployer.class;
     }
 
     @Override
-    public boolean start(ApplicationContext ctx) throws Exception {
-        metricsService.registerApplication(appName);
-        return true;
-    }
-
-    @Override
-    public boolean stop(ApplicationContext ctx) {
-        metricsService.deregisterApplication(appName);
-        return true;
-    }
-
-    @Override
-    public boolean resume() throws Exception {
-        metricsService.registerApplication(appName);
-        return true;
-    }
-
-    @Override
-    public boolean suspend() {
-        metricsService.deregisterApplication(appName);
-        return true;
+    public String getName() {
+        return "JwtAuthContainer";
     }
 
 }

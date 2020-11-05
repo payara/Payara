@@ -37,26 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.faulttolerance;
+package fish.payara.microprofile.openapi.activation;
 
-import org.glassfish.api.deployment.Deployer;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.deployment.ApplicationContext;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
-import fish.payara.microprofile.connector.MicroProfileContainer;
+import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
+import fish.payara.microprofile.openapi.impl.OpenApiService;
 
-@Service(name = "fish.payara.microprofile.faulttolerance.FaultToleranceContainer")
-@PerLookup
-public class FaultToleranceContainer extends MicroProfileContainer {
+public class OpenApiApplicationContainer extends MicroProfileApplicationContainer {
 
-    @Override
-    public Class<? extends Deployer<?, ?>> getDeployer() {
-        return FaultToleranceDeployer.class;
+    private final OpenApiService openapi;
+    private final String appName;
+
+    protected OpenApiApplicationContainer(OpenApiService openapi, DeploymentContext deploymentContext) {
+        super(deploymentContext);
+        this.openapi = openapi;
+        this.appName = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class).getModuleID();
     }
 
     @Override
-    public String getName() {
-        return "FaultToleranceContainer";
+    public boolean start(ApplicationContext ctx) throws Exception {
+        openapi.registerApp(appName, this.ctx);
+        return true;
+    }
+
+    @Override
+    public boolean stop(ApplicationContext ctx) {
+        openapi.deregisterApp(appName);
+        return true;
+    }
+
+    @Override
+    public boolean resume() throws Exception {
+        openapi.resumeApp(appName);
+        return true;
+    }
+
+    @Override
+    public boolean suspend() {
+        openapi.suspendApp(appName);
+        return true;
     }
 
 }

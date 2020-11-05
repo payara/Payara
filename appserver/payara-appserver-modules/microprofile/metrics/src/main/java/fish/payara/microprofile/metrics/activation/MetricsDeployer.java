@@ -37,26 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi;
+package fish.payara.microprofile.metrics.activation;
 
-import org.glassfish.api.deployment.Deployer;
+import java.util.Collection;
+import java.util.function.Supplier;
+
+import javax.enterprise.inject.spi.Extension;
+import javax.inject.Inject;
+
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileContainer;
+import fish.payara.microprofile.connector.MicroProfileDeployer;
+import fish.payara.microprofile.metrics.MetricsService;
+import fish.payara.microprofile.metrics.cdi.extension.MetricCDIExtension;
 
-@Service(name = "fish.payara.microprofile.openapi.OpenApiContainer")
+@Service
 @PerLookup
-public class OpenApiContainer extends MicroProfileContainer {
+public class MetricsDeployer extends MicroProfileDeployer<MetricsContainer, MetricsApplicationContainer> {
+
+    @Inject
+    private MetricsService metricsService;
 
     @Override
-    public Class<? extends Deployer<?, ?>> getDeployer() {
-        return OpenApiDeployer.class;
+    @SuppressWarnings("unchecked")
+    public MetricsApplicationContainer load(MetricsContainer container,
+            DeploymentContext deploymentContext) {
+
+        // Register the CDI extension
+        Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
+        if (snifferExtensions != null) {
+            snifferExtensions.add(MetricCDIExtension::new);
+        }
+
+        return new MetricsApplicationContainer(metricsService, deploymentContext);
     }
 
     @Override
-    public String getName() {
-        return "OpenAPIContainer";
+    public void unload(MetricsApplicationContainer applicationContainer, DeploymentContext ctx) {
     }
-
+    
 }

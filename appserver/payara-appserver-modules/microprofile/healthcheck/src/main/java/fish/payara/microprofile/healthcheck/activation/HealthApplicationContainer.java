@@ -37,32 +37,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi;
+package fish.payara.microprofile.healthcheck.activation;
 
-import javax.inject.Inject;
-
+import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
-import fish.payara.microprofile.connector.MicroProfileDeployer;
-import fish.payara.microprofile.openapi.impl.OpenApiService;
+import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
+import fish.payara.microprofile.healthcheck.HealthCheckService;
 
-@Service
-@PerLookup
-public class OpenApiDeployer extends MicroProfileDeployer<OpenApiContainer, OpenApiApplicationContainer> {
+public class HealthApplicationContainer extends MicroProfileApplicationContainer {
 
-    @Inject
-    private OpenApiService openapi;
+    private final HealthCheckService healthService;
+    private final String appName;
+    private final ClassLoader appClassLoader;
 
-    @Override
-    public OpenApiApplicationContainer load(OpenApiContainer container,
-            DeploymentContext deploymentContext) {
-        return new OpenApiApplicationContainer(openapi, deploymentContext);
+    protected HealthApplicationContainer(HealthCheckService healthService, DeploymentContext deploymentContext) {
+        super(deploymentContext);
+        this.healthService = healthService;
+        this.appName = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class).getApplication().getAppName();
+        this.appClassLoader = deploymentContext.getClassLoader();
     }
 
     @Override
-    public void unload(OpenApiApplicationContainer applicationContainer, DeploymentContext ctx) {
+    public boolean start(ApplicationContext ctx) throws Exception {
+        healthService.registerClassLoader(appName, appClassLoader);
+        return true;
     }
-    
+
+    @Override
+    public boolean stop(ApplicationContext ctx) {
+        healthService.unregisterHealthCheck(appName);
+        return true;
+    }
+
+    @Override
+    public boolean resume() throws Exception {
+        healthService.registerClassLoader(appName, appClassLoader);
+        return true;
+    }
+
+    @Override
+    public boolean suspend() {
+        healthService.unregisterHealthCheck(appName);
+        return true;
+    }
+
 }

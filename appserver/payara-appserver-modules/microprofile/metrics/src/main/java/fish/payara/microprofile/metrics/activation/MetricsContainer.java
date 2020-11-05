@@ -37,41 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.faulttolerance;
+package fish.payara.microprofile.metrics.activation;
 
-import java.util.Collection;
-import java.util.function.Supplier;
-
-import javax.enterprise.inject.spi.Extension;
-
-import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.Deployer;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileDeployer;
-import fish.payara.microprofile.faulttolerance.cdi.FaultToleranceExtension;
+import fish.payara.microprofile.connector.MicroProfileContainer;
 
-@Service
+@Service(name = "fish.payara.microprofile.metrics.activation.MetricsContainer")
 @PerLookup
-public class FaultToleranceDeployer extends MicroProfileDeployer<FaultToleranceContainer, FaultToleranceApplicationContainer> {
+public class MetricsContainer extends MicroProfileContainer {
 
     @Override
-    @SuppressWarnings("unchecked")
-    public FaultToleranceApplicationContainer load(FaultToleranceContainer container,
-            DeploymentContext deploymentContext) {
-
-        // Register the CDI extension
-        Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
-        if (snifferExtensions != null) {
-            snifferExtensions.add(FaultToleranceExtension::new);
-        }
-
-        return new FaultToleranceApplicationContainer(deploymentContext);
+    public Class<? extends Deployer<?, ?>> getDeployer() {
+        return MetricsDeployer.class;
     }
 
     @Override
-    public void unload(FaultToleranceApplicationContainer applicationContainer, DeploymentContext ctx) {
+    public String getName() {
+        return "MetricsContainer";
     }
-    
+
 }

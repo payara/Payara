@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi;
+package fish.payara.microprofile.openapi.activation;
 
 import java.lang.annotation.Annotation;
 

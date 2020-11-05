@@ -465,7 +465,7 @@ public class MetricsService implements ConfigListener, MonitoringDataSource {
      *
      * @param applicationName The name of the application to remove
      */
-    protected void registerApplication(String applicationName) {
+    public void registerApplication(String applicationName) {
         getOrAddRegistry(applicationName);
     }
 
@@ -474,7 +474,7 @@ public class MetricsService implements ConfigListener, MonitoringDataSource {
      *
      * @param applicationName The name of the application to remove
      */
-    protected void deregisterApplication(String applicationName) {
+    public void deregisterApplication(String applicationName) {
         removeRegistry(applicationName);
     }
 

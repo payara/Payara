@@ -37,26 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth;
+package fish.payara.microprofile.jwtauth.activation;
 
-import org.glassfish.api.deployment.Deployer;
+import java.lang.annotation.Annotation;
+
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileContainer;
+import fish.payara.microprofile.connector.MicroProfileSniffer;
 
-@Service(name = "fish.payara.microprofile.jwtauth.JwtAuthContainer")
+@Service
 @PerLookup
-public class JwtAuthContainer extends MicroProfileContainer {
+public class JwtAuthSniffer extends MicroProfileSniffer {
 
     @Override
-    public Class<? extends Deployer<?, ?>> getDeployer() {
-        return JwtAuthDeployer.class;
+    @SuppressWarnings("unchecked")
+    public Class<? extends Annotation>[] getAnnotationTypes() {
+        return new Class[] {
+            // Search for jwtauth activator annotation
+            org.eclipse.microprofile.auth.LoginConfig.class
+        };
     }
 
     @Override
-    public String getName() {
-        return "JwtAuthContainer";
+    protected Class<?> getContainersClass() {
+        return JwtAuthContainer.class;
     }
 
+    @Override
+    public String getModuleType() {
+        return "jwtauth";
+    }
+    
 }

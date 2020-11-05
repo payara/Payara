@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth;
+package fish.payara.microprofile.jwtauth.activation;
 
 import org.glassfish.api.deployment.DeploymentContext;
 

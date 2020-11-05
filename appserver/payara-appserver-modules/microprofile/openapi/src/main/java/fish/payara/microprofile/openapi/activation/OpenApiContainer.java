@@ -37,39 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config;
+package fish.payara.microprofile.openapi.activation;
 
-import java.lang.annotation.Annotation;
-
-import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.Deployer;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileSniffer;
+import fish.payara.microprofile.connector.MicroProfileContainer;
 
-@Service
+@Service(name = "fish.payara.microprofile.openapi.activation.OpenApiContainer")
 @PerLookup
-public class ConfigSniffer extends MicroProfileSniffer {
+public class OpenApiContainer extends MicroProfileContainer {
 
     @Override
-    public boolean handles(ReadableArchive archive) {
-        // Defer annotation processing to the deployer to make sure the ConfigProvider is started correctly
-        return true;
+    public Class<? extends Deployer<?, ?>> getDeployer() {
+        return OpenApiDeployer.class;
     }
 
     @Override
-    public Class<? extends Annotation>[] getAnnotationTypes() {
-        return null;
+    public String getName() {
+        return "OpenAPIContainer";
     }
 
-    @Override
-    protected Class<?> getContainersClass() {
-        return ConfigContainer.class;
-    }
-
-    @Override
-    public String getModuleType() {
-        return "config";
-    }
-    
 }

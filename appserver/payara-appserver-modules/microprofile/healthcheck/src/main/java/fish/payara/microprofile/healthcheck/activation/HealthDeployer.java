@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.healthcheck;
+package fish.payara.microprofile.healthcheck.activation;
 
 import java.util.Collection;
 import java.util.function.Supplier;
@@ -51,6 +51,7 @@ import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.microprofile.connector.MicroProfileDeployer;
+import fish.payara.microprofile.healthcheck.HealthCheckService;
 import fish.payara.microprofile.healthcheck.cdi.extension.HealthCDIExtension;
 
 @Service

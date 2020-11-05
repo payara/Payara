@@ -37,25 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config;
+package fish.payara.microprofile.healthcheck.activation;
 
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.glassfish.api.deployment.ApplicationContext;
-import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.Deployer;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
+import fish.payara.microprofile.connector.MicroProfileContainer;
 
-public class ConfigApplicationContainer extends MicroProfileApplicationContainer {
+@Service(name = "fish.payara.microprofile.healthcheck.activation.HealthContainer")
+@PerLookup
+public class HealthContainer extends MicroProfileContainer {
 
-    protected ConfigApplicationContainer(DeploymentContext deploymentContext) {
-        super(deploymentContext);
+    @Override
+    public Class<? extends Deployer<?, ?>> getDeployer() {
+        return HealthDeployer.class;
     }
 
     @Override
-    public boolean start(ApplicationContext ctx) throws Exception {
-        // Needed to make sure that the Config Sources are created at the right stage during deployment
-        ConfigProvider.getConfig();
-        return true;
+    public String getName() {
+        return "HealthContainer";
     }
 
 }

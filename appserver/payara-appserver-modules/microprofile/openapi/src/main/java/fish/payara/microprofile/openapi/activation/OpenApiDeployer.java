@@ -37,16 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.faulttolerance;
+package fish.payara.microprofile.openapi.activation;
+
+import javax.inject.Inject;
 
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
+import fish.payara.microprofile.connector.MicroProfileDeployer;
+import fish.payara.microprofile.openapi.impl.OpenApiService;
 
-public class FaultToleranceApplicationContainer extends MicroProfileApplicationContainer {
+@Service
+@PerLookup
+public class OpenApiDeployer extends MicroProfileDeployer<OpenApiContainer, OpenApiApplicationContainer> {
 
-    protected FaultToleranceApplicationContainer(DeploymentContext deploymentContext) {
-        super(deploymentContext);
+    @Inject
+    private OpenApiService openapi;
+
+    @Override
+    public OpenApiApplicationContainer load(OpenApiContainer container,
+            DeploymentContext deploymentContext) {
+        return new OpenApiApplicationContainer(openapi, deploymentContext);
     }
 
+    @Override
+    public void unload(OpenApiApplicationContainer applicationContainer, DeploymentContext ctx) {
+    }
+    
 }

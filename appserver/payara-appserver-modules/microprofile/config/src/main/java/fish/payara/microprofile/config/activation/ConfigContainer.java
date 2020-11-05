@@ -37,40 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.faulttolerance;
+package fish.payara.microprofile.config.activation;
 
-import java.lang.annotation.Annotation;
-
+import org.glassfish.api.deployment.Deployer;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.connector.MicroProfileSniffer;
+import fish.payara.microprofile.connector.MicroProfileContainer;
 
-@Service
+@Service(name = "fish.payara.microprofile.config.activation.ConfigContainer")
 @PerLookup
-public class FaultToleranceSniffer extends MicroProfileSniffer {
+public class ConfigContainer extends MicroProfileContainer {
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends Annotation>[] getAnnotationTypes() {
-        return new Class[] {
-            org.eclipse.microprofile.faulttolerance.Asynchronous.class,
-            org.eclipse.microprofile.faulttolerance.Timeout.class,
-            org.eclipse.microprofile.faulttolerance.Retry.class,
-            org.eclipse.microprofile.faulttolerance.Bulkhead.class,
-            org.eclipse.microprofile.faulttolerance.CircuitBreaker.class,
-            org.eclipse.microprofile.faulttolerance.Fallback.class
-        };
+    public Class<? extends Deployer<?, ?>> getDeployer() {
+        return ConfigDeployer.class;
     }
 
     @Override
-    protected Class<?> getContainersClass() {
-        return FaultToleranceContainer.class;
+    public String getName() {
+        return "ConfigContainer";
     }
 
-    @Override
-    public String getModuleType() {
-        return "faulttolerance";
-    }
-    
 }

@@ -37,41 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.healthcheck;
+package fish.payara.microprofile.metrics.activation;
 
-import java.lang.annotation.Annotation;
+import org.glassfish.api.deployment.ApplicationContext;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
+import fish.payara.microprofile.metrics.MetricsService;
 
-import fish.payara.microprofile.connector.MicroProfileSniffer;
+public class MetricsApplicationContainer extends MicroProfileApplicationContainer {
 
-@Service
-@PerLookup
-public class HealthSniffer extends MicroProfileSniffer {
+    private final MetricsService metricsService;
+    private final String appName;
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends Annotation>[] getAnnotationTypes() {
-        return new Class[] {
-            // Search for Health annotations
-            org.eclipse.microprofile.health.Health.class,
-            org.eclipse.microprofile.health.Readiness.class,
-            org.eclipse.microprofile.health.Liveness.class,
-
-            // All JAX-RS applications are valid applications for Metrics
-            javax.ws.rs.Path.class
-        };
+    protected MetricsApplicationContainer(MetricsService metricsService, DeploymentContext deploymentContext) {
+        super(deploymentContext);
+        this.metricsService = metricsService;
+        this.appName = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class).getApplication().getAppName();
     }
 
     @Override
-    protected Class<?> getContainersClass() {
-        return HealthContainer.class;
+    public boolean start(ApplicationContext ctx) throws Exception {
+        metricsService.registerApplication(appName);
+        return true;
     }
 
     @Override
-    public String getModuleType() {
-        return "health";
+    public boolean stop(ApplicationContext ctx) {
+        metricsService.deregisterApplication(appName);
+        return true;
     }
-    
+
+    @Override
+    public boolean resume() throws Exception {
+        metricsService.registerApplication(appName);
+        return true;
+    }
+
+    @Override
+    public boolean suspend() {
+        metricsService.deregisterApplication(appName);
+        return true;
+    }
+
 }
