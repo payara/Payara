@@ -46,6 +46,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
@@ -78,8 +79,13 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 
 
 /**
@@ -230,24 +236,22 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                                 //in that case try using the DAS to check if the resource is valid.
                                 if (host != null) {
                                     int port = remoteHelper.getAdminPort(deployParams.target);
-                                    try {
-                                        Environment commandEnv = new Environment();
-                                        ProgramOptions options = new ProgramOptions(commandEnv);
-                                        options.setSecure(true);
-                                        options.setPort(port);
-                                        options.setHost(host);
-                                        options.setCommandName("_get-translated-config-value");
-                                        
-                                        RemoteCLICommand getTranslatedValueCommand = new RemoteCLICommand("_get-translated-config-value",
-                                                options, commandEnv);
-                                        
-                                        String translatedValue = getTranslatedValueCommand.executeAndReturnOutput("_get-translated-config-value",
-                                                "--propertyName=" + deployParams.target);
-                                        pud.setJtaDataSource(translatedValue);
 
-                                    } catch (CommandException ex) {
-                                        Logger.getLogger(JPADeployer.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
+                                        InternalSystemAdministrator kernelIdentity = Globals.getDefaultHabitat().getService(InternalSystemAdministrator.class);
+                                        CommandRunner commandRunner = Globals.getDefaultHabitat().getService(CommandRunner.class);
+                                        CommandRunner.CommandInvocation getTranslatedValueCommand = commandRunner.getCommandInvocation("_get-translated-config-value", new PlainTextActionReporter(), kernelIdentity.getSubject());
+                                        ParameterMap params = new ParameterMap();
+                                        params.add(DeploymentProperties.TARGET, deployParams.target);
+                                        params.add("--propertyName", pud.getJtaDataSource());
+                                        getTranslatedValueCommand.parameters(params);
+                                        getTranslatedValueCommand.execute();
+                                        ActionReport report = getTranslatedValueCommand.report();
+                                        if (report.hasSuccesses()) {
+                                            pud.setJtaDataSource(getTranslatedValueCommand.report().getMessage());
+                                        } else {
+                                            logger.log(Level.SEVERE, report.getMessage());
+                                        }
+
                                 }
 
                             }
