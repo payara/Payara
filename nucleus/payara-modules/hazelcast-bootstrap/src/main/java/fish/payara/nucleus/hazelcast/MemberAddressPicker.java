@@ -52,21 +52,35 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import org.glassfish.api.admin.ServerEnvironment;
 import java.util.logging.Logger;
+import org.glassfish.grizzly.utils.Holder.LazyHolder;
 
 /**
  * This class tries to work out which interface to choose as the address of the member
  * broadcast within Hazelcast
+ *
+ * This method picks an interface using the following rules:
+ * If there is only one interface that is not loopback, choose that
+ * If there is an interfaces element use that
+ * For the DAS, if there is a bind address specified use that
+ * If none of those choose the one that isn't the default docker one
+ * For a standalone if the DAS specifies a Bind or Public address,
+ * choose the interface on the same net or subnet
+ * If none of those choose the one that is not the default docker interface
+ * For micro if domain discovery mode, choose the network on the same subnet
+ * If tcpip mode choose the interface which matches a subnet in the tcpip list
+ * If none of those choose the first interface that is not the default docker one
+ *
  * @author Steve Millidge (Payara Foundation)
  * @since 5.0.181
  */
 public class MemberAddressPicker implements MemberAddressProvider {
-
+    private static final Logger logger = Logger.getLogger(MemberAddressPicker.class.getName());
     private final ServerEnvironment env;
     private final HazelcastRuntimeConfiguration config;
     private final HazelcastConfigSpecificConfiguration localConfig;
-    private InetSocketAddress bindAddress;
-    private InetSocketAddress publicAddress;
-    private static final Logger logger = Logger.getLogger(MemberAddressPicker.class.getName());
+    private final InetSocketAddress bindAddress;
+    private final InetSocketAddress publicAddress;
+    private final LazyHolder<InetAddress> chosenAddress = LazyHolder.lazyHolder(MemberAddressPicker::findMyAddress);
 
     MemberAddressPicker(ServerEnvironment env, HazelcastRuntimeConfiguration config, HazelcastConfigSpecificConfiguration localConfig) {
         this.env = env;
@@ -74,7 +88,8 @@ public class MemberAddressPicker implements MemberAddressProvider {
         this.localConfig = localConfig;
 
         // determine public address and bind address
-        initBindAndPublicAddress();
+        bindAddress = initBindAddress();
+        publicAddress = initPublicAddress(bindAddress);
     }
 
     @Override
@@ -97,66 +112,61 @@ public class MemberAddressPicker implements MemberAddressProvider {
         return publicAddress;
     }
 
-    private void initBindAndPublicAddress() {
-        // try setting public address from configuration, Payara node config
-        if (localConfig.getPublicAddress() != null && !localConfig.getPublicAddress().isEmpty()) {
-            String address[] = localConfig.getPublicAddress().split(":");
-            if (address.length > 1) {
-                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(address[1]));
-            } else {
-                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(config.getStartPort()));
-            }
+    private InetSocketAddress initBindAddress() {
+        InetSocketAddress address = new InetSocketAddress(0);
+        if (env.isDas() && !env.isMicro() && !config.getDASBindAddress().isEmpty()) {
+            int port = new Integer(config.getDasPort());
+            address = initAddress(config.getDASBindAddress(), port);
+            logger.log(Level.FINE, "Bind address is specified in the configuration so we will use that {0}", address);
+        } else {
+            logger.log(Level.FINE, "Using Wildcard bind address");
         }
+        return address;
+    }
 
+    private InetSocketAddress initPublicAddress(InetSocketAddress bindAddress) {
         logger.fine("Finding an appropriate address for Hazelcast to use");
+        InetSocketAddress address;
         int port = 0;
-        InetAddress chosenAddress = chooseAddress();
         if (env.isDas() && !env.isMicro()) {
             port = new Integer(config.getDasPort());
-            if (config.getDASPublicAddress() != null && !config.getDASPublicAddress().isEmpty()) {
-                // try setting public address from global Payara config
-                publicAddress = new InetSocketAddress(config.getDASPublicAddress(), port);
-            }
-
-            // bind address
-            if (config.getDASBindAddress() != null && !config.getDASBindAddress().isEmpty()) {
-                String bindAddr = config.getDASBindAddress();
-                // wildcard does not work in multi-homed environments in Hazelcast
-                boolean tryWildCard = false;
-                if (tryWildCard && bindAddr.trim().equals("*")) {
-                    bindAddress = new InetSocketAddress(port);
-                    logger.log(Level.FINE, "Using Wildcard bind address");
-                } else {
-                    bindAddress = new InetSocketAddress(bindAddr, port);
-                    logger.log(Level.FINE, "Bind address is specified in the configuration so we will use that {0}", bindAddress);
-                }
-                setPublicAddressIfNecessary(chosenAddress, port);
-                return;
-            }
+            // try setting public address from global Payara config
+            address = initAddress(config.getDASPublicAddress(), port);
+        } else {
+            // try setting public address from configuration, Payara node config
+            address = initAddress(localConfig.getPublicAddress(), Integer.parseInt(config.getStartPort()));
         }
-
-        if (chosenAddress != null && bindAddress == null) {
-            bindAddress = new InetSocketAddress(chosenAddress, port);
-        } else if (bindAddress == null) {
-            bindAddress = tryLocalHostOrLoopback(port);
-        }
-
-        setPublicAddressIfNecessary(chosenAddress, port);
+        return ensureAddress(address, bindAddress, chosenAddress, port);
     }
 
-    private void setPublicAddressIfNecessary(InetAddress chosenAddress, int port) {
-        if (publicAddress == null) {
-            if (!bindAddress.getAddress().isAnyLocalAddress()) {
-                publicAddress = bindAddress;
-            } else if (chosenAddress != null) {
-                publicAddress = new InetSocketAddress(chosenAddress, port);
+    private static InetSocketAddress initAddress(String address, int port) {
+        if (address != null && !address.isEmpty()) {
+            String addressParts[] = address.split(":");
+            if (addressParts.length > 1) {
+                return new InetSocketAddress(addressParts[0], Integer.parseInt(addressParts[1]));
             } else {
-                publicAddress = tryLocalHostOrLoopback(port);
+                return new InetSocketAddress(addressParts[0], port);
             }
+        } else {
+            return null;
         }
     }
 
-    private InetSocketAddress tryLocalHostOrLoopback(int port) {
+    private static InetSocketAddress ensureAddress(InetSocketAddress targetAddress, InetSocketAddress sourceAddress,
+            LazyHolder<InetAddress> backupAddress, int port) {
+        if (targetAddress == null) {
+            if (sourceAddress != null && !sourceAddress.getAddress().isAnyLocalAddress()) {
+                targetAddress = sourceAddress;
+            } else if (backupAddress.get() != null) {
+                targetAddress = new InetSocketAddress(backupAddress.get(), port);
+            } else {
+                targetAddress = tryLocalHostOrLoopback(port);
+            }
+        }
+        return targetAddress;
+    }
+
+    private static InetSocketAddress tryLocalHostOrLoopback(int port) {
         try {
             // ok do the easy thing
             logger.log(Level.FINE, "Could not find an appropriate address by searching falling back to local host");
@@ -167,19 +177,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
         }
     }
 
-    /**
-     * This method picks an interface using the following rules
-     * If there is only one interface that is not loopback choose that
-     * If there is an interfaces element use that
-     * For the DAS if there is a bind address specified use that
-     * If none of those choose the one that isn't the default docker one
-     * For a standalone if the DAS specifies a Bind or Public address choose the interface on the same net or subnet
-     * If none of those choose the one that is not the default docker interface
-     * For micro if domain discovery mode choose the network on the same subnet
-     * If tcpip mode choose the interface which matches a subnet in the tcpip list
-     * If none of those choose the first interface that is not the default docker one
-     */
-    private static InetAddress chooseAddress() {
+    private static InetAddress findMyAddress() {
         //add to list filtering out docker0
         HashSet<NetworkInterface> possibleInterfaces = new HashSet<>();
         try {
@@ -194,15 +192,15 @@ public class MemberAddressPicker implements MemberAddressProvider {
                     logger.log(Level.FINE, "Adding interface {0} as a possible interface", intf.getName());
                     possibleInterfaces.add(intf);
                 } else {
-                    logger.log(Level.FINE, "Ignoring down, docker or loopback interface {0}", intf.getName());
+                    logger.log(Level.FINE, "Ignoring down, docker, p2p or loopback interface {0}", intf.getName());
                 }
             }
         } catch (SocketException socketException) {
             logger.log(Level.WARNING, "There was a problem determining the network interfaces on this machine", socketException);
         }
-        if (possibleInterfaces.size() >= 1) {
-            InetAddress chosenAddress = null;
 
+        InetAddress chosenAddress = null;
+        if (!possibleInterfaces.isEmpty()) {
             // we haven't found an address
             // this is our interface
             // get first address on the interface
@@ -216,9 +214,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
                 }
             }
             logger.log(Level.FINE, "Picked address {0}", chosenAddress);
-            return chosenAddress;
-        } else {
-            return null;
         }
+        return chosenAddress;
     }
 }
