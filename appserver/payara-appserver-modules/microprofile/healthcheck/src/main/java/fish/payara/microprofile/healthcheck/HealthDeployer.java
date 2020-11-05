@@ -41,15 +41,12 @@ package fish.payara.microprofile.healthcheck;
 
 import java.util.Collection;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.Extension;
 import javax.inject.Inject;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 
@@ -60,8 +57,6 @@ import fish.payara.microprofile.healthcheck.cdi.extension.HealthCDIExtension;
 @PerLookup
 public class HealthDeployer extends MicroProfileDeployer<HealthContainer, HealthApplicationContainer> {
 
-    private static final Logger LOGGER = Logger.getLogger(HealthDeployer.class.getName());
-
     @Inject
     private HealthCheckService healthService;
 
@@ -69,14 +64,6 @@ public class HealthDeployer extends MicroProfileDeployer<HealthContainer, Health
     @SuppressWarnings("unchecked")
     public HealthApplicationContainer load(HealthContainer container,
             DeploymentContext deploymentContext) {
-
-        // Register the Health Servlet
-        WebBundleDescriptorImpl descriptor = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class);
-        if (descriptor != null) {
-            descriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(HealthServletContextListener.class.getName()));
-        } else {
-            LOGGER.warning("Failed to find WebBundleDescriptorImpl. Health servlet won't be available");
-        }
 
         // Register the CDI extension
         Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);

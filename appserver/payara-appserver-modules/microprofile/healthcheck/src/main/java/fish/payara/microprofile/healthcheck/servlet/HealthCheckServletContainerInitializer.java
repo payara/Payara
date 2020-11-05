@@ -37,49 +37,70 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.healthcheck;
+package fish.payara.microprofile.healthcheck.servlet;
 
 import static java.util.Arrays.asList;
 import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+
 import javax.servlet.HttpConstraintElement;
+import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
 
 import org.glassfish.internal.api.Globals;
 
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
-import fish.payara.microprofile.healthcheck.servlet.HealthCheckServlet;
 
-public class HealthServletContextListener implements ServletContextListener {
+/**
+ * Servlet Container Initializer that registers the HealthCheckServlet, as well
+ * as the HealthChecks of a deployed application.
+ *
+ * @author Andrew Pielage
+ */
+public class HealthCheckServletContainerInitializer implements ServletContainerInitializer {
 
-    private final MetricsHealthCheckConfiguration configuration;
-
-    public HealthServletContextListener() {
-        this.configuration = Globals.getDefaultHabitat().getService(MetricsHealthCheckConfiguration.class);
-    }
+    private static final Logger LOGGER = Logger.getLogger(HealthCheckServletContainerInitializer.class.getName());
 
     @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        final ServletContext ctx = sce.getServletContext();
+    public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+        // Check if this context is the root one ("/")
+        if (ctx.getContextPath().isEmpty()) {
+            // Check if there is already a servlet for healthcheck
+            Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
+            MetricsHealthCheckConfiguration configuration = Globals.getDefaultHabitat().getService(MetricsHealthCheckConfiguration.class);
 
-        String virtualServers = configuration.getVirtualServers();
-        if (!isEmpty(virtualServers)
-                && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
-            return;
-        }
+            if (!Boolean.parseBoolean(configuration.getEnabled())) {
+                return; //MP Healthcheck disabled
+            }
 
-        // Register a servlet health URL patterns
-        ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", HealthCheckServlet.class);
-        reg.addMapping("/" + configuration.getEndpoint() + "/*");
-        if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
-            String[] roles = configuration.getRoles().split(",");
-            reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
-            ctx.declareRoles(roles);
+            for (ServletRegistration reg : registrations.values()) {
+                if (reg.getClass().equals(HealthCheckServlet.class) || reg.getMappings().contains("/" + configuration.getEndpoint())) {
+                    return;
+                }
+            }
+
+            String virtualServers = configuration.getVirtualServers();
+            if (!isEmpty(virtualServers)
+                    && !asList(virtualServers.split(",")).contains(ctx.getVirtualServerName())) {
+                return;
+            }
+
+            // Register servlet
+            ServletRegistration.Dynamic reg = ctx.addServlet("microprofile-healthcheck-servlet", HealthCheckServlet.class);
+            reg.addMapping("/" + configuration.getEndpoint() + "/*");
+            if (Boolean.parseBoolean(configuration.getSecurityEnabled())) {
+                String[] roles = configuration.getRoles().split(",");
+                reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
+                ctx.declareRoles(roles);
+            }
         }
     }
+
 }
