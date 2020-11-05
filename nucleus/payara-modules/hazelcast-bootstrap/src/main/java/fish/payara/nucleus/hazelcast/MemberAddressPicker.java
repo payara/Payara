@@ -139,7 +139,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
         return ensureAddress(address, bindAddress, chosenAddress, port);
     }
 
-    private static InetSocketAddress initAddress(String address, int port) {
+    static InetSocketAddress initAddress(String address, int port) {
         if (address != null && !address.isEmpty()) {
             String addressParts[] = address.split(":");
             if (addressParts.length > 1) {
@@ -177,7 +177,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
         }
     }
 
-    private static InetAddress findMyAddress() {
+    static InetAddress findMyAddress() {
         //add to list filtering out docker0
         HashSet<NetworkInterface> possibleInterfaces = new HashSet<>();
         try {
