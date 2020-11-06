@@ -40,12 +40,16 @@
 package fish.payara.enterprise.config;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.StringUtils;
+import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
@@ -67,9 +71,18 @@ public class GetTranslatedConfigValue implements AdminCommand {
     
     @Param(name="propertyName")
     String propertyName;
+    
+    @Param
+    String target;
+    
+    @Inject
+    ServerEnvironment env;
 
     @Override
     public void execute(AdminCommandContext context) {
+        if (StringUtils.ok(target) && !target.equals(env.getInstanceName())) {
+            return;
+        }
         ActionReport report = context.getActionReport();
         report.setMessage(TranslatedConfigView.expandConfigValue(propertyName));
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);

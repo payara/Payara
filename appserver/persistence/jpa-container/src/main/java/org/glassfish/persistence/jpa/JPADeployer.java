@@ -241,13 +241,15 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                                         CommandRunner commandRunner = Globals.getDefaultHabitat().getService(CommandRunner.class);
                                         CommandRunner.CommandInvocation getTranslatedValueCommand = commandRunner.getCommandInvocation("_get-translated-config-value", new PlainTextActionReporter(), kernelIdentity.getSubject());
                                         ParameterMap params = new ParameterMap();
-                                        params.add(DeploymentProperties.TARGET, deployParams.target);
-                                        params.add("--propertyName", pud.getJtaDataSource());
+                                        params.add("propertyName", pud.getJtaDataSource());
+                                        params.add("target", deployParams.target);
                                         getTranslatedValueCommand.parameters(params);
                                         getTranslatedValueCommand.execute();
                                         ActionReport report = getTranslatedValueCommand.report();
                                         if (report.hasSuccesses()) {
-                                            pud.setJtaDataSource(getTranslatedValueCommand.report().getMessage());
+                                            ActionReport subReport = report.getSubActionsReport().get(0);
+                                            String value = subReport.getMessage().replace(deployParams.target + ":", "");
+                                            pud.setJtaDataSource(value.trim());
                                         } else {
                                             logger.log(Level.SEVERE, report.getMessage());
                                         }
