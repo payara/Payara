@@ -41,7 +41,6 @@ package fish.payara.microprofile.metrics.activation;
 
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
 import fish.payara.microprofile.metrics.MetricsService;
@@ -49,12 +48,10 @@ import fish.payara.microprofile.metrics.MetricsService;
 public class MetricsApplicationContainer extends MicroProfileApplicationContainer {
 
     private final MetricsService metricsService;
-    private final String appName;
 
     protected MetricsApplicationContainer(MetricsService metricsService, DeploymentContext deploymentContext) {
         super(deploymentContext);
         this.metricsService = metricsService;
-        this.appName = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class).getApplication().getAppName();
     }
 
     @Override

@@ -41,7 +41,6 @@ package fish.payara.microprofile.healthcheck.activation;
 
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
 import fish.payara.microprofile.healthcheck.HealthCheckService;
@@ -49,14 +48,10 @@ import fish.payara.microprofile.healthcheck.HealthCheckService;
 public class HealthApplicationContainer extends MicroProfileApplicationContainer {
 
     private final HealthCheckService healthService;
-    private final String appName;
-    private final ClassLoader appClassLoader;
 
-    protected HealthApplicationContainer(HealthCheckService healthService, DeploymentContext deploymentContext) {
-        super(deploymentContext);
+    protected HealthApplicationContainer(HealthCheckService healthService, DeploymentContext ctx) {
+        super(ctx);
         this.healthService = healthService;
-        this.appName = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class).getApplication().getAppName();
-        this.appClassLoader = deploymentContext.getClassLoader();
     }
 
     @Override

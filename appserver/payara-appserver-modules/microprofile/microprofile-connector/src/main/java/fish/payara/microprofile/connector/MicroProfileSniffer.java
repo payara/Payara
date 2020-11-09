@@ -120,11 +120,16 @@ public abstract class MicroProfileSniffer implements Sniffer {
 
     @Override
     public final boolean supportsArchiveType(ArchiveType type) {
-        final boolean result = type != null && WarType.ARCHIVE_EXTENSION.equals(type.getExtension());
-        if (!result) {
-            LOGGER.fine("Unsupported ArchiveType: " + type.getExtension());
+        final String extension = (type == null)? null : type.getExtension();
+        switch (extension) {
+            //case EarType.ARCHIVE_EXTENSION:
+            case WarType.ARCHIVE_EXTENSION:
+            //case EjbType.ARCHIVE_EXTENSION:
+                return true;
+            default:
+                LOGGER.fine("Unsupported ArchiveType: " + extension);
         }
-        return result;
+        return false;
     }
 
     @Override

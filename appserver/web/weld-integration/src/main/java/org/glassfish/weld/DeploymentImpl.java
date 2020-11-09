@@ -494,18 +494,21 @@ public class DeploymentImpl implements CDI11Deployment {
                                 loadedExtensions.put(bdaExtn.getValue().getClass(), bdaExtn);
                             }
                         }
-                        Iterable<Supplier<Extension>> snifferExtensions = context.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Iterable.class);
-                        for (Supplier<Extension> extensionCreator : snifferExtensions) {
-                            final Extension extension = extensionCreator.get();
-                            final Class<?> extensionClass = extension.getClass();
-                            final Metadata<Extension> extensionMetadata = new MetadataImpl<Extension>(extension, extensionClass.getName());
-                            extnList.add(extensionMetadata);
-                            loadedExtensions.put(extensionClass, extensionMetadata);
-                        }
                     }
                 }
             }
         }
+
+        // Load sniffer extensions
+        @SuppressWarnings("unchecked")
+        Iterable<Supplier<Extension>> snifferExtensions = context.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Iterable.class);
+        for (Supplier<Extension> extensionCreator : snifferExtensions) {
+            final Extension extension = extensionCreator.get();
+            final Class<?> extensionClass = extension.getClass();
+            final Metadata<Extension> extensionMetadata = new MetadataImpl<Extension>(extension, extensionClass.getName());
+            extnList.add(extensionMetadata);
+        }
+
         extnList.addAll(dynamicExtensions);
         extensions = extnList;
         return extnList;

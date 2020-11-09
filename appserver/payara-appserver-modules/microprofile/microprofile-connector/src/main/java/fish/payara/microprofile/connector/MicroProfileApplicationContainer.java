@@ -46,14 +46,18 @@ import org.glassfish.api.deployment.DeploymentContext;
 public abstract class MicroProfileApplicationContainer implements ApplicationContainer<Object> {
 
     protected final DeploymentContext ctx;
+    protected final ClassLoader appClassLoader;
+    protected final String appName;
 
     public MicroProfileApplicationContainer(DeploymentContext ctx) {
         this.ctx = ctx;
+        this.appClassLoader = ctx.getFinalClassLoader();
+        this.appName = ctx.getArchiveHandler().getDefaultApplicationName(ctx.getSource(), ctx);
     }
 
     @Override
     public ClassLoader getClassLoader() {
-        return ctx.getClassLoader();
+        return appClassLoader;
     }
 
     @Override

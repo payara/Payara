@@ -63,14 +63,22 @@
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- For ArchiveType dependencies -->
         <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>gf-web-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
+            <artifactId>gf-ejb-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

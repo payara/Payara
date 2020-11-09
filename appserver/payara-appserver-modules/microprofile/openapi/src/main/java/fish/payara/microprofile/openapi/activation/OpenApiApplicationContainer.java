@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.activation;
 
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 import fish.payara.microprofile.connector.MicroProfileApplicationContainer;
 import fish.payara.microprofile.openapi.impl.OpenApiService;
@@ -49,12 +48,10 @@ import fish.payara.microprofile.openapi.impl.OpenApiService;
 public class OpenApiApplicationContainer extends MicroProfileApplicationContainer {
 
     private final OpenApiService openapi;
-    private final String appName;
 
     protected OpenApiApplicationContainer(OpenApiService openapi, DeploymentContext deploymentContext) {
         super(deploymentContext);
         this.openapi = openapi;
-        this.appName = deploymentContext.getModuleMetaData(WebBundleDescriptorImpl.class).getModuleID();
     }
 
     @Override
