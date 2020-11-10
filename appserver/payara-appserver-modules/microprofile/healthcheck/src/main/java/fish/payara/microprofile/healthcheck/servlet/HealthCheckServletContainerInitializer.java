@@ -39,19 +39,19 @@
  */
 package fish.payara.microprofile.healthcheck.servlet;
 
-import fish.payara.microprofile.healthcheck.HealthCheckService;
-import fish.payara.microprofile.healthcheck.HealthCheckType;
-import static fish.payara.microprofile.healthcheck.HealthCheckType.HEALTH;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
-import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import static java.util.Arrays.asList;
+import static java.util.logging.Level.INFO;
+import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
+import static org.glassfish.common.util.StringHelper.isEmpty;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import static java.util.logging.Level.INFO;
 import java.util.logging.Logger;
+
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.servlet.HttpConstraintElement;
@@ -60,16 +60,19 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletSecurityElement;
-import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
+
 import org.eclipse.microprofile.health.HealthCheck;
 import org.glassfish.api.invocation.InvocationManager;
-import static org.glassfish.common.util.StringHelper.isEmpty;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.weld.RootBeanDeploymentArchive;
 import org.jboss.weld.Container;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.manager.BeanManagerImpl;
+
+import fish.payara.microprofile.healthcheck.HealthCheckService;
+import fish.payara.microprofile.healthcheck.HealthCheckType;
+import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 
 /**
  * Servlet Container Initializer that registers the HealthCheckServlet, as well
@@ -132,7 +135,6 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
 
             beans.addAll(beanManager.getBeans(HealthCheck.class, READINESS.getLiteral()));
             beans.addAll(beanManager.getBeans(HealthCheck.class, LIVENESS.getLiteral()));
-            beans.addAll(beanManager.getBeans(HealthCheck.class, HEALTH.getLiteral()));
 
             for (Bean<?> bean : beans) {
                 HealthCheck healthCheck = (HealthCheck) beanManager.getReference(

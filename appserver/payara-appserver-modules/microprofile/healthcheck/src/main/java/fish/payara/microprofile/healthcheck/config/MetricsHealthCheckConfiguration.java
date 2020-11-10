@@ -46,7 +46,6 @@ import static fish.payara.microprofile.Constants.DEFAULT_GROUP_NAME;
 import java.beans.PropertyVetoException;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
@@ -55,7 +54,7 @@ import org.jvnet.hk2.config.Configured;
  * @since 4.1.2.182
  */
 @Configured
-public interface MetricsHealthCheckConfiguration extends ConfigBeanProxy, ConfigExtension {
+public interface MetricsHealthCheckConfiguration extends ConfigExtension {
     
     /**
      * @return a Boolean value determining if the service is enabled or

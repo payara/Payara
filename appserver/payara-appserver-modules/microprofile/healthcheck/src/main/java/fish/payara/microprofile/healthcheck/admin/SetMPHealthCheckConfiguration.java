@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@
 package fish.payara.microprofile.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.microprofile.SetSecureMicroprofileConfigurationCommand;
 import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import java.util.logging.Logger;
@@ -105,9 +104,6 @@ public class SetMPHealthCheckConfiguration extends SetSecureMicroprofileConfigur
 
     @Inject
     UnprocessedConfigListener unprocessedListener;
-
-    @Inject
-    private Domain domain;
 
     @Override
     public void execute(AdminCommandContext context) {
