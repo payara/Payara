@@ -89,7 +89,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import fish.payara.microprofile.healthcheck.checks.PayaraHealthCheck;
-import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.microprofile.healthcheck.config.MicroprofileHealthCheckConfiguration;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -114,7 +114,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     private ApplicationRegistry applicationRegistry;
 
     @Inject
-    private MetricsHealthCheckConfiguration configuration;
+    private MicroprofileHealthCheckConfiguration configuration;
 
     private static final Logger LOG = Logger.getLogger(HealthCheckService.class.getName());
 

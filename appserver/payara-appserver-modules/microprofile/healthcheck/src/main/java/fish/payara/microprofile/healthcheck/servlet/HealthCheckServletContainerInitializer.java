@@ -72,7 +72,7 @@ import org.jboss.weld.manager.BeanManagerImpl;
 
 import fish.payara.microprofile.healthcheck.HealthCheckService;
 import fish.payara.microprofile.healthcheck.HealthCheckType;
-import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.microprofile.healthcheck.config.MicroprofileHealthCheckConfiguration;
 
 /**
  * Servlet Container Initializer that registers the HealthCheckServlet, as well
@@ -90,7 +90,7 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
         if (ctx.getContextPath().isEmpty()) {
             // Check if there is already a servlet for healthcheck
             Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
-            MetricsHealthCheckConfiguration configuration = Globals.getDefaultHabitat().getService(MetricsHealthCheckConfiguration.class);
+            MicroprofileHealthCheckConfiguration configuration = Globals.getDefaultHabitat().getService(MicroprofileHealthCheckConfiguration.class);
 
             if (!Boolean.parseBoolean(configuration.getEnabled())) {
                 return; //MP Healthcheck disabled

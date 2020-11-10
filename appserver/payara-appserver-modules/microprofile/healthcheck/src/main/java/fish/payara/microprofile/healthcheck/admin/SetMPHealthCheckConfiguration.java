@@ -44,7 +44,7 @@ package fish.payara.microprofile.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.microprofile.SetSecureMicroprofileConfigurationCommand;
-import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.microprofile.healthcheck.config.MicroprofileHealthCheckConfiguration;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
@@ -79,7 +79,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @I18n("set-microprofile-healthcheck-configuration")
 @RestEndpoints({
-    @RestEndpoint(configBean = MetricsHealthCheckConfiguration.class,
+    @RestEndpoint(configBean = MicroprofileHealthCheckConfiguration.class,
             opType = RestEndpoint.OpType.POST,
             description = "Configures Microprofile HealthCheck")
 })
@@ -110,7 +110,7 @@ public class SetMPHealthCheckConfiguration extends SetSecureMicroprofileConfigur
         ActionReport actionReport = context.getActionReport();
         Subject subject = context.getSubject();
         Config targetConfig = targetUtil.getConfig(target);
-        MetricsHealthCheckConfiguration config = targetConfig.getExtensionByType(MetricsHealthCheckConfiguration.class);
+        MicroprofileHealthCheckConfiguration config = targetConfig.getExtensionByType(MicroprofileHealthCheckConfiguration.class);
 
         if (Boolean.TRUE.equals(securityEnabled)
                 || Boolean.parseBoolean(config.getSecurityEnabled())) {
