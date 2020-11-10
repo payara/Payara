@@ -44,12 +44,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
 
 import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
 
-public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource {
+public class JDBCConfigSource extends PayaraConfigSource {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCConfigSource.class.getName());
 

@@ -44,14 +44,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
 
 /**
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class ClusterConfigSource extends PayaraConfigSource implements ConfigSource {
+public class ClusterConfigSource extends PayaraConfigSource {
     
     public final static String CLUSTERED_CONFIG_STORE = "payara.microprofile.config";
     private final ClusteredStore clusterStore;

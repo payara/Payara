@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.internal.api.Globals;
 
@@ -60,7 +59,7 @@ import org.glassfish.internal.api.Globals;
  *
  * @author steve
  */
-public class PasswordAliasConfigSource extends PayaraConfigSource implements ConfigSource {
+public class PasswordAliasConfigSource extends PayaraConfigSource {
 
     private final DomainScopedPasswordAliasStore store;
     

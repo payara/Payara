@@ -42,6 +42,8 @@ package fish.payara.nucleus.microprofile.config.source;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
+import java.util.Set;
+
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
@@ -53,6 +55,11 @@ public class EnvironmentConfigSource implements ConfigSource {
     @Override
     public Map<String, String> getProperties() {
         return getEnv();
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
     }
 
     @Override

@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
@@ -68,7 +67,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource {
+public class JNDIConfigSource extends PayaraConfigSource {
 
     @Override
     public Map<String, String> getProperties() {
