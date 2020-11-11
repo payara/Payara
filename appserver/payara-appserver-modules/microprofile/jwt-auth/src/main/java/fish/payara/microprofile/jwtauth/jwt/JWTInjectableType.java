@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -148,8 +148,7 @@ public class JWTInjectableType {
         } else if (coreClass.equals(Long.class)) {
             converter = e -> ((JsonNumber) e).longValue();
         } else if (coreClass.equals(Boolean.class)) {
-            // TODO
-            converter = e -> e;
+            converter = e -> convertToBoolean(e);
         } else if (coreClass.equals(JsonArray.class)) {
             converter = e -> e instanceof JsonArray ? e : createArrayBuilder().add(e).build();
         } else {
@@ -163,6 +162,14 @@ public class JWTInjectableType {
         }
         
         return singleton(((JsonString) jsonValue).getString());
+    }
+
+    private static boolean convertToBoolean(JsonValue jsonValue) {
+        if (jsonValue instanceof JsonString) {
+            return Boolean.parseBoolean(((JsonString) jsonValue).getString());
+        }
+
+        return Boolean.parseBoolean(jsonValue.toString());
     }
 
 }
