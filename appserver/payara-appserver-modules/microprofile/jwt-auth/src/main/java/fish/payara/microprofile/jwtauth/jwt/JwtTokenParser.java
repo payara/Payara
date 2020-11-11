@@ -67,8 +67,9 @@ import static org.eclipse.microprofile.jwt.Claims.*;
 public class JwtTokenParser {
     
     private final static String DEFAULT_NAMESPACE = "https://payara.fish/mp-jwt/";
-    
-    private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti, groups);
+
+    // Groups no longer required since 2.0
+    private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti);
     
     private final boolean enableNamespacedClaims;
     private final Optional<String> customNamespace;
