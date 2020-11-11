@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -178,11 +178,19 @@ public class JwtTokenParser {
         return true;
     }
 
+    /**
+     * Will confirm the token has not expired if the current time and issue time
+     * were both before the expiry time
+     * 
+     * @param presentedClaims the claims from the JWT
+     * @return if the JWT has expired
+     */
     private boolean checkNotExpired(Map<String, JsonValue> presentedClaims) {
-        int currentTime = (int) (System.currentTimeMillis() / 1000);
-        int expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).intValue();
+        final int currentTime = (int) (System.currentTimeMillis() / 1000);
+        final int expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).intValue();
+        final int issueTime = ((JsonNumber) presentedClaims.get(iat.name())).intValue();
 
-        return currentTime < expiredTime;
+        return currentTime < expiredTime && issueTime < expiredTime;
     }
 
     private boolean checkIssuer(Map<String, JsonValue> presentedClaims, String acceptedIssuer) {
