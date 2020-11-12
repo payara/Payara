@@ -180,16 +180,14 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 for (String metric : e.getValue()) {
                     addWatch(collector, appName, metric);
                 }
-                addWatch(collector, appName, "Health");
                 addWatch(collector, appName, "Readiness");
                 addWatch(collector, appName, "Liveness");
-                addWatch(collector, appName, "Overall");
+                addWatch(collector, appName, "Health");
             }
             if (!collected.isEmpty()) {
-                addWatch(collector, null, "Health");
                 addWatch(collector, null, "Readiness");
                 addWatch(collector, null, "Liveness");
-                addWatch(collector, null, "Overall");
+                addWatch(collector, null, "Health");
             }
         }
     }
