@@ -82,7 +82,7 @@ public class RolesAllowedDynamicFeature implements DynamicFeature {
         // Permit All (Unchecked) resources are free to be accessed by everyone
         if (resourceMethod.isAnnotationPresent(PermitAll.class)) {
             // Still register the filter, as the principal should still be injected
-            configuration.register(new RolesAllowedRequestFilter(request, response, true));
+            configuration.register(new RolesAllowedRequestFilter(request, response));
             return;
         }
 

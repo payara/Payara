@@ -141,15 +141,15 @@ public class JWTInjectableType {
     }
 
     private void installCoreConverter() {
-        if (coreClass.equals(String.class)) {
+        if (coreClass == String.class) {
             converter = e -> ((JsonString) e).getString();
-        } else if (coreClass.equals(Set.class)) {
+        } else if (coreClass == Set.class) {
             converter = e -> convertToSet(e);
-        } else if (coreClass.equals(Long.class)) {
+        } else if (coreClass == Long.class) {
             converter = e -> ((JsonNumber) e).longValue();
-        } else if (coreClass.equals(Boolean.class)) {
+        } else if (coreClass == Boolean.class) {
             converter = e -> convertToBoolean(e);
-        } else if (coreClass.equals(JsonArray.class)) {
+        } else if (coreClass == JsonArray.class) {
             converter = e -> e instanceof JsonArray ? e : createArrayBuilder().add(e).build();
         } else {
             converter = e -> e;

@@ -86,7 +86,7 @@ public class RolesAllowedRequestFilter implements ContainerRequestFilter {
         this(request, response, rolesAllowed, false);
     }
 
-    RolesAllowedRequestFilter(HttpServletRequest request, HttpServletResponse response, boolean permitAll) {
+    RolesAllowedRequestFilter(HttpServletRequest request, HttpServletResponse response) {
         this(request, response, null, true);
     }
 
@@ -97,7 +97,7 @@ public class RolesAllowedRequestFilter implements ContainerRequestFilter {
         this.securityContext = CDI.current().select(SecurityContext.class).get();
         this.permitAll = permitAll;
         // If permitAll, roles allowed should be null. Otherwise roles allowed should not be null
-        assert permitAll ^ rolesAllowed != null;
+        assert permitAll == (rolesAllowed == null);
     }
 
     @Override
