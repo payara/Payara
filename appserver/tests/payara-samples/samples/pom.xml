@@ -229,6 +229,7 @@
             <modules>
                 <module>ejb-http-remoting</module>
                 <module>remote-ejb-tracing</module>
+                <module>rolesallowed-unprotected-methods</module>
             </modules>
             <dependencies>
                 <dependency>

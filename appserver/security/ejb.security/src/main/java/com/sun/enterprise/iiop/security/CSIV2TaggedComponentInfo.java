@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 import static com.sun.enterprise.deployment.EjbIORConfigurationDescriptor.NONE;
@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.deployment.MethodPermission;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.enterprise.iiop.impl.CSIv2Policy;
 import org.glassfish.internal.api.ORBLocator;
@@ -269,7 +270,6 @@ public final class CSIV2TaggedComponentInfo {
             iorDescriptor.setConfidentiality(SUPPORTED);
             iorDescriptor.setEstablishTrustInClient(SUPPORTED);
             iorDescriptors.add(iorDescriptor);
-            size = 1;
 
             // Check if method permissions are set on the descriptor.
             // If they are then enable username_password mechanism in as_context
@@ -291,6 +291,21 @@ public final class CSIV2TaggedComponentInfo {
                 }
 
                 iorDescriptor.setRealmName(realmName);
+
+                // If the EJB contains some methods that don't require authentication, add a descriptor that
+                // doesn't require authentication so that lookup can be performed (access checks on protected
+                // methods should still happen later, this is simply to allow lookup)
+                for (MethodPermission methodPermission : ejbDescriptor.getMethodPermissionsFromDD().keySet()) {
+                    if (methodPermission.isUnchecked()) {
+                        EjbIORConfigurationDescriptor uncheckedDescriptor = new EjbIORConfigurationDescriptor();
+                        uncheckedDescriptor.setIntegrity(SUPPORTED);
+                        uncheckedDescriptor.setConfidentiality(SUPPORTED);
+                        uncheckedDescriptor.setEstablishTrustInClient(SUPPORTED);
+                        uncheckedDescriptor.setRealmName(realmName);
+                        iorDescriptors.add(uncheckedDescriptor);
+                        break;
+                    }
+                }
             }
         }
 
