@@ -84,7 +84,7 @@
                 mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                 mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-hahsicrop-config-source-configuration" 
+                    gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-hashicrop-config-source-configuration" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     /> 
             </sun:button>
@@ -104,10 +104,10 @@
                     helpText="$resource{i18n_microprofile.config.hashicrop.configuration.dynamicHelpText}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
         </sun:property>
-        <sun:property id="regionName" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+        <sun:property id="vaultAddress" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                     label="$resource{i18n_microprofile.config.hashicrop.configuration.vaultAddressLabel}"  
                     helpText="$resource{i18n_microprofile.config.hashicrop.configuration.vaultAddressHelpText}">
-            <sun:textField id="regionNameField" columns="$int{75}" maxLength="255"
+            <sun:textField id="vaultAddressField" columns="$int{75}" maxLength="512"
                         text="#{pageSession.valueMap['vaultAddress']}" styleClass="required"  
                         required="#{true}"/>
         </sun:property>

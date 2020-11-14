@@ -114,6 +114,7 @@ public class HashiCropSecretsConfigSource extends ConfiguredExtensionConfigSourc
                 .get();
 
         if (secretsResponse.getStatus() != 200) {
+            LOGGER.log(Level.WARNING, "Unable to get secrets from the vault", ex);
             return results;
         }
 
