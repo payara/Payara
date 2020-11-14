@@ -75,7 +75,7 @@ public class GetAzureSecretsConfigSourceConfigurationCommand extends BaseGetConf
             config.put("Tenant ID", configuration.getTenantId());
             config.put("Client ID", configuration.getClientId());
             config.put("Key VaultName", configuration.getKeyVaultName());
-            config.put("Private Key Path", configuration.getPrivateKeyFilePath());
+            config.put("Private Key File", configuration.getPrivateKeyFilePath());
             config.put("Thumbprint", configuration.getThumbprint());
         }
         return config;
