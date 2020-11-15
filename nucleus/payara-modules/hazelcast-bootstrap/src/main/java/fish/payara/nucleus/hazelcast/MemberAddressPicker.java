@@ -118,6 +118,8 @@ public class MemberAddressPicker implements MemberAddressProvider {
             int port = new Integer(config.getDasPort());
             address = initAddress(config.getDASBindAddress(), port);
             logger.log(Level.FINE, "Bind address is specified in the configuration so we will use that {0}", address);
+        } else if (config.getDiscoveryMode().startsWith("multicast")) {
+            address = ensureAddress(null, null, chosenAddress, 0);
         } else {
             logger.log(Level.FINE, "Using Wildcard bind address");
         }
