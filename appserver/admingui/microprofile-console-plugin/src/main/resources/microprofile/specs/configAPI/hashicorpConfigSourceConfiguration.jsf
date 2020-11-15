@@ -42,17 +42,17 @@
     setResourceBundle(key="i18n_microprofile" bundle="fish.payara.admingui.microprofile.Strings");
 />
 <!composition template="/templates/default.layout"  
-    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.hashicropSecretsConfigSource.pageTitle}">
+    guiTitle="$resource{i18n_microprofile.microprofile.specs.configuration.config.hashicorpSecretsConfigSource.pageTitle}">
 
 <!define name="content">
 
 <event>
     <!beforeCreate
-        setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigHashiCropSecretsConfigSourceTab");
+        setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigHashiCorpSecretsConfigSourceTab");
         getRequestValue(key="configName" value="#{pageSession.configName}");
         setPageSessionAttribute(key="MICROPROFILE_CONFIG_URL", 
                 value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/microprofile-config");
-        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/get-hashicrop-config-source-configuration?target=#{pageSession.configName}"  
+        gf.restRequest(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/get-hashicorp-config-source-configuration?target=#{pageSession.configName}"  
                 method="GET" result="#{requestScope.resp}");
         
         setPageSessionAttribute(key="valueMap", 
@@ -73,8 +73,8 @@
 #include "/common/shared/alertMsg_1.inc"
 #include "/microprofile/microprofile/microprofileConfigTabs.inc"
 #include "/microprofile/microprofile/microprofileConfigAPITabs.inc"
-    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.hashicropSecretsConfigSource.pageTitle}" 
-               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.hashicropSecretsConfigSource.pageTitleHelpText}" >
+    <sun:title id="propertyContentPage" title="$resource{i18n_microprofile.microprofile.specs.configuration.config.hashicorpSecretsConfigSource.pageTitle}" 
+               helpText="$resource{i18n_microprofile.microprofile.specs.configuration.config.hashicorpSecretsConfigSource.pageTitleHelpText}" >
         <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
@@ -84,7 +84,7 @@
                 mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                 mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-hashicrop-config-source-configuration" 
+                    gf.updateEntity(endpoint="#{pageSession.MICROPROFILE_CONFIG_URL}/set-hashicorp-config-source-configuration" 
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     /> 
             </sun:button>
@@ -93,20 +93,20 @@
     </sun:title>
 <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-  <sun:propertySheetSection id="hashicropSecretsConfigSourceProps">
+  <sun:propertySheetSection id="hashicorpSecretsConfigSourceProps">
         <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                    label="$resource{i18n_microprofile.config.hashicrop.configuration.enabledLabel}"  
-                    helpText="$resource{i18n_microprofile.config.hashicrop.configuration.enabledHelpText}">
+                    label="$resource{i18n_microprofile.config.hashicorp.configuration.enabledLabel}"  
+                    helpText="$resource{i18n_microprofile.config.hashicorp.configuration.enabledHelpText}">
             <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
         </sun:property>
         <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                    label="$resource{i18n_microprofile.config.hashicrop.configuration.dynamicLabel}"  
-                    helpText="$resource{i18n_microprofile.config.hashicrop.configuration.dynamicHelpText}">
+                    label="$resource{i18n_microprofile.config.hashicorp.configuration.dynamicLabel}"  
+                    helpText="$resource{i18n_microprofile.config.hashicorp.configuration.dynamicHelpText}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
         </sun:property>
         <sun:property id="vaultAddress" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                    label="$resource{i18n_microprofile.config.hashicrop.configuration.vaultAddressLabel}"  
-                    helpText="$resource{i18n_microprofile.config.hashicrop.configuration.vaultAddressHelpText}">
+                    label="$resource{i18n_microprofile.config.hashicorp.configuration.vaultAddressLabel}"  
+                    helpText="$resource{i18n_microprofile.config.hashicorp.configuration.vaultAddressHelpText}">
             <sun:textField id="vaultAddressField" columns="$int{75}" maxLength="512"
                         text="#{pageSession.valueMap['vaultAddress']}" styleClass="required"  
                         required="#{true}"/>

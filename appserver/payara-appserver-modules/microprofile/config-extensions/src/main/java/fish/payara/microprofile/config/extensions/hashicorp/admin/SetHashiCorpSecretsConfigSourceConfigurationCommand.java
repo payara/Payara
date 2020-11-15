@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.extensions.hashicrop.admin;
+package fish.payara.microprofile.config.extensions.hashicorp.admin;
 
-import java.util.Map;
+import java.beans.PropertyVetoException;
+import java.util.logging.Logger;
 
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
@@ -51,29 +53,35 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.microprofile.config.extensions.hashicrop.HashiCropSecretsConfigSourceConfiguration;
-import fish.payara.nucleus.microprofile.config.source.extension.BaseGetConfigSourceConfigurationCommand;
+import com.sun.enterprise.util.StringUtils;
+
+import fish.payara.microprofile.config.extensions.hashicorp.HashiCorpSecretsConfigSourceConfiguration;
+import fish.payara.nucleus.microprofile.config.source.extension.BaseSetConfigSourceConfigurationCommand;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
-@Service(name = "get-hashicrop-config-source-configuration")
+@Service(name = "set-hashicorp-config-source-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = MicroprofileConfigConfiguration.class,
-            opType = RestEndpoint.OpType.GET,
-            path = "get-hashicrop-config-source-configuration",
-            description = "List HashiCrop Secrets Config Source Configuration")
+            opType = RestEndpoint.OpType.POST,
+            path = "set-hashicorp-config-source-configuration",
+            description = "Configures HashiCorp Secrets Config Source")
 })
-public class GetHashiCropSecretsConfigSourceConfigurationCommand extends BaseGetConfigSourceConfigurationCommand<HashiCropSecretsConfigSourceConfiguration> {
+public class SetHashiCorpSecretsConfigSourceConfigurationCommand extends BaseSetConfigSourceConfigurationCommand<HashiCorpSecretsConfigSourceConfiguration> {
+
+    private static final Logger LOGGER = Logger.getLogger(SetHashiCorpSecretsConfigSourceConfigurationCommand.class.getPackage().getName());
+
+    @Param(optional = true, name = "vault-address", alias = "vaultAddress")
+    protected String vaultAddress;
 
     @Override
-    protected Map<String, Object> getConfigSourceConfiguration(HashiCropSecretsConfigSourceConfiguration configuration) {
-        Map<String, Object> config = super.getConfigSourceConfiguration(configuration);
-        if (configuration != null) {
-            config.put("Vault Address", configuration.getVaultAddress());
+    protected void applyValues(HashiCorpSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(configuration);
+        if (StringUtils.ok(vaultAddress)) {
+            configuration.setVaultAddress(vaultAddress);
         }
-        return config;
     }
 }

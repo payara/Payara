@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.extensions.hashicrop;
+package fish.payara.microprofile.config.extensions.hashicorp;
 
 import fish.payara.nucleus.microprofile.config.spi.ConfigSourceConfiguration;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
-@Configured(name = "hashicrop-secrets-config-source-configuration")
-public interface HashiCropSecretsConfigSourceConfiguration extends ConfigSourceConfiguration {
+@Configured(name = "hashicorp-secrets-config-source-configuration")
+public interface HashiCorpSecretsConfigSourceConfiguration extends ConfigSourceConfiguration {
 
     @Attribute(required = true)
     String getVaultAddress();

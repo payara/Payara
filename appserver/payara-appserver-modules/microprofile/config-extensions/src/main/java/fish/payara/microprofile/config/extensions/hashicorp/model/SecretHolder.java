@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.config.extensions.hashicrop.model;
+package fish.payara.microprofile.config.extensions.hashicorp.model;
 
 import java.util.Map;
 
