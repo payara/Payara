@@ -119,6 +119,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
             address = initAddress(config.getDASBindAddress(), port);
             logger.log(Level.FINE, "Bind address is specified in the configuration so we will use that {0}", address);
         } else if (config.getDiscoveryMode().startsWith("multicast")) {
+            // in multicast mode, Hazelcast needs actual interface to bind, not wildcard
             address = ensureAddress(null, null, chosenAddress, 0);
         } else {
             logger.log(Level.FINE, "Using Wildcard bind address");
