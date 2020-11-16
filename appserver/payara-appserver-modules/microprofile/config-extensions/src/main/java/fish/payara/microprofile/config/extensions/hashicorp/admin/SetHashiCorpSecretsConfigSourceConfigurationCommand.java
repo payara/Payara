@@ -42,6 +42,7 @@ package fish.payara.microprofile.config.extensions.hashicorp.admin;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ExecuteOn;
@@ -78,8 +79,8 @@ public class SetHashiCorpSecretsConfigSourceConfigurationCommand extends BaseSet
     protected String vaultAddress;
 
     @Override
-    protected void applyValues(HashiCorpSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
-        super.applyValues(configuration);
+    protected void applyValues(ActionReport report, HashiCorpSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(report, configuration);
         if (StringUtils.ok(vaultAddress)) {
             configuration.setVaultAddress(vaultAddress);
         }
