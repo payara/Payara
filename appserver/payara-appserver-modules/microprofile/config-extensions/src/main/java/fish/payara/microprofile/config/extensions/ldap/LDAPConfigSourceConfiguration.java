@@ -37,73 +37,68 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.source.extension.proxy;
+package fish.payara.microprofile.config.extensions.ldap;
 
-import java.util.HashMap;
-import java.util.Map;
+import fish.payara.nucleus.microprofile.config.spi.ConfigSourceConfiguration;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
 
-import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSource;
+/**
+ *
+ * @author Gaurav Gupta
+ */
+@Configured(name = "ldap-config-source-configuration")
+public interface LDAPConfigSourceConfiguration extends ConfigSourceConfiguration {
 
-public class ConfigSourceProxy implements ExtensionConfigSource {
+    String AUTH_TYPE_SIMPLE = "simple";
+    String AUTH_TYPE_NONE = "none";
 
-    private final String name;
-    private ExtensionConfigSource delegate;
+    String SEARCH_SCOPE_SUBTREE = "subtree";
+    String SEARCH_SCOPE_ONELEVEL = "onelevel";
+    String SEARCH_SCOPE_OBJECT = "object";
 
-    public ConfigSourceProxy(String name) {
-        this.name = name;
-        this.delegate = null;
-    }
+    String LDAP_CONTEXT_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
+    String LDAP_CONNECT_TIMEOUT = "com.sun.jndi.ldap.connect.timeout";
+    String LDAP_READ_TIMEOUT = "com.sun.jndi.ldap.read.timeout";
 
-    public void setDelegate(ExtensionConfigSource delegate) {
-        this.delegate = delegate;
-    }
+    @Attribute(required = true)
+    String getUrl();
+    void setUrl(String url);
 
-    @Override
-    public Map<String, String> getProperties() {
-        if (delegate != null) {
-            return delegate.getProperties();
-        }
-        return new HashMap<>();
-    }
+    @Attribute(required = true, defaultValue = AUTH_TYPE_SIMPLE)
+    String getAuthType();
+    void setAuthType(String authType);
 
-    @Override
-    public String getValue(String propertyName) {
-        if (delegate != null) {
-            return delegate.getValue(propertyName);
-        }
-        return null;
-    }
+    @Attribute(dataType=Boolean.class, defaultValue = "false")
+    String getStartTLSEnabled();
+    void setStartTLSEnabled(String startTLSEnabled);
 
-    @Override
-    public String getSource() {
-        if (delegate != null) {
-            return delegate.getSource();
-        }
-        return null;
-    }
+    @Attribute
+    String getBindDN();
+    void setBindDN(String bindDN);
 
-    @Override
-    public String getName() {
-        if (delegate != null) {
-            return delegate.getName();
-        }
-        return name;
-    }
+    @Attribute
+    String getBindDNPassword();
+    void setBindDNPassword(String bindDNPassword);
 
-    @Override
-    public boolean setValue(String name, String value) {
-        if (delegate != null) {
-            return delegate.setValue(name, value);
-        }
-        return false;
-    }
+    @Attribute
+    String getSearchBase();
+    void setSearchBase(String searchBase);
 
-    @Override
-    public boolean deleteValue(String name) {
-        if (delegate != null) {
-            return delegate.deleteValue(name);
-        }
-        return false;
-    }
+    @Attribute
+    String getSearchFilter();
+    void setSearchFilter(String searchFilter);
     
+    @Attribute
+    String getSearchScope();
+    void setSearchScope(String searchScope);
+
+    @Attribute
+    String getConnectionTimeout();
+    void setConnectionTimeout(String connectionTimeout);
+
+    @Attribute
+    String getReadTimeout();
+    void setReadTimeout(String readTimeout);
+
 }

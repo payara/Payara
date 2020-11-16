@@ -37,73 +37,88 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.source.extension.proxy;
+package fish.payara.microprofile.config.extensions.ldap;
 
+import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSource;
+/**
+ *
+ * @author Gaurav Gupta
+ */
+@Service(name = "ldap-config-source")
+public class LDAPConfigSource extends ConfiguredExtensionConfigSource<LDAPConfigSourceConfiguration> {
+    
+    private static final Logger LOGGER = Logger.getLogger(LDAPConfigSource.class.getName());
 
-public class ConfigSourceProxy implements ExtensionConfigSource {
+    private LDAPConfigSourceHelper ldapConfigSourceHelper;
 
-    private final String name;
-    private ExtensionConfigSource delegate;
-
-    public ConfigSourceProxy(String name) {
-        this.name = name;
-        this.delegate = null;
+    @Override
+    public void bootstrap() {
+        this.ldapConfigSourceHelper = new LDAPConfigSourceHelper(configuration);
     }
 
-    public void setDelegate(ExtensionConfigSource delegate) {
-        this.delegate = delegate;
+    @Override
+    public void destroy() {
+        this.ldapConfigSourceHelper = null;
     }
-
+    
     @Override
     public Map<String, String> getProperties() {
-        if (delegate != null) {
-            return delegate.getProperties();
+        if (ldapConfigSourceHelper == null) {
+            printMisconfigurationMessage();
+            return new HashMap<>();
         }
-        return new HashMap<>();
+        return ldapConfigSourceHelper.getAllConfigValues();
+    }
+    
+    @Override
+    public String getValue(String propertyName) {
+        if (ldapConfigSourceHelper == null) {
+            printMisconfigurationMessage();
+            return null;
+        }
+        return ldapConfigSourceHelper.getConfigValue(propertyName);
     }
 
     @Override
-    public String getValue(String propertyName) {
-        if (delegate != null) {
-            return delegate.getValue(propertyName);
-        }
-        return null;
+    public boolean deleteValue(String value) {
+        return false;
+    }
+
+    @Override
+    public boolean setValue(String key, String value) {
+        return false;
     }
 
     @Override
     public String getSource() {
-        if (delegate != null) {
-            return delegate.getSource();
-        }
-        return null;
+        return "ldap";
     }
 
     @Override
     public String getName() {
-        if (delegate != null) {
-            return delegate.getName();
-        }
-        return name;
+        return "ldap";
     }
 
     @Override
-    public boolean setValue(String name, String value) {
-        if (delegate != null) {
-            return delegate.setValue(name, value);
-        }
-        return false;
+    public int getOrdinal() {
+        return Integer.parseInt(
+                Globals.getDefaultHabitat()
+                        .getService(ConfigProviderResolverImpl.class)
+                        .getMPConfig().getLdapOrdinality()
+        );
     }
 
-    @Override
-    public boolean deleteValue(String name) {
-        if (delegate != null) {
-            return delegate.deleteValue(name);
-        }
-        return false;
+    private static void printMisconfigurationMessage() {
+        LOGGER.warning("LDAP Config Source isn't configured correctly.");
     }
-    
+
+
+
 }

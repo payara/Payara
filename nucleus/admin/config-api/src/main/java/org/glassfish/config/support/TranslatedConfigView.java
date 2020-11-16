@@ -125,7 +125,7 @@ public class TranslatedConfigView implements ConfigView {
             }
 
             if (domainPasswordAliasStore() != null) {
-                if (getAlias(stringValue, ALIAS_TOKEN) != null) {
+                if (getAlias(stringValue) != null) {
                     try {
                         return getRealPasswordFromAlias(stringValue);
                     } catch (Exception e) {
@@ -264,10 +264,10 @@ public class TranslatedConfigView implements ConfigView {
      * @param token
      * @return The aliasname or null.
      */
-    public static String getAlias(String propName, String token)
+    public static String getAlias(String propName)
     {
        String aliasName = null;
-       String starter = "${" + token + "="; //no space is allowed in starter
+       String starter = "${" + ALIAS_TOKEN + "="; //no space is allowed in starter
        String ender   = "}";
 
        propName = propName.trim();
@@ -287,7 +287,7 @@ public class TranslatedConfigView implements ConfigView {
     public static String getRealPasswordFromAlias(final String at) throws
             KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException {
 
-        final String an = getAlias(at, ALIAS_TOKEN);
+        final String an = getAlias(at);
         final boolean exists = domainPasswordAliasStore.containsKey(an);
         if (!exists) {
 
