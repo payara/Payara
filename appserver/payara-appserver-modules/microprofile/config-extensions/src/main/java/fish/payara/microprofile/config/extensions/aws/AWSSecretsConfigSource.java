@@ -156,6 +156,11 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
     }
 
     @Override
+    public String getSource() {
+        return "cloud";
+    }
+
+    @Override
     public String getName() {
         return "aws";
     }

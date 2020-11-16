@@ -45,6 +45,16 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.APPLICATION;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLOUD;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLUSTER;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CONFIG;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.DOMAIN;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.JDBC;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.JNDI;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.LDAP;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.MODULE;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SERVER;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -87,7 +97,7 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 })
 public class GetConfigProperty implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,jdbc,cloud", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,jdbc,cloud,ldap", defaultValue = DOMAIN)
     String source;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
@@ -110,12 +120,12 @@ public class GetConfigProperty implements AdminCommand {
 
         String result = null;
         switch (source) {
-            case "domain": {
+            case DOMAIN: {
                 DomainConfigSource csource = new DomainConfigSource();
                 result = csource.getValue(propertyName);
                 break;
             }
-            case "config": {
+            case CONFIG: {
                 if (sourceName == null) {
                     context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the configuration if config is the source");
                 } else {
@@ -124,7 +134,7 @@ public class GetConfigProperty implements AdminCommand {
                 }
                 break;
             }
-            case "server": {
+            case SERVER: {
                 if (sourceName == null) {
                     context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the server if server is the source");
                 } else {
@@ -133,7 +143,7 @@ public class GetConfigProperty implements AdminCommand {
                 }
                 break;
             }
-            case "application": {
+            case APPLICATION: {
                 if (sourceName == null) {
                     context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the application if application is the source");
                 } else {
@@ -142,7 +152,7 @@ public class GetConfigProperty implements AdminCommand {
                 }
                 break;
             }
-            case "module": {
+            case MODULE: {
                 if (sourceName == null || moduleName == null) {
                     context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
                 } else {
@@ -151,25 +161,35 @@ public class GetConfigProperty implements AdminCommand {
                 }
                 break;
             }
-            case "cluster": {
+            case CLUSTER: {
                 ClusterConfigSource csource = new ClusterConfigSource();
                 result = csource.getValue(propertyName);
                 break;
             }
-            case "jndi": {
+            case JNDI: {
                 JNDIConfigSource csource = new JNDIConfigSource();
                 result = csource.getValue(propertyName);
                 break;
             }
-            case "jdbc": {
+            case JDBC: {
                 JDBCConfigSource jdbcConfigSource = new JDBCConfigSource();
                 result = jdbcConfigSource.getValue(propertyName);
                 break;
             }
-            case "cloud": {
+            case CLOUD: {
                 Collection<ExtensionConfigSource> extensionSources = extensionService.getExtensionSources();
                 for (ExtensionConfigSource extension : extensionSources) {
-                    if (extension.getName().equals(sourceName)) {
+                    if (CLOUD.equals(extension.getSource()) 
+                            && extension.getName().equals(sourceName)) {
+                        result = extension.getValue(propertyName);
+                    }
+                }
+                break;
+            }
+            case LDAP: {
+                Collection<ExtensionConfigSource> extensionSources = extensionService.getExtensionSources();
+                for (ExtensionConfigSource extension : extensionSources) {
+                    if (LDAP.equals(extension.getSource())) {
                         result = extension.getValue(propertyName);
                     }
                 }

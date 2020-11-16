@@ -47,10 +47,11 @@ import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRI
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.StringJoiner;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import java.util.Optional;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -271,5 +272,21 @@ public class MBeanMetadata implements Metadata {
                 Objects.equals(unit, thatUnit) &&
                 Objects.equals(this.getTypeRaw(), that.getTypeRaw()) &&
                 Objects.equals(reusable, that.isReusable());
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", MBeanMetadata.class.getSimpleName() + "[", "]")
+                .add("mBean='" + mBean + "'")
+                .add("dynamic=" + dynamic)
+                .add("name='" + name + "'")
+                .add("displayName='" + displayName + "'")
+                .add("description='" + description + "'")
+                .add("unit='" + unit + "'")
+                .add("type='" + type + "'")
+                .add("reusable=" + reusable)
+                .add("valid=" + valid)
+                .add("tags=" + tags)
+                .toString();
     }
 }

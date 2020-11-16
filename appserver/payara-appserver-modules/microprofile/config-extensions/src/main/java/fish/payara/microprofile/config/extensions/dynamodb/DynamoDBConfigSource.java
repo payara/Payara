@@ -191,6 +191,11 @@ public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<Dynamo
     }
 
     @Override
+    public String getSource() {
+        return "cloud";
+    }
+
+    @Override
     public String getName() {
         return "dynamodb";
     }

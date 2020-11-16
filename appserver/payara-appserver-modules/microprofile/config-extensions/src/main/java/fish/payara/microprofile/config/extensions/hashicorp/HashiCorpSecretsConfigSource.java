@@ -205,6 +205,11 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
     }
 
     @Override
+    public String getSource() {
+        return "cloud";
+    }
+    
+    @Override
     public String getName() {
         return "hashicorp";
     }

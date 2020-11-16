@@ -59,6 +59,7 @@ import com.sun.enterprise.util.StringUtils;
 import fish.payara.microprofile.config.extensions.dynamodb.DynamoDBConfigSourceConfiguration;
 import fish.payara.nucleus.microprofile.config.source.extension.BaseSetConfigSourceConfigurationCommand;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import org.glassfish.api.ActionReport;
 
 @Service(name = "set-dynamodb-config-source-configuration")
 @PerLookup
@@ -90,8 +91,8 @@ public class SetDynamoDBConfigSourceConfigurationCommand extends BaseSetConfigSo
     protected String limit;
 
     @Override
-    protected void applyValues(DynamoDBConfigSourceConfiguration configuration) throws PropertyVetoException {
-        super.applyValues(configuration);
+    protected void applyValues(ActionReport report, DynamoDBConfigSourceConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(report, configuration);
         if (StringUtils.ok(regionName)) {
             configuration.setRegionName(regionName);
         }

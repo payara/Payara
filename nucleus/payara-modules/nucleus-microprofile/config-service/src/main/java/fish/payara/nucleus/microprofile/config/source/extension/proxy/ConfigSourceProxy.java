@@ -75,6 +75,14 @@ public class ConfigSourceProxy implements ExtensionConfigSource {
     }
 
     @Override
+    public String getSource() {
+        if (delegate != null) {
+            return delegate.getSource();
+        }
+        return null;
+    }
+
+    @Override
     public String getName() {
         if (delegate != null) {
             return delegate.getName();
