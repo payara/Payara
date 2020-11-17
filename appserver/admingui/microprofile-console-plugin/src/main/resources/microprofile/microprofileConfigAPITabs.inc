@@ -104,4 +104,12 @@
           gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/jdbcConfigSourceConfiguration.jsf?configName=#{configName}");
         />
     </sun:tab>
+    <sun:tab id="microProfileLdapConfigSourceTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.ldapConfigSourceTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.ldapConfigSourceTab} Tab" >
+        <!command
+            setSessionAttribute(key="microprofileConfigTabs" value="microProfileLdapConfigSourceTab");
+            gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/ldapConfigSourceConfiguration.jsf?configName=#{configName}");
+            />
+    </sun:tab>
 </sun:tabSet>

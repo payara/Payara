@@ -123,9 +123,12 @@ public abstract class BaseSetConfigSourceConfigurationCommand<C extends ConfigSo
                     public Object run(final MicroprofileConfigConfiguration configurationProxy)
                             throws PropertyVetoException, TransactionFailure {
                         C c = configurationProxy.createChild(configSourceConfigClass);
-                        applyValues(c);
-                        configurationProxy.getConfigSourceConfigurationList().add(c);
-                        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        applyValues(report, c);
+                        if (report.getActionExitCode() != ActionReport.ExitCode.FAILURE) {
+                            configurationProxy.getConfigSourceConfigurationList().add(c);
+                        } else {
+                            c = null;
+                        }
                         return c;
                     }
                 }, mpConfigConfiguration);
@@ -134,8 +137,7 @@ public abstract class BaseSetConfigSourceConfigurationCommand<C extends ConfigSo
             else {
                 ConfigSupport.apply(new SingleConfigCode<C>() {
                     public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
-                        applyValues(cProxy);
-                        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        applyValues(report, cProxy);
                         return cProxy;
                     }
                 }, c);
@@ -166,7 +168,7 @@ public abstract class BaseSetConfigSourceConfigurationCommand<C extends ConfigSo
      * @throws PropertyVetoException an exception thrown if the property doesn't
      *                               pass the configured validation.
      */
-    protected void applyValues(C configuration) throws PropertyVetoException {
+    protected void applyValues(ActionReport report, C configuration) throws PropertyVetoException {
         if (this.enabled != null) {
             configuration.setEnabled(Boolean.toString(this.enabled));
         }
