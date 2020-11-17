@@ -238,6 +238,13 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         events.register(this);
     }
 
+    @Override
+    public boolean prepare(DeploymentContext context) {
+        context.addTransientAppMetaData(SNIFFER_EXTENSIONS, new HashSet<Supplier<Extension>>());
+
+        return super.prepare(context);
+    }
+
     /**
      * Processing in this method is performed for each module that is in the process of being loaded by
      * the container.
@@ -408,7 +415,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         context.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
         applicationInfo.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
-        context.addTransientAppMetaData(SNIFFER_EXTENSIONS, new HashSet<Supplier<Extension>>());
 
         return new WeldApplicationContainer();
     }
