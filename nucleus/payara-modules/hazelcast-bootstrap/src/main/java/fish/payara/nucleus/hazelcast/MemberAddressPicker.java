@@ -172,7 +172,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
     private static InetSocketAddress tryLocalHostOrLoopback(int port) {
         try {
             // ok do the easy thing
-            logger.log(Level.FINE, "Could not find an appropriate address by searching falling back to local host");
+            logger.log(Level.FINE, "Could not find an appropriate address, falling back to local host");
             return new InetSocketAddress(InetAddress.getLocalHost(), port);
         } catch (UnknownHostException ex) {
             logger.log(Level.FINE, "Could not find local host, falling back to loop back address");
