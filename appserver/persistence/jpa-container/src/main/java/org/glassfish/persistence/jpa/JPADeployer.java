@@ -218,36 +218,32 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                 if(referencedPus.contains(pud)) {
                     boolean isDas = isDas();
                     if (isDas && !isTargetDas(context.getCommandParameters(DeployCommandParameters.class))) {
-                        
+
                         DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
-                        
-                        if (!isTargetDas(deployParams)) {
 
-                            //If on DAS and not generating schema for remotes then return here
-                            String jpaScemaGeneration = pud.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
-                            String eclipselinkSchemaGeneration = pud.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
-                            if ("none".equals(jpaScemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
-                                return;
+                        //If on DAS and not generating schema for remotes then return here
+                        String jpaScemaGeneration = pud.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
+                        String eclipselinkSchemaGeneration = pud.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
+                        if ("none".equals(jpaScemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
+                            return;
+                        } else {
+                            InternalSystemAdministrator kernelIdentity = Globals.getDefaultHabitat().getService(InternalSystemAdministrator.class);
+                            CommandRunner commandRunner = Globals.getDefaultHabitat().getService(CommandRunner.class);
+                            CommandRunner.CommandInvocation getTranslatedValueCommand = commandRunner.getCommandInvocation("_get-translated-config-value", new PlainTextActionReporter(), kernelIdentity.getSubject());
+                            ParameterMap params = new ParameterMap();
+                            params.add("propertyName", pud.getJtaDataSource());
+                            params.add("target", deployParams.target);
+                            getTranslatedValueCommand.parameters(params);
+                            getTranslatedValueCommand.execute();
+                            ActionReport report = getTranslatedValueCommand.report();
+                            if (report.hasSuccesses() && report.getSubActionsReport().size() == 1) {
+                                ActionReport subReport = report.getSubActionsReport().get(0);
+                                String value = subReport.getMessage().replace(deployParams.target + ":", "");
+                                pud.setJtaDataSource(value.trim());
                             } else {
-
-                                InternalSystemAdministrator kernelIdentity = Globals.getDefaultHabitat().getService(InternalSystemAdministrator.class);
-                                CommandRunner commandRunner = Globals.getDefaultHabitat().getService(CommandRunner.class);
-                                CommandRunner.CommandInvocation getTranslatedValueCommand = commandRunner.getCommandInvocation("_get-translated-config-value", new PlainTextActionReporter(), kernelIdentity.getSubject());
-                                ParameterMap params = new ParameterMap();
-                                params.add("propertyName", pud.getJtaDataSource());
-                                params.add("target", deployParams.target);
-                                getTranslatedValueCommand.parameters(params);
-                                getTranslatedValueCommand.execute();
-                                ActionReport report = getTranslatedValueCommand.report();
-                                if (report.hasSuccesses() && report.getSubActionsReport().size() == 1) {
-                                    ActionReport subReport = report.getSubActionsReport().get(0);
-                                    String value = subReport.getMessage().replace(deployParams.target + ":", "");
-                                    pud.setJtaDataSource(value.trim());
-                                } else {
-                                    logger.log(Level.SEVERE, report.getMessage());
-                                }
-
+                                logger.log(Level.SEVERE, report.getMessage(), report.getFailureCause());
                             }
+
                         }
                     }
 

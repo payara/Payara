@@ -46,7 +46,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -64,15 +63,15 @@ import org.jvnet.hk2.annotations.Service;
 @RestEndpoints({
     @RestEndpoint(configBean = Config.class,
             opType = RestEndpoint.OpType.GET,
-            path = "get-config-ordinal",
+            path = "get-translated-config-value",
             description = "Gets the Ordinal of a builtin Config Source")
 })
 public class GetTranslatedConfigValue implements AdminCommand {
     
-    @Param(name="propertyName")
+    @Param
     String propertyName;
     
-    @Param
+    @Param(optional=true, defaultValue = "server")
     String target;
     
     @Inject
