@@ -81,7 +81,7 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
     private static final Logger LOGGER = Logger.getLogger(HashiCorpSecretsConfigSource.class.getName());
 
     private Client client = ClientBuilder.newClient();
-    private String hashiCorpVaultToken;
+    protected String hashiCorpVaultToken;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
@@ -191,7 +191,7 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
 
                     parser.next();
                     if ("data".equals(keyName)) {
-                        return parser.getObject().getJsonObject(keyName).toString();
+                        return parser.getObject().toString();
                     }
                 }
             }
