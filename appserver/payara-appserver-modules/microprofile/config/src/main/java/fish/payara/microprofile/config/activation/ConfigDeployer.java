@@ -44,6 +44,7 @@ import java.util.function.Supplier;
 
 import javax.enterprise.inject.spi.Extension;
 
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;
@@ -69,9 +70,11 @@ public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, Config
         final Types types = deploymentContext.getTransientAppMetaData(Types.class.getName(), Types.class);
 
         final Type annotationType = types.getBy(ConfigProperty.class.getName());
+        final Type classType = types.getBy(Config.class.getName());
         final boolean annotationFound = annotationType != null;
+        final boolean classFound = classType != null;
 
-        if (annotationFound) {
+        if (annotationFound || classFound) {
             // Register the CDI extension
             final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
             if (snifferExtensions != null) {
