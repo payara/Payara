@@ -37,17 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.context;
 
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.web.SecurityConstraint;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * This provides a context for a of web component.
@@ -73,8 +70,8 @@ public class WebComponentContext extends ResourceContainerContextImpl {
         descriptor = webComp.getWebBundleDescriptor();
     }
 
+    @Override
     public void endElement(ElementType type, AnnotatedElement element) {
-        
         if (ElementType.TYPE.equals(type)) {
             // done with processing this class, let's pop this context
             getProcessingContext().popHandler();

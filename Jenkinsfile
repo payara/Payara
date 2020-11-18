@@ -3,7 +3,6 @@
 def pom
 def DOMAIN_NAME
 def payaraBuildNumber
-def rc
 pipeline {
     agent any
     options {
@@ -28,14 +27,7 @@ pipeline {
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
-
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Certificates Expiring Soon  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    rc = sh(returnStatus: true, script: "keytool -list -v -keystore \'${pwd()}/nucleus/admin/template/src/main/resources/config/cacerts.jks\' -storepass \'changeit\' | grep -E \"Valid from:.*`date +'%b' --date='+1 month'`.*`date +'%Y'`|`date +'%b'`.*`date +'%Y'`\"")
-                    if(rc != 1) {
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Certificates Expiring Soon  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                }
+              }
             }
         }
         stage('Build') {
@@ -109,7 +101,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/master"]],
+                    branches: [[name: "*/microprofile-4.0"]],
                     userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }

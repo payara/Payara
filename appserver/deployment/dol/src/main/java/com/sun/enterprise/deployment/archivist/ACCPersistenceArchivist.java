@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Services Ltd.
 
 package com.sun.enterprise.deployment.archivist;
 
@@ -92,8 +93,7 @@ public class ACCPersistenceArchivist extends PersistenceArchivist {
                     archive.getURI());
         }
         
-        final Map<String,ReadableArchive> candidatePersistenceArchives =
-                new HashMap<String,ReadableArchive>();
+        final Map<String,ReadableArchive> candidatePersistenceArchives = new HashMap<>();
         
         /*
          * The descriptor had better be an ApplicationClientDescriptor!

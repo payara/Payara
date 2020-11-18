@@ -51,7 +51,6 @@ import fish.payara.nucleus.healthcheck.HealthCheckStuckThreadExecutionOptions;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 
-import java.lang.Thread.State;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -185,7 +184,7 @@ public class StuckThreadsHealthCheck extends
     @Override
     public HealthCheckStuckThreadExecutionOptions constructOptions(StuckThreadsChecker checker) {
         return new HealthCheckStuckThreadExecutionOptions(Boolean.valueOf(checker.getEnabled()),
-                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()),
+                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), Boolean.valueOf(checker.getAddToMicroProfileHealth()),
                 Long.parseLong(checker.getThreshold()), asTimeUnit(checker.getThresholdTimeUnit()));
     }
 

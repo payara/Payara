@@ -47,7 +47,6 @@ import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,7 +62,6 @@ import javax.inject.Named;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.naming.NamingException;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -121,7 +119,7 @@ public class JMXMonitoringService implements EventListener {
     private ScheduledFuture<?> monitoringFuture;
 
     @PostConstruct
-    public void postConstruct() throws NamingException {
+    public void postConstruct() {
         events.register(this);
     }
 

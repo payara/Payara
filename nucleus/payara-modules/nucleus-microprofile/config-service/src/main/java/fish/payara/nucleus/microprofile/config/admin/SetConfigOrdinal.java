@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,24 @@
  */
 package fish.payara.nucleus.microprofile.config.admin;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.logging.Logger;
+
 import javax.inject.Inject;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.APPLICATION;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLOUD;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLUSTER;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CONFIG;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.DOMAIN;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.JDBC;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.JNDI;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.LDAP;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.MODULE;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.PASSWORD;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SECRETS;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SERVER;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -56,6 +70,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 /**
  * asAdmin command to the set the ordinal for one of the built in Config Sources
@@ -79,7 +95,7 @@ public class SetConfigOrdinal implements AdminCommand {
     @Param()
     int ordinal;
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc,cloud,ldap", defaultValue = DOMAIN)
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -101,40 +117,52 @@ public class SetConfigOrdinal implements AdminCommand {
                     public Object run(MicroprofileConfigConfiguration config) {
 
                         switch (source) {
-                            case "domain": {
+                            case DOMAIN: {
                                 config.setDomainOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "config": {
+                            case CONFIG: {
                                 config.setConfigOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "server": {
+                            case SERVER: {
                                 config.setServerOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "application": {
+                            case APPLICATION: {
                                 config.setApplicationOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "module": {
+                            case MODULE: {
                                 config.setModuleOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "cluster": {
+                            case CLUSTER: {
                                 config.setClusterOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "jndi": {
+                            case JNDI: {
                                 config.setJNDIOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "secrets": {
+                            case SECRETS: {
                                 config.setSecretDirOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "password" : {
+                            case PASSWORD : {
                                 config.setPasswordOrdinality(Integer.toString(ordinal));
+                                break;
+                            }
+                            case JDBC : {
+                                config.setJdbcOrdinality(Integer.toString(ordinal));
+                                break;
+                            }
+                            case CLOUD: {
+                                config.setCloudOrdinality(Integer.toString(ordinal));
+                                break;
+                            }
+                            case LDAP: {
+                                config.setLdapOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                         }

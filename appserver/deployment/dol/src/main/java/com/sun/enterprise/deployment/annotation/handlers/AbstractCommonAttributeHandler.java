@@ -37,14 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.context.*;
-import com.sun.enterprise.deployment.web.SecurityConstraint;
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -113,8 +110,8 @@ public abstract class AbstractCommonAttributeHandler extends AbstractHandler {
      *
      * @param ainfo the annotation information
      */
-    public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo)
-            throws AnnotationProcessorException {
+    @Override
+    public HandlerProcessingResult processAnnotation(AnnotationInfo ainfo) throws AnnotationProcessorException {
 
         AnnotatedElementHandler aeHandler = ainfo.getProcessingContext().getHandler();
         if (aeHandler instanceof EjbBundleContext) {

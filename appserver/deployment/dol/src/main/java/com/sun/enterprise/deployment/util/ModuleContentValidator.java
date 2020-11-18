@@ -37,17 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.web.SecurityConstraint;
-import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentException;
-
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
@@ -56,10 +52,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
 
 /**
  * Allows validation of module content that might involve actually
@@ -76,16 +68,17 @@ public class ModuleContentValidator extends ModuleContentLinker implements Compo
     private ReadableArchive archive_;
     
     // resources...
-    private static LocalStringManagerImpl localStrings =
-	    new LocalStringManagerImpl(ModuleContentValidator.class);      
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ModuleContentValidator.class);      
 
     public ModuleContentValidator() {
     }
  
+    @Override
     public void setArchive(ReadableArchive archive) {
         archive_ = archive;
     }
 
+    @Override
     public void accept(ServiceReferenceDescriptor serviceRef) {
         if( serviceRef.hasWsdlFile() ) {
             String wsdlFileUri = serviceRef.getWsdlFileUri();
@@ -156,6 +149,7 @@ public class ModuleContentValidator extends ModuleContentLinker implements Compo
         }
     }
 
+    @Override
     public void accept(WebService webService) {
         
         try {

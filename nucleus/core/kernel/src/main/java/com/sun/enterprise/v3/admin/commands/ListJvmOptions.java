@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.commands;
 
@@ -129,6 +129,9 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
                 }
                 option.minVersion.ifPresent(minVersion -> {
                     sb.append("min(");
+                    option.vendor.ifPresent(vendor -> {
+                        sb.append(vendor).append("-");
+                    });
                     sb.append(minVersion);
                     sb.append(")");
                 });

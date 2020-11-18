@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
+// Portions Copyright [2017-2020] Payara Foundation and/or affiliates
 
  package com.sun.enterprise.deployment;
 
@@ -90,8 +90,8 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
                                         java.lang.Character.class,
                                         java.lang.Class.class
 					    };
-    static LocalStringManagerImpl localStrings =
-	    new LocalStringManagerImpl(EnvironmentProperty.class);
+    
+    static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EnvironmentProperty.class);
 
     protected String mappedName;
 
@@ -183,8 +183,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 	    Class typeClass = null;
 	    // is it loadable ?
 	    try {
-		typeClass = Class.forName(type, true,
-                    Thread.currentThread().getContextClassLoader());
+		typeClass = Class.forName(type, true, Thread.currentThread().getContextClassLoader());
 	    } catch (Throwable t) {
 		if (this.isBoundsChecking()) {
 		    throw new IllegalArgumentException(localStrings.getLocalString(
@@ -205,7 +204,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
                 allowedType = true;
             }
 
-	    if (this.isBoundsChecking() && !allowedType) {
+	    if (isBoundsChecking() && !allowedType) {
 		throw new IllegalArgumentException(localStrings.getLocalString(
 										   "enterprise.deployment.exceptiontypenotallowedprprtytype",
 										   "{0} is not an allowed property value type", new Object[] {type}));
@@ -235,8 +234,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 	    return String.class;
 	} else {
 	    try {
-		return Class.forName(this.type, true,
-                    Thread.currentThread().getContextClassLoader());
+		return Class.forName(this.type, true, Thread.currentThread().getContextClassLoader());
 	    } catch (Throwable t) {
 		return null;
 	    }
@@ -259,22 +257,25 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
             return type;
         }
 
-        if (type.equals("int")) {
-            return "java.lang.Integer";
-        } else if (type.equals("boolean")) {
-            return "java.lang.Boolean";
-        } else if (type.equals("double")) {
-            return "java.lang.Double";
-        } else if (type.equals("float")) {
-            return "java.lang.Float";
-        } else if (type.equals("long")) {
-            return "java.lang.Long";
-        } else if (type.equals("short")) {
-            return "java.lang.Short";
-        } else if (type.equals("byte")) {
-            return "java.lang.Byte";
-        } else if (type.equals("char")) {
-            return "java.lang.Character";
+        switch (type) {
+            case "int":
+                return "java.lang.Integer";
+            case "boolean":
+                return "java.lang.Boolean";
+            case "double":
+                return "java.lang.Double";
+            case "float":
+                return "java.lang.Float";
+            case "long":
+                return "java.lang.Long";
+            case "short":
+                return "java.lang.Short";
+            case "byte":
+                return "java.lang.Byte";
+            case "char":
+                return "java.lang.Character";
+            default:
+                break;
         }
         return type;
     }
@@ -286,7 +287,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     */
     @Override
     public String getType() {
-        if (type == null && this.isBoundsChecking()) {
+        if (type == null && isBoundsChecking()) {
             return String.class.getName();
         } else {
             type = convertPrimitiveTypes(type);
@@ -477,7 +478,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     @Override
     public void addInjectionTarget(InjectionTarget target) {
         if (injectionTargets==null) {
-            injectionTargets = new HashSet<InjectionTarget>();
+            injectionTargets = new HashSet<>();
         }
         boolean found = false;
         for (InjectionTarget injTarget : injectionTargets) {
@@ -493,13 +494,12 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
 
     @Override
     public Set<InjectionTarget> getInjectionTargets() {
-        return (injectionTargets != null) ? injectionTargets : new HashSet<InjectionTarget>();
+        return (injectionTargets != null) ? injectionTargets : new HashSet<>();
     }
 
     @Override
     public boolean isInjectable() {
         return (injectionTargets!=null && injectionTargets.size()>0);
-        //return (getInjectTargetName() != null);
     }
 
     public boolean hasInjectionTargetFromXml() {

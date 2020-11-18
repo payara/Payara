@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.ejb.deployment.descriptor;
 
 import com.sun.enterprise.container.common.spi.JCDIService;
@@ -1850,7 +1851,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     @Override
     public final Set<MessageDestinationReferenceDescriptor> getMessageDestinationReferenceDescriptors() {
         if (env != null) {
-            return env.getMessageDestinationReferenceDescriptors();
+            return (Set<MessageDestinationReferenceDescriptor>) env.getMessageDestinationReferenceDescriptors();
         }
         return messageDestReferences;
     }
@@ -2063,7 +2064,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     @Override
     public final Set<EnvironmentProperty> getEnvironmentProperties() {
         if (env != null) {
-            return env.getEnvironmentProperties();
+            return (Set<EnvironmentProperty>) env.getEnvironmentProperties();
         }
         return environmentProperties;
     }

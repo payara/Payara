@@ -791,9 +791,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
      */
     @Override
     public void expire() {
-
         expire(true);
-
     }
 
     /**
@@ -1692,7 +1690,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
         if (name == null) return;
 
         // Validate our current state
-        if (!isValid() && checkValid)
+        if (checkValid && !isValid())
             throw new IllegalStateException
                 ("removeAttribute: " + RESOURCE_BUNDLE.getString(LogFacade.SESSION_INVALIDATED_EXCEPTION));
 

@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.deployment.node.ws;
 
-import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.runtime.ws.ReliabilityConfig;

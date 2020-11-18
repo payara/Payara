@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
@@ -83,8 +84,8 @@ public class SaxParserHandler extends DefaultHandler {
     private static final String FALSE_STR = "false";
 
     private static final class MappingStuff {
-        public final ConcurrentMap<String, Boolean> bundleRegistrationStatus = new ConcurrentHashMap<String, Boolean>();
-        public final ConcurrentMap<String, String> mapping = new ConcurrentHashMap<String, String>();
+        public final ConcurrentMap<String, Boolean> bundleRegistrationStatus = new ConcurrentHashMap<>();
+        public final ConcurrentMap<String, String> mapping = new ConcurrentHashMap<>();
 
         private final ConcurrentMap<String, Class<?>> rootNodesMutable;
         public final Map<String, Class<?>> rootNodes;
@@ -113,7 +114,7 @@ public class SaxParserHandler extends DefaultHandler {
 
     private static final MappingStuff MAPPING_STUFF = new MappingStuff();
 
-    private final List<XMLNode> nodes = new ArrayList<XMLNode>();
+    private final List<XMLNode> nodes = new ArrayList<>();
     public XMLNode topNode = null;
     protected String publicID = null;
     private StringBuilder elementData = null;
@@ -124,7 +125,7 @@ public class SaxParserHandler extends DefaultHandler {
     private boolean pushedNamespaceContext = false;
     private NamespaceSupport namespaces = new NamespaceSupport();
 
-    private Stack elementStack = new Stack();
+    private Stack<String> elementStack = new Stack<>();
 
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SaxParserHandler.class);
 
@@ -143,7 +144,7 @@ public class SaxParserHandler extends DefaultHandler {
             return null;
         }
 
-        versionUpgradeList = new ArrayList<VersionUpgrade>();
+        versionUpgradeList = new ArrayList<>();
         for (int n = 0; n < classList.size(); ++n) {
             VersionUpgrade versionUpgrade = null;
             try {
@@ -182,7 +183,7 @@ public class SaxParserHandler extends DefaultHandler {
             return;
         }
 
-        HashMap<String, String> dtdMapping = new HashMap<String, String>();
+        HashMap<String, String> dtdMapping = new HashMap<>();
         Map<String, List<Class<?>>> versionUpgrades = new HashMap<>();
 
         String rootNodeKey = bn.registerBundle(dtdMapping);
@@ -275,6 +276,7 @@ public class SaxParserHandler extends DefaultHandler {
         stopOnXMLErrors = stop;
     }
 
+    @Override
     public void error(SAXParseException spe) throws SAXParseException {
         DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorFailure",
                 new Object[] { errorReportingString, String.valueOf(spe.getLineNumber()), String.valueOf(spe.getColumnNumber()), spe.getLocalizedMessage() });
@@ -284,6 +286,7 @@ public class SaxParserHandler extends DefaultHandler {
         }
     }
 
+    @Override
     public void fatalError(SAXParseException spe) throws SAXParseException {
         DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorFailure",
                 new Object[] { errorReportingString, String.valueOf(spe.getLineNumber()), String.valueOf(spe.getColumnNumber()), spe.getLocalizedMessage() });
@@ -376,16 +379,18 @@ public class SaxParserHandler extends DefaultHandler {
         return null;
     }
 
+    @Override
     public void notationDecl(java.lang.String name, java.lang.String publicId, java.lang.String systemId) throws SAXException {
         if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
             DOLUtils.getDefaultLogger().fine("Received notation " + name + " :=: " + publicId + " :=: " + systemId);
         }
     }
 
+    @Override
     public void startPrefixMapping(String prefix, String uri) throws SAXException {
 
         if (prefixMapping == null) {
-            prefixMapping = new HashMap<String, String>();
+            prefixMapping = new HashMap<>();
         }
 
         // We need one namespace context per element, but any prefix mapping
@@ -399,6 +404,7 @@ public class SaxParserHandler extends DefaultHandler {
         prefixMapping.put(prefix, uri);
     }
 
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
         if (!pushedNamespaceContext) {
             // We need one namespae context per element, so push a context
@@ -412,7 +418,7 @@ public class SaxParserHandler extends DefaultHandler {
         doDelete = false;
         String lastElement = null;
         try {
-            lastElement = (String) elementStack.pop();
+            lastElement = elementStack.pop();
         } catch (EmptyStackException ex) {
         }
         if (lastElement == null) {
@@ -507,18 +513,19 @@ public class SaxParserHandler extends DefaultHandler {
         }
     }
 
+    @Override
     public void endElement(String uri, String localName, String qName) {
 
         String lastElement = null;
         try {
-            lastElement = (String) elementStack.peek();
+            lastElement = elementStack.peek();
         } catch (EmptyStackException ex) {
         }
 
         if (DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
             DOLUtils.getDefaultLogger().finer("End of element " + uri + " local name " + localName + " and " + qName + " value " + elementData);
         }
-        if (nodes.size() == 0) {
+        if (nodes.isEmpty()) {
             // no more nodes to pop
             elementData = null;
             return;
@@ -614,7 +621,7 @@ public class SaxParserHandler extends DefaultHandler {
         pushedNamespaceContext = false;
 
         try {
-            lastElement = (String) elementStack.pop();
+            lastElement = elementStack.pop();
         } catch (EmptyStackException ex) {
         }
         if (lastElement != null) {
@@ -625,6 +632,7 @@ public class SaxParserHandler extends DefaultHandler {
         }
     }
 
+    @Override
     public void characters(char[] ch, int start, int stop) {
         if (elementData != null) {
             elementData = elementData.append(ch, start, stop);

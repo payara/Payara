@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.JaxrpcMappingDescriptor;
@@ -63,15 +64,15 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode {
     public final static String SCHEMA_ID = "j2ee_jaxrpc_mapping_1_1.xsd";
     private final static List<String> systemIDs = initSystemIDs();
 
-    private static final Set complexElements = initComplexElements();
+    private static final Set<String> complexElements = initComplexElements();
     private JaxrpcMappingDescriptor descriptor = null;
     private String javaPackage = null;
 
     // true if mapping file contains more than just package->namespace mappings.
     private boolean complexMapping = false;
 
-    private static Set initComplexElements() {
-        Set complexElements = new HashSet();
+    private static Set<String> initComplexElements() {
+        Set<String> complexElements = new HashSet<>();
         complexElements.add(WebServicesTagNames.JAVA_XML_TYPE_MAPPING);
         complexElements.add(WebServicesTagNames.EXCEPTION_MAPPING);
         complexElements.add(WebServicesTagNames.SERVICE_INTERFACE_MAPPING);
@@ -80,7 +81,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode {
     }
 
     private static List<String> initSystemIDs() {
-        ArrayList<String> systemIDs = new ArrayList<String>();
+        ArrayList<String> systemIDs = new ArrayList<>();
         systemIDs.add(SCHEMA_ID);
         return Collections.unmodifiableList(systemIDs);
     }
@@ -103,6 +104,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return ROOT_ELEMENT;
     }
@@ -110,6 +112,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode {
     /**
      * @return the DOCTYPE of the XML file
      */
+    @Override
     public String getDocType() {
         return null;
     }
@@ -117,6 +120,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -124,13 +128,15 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode {
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
 
     /**
-     * @return the complete URL for J2EE schemas
+     * @return the complete URL for Jakarta EE schemas
      */
+    @Override
     protected String getSchemaURL() {
         return WebServicesTagNames.IBM_NAMESPACE + "/" + getSystemID();
     }
@@ -138,10 +144,12 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode {
     /**
      * @return the descriptor instance to associate with this XMLNode
      */
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }
 
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         if (complexMapping) {
             // NOTE : we don't call super.startElement in this case because
@@ -163,6 +171,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (complexMapping) {
             // We only gather namespace->package mapping. In exhaustive(complex)
@@ -183,6 +192,7 @@ public class JaxrpcMappingDescriptorNode extends AbstractBundleNode {
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return "1.1";
     }

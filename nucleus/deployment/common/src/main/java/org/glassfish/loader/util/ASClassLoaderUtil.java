@@ -263,6 +263,12 @@ public class ASClassLoaderUtil {
                                             "Error truncating URI with prefix of \"reference:\"",
                                             use);
                                 }
+                            } else if (uri.toString().startsWith("jardir:")) {
+                                // OSGi fileinstall created modules can have a "jardir:" schema for directory
+                                // structures, but there is no FileSystemProvider for this type.
+                                // Since the path is the file system path, just substitute the "file:" schema
+                                tmpString.append("file:").append(uri.toString().substring("jardir:".length()));
+                                tmpString.append(File.pathSeparator);
                             } else {
                                 tmpString.append(Paths.get(uri).toString());
                                 tmpString.append(File.pathSeparator);

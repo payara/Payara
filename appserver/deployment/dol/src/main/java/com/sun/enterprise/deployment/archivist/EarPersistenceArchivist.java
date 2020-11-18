@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.archivist;
 
@@ -78,7 +79,7 @@ public class EarPersistenceArchivist extends PersistenceArchivist {
         }
 
 
-        Map<String, ReadableArchive> probablePersitenceArchives = new HashMap<String,  ReadableArchive>();
+        Map<String, ReadableArchive> probablePersitenceArchives = new HashMap<>();
         try {
             if (! (descriptor instanceof Application)) {
                 return null;

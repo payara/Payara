@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.context;
 
@@ -62,13 +63,13 @@ public class AppClientContext extends ResourceContainerContextImpl {
         return (ApplicationClientDescriptor)descriptor;
     }
     
-    public HandlerChainContainer[] 
-            getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
+    @Override
+    public HandlerChainContainer[] getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
         if(serviceSideHandlerChain) {
             // We should not come here at all - anyway return null
             return null;
         } else {
-            List<ServiceReferenceDescriptor> result = new ArrayList<ServiceReferenceDescriptor>();
+            List<ServiceReferenceDescriptor> result = new ArrayList<>();
             result.addAll(getDescriptor().getServiceReferenceDescriptors());
             return(result.toArray(new HandlerChainContainer[result.size()]));
         }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -47,7 +48,6 @@ import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PreDestroy;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
@@ -61,9 +61,8 @@ public class PreDestroyHandler extends AbstractResourceHandler {
     public PreDestroyHandler() {
     }
 
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
-            ResourceContainerContext[] rcContexts)
-            throws AnnotationProcessorException {
+    @Override
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts) throws AnnotationProcessorException {
 
         Method annMethod = (Method)ainfo.getAnnotatedElement();
         validateAnnotatedLifecycleMethod(annMethod);
