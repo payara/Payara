@@ -55,6 +55,14 @@
 		<javac includeantruntime="false" />
 	</presetdef>
 
+	<target name="cluster">
+		<ant dir="cluster/clustersetup" target="build"/>
+		<ant dir="cluster/helloworld" target="build"/>
+		<ant dir="cluster/clusterteardown" target="build"/>
+		<antcall target="runtest">
+			<param name="testng.xml" value="testng/testng_cluster.xml"/>
+		</antcall>
+    </target>
 	<target name="all_cluster">
 		<record name="${basedir}/allrun.output" action="start"/>
 		<antcall target="start-server-felix"/>
