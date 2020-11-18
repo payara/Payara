@@ -6,8 +6,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Initialized;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -42,16 +43,16 @@ public class HealthCDIExtension implements Extension {
         this.healthCheckBeans = new HashSet<>();
     }
 
-    void processBean(@Observes ProcessBean<HealthCheck> processBean, BeanManager beanManager) {
-        final Annotated annotated = processBean.getAnnotated();
+    void processBean(@Observes ProcessBean<?> event) {
+        final Annotated annotated = event.getAnnotated();
         if (annotated.isAnnotationPresent(Readiness.class)
                 || annotated.isAnnotationPresent(Liveness.class)
                 || annotated.isAnnotationPresent(Health.class)) {
-            this.healthCheckBeans.add(processBean.getBean());
+            this.healthCheckBeans.add(event.getBean());
         }
     }
 
-    void afterDeploymentValidation(@Observes AfterDeploymentValidation afterDeploymentValidation, BeanManager beanManager) {
+    void applicationInitialized(@Observes @Initialized(ApplicationScoped.class) Object init, BeanManager beanManager) {
         Iterator<Bean<?>> beanIterator = healthCheckBeans.iterator();
         while (beanIterator.hasNext()) {
             registerHealthCheck(beanIterator.next(), beanManager);
