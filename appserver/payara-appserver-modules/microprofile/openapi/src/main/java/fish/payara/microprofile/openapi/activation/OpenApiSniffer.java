@@ -39,8 +39,12 @@
  */
 package fish.payara.microprofile.openapi.activation;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
@@ -50,6 +54,17 @@ import fish.payara.microprofile.connector.MicroProfileSniffer;
 @PerLookup
 public class OpenApiSniffer extends MicroProfileSniffer {
 
+    private static final Logger LOGGER = Logger.getLogger(OpenApiSniffer.class.getName());
+
+    public static final String[] OPENAPI_YAML_FILE_PATHS = {
+        "META-INF/openapi.json",
+        "WEB-INF/classes/META-INF/openapi.json",
+        "META-INF/openapi.yaml",
+        "WEB-INF/classes/META-INF/openapi.yaml",
+        "META-INF/openapi.yml",
+        "WEB-INF/classes/META-INF/openapi.yml",
+    };
+
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
@@ -57,6 +72,24 @@ public class OpenApiSniffer extends MicroProfileSniffer {
             // All JAX-RS applications are valid applications for OpenAPI
             javax.ws.rs.Path.class
         };
+    }
+
+    @Override
+    public boolean handles(ReadableArchive archive) {
+        
+        // Check for metrics.xml files
+        try {
+            for (String openApiFile : OPENAPI_YAML_FILE_PATHS) {
+                if (archive.exists(openApiFile)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Error reading archive", e);
+            return false;
+        }
+
+        return super.handles(archive);
     }
 
     @Override
