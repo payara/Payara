@@ -37,7 +37,7 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  */
-package fish.payara.enterprise.config;
+package fish.payara.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.StringUtils;
