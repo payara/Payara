@@ -449,5 +449,13 @@
           <artifactId>jakarta.enterprise.cdi-api</artifactId>
       </dependency>
 
+      <!-- Request tracing for remote eJB -->
+      <dependency>
+        <scope>runtime</scope>
+        <groupId>fish.payara.server.internal.ejb</groupId>
+        <artifactId>ejb-opentracing</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
     </dependencies>
 </project>
