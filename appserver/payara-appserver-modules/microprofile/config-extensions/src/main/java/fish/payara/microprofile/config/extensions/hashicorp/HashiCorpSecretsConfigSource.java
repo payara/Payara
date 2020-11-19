@@ -105,16 +105,16 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
         }
 
         final WebTarget secretsTarget = client
-                .target(configuration.getVaultAddress());
+                .target(configuration.getVaultAddress() + "/v1" + configuration.getPath());
 
         final Response secretsResponse = secretsTarget
                 .request()
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + hashiCorpVaultToken)
                 .get();
-
+        
         if (secretsResponse.getStatus() != 200) {
-            LOGGER.log(Level.WARNING, "Unable to get secrets from the vault");
+            LOGGER.log(Level.WARNING, "Unable to get secrets from the vault. Make sure all the configurtaion options has been entered correctly");
             return results;
         }
 
@@ -154,14 +154,22 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
 
     private boolean modifySecret(Map<String, String> properties) {
         final WebTarget target = client
-                .target(configuration.getVaultAddress());
+                .target(configuration.getVaultAddress() + "/v1/" + configuration.getPath());
+
+        Object payload;
+        if (Integer.parseInt(configuration.getApiVersion()) == 1) {
+            Map<String, Object> secrets = (Map) properties;
+            payload = Json.createObjectBuilder(secrets).build().toString();
+        } else {
+            payload = new SecretHolder(properties);
+        }
 
         final Response setSecretResponse = target
                 .request()
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + hashiCorpVaultToken)
-                .put(Entity.entity(new SecretHolder(properties), MediaType.APPLICATION_JSON));
+                .put(Entity.entity(payload, MediaType.APPLICATION_JSON));
 
         if (setSecretResponse.getStatus() == 200) {
             return true;
@@ -182,7 +190,7 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
         return modifySecret(properties);
     }
 
-    private static String readSecretString(InputStream input) {
+    private String readSecretString(InputStream input) {
         try (JsonParser parser = Json.createParser(input)) {
             while (parser.hasNext()) {
                 JsonParser.Event parseEvent = parser.next();
@@ -191,7 +199,10 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
 
                     parser.next();
                     if ("data".equals(keyName)) {
-                        return parser.getObject().toString();
+                        if (Integer.parseInt(configuration.getApiVersion()) == 1) {
+                            return parser.getObject().toString();
+                        }
+                        return parser.getObject().getJsonObject(keyName).toString();
                     }
                 }
             }
@@ -208,7 +219,7 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
     public String getSource() {
         return "cloud";
     }
-    
+
     @Override
     public String getName() {
         return "hashicorp";

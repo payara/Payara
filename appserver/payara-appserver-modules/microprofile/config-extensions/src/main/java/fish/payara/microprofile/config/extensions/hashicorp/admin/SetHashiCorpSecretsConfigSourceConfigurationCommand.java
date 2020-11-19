@@ -73,7 +73,11 @@ import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfigurati
 })
 public class SetHashiCorpSecretsConfigSourceConfigurationCommand extends BaseSetConfigSourceConfigurationCommand<HashiCorpSecretsConfigSourceConfiguration> {
 
-    private static final Logger LOGGER = Logger.getLogger(SetHashiCorpSecretsConfigSourceConfigurationCommand.class.getPackage().getName());
+    @Param(optional = true, name = "api-version", alias = "apiVersion", defaultValue = "2", acceptableValues = "1,2")
+    protected String apiVersion;
+    
+    @Param(optional = true, name = "path")
+    protected String path;
 
     @Param(optional = true, name = "vault-address", alias = "vaultAddress")
     protected String vaultAddress;
@@ -81,6 +85,14 @@ public class SetHashiCorpSecretsConfigSourceConfigurationCommand extends BaseSet
     @Override
     protected void applyValues(ActionReport report, HashiCorpSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
         super.applyValues(report, configuration);
+        if (StringUtils.ok(apiVersion)) {
+            configuration.setApiVersion(apiVersion);
+        }
+        
+        if (StringUtils.ok(path)) {
+            configuration.setPath(path);
+        }
+        
         if (StringUtils.ok(vaultAddress)) {
             configuration.setVaultAddress(vaultAddress);
         }

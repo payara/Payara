@@ -72,6 +72,8 @@ public class GetHashiCorpSecretsConfigSourceConfigurationCommand extends BaseGet
     protected Map<String, Object> getConfigSourceConfiguration(HashiCorpSecretsConfigSourceConfiguration configuration) {
         Map<String, Object> config = super.getConfigSourceConfiguration(configuration);
         if (configuration != null) {
+            config.put("Api Version", configuration.getApiVersion());
+            config.put("Path", configuration.getPath());
             config.put("Vault Address", configuration.getVaultAddress());
         }
         return config;

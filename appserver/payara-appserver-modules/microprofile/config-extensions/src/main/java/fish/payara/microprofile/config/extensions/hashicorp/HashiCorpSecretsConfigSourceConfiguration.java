@@ -46,6 +46,14 @@ import org.jvnet.hk2.config.Configured;
 @Configured(name = "hashicorp-secrets-config-source-configuration")
 public interface HashiCorpSecretsConfigSourceConfiguration extends ConfigSourceConfiguration {
 
+    @Attribute(required = true, defaultValue = "2", dataType = Integer.class)
+    String getApiVersion();
+    void setApiVersion(String apiVersion);
+    
+    @Attribute(required = true)
+    String getPath();
+    void setPath(String path);
+    
     @Attribute(required = true)
     String getVaultAddress();
     void setVaultAddress(String vaultAddress);

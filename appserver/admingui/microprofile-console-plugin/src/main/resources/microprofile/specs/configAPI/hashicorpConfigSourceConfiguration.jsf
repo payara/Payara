@@ -104,11 +104,24 @@
                     helpText="$resource{i18n_microprofile.config.hashicorp.configuration.dynamicHelpText}">
             <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
         </sun:property>
-        <sun:property id="vaultAddress" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+        <sun:property id="apiVersionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                  label="$resource{i18n_microprofile.config.hashicorp.configuration.apiVersionLabel}"  
+                  helpText="$resource{i18n_microprofile.config.hashicorp.configuration.apiVersionHelpText}">
+        <sun:dropDown id="apiVersionDropdown" selected="#{pageSession.valueMap['apiVersion']}" 
+                      labels={"1", "2"} />
+        </sun:property>
+        <sun:property id="vaultAddressProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                     label="$resource{i18n_microprofile.config.hashicorp.configuration.vaultAddressLabel}"  
                     helpText="$resource{i18n_microprofile.config.hashicorp.configuration.vaultAddressHelpText}">
             <sun:textField id="vaultAddressField" columns="$int{75}" maxLength="512"
                         text="#{pageSession.valueMap['vaultAddress']}" styleClass="required"  
+                        required="#{true}"/>
+        </sun:property>
+         <sun:property id="pathProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                    label="$resource{i18n_microprofile.config.hashicorp.configuration.pathLabel}"  
+                    helpText="$resource{i18n_microprofile.config.hashicorp.configuration.pathHelpText}">
+            <sun:textField id="pathField" columns="$int{75}" maxLength="512"
+                        text="#{pageSession.valueMap['path']}" styleClass="required"  
                         required="#{true}"/>
         </sun:property>
     </sun:propertySheetSection>
