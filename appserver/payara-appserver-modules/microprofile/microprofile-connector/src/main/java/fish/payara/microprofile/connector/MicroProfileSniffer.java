@@ -59,7 +59,7 @@ public abstract class MicroProfileSniffer implements Sniffer {
     private static final Logger LOGGER = Logger.getLogger(MicroProfileSniffer.class.getName());
 
     @Override
-    public final boolean handles(DeploymentContext context) {
+    public boolean handles(DeploymentContext context) {
         final ReadableArchive archive = context.getSource();
 
         final String archivePath = archive.getURI().getPath();

@@ -47,9 +47,14 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.metrics.Metric;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.microprofile.connector.MicroProfileSniffer;
@@ -79,6 +84,16 @@ public class MetricsSniffer extends MicroProfileSniffer {
             // All JAX-RS applications are valid applications for Metrics
             javax.ws.rs.Path.class
         };
+    }
+
+    @Override
+    public boolean handles(DeploymentContext context) {
+        final Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
+
+        if (types.getBy(MetricRegistry.class.getName()) != null) return true;
+        if (types.getBy(Metric.class.getName()) != null) return true;
+
+        return super.handles(context);
     }
 
     @Override
