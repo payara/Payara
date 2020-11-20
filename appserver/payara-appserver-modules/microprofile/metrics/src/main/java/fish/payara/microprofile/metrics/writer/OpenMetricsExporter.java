@@ -244,7 +244,7 @@ public class OpenMetricsExporter implements MetricExporter {
             return;
         }
         helpWrittenByGlobalName.add(globalName);
-        Optional<String> description = metadata.getDescription();
+        Optional<String> description = metadata.description();
         if (!description.isPresent()) {
             return;
         }
@@ -315,10 +315,10 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     private String globalName(MetricID metricID, String infix, Metadata metadata, String suffix) {
-        if (!metadata.getUnit().isPresent()) {
+        if (!metadata.unit().isPresent()) {
             return globalName(metricID, infix + suffix);
         }
-        String unit = metadata.getUnit().get();
+        String unit = metadata.getUnit();
         switch (unit) {
         case MetricUnits.NANOSECONDS:
         case MetricUnits.MICROSECONDS:

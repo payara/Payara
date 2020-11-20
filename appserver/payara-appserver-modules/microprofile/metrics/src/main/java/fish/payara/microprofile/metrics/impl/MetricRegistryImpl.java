@@ -52,6 +52,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -89,7 +91,7 @@ import org.eclipse.microprofile.metrics.Timer;
  * The MetricRegistry stores the metrics and metadata information
  */
 @Vetoed
-public class MetricRegistryImpl extends MetricRegistry {
+public class MetricRegistryImpl implements MetricRegistry {
 
     private static final Logger LOGGER = Logger.getLogger(MetricRegistryImpl.class.getName());
 
@@ -110,16 +112,23 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
     }
 
+    private final Type type;
     private final ConcurrentMap<String, MetricFamily<?>> metricsFamiliesByName = new ConcurrentHashMap<>();
     private final Clock clock;
     private final List<MetricRegistrationListener> listeners = new ArrayList<>();
 
-    public MetricRegistryImpl() {
-        this(Clock.defaultClock());
+    public MetricRegistryImpl(Type type) {
+        this(type, Clock.defaultClock());
     }
 
-    public MetricRegistryImpl(Clock clock) {
+    public MetricRegistryImpl(Type type, Clock clock) {
+        this.type = type;
         this.clock = clock;
+    }
+
+    @Override
+    public Type getType() {
+        return type;
     }
 
     public MetricRegistryImpl addListener(MetricRegistrationListener listener) {
@@ -148,43 +157,40 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
-    public Histogram histogram(String name) {
-        return findMetricOrCreate(name, HISTOGRAM, new Tag[0]);
+    public Counter counter(MetricID metricID) {
+        return findMetricOrCreate(metricID.getName(), COUNTER, metricID.getTagsAsArray());
     }
 
     @Override
-    public Histogram histogram(Metadata metadata) {
-         return findMetricOrCreate(metadata, HISTOGRAM);
+    public <T, R extends Number> Gauge<R> gauge(Metadata metadata, T object, Function<T, R> func, Tag... tags) {
+        return gauge(metadata, () -> func.apply(object), tags);
     }
 
     @Override
-    public Meter meter(String name) {
-        return findMetricOrCreate(name, METERED, new Tag[0]);
+    public <T extends Number> Gauge<T> gauge(MetricID metricID, Supplier<T> supplier) {
+        return gauge(metricID.getName(), supplier, metricID.getTagsAsArray());
     }
 
     @Override
-    public Meter meter(Metadata metadata) {
-         return findMetricOrCreate(metadata, METERED);
+    public <T, R extends Number> Gauge<R> gauge(MetricID metricID, T object, Function<T, R> func) {
+        return gauge(metricID, () -> func.apply(object));
     }
 
     @Override
-    public SimpleTimer simpleTimer(String name) {
-        return findMetricOrCreate(name, SIMPLE_TIMER, new Tag[0]);
+    public <T extends Number> Gauge<T> gauge(Metadata metadata, Supplier<T> supplier, Tag... tags) {
+        Gauge<T> gauge = () -> supplier.get();
+        return findMetricOrCreate(metadata, GAUGE, gauge, tags);
     }
 
     @Override
-    public SimpleTimer simpleTimer(Metadata metadata) {
-        return findMetricOrCreate(metadata, MetricType.SIMPLE_TIMER, new Tag[0]);
+    public <T extends Number> Gauge<T> gauge(String name, Supplier<T> supplier, Tag... tags) {
+        Gauge<T> gauge = () -> supplier.get();
+        return findMetricOrCreate(name, GAUGE, gauge, tags);
     }
 
     @Override
-    public Timer timer(String name) {
-        return findMetricOrCreate(name, TIMER, new Tag[0]);
-    }
-
-    @Override
-    public Timer timer(Metadata metadata) {
-        return findMetricOrCreate(metadata, TIMER);
+    public <T, R extends Number> Gauge<R> gauge(String name, T object, Function<T, R> func, Tag... tags) {
+        return gauge(name, () -> func.apply(object), tags);
     }
 
     @Override
@@ -208,6 +214,11 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
+    public ConcurrentGauge concurrentGauge(MetricID metricID) {
+        return findMetricOrCreate(metricID.getName(), MetricType.CONCURRENT_GAUGE, metricID.getTagsAsArray());
+    }
+
+    @Override
     public Histogram histogram(String name, Tag... tags) {
         return findMetricOrCreate(name, MetricType.HISTOGRAM, tags);
     }
@@ -215,6 +226,21 @@ public class MetricRegistryImpl extends MetricRegistry {
     @Override
     public Histogram histogram(Metadata metadata, Tag... tags) {
         return findMetricOrCreate(metadata, MetricType.HISTOGRAM, tags);
+    }
+
+    @Override
+    public Histogram histogram(String name) {
+        return findMetricOrCreate(name, HISTOGRAM, new Tag[0]);
+    }
+
+    @Override
+    public Histogram histogram(Metadata metadata) {
+         return findMetricOrCreate(metadata, HISTOGRAM);
+    }
+
+    @Override
+    public Histogram histogram(MetricID metricID) {
+        return findMetricOrCreate(metricID.getName(), HISTOGRAM, metricID.getTagsAsArray());
     }
 
     @Override
@@ -228,6 +254,21 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
+    public Meter meter(String name) {
+        return findMetricOrCreate(name, METERED, new Tag[0]);
+    }
+
+    @Override
+    public Meter meter(Metadata metadata) {
+         return findMetricOrCreate(metadata, METERED);
+    }
+
+    @Override
+    public Meter meter(MetricID metricID) {
+        return findMetricOrCreate(metricID.getName(), METERED, metricID.getTagsAsArray());
+    }
+
+    @Override
     public SimpleTimer simpleTimer(String name, Tag... tags) {
         return findMetricOrCreate(name, SIMPLE_TIMER, tags);
     }
@@ -238,6 +279,21 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     @Override
+    public SimpleTimer simpleTimer(String name) {
+        return findMetricOrCreate(name, SIMPLE_TIMER, new Tag[0]);
+    }
+
+    @Override
+    public SimpleTimer simpleTimer(Metadata metadata) {
+        return findMetricOrCreate(metadata, MetricType.SIMPLE_TIMER, new Tag[0]);
+    }
+
+    @Override
+    public SimpleTimer simpleTimer(MetricID metricID) {
+        return findMetricOrCreate(metricID.getName(), SIMPLE_TIMER, metricID.getTagsAsArray());
+    }
+
+    @Override
     public Timer timer(String name, Tag... tags) {
         return findMetricOrCreate(name, TIMER, tags);
     }
@@ -245,6 +301,62 @@ public class MetricRegistryImpl extends MetricRegistry {
     @Override
     public Timer timer(Metadata metadata, Tag... tags) {
         return findMetricOrCreate(metadata, TIMER, tags);
+    }
+
+    @Override
+    public Timer timer(String name) {
+        return findMetricOrCreate(name, TIMER, new Tag[0]);
+    }
+
+    @Override
+    public Timer timer(Metadata metadata) {
+        return findMetricOrCreate(metadata, TIMER);
+    }
+
+    @Override
+    public Timer timer(MetricID metricID) {
+        return findMetricOrCreate(metricID.getName(), TIMER, metricID.getTagsAsArray());
+    }
+
+    @Override
+    public ConcurrentGauge getConcurrentGauge(MetricID metricID) {
+        return null;
+    }
+
+    @Override
+    public Counter getCounter(MetricID metricID) {
+        return getMetric(metricID, Counter.class);
+    }
+
+    @Override
+    public Gauge<?> getGauge(MetricID metricID) {
+        return getMetric(metricID, Gauge.class);
+    }
+
+    @Override
+    public Histogram getHistogram(MetricID metricID) {
+        return getMetric(metricID, Histogram.class);
+    }
+
+    @Override
+    public Meter getMeter(MetricID metricID) {
+        return getMetric(metricID, Meter.class);
+    }
+
+    @Override
+    public SimpleTimer getSimpleTimer(MetricID metricID) {
+        return getMetric(metricID, SimpleTimer.class);
+    }
+
+    @Override
+    public Timer getTimer(MetricID metricID) {
+        return getMetric(metricID, Timer.class);
+    }
+
+    @Override
+    public Metric getMetric(MetricID metricID) {
+        MetricFamily<?> family = metricsFamiliesByName.get(metricID.getName());
+        return family == null ? null : family.get(metricID);
     }
 
     @Override
@@ -394,30 +506,38 @@ public class MetricRegistryImpl extends MetricRegistry {
     }
 
     private <T extends Metric> T findMetricOrCreate(String name, MetricType metricType, Tag... tags) {
+        return findMetricOrCreate(name, metricType, null, tags);
+    }
+
+    private <T extends Metric> T findMetricOrCreate(String name, MetricType metricType, T metric, Tag... tags) {
         checkNameIsNotNullOrEmpty(name);
         Metadata metadata = Metadata.builder()
                 .withName(name)
                 .withType(metricType)
-                .withOptionalDisplayName(null)
+                .withDisplayName("")
                 .build();
-        return findMetricOrCreate(metadata, true, tags);
+        return findMetricOrCreate(metadata, true, metric, tags);
     }
 
     private <T extends Metric> T findMetricOrCreate(Metadata metadata, MetricType metricType, Tag... tags) {
-        return findMetricOrCreate(withType(metadata, metricType), false, tags);
+        return findMetricOrCreate(metadata, metricType, null, tags);
+    }
+
+    private <T extends Metric> T findMetricOrCreate(Metadata metadata, MetricType metricType, T metric, Tag... tags) {
+        return findMetricOrCreate(withType(metadata, metricType), false, metric, tags);
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Metric> T findMetricOrCreate(Metadata metadata, boolean useExistingMetadata, Tag... tags) {
+    private <T extends Metric> T findMetricOrCreate(Metadata metadata, boolean useExistingMetadata, T metric, Tag... tags) {
         MetricID metricID = new MetricID(metadata.getName(), tags);
         MetricFamily<?> family = metricsFamiliesByName.get(metricID.getName());
         if (family == null) {
-            return register(metadata, useExistingMetadata, null, tags);
+            return register(metadata, useExistingMetadata, metric, tags);
         }
         Metric existing = family.get(metricID);
         if (existing == null) {
             checkSameType(metricID.getName(), metadata, family.metadata);
-            return register(metadata, useExistingMetadata, null, tags);
+            return register(metadata, useExistingMetadata, metric, tags);
         }
         if (useExistingMetadata && metadata.getType() != family.metadata.getType()
                 || !useExistingMetadata && !metadata.equals(family.metadata)) {
@@ -492,7 +612,6 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     private static void checkReusableMetadata(String name, Metadata newMetadata, Metadata existingMetadata, boolean checkReusable) {
         if (checkReusable) {
-            checkIsReusable(name, newMetadata, existingMetadata);
             checkNotAGauge(name, newMetadata);
         }
 
@@ -503,22 +622,6 @@ public class MetricRegistryImpl extends MetricRegistry {
                   "Metadata ['%s'] already registered, does not match provided ['%s']",
                   existingMetadata.toString(), newMetadata.toString()
           ));
-        }
-    }
-
-    private static void checkIsReusable(String name, Metadata newMetadata, Metadata existingMetadata) {
-        //if existing metric declared not reusable
-        if (!existingMetadata.isReusable()) {
-            throw new IllegalArgumentException(String.format(
-                    "Metric ['%s'] already exists and declared not reusable", name
-                    ));
-        }
-
-        //registration call itself declares the metric to not be reusable
-        if (!newMetadata.isReusable()) {
-            throw new IllegalArgumentException(String.format(
-                    "Metric ['%s'] already exists and declared reusable but registration call declares the metric to not be reusable", name
-                    ));
         }
     }
 
@@ -564,22 +667,41 @@ public class MetricRegistryImpl extends MetricRegistry {
         }
     }
 
-    /*
-     * Non-API Methods (Extra Methods)
-     */
-
+    @Override
     @SuppressWarnings("unchecked")
-    public <T extends Metric> T getMetric(MetricID metricID, Class<T> metricType) {
+    public <T extends Metric> T getMetric(MetricID metricID, Class<T> ofType) {
         MetricFamily<?> family = metricsFamiliesByName.get(metricID.getName());
         if (family == null) {
             return null;
         }
         Metric metric = family.get(metricID);
-        if (!metricType.isAssignableFrom(metric.getClass())) {
-            throw new IllegalArgumentException("Invalid metric type : " + metricType);
+        if (!ofType.isAssignableFrom(metric.getClass())) {
+            throw new IllegalArgumentException("Invalid metric type : " + ofType);
         }
         return (T) metric;
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends Metric> SortedMap<MetricID, T> getMetrics(Class<T> ofType, MetricFilter filter) {
+        return (SortedMap<MetricID, T>) findMetrics(
+                (metricID, metric) -> filter.matches(metricID, metric) && ofType.isAssignableFrom(metric.getClass()));
+    }
+
+    @Override
+    public SortedMap<MetricID, Metric> getMetrics(MetricFilter filter) {
+        return findMetrics(filter);
+    }
+
+    @Override
+    public Metadata getMetadata(String name) {
+        MetricFamily<?> family = metricsFamiliesByName.get(name);
+        return family == null ? null : family.metadata;
+    }
+
+    /*
+     * Non-API Methods (Extra Methods)
+     */
 
     public Set<MetricID> getMetricsIDs(String name) {
         MetricFamily<?> family = metricsFamiliesByName.get(name);
@@ -591,11 +713,6 @@ public class MetricRegistryImpl extends MetricRegistry {
         return family == null
                 ? emptyMap()
                 : unmodifiableMap(family.metrics);
-    }
-
-    public Metadata getMetadata(String name) {
-        MetricFamily<?> family = metricsFamiliesByName.get(name);
-        return family == null ? null : family.metadata;
     }
 
     @Override

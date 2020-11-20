@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -89,9 +89,6 @@ public class MBeanMetadata implements Metadata {
     @XmlElement
     private String type;
 
-    @XmlElement
-    private boolean reusable;
-
     @XmlTransient
     private Boolean valid;
 
@@ -104,7 +101,7 @@ public class MBeanMetadata implements Metadata {
     }
 
     public MBeanMetadata(Metadata metadata) {
-        this(null, metadata.getName(), metadata.getDisplayName(), metadata.getDescription().orElse(null), metadata.getTypeRaw(), metadata.getUnit().orElse(null));
+        this(null, metadata.getName(), metadata.getDisplayName(), metadata.description().orElse(null), metadata.getTypeRaw(), metadata.unit().orElse(null));
 
     }
 
@@ -159,12 +156,27 @@ public class MBeanMetadata implements Metadata {
     }
 
     @Override
-    public Optional<String> getUnit() {
+    public Optional<String> displayName() {
+        return Optional.ofNullable(displayName);
+    }
+
+    @Override
+    public String getUnit() {
+        return unit == null ? MetricUnits.NONE : unit;
+    }
+
+    @Override
+    public Optional<String> unit() {
         return Optional.ofNullable(unit);
     }
 
     @Override
-    public Optional<String> getDescription() {
+    public String getDescription() {
+        return description == null ? "" : description;
+    }
+
+    @Override
+    public Optional<String> description() {
         return Optional.ofNullable(description);
     }
 
@@ -230,11 +242,6 @@ public class MBeanMetadata implements Metadata {
         return MetricType.from(type);
     }
 
-    @Override
-    public boolean isReusable() {
-        return reusable;
-    }
-
     public void setTags(List<XmlTag> tags) {
         this.tags = tags;
     }
@@ -248,7 +255,7 @@ public class MBeanMetadata implements Metadata {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, displayName, description, unit, type, reusable);
+        return Objects.hash(name, displayName, description, unit, type);
     }
 
     @Override
@@ -261,17 +268,11 @@ public class MBeanMetadata implements Metadata {
         }
         Metadata that = (Metadata) o;
 
-        //Retrieve the Optional value or set to the "defaults" if empty
-        String thatDescription = (that.getDescription().isPresent()) ? that.getDescription().get() : null;
-        String thatUnit = (that.getUnit().isPresent()) ? that.getUnit().get() : MetricUnits.NONE;
-
-        //Need to use this.getDisplayname() and this.getTypeRaw() for the Optional.orElse() logic
         return Objects.equals(name, that.getName()) &&
-                Objects.equals(this.getDisplayName(), that.getDisplayName()) &&
-                Objects.equals(description, thatDescription) &&
-                Objects.equals(unit, thatUnit) &&
-                Objects.equals(this.getTypeRaw(), that.getTypeRaw()) &&
-                Objects.equals(reusable, that.isReusable());
+                Objects.equals(getDisplayName(), that.getDisplayName()) &&
+                Objects.equals(getDescription(), that.getDescription()) &&
+                Objects.equals(getUnit(), that.getUnit()) &&
+                Objects.equals(getTypeRaw(), that.getTypeRaw());
     }
 
     @Override
@@ -284,7 +285,6 @@ public class MBeanMetadata implements Metadata {
                 .add("description='" + description + "'")
                 .add("unit='" + unit + "'")
                 .add("type='" + type + "'")
-                .add("reusable=" + reusable)
                 .add("valid=" + valid)
                 .add("tags=" + tags)
                 .toString();

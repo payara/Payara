@@ -370,7 +370,7 @@ public class OpenMetricsExporterTest {
         MetricID metricID = new MetricID("test1");
         Metadata metadata = Metadata.builder()
                 .withName(metricID.getName())
-                .withOptionalDescription("")
+                .withDescription("")
                 .build();
         assertOutputEquals("# TYPE application_test1_total counter\n" +
                 "application_test1_total 13\n", metricID, counter, metadata);
