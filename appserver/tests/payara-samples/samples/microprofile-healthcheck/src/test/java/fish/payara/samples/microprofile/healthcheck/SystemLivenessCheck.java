@@ -57,6 +57,6 @@ public class SystemLivenessCheck implements HealthCheck {
     return HealthCheckResponse.named(SystemLivenessCheck.class.getSimpleName() + " Liveness Check")
                               .withData("memory used", memUsed)
                               .withData("memory max", memMax)
-                              .state(memUsed < memMax * 0.9).build();
+                              .status(memUsed < memMax * 0.9).build();
   }
 }
