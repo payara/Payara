@@ -39,6 +39,52 @@
  */
 package fish.payara.microprofile.metrics;
 
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
+import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
+
+import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.xml.bind.JAXB;
+
+import org.eclipse.microprofile.metrics.Counting;
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.Metric;
+import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.SimpleTimer;
+import org.eclipse.microprofile.metrics.Timer;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.impl.MetricRegistrationListener;
@@ -49,63 +95,12 @@ import fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import java.beans.PropertyChangeEvent;
-
-import org.eclipse.microprofile.metrics.Counting;
-import org.eclipse.microprofile.metrics.Gauge;
-import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Metric;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
-import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.SimpleTimer;
-import org.eclipse.microprofile.metrics.Timer;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.Events;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.deployment.Deployment;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.xml.bind.JAXB;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Logger;
-import org.eclipse.microprofile.metrics.MetricID;
-
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
-import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.jvnet.hk2.config.ConfigListener;
-import org.jvnet.hk2.config.UnprocessedChangeEvent;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 @Service(name = "microprofile-metrics-service")
 @RunLevel(StartupRunLevel.VAL)
-public class MetricsService implements EventListener, ConfigListener, MonitoringDataSource {
+public class MetricsService implements ConfigListener, MonitoringDataSource {
 
     private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
-
-    @Inject
-    Events events;
-
-    @Inject
-    ApplicationRegistry applicationRegistry;
 
     @Inject
     MetricsServiceConfiguration configuration;
@@ -158,10 +153,6 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
 
     @PostConstruct
     public void init() {
-        if(events == null){
-            events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
-        }
-        events.register(this);
         metricsServiceConfiguration = serviceLocator.getService(MetricsServiceConfiguration.class);
         // Only start if metrics are enabled
         if (isEnabled()) {
@@ -321,17 +312,6 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
         }
     }
 
-    @Override
-    public void event(Event event) {
-        if (event.is(Deployment.APPLICATION_LOADED)) {
-            ApplicationInfo info = (ApplicationInfo) event.hook();
-            registerApplication(info.getName());
-        } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
-            ApplicationInfo info = (ApplicationInfo) event.hook();
-            deregisterApplication(info.getName());
-        }
-    }
-
     /**
      * Initialize metrics from the metrics.xml containing the base & vendor
      * metrics metadata.
@@ -485,7 +465,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
      *
      * @param applicationName The name of the application to remove
      */
-    private void registerApplication(String applicationName) {
+    public void registerApplication(String applicationName) {
         getOrAddRegistry(applicationName);
     }
 
@@ -494,7 +474,7 @@ public class MetricsService implements EventListener, ConfigListener, Monitoring
      *
      * @param applicationName The name of the application to remove
      */
-    private void deregisterApplication(String applicationName) {
+    public void deregisterApplication(String applicationName) {
         removeRegistry(applicationName);
     }
 

@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,36 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.microprofile.faulttolerance.activation;
 
+import java.lang.annotation.Annotation;
 
-package org.glassfish.web;
-
-import org.glassfish.api.deployment.archive.ArchiveType;
-
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-/**
- * {@link ArchiveType} corresponding to {@link javax.enterprise.deploy.shared.ModuleType#WAR}
- *
- * @author sanjeeb.sahoo@oracle.com
- */
-@Service(name = WarType.ARCHIVE_TYPE)
-@javax.inject.Singleton
-public class WarType extends ArchiveType {
-    /**
-     * same as what's returned by {@link javax.enterprise.deploy.shared.ModuleType#WAR#toString()}
-     * We have inlined the value here as opposed to initializing by calling a method on ModuleType.toString().
-     * This is done so that we can refer it in annotation attributes
-     */
-    public static final String ARCHIVE_TYPE = "war";
+import fish.payara.microprofile.connector.MicroProfileSniffer;
 
-    /**
-     * same as what's returned by {@link javax.enterprise.deploy.shared.ModuleType#WAR#getExtension()}
-     * This has been inlined so that other modules can refer to it as a constant in annotation attributes for example.
-     */
-    public static final String ARCHIVE_EXTENSION = ".war";
+@Service
+@PerLookup
+public class FaultToleranceSniffer extends MicroProfileSniffer {
 
-    public WarType() {
-        super(ARCHIVE_TYPE, ARCHIVE_EXTENSION);
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Annotation>[] getAnnotationTypes() {
+        return new Class[] {
+            org.eclipse.microprofile.faulttolerance.Asynchronous.class,
+            org.eclipse.microprofile.faulttolerance.Timeout.class,
+            org.eclipse.microprofile.faulttolerance.Retry.class,
+            org.eclipse.microprofile.faulttolerance.Bulkhead.class,
+            org.eclipse.microprofile.faulttolerance.CircuitBreaker.class,
+            org.eclipse.microprofile.faulttolerance.Fallback.class
+        };
     }
+
+    @Override
+    protected Class<?> getContainersClass() {
+        return FaultToleranceContainer.class;
+    }
+
+    @Override
+    public String getModuleType() {
+        return "faulttolerance";
+    }
+    
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -51,6 +51,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.Extension;
@@ -73,6 +74,7 @@ import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
@@ -476,7 +478,7 @@ public class DeploymentImpl implements CDI11Deployment {
         HashSet<ClassLoader> scannedClassLoaders = new HashSet<>();
 
         // ensure we don't add the same extension twice
-        HashMap<Class,Metadata<Extension>> loadedExtensions = new HashMap<>();
+        HashMap<Class<?>,Metadata<Extension>> loadedExtensions = new HashMap<>();
 
         for (BeanDeploymentArchive bda : bdas) {
             if (!(bda instanceof RootBeanDeploymentArchive)) {
@@ -496,6 +498,17 @@ public class DeploymentImpl implements CDI11Deployment {
                 }
             }
         }
+
+        // Load sniffer extensions
+        @SuppressWarnings("unchecked")
+        Iterable<Supplier<Extension>> snifferExtensions = context.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Iterable.class);
+        for (Supplier<Extension> extensionCreator : snifferExtensions) {
+            final Extension extension = extensionCreator.get();
+            final Class<?> extensionClass = extension.getClass();
+            final Metadata<Extension> extensionMetadata = new MetadataImpl<Extension>(extension, extensionClass.getName());
+            extnList.add(extensionMetadata);
+        }
+
         extnList.addAll(dynamicExtensions);
         extensions = extnList;
         return extnList;

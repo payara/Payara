@@ -47,7 +47,7 @@ import java.util.Map;
 
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.web.WarType;
+import org.glassfish.web.sniffer.WarType;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.node.runtime.gf.WebBundleRuntimeNode;
 import org.jvnet.hk2.annotations.Service;
