@@ -71,12 +71,6 @@
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>create-production-domain</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                    <execution>
                         <id>create-glassfish-domain</id>
                         <goals>
                             <goal>exec</goal>

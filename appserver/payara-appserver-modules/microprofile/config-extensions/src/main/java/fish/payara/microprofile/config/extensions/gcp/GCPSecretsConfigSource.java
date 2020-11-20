@@ -316,6 +316,11 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
     }
 
     @Override
+    public String getSource() {
+        return "cloud";
+    }
+
+    @Override
     public String getName() {
         return "gcp";
     }

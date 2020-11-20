@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,40 +44,52 @@ import com.hazelcast.spi.MemberAddressProvider;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.logging.Level;
 import org.glassfish.api.admin.ServerEnvironment;
 import java.util.logging.Logger;
+import org.glassfish.grizzly.utils.Holder.LazyHolder;
 
 /**
  * This class tries to work out which interface to choose as the address of the member
  * broadcast within Hazelcast
+ *
+ * This method picks an interface using the following rules:
+ * If there is only one interface that is not loopback, choose that
+ * If there is an interfaces element use that
+ * For the DAS, if there is a bind address specified use that
+ * If none of those choose the one that isn't the default docker one
+ * For a standalone if the DAS specifies a Bind or Public address,
+ * choose the interface on the same net or subnet
+ * If none of those choose the one that is not the default docker interface
+ * For micro if domain discovery mode, choose the network on the same subnet
+ * If tcpip mode choose the interface which matches a subnet in the tcpip list
+ * If none of those choose the first interface that is not the default docker one
+ *
  * @author Steve Millidge (Payara Foundation)
  * @since 5.0.181
  */
 public class MemberAddressPicker implements MemberAddressProvider {
-
+    private static final Logger logger = Logger.getLogger(MemberAddressPicker.class.getName());
     private final ServerEnvironment env;
     private final HazelcastRuntimeConfiguration config;
     private final HazelcastConfigSpecificConfiguration localConfig;
-    private InetSocketAddress bindAddress;
-    private InetSocketAddress publicAddress;
-    private static final Logger logger = Logger.getLogger(MemberAddressPicker.class.getName());
-    
+    private final InetSocketAddress bindAddress;
+    private final InetSocketAddress publicAddress;
+    private final LazyHolder<InetAddress> chosenAddress = LazyHolder.lazyHolder(MemberAddressPicker::findMyAddress);
+
     MemberAddressPicker(ServerEnvironment env, HazelcastRuntimeConfiguration config, HazelcastConfigSpecificConfiguration localConfig) {
         this.env = env;
         this.config = config;
         this.localConfig = localConfig;
-        
+
         // determine public address and bind address
-        findAppropriateInterfaces();
+        bindAddress = initBindAddress();
+        publicAddress = initPublicAddress(bindAddress);
     }
 
     @Override
@@ -97,52 +109,78 @@ public class MemberAddressPicker implements MemberAddressProvider {
 
     @Override
     public InetSocketAddress getPublicAddress() {
-        if (publicAddress != null) {
-            return publicAddress;
-        } else {
-            return bindAddress;
-        }
+        return publicAddress;
     }
-    
-    /**
-     * This method picks an interface using the following rules
-     * If there is only one interface that is not loopback choose that
-     * If there is an interfaces element use that
-     * For the DAS if there is a bind address specified use that
-     * If none of those choose the one that isn't the default docker one
-     * For a standalone if the DAS specifies a Bind or Public address choose the interface on the same net or subnet
-     * If none of those choose the one that is not the default docker interface
-     * For micro if domain discovery mode choose the network on the same subnet
-     * If tcpip mode choose the interface which matches a subnet in the tcpip list
-     * If none of those choose the first interface that is not the default docker one
-     */
-    private void findAppropriateInterfaces() {
-        
-        if (localConfig.getPublicAddress() != null && !localConfig.getPublicAddress().isEmpty()) {
-            String address[] = localConfig.getPublicAddress().split(":");
-            if (address.length > 1) {
-                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(address[1]));
-            } else {
-                publicAddress = new InetSocketAddress(address[0], Integer.parseInt(config.getStartPort()));
-            }
+
+    private InetSocketAddress initBindAddress() {
+        InetSocketAddress address = new InetSocketAddress(0);
+        if (env.isDas() && !env.isMicro() && !config.getDASBindAddress().isEmpty()) {
+            int port = new Integer(config.getDasPort());
+            address = initAddress(config.getDASBindAddress(), port);
+            logger.log(Level.FINE, "Bind address is specified in the configuration so we will use that {0}", address);
+        } else if (config.getDiscoveryMode().startsWith("multicast")) {
+            // in multicast mode, Hazelcast needs actual interface to bind, not wildcard
+            address = ensureAddress(null, null, chosenAddress, 0);
+        } else {
+            logger.log(Level.FINE, "Using Wildcard bind address");
         }
-        
+        return address;
+    }
+
+    private InetSocketAddress initPublicAddress(InetSocketAddress bindAddress) {
         logger.fine("Finding an appropriate address for Hazelcast to use");
+        InetSocketAddress address;
         int port = 0;
         if (env.isDas() && !env.isMicro()) {
             port = new Integer(config.getDasPort());
-            if (config.getDASPublicAddress() != null && !config.getDASPublicAddress().isEmpty()) {
-                publicAddress = new InetSocketAddress(config.getDASPublicAddress(), port);
+            // try setting public address from global Payara config
+            address = initAddress(config.getDASPublicAddress(), port);
+        } else {
+            // try setting public address from configuration, Payara node config
+            address = initAddress(localConfig.getPublicAddress(), Integer.parseInt(config.getStartPort()));
+        }
+        return ensureAddress(address, bindAddress, chosenAddress, port);
+    }
+
+    static InetSocketAddress initAddress(String address, int port) {
+        if (address != null && !address.isEmpty()) {
+            String addressParts[] = address.split(":");
+            if (addressParts.length > 1) {
+                return new InetSocketAddress(addressParts[0], Integer.parseInt(addressParts[1]));
+            } else {
+                return new InetSocketAddress(addressParts[0], port);
             }
-            
-            if (config.getDASBindAddress() != null && !config.getDASBindAddress().isEmpty()) {
-                bindAddress = new InetSocketAddress(config.getDASBindAddress(), port);
-                logger.log(Level.FINE, "Bind address is specified in the configuration so we will use that {0}", bindAddress);
-                return;
+        } else {
+            return null;
+        }
+    }
+
+    private static InetSocketAddress ensureAddress(InetSocketAddress targetAddress, InetSocketAddress sourceAddress,
+            LazyHolder<InetAddress> backupAddress, int port) {
+        if (targetAddress == null) {
+            if (sourceAddress != null && !sourceAddress.getAddress().isAnyLocalAddress()) {
+                targetAddress = sourceAddress;
+            } else if (backupAddress.get() != null) {
+                targetAddress = new InetSocketAddress(backupAddress.get(), port);
+            } else {
+                targetAddress = tryLocalHostOrLoopback(port);
             }
         }
-       
-        
+        return targetAddress;
+    }
+
+    private static InetSocketAddress tryLocalHostOrLoopback(int port) {
+        try {
+            // ok do the easy thing
+            logger.log(Level.FINE, "Could not find an appropriate address, falling back to local host");
+            return new InetSocketAddress(InetAddress.getLocalHost(), port);
+        } catch (UnknownHostException ex) {
+            logger.log(Level.FINE, "Could not find local host, falling back to loop back address");
+            return new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
+        }
+    }
+
+    static InetAddress findMyAddress() {
         //add to list filtering out docker0
         HashSet<NetworkInterface> possibleInterfaces = new HashSet<>();
         try {
@@ -151,22 +189,21 @@ public class MemberAddressPicker implements MemberAddressProvider {
             while (interfaces.hasMoreElements()) {
                 NetworkInterface intf = interfaces.nextElement();
                 logger.log(Level.FINE, "Found Network Interface {0}", new Object[]{intf.getName()});
-                
-                if (intf.isUp() && !intf.isLoopback() && !intf.isVirtual() && !intf.getName().contains("docker0") &&!intf.getDisplayName().contains("Teredo") && intf.getInterfaceAddresses().size()>0) {
+
+                if (intf.isUp() && !intf.isLoopback() && !intf.isVirtual() && !intf.isPointToPoint() && !intf.getName().contains("docker0") &&
+                        !intf.getDisplayName().contains("Teredo") && intf.getInterfaceAddresses().size() > 0) {
                     logger.log(Level.FINE, "Adding interface {0} as a possible interface", intf.getName());
                     possibleInterfaces.add(intf);
                 } else {
-                    logger.fine("Ignoring down, docker or loopback interface " + intf.getName());
+                    logger.log(Level.FINE, "Ignoring down, docker, p2p or loopback interface {0}", intf.getName());
                 }
             }
         } catch (SocketException socketException) {
-            logger.log(Level.WARNING,"There was a problem determining the network interfaces on this machine", socketException);
+            logger.log(Level.WARNING, "There was a problem determining the network interfaces on this machine", socketException);
         }
-        
-        if (possibleInterfaces.size() >= 1) {
-            
-            InetAddress chosenAddress = null;
 
+        InetAddress chosenAddress = null;
+        if (!possibleInterfaces.isEmpty()) {
             // we haven't found an address
             // this is our interface
             // get first address on the interface
@@ -180,19 +217,7 @@ public class MemberAddressPicker implements MemberAddressProvider {
                 }
             }
             logger.log(Level.FINE, "Picked address {0}", chosenAddress);
-            bindAddress = new InetSocketAddress(chosenAddress,port);
         }
-        
-        if (bindAddress == null) {
-            try {
-                // ok do the easy thing
-                logger.log(Level.FINE,"Could not find an appropriate address by searching falling back to local host");
-                bindAddress = new InetSocketAddress(InetAddress.getLocalHost(),port);
-            } catch (UnknownHostException ex) {
-                logger.log(Level.FINE,"Could not find local host, falling back to loop back address");
-                bindAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(),port);
-            }
-        }
+        return chosenAddress;
     }
-    
 }

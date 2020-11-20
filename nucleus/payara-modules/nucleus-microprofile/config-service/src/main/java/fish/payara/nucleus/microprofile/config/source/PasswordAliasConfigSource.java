@@ -63,7 +63,6 @@ import org.glassfish.internal.api.Globals;
 public class PasswordAliasConfigSource extends PayaraConfigSource implements ConfigSource {
 
     private final DomainScopedPasswordAliasStore store;
-    private static final String ALIAS_TOKEN = "ALIAS";
     
     public PasswordAliasConfigSource() {
         store = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
@@ -101,7 +100,7 @@ public class PasswordAliasConfigSource extends PayaraConfigSource implements Con
             value = new String(store.get(name));
         } else {
             // Check if the property being asked for is in the format ${ALIAS=xxx} and get the password associated with the alias if so
-            if (TranslatedConfigView.getAlias(name, ALIAS_TOKEN) != null) {
+            if (TranslatedConfigView.getAlias(name) != null) {
                 try {
                     value = TranslatedConfigView.getRealPasswordFromAlias(name);
                 } catch (IllegalArgumentException iae) {

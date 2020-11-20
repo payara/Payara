@@ -45,11 +45,6 @@
             <outputDirectory>artifacts/</outputDirectory>
             <scope>provided</scope>
             <unpack>true</unpack>
-            <unpackOptions>
-                <excludes>
-                    <exclude>**/glassfish/domains/domain1/**</exclude>
-                </excludes>
-            </unpackOptions>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
         </dependencySet>
     </dependencySets>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.impl.j2ee.loader;
 
@@ -74,8 +74,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.admin.amx.j2ee.AMXEELoggerInfo;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.PostStartupRunLevel;
 
 
 /**
@@ -127,7 +125,7 @@ public final class AMXJ2EEStartupService implements org.glassfish.hk2.api.PostCo
     }
 
     @Override
-    public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {       
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] propertyChangeEvents) {
         return ConfigSupport.sortAndDispatch(propertyChangeEvents, new PropertyChangeHandler(propertyChangeEvents), logger);
     }
 
@@ -154,13 +152,15 @@ public final class AMXJ2EEStartupService implements org.glassfish.hk2.api.PostCo
                         String serverName = server.getName();
 
                         MetadataImpl meta = new MetadataImpl();
-                        meta.setCorrespondingConfig(ConfigBeanRegistry.getInstance().getObjectNameForProxy(server));
+                        ObjectName objectName = ConfigBeanRegistry.getInstance().getObjectNameForProxy(server);
+                        if (objectName != null) {
+                            meta.setCorrespondingConfig(objectName);
+                        }
                         final DASJ2EEServerImpl impl = new DASJ2EEServerImpl(getJ2EEDomain(), meta);
                         ObjectName serverObjectName = new ObjectNameBuilder(mMBeanServer, getJ2EEDomain()).buildChildObjectName(J2EETypes.J2EE_SERVER, serverName);
                         try {
                             mMBeanServer.registerMBean(impl, serverObjectName).getObjectName();
-                        }
-                        catch (JMException e) {
+                        } catch (JMException e) {
                             throw new Error(e);
                         }
                     }

@@ -56,7 +56,6 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
 import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.RegisteredComponentInvocationHandler;
@@ -469,7 +468,8 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             }
 
             boolean createTimers = true;
-            boolean isDeploymentGroup = domain.getDeploymentGroupNamed(dcp.target) != null;
+            // target could be null for internal apps such as wstx-services or admin console
+            boolean isDeploymentGroup = dcp.target == null ? false : domain.getDeploymentGroupNamed(dcp.target) != null;
             boolean isDeployment = opsparams.origin.isDeploy() || opsparams.origin.isCreateAppRef();
             boolean isDirectTarget = env.getInstanceName().equals(dcp.target);
             // Create timers on DAS only if this condition is not met

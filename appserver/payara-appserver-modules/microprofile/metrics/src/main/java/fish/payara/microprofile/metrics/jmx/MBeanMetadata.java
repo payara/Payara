@@ -47,10 +47,11 @@ import static fish.payara.microprofile.metrics.jmx.MBeanMetadataHelper.SUB_ATTRI
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.StringJoiner;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import java.util.Optional;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -261,8 +262,8 @@ public class MBeanMetadata implements Metadata {
         Metadata that = (Metadata) o;
 
         //Retrieve the Optional value or set to the "defaults" if empty
-        String thatDescription = (that.getDescription().isPresent()) ? that.getDescription().get() : null;
-        String thatUnit = (that.getUnit().isPresent()) ? that.getUnit().get() : MetricUnits.NONE;
+        String thatDescription = that.getDescription().orElse(null);
+        String thatUnit = that.getUnit().orElse(MetricUnits.NONE);
 
         //Need to use this.getDisplayname() and this.getTypeRaw() for the Optional.orElse() logic
         return Objects.equals(name, that.getName()) &&
@@ -271,5 +272,21 @@ public class MBeanMetadata implements Metadata {
                 Objects.equals(unit, thatUnit) &&
                 Objects.equals(this.getTypeRaw(), that.getTypeRaw()) &&
                 Objects.equals(reusable, that.isReusable());
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", MBeanMetadata.class.getSimpleName() + "[", "]")
+                .add("mBean='" + mBean + "'")
+                .add("dynamic=" + dynamic)
+                .add("name='" + name + "'")
+                .add("displayName='" + displayName + "'")
+                .add("description='" + description + "'")
+                .add("unit='" + unit + "'")
+                .add("type='" + type + "'")
+                .add("reusable=" + reusable)
+                .add("valid=" + valid)
+                .add("tags=" + tags)
+                .toString();
     }
 }

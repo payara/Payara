@@ -44,6 +44,18 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.APPLICATION;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLOUD;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLUSTER;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CONFIG;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.DOMAIN;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.JDBC;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.JNDI;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.LDAP;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.MODULE;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.PASSWORD;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SECRETS;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SERVER;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -83,7 +95,7 @@ public class SetConfigOrdinal implements AdminCommand {
     @Param()
     int ordinal;
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc,cloud", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc,cloud,ldap", defaultValue = DOMAIN)
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -105,48 +117,52 @@ public class SetConfigOrdinal implements AdminCommand {
                     public Object run(MicroprofileConfigConfiguration config) {
 
                         switch (source) {
-                            case "domain": {
+                            case DOMAIN: {
                                 config.setDomainOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "config": {
+                            case CONFIG: {
                                 config.setConfigOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "server": {
+                            case SERVER: {
                                 config.setServerOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "application": {
+                            case APPLICATION: {
                                 config.setApplicationOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "module": {
+                            case MODULE: {
                                 config.setModuleOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "cluster": {
+                            case CLUSTER: {
                                 config.setClusterOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "jndi": {
+                            case JNDI: {
                                 config.setJNDIOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "secrets": {
+                            case SECRETS: {
                                 config.setSecretDirOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "password" : {
+                            case PASSWORD : {
                                 config.setPasswordOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "jdbc" : {
+                            case JDBC : {
                                 config.setJdbcOrdinality(Integer.toString(ordinal));
                                 break;
                             }
-                            case "cloud": {
+                            case CLOUD: {
                                 config.setCloudOrdinality(Integer.toString(ordinal));
+                                break;
+                            }
+                            case LDAP: {
+                                config.setLdapOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                         }
