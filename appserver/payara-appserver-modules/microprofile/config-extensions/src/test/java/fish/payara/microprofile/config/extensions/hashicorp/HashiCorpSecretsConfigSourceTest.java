@@ -21,31 +21,30 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HashiCorpSecretsConfigSourceTest {
-
-    private static final String FAKE_ENDPOINT = "http://fake-endpoint";
     private static final String FAKE_TOKEN = "FAKE_TOKEN";
+    private static final String FAKE_SECRETS_ENGINE_PATH = "KV";
+    private static final String FAKE_SECRETS_PATH = "mySecrets";
+    private static final String FAKE_VAULT_ADDRESS = "http://127.0.0.1:8200";
 
     @Mock
     private Client client;
 
     @InjectMocks
     private HashiCorpSecretsConfigSource configSource = new HashiCorpSecretsConfigSource();
-    private static HashiCorpSecretsConfigSourceConfiguration config;
     private static Response fakeResponse;
+    private static WebTarget fakeTarget;
 
     @Before
     public void initMocks() {
-        // Create fake config that returns the fake endpoint address
-        config = mock(HashiCorpSecretsConfigSourceConfiguration.class);
-        when(config.getVaultAddress()).thenReturn(FAKE_ENDPOINT);
-        when(config.getPath()).thenReturn("/secret/my-secret");
-
         // Configure the vault token
         configSource.hashiCorpVaultToken = FAKE_TOKEN;
+        configSource.secretsEnginePath = FAKE_SECRETS_ENGINE_PATH;
+        configSource.secretsPath = FAKE_SECRETS_PATH;
+        configSource.vaultAddress = FAKE_VAULT_ADDRESS;
 
         // Create fake web target to return the expected response
-        final WebTarget fakeTarget = mock(WebTarget.class);
-        when(client.target(config.getVaultAddress() + "/v1" + config.getPath())).thenReturn(fakeTarget);
+        fakeTarget = mock(WebTarget.class);
+        //when(client.target(config.getVaultAddress() + "/v1" + config.getPath())).thenReturn(fakeTarget);
         final Invocation.Builder fakeBuilder = mock(Invocation.Builder.class);
         when(fakeTarget.request()).thenReturn(fakeBuilder);
         when(fakeBuilder.accept(MediaType.APPLICATION_JSON)).thenReturn(fakeBuilder);
@@ -58,19 +57,19 @@ public class HashiCorpSecretsConfigSourceTest {
 
     @Test
     public void testApiVersion1() {
+        configSource.apiVersion = 1;
+        when(client.target(FAKE_VAULT_ADDRESS + "/v1/" + FAKE_SECRETS_ENGINE_PATH + "/" + FAKE_SECRETS_PATH)).thenReturn(fakeTarget);
         final String apiVersion1GetResult = "{\"request_id\":\"666f6576-8e81-5938-fcc8-bc8fe914c219\",\"lease_id\":\"\",\"renewable\":false,\"lease_duration\":36000,\"data\":{\"key\":\"value\"},\"wrap_info\":null,\"warnings\":null,\"auth\":null}";
         when(fakeResponse.getEntity()).thenReturn(new ByteArrayInputStream(apiVersion1GetResult.getBytes()));
-        when(config.getApiVersion()).thenReturn("1");
-        configSource.setConfiguration(config);
         assertEquals("Incorrect property value", "value", configSource.getValue("key"));
     }
 
     @Test
     public void testApiVersion2() {
+        configSource.apiVersion = 2;
+        when(client.target(FAKE_VAULT_ADDRESS + "/v1/" + FAKE_SECRETS_ENGINE_PATH + "/data/" + FAKE_SECRETS_PATH)).thenReturn(fakeTarget);
         final String apiVersion2GetResult = "{\"request_id\":\"666f6576-8e81-5938-fcc8-bc8fe914c219\",\"lease_id\":\"\",\"renewable\":false,\"lease_duration\":36000,\"data\": {\"data\": {\"key\": \"value\",\"secretkey\": \"secretvalue\"}},\"wrap_info\":null,\"warnings\":null,\"auth\":null}";
-        when(fakeResponse.getEntity()).thenReturn(new ByteArrayInputStream(apiVersion2GetResult.getBytes()));
-        when(config.getApiVersion()).thenReturn("2");
-        configSource.setConfiguration(config);
+        when(fakeResponse.getEntity()).thenReturn(new ByteArrayInputStream(apiVersion2GetResult.getBytes()));;
         assertEquals("Incorrect property value", "value", configSource.getValue("key"));
     }
 }

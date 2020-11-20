@@ -117,11 +117,18 @@
                         text="#{pageSession.valueMap['vaultAddress']}" styleClass="required"  
                         required="#{true}"/>
         </sun:property>
-         <sun:property id="pathProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
-                    label="$resource{i18n_microprofile.config.hashicorp.configuration.pathLabel}"  
-                    helpText="$resource{i18n_microprofile.config.hashicorp.configuration.pathHelpText}">
-            <sun:textField id="pathField" columns="$int{75}" maxLength="512"
-                        text="#{pageSession.valueMap['path']}" styleClass="required"  
+         <sun:property id="secretsEnginePathProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                    label="$resource{i18n_microprofile.config.hashicorp.configuration.secretsEnginePathLabel}"  
+                    helpText="$resource{i18n_microprofile.config.hashicorp.configuration.secretsEnginePathHelpText}">
+            <sun:textField id="secretsEnginePathField" columns="$int{75}" maxLength="255"
+                        text="#{pageSession.valueMap['secretsEnginePath']}" styleClass="required"  
+                        required="#{true}"/>
+        </sun:property>
+         <sun:property id="secretsPathProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                    label="$resource{i18n_microprofile.config.hashicorp.configuration.secretsPathLabel}"  
+                    helpText="$resource{i18n_microprofile.config.hashicorp.configuration.secretsPathHelpText}">
+            <sun:textField id="secretsPathField" columns="$int{75}" maxLength="255"
+                        text="#{pageSession.valueMap['secretsPath']}" styleClass="required"  
                         required="#{true}"/>
         </sun:property>
     </sun:propertySheetSection>

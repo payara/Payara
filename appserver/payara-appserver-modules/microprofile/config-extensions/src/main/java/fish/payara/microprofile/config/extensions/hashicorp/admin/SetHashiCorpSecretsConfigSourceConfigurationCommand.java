@@ -76,8 +76,11 @@ public class SetHashiCorpSecretsConfigSourceConfigurationCommand extends BaseSet
     @Param(optional = true, name = "api-version", alias = "apiVersion", defaultValue = "2", acceptableValues = "1,2")
     protected String apiVersion;
     
-    @Param(optional = true, name = "path")
-    protected String path;
+    @Param(optional = true, name = "secrets-engine-path", alias = "secretsEnginePath")
+    protected String secretsEnginePath;
+    
+    @Param(optional = true, name = "secrets-path", alias = "secretsPath")
+    protected String secretsPath;
 
     @Param(optional = true, name = "vault-address", alias = "vaultAddress")
     protected String vaultAddress;
@@ -89,8 +92,12 @@ public class SetHashiCorpSecretsConfigSourceConfigurationCommand extends BaseSet
             configuration.setApiVersion(apiVersion);
         }
         
-        if (StringUtils.ok(path)) {
-            configuration.setPath(path);
+        if (StringUtils.ok(secretsEnginePath)) {
+            configuration.setSecretsEnginePath(secretsEnginePath);
+        }
+        
+         if (StringUtils.ok(secretsPath)) {
+            configuration.setSecretsPath(secretsPath);
         }
         
         if (StringUtils.ok(vaultAddress)) {

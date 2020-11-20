@@ -51,8 +51,12 @@ public interface HashiCorpSecretsConfigSourceConfiguration extends ConfigSourceC
     void setApiVersion(String apiVersion);
     
     @Attribute(required = true)
-    String getPath();
-    void setPath(String path);
+    String getSecretsEnginePath();
+    void setSecretsEnginePath(String secretsEnginePath);
+    
+    @Attribute(required = true)
+    String getSecretsPath();
+    void setSecretsPath(String secretsPath);
     
     @Attribute(required = true)
     String getVaultAddress();

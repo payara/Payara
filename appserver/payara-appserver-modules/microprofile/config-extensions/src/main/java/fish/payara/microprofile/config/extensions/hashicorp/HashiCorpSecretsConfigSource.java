@@ -82,6 +82,11 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
 
     private Client client = ClientBuilder.newClient();
     protected String hashiCorpVaultToken;
+    protected String vaultAddress;
+    protected String secretsEnginePath;
+    protected String secretsPath;
+    protected int apiVersion;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
@@ -89,6 +94,10 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
         try {
             // Get the HashiCorp Vault token.
             hashiCorpVaultToken = TranslatedConfigView.getRealPasswordFromAlias("${ALIAS=HASHICORP_VAULT_TOKEN}");
+            vaultAddress = removeForwardSlashFromSuffixAndPrefix(configuration.getVaultAddress());
+            secretsEnginePath = removeForwardSlashFromSuffixAndPrefix(configuration.getSecretsEnginePath());
+            secretsPath = removeForwardSlashFromSuffixAndPrefix(configuration.getSecretsPath());
+            apiVersion = Integer.parseInt(configuration.getApiVersion());
         } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException | UnrecoverableKeyException ex) {
             LOGGER.log(Level.WARNING, "Unable to get value from password aliases", ex);
 
@@ -104,17 +113,25 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
             return results;
         }
 
+        //Use version 2 of API by default
+        String secretsURL = vaultAddress + "/v1/" + secretsEnginePath + "/data/" + secretsPath;
+
+        if (apiVersion == 1) {
+            secretsURL = vaultAddress + "/v1/" + secretsEnginePath + "/" + secretsPath;
+        }
+
         final WebTarget secretsTarget = client
-                .target(configuration.getVaultAddress() + "/v1" + configuration.getPath());
+                .target(secretsURL);
 
         final Response secretsResponse = secretsTarget
                 .request()
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + hashiCorpVaultToken)
                 .get();
-        
+
         if (secretsResponse.getStatus() != 200) {
-            LOGGER.log(Level.WARNING, "Unable to get secrets from the vault. Make sure all the configurtaion options has been entered correctly");
+            LOGGER.log(Level.WARNING, "Unable to get secrets from the vault using the following URL: " + secretsURL + ". "
+                    + "Make sure all the configurtaion options has been entered correctly and HashiCorp Vault Token is correct");
             return results;
         }
 
@@ -153,11 +170,18 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
     }
 
     private boolean modifySecret(Map<String, String> properties) {
+        //Use version 2 of API by default
+        String secretsURL = vaultAddress + "/v1/" + secretsEnginePath + "/data/" + secretsPath;
+
+        if (apiVersion == 1) {
+            secretsURL = vaultAddress + "/v1/" + secretsEnginePath + "/" + secretsPath;
+        }
+
         final WebTarget target = client
-                .target(configuration.getVaultAddress() + "/v1/" + configuration.getPath());
+                .target(secretsURL);
 
         Object payload;
-        if (Integer.parseInt(configuration.getApiVersion()) == 1) {
+        if (apiVersion == 1) {
             Map<String, Object> secrets = (Map) properties;
             payload = Json.createObjectBuilder(secrets).build().toString();
         } else {
@@ -199,7 +223,7 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
 
                     parser.next();
                     if ("data".equals(keyName)) {
-                        if (Integer.parseInt(configuration.getApiVersion()) == 1) {
+                        if (apiVersion == 1) {
                             return parser.getObject().toString();
                         }
                         return parser.getObject().getJsonObject(keyName).toString();
@@ -228,6 +252,17 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
     private static void printMisconfigurationMessage() {
         LOGGER.warning("HashiCorp Secrets Config Source isn't configured correctly. "
                 + "Make sure that the password aliases HASHICORP_VAULT_TOKEN exist.");
+    }
+
+    private String removeForwardSlashFromSuffixAndPrefix(String path) {
+        if (path.charAt(path.length() - 1) == '/') {
+            path = path.substring(0, path.length() - 1);
+        }
+
+        if (path.charAt(0) == '/') {
+            path = path.substring(1);
+        }
+        return path;
     }
 
 }
