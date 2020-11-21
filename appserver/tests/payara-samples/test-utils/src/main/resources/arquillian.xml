@@ -8,7 +8,6 @@
      <container qualifier="payara">
         <configuration>
             <property name="domain">${payara.domain.name}</property>
-            <property name="debug">true</property>
         </configuration>
      </container>
      

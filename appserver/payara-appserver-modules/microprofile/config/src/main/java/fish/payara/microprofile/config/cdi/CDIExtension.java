@@ -58,7 +58,7 @@ import javax.inject.Provider;
  * CDI extension that implements the Microprofile Config API ConfigProperty injection
  * @author Steve Millidge <Payara Services Limited>
  */
-public class ConfigCdiExtension implements Extension {
+public class CDIExtension implements Extension {
     
     public void validateInjectionPoint(@Observes ProcessInjectionPoint<?, ?> pip) {
         

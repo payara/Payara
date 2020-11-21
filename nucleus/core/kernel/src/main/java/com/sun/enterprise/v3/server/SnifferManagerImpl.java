@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.server;
 
@@ -53,14 +52,13 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.internal.deployment.SnifferManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
+import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Provide convenience methods to deal with {@link Sniffer}s in the system.
@@ -69,9 +67,7 @@ import java.util.logging.Logger;
  */
 @Service
 public class SnifferManagerImpl implements SnifferManager {
-
-    private static final Logger LOGGER = Logger.getLogger(SnifferManager.class.getName());
-    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SnifferManagerImpl.class);
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SnifferManagerImpl.class);
 
     @Inject
     protected ServiceLocator habitat;
@@ -175,17 +171,7 @@ public class SnifferManagerImpl implements SnifferManager {
                     Collection<AnnotatedElement> elements = ((AnnotationType) type).allAnnotatedTypes();
                     for (AnnotatedElement element : elements) {
                         if (checkPath) {
-                            Type t;
-                            if (element instanceof Member) {
-                                t = ((Member) element).getDeclaringType();
-                            } else if (element instanceof Type) {
-                                t = (Type) element;
-                            } else if (element instanceof ParameterizedType) {
-                                t = ((ParameterizedType) element).getType();
-                            } else {
-                                LOGGER.log(Level.WARNING, "Unrecognised type: {0}.", element);
-                                continue;
-                            }
+                            Type t = (element instanceof Member?((Member) element).getDeclaringType():(Type) element);
                             if (t.wasDefinedIn(uris)) {
                                 result.add(sniffer);
                                 break;
