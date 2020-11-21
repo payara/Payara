@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2016-2020] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.amx.impl.config;
 
@@ -903,7 +903,7 @@ public class AMXConfigImpl extends AMXImplBase {
 
         final MBeanAttributeInfo attrInfo = getAttributeInfo(amxName);
         if (attrInfo == null) {
-            // 
+            //
             // check for  PSEUDO ATTTRIBUTES implemented as methods eg getFoo()
             //
 
@@ -1221,14 +1221,14 @@ public class AMXConfigImpl extends AMXImplBase {
      */
     private static final AtomicLong sSequenceNumber = new AtomicLong(0);
 
-    void issueAttributeChangeForXmlAttrName(final String xmlAttrName, final String message, final Object oldValue, final Object newValue, 
+    void issueAttributeChangeForXmlAttrName(final String xmlAttrName, final String message, final Object oldValue, final Object newValue,
             final long whenChanged) {
-        
+
         final Map<String, String> m = getConfigBeanJMXSupport().getFromXMLNameMapping();
         final String attributeName = m.containsKey(xmlAttrName) ? m.get(xmlAttrName) : xmlAttrName;
         if (attributeName.equals(xmlAttrName)) // will *always* be different due to camel case
         {
-            logger.log(Level.SEVERE, AMXLoggerInfo.attributeNotfound, xmlAttrName);
+            logger.log(Level.SEVERE, AMXLoggerInfo.attributeNotfound, new Object[] { xmlAttrName, getObjectName() });
         }
 
         final String attributeType = String.class.getName();

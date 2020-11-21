@@ -80,7 +80,7 @@ import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCA
  * 
  * @author Arjan Tijms
  */
-public class CdiExtension implements Extension {
+public class JwtAuthCdiExtension implements Extension {
     
     /**
      * Tracks whether a LoginConfig annotation has been encountered and thus

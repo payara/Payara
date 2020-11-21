@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.jwtauth.servlet;
+package fish.payara.microprofile.jwtauth;
 
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
@@ -47,11 +47,11 @@ import java.util.logging.Logger;
 
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.CDI;
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
-import fish.payara.microprofile.jwtauth.cdi.CdiExtension;
+import fish.payara.microprofile.jwtauth.cdi.JwtAuthCdiExtension;
 
 /**
  * This servlet container initializer checks if CDI is active and if so obtains
@@ -64,12 +64,13 @@ import fish.payara.microprofile.jwtauth.cdi.CdiExtension;
  * 
  * @author Arjan Tijms
  */
-public class RolesDeclarationInitializer implements ServletContainerInitializer {
+public class RolesDeclarationInitializer implements ServletContextListener {
     
     private static final Logger logger =  Logger.getLogger(RolesDeclarationInitializer.class.getName());
 
     @Override
-    public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+    public void contextInitialized(ServletContextEvent sce) {
+        final ServletContext ctx = sce.getServletContext();
         
         Set<String> roles = null;
         boolean addJWTAuthenticationMechanism = false;
@@ -78,10 +79,10 @@ public class RolesDeclarationInitializer implements ServletContainerInitializer 
             CDI<Object> cdi = CDI.current();
             
             if (cdi != null) {
-                Instance<CdiExtension> extensionInstance = cdi.select(CdiExtension.class);
+                Instance<JwtAuthCdiExtension> extensionInstance = cdi.select(JwtAuthCdiExtension.class);
                 
                 if (extensionInstance != null && !extensionInstance.isUnsatisfied() && !extensionInstance.isAmbiguous()) {
-                    CdiExtension cdiExtension = extensionInstance.get();
+                    JwtAuthCdiExtension cdiExtension = extensionInstance.get();
                     
                     if (cdiExtension != null) {
                         roles = cdiExtension.getRoles();
@@ -108,7 +109,6 @@ public class RolesDeclarationInitializer implements ServletContainerInitializer 
         }
         
         ctx.declareRoles(roles.toArray(new String[0]));
-        
     }
 
 }

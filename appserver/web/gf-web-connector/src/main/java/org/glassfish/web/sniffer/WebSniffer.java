@@ -47,7 +47,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.GenericSniffer;
-import org.glassfish.web.WarType;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;

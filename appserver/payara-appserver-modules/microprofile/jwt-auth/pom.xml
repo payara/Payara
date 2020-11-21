@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -80,6 +80,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+            <artifactId>microprofile-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.eclipse.microprofile.jwt</groupId>
             <artifactId>microprofile-jwt-auth-api</artifactId>
         </dependency>
@@ -104,7 +110,19 @@
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-    
+
+        <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>web-glue</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>weld-integration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>

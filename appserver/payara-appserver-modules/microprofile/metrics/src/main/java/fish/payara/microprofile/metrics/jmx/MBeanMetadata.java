@@ -262,8 +262,8 @@ public class MBeanMetadata implements Metadata {
         Metadata that = (Metadata) o;
 
         //Retrieve the Optional value or set to the "defaults" if empty
-        String thatDescription = (that.getDescription().isPresent()) ? that.getDescription().get() : null;
-        String thatUnit = (that.getUnit().isPresent()) ? that.getUnit().get() : MetricUnits.NONE;
+        String thatDescription = that.getDescription().orElse(null);
+        String thatUnit = that.getUnit().orElse(MetricUnits.NONE);
 
         //Need to use this.getDisplayname() and this.getTypeRaw() for the Optional.orElse() logic
         return Objects.equals(name, that.getName()) &&
