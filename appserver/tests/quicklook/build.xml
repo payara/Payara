@@ -55,6 +55,14 @@
 		<javac includeantruntime="false" />
 	</presetdef>
 
+	<target name="cluster">
+		<ant dir="cluster/clustersetup" target="build"/>
+		<ant dir="cluster/helloworld" target="build"/>
+		<ant dir="cluster/clusterteardown" target="build"/>
+		<antcall target="runtest">
+			<param name="testng.xml" value="testng/testng_cluster.xml"/>
+		</antcall>
+    </target>
 	<target name="all_cluster">
 		<record name="${basedir}/allrun.output" action="start"/>
 		<antcall target="start-server-felix"/>
@@ -158,15 +166,15 @@
 		<antcall target="build-deploy-gd"/>
 
 		<antcall target="build-cluster"/>
-		
+
 		<antcall target="runtest">
 			<param name="testng.xml" value="testng/testng_gd.xml"/>
 			<param name="domain.name" value="${domain.name}"/>
 		</antcall>
-				
+
 		<antcall target="undeploy"/>
 		<antcall target="undeploy-gd"/>
-		
+
 		<antcall target="quicklook-summary"/>
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
@@ -288,6 +296,7 @@
 		<ant dir="ejb/slsbnicmt" target="build-deploy"/>
 		<ant dir="ejb/sfulnoi" target="build-deploy"/>
 		<ant dir="bean-validator/simple-bv-servlet" target="build-deploy"/>
+                <!-- this test never worked correctly, needs update to pom from ant build anyway -->
 		<!--<ant dir="weld/numberguess" target="build-deploy"/>-->
 		<!--<ant dir="weld/osgiweld" target="build-deploy"/>-->
 		<ant dir="weld/extensions" target="build-deploy"/>
@@ -338,7 +347,7 @@
              for the test to pass. We are waiting for RE to release a newer version.
 	<ant dir="web/jruby" target="undeploy"/>
         -->
-		<!--<ant dir="wsit/JaxwsFromWsdl" target="undeploy"/>-->
+		<ant dir="wsit/JaxwsFromWsdl" target="undeploy"/>
 		<ant dir="wsit/jsr109tester" target="undeploy"/>
 		<ant dir="security/appperms" target="undeploy"/>
 	</target>
@@ -371,12 +380,12 @@
 	<!-- Target is re-definted here as didn't want to specify ws.root property -->
 	<target  name="runtest" depends="initprops,setOSConditions,asenv-unix,asenv-windows">
 		<record name="${basedir}/runtestng.output" action="start"/>
-		
+
 		<echo message="=============Starting TestNG functional tests from ${testng.xml} ============"/>
 		<property name="hasTestNGXML" value="true"/>
 
 		<mkdir dir="${test.report}"/>
-		
+
 		<testng outputdir="${test.report}" classpathref="run.testng.classpath" haltOnFailure="true">
 			<jvmarg value="-Djava.compiler=NONE"/>
 			<jvmarg value="-Dhttp.host=${glassfish.http.host}"/>
@@ -388,7 +397,7 @@
 			<sysproperty key="BASEDIR" value="${basedir}"/>
 			<xmlfileset dir="." includes="${testng.xml}"/>
 		</testng>
-		
+
 		<record name="${basedir}/runtestng.output" action="stop"/>
 	</target>
 
@@ -433,7 +442,7 @@
 			<then>
 				<echo>perform the assertion</echo>
 				<sequential>
-					<property name="test.report.dir" 
+					<property name="test.report.dir"
                      value="${basedir}/test-output" />
 					<loadfile property="report.summary"
                      srcFile="${test.report.dir}/index.html" />
@@ -443,7 +452,7 @@
                           select="\3"
            />
 					<math result="passed.test.count.difference" datatype="int"
-                 operation="subtract" 
+                 operation="subtract"
                  operand1="${actual.passed.test.count}"
                  operand2="${expected.passed.test.count}" />
 					<propertyregex property="actual.lessthan.expected"
@@ -460,7 +469,7 @@
 
 
 	<!--
-    <target name="reportAll" depends="initprops">        
+    <target name="reportAll" depends="initprops">
         <echo message="Generating report at ${test.report}"/>
         <macrodef name="gen-report">
             <attribute name="name" />
