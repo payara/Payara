@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -120,7 +120,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
     */
     private volatile String doneSnapshot;
 
-    private boolean mostLoadInThisStackFrame;
+    private boolean mustLoadInThisStackFrame;
 
     /** streams opened by this loader */
     private final List<SentinelInputStream> streams = new CopyOnWriteArrayList<>();
@@ -382,8 +382,8 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
     }
 
     private AutoCloseable mustLoad() {
-        mostLoadInThisStackFrame = true;
-        return () -> mostLoadInThisStackFrame = false;
+        mustLoadInThisStackFrame = true;
+        return () -> mustLoadInThisStackFrame = false;
     }
 
     /**
@@ -983,7 +983,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         }
 
         boolean hasItem(String item, ASURLClassLoader classLoader) {
-            return classLoader.mostLoadInThisStackFrame || presenceCheck.test(item);
+            return classLoader.mustLoadInThisStackFrame || presenceCheck.test(item);
         }
 
           /**
