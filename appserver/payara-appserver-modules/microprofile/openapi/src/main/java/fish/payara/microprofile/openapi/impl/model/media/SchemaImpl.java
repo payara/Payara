@@ -50,7 +50,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeP
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -88,7 +88,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Integer minProperties;
     private List<String> required = new ArrayList<>();
     private SchemaType type;
-    private Map<String, Schema> properties = new HashMap<>();
+    private Map<String, Schema> properties = new LinkedHashMap<>();
     private String description;
     private String format;
     private String ref;
@@ -745,7 +745,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
         if (from.getProperties() != null && !from.getProperties().isEmpty()) {
             if (to.getProperties() == null) {
-                to.setProperties(new HashMap<>());
+                to.setProperties(new LinkedHashMap<>());
             }
             for (String key : from.getProperties().keySet()) {
                 if (!to.getProperties().containsKey(key)) {

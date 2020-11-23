@@ -39,14 +39,14 @@
  */
 package fish.payara.microprofile.openapi.impl.model.media;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 
 public class DiscriminatorImpl implements Discriminator {
 
     private String propertyName;
-    private Map<String, String> mapping = new HashMap<>();
+    private Map<String, String> mapping = new LinkedHashMap<>();
 
     @Override
     public String getPropertyName() {

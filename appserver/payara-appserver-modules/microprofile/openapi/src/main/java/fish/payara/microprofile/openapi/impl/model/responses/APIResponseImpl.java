@@ -48,7 +48,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyR
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.headers.Header;
@@ -60,10 +60,10 @@ import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIResponse {
 
     private String description;
-    private Map<String, Header> headers = new HashMap<>();
+    private Map<String, Header> headers = new LinkedHashMap<>();
     private Content content = new ContentImpl();
     private List<Content> contents = new ArrayList<>();
-    private Map<String, Link> links = new HashMap<>();
+    private Map<String, Link> links = new LinkedHashMap<>();
     private String ref;
     private String responseCode;
 

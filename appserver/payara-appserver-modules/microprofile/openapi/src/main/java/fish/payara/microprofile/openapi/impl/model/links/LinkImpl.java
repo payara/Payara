@@ -45,7 +45,7 @@ import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.links.Link;
@@ -56,7 +56,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
     private String operationRef;
     private String operationId;
-    private Map<String, Object> parameters = new HashMap<>();
+    private Map<String, Object> parameters = new LinkedHashMap<>();
     private Object requestBody;
     private String description;
     private String ref;

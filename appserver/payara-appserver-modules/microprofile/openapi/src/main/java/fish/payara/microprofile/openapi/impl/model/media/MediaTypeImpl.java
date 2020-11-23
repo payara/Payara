@@ -40,7 +40,7 @@
 package fish.payara.microprofile.openapi.impl.model.media;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.eclipse.microprofile.openapi.models.media.Encoding;
@@ -50,9 +50,9 @@ import org.eclipse.microprofile.openapi.models.media.Schema;
 public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaType {
 
     private Schema schema;
-    private Map<String, Example> examples = new HashMap<>();
+    private Map<String, Example> examples = new LinkedHashMap<>();
     private Object example;
-    private Map<String, Encoding> encoding = new HashMap<>();
+    private Map<String, Encoding> encoding = new LinkedHashMap<>();
 
     @Override
     public Schema getSchema() {

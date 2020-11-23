@@ -43,8 +43,7 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.eclipse.microprofile.openapi.models.media.Encoding;
@@ -53,7 +52,7 @@ import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
     private String contentType;
-    private Map<String, Header> headers = new HashMap<>();
+    private Map<String, Header> headers = new LinkedHashMap<>();
     private Style style;
     private Boolean explode;
     private Boolean allowReserved;

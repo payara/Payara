@@ -50,7 +50,7 @@ import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -74,7 +74,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
     protected List<Parameter> parameters = new ArrayList<>();
     protected RequestBody requestBody;
     protected APIResponses responses = new APIResponsesImpl();
-    protected Map<String, Callback> callbacks = new HashMap<>();
+    protected Map<String, Callback> callbacks = new LinkedHashMap<>();
     protected Boolean deprecated;
     protected List<SecurityRequirement> security = new ArrayList<>();
     protected List<Server> servers = new ArrayList<>();

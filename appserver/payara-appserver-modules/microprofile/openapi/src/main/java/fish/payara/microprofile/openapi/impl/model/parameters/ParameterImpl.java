@@ -48,7 +48,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyR
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.examples.Example;
@@ -72,7 +72,7 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
     private Boolean explode;
     private Boolean allowReserved;
     private Schema schema;
-    private Map<String, Example> examples = new HashMap<>();
+    private Map<String, Example> examples = new LinkedHashMap<>();
     private Object example;
     private Content content = new ContentImpl();
     private List<ContentImpl> contents = new ArrayList<>();

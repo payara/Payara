@@ -49,7 +49,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyR
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.examples.Example;
@@ -69,13 +69,13 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
     private Style style;
     private Boolean explode;
     private Schema schema;
-    private Map<String, Example> examples = new HashMap<>();
+    private Map<String, Example> examples = new LinkedHashMap<>();
     private Object example;
     private Content content = new ContentImpl();
     private List<ContentImpl> contents = new ArrayList<>();
 
     public static Map<String, Header> createInstances(AnnotationModel annotation, ApiContext context) {
-        Map<String, Header> map = new HashMap<>();
+        Map<String, Header> map = new LinkedHashMap<>();
         List<AnnotationModel> headers = annotation.getValue("headers", List.class);
         if (headers != null) {
             for (AnnotationModel header : headers) {
