@@ -146,6 +146,7 @@ public class JsonExporterGetTest {
     public void exportHistogram() {
         Histogram histogram = mock(Histogram.class);
         when(histogram.getCount()).thenReturn(2L);
+        when(histogram.getSum()).thenReturn(42L);
         Snapshot snapshot = mock(Snapshot.class);
         when(histogram.getSnapshot()).thenReturn(snapshot);
         when(snapshot.getMin()).thenReturn(-1624L);
@@ -168,6 +169,7 @@ public class JsonExporterGetTest {
     @Test
     public void exportTimer() {
         Timer timer = mock(Timer.class);
+        when(timer.getElapsedTime()).thenReturn(Duration.ofMillis(45678L));
         when(timer.getCount()).thenReturn(29382L);
         when(timer.getMeanRate()).thenReturn(12.185627192860734d);
         when(timer.getOneMinuteRate()).thenReturn(12.563d);
@@ -197,6 +199,8 @@ public class JsonExporterGetTest {
         SimpleTimer timer = mock(SimpleTimer.class);
         when(timer.getCount()).thenReturn(1L);
         when(timer.getElapsedTime()).thenReturn(Duration.ofMillis(12300000000L));
+        when(timer.getMaxTimeDuration()).thenReturn(Duration.ofMillis(3231000000L));
+        when(timer.getMinTimeDuration()).thenReturn(Duration.ofMillis(25600000L));
         export(new MetricID("simple_responseTime"), timer);
         assertOutputEqualsFile("SimpleTimer.json");
     }

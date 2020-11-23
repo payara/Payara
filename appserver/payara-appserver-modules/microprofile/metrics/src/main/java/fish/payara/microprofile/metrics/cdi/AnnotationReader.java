@@ -569,10 +569,6 @@ public final class AnnotationReader<T extends Annotation> {
                 .build();
     }
 
-    private static String emptyAsNull(String actual) {
-        return actual.isEmpty() ? null : actual;
-    }
-
     @Override
     public boolean equals(Object obj) {
         return obj instanceof AnnotationReader && annotationType == ((AnnotationReader<?>) obj).annotationType;

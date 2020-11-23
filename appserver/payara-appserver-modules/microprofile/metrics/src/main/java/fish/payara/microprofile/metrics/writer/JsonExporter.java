@@ -46,6 +46,7 @@ import static java.util.Collections.singletonMap;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -157,6 +158,7 @@ public class JsonExporter implements MetricExporter {
     public void export(MetricID metricID, Histogram histogram, Metadata metadata) {
         completeOrUpdateGroup(metricID, metadata);
         appendMember(metricID, "count", histogram.getCount());
+        appendMember(metricID, "sum", histogram.getSum());
         exportSampling(metricID, histogram);
     }
 
@@ -193,11 +195,18 @@ public class JsonExporter implements MetricExporter {
         completeOrUpdateGroup(metricID, metadata);
         appendMember(metricID, "count", timer.getCount());
         appendMember(metricID, "elapsedTime", timer.getElapsedTime().toMillis());
+        appendMember(metricID, "maxTimeDuration", millisOrNull(timer.getMaxTimeDuration()));
+        appendMember(metricID, "minTimeDuration", millisOrNull(timer.getMinTimeDuration()));
+    }
+
+    private static Long millisOrNull(Duration d) {
+        return d == null ? null : d.toMillis();
     }
 
     @Override
     public void export(MetricID metricID, Timer timer, Metadata metadata) {
         completeOrUpdateGroup(metricID, metadata);
+        appendMember(metricID, "elapsedTime", millisOrNull(timer.getElapsedTime()));
         exportMetered(metricID, timer);
         exportSampling(metricID, timer);
     }
@@ -304,6 +313,8 @@ public class JsonExporter implements MetricExporter {
             target.add(name, (BigDecimal) value);
         } else if (value instanceof BigInteger) {
             target.add(name, (BigInteger) value);
+        } else if (value == null) {
+            target.addNull(name);
         } else {
             target.add(name, value.longValue());
         }

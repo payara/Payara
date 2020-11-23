@@ -178,14 +178,22 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public <T extends Number> Gauge<T> gauge(Metadata metadata, Supplier<T> supplier, Tag... tags) {
-        Gauge<T> gauge = () -> supplier.get();
-        return findMetricOrCreate(metadata, GAUGE, gauge, tags);
+        return findMetricOrCreate(metadata, GAUGE, createGauge(supplier), tags);
     }
 
     @Override
     public <T extends Number> Gauge<T> gauge(String name, Supplier<T> supplier, Tag... tags) {
-        Gauge<T> gauge = () -> supplier.get();
-        return findMetricOrCreate(name, GAUGE, gauge, tags);
+        return findMetricOrCreate(name, GAUGE, createGauge(supplier), tags);
+    }
+
+    /**
+     * This is a non-standard feature that the {@link Supplier} passed to a {@code gauge}-method can implement
+     * {@link Gauge} as well in which case the passed instance is not wrapped in another lambda to get to {@link Gauge}
+     * interface.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T extends Number> Gauge<T> createGauge(Supplier<T> supplier) {
+        return supplier instanceof Gauge ? (Gauge<T>) supplier : () -> supplier.get();
     }
 
     @Override
@@ -675,7 +683,7 @@ public class MetricRegistryImpl implements MetricRegistry {
             return null;
         }
         Metric metric = family.get(metricID);
-        if (!ofType.isAssignableFrom(metric.getClass())) {
+        if (metric != null && !ofType.isAssignableFrom(metric.getClass())) {
             throw new IllegalArgumentException("Invalid metric type : " + ofType);
         }
         return (T) metric;

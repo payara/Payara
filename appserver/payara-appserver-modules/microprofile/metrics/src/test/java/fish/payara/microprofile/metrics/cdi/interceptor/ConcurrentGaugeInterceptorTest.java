@@ -56,6 +56,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.interceptor.InvocationContext;
+
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,6 +156,19 @@ public class ConcurrentGaugeInterceptorTest implements Clock {
         assertGaugeProbesThreads(0); // this tries to register the counter again, but it gets reused so we start at 2
     }
 
+    public static class Bean {
+
+        @ConcurrentGauge
+        public Bean() {
+
+        }
+    }
+
+    @Test
+    public void concurrentGaugeConstructorNoAttributes() throws Exception {
+        assertGaugeProbesThreads(0, Bean.class, Bean.class.getConstructor());
+    }
+
     private void assertGaugeProbesThreads() throws Exception {
         assertGaugeProbesThreads(0);
     }
@@ -160,6 +176,11 @@ public class ConcurrentGaugeInterceptorTest implements Clock {
     private void assertGaugeProbesThreads(long expectedStartCount) throws Exception {
         Method element = TestUtils.getTestMethod();
         Class<?> bean = getClass();
+        assertGaugeProbesThreads(expectedStartCount, bean, element);
+    }
+
+    private <E extends Member & AnnotatedElement> void assertGaugeProbesThreads(long expectedStartCount, Class<?> bean, E element)
+            throws Exception, InterruptedException {
         AnnotationReader<ConcurrentGauge> reader = AnnotationReader.CONCURRENT_GAUGE;
         org.eclipse.microprofile.metrics.ConcurrentGauge gauge = MetricUtils.getOrRegisterByMetadataAndTags(
                 registry, org.eclipse.microprofile.metrics.ConcurrentGauge.class,

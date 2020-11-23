@@ -74,9 +74,20 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.metrics.Tag;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
+
+    private static final String GLOBAL_TAGS_VARIABLE = "mp.metrics.tags";
+    private static final String GLOBAL_TAG_MALFORMED_EXCEPTION = "Malformed list of Global Tags. Tag names "
+            + "must match the following regex [a-zA-Z_][a-zA-Z0-9_]*."
+            + " Global Tag values must not be empty."
+            + " Global Tag values MUST escape equal signs `=` and commas `,`"
+            + " with a backslash `\\` ";
+
     private static final Logger LOG = Logger.getLogger(MetricsResource.class.getName());
     private static final String APPLICATION_WILDCARD = "application/*";
     private static final Pattern PATTERN_Q_PART = Pattern.compile("\\s*q\\s*=\\s*(.+)");
@@ -144,20 +155,50 @@ public class MetricsResource extends HttpServlet {
         if (GET.equalsIgnoreCase(method)) {
             if (APPLICATION_JSON.equals(contentType)) {
                 return new MetricsWriterImpl(new JsonExporter(writer, Mode.GET, true),
-                    service::getAllRegistryNames, service::getRegistry);
+                    service::getAllRegistryNames, service::getRegistry, getGlobalTags());
             }
             if (TEXT_PLAIN.equals(contentType)) {
                 return new MetricsWriterImpl(new OpenMetricsExporter(writer),
-                    service::getAllRegistryNames, service::getRegistry);
+                    service::getAllRegistryNames, service::getRegistry, getGlobalTags());
             }
         }
         if (OPTIONS.equalsIgnoreCase(method)) {
             if (APPLICATION_JSON.equals(contentType)) {
                 return new MetricsWriterImpl(new JsonExporter(writer, Mode.OPTIONS, true),
-                        service::getAllRegistryNames, service::getRegistry);
+                        service::getAllRegistryNames, service::getRegistry, getGlobalTags());
             }
         }
         return null;
+    }
+
+    private static Tag[] getGlobalTags() {
+        Config config = ConfigProvider.getConfig();
+        Optional<String> globalTagsProperty = config.getOptionalValue(GLOBAL_TAGS_VARIABLE, String.class);
+        if (!globalTagsProperty.isPresent()) {
+            return new Tag[0];
+        }
+        String globalTags = globalTagsProperty.get();
+        if (globalTags == null || globalTags.length() == 0) {
+            return new Tag[0];
+        }
+        String[] kvPairs = globalTags.split("(?<!\\\\),");
+        Tag[] tags = new Tag[kvPairs.length];
+        for (int i = 0; i < kvPairs.length; i++) {
+            String kvString = kvPairs[i];
+            if (kvString.length() == 0) {
+                throw new IllegalArgumentException(GLOBAL_TAG_MALFORMED_EXCEPTION);
+            }
+            String[] keyValueSplit = kvString.split("(?<!\\\\)=");
+            if (keyValueSplit.length != 2 || keyValueSplit[0].length() == 0 || keyValueSplit[1].length() == 0) {
+                throw new IllegalArgumentException(GLOBAL_TAG_MALFORMED_EXCEPTION);
+            }
+            String key = keyValueSplit[0];
+            String value = keyValueSplit[1];
+            value = value.replace("\\,", ",");
+            value = value.replace("\\=", "=");
+            tags[i] = new Tag(key, value);
+        }
+        return tags;
     }
 
     private static String getContentType(HttpServletRequest request, HttpServletResponse response) throws IOException {
