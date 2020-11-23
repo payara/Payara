@@ -53,6 +53,7 @@ import java.util.logging.Level;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonWriter;
 import javax.json.stream.JsonGenerator;
@@ -248,7 +249,10 @@ public class JsonExporter implements MetricExporter {
     private void completeScope() {
         completeGroup(null, null);
         if (scopeObj != null) {
-            documentObj.add(scope.getName(), scopeObj.build());
+            JsonObject obj = scopeObj.build();
+            if (obj.size() > 0) {
+                documentObj.add(scope.getName(), obj);
+            }
         }
     }
 

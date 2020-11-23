@@ -56,8 +56,6 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricType;
-import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;

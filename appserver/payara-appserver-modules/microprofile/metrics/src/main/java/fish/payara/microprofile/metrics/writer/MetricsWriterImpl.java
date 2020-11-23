@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.metrics.writer;
 
+import static java.lang.System.arraycopy;
 import static java.util.Arrays.asList;
 
 import java.io.IOException;
@@ -157,8 +158,8 @@ public class MetricsWriterImpl implements MetricsWriter {
             if (globalTags.length > 0) {
                 Tag[]  tagsWithoutGlobal = metricID.getTagsAsArray();
                 Tag[] tags = new Tag[tagsWithoutGlobal.length +  globalTags.length];
-                System.arraycopy(globalTags, 0, tags, 0, globalTags.length);
-                System.arraycopy(tagsWithoutGlobal, 0, tags, globalTags.length, tagsWithoutGlobal.length);
+                arraycopy(globalTags, 0, tags, 0, globalTags.length);
+                arraycopy(tagsWithoutGlobal, 0, tags, globalTags.length, tagsWithoutGlobal.length);
                 metricID = new MetricID(metricName, tags);
             }
             if (addAppTag) {
