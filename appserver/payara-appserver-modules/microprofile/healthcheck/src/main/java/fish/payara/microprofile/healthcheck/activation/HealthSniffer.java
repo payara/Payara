@@ -55,7 +55,6 @@ public class HealthSniffer extends MicroProfileSniffer {
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return new Class[] {
             // Search for Health annotations
-            org.eclipse.microprofile.health.Health.class,
             org.eclipse.microprofile.health.Readiness.class,
             org.eclipse.microprofile.health.Liveness.class,
 
