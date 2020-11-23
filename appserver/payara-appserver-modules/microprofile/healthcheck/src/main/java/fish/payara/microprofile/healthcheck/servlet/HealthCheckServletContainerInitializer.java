@@ -45,7 +45,6 @@ import static org.glassfish.common.util.StringHelper.isEmpty;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContainerInitializer;
@@ -56,7 +55,7 @@ import javax.servlet.ServletSecurityElement;
 
 import org.glassfish.internal.api.Globals;
 
-import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
+import fish.payara.microprofile.healthcheck.config.MicroprofileHealthCheckConfiguration;
 
 /**
  * Servlet Container Initializer that registers the HealthCheckServlet, as well
@@ -66,15 +65,13 @@ import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfigurati
  */
 public class HealthCheckServletContainerInitializer implements ServletContainerInitializer {
 
-    private static final Logger LOGGER = Logger.getLogger(HealthCheckServletContainerInitializer.class.getName());
-
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
         // Check if this context is the root one ("/")
         if (ctx.getContextPath().isEmpty()) {
             // Check if there is already a servlet for healthcheck
             Map<String, ? extends ServletRegistration> registrations = ctx.getServletRegistrations();
-            MetricsHealthCheckConfiguration configuration = Globals.getDefaultHabitat().getService(MetricsHealthCheckConfiguration.class);
+            MicroprofileHealthCheckConfiguration configuration = Globals.getDefaultHabitat().getService(MicroprofileHealthCheckConfiguration.class);
 
             if (!Boolean.parseBoolean(configuration.getEnabled())) {
                 return; //MP Healthcheck disabled
