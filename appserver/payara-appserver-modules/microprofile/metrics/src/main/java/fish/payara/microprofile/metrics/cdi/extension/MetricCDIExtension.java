@@ -200,37 +200,6 @@ public class MetricCDIExtension<E extends Member & AnnotatedElement> implements 
         }
     }
 
-    /*
-    <T extends Metric> void filterMetricsProducer(@Observes ProcessProducer<?, T> processProducer) {
-        Type type = processProducer.getAnnotatedMember().getDeclaringType().getBaseType();
-        if (!type.equals(MetricProducer.class)) {
-            org.eclipse.microprofile.metrics.annotation.Metric metric
-                    = processProducer.getAnnotatedMember().getAnnotation(org.eclipse.microprofile.metrics.annotation.Metric.class);
-
-            if (metric != null) {
-                producerMetrics.put(processProducer.getProducer(), processProducer.getAnnotatedMember());
-            }
-        }
-    }
-
-    void vetoMetricsProducer(@Observes ProcessBeanAttributes<?> processBeanAttributes, BeanManager manager) {
-        Type declaringType;
-        if (processBeanAttributes.getAnnotated() instanceof AnnotatedMember) {
-            AnnotatedMember<?> annotatedMember = (AnnotatedMember<?>) processBeanAttributes.getAnnotated();
-            declaringType = annotatedMember.getDeclaringType().getBaseType();
-        } else {
-            declaringType = processBeanAttributes.getAnnotated().getBaseType();
-        }
-
-        if (declaringType != MetricProducer.class
-                && processBeanAttributes.getAnnotated().isAnnotationPresent(org.eclipse.microprofile.metrics.annotation.Metric.class)
-                && processBeanAttributes.getAnnotated().isAnnotationPresent(Produces.class)
-                && processBeanAttributes.getBeanAttributes().getTypes().contains(Metric.class)) {
-            processBeanAttributes.veto();
-        }
-    }
-    */
-
     void validationError(@Observes AfterBeanDiscovery afterBeanDiscovery){
         validationMessages.forEach(message -> afterBeanDiscovery.addDefinitionError(new IllegalStateException(message)));
         annotatedElements.clear();

@@ -56,6 +56,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import javax.enterprise.inject.Stereotype;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedParameter;
@@ -674,6 +675,11 @@ public final class AnnotationReader<T extends Annotation> {
         }
         if (bean.isAnnotationPresent(annotationType)) {
             return onClass.apply(bean.getAnnotation(annotationType));
+        }
+        for (Annotation a : bean.getAnnotations()) {
+            if (a.annotationType().isAnnotationPresent(Stereotype.class) && a.annotationType().isAnnotationPresent(annotationType)) {
+                return onClass.apply(a.annotationType().getAnnotation(annotationType));
+            }
         }
         if (bean.getSuperclass() != null) {
             return compute(bean.getSuperclass(), member, element, onElement, onClass);
