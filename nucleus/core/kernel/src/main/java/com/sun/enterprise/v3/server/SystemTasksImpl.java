@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -59,6 +61,8 @@ import com.sun.enterprise.util.net.NetUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.universal.io.SmartFile;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import java.util.ArrayList;
 
 import org.jvnet.hk2.annotations.Optional;
 import org.glassfish.hk2.api.PostConstruct;
@@ -74,6 +78,7 @@ import java.util.regex.Matcher;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.config.types.Property;
 
 /**
  * Init run level service to take care of vm related tasks.
@@ -107,7 +112,7 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
         setSystemPropertiesFromEnv();
         setSystemPropertiesFromDomainXml();
         resolveJavaConfig();
-        _logger.fine("SystemTasks: loaded server named: " + server.getName());
+        _logger.log(Level.FINE, "SystemTasks: loaded server named: {0}", server.getName());
     }
 
     @Override
@@ -120,14 +125,11 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
             String pidString = getPidString();
             FileUtils.writeStringToFile(pidString, pidFile);
             FileUtils.writeStringToFile(pidString, pidFileCopy);
-        }
-        catch (PidException pe) {
+        } catch (PidException pe) {
             _logger.warning(pe.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.warning(strings.get("internal_error", e));
-        }
-        finally {
+        } finally {
             if (pidFile != null) {
                 FileUtils.deleteOnExit(pidFile);
             }
@@ -157,8 +159,7 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
             hostname = NetUtils.getCanonicalHostName();
 
 
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             if (_logger != null) {
                 _logger.log(Level.SEVERE, KernelLoggerInfo.exceptionHostname, ex);
             }
@@ -173,7 +174,8 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
         // 0. server
         // 1. cluster
         // 2. <server>-config or <cluster>-config
-        // 3. domain
+        // 3. deployment-group
+        // 4. domain
         // so we need to add System Properties in *reverse order* to get the
         // right precedence.
 
@@ -181,7 +183,11 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
         List<SystemProperty> configSPList = getConfigSystemProperties();
         Cluster cluster = server.getCluster();
         List<SystemProperty> clusterSPList = null;
-
+        List<DeploymentGroup> depGroups = server.getDeploymentGroup();
+        List<Property> depGroupProperties = new ArrayList<>();
+        for (DeploymentGroup group : depGroups) {
+            depGroupProperties.addAll(group.getProperty());
+        }
 
         if (cluster != null) {
             clusterSPList = cluster.getSystemProperty();
@@ -190,10 +196,9 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
         }
         List<SystemProperty> serverSPList = server.getSystemProperty();
 
-        setSystemProperties(
-                domainSPList);
-        setSystemProperties(
-                configSPList);
+        setSystemProperties(domainSPList);
+        setProperties(depGroupProperties);
+        setSystemProperties(configSPList);
 
 
         if (clusterSPList != null) {
@@ -236,7 +241,7 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
                     setSystemProperty(m.group(1), value);
 
                     if (_logger.isLoggable(Level.FINE)) {
-                        _logger.fine("Setting " + m.group(1) + " = " + value);
+                        _logger.log(Level.FINE, "Setting {0} = {1}", new Object[]{m.group(1), value});
                     }
                 }
             }
@@ -250,6 +255,15 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
 
             if (ok(name)) {
                 setSystemProperty(name, value);
+            }
+        }
+    }
+    
+    private void setProperties(List<Property> propList) {
+        for (Property prop: propList) {
+            String name = prop.getName();
+            if (ok(name)) {
+                setSystemProperty(name, prop.getValue());
             }
         }
     }

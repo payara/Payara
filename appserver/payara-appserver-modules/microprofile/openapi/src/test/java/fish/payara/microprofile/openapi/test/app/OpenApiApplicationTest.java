@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,30 +39,27 @@
  */
 package fish.payara.microprofile.openapi.test.app;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
+import fish.payara.microprofile.openapi.spec.OpenApiValidator;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.toJson;
-import static org.junit.Assert.assertNotNull;
-
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import fish.payara.microprofile.openapi.resource.rule.ApplicationProcessedDocument;
-import fish.payara.microprofile.openapi.spec.OpenApiValidator;
-
 public abstract class OpenApiApplicationTest {
 
-    private OpenAPI document;
-    private ObjectNode jsonDocument;
+    protected OpenAPI document;
+    protected ObjectNode jsonDocument;
 
     @Before
     public void createDocument() {
         Class<?> filter = filterClass();
         document = filter == null 
-                ? ApplicationProcessedDocument.createDocument(getClass())
-                : ApplicationProcessedDocument.createDocument(filterClass(), getClass(), filterClass());
+                ? ApplicationProcessedDocument.createDocument(getClass(), TestApplication.class)
+                : ApplicationProcessedDocument.createDocument(filterClass(), getClass(), TestApplication.class, filterClass());
         jsonDocument = toJson(document);
     }
 

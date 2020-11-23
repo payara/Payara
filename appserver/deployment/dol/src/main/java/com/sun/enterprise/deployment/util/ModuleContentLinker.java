@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.util;
 
@@ -56,7 +57,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -65,12 +65,12 @@ import java.util.logging.Level;
  */
 public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentVisitor {
 
-    // For standalone modules, this is either a directory or a jar file.
-    // For .ears, this is the directory used by the j2ee classloader.
+    /** For standalone modules, this is either a directory or a jar file.
+     * For .ears, this is the directory used by the Jakarta EE classloader. */
     protected ReadableArchive rootLocation_;
     
-    // records whether URL assignments should be calculated even if the URLs
-    // already have values. 
+    /** records whether URL assignments should be calculated even if the URLs
+     *  already have values. */
     private boolean forceWSDLURLs;
 
     public ModuleContentLinker(ReadableArchive rootLocation, boolean forceWSDLURLs) {
@@ -85,9 +85,9 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
     protected ModuleContentLinker() {
     }
 
+    @Override
     public void accept (BundleDescriptor bundle) {
-        for (Iterator<WebService> itr = bundle.getWebServices().getWebServices().iterator(); itr.hasNext();) {
-            WebService aWebService = itr.next();
+        for (WebService aWebService : bundle.getWebServices().getWebServices()) {
             accept(aWebService);
         }
 
@@ -154,10 +154,10 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
         return url;
     }
 
+    @Override
     public void accept(ServiceReferenceDescriptor serviceRef) {
         try {
-            ModuleDescriptor moduleDesc = 
-                serviceRef.getBundleDescriptor().getModuleDescriptor();
+            ModuleDescriptor moduleDesc = serviceRef.getBundleDescriptor().getModuleDescriptor();
 
             if( serviceRef.hasWsdlFile() ) {
                 
@@ -205,8 +205,8 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
 
     public void accept(WebService webService) {
         try {
-            ModuleDescriptor moduleDesc =
-                webService.getBundleDescriptor().getModuleDescriptor();
+            ModuleDescriptor moduleDesc = webService.getBundleDescriptor().getModuleDescriptor();
+            
             // If the web service has a WSDL file, assign its URL if it is not
             // already assigned or if URLs are forced to be assigned.  
             if( webService.hasWsdlFile() && (webService.getWsdlFileUrl()==null || forceWSDLURLs) ) {

@@ -74,7 +74,7 @@ public class EjbContext extends ResourceContainerContextImpl {
     private Method[] methods;
     private boolean inherited;
     private ArrayList<PostProcessInfo> postProcessInfos =
-            new ArrayList<PostProcessInfo>();
+            new ArrayList<>();
 
     public EjbContext(EjbDescriptor currentEjb, Class ejbClass) {
         super((Descriptor) currentEjb); // FIXME by srini - can we extract intf to avoid this
@@ -154,13 +154,13 @@ public class EjbContext extends ResourceContainerContextImpl {
             getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
         if(serviceSideHandlerChain) {
             EjbDescriptor[] ejbs = getDescriptor().getEjbBundleDescriptor().getEjbByClassName(declaringClass.getName());
-            List<WebServiceEndpoint> result = new ArrayList<WebServiceEndpoint>();
+            List<WebServiceEndpoint> result = new ArrayList<>();
             for (EjbDescriptor ejb : ejbs) {
                 result.addAll(getDescriptor().getEjbBundleDescriptor().getWebServices().getEndpointsImplementedBy(ejb));
             }
             return(result.toArray(new HandlerChainContainer[result.size()]));
         } else {
-            List<ServiceReferenceDescriptor> result = new ArrayList<ServiceReferenceDescriptor>();
+            List<ServiceReferenceDescriptor> result = new ArrayList<>();
             result.addAll(getDescriptor().getEjbBundleDescriptor().getEjbServiceReferenceDescriptors());
             return(result.toArray(new HandlerChainContainer[result.size()]));
         }

@@ -50,6 +50,11 @@ import fish.payara.microprofile.metrics.writer.MetricsWriterImpl;
 import fish.payara.microprofile.metrics.writer.OpenMetricsExporter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Optional;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static fish.payara.microprofile.Constants.EMPTY_STRING;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -72,8 +77,9 @@ import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.glassfish.internal.api.Globals;
 
 public class MetricsResource extends HttpServlet {
-
+    private static final Logger LOG = Logger.getLogger(MetricsResource.class.getName());
     private static final String APPLICATION_WILDCARD = "application/*";
+    private static final Pattern PATTERN_Q_PART = Pattern.compile("\\s*q\\s*=\\s*(.+)");
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>OPTIONS</code>
@@ -162,38 +168,15 @@ public class MetricsResource extends HttpServlet {
         }
         switch (method) {
         case GET:
-            //application/json;q=0.1,text/plain;q=0.9
+            Optional<String> selectedFormat = parseMetricsAcceptHeader(accept);
 
-            String[] acceptFormats = accept.split(",");
-            float qJsonValue = 0;
-            float qTextFormat = 0;
-            for (String format : acceptFormats) {
-                if (format.contains(TEXT_PLAIN) || format.contains(MediaType.WILDCARD) || format.contains("text/*")) {
-                    String[] splitTextFormat = format.split(";");
-                    if (splitTextFormat.length == 2) {
-                        qTextFormat = Float.parseFloat(splitTextFormat[1].substring(2));
-                    } else {
-                        qTextFormat = 1;
-                    }
-                } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
-                    String[] splitJsonFormat = format.split(";");
-                    if (splitJsonFormat.length == 2) {
-                        qJsonValue = Float.parseFloat(splitJsonFormat[1].substring(2));
-                    } else {
-                        qJsonValue = 1;
-                    }
-                } // else { no other formats supported by Payara, ignored }
+            if (selectedFormat.isPresent()) {
+                return selectedFormat.get();
             }
 
-            //if neither JSON or plain text are supported
-            if (qJsonValue == 0 && qTextFormat == 0) {
-                response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
-                return null;
-            }
-            if (qJsonValue > qTextFormat) {
-                return MediaType.APPLICATION_JSON;
-            }
-            return MediaType.TEXT_PLAIN;
+            response.sendError(SC_NOT_ACCEPTABLE, String.format("[%s] not acceptable", accept));
+            return null;
+
         case OPTIONS:
             if (accept.contains(APPLICATION_JSON) || accept.contains(APPLICATION_WILDCARD)) {
                 return APPLICATION_JSON;
@@ -203,7 +186,51 @@ public class MetricsResource extends HttpServlet {
         default:
             response.sendError(SC_METHOD_NOT_ALLOWED, String.format("HTTP method [%s] not allowed", method));
         }
+
         return null;
+    }
+
+    static Optional<String> parseMetricsAcceptHeader(String accept) {
+        String[] acceptFormats = accept.split(",");
+        double qJsonValue = 0;
+        double qTextFormat = 0;
+        for (String format : acceptFormats) {
+            if (format.contains(TEXT_PLAIN) || format.contains(MediaType.WILDCARD) || format.contains("text/*")) {
+                qTextFormat = parseQValue(format);
+            } else if (format.contains(APPLICATION_JSON) || format.contains(APPLICATION_WILDCARD)) {
+                qJsonValue = parseQValue(format);
+            } // else { no other formats supported by Payara, ignored }
+        }
+
+        // if neither JSON or plain text are supported
+        if (qJsonValue == 0 && qTextFormat == 0) {
+            return Optional.empty();
+        }
+        if (qJsonValue > qTextFormat) {
+            return Optional.of(MediaType.APPLICATION_JSON);
+        }
+        return Optional.of(MediaType.TEXT_PLAIN);
+    }
+
+    private static double parseQValue(final String format) {
+        return Stream.of(format.split(";")).skip(1)
+                .map(PATTERN_Q_PART::matcher)
+                .filter(Matcher::find)
+                .mapToDouble(m -> toDouble(m.group(1)))
+                .findFirst()
+                .orElse(1);
+    }
+
+    private static double toDouble(final String text) {
+        try {
+            if (text.startsWith(".")) {
+                return Double.parseDouble("0" + text);
+            }
+            return Double.parseDouble(text);
+        } catch (final NumberFormatException e) {
+            LOG.warning(() -> "Invalid q value in " + ACCEPT + " header: " + text);
+            return 0f;
+        }
     }
 
     /**

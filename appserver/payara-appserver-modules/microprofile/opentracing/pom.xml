@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.7-SNAPSHOT</version>
     </parent>
 
     <artifactId>microprofile-opentracing</artifactId>
@@ -94,6 +94,11 @@ holder.
             <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-api</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

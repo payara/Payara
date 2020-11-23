@@ -1,7 +1,7 @@
 <!--
   ~    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+  ~    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~    The contents of this file are subject to the terms of either the GNU
   ~    General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.7-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -329,11 +329,6 @@
                 <version>${jakarta.transaction-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.transaction.cdi</groupId>
-                <artifactId>jakarta.transaction.cdi-api</artifactId>
-                <version>${jakarta.transaction.cdi-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.xml.rpc</groupId>
                 <artifactId>jakarta.xml.rpc-api</artifactId>
                 <version>${jakarta.xml.rpc-api.version}</version>
@@ -486,6 +481,11 @@
             <dependency>
                 <groupId>io.opentracing</groupId>
                 <artifactId>opentracing-api</artifactId>
+                <version>${opentracing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-util</artifactId>
                 <version>${opentracing.version}</version>
             </dependency>
 
@@ -818,4 +818,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

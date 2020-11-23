@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,12 +37,12 @@
  */
 package fish.payara.nucleus.notification.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
+
 import javax.inject.Inject;
 
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import com.sun.enterprise.util.SystemPropertyConstants;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -60,6 +60,8 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+
+import fish.payara.internal.notification.admin.NotificationServiceConfiguration;
 
 /**
  * Admin command to set notification services configuration
@@ -141,7 +143,7 @@ public class SetNotificationConfiguration implements AdminCommand {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        inv = runner.getCommandInvocation("notification-log-configure", subReport, context.getSubject());
+        inv = runner.getCommandInvocation("set-log-notifier-configuration", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());

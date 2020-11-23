@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,31 +39,47 @@
  */
 package fish.payara.microprofile.openapi.impl.model.responses;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.microprofile.openapi.models.headers.Header;
-import org.eclipse.microprofile.openapi.models.links.Link;
-import org.eclipse.microprofile.openapi.models.media.Content;
-import org.eclipse.microprofile.openapi.models.media.Schema;
-import org.eclipse.microprofile.openapi.models.responses.APIResponse;
-
+import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.eclipse.microprofile.openapi.models.headers.Header;
+import org.eclipse.microprofile.openapi.models.links.Link;
+import org.eclipse.microprofile.openapi.models.media.Content;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIResponse {
 
     private String description;
     private Map<String, Header> headers = new HashMap<>();
     private Content content = new ContentImpl();
+    private List<Content> contents = new ArrayList<>();
     private Map<String, Link> links = new HashMap<>();
     private String ref;
+    private String responseCode;
+
+    public static APIResponseImpl createInstance(AnnotationModel annotation, ApiContext context) {
+        APIResponseImpl from = new APIResponseImpl();
+        from.setDescription(annotation.getValue("description", String.class));
+        from.getHeaders().putAll(HeaderImpl.createInstances(annotation, context));
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
+        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks());
+        String ref = annotation.getValue("ref", String.class);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+        }
+        from.setResponseCode(annotation.getValue("responseCode", String.class));
+        return from;
+    }
 
     @Override
     public String getDescription() {
@@ -144,32 +160,69 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
         this.ref = ref;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.responses.APIResponse from, APIResponse to,
-            boolean override, Map<String, Schema> currentSchemas) {
-        if (isAnnotationNull(from)) {
+    public String getResponseCode() {
+        return responseCode;
+    }
+
+    public void setResponseCode(String responseCode) {
+        this.responseCode = responseCode;
+    }
+
+    public List<Content> getContents() {
+        return contents;
+    }
+
+    public void setContents(List<Content> contents) {
+        this.contents = contents;
+    }
+
+    public static void merge(APIResponse from, APIResponse to,
+            boolean override, ApiContext context) {
+        if (from == null) {
             return;
         }
-        if (from.ref() != null && !from.ref().isEmpty()) {
-            applyReference(to, from.ref());
+        if (from.getRef() != null && !from.getRef().isEmpty()) {
+            applyReference(to, from.getRef());
             return;
         }
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        if (from.content() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.media.Content content : from.content()) {
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        if (from.getContent() != null) {
+            if (to.getContent() == null) {
+                to.setContent(new ContentImpl());
+            }
+            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
+        }
+        if (from instanceof APIResponseImpl) {
+            APIResponseImpl fromImpl = (APIResponseImpl) from;
+            if (fromImpl.getContents() != null) {
                 if (to.getContent() == null) {
                     to.setContent(new ContentImpl());
                 }
-                ContentImpl.merge(content, to.getContent(), override, currentSchemas);
+                for (Content content : fromImpl.getContents()) {
+                    ContentImpl.merge((ContentImpl)content, to.getContent(), override, context);
+                }
             }
         }
-        if (from.headers() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.headers.Header header : from.headers()) {
-                HeaderImpl.merge(header, to.getHeaders(), override, currentSchemas);
+        if (from.getContent() != null) {
+            if (to.getContent() == null) {
+                to.setContent(new ContentImpl());
+            }
+            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
+        }
+        if (from.getHeaders()!= null) {
+            for (String headerName : from.getHeaders().keySet()) {
+                HeaderImpl.merge(
+                        headerName,
+                        from.getHeaders().get(headerName),
+                        to.getHeaders(),
+                        override,
+                        context
+                );
             }
         }
-        if (from.links() != null) {
-            for (org.eclipse.microprofile.openapi.annotations.links.Link link : from.links()) {
-                LinkImpl.merge(link, to.getLinks(), override);
+        if (from.getLinks() != null) {
+            for (String linkName : from.getLinks().keySet()) {
+                LinkImpl.merge(linkName, from.getLinks().get(linkName), to.getLinks(), override);
             }
         }
     }

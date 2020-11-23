@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,14 +39,12 @@
  */
 package fish.payara.microprofile.openapi.impl.model.info;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isAnnotationNull;
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-
 import org.eclipse.microprofile.openapi.models.info.Contact;
 import org.eclipse.microprofile.openapi.models.info.Info;
 import org.eclipse.microprofile.openapi.models.info.License;
-
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class InfoImpl extends ExtensibleImpl<Info> implements Info {
 
@@ -56,6 +54,23 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
     private Contact contact;
     private License license;
     private String version;
+
+    public static Info createInstance(AnnotationModel annotation) {
+        Info from = new InfoImpl();
+        from.setTitle(annotation.getValue("title", String.class));
+        from.setDescription(annotation.getValue("description", String.class));
+        from.setTermsOfService(annotation.getValue("termsOfService", String.class));
+        AnnotationModel contact = annotation.getValue("contact", AnnotationModel.class);
+        if (contact != null) {
+            from.setContact(ContactImpl.createInstance(contact));
+        }
+        AnnotationModel license = annotation.getValue("license", AnnotationModel.class);
+        if (license != null) {
+            from.setLicense(LicenseImpl.createInstance(license));
+        }
+        from.setVersion(annotation.getValue("version", String.class));
+        return from;
+    }
 
     @Override
     public String getTitle() {
@@ -117,25 +132,25 @@ public class InfoImpl extends ExtensibleImpl<Info> implements Info {
         this.version = version;
     }
 
-    public static void merge(org.eclipse.microprofile.openapi.annotations.info.Info from, Info to, boolean override) {
-        if (isAnnotationNull(from)) {
+    public static void merge(Info from, Info to, boolean override) {
+        if (from == null) {
             return;
         }
-        to.setTitle(mergeProperty(to.getTitle(), from.title(), override));
-        to.setVersion(mergeProperty(to.getVersion(), from.version(), override));
-        to.setDescription(mergeProperty(to.getDescription(), from.description(), override));
-        to.setTermsOfService(mergeProperty(to.getTermsOfService(), from.termsOfService(), override));
-        if (!isAnnotationNull(from.license())) {
+        to.setTitle(mergeProperty(to.getTitle(), from.getTitle(), override));
+        to.setVersion(mergeProperty(to.getVersion(), from.getVersion(), override));
+        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
+        to.setTermsOfService(mergeProperty(to.getTermsOfService(), from.getTermsOfService(), override));
+        if (from.getLicense() != null) {
             if (to.getLicense() == null) {
                 to.setLicense(new LicenseImpl());
             }
-            LicenseImpl.merge(from.license(), to.getLicense(), override);
+            LicenseImpl.merge(from.getLicense(), to.getLicense(), override);
         }
-        if (!isAnnotationNull(from.contact())) {
+        if (from.getContact() != null) {
             if (to.getContact() == null) {
                 to.setContact(new ContactImpl());
             }
-            ContactImpl.merge(from.contact(), to.getContact(), override);
+            ContactImpl.merge(from.getContact(), to.getContact(), override);
         }
     }
 

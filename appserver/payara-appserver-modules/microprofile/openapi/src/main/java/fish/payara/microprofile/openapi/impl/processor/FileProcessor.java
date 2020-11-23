@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 
+import fish.payara.microprofile.openapi.activation.OpenApiSniffer;
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
@@ -77,13 +78,9 @@ public class FileProcessor implements OASProcessor {
 
     public FileProcessor(ClassLoader appClassLoader) {
         try {
-            // Search for a the correct file
-            URL fileUrl = appClassLoader.getResource("META-INF/openapi.json");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("../../META-INF/openapi.json");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("META-INF/openapi.yaml");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("../../META-INF/openapi.yaml");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("META-INF/openapi.yml");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("../../META-INF/openapi.yml");
+            // Search for a valid static file
+            // WebAppClassLoader root is found in WEB-INF/classes, so paths need relativising
+            URL fileUrl = getFirstValidOpenApiResource(appClassLoader, "../../");
 
             // If the file is found, configure the public variables
             if (fileUrl != null) {
@@ -115,6 +112,17 @@ public class FileProcessor implements OASProcessor {
             }
         }
         return api;
+    }
+
+    private static final URL getFirstValidOpenApiResource(ClassLoader classLoader, String prefix) {
+        for (String path : OpenApiSniffer.OPENAPI_YAML_FILE_PATHS) {
+            final String resourceName = (prefix + "/" + path).replace("//", "/");
+            final URL resource = classLoader.getResource(resourceName);
+            if (resource != null) {
+                return resource;
+            }
+        }
+        return null;
     }
 
 }

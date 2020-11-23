@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -50,8 +50,9 @@ public class HealthCheckStuckThreadExecutionOptions extends HealthCheckExecution
     private long timeStuck;
     private TimeUnit unitStuck;
     
-    public HealthCheckStuckThreadExecutionOptions(boolean enabled, long time, TimeUnit unit, long timeStuck, TimeUnit unitStuck) {
-        super(enabled, time, unit);
+    public HealthCheckStuckThreadExecutionOptions(boolean enabled, long time, TimeUnit unit, boolean addToMicroProfileHealth, 
+            long timeStuck, TimeUnit unitStuck) {
+        super(enabled, time, unit, addToMicroProfileHealth);
         this.timeStuck = timeStuck;
         this.unitStuck = unitStuck;
     }

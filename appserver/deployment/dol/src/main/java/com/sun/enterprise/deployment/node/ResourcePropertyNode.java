@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.node;
 
@@ -48,7 +48,6 @@ import org.w3c.dom.Node;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -61,9 +60,10 @@ public class ResourcePropertyNode extends DeploymentDescriptorNode<ResourcePrope
 
     private ResourcePropertyDescriptor descriptor = null;
 
-    protected Map getDispatchTable() {
+    @Override
+    protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
-        Map table = super.getDispatchTable();
+        Map<String, String> table = super.getDispatchTable();
         table.put(TagNames.RESOURCE_PROPERTY_NAME, "setName");
         table.put(TagNames.RESOURCE_PROPERTY_VALUE, "setValue");
         return table;
@@ -98,6 +98,7 @@ public class ResourcePropertyNode extends DeploymentDescriptorNode<ResourcePrope
     }
 
 
+    @Override
     public ResourcePropertyDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = new ResourcePropertyDescriptor();

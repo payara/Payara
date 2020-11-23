@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.7-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
@@ -64,8 +64,23 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
+            <artifactId>microprofile-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>web-glue</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>weld-integration</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

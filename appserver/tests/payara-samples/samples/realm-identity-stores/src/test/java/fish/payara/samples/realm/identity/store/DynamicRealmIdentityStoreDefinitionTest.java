@@ -39,6 +39,8 @@
  */
 package fish.payara.samples.realm.identity.store;
 
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.ServerOperations;
 import fish.payara.samples.realm.identity.store.common.AuthoritiesConstants;
 import fish.payara.samples.realm.identity.store.common.Person;
@@ -51,7 +53,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -76,7 +77,8 @@ import static org.valid4j.matchers.http.HttpResponseMatchers.hasStatus;
 /**
  * @author Gaurav Gupta
  */
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public class DynamicRealmIdentityStoreDefinitionTest {
 
     @ArquillianResource

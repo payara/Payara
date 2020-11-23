@@ -39,9 +39,12 @@
  */
 package fish.payara.microprofile.openapi.spec;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import fish.payara.microprofile.openapi.test.util.JsonUtils;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.fail;
-
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -50,13 +53,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import fish.payara.microprofile.openapi.test.util.JsonUtils;
+import static org.junit.Assert.fail;
 
 /**
  * Uses the structural model described by {@link NodeType} to check a {@link JsonNode} document against the expected

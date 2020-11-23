@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>5.202-SNAPSHOT</version>
+        <version>5.2020.7-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara</artifactId>
@@ -55,10 +55,6 @@
     <packaging>glassfish-distribution</packaging>
 
     <description>This pom describes how to assemble the Payara Distribution</description>
-
-    <properties>
-        <deploy.skip>false</deploy.skip>
-    </properties>
 
     <build>
         <plugins>
@@ -76,12 +72,6 @@
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>create-production-domain</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                    <execution>
                         <id>create-glassfish-domain</id>
                         <goals>
                             <goal>exec</goal>
@@ -97,6 +87,15 @@
                         <id>validate-xml-files</id>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <pomElements>
+                        <dependencies>remove</dependencies>
+                    </pomElements>
+                </configuration>
             </plugin>
         </plugins>
     </build>

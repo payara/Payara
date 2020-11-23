@@ -76,6 +76,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -151,6 +152,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     public static final String WELD_EXTENSION = "org.glassfish.weld";
     public static final String WELD_DEPLOYMENT = "org.glassfish.weld.WeldDeployment";
     /* package */ static final String WELD_BOOTSTRAP = "org.glassfish.weld.WeldBootstrap";
+    public static final String SNIFFER_EXTENSIONS = "org.glassfish.weld.sniffers";
     private static final String WELD_CONTEXT_LISTENER = "org.glassfish.weld.WeldContextListener";
 
     // Note...this constant is also defined in org.apache.catalina.connector.AsyncContextImpl. If it
@@ -201,7 +203,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     private Deployment deployment;
-    
+
     @Inject
     private PayaraExecutorService executorService;
 
@@ -234,6 +236,13 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     @Override
     public void postConstruct() {
         events.register(this);
+    }
+
+    @Override
+    public boolean prepare(DeploymentContext context) {
+        context.addTransientAppMetaData(SNIFFER_EXTENSIONS, new HashSet<Supplier<Extension>>());
+
+        return super.prepare(context);
     }
 
     /**
@@ -298,7 +307,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
             ProxyServices proxyServices = new ProxyServicesImpl(services);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
-            
+
             ExecutorServices executorServices = new ExecutorServicesImpl(executorService);
             deploymentImpl.getServices().add(ExecutorServices.class, executorServices);
 
@@ -318,7 +327,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         externalConfiguration.setBeanIndexOptimization(!deployParams.isAvailabilityEnabled());
         externalConfiguration.setNonPortableMode(false);
         configureConcurrentDeployment(context, externalConfiguration);
-        
+
         deploymentImpl.getServices().add(ExternalConfiguration.class, externalConfiguration);
 
         BeanDeploymentArchive beanDeploymentArchive = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
@@ -499,7 +508,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // Get current TCL
             ClassLoader oldTCL = Thread.currentThread().getContextClassLoader();
 
-            invocationManager.pushAppEnvironment(() ->  applicationInfo.getName());
+            invocationManager.pushAppEnvironment(applicationInfo::getName);
 
             ComponentInvocation componentInvocation = createComponentInvocation(applicationInfo);
 
@@ -553,7 +562,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         try {
             WeldBootstrap bootstrap = applicationInfo.getTransientAppMetaData(WELD_BOOTSTRAP, WeldBootstrap.class);
             if (bootstrap != null) {
-                invocationManager.pushAppEnvironment(() ->  applicationInfo.getName());
+                invocationManager.pushAppEnvironment(applicationInfo::getName);
 
                 try {
                     doBootstrapShutdown(applicationInfo);
@@ -868,7 +877,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
         deploymentImpl.addDynamicExtension(createProbeExtension());
     }
-    
+
     private void configureConcurrentDeployment(DeploymentContext context, ExternalConfigurationImpl configuration) {
         configuration.setConcurrentDeployment(WeldUtils.isConcurrentDeploymentEnabled());
         configuration.setPreLoaderThreadPoolSize(WeldUtils.getPreLoaderThreads());

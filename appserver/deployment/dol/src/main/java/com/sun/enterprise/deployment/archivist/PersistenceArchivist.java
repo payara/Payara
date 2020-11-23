@@ -51,7 +51,6 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.PersistenceUnitsDescriptor;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
@@ -180,7 +179,7 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
      * @return Map of puroot path to probable puroot archive.
      */
     protected static Map<String, ReadableArchive> getProbablePersistenceRoots(ReadableArchive parentArchive, SubArchivePURootScanner subArchivePURootScanner) {
-        Map<String, ReadableArchive> probablePersitenceArchives = new HashMap<String, ReadableArchive>();
+        Map<String, ReadableArchive> probablePersitenceArchives = new HashMap<>();
         ReadableArchive  archiveToScan = subArchivePURootScanner.getSubArchiveToScan(parentArchive);
         if(archiveToScan != null) { // The subarchive exists
             Enumeration<String> entries = archiveToScan.entries();

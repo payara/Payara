@@ -38,15 +38,17 @@
  * holder.
  */
 
+// Portions Copyright [2020] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.util.io.FileUtils;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 import java.io.File;
+
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 /**
  * Represents the configuration parameters required in order to create
@@ -60,46 +62,40 @@ public class WebModuleConfig {
      * The config bean containing the properties specified in the web-module
      * element in server.xml.
      */
-    private Application _wmBean = null;
+    private Application _wmBean;
 
     /**
      * The parent directory under which the work directory for files generated
      * by the web application (i.e compiled JSP class files etc) resides.
      */
-    private String _baseDir = null;
+    private String _baseDir;
 
     /**
      * The work directory
      */
-    private String workDir = null;
-            
-    /**
-     * The directory under which the work directory for files generated
-     * by the web application (i.e compiled JSP class files etc) resides.
-     */
-    private String _workDir = null;
-    
+    private String workDir;
+
     /**
      * The source directory for the web application
      */
-    private File _dir = null;
-    
+    private File _dir;
+
     /**
      * The objectType property
      */
-    private String _objectType = null;
-    
+    private String _objectType;
+
     /**
      * The parent classloader for the web application.
      */
-    private ClassLoader _parentLoader = null;
+    private ClassLoader _parentLoader;
 
     /**
      * Deployment descriptor information about the web application.
      */
-    private WebBundleDescriptorImpl _wbd = null;
+    private WebBundleDescriptorImpl _wbd;
 
-    /** 
+    /**
      * keep a list of virtual servers that this webmodule is associated with
      */
     private String _vsIDs;
@@ -108,7 +104,7 @@ public class WebModuleConfig {
     private String stubBaseDir;
     // END S1AS 6178005
 
-    private ClassLoader _appClassLoader = null;
+    private ClassLoader _appClassLoader;
 
     private DeploymentContext deploymentContext;
 
@@ -122,7 +118,7 @@ public class WebModuleConfig {
     public void setAppClassLoader(ClassLoader _appClassLoader) {
         this._appClassLoader = _appClassLoader;
     }
-    
+
     /**
      * Set the elements of information specified in the web-module element
      * in server.xml.
@@ -169,7 +165,7 @@ public class WebModuleConfig {
         }
         return ctxPath;
     }
-    
+
     /**
      * Set the directory in which the web application is deployed.
      */
@@ -199,7 +195,7 @@ public class WebModuleConfig {
     public void setVirtualServers(String virtualServers) {
         _vsIDs = virtualServers;
     }
-    
+
     /**
      * Set the parent classloader for the web application.
      */
@@ -270,7 +266,7 @@ public class WebModuleConfig {
         return getWebDir(stubBaseDir);
     }
     // END S1AS 6178005
-    
+
     /**
      * Sets the parent of the work directory for this web application.
      *
@@ -314,7 +310,7 @@ public class WebModuleConfig {
     public void setDescriptor(WebBundleDescriptorImpl wbd) {
         _wbd = wbd;
     }
-        
+
     /**
      * Return the objectType property
      */
@@ -330,15 +326,24 @@ public class WebModuleConfig {
     public void setObjectType(String objectType) {
         _objectType = objectType;
     }
-        
-    /*
+
+
+    /**
+     * @return true if {@link #getObjectType()} starts with <code>system-</code>
+     */
+    public boolean isSystemObjectType() {
+        final String objType = getObjectType();
+        return objType != null && objType.startsWith("system-");
+    }
+
+
+    /**
      * Appends this web module's id to the given base directory path, and
      * returns it.
      *
      * @param baseDir Base directory path
      */
     private String getWebDir(String baseDir) {
-
         if (baseDir == null) {
             return null;
         }
@@ -348,14 +353,11 @@ public class WebModuleConfig {
 
         com.sun.enterprise.deployment.Application app = _wbd.getApplication();
         if (app != null && !app.isVirtual()) {
-            dir.append(FileUtils.makeFriendlyFilename(
-                app.getRegistrationName()));
+            dir.append(FileUtils.makeFriendlyFilename(app.getRegistrationName()));
             dir.append(File.separator);
-            dir.append(FileUtils.makeFriendlyFilename(
-                _wbd.getModuleDescriptor().getArchiveUri()));
+            dir.append(FileUtils.makeFriendlyFilename(_wbd.getModuleDescriptor().getArchiveUri()));
         } else {
-            dir.append(FileUtils.makeLegalNoBlankFileName(
-                _wbd.getModuleID()));
+            dir.append(FileUtils.makeLegalNoBlankFileName(_wbd.getModuleID()));
         }
 
         return dir.toString();

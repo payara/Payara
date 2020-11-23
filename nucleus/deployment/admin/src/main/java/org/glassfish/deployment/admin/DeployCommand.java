@@ -47,6 +47,8 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.deployment.admin.PayaraTransformer;
+import static fish.payara.deployment.admin.PayaraTransformer.TRANSFORM_NAMESPACE;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -89,6 +91,8 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.classmodel.reflect.Parser;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.*;
 import org.glassfish.internal.deployment.analysis.DeploymentSpan;
@@ -230,7 +234,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             return false;
         }
 
-        try(DeploymentSpan span = structuredTracing.startSpan(DeploymentTracing.AppStage.OPENING_ARCHIVE)) {
+        try (DeploymentSpan span = structuredTracing.startSpan(DeploymentTracing.AppStage.OPENING_ARCHIVE)) {
             archive = archiveFactory.openArchive(path, this);
         } catch (IOException e) {
             final String msg = localStrings.getLocalString("deploy.errOpeningArtifact",
@@ -498,14 +502,28 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                             .archiveHandler(archiveHandler)
                             .build(initialContext);
 
+            String transformNS = System.getProperty(TRANSFORM_NAMESPACE);
+            Types types = deployment.getDeployableTypes(deploymentContext);
+            if (Boolean.valueOf(transformNS) || (transformNS == null && PayaraTransformer.isJakartaEEApplication(types))) {
+                span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
+                deploymentContext.getSource().close();
+                File output = PayaraTransformer.transformApplication(path, context, isDirectoryDeployed);
+                if (output == null) {
+                    return;
+                }
+
+                deploymentContext.setSource((FileArchive)archiveFactory.createArchive(output));
+                deploymentContext.removeTransientAppMetaData(Types.class.getName());
+                deploymentContext.removeTransientAppMetaData(Parser.class.getName());
+            }
             // reset the properties (might be null) set by the deployers when undeploying.
             if (undeployProps != null) {
                 deploymentContext.getAppProps().putAll(undeployProps);
             }
 
             if (properties != null || property != null) {
-                // if one of them is not null, let's merge them 
-                // to properties so we don't need to always 
+                // if one of them is not null, let's merge them
+                // to properties so we don't need to always
                 // check for both
                 if (properties == null) {
                     properties = new Properties();

@@ -65,6 +65,7 @@ import java.net.MalformedURLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
@@ -840,7 +841,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                     "JNDI lookup failed for the resource: Name: {0}, Lookup: {1}, Type: {2}",
                     resource.getName(), null, resource.getType()));
         }
-        String jndiName = resource.getJndiName();
+        String jndiName = TranslatedConfigView.expandConfigValue(resource.getJndiName());
         if (jndiName == null) {
             // there's no mapping in this resource, but it exists in JNDI namespace, so it's validated by other ref.
             return;
@@ -895,12 +896,10 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
         } catch (NamingException e) {
             deplLogger.log(Level.SEVERE, RESOURCE_REF_JNDI_LOOKUP_FAILED,
                     new Object[]{resource.getName(), jndiName, resource.getType()});
-            DeploymentException de = new DeploymentException(localStrings.getLocalString(
+            throw new DeploymentException(localStrings.getLocalString(
                     "enterprise.deployment.util.resource.validation",
                     "JNDI lookup failed for the resource: Name: {0}, Lookup: {1}, Type: {2}",
-                    resource.getName(), jndiName, resource.getType()));
-            de.initCause(e);
-            throw de;
+                    resource.getName(), jndiName, resource.getType()), e);
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -71,16 +71,9 @@ import static org.junit.Assert.fail;
 @RunWith(PayaraArquillianTestRunner.class)
 public class InvalidRedirectURITest {
 
-    private WebClient webClient;
-
     @OperateOnDeployment("openid-client")
     @ArquillianResource
     private URL base;
-
-    @Before
-    public void init() {
-        webClient = new WebClient();
-    }
 
     @Deployment(name = "openid-server")
     public static WebArchive createServerDeployment() {
@@ -99,6 +92,7 @@ public class InvalidRedirectURITest {
     @RunAsClient
     public void testOpenIdConnect() throws IOException {
         try {
+            WebClient webClient = new WebClient();
             webClient.getPage(base + "Secured");
             fail("redirect uri is valid");
         } catch (FailingHttpStatusCodeException ex) {

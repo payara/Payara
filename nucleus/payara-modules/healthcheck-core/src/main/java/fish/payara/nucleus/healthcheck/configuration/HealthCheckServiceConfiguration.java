@@ -38,20 +38,23 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.*;
-
-import javax.validation.constraints.Min;
 import java.beans.PropertyVetoException;
 import java.util.List;
+
+import javax.validation.constraints.Min;
+
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
 
 /**
  * @author mertcaliskan
  *
  */
 @Configured
-public interface HealthCheckServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
+public interface HealthCheckServiceConfiguration extends ConfigExtension {
 
     @Attribute(defaultValue="false",dataType=Boolean.class)
     String getEnabled();
@@ -76,11 +79,8 @@ public interface HealthCheckServiceConfiguration extends ConfigBeanProxy, Config
     @DuckTyped
     <T extends Checker> T getCheckerByType(Class<T> type);
 
-    @Element("*")
-    List<Notifier> getNotifierList();
-
-    @DuckTyped
-    <T extends Notifier> T getNotifierByType(Class<T> type);
+    @Element("notifier")
+    List<String> getNotifierList();
 
     class Duck {
         public static <T extends Checker> T getCheckerByType(HealthCheckServiceConfiguration config, Class<T> type) {
@@ -93,17 +93,5 @@ public interface HealthCheckServiceConfiguration extends ConfigBeanProxy, Config
             }
             return null;
         }
-
-        public static <T extends Notifier> T getNotifierByType(HealthCheckServiceConfiguration config, Class<T> type) {
-            for (Notifier notifier : config.getNotifierList()) {
-                try {
-                    return type.cast(notifier);
-                } catch (Exception e) {
-                    // ignore, not the right type.
-                }
-            }
-            return null;
-        }
-
     }
 }

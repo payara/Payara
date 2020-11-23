@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.node.runtime;
 
@@ -44,7 +45,6 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.NameValuePairNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
@@ -78,6 +78,7 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
              NameValuePairNode.class, "addCallProperty");
     }
     
+    @Override
     public void addDescriptor(Object desc) {
         if( desc instanceof ServiceRefPortInfo ) {
             ServiceRefPortInfo newPortInfo = (ServiceRefPortInfo) desc;
@@ -90,6 +91,7 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }   
@@ -100,10 +102,10 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
-    protected Map getDispatchTable() {    
-        Map table = super.getDispatchTable();
-        table.put(WebServicesTagNames.SERVICE_IMPL_CLASS, 
-                  "setServiceImplClassName");
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+        Map<String, String> table = super.getDispatchTable();
+        table.put(WebServicesTagNames.SERVICE_IMPL_CLASS, "setServiceImplClassName");
         return table;
     }
     
@@ -114,6 +116,7 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
      * @param value it's associated value
      */
 
+    @Override
     public void setElementValue(XMLElement element, String value) {
         String name = element.getQName();
         if (WebServicesTagNames.SERVICE_REF_NAME.equals(name)) {
@@ -159,8 +162,7 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
      */    
     public Node writeDescriptor(Node parent, String nodeName, 
                                 ServiceReferenceDescriptor serviceRef) {
-        Node serviceRefNode = 
-            super.writeDescriptor(parent, nodeName, serviceRef);
+        Node serviceRefNode = super.writeDescriptor(parent, nodeName, serviceRef);
 
         appendTextChild(serviceRefNode, WebServicesTagNames.SERVICE_REF_NAME,
                         serviceRef.getName());
@@ -168,19 +170,14 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
         ServiceRefPortInfoRuntimeNode portInfoRuntimeNode =
             new ServiceRefPortInfoRuntimeNode();
 
-        Set portsInfo = serviceRef.getPortsInfo();
-        for(Iterator iter = portsInfo.iterator(); iter.hasNext();) {
-            ServiceRefPortInfo next = (ServiceRefPortInfo) iter.next();
-            portInfoRuntimeNode.writeDescriptor
-                (serviceRefNode, WebServicesTagNames.PORT_INFO, next);
+        Set<ServiceRefPortInfo> portsInfo = serviceRef.getPortsInfo();
+        for (ServiceRefPortInfo next : portsInfo) {
+            portInfoRuntimeNode.writeDescriptor(serviceRefNode, WebServicesTagNames.PORT_INFO, next);
         }
 
         NameValuePairNode nameValueNode = new NameValuePairNode();
-        for(Iterator iter = serviceRef.getCallProperties().iterator();
-            iter.hasNext();) {
-            NameValuePairDescriptor next = (NameValuePairDescriptor)iter.next();
-            nameValueNode.writeDescriptor
-                (serviceRefNode, WebServicesTagNames.CALL_PROPERTY, next);
+        for (NameValuePairDescriptor next : serviceRef.getCallProperties()) {
+            nameValueNode.writeDescriptor(serviceRefNode, WebServicesTagNames.CALL_PROPERTY, next);
         }
 
         if( serviceRef.hasWsdlOverride() ) {
@@ -213,15 +210,13 @@ public class ServiceRefNode extends DeploymentDescriptorNode {
      * @param parent node to add the runtime xml info
      * @param the J2EE component containing service references
      */        
-    public static void writeServiceReferences(Node parent, 
-                                              JndiNameEnvironment descriptor) {
-        Iterator serviceRefs = 
-            descriptor.getServiceReferenceDescriptors().iterator();
+    public static void writeServiceReferences(Node parent, JndiNameEnvironment descriptor) {
+        
+        Iterator<ServiceReferenceDescriptor> serviceRefs = descriptor.getServiceReferenceDescriptors().iterator();
         if (serviceRefs.hasNext()) {
             ServiceRefNode serviceRefNode = new ServiceRefNode();
             while (serviceRefs.hasNext()) {
-                ServiceReferenceDescriptor next = 
-                    (ServiceReferenceDescriptor) serviceRefs.next();
+                ServiceReferenceDescriptor next = serviceRefs.next();
                 // Only write runtime service-ref entry if there IS 
                 // some runtime info...
                 if( next.hasServiceImplClassName() ||

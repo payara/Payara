@@ -39,12 +39,10 @@
  */
 package fish.payara.microprofile.openapi.test.app.data;
 
-import static org.junit.Assert.assertNotNull;
-
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.junit.Test;
-
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 /**
  * A test to check that schema objects without a @Schema annotation at the top are created.

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 
 /*
  * ConnectorNode.java. This class is responsible for encapsulating all information specific to the Connector DTD
@@ -102,7 +102,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     public final static XMLElement tag = new XMLElement(ConnectorTagNames.CONNECTOR);
 
     private static List<String> initSystemIDs() {
-        List<String> systemIDs = new ArrayList<String>();
+        List<String> systemIDs = new ArrayList<>();
         systemIDs.add(SCHEMA_ID);
         return Collections.unmodifiableList(systemIDs);
     }
@@ -113,6 +113,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
      * @return the doctype tag name
      */
+    @Override
     public String registerBundle(Map<String,String> publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_10, SYSTEM_ID_10);
@@ -121,7 +122,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     
     @Override
     public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
-        Map<String, Class<?>> result = new HashMap<String, Class<?>>();
+        Map<String, Class<?>> result = new HashMap<>();
         
         result.put(com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.registerBundle(publicIDToDTD),
                 com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.class);
@@ -139,6 +140,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public ConnectorDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = (ConnectorDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
@@ -154,6 +156,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @param the attribute value
      * @return true if the attribute was processed
      */
+    @Override
     protected boolean setAttributeValue(XMLElement elementName, 
         XMLElement attributeName, String value) {
         getDescriptor();
@@ -181,6 +184,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         getDescriptor();
         if (descriptor == null) {
@@ -208,6 +212,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      *  @return true if the element tag can be handled by any registered sub nodes of the
      * current XMLNode
      */
+    @Override
     public boolean handlesElement(XMLElement element) {
 	if (ConnectorTagNames.RESOURCE_ADAPTER.equals(element.getQName())) {
             return false;
@@ -218,6 +223,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the handler registered for the subtag element of the curent  XMLNode
      */
+    @Override
     public  XMLNode getHandlerFor(XMLElement element) {
 	if (ConnectorTagNames.RESOURCE_ADAPTER.equals(element.getQName())) {
 	    /** For resourceadapter tag, we need to find out what version of DTD we are handling 
@@ -241,6 +247,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return tag;
     }
@@ -251,6 +258,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object newDescriptor) {
     }
         
@@ -260,15 +268,16 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
-    protected Map getDispatchTable() {
+    @Override
+    protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
-        Map table = super.getDispatchTable();
+        Map<String, String> table = super.getDispatchTable();
         table.put(ConnectorTagNames.VENDOR_NAME, "setVendorName");
 	table.put(ConnectorTagNames.EIS_TYPE, "setEisType");
 
 	// support for 1.0 DTD and 1.5 schema and not 1.5 DTD
 	table.put(ConnectorTagNames.RESOURCEADAPTER_VERSION, "setResourceAdapterVersion");
-    table.put(ConnectorTagNames.REQUIRED_WORK_CONTEXT, "addRequiredWorkContext");
+        table.put(ConnectorTagNames.REQUIRED_WORK_CONTEXT, "addRequiredWorkContext");
 
         return table;
     } 
@@ -276,6 +285,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the DOCTYPE of the XML file
      */
+    @Override
     public String getDocType() {
 	return null;
     }
@@ -283,6 +293,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
 	    return SCHEMA_ID;
     } 
@@ -290,6 +301,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -301,6 +313,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, ConnectorDescriptor conDesc) {
 	conDesc.setSpecVersion(VERSION_17);
         Node connectorNode = super.writeDescriptor(parent, conDesc);      
@@ -328,6 +341,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return SPEC_VERSION;
     }
@@ -335,6 +349,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
     /**
      * @return the schema URL
      */
+    @Override
     protected String getSchemaURL() {
         return TagNames.JAVAEE_NAMESPACE + "/" + getSystemID();
     }

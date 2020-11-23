@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -55,19 +55,22 @@ import org.glassfish.internal.api.Globals;
  */
 public class HealthCheckServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HealthCheckService healthCheckService = Globals.getDefaultBaseServiceLocator().getService(HealthCheckService.class);
-        
+
         // If we couldn't find the HealthCheckService, throw an exception
         if (healthCheckService == null) {
             throw new ServletException("Could not find Health Check Service");
@@ -77,8 +80,7 @@ public class HealthCheckServlet extends HttpServlet {
             return;
         }
 
-        healthCheckService.performHealthChecks(response, HealthCheckType.fromPath(request.getPathInfo()));
-
+        healthCheckService.performHealthChecks(response, HealthCheckType.fromPath(request.getPathInfo()), request.getParameter("pretty"));
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

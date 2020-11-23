@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -200,7 +200,7 @@ authentication. To use a JAAS <code>LoginModule</code>, you must first create
 an implementation of the javax.security.auth.spi.LoginModule
 interface, and then plug the module into a <code>jaas-context</code>. For more
 information, see "<a href="../security-guide/system-security.html#GSSCG00196">Custom Authentication of Client
-Certificate in SSL Mutual Authentication</a>" in GlassFish Server Open
+Certificate in SSL Mutual Authentication</a>" in Payara Server Open
 Source Edition Security Guide.</p>
 <div class="ulist">
 <ul>
@@ -340,10 +340,13 @@ algorithm.</p>
 <dl>
 <dt class="hdlist1"><code>encoding</code></dt>
 <dd>
-<p>(Optional) Specifies the encoding. Allowed values are <code>Hex</code> and
-<code>Base64</code>. If digest-algorithm is specified, the default is <code>Hex</code>. If
-<code>digest-algorithm</code> is not specified, by default no encoding is
-specified.</p>
+<p>
+	(Optional) Specifies the encoding. Default allowed values are <code>Hex</code> and
+	<code>Base64</code>, although the specific realm class may allow other values.
+	If digest-algorithm is specified, the default is <code>Hex</code>. If
+	<code>digest-algorithm</code> is not specified, by default no encoding is
+	specified.
+</p>
 </dd>
 <dt class="hdlist1"><code>charset</code></dt>
 <dd>

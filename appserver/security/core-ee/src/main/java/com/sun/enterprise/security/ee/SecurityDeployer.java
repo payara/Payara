@@ -37,16 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.ee;
 
-import static com.sun.enterprise.deployment.WebBundleDescriptor.AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT;
-import static com.sun.enterprise.security.ee.SecurityUtil.getContextID;
-import static java.util.logging.Level.WARNING;
-import static org.glassfish.internal.deployment.Deployment.APPLICATION_LOADED;
-import static org.glassfish.internal.deployment.Deployment.APPLICATION_PREPARED;
-import static org.glassfish.internal.deployment.Deployment.MODULE_LOADED;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.security.AppCNonceCacheMap;
+import com.sun.enterprise.security.CNonceCacheFactory;
+import com.sun.enterprise.security.EjbSecurityPolicyProbeProvider;
+import com.sun.enterprise.security.SecurityLifecycle;
+import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
+import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
+import com.sun.enterprise.security.util.IASSecurityException;
+import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
+import com.sun.logging.LogDomains;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,31 +85,31 @@ import org.glassfish.security.common.CNonceCache;
 import org.glassfish.security.common.HAUtil;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.web.LoginConfiguration;
-import com.sun.enterprise.security.AppCNonceCacheMap;
-import com.sun.enterprise.security.CNonceCacheFactory;
-import com.sun.enterprise.security.EjbSecurityPolicyProbeProvider;
-import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
-import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
-import com.sun.enterprise.security.util.IASSecurityException;
-import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
-import com.sun.logging.LogDomains;
+import static com.sun.enterprise.deployment.WebBundleDescriptor.AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT;
+import static com.sun.enterprise.security.ee.SecurityUtil.getContextID;
+import static java.util.logging.Level.CONFIG;
+import static java.util.logging.Level.WARNING;
+import static org.glassfish.internal.deployment.Deployment.APPLICATION_LOADED;
+import static org.glassfish.internal.deployment.Deployment.APPLICATION_PREPARED;
+import static org.glassfish.internal.deployment.Deployment.MODULE_LOADED;
 
 /**
  * Security Deployer which generate and clean the security policies
- * 
+ *
  * <p>
- * This contains many JACC life cycle methods which can/should be moved to the JACC package 
+ * This contains many JACC life cycle methods which can/should be moved to the JACC package
  *
  */
 @Service(name = "Security")
 public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApplication> implements PostConstruct {
 
     private static final Logger _logger = LogDomains.getLogger(SecurityDeployer.class, LogDomains.SECURITY_LOGGER);
-    
+
+    // must be already set before using this service.
+    @SuppressWarnings("unused")
+    @Inject
+    private SecurityLifecycle securityLifecycle;
+
     @Inject
     private ServerContext serverContext;
 
@@ -139,7 +147,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         @Override
         public void event(Event event) {
             Application app = null;
-            
+
             if (MODULE_LOADED.equals(event.type())) {
                 ModuleInfo moduleInfo = (ModuleInfo) event.hook();
                 if (moduleInfo instanceof ApplicationInfo) {
@@ -158,7 +166,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                 Set<WebBundleDescriptor> webBundleDescriptors = app.getBundleDescriptors(WebBundleDescriptor.class);
                 linkPolicies(app, webBundleDescriptors);
                 commitEjbPolicies(app);
-                
+
                 if (webBundleDescriptors != null && !webBundleDescriptors.isEmpty()) {
                     // Register the WebSecurityComponentInvocationHandler
                     RegisteredComponentInvocationHandler handler = registeredComponentInvocationHandlerProvider.get();
@@ -170,8 +178,8 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                 commitWebPolicy((WebBundleDescriptor) event.hook());
             }
         }
-    };
-    
+    }
+
     @Override
     public void postConstruct() {
         listener = new AppDeployEventListener();
@@ -185,7 +193,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         if (params.origin.isArtifactsPresent()) {
             return;
         }
-        
+
         String appName = params.name();
         try {
             Application app = context.getModuleMetaData(Application.class);
@@ -208,7 +216,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     protected void cleanArtifacts(DeploymentContext context) throws DeploymentException {
         removePolicy(context);
         SecurityUtil.removeRoleMapper(context);
-        
+
         OpsParams params = context.getCommandParameters(OpsParams.class);
         if (this.appCnonceMap != null) {
             CNonceCache cache = appCnonceMap.remove(params.name());
@@ -231,44 +239,49 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     public void unload(DummyApplication container, DeploymentContext context) {
         cleanSecurityContext(context.getCommandParameters(OpsParams.class).name());
     }
-    
+
     @Override
     public MetaData getMetaData() {
         return new MetaData(false, null, new Class[] { Application.class });
     }
-    
+
     /**
      * Translate Web Bundle Policy
-     * 
+     *
      * @param webDescriptor
      * @param remove boolean indicated whether any existing policy statements are removed form context before translation
      * @throws DeploymentException
      */
     public void loadPolicy(WebBundleDescriptor webDescriptor, boolean remove) throws DeploymentException {
+        if (webDescriptor == null) {
+            return;
+        }
         try {
-            if (webDescriptor != null) {
-                if (remove) {
-                    JaccWebAuthorizationManager authorizationManager = webSecurityManagerFactory.getManager(getContextID(webDescriptor), null, true);
-                    if (authorizationManager != null) {
-                        authorizationManager.release();
-                    }
+            if (remove) {
+                JaccWebAuthorizationManager authorizationManager = webSecurityManagerFactory
+                    .getManager(getContextID(webDescriptor), null, true);
+                if (authorizationManager != null) {
+                    authorizationManager.release();
                 }
-                webSecurityManagerFactory.createManager(webDescriptor, true, serverContext);
             }
-
-        } catch (Exception se) {
-            throw new DeploymentException("Error in generating security policy for " + webDescriptor.getModuleDescriptor().getModuleName(), se);
+            webSecurityManagerFactory.createManager(webDescriptor, true, serverContext);
+        } catch (Exception e) {
+            // log stacktrace and throw, because stacktrace of causes will be lost in DeploymentException
+            _logger.log(CONFIG,
+                "[Web-Security] FATAL Exception. Unable to create WebSecurityManager: " + e.getMessage(), e);
+            throw new DeploymentException(
+                "Error in generating security policy for " + webDescriptor.getModuleDescriptor().getModuleName(), e);
         }
     }
-    
-    
-    
+
+
+
     // ### Private methods
- 
+
 
     /**
      * Puts Web Bundle Policy In Service, repeats translation is Descriptor indicate policy was changed by ContextListener.
-     * 
+     *
      * @param webBundleDescriptor
      * @throws DeploymentException
      */
@@ -279,14 +292,13 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                     // redo policy translation for web module
                     loadPolicy(webBundleDescriptor, true);
                 }
-                
+
                 String contextId = SecurityUtil.getContextID(webBundleDescriptor);
-                
+
                 websecurityProbeProvider.policyCreationStartedEvent(contextId);
                 SecurityUtil.generatePolicyFile(contextId);
                 websecurityProbeProvider.policyCreationEndedEvent(contextId);
                 websecurityProbeProvider.policyCreationEvent(contextId);
-
             }
         } catch (Exception se) {
             String msg = "Error in generating security policy for " + webBundleDescriptor.getModuleDescriptor().getModuleName();
@@ -297,19 +309,18 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     /**
      * commits ejb policy contexts. This should occur in EjbApplication, being done here until issue with
      * ejb-ejb31-singleton-multimoduleApp.ear is resolved
-     * 
+     *
      * @param ejbs
      */
     private void commitEjbPolicies(Application app) throws DeploymentException {
         try {
             for (EjbBundleDescriptor ejbBD : app.getBundleDescriptors(EjbBundleDescriptor.class)) {
                 String contextId = SecurityUtil.getContextID(ejbBD);
-                
+
                 ejbProbeProvider.policyCreationStartedEvent(contextId);
                 SecurityUtil.generatePolicyFile(contextId);
                 ejbProbeProvider.policyCreationEndedEvent(contextId);
                 ejbProbeProvider.policyCreationEvent(contextId);
-
             }
         } catch (Exception se) {
             String msg = "Error in committing security policy for ejbs of " + app.getRegistrationName();
@@ -353,20 +364,19 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         if (!params.origin.needsCleanArtifacts()) {
             return;
         }
-        
+
         String appName = params.name();
         // Monitoring
-
         // Remove policy files only if managers are not destroyed by cleanup
         try {
             String[] webcontexts = webSecurityManagerFactory.getContextsForApp(appName, false);
             if (webcontexts != null) {
-                for (int i = 0; i < webcontexts.length; i++) {
-                    if (webcontexts[i] != null) {
-                        websecurityProbeProvider.policyDestructionStartedEvent(webcontexts[i]);
-                        SecurityUtil.removePolicy(webcontexts[i]);
-                        websecurityProbeProvider.policyDestructionEndedEvent(webcontexts[i]);
-                        websecurityProbeProvider.policyDestructionEvent(webcontexts[i]);
+                for (String webcontext : webcontexts) {
+                    if (webcontext != null) {
+                        websecurityProbeProvider.policyDestructionStartedEvent(webcontext);
+                        SecurityUtil.removePolicy(webcontext);
+                        websecurityProbeProvider.policyDestructionEndedEvent(webcontext);
+                        websecurityProbeProvider.policyDestructionEvent(webcontext);
                     }
                 }
             }
@@ -384,24 +394,24 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
      * Clean security policy generated at deployment time. NOTE: This routine calls destroy on the WebSecurityManagers, but
      * that does not cause deletion of the underlying policy (files). The underlying policy is deleted when removePolicy (in
      * AppDeployerBase and WebModuleDeployer) is called.
-     * 
+     *
      * @param appName the app name
      */
     private boolean cleanSecurityContext(String appName) {
         boolean cleanUpDone = false;
-        
+
         List<JaccWebAuthorizationManager> managers = webSecurityManagerFactory.getManagersForApp(appName, false);
         if (managers == null) {
             return false;
         }
-        
+
         for (JaccWebAuthorizationManager manager : managers) {
             try {
                 websecurityProbeProvider.securityManagerDestructionStartedEvent(appName);
                 manager.destroy();
                 websecurityProbeProvider.securityManagerDestructionEndedEvent(appName);
                 websecurityProbeProvider.securityManagerDestructionEvent(appName);
-                
+
                 cleanUpDone = true;
             } catch (Exception pce) {
                 // Log it and continue
@@ -409,14 +419,14 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
             }
 
         }
-        
+
         return cleanUpDone;
     }
 
     public static List<EventTypes> getDeploymentEvents() {
-        List<EventTypes> events = new ArrayList<EventTypes>();
+        List<EventTypes> events = new ArrayList<>();
         events.add(APPLICATION_PREPARED);
-        
+
         return events;
     }
 
@@ -440,10 +450,9 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                 CNonceCache cache = cnonceCacheFactory.createCNonceCache(appName, clusterName, instanceName, HA_CNONCE_BS_NAME);
                 this.appCnonceMap.put(appName, cache);
             }
-
         }
     }
-    
+
     private boolean isHaEnabled() {
         boolean haEnabled = false;
         // lazily init the required services instead of

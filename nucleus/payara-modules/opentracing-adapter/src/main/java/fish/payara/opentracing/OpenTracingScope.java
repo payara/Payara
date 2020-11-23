@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,23 @@
  *  and therefore, elected the GPL Version 2 license, then the option applies
  *  only if the new code is made subject to such option by the copyright
  *  holder.
+ *
+ * This file incorporates work covered by the following copyright and
+ * permission notice:
+ *
+ * Copyright 2016-2018 The OpenTracing Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package fish.payara.opentracing;
-
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import io.opentracing.Span;
 
@@ -57,39 +68,35 @@ import io.opentracing.Span;
 public class OpenTracingScope implements io.opentracing.Scope {
 
     private Span currentSpan;
-    private Map<Span, Boolean> allSpans = new LinkedHashMap<>();
-    
+    private boolean finishOnClose;
+
+    private OpenTracingScope previouslyActiveScope;
+    private ScopeManager scopeManager;
+
+    OpenTracingScope(ScopeManager scopeManager, Span spanToActivate, boolean finishOnClose) {
+        this.scopeManager = scopeManager;
+        this.currentSpan = spanToActivate;
+        this.finishOnClose = finishOnClose;
+        previouslyActiveScope = (OpenTracingScope) scopeManager.active();
+        scopeManager.activeScope.set(this);
+    }
+
     @Override
     public void close() {
-        Iterator<Span> keys = allSpans.keySet().iterator();
-        while (keys.hasNext()){
-            Span span = keys.next();
-            if (allSpans.get(span)){
-                span.finish();
-            }
-            // Prevent scope holding on a reference to old spans
-            keys.remove();
+        if (scopeManager.activeScope.get() != this) {
+            // This shouldn't happen if users call methods in the expected order. Bail out.
+            return;
         }
-        
-        currentSpan = null;
+
+        if (finishOnClose) {
+            currentSpan.finish();
+        }
+
+        scopeManager.activeScope.set(previouslyActiveScope);
     }
 
     @Override
     public Span span() {
         return currentSpan;
     }
-    
-    // Package private - used only by ScopeManager
-    void setSpan(Span span, Boolean finishOnClose){
-        allSpans.put(span, finishOnClose);
-        currentSpan = span;
-    }
-    
-    void removeSpan(Span span){
-        allSpans.remove(span);
-        if (span == currentSpan) {
-            currentSpan = null;
-        }
-    }
-    
 }

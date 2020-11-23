@@ -82,34 +82,28 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     }
 
     @Test
-    public void enabledIsMandatory() {
-        assertMissingParameter("enabled", asadmin("set-healthcheck-service-configuration", 
-                "--service", "gc"));
-    }
-
-    @Test
     public void serviceIsMandatory() {
-        assertMissingParameter("serviceName", asadmin("set-healthcheck-service-configuration", 
+        assertMissingParameter("serviceName", asadmin("set-healthcheck-service-configuration",
                 "--enabled", "true"));
     }
 
     @Test
     public void shortNamesAreAccepted() {
-        String[] shortNames = { "cp", "cu", "gc", "hmu", "ht", "mmu", "st", "mh" };
+        String[] shortNames = { "cp", "cu", "gc", "hmu", "ht", "mmu", "st", "mh", "mm" };
         assertServiceNamesAreAccepted(shortNames);
     }
 
     @Test
     public void fullNamesAreAccepted() {
         String[] fullNames = { "CONNECTION_POOL", "CPU_USAGE", "GARBAGE_COLLECTOR", "HEAP_MEMORY_USAGE",
-                "HOGGING_THREADS", "MACHINE_MEMORY_USAGE", "STUCK_THREAD", "MP_HEALTH" };
+                "HOGGING_THREADS", "MACHINE_MEMORY_USAGE", "STUCK_THREAD", "MP_HEALTH", "MP_METRICS" };
         assertServiceNamesAreAccepted(fullNames);
     }
 
     private void assertServiceNamesAreAccepted(String[] serviceNames) {
         for (String serviceName : serviceNames) {
-            CommandResult result = asadmin("set-healthcheck-service-configuration", 
-                    "--service", serviceName, 
+            CommandResult result = asadmin("set-healthcheck-service-configuration",
+                    "--service", serviceName,
                     "--enabled", "true");
             assertSuccess(result); // just check the name got accepted
         }
@@ -117,14 +111,14 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void enabledAffectsConfigButNotService() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
-                "--service", "gc", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
+                "--service", "gc",
                 "--enabled", "true");
         assertSuccess(result);
         Checker gcConfig = config.getCheckerByType(garbageCollection.getCheckerType());
         assertTrue(gcConfig.getEnabled());
-        result = asadmin("set-healthcheck-service-configuration", 
-                "--service", "gc", 
+        result = asadmin("set-healthcheck-service-configuration",
+                "--service", "gc",
                 "--enabled", "false");
         assertFalse(gcConfig.getEnabled());
     }
@@ -132,8 +126,8 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void enabledDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
-                "--service", "gc", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
+                "--service", "gc",
                 "--enabled", "true",
                 "--dynamic", "true");
         assertSuccess(result);
@@ -141,8 +135,8 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
         BaseHealthCheck<?,?> check = service.getCheck(gcConfig.getName());
         assertNotNull(check);
         assertTrue(check.getOptions().isEnabled());
-        result = asadmin("set-healthcheck-service-configuration", 
-                "--service", "gc", 
+        result = asadmin("set-healthcheck-service-configuration",
+                "--service", "gc",
                 "--enabled", "false",
                 "--dynamic", "true");
         assertFalse(check.getOptions().isEnabled());
@@ -150,7 +144,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void timeAffectsConfigButNotService() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--time", "33");
@@ -163,7 +157,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void timeDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--time", "42",
@@ -176,7 +170,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void timeUnitUnknownNameCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--time-unit", "YEARS");
@@ -186,7 +180,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void timeUnitAffectsConfigButNotService() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--time-unit", TimeUnit.DAYS.name());
@@ -199,7 +193,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void timeUnitDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--time-unit", TimeUnit.HOURS.name(),
@@ -213,7 +207,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void hogginThreadsThresholdBelowMinumumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "ht",
                 "--enabled", "true",
                 "--hogging-threads-threshold", "-1");
@@ -223,7 +217,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void hogginThreadsThresholdAboveMaximumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "ht",
                 "--enabled", "true",
                 "--hogging-threads-threshold", "101");
@@ -233,7 +227,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void hogginThreadsThresholdAffectsConfigButNotService() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "ht",
                 "--enabled", "true",
                 "--hogging-threads-threshold", "33");
@@ -247,7 +241,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void hogginThreadsThresholdDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "ht",
                 "--enabled", "true",
                 "--hogging-threads-threshold", "42",
@@ -261,17 +255,17 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void hogginThreadsRetryCountBelowMinimumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "ht",
                 "--enabled", "true",
-                "--hogging-threads-retry-count", "0");
+                "--hogging-threads-retry-count", "-1");
         assertUnacceptableParameter("hogginThreadsRetryCount", result);
-        assertContains("Hogging threads retry count must be 1 or more", result.getOutput());
+        assertContains("Hogging threads retry count must be zero or more", result.getOutput());
     }
 
     @Test
     public void hogginThreadsRetryCountAffectsConfigButNotService() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "ht",
                 "--enabled", "true",
                 "--hogging-threads-retry-count", "13");
@@ -285,7 +279,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void hogginThreadsRetryCountDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "ht",
                 "--enabled", "true",
                 "--hogging-threads-retry-count", "24",
@@ -299,7 +293,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void stuckThreadsThresholdBelowMinumumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "st",
                 "--enabled", "true",
                 "--stuck-threads-threshold", "0");
@@ -308,7 +302,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void stuckThreadsThresholdAffectsConfigButNotError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "st",
                 "--enabled", "true",
                 "--stuck-threads-threshold", "13");
@@ -316,7 +310,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
         StuckThreadsChecker stConfig = config.getCheckerByType(stuckThreads.getCheckerType());
         assertEquals(13, Integer.parseInt(stConfig.getThreshold()));
         StuckThreadsHealthCheck activeService = (StuckThreadsHealthCheck) service.getCheck(stConfig.getName());
-        if (activeService != null) { 
+        if (activeService != null) {
             assertNotEquals(Long.valueOf(13), activeService.getOptions().getTimeStuck());
         }
     }
@@ -324,7 +318,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void stuckThreadsThresholdDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "st",
                 "--enabled", "true",
                 "--stuck-threads-threshold", "17",
@@ -338,7 +332,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void stuckThreadsThresholdUnitUnknownValueCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "st",
                 "--enabled", "true",
                 "--stuck-threads-threshold-unit", "YEARS");
@@ -347,7 +341,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void stuckThreadsThresholdUnitAffectsConfigButNotService() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "st",
                 "--enabled", "true",
                 "--stuck-threads-threshold-unit", TimeUnit.DAYS.name());
@@ -355,7 +349,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
         StuckThreadsChecker stConfig = config.getCheckerByType(stuckThreads.getCheckerType());
         assertEquals(TimeUnit.DAYS.name(), stConfig.getThresholdTimeUnit());
         StuckThreadsHealthCheck activeService = (StuckThreadsHealthCheck) service.getCheck(stConfig.getName());
-        if (activeService != null) { 
+        if (activeService != null) {
             assertNotEquals(TimeUnit.DAYS, activeService.getOptions().getUnitStuck());
         }
     }
@@ -363,7 +357,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void stuckThreadsThresholdUnitDynamicAffectsConfigButNotService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "st",
                 "--enabled", "true",
                 "--stuck-threads-threshold-unit", TimeUnit.HOURS.name(),
@@ -377,7 +371,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void thresholdCriticalBelowMinimumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-critical", "-1");
@@ -387,7 +381,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void thresholdCriticalAboveMaximumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-critical", "101");
@@ -397,7 +391,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void thresholdCriticalAffectsConfigButNotService() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-critical", "99");
@@ -411,7 +405,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void thresholdCriticalDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-critical", "88",
@@ -425,7 +419,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void thresholdWarningBelowMinimumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-warning", "-1");
@@ -435,7 +429,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void thresholdWarningAboveMaximumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-warning", "101");
@@ -445,7 +439,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void thresholdWarningAffectsConfigButNotService() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-warning", "99");
@@ -459,7 +453,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void thresholdWarningDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-warning", "88",
@@ -473,7 +467,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void thresholdGoodBelowMinimumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-good", "-1");
@@ -483,7 +477,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void thresholdGoodAboveMaximumCausesError() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-good", "101");
@@ -493,7 +487,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
 
     @Test
     public void thresholdGoodAffectsConfigButNotService() {
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-good", "33");
@@ -507,7 +501,7 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
     @Test
     public void thresholdGoodDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-service-configuration", 
+        CommandResult result = asadmin("set-healthcheck-service-configuration",
                 "--service", "gc",
                 "--enabled", "true",
                 "--threshold-good", "22",
@@ -526,8 +520,8 @@ public class SetHealthCheckServiceConfigurationTest extends AsadminTest {
         if (service.isEnabled()) {
             return; // already enabled, fine
         }
-        assertSuccess(asadmin("set-healthcheck-configuration", 
-                "--enabled", "true", 
+        assertSuccess(asadmin("set-healthcheck-configuration",
+                "--enabled", "true",
                 "--dynamic", "true"));
     }
 

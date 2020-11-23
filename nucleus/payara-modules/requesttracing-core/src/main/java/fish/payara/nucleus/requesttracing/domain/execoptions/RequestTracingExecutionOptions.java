@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,11 +39,11 @@
  */
 package fish.payara.nucleus.requesttracing.domain.execoptions;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -54,28 +54,31 @@ import java.util.concurrent.TimeUnit;
  */
 public class RequestTracingExecutionOptions {
 
-    private Boolean enabled;
+    // Default values taken from RequestTracingServiceConfiguration
+    private Boolean enabled = false;
     
-    private Double sampleRate;
-    private Boolean adaptiveSamplingEnabled;
-    private Integer adaptiveSamplingTargetCount;
-    private Integer adaptiveSamplingTimeValue;
-    private TimeUnit adaptiveSamplingTimeUnit;
+    private Double sampleRate = 1.0;
+    private Boolean adaptiveSamplingEnabled = false;
+    private Integer adaptiveSamplingTargetCount = 6;
+    private Integer adaptiveSamplingTimeValue = 1;
+    private TimeUnit adaptiveSamplingTimeUnit = MINUTES;
     
-    private Boolean applicationsOnlyEnabled;
-    private Long thresholdValue;
-    private TimeUnit thresholdUnit;
-    private Boolean sampleRateFirstEnabled;
+    private Boolean applicationsOnlyEnabled = true;
+    private Long thresholdValue = 30L;
+    private TimeUnit thresholdUnit = SECONDS;
+    private Boolean sampleRateFirstEnabled = true;
     
-    private Integer traceStoreSize;
-    private Long traceStoreTimeout;
-    private Boolean reservoirSamplingEnabled;
+    private Integer traceStoreSize = 20;
+    // Default timeout value **NOT** taken from RequestTracingServiceConfiguration, but from TimeUtil.setStoreTimeLimit
+    private Long traceStoreTimeout = 0L;
+    private Boolean reservoirSamplingEnabled = false;
     
-    private Boolean historicTraceStoreEnabled;
-    private Integer historicTraceStoreSize;
-    private Long historicTraceStoreTimeout;
+    private Boolean historicTraceStoreEnabled = false;
+    private Integer historicTraceStoreSize = 20;
+    // Default timeout value **NOT** taken from RequestTracingServiceConfiguration, but from TimeUtil.setStoreTimeLimit
+    private Long historicTraceStoreTimeout = 0L;
 
-    private final Map<NotifierType, NotifierExecutionOptions> notifierExecutionOptionsList = new HashMap<>();
+    private final Set<String> enabledNotifiers = new LinkedHashSet<>();
 
     public Boolean isEnabled() {
         if (enabled == null) {
@@ -245,20 +248,20 @@ public class RequestTracingExecutionOptions {
      * Gets the notifier options configured with request tracing
      * @return 
      */
-    public Map<NotifierType, NotifierExecutionOptions> getNotifierExecutionOptionsList() {
-        return notifierExecutionOptionsList;
+    public Set<String> getEnabledNotifiers() {
+        return enabledNotifiers;
     }
     
-    public void addNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
-        getNotifierExecutionOptionsList().put(notifierExecutionOptions.getNotifierType(), notifierExecutionOptions);
+    public void enableNotifier(String notifier) {
+        enabledNotifiers.add(notifier);
     }
 
-    public void removeNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
-        getNotifierExecutionOptionsList().remove(notifierExecutionOptions.getNotifierType());
+    public void disableNotifier(String notifier) {
+        enabledNotifiers.remove(notifier);
     }
 
-    public void resetNotifierExecutionOptions() {
-        getNotifierExecutionOptionsList().clear();
+    public void clearNotifiers() {
+        enabledNotifiers.clear();
     }
 
     @Override
@@ -271,7 +274,7 @@ public class RequestTracingExecutionOptions {
                 + ", adaptiveSamplingTimeValue=" + adaptiveSamplingTimeValue
                 + ", adaptiveSamplingTimeUnit=" + adaptiveSamplingTimeUnit
                 + ", applicationsOnlyEnabled=" + applicationsOnlyEnabled
-                + " ,thresholdValue=" + thresholdValue
+                + ", thresholdValue=" + thresholdValue
                 + ", thresholdUnit=" + thresholdUnit
                 + ", sampleRateFirstEnabled=" + sampleRateFirstEnabled
                 + ", traceStoreSize=" + traceStoreSize

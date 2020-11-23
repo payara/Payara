@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -52,6 +52,28 @@ import java.util.Optional;
  * @author bnevins
  */
 public final class JDK {
+
+    private static final int TLS13_MINIMUM_MINOR_VERSION = 8;
+    private static final int TLS13_MINIMUM_UPDATE_VERSION = 261;
+
+    private static final String OPENJSSE_VENDOR = "Azul";
+    private static final int OPENJSSE_MINIMUM_UPDATE_VERSION = 222;
+    private static final int OPENJSSE_MAXIMUM_UPDATE_VERSION = 252;
+
+    public static boolean isTls13Supported() {
+        return getMinor() >= TLS13_MINIMUM_MINOR_VERSION
+            && getUpdate() >= TLS13_MINIMUM_UPDATE_VERSION;
+    }
+
+    public static boolean isOpenJSSEFlagRequired() {
+        final String vendor = getVendor();
+        final int updateVersion = getUpdate();
+        return vendor != null
+            && vendor.contains(OPENJSSE_VENDOR)
+            && updateVersion >= OPENJSSE_MINIMUM_UPDATE_VERSION
+            && updateVersion <= OPENJSSE_MAXIMUM_UPDATE_VERSION;
+    }
+
     /**
      * See if the current JDK is legal for running GlassFish
      * @return true if the JDK is >= 1.6.0

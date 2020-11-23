@@ -39,15 +39,34 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
+import fish.payara.microprofile.openapi.impl.model.callbacks.CallbackImpl;
+import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
+import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
+import fish.payara.microprofile.openapi.impl.model.info.ContactImpl;
+import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
+import fish.payara.microprofile.openapi.impl.model.info.LicenseImpl;
+import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
+import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
+import fish.payara.microprofile.openapi.impl.model.media.DiscriminatorImpl;
+import fish.payara.microprofile.openapi.impl.model.media.EncodingImpl;
+import fish.payara.microprofile.openapi.impl.model.media.MediaTypeImpl;
+import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
+import fish.payara.microprofile.openapi.impl.model.media.XMLImpl;
+import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
+import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
+import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
+import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
+import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowImpl;
+import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowsImpl;
+import fish.payara.microprofile.openapi.impl.model.security.ScopesImpl;
+import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
+import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
+import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
+import fish.payara.microprofile.openapi.impl.model.servers.ServerVariableImpl;
+import fish.payara.microprofile.openapi.impl.model.servers.ServerVariablesImpl;
+import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import java.util.List;
 import java.util.function.BiPredicate;
-
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.Extensible;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -81,34 +100,12 @@ import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 import org.eclipse.microprofile.openapi.models.tags.Tag;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-
-import fish.payara.microprofile.openapi.impl.model.callbacks.CallbackImpl;
-import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
-import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
-import fish.payara.microprofile.openapi.impl.model.info.ContactImpl;
-import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
-import fish.payara.microprofile.openapi.impl.model.info.LicenseImpl;
-import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
-import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
-import fish.payara.microprofile.openapi.impl.model.media.DiscriminatorImpl;
-import fish.payara.microprofile.openapi.impl.model.media.EncodingImpl;
-import fish.payara.microprofile.openapi.impl.model.media.MediaTypeImpl;
-import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
-import fish.payara.microprofile.openapi.impl.model.media.XMLImpl;
-import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
-import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
-import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
-import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
-import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowImpl;
-import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowsImpl;
-import fish.payara.microprofile.openapi.impl.model.security.ScopesImpl;
-import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
-import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
-import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
-import fish.payara.microprofile.openapi.impl.model.servers.ServerVariableImpl;
-import fish.payara.microprofile.openapi.impl.model.servers.ServerVariablesImpl;
-import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 
 public class ModelInvariantsTest {
 

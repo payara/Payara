@@ -72,7 +72,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 import fish.payara.nucleus.healthcheck.HealthCheckConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
@@ -82,10 +84,13 @@ import fish.payara.nucleus.healthcheck.configuration.CheckerConfigurationType;
 import fish.payara.nucleus.healthcheck.configuration.CheckerType;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
+import fish.payara.nucleus.healthcheck.configuration.MicroProfileMetricsChecker;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
+import java.util.List;
+import fish.payara.nucleus.healthcheck.configuration.MonitoredMetric;
 
 /**
  * Service to configure individual specific {@link BaseHealthCheck} service directly using dynamic or their
@@ -126,14 +131,17 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
 
     @Inject
     private ServerEnvironment server;
+    
+    @Inject
+    private Domain domain;
 
     // target params:
 
-    @Param(name = "target", optional = true, defaultValue = "server-config")
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     private String target;
     private Config targetConfig;
 
-    @Param(name = "service")
+    @Param(name = "service", alias = "serviceName")
     private String serviceName;
     private CheckerType serviceType;
 
@@ -141,55 +149,72 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private boolean dynamic;
 
     // general properties params:
+    @Param(name = "checker-name", alias = "checkerName", optional = true)
+    private String checkerName;
+    
+    @Param(name = "add-to-microprofile-health", alias = "addToMicroProfileHealth",
+            optional = true, defaultValue = "false")
+    private Boolean addToMicroProfileHealth;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
     @Param(name = "time", optional = true)
     @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "time-unit", optional = true,
+    @Param(name = "time-unit", alias = "unit", optional = true,
             acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String timeUnit;
-
+    
     // hogging threads properties params:
 
-    @Param(name = "hogging-threads-threshold", optional = true)
+    @Param(name = "hogging-threads-threshold", alias = "threshold-percentage", optional = true)
     @Min(value = 0, message = "Hogging threads threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Hogging threads threshold is a percentage so must be less than 100")
     private String hogginThreadsThreshold;
 
     @Min(value = 0, message = "Hogging threads retry count must be zero or more")
-    @Param(name = "hogging-threads-retry-count", optional = true)
+    @Param(name = "hogging-threads-retry-count", alias = "retry-count", optional = true)
     private String hogginThreadsRetryCount;
 
     // stuck threads property params:
 
-    @Param(name = "stuck-threads-threshold", optional = true)
+    @Param(name = "stuck-threads-threshold", alias = "threshold", optional = true)
     @Min(value = 1, message = "Threshold length must be 1 or more")
     private String stuckThreadsThreshold;
 
-    @Param(name = "stuck-threads-threshold-unit", optional = true,
+    @Param(name = "stuck-threads-threshold-unit", alias = "thresholdUnit", optional = true,
             acceptableValues = "DAYS,HOURS,MILLISECONDS,MINUTES,SECONDS")
     private String stuckThreadsThresholdUnit;
 
     // threshold properties params:
 
-    @Param(name = "threshold-critical", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL)
+    @Param(name = "threshold-critical", alias = "thresholdCritical", optional = true, 
+            defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL)
     @Min(value = 0, message = "Critical threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Critical threshold is a percentage so must be less than 100")
     private String thresholdCritical;
 
-    @Param(name = "threshold-warning", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING)
+    @Param(name = "threshold-warning", alias = "thresholdWarning", optional = true, 
+            defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING)
     @Min(value = 0, message = "Warning threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Wanring threshold is a percentage so must be less than 100")
     private String thresholdWarning;
 
-    @Param(name = "threshold-good", optional = true, defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD)
+    @Param(name = "threshold-good", alias = "thresholdGood", optional = true, 
+            defaultValue = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD)
     @Min(value = 0, message = "Good threshold is a percentage so must be greater than zero")
     @Max(value = 100, message ="Good threshold is a percentage so must be less than 100")
     private String thresholdGood;
+    
+    // microprofile metrics properties params:
+    
+    @Param(name = "add-metric", optional = true, multiple = true, alias = "addMetric")
+    private List<String> metricsToAdd;
+
+    @Param(name = "delete-metric", optional = true, multiple = true, alias = "deleteMetric")
+    private List<String> metricsToRemove;
 
     private ActionReport report;
 
@@ -222,6 +247,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
+        
         updateServiceConfiguration(service);
     }
 
@@ -294,8 +320,19 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private <C extends Checker, O extends HealthCheckExecutionOptions> void configureDynamically(
             BaseHealthCheck<O, C> service, C config) {
         service.setOptions(service.constructOptions(config));
-        healthCheckService.registerCheck(config.getName(), service);
-        healthCheckService.reboot();
+
+        boolean register = true;
+        //This prevents MicroProfileMetricsChecker for registering without monitored metrics
+        if (config instanceof MicroProfileMetricsChecker) {
+            MicroProfileMetricsChecker checker = (MicroProfileMetricsChecker) config;
+            if (checker.getMonitoredMetrics().isEmpty()) {
+                register = false;
+            }
+        }
+        if (register) {
+            healthCheckService.registerCheck(config.getName(), service);
+            healthCheckService.reboot();
+        }
         if (service instanceof BaseThresholdHealthCheck) {
             configureDynamically((BaseThresholdHealthCheck<?, ?>) service);
         }
@@ -323,10 +360,16 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         }
     }
 
-    private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException {
-        updateProperty(config, "enabled", config.getEnabled(), enabled.toString(), Checker::setEnabled);
+    private <C extends Checker> Checker updateProperties(Checker config, Class<C> type) throws PropertyVetoException, TransactionFailure {
+        if (enabled != null) {
+            updateProperty(config, "enabled", config.getEnabled(), enabled.toString(), Checker::setEnabled);
+        }
+        updateProperty(config, "checker-name", config.getName(), checkerName, Checker::setName);
+        updateProperty(config, "add-to-microprofile-health", config.getAddToMicroProfileHealth(), 
+                addToMicroProfileHealth.toString(), Checker::setAddToMicroProfileHealth);
         updateProperty(config, "time", config.getTime(), time, Checker::setTime);
         updateProperty(config, "time-unit", config.getUnit(), timeUnit, Checker::setUnit);
+        updateProperty(config, "checker-name", config.getName(), checkerName, Checker::setName);
         if (HoggingThreadsChecker.class.isAssignableFrom(type)) {
             HoggingThreadsChecker hoggingThreadsConfig = (HoggingThreadsChecker) config;
             updateProperty(hoggingThreadsConfig, "hogging-threads-threshold", hoggingThreadsConfig.getThresholdPercentage(), 
@@ -341,9 +384,93 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
             updateProperty(stuckThreadsConfig, "stuck-threads-threshold-unit", stuckThreadsConfig.getThresholdTimeUnit(), 
                     stuckThreadsThresholdUnit, StuckThreadsChecker::setThresholdTimeUnit);
         }
+        if (MicroProfileMetricsChecker.class.isAssignableFrom(type)) {
+            MicroProfileMetricsChecker microProfileMetricsConfig = (MicroProfileMetricsChecker) config;           
+            // This is required as the child resources is not created if the name is not set.
+            microProfileMetricsConfig.setName(config.getName());
+            List<MonitoredMetric> metrics = microProfileMetricsConfig.getMonitoredMetrics();
+            if (metricsToRemove != null && !metricsToRemove.isEmpty()) {
+                for (String metricToRemove : metricsToRemove) {
+                    MonitoredMetric monitoredMetric = parseToMonitoredMetric(metricToRemove, microProfileMetricsConfig.createChild(MonitoredMetric.class));               
+                    boolean removed = false;
+
+                    for (MonitoredMetric metric : metrics) {
+                        if (metric.equals(monitoredMetric)) {
+                            metrics.remove(metric);
+                            report.appendMessage("Metric 'metricName=" + monitoredMetric.getMetricName() + "' successfully deleted." + "\n");
+                            removed = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!removed) {
+                        report.appendMessage("Metric 'metricName=" + monitoredMetric.getMetricName() + "' doesn't exist, so was ignored." + "\n");
+                    }
+                }
+            }
+            
+            if (metricsToAdd != null && !metricsToAdd.isEmpty()) {
+                for (String metricToAdd : metricsToAdd) {
+                    MonitoredMetric monitoredMetric = parseToMonitoredMetric(metricToAdd, microProfileMetricsConfig.createChild(MonitoredMetric.class));
+                    boolean metricExists = false;
+
+                    for (MonitoredMetric metric : metrics) {
+                        if (metric.equals(monitoredMetric)) {
+                            metricExists = true;
+                            report.appendMessage("Metric 'metricName=" + monitoredMetric.getMetricName() + "' already exists, so was ignored." + "\n");
+                            break;
+                        }
+                    }
+
+                    if (!metricExists) {
+                        metrics.add(monitoredMetric);
+                        report.appendMessage("Metric 'metricName=" + monitoredMetric.getMetricName() + "' successfully added." + "\n");
+                    }
+                }
+            }
+        }
+        
         return config;
     }
 
+    private MonitoredMetric parseToMonitoredMetric(String input, MonitoredMetric monitoredMetric) throws PropertyVetoException {
+        String[] metricTokens = input.split("(?=metricName ?=)|(?=description ?=)");
+        String metricName = null;
+        String description = null;
+
+        if (metricTokens.length < 1) {
+            throw new IllegalArgumentException("No metric property was available. The required metric property is 'metricName'.");
+        }
+
+        for (String token : metricTokens) {
+            token = token.replaceAll("\\\\", "");
+            String[] param = token.split("=", 2);
+            if (param.length != 2) {
+                throw new IllegalArgumentException("Incorrectly formatted metric property. Correct format is 'metricName=MetricName'.");
+            }
+            switch (param[0]) {
+                case "metricName":
+                    metricName = param[1].trim();
+                    break;
+                case "description":
+                    description = param[1].trim();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown metric property: " + param[0] + ". Valid metric properties are: 'metricName' and 'description'.");
+            }
+        }
+        if (metricName == null || metricName.isEmpty()) {
+            throw new IllegalArgumentException("Invalid metric property: " + metricName);
+        }
+
+        monitoredMetric.setMetricName(metricName);
+        if (description != null) {
+            monitoredMetric.setDescription(description);
+        }
+
+        return monitoredMetric;
+    }
+    
     /**
      * Updates the named property in the given config with the given value. If the property does not exist it is
      * created.

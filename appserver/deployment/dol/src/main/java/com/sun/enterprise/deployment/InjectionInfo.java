@@ -79,7 +79,7 @@ public class InjectionInfo {
 
     public List<InjectionCapable> getInjectionResources() {
         if (injectionResources == null) {
-            injectionResources = new LinkedList<InjectionCapable>();
+            injectionResources = new LinkedList<>();
         }
         return injectionResources;
     } 

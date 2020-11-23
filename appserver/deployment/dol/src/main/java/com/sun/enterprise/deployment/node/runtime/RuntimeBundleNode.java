@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.node.runtime;
@@ -58,8 +58,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
-        extends DeploymentDescriptorNode<T> implements RootXMLNode<T> {
+public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor> extends DeploymentDescriptorNode<T> implements RootXMLNode<T> {
 
     private static Boolean restrictDTDDeclarations=null;
 
@@ -70,7 +69,7 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
     // The first level map is indexed by the parent element name, and the 
     // second level of the map is indexed by the sub element name and the
     // corresponding handler node class name
-    protected HashMap<String, LinkedHashMap<String, Class>> elementToNodeMappings = new HashMap<String, LinkedHashMap<String, Class>>();
+    protected HashMap<String, LinkedHashMap<String, Class>> elementToNodeMappings = new HashMap<>();
     
     public RuntimeBundleNode(T descriptor) {
         this.descriptor = descriptor;
@@ -138,14 +137,10 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
      * @param parent
      * @param descriptor
      */
-    protected void writeMessageDestinationInfo(Node parent, 
-                                               BundleDescriptor descriptor) {
-        for(Iterator iter = descriptor.getMessageDestinations().iterator();
-            iter.hasNext();) {
-            MessageDestinationRuntimeNode node = 
-                new MessageDestinationRuntimeNode();
-            node.writeDescriptor(parent, RuntimeTagNames.MESSAGE_DESTINATION,
-                                 (MessageDestinationDescriptor) iter.next());
+    protected void writeMessageDestinationInfo(Node parent, BundleDescriptor descriptor) {
+        for(Iterator<MessageDestinationDescriptor> iter = descriptor.getMessageDestinations().iterator(); iter.hasNext();) {
+            MessageDestinationRuntimeNode node = new MessageDestinationRuntimeNode();
+            node.writeDescriptor(parent, RuntimeTagNames.MESSAGE_DESTINATION, iter.next());
         }
     }    
     
@@ -176,7 +171,7 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
     public void recordNodeMapping(String currentElementName, String subElementName, Class subElementHandler) {
         LinkedHashMap<String, Class> subElementMappings = elementToNodeMappings.get(currentElementName);
         if (subElementMappings == null) {
-            subElementMappings = new LinkedHashMap<String, Class>();
+            subElementMappings = new LinkedHashMap<>();
             elementToNodeMappings.put(currentElementName, subElementMappings);
         }
         subElementMappings.put(subElementName, subElementHandler);

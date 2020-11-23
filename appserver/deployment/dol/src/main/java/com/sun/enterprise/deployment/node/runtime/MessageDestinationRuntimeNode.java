@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.node.runtime;
 
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.MessageDestinationDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
@@ -65,6 +65,7 @@ public class MessageDestinationRuntimeNode extends DeploymentDescriptorNode {
     /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public Object getDescriptor() {
         return descriptor;
     }   
@@ -75,8 +76,9 @@ public class MessageDestinationRuntimeNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
-    protected Map getDispatchTable() {    
-        Map table = super.getDispatchTable();
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+        Map<String, String> table = super.getDispatchTable();
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
         return table;
     }
@@ -87,6 +89,7 @@ public class MessageDestinationRuntimeNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (RuntimeTagNames.MESSAGE_DESTINATION_NAME.equals(element.getQName())) {
             // this is a hack but not much choice

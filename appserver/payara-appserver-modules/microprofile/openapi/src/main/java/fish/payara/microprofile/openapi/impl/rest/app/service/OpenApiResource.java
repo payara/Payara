@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,28 +39,28 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.app.service;
 
+import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
+import fish.payara.microprofile.openapi.impl.OpenApiService;
+import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
+import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
+
 import static fish.payara.microprofile.openapi.impl.rest.app.OpenApiApplication.APPLICATION_YAML;
-import static java.util.logging.Level.WARNING;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-
 import java.io.IOException;
-import java.util.logging.Logger;
+import static java.util.logging.Level.WARNING;
 
+import java.util.ArrayList;
+import java.util.logging.Logger;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-
-import fish.payara.microprofile.openapi.api.OpenAPIBuildException;
-import fish.payara.microprofile.openapi.impl.OpenApiService;
-import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
-import javax.servlet.http.HttpServletRequest;
 
 @Path("/")
 public class OpenApiResource {
@@ -82,14 +82,15 @@ public class OpenApiResource {
         OpenAPI document = null;
         try {
             document = openApiService.getDocument();
-        } catch (OpenAPIBuildException ex) {
+        } catch (OpenAPIBuildException | IOException ex) {
             LOGGER.log(WARNING, "OpenAPI document creation failed.", ex);
         }
 
         // If there are none, return an empty OpenAPI document
         if (document == null) {
             LOGGER.info("No OpenAPI document found.");
-            return Response.status(Status.NOT_FOUND).entity(new OpenAPIImpl()).build();
+            OpenAPI result = new BaseProcessor(new ArrayList<>()).process(new OpenAPIImpl(), null);
+            return Response.status(Status.NOT_FOUND).entity(result).build();
         }
 
         // Return the document

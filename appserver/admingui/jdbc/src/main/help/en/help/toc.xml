@@ -17,7 +17,7 @@
 -->
 
 <toc version="2.0">
-  <tocitem target="tasks-topic-group" text="GlassFish Server Administration Console Tasks" expand="false">
+  <tocitem target="tasks-topic-group" text="Payara Server Administration Console Tasks" expand="false">
     <tocitem target="task-group-jdbc" text="Connecting Applications to Databases Through JDBC Technology" expand="false">
       <tocitem target="task-setdbaccess" text="To Set Up Database Access" expand="false"></tocitem>
       <tocitem target="task-integratejdbcdriver" text="To Integrate a JDBC Driver" expand="false"></tocitem>
@@ -33,7 +33,7 @@
       <tocitem target="task-jdbcconnectionpooldelete" text="To Delete a JDBC Connection Pool" expand="false"></tocitem>
     </tocitem>
   </tocitem>
-  <tocitem target="ref-topic-group" text="GlassFish Server Administration Console Reference" expand="false">
+  <tocitem target="ref-topic-group" text="Payara Server Administration Console Reference" expand="false">
     <tocitem target="ref-group-resources" text="Resources" expand="false">
       <tocitem target="ref-group-jdbc" text="JDBC" expand="false">
         <tocitem target="ref-jdbc" text="JDBC" expand="false"></tocitem>

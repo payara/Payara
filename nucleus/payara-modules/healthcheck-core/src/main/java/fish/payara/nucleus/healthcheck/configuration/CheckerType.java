@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2017-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,5 +50,6 @@ public enum CheckerType {
     HOGGING_THREADS,
     MACHINE_MEMORY_USAGE,
     STUCK_THREAD,
-    MP_HEALTH
+    MP_HEALTH,
+    MP_METRICS
 }

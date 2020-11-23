@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,46 +39,9 @@
  */
 package fish.payara.microprofile.openapi.api.visitor;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.PATCH;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-
-import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
-import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
-import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.callbacks.Callback;
-import org.eclipse.microprofile.openapi.annotations.callbacks.Callbacks;
-import org.eclipse.microprofile.openapi.annotations.extensions.Extension;
-import org.eclipse.microprofile.openapi.annotations.extensions.Extensions;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirements;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
-import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
-import org.eclipse.microprofile.openapi.annotations.servers.Server;
-import org.eclipse.microprofile.openapi.annotations.servers.Servers;
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.eclipse.microprofile.openapi.annotations.tags.Tags;
+import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.MethodModel;
 
 public interface ApiVisitor {
 
@@ -86,84 +49,84 @@ public interface ApiVisitor {
      * Generic representation of each of these functions.
      */
     @FunctionalInterface
-    interface VisitorFunction<A extends Annotation, E extends AnnotatedElement> {
-        void apply(A annotation, E element, ApiContext context);
+    interface VisitorFunction<AnnotationModel, E extends AnnotatedElement> {
+        void apply(AnnotationModel annotation, E element, ApiContext context);
     }
 
     // JAX-RS annotations
 
-    void visitGET(GET get, Method element, ApiContext context);
+    void visitGET(AnnotationModel get, MethodModel element, ApiContext context);
 
-    void visitPOST(POST post, Method element, ApiContext context);
+    void visitPOST(AnnotationModel post, MethodModel element, ApiContext context);
 
-    void visitPUT(PUT put, Method element, ApiContext context);
+    void visitPUT(AnnotationModel put, MethodModel element, ApiContext context);
 
-    void visitDELETE(DELETE delete, Method element, ApiContext context);
+    void visitDELETE(AnnotationModel delete, MethodModel element, ApiContext context);
 
-    void visitHEAD(HEAD head, Method element, ApiContext context);
+    void visitHEAD(AnnotationModel head, MethodModel element, ApiContext context);
 
-    void visitOPTIONS(OPTIONS options, Method element, ApiContext context);
+    void visitOPTIONS(AnnotationModel options, MethodModel element, ApiContext context);
 
-    void visitPATCH(PATCH patch, Method element, ApiContext context);
+    void visitPATCH(AnnotationModel patch, MethodModel element, ApiContext context);
 
-    void visitProduces(Produces produces, AnnotatedElement element, ApiContext context);
+    void visitProduces(AnnotationModel produces, AnnotatedElement element, ApiContext context);
 
-    void visitConsumes(Consumes produces, AnnotatedElement element, ApiContext context);
+    void visitConsumes(AnnotationModel produces, AnnotatedElement element, ApiContext context);
 
-    void visitQueryParam(QueryParam param, AnnotatedElement element, ApiContext context);
+    void visitQueryParam(AnnotationModel param, AnnotatedElement element, ApiContext context);
 
-    void visitPathParam(PathParam param, AnnotatedElement element, ApiContext context);
+    void visitPathParam(AnnotationModel param, AnnotatedElement element, ApiContext context);
 
-    void visitFormParam(FormParam param, AnnotatedElement element, ApiContext context);
+    void visitFormParam(AnnotationModel param, AnnotatedElement element, ApiContext context);
 
-    void visitHeaderParam(HeaderParam param, AnnotatedElement element, ApiContext context);
+    void visitHeaderParam(AnnotationModel param, AnnotatedElement element, ApiContext context);
 
-    void visitCookieParam(CookieParam param, AnnotatedElement element, ApiContext context);
+    void visitCookieParam(AnnotationModel param, AnnotatedElement element, ApiContext context);
     
     // OpenAPI annotations
 
-    void visitOpenAPI(OpenAPIDefinition definition, AnnotatedElement element, ApiContext context);
+    void visitOpenAPI(AnnotationModel definition, AnnotatedElement element, ApiContext context);
 
-    void visitSchema(Schema schema, AnnotatedElement element, ApiContext context);
+    void visitSchema(AnnotationModel schema, AnnotatedElement element, ApiContext context);
 
-    void visitExtension(Extension extension, AnnotatedElement element, ApiContext context);
+    void visitExtension(AnnotationModel extension, AnnotatedElement element, ApiContext context);
 
-    void visitExtensions(Extensions extensions, AnnotatedElement element, ApiContext context);
+    void visitExtensions(AnnotationModel extensions, AnnotatedElement element, ApiContext context);
 
-    void visitOperation(Operation operation, AnnotatedElement element, ApiContext context);
+    void visitOperation(AnnotationModel operation, AnnotatedElement element, ApiContext context);
 
-    void visitCallback(Callback callback, AnnotatedElement element, ApiContext context);
+    void visitCallback(AnnotationModel callback, AnnotatedElement element, ApiContext context);
 
-    void visitCallbacks(Callbacks callbacks, AnnotatedElement element, ApiContext context);
+    void visitCallbacks(AnnotationModel callbacks, AnnotatedElement element, ApiContext context);
 
-    void visitRequestBody(RequestBody requestBody, AnnotatedElement element, ApiContext context);
+    void visitRequestBody(AnnotationModel requestBody, AnnotatedElement element, ApiContext context);
 
-    void visitAPIResponse(APIResponse apiResponse, AnnotatedElement element, ApiContext context);
+    void visitAPIResponse(AnnotationModel apiResponse, AnnotatedElement element, ApiContext context);
 
-    void visitAPIResponses(APIResponses apiResponses, AnnotatedElement element, ApiContext context);
+    void visitAPIResponses(AnnotationModel apiResponses, AnnotatedElement element, ApiContext context);
 
-    void visitParameter(Parameter parameter, AnnotatedElement element, ApiContext context);
+    void visitParameter(AnnotationModel parameter, AnnotatedElement element, ApiContext context);
 
-    void visitParameters(Parameters parameters, AnnotatedElement element, ApiContext context);
+    void visitParameters(AnnotationModel parameters, AnnotatedElement element, ApiContext context);
 
-    void visitExternalDocumentation(ExternalDocumentation externalDocs, AnnotatedElement element, ApiContext context);
+    void visitExternalDocumentation(AnnotationModel externalDocs, AnnotatedElement element, ApiContext context);
 
-    void visitServer(Server server, AnnotatedElement element, ApiContext context);
+    void visitServer(AnnotationModel server, AnnotatedElement element, ApiContext context);
 
-    void visitServers(Servers servers, AnnotatedElement element, ApiContext context);
+    void visitServers(AnnotationModel servers, AnnotatedElement element, ApiContext context);
 
-    void visitTag(Tag tag, AnnotatedElement element, ApiContext context);
+    void visitTag(AnnotationModel tag, AnnotatedElement element, ApiContext context);
 
-    void visitTags(Tags tags, AnnotatedElement element, ApiContext context);
+    void visitTags(AnnotationModel tags, AnnotatedElement element, ApiContext context);
 
-    void visitSecurityScheme(SecurityScheme securityScheme, AnnotatedElement element, ApiContext context);
+    void visitSecurityScheme(AnnotationModel securityScheme, AnnotatedElement element, ApiContext context);
 
-    void visitSecuritySchemes(SecuritySchemes securitySchemes, AnnotatedElement element, ApiContext context);
+    void visitSecuritySchemes(AnnotationModel securitySchemes, AnnotatedElement element, ApiContext context);
 
-    void visitSecurityRequirement(SecurityRequirement securityRequirement, AnnotatedElement element,
+    void visitSecurityRequirement(AnnotationModel securityRequirement, AnnotatedElement element,
             ApiContext context);
 
-    void visitSecurityRequirements(SecurityRequirements securityRequirements, AnnotatedElement element,
+    void visitSecurityRequirements(AnnotationModel securityRequirements, AnnotatedElement element,
             ApiContext context);
 
 }

@@ -95,7 +95,6 @@ public class CookiePersistentManager extends StandardManager {
         if (cookies == null) {
             return null;
         }
-        String value = null;
         for (Cookie cookie : cookies) {
             if (cookieName.equals(cookie.getName())) {
                 return parseSession(cookie.getValue(), request.getRequestedSessionId());
@@ -112,8 +111,8 @@ public class CookiePersistentManager extends StandardManager {
     }
 
     @Override
-    public Session[] findSessions() {
-        return null;
+    public List<Session> findSessions() {
+        return Collections.emptyList();
     }
 
     @Override

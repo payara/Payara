@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package fish.payara.security.oauth2;
 import fish.payara.security.oauth2.api.OAuth2AccessToken;
 import java.time.Instant;
 import java.util.Optional;
+import javax.enterprise.context.SessionScoped;
 
 /**
  * Class to hold state of OAuth2 token as returned by the provider
@@ -49,7 +50,7 @@ import java.util.Optional;
  * @author jonathan
  * @since 4.1.2.172
  */
-//@SessionScoped
+@SessionScoped
 public class OAuth2StateHolder implements OAuth2AccessToken {
 
     /**
@@ -58,7 +59,7 @@ public class OAuth2StateHolder implements OAuth2AccessToken {
     private String token;
     private Optional<String> scope;
     private Optional<String> refreshToken;
-    private Optional<Integer> expiresIn;
+    private Optional<Long> expiresIn;
     private Instant timeset;
 
     public OAuth2StateHolder() {
@@ -87,12 +88,12 @@ public class OAuth2StateHolder implements OAuth2AccessToken {
     }
 
     @Override
-    public Optional<Integer> getExpiresIn() {
+    public Optional<Long> getExpiresIn() {
         return expiresIn;
     }
 
     @Override
-    public void setExpiresIn(Integer expiresIn) {
+    public void setExpiresIn(Long expiresIn) {
         this.expiresIn = Optional.ofNullable(expiresIn);
     }
     

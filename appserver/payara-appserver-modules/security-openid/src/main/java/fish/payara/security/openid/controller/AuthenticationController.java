@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -51,13 +51,15 @@ import static fish.payara.security.openid.api.OpenIdConstant.STATE;
 import fish.payara.security.openid.api.OpenIdState;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdNonce;
+import java.io.IOException;
 import static java.util.logging.Level.FINEST;
 import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.security.enterprise.AuthenticationStatus;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import static javax.security.enterprise.AuthenticationStatus.SEND_CONTINUE;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.UriBuilder;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
@@ -82,22 +84,20 @@ public class AuthenticationController {
      * to authenticates the End-User using the Authorization Code Flow and
      * authorization Code is returned from the Authorization Endpoint.
      * <br>
-     * (2)
-     * <br>
-     * Authorization Server authenticates the End-User, obtains End-User
+     * (2) Authorization Server authenticates the End-User, obtains End-User
      * Consent/Authorization and sends the End-User back to the Client with an
      * Authorization Code.
      *
      *
      * @param configuration
-     * @param httpMessageContext
+     * @param request
+     * @param response
      * @return
      */
     public AuthenticationStatus authenticateUser(
             OpenIdConfiguration configuration,
-            HttpMessageContext httpMessageContext) {
-
-        HttpServletRequest request = httpMessageContext.getRequest();
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
         /**
          * Client prepares an authentication request and redirect to the
@@ -113,7 +113,7 @@ public class AuthenticationController {
 
         OpenIdState state = new OpenIdState();
         authRequest.queryParam(STATE, state.getValue());
-        stateController.store(state, configuration, httpMessageContext);
+        stateController.store(state, configuration, request, response);
 
         // add nonce for replay attack prevention
         if (configuration.isUseNonce()) {
@@ -121,7 +121,7 @@ public class AuthenticationController {
             // use a cryptographic hash of the value as the nonce parameter
             String nonceHash = nonceController.getNonceHash(nonce);
             authRequest.queryParam(NONCE, nonceHash);
-            nonceController.store(nonce, configuration, httpMessageContext);
+            nonceController.store(nonce, configuration, request, response);
 
         }
         if (!isEmpty(configuration.getResponseMode())) {
@@ -138,7 +138,12 @@ public class AuthenticationController {
 
         String authUrl = authRequest.toString();
         LOGGER.log(FINEST, "Redirecting for authentication to {0}", authUrl);
-        return httpMessageContext.redirect(authUrl);
+        try {
+            response.sendRedirect(authUrl);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return SEND_CONTINUE;
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,22 +38,24 @@
  */
 package fish.payara.nucleus.healthcheck;
 
+import java.beans.PropertyChangeEvent;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import com.sun.enterprise.config.serverbeans.Config;
 
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.notification.healthcheck.HealthCheckResultStatus;
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
-import fish.payara.nucleus.notification.TimeUtil;
-import fish.payara.nucleus.notification.configuration.Notifier;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
-import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
-import fish.payara.nucleus.notification.log.LogNotifier;
-import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -64,24 +66,22 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.Changed;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.NotProcessed;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import fish.payara.internal.notification.TimeUtil;
+import fish.payara.monitoring.collect.MonitoringDataCollector;
+import fish.payara.monitoring.collect.MonitoringDataSource;
+import fish.payara.notification.healthcheck.HealthCheckResultStatus;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.healthcheck.events.PayaraHealthCheckServiceEvents;
+import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 
 /**
  * @author steve
@@ -114,15 +114,12 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     Transactions transactions;
 
     @Inject
-    private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
-
-    @Inject
     private HistoricHealthCheckEventStore healthCheckEventStore;
 
     @Inject 
     private PayaraExecutorService executor;
 
-    private List<NotifierExecutionOptions> notifierExecutionOptionsList;
+    private Set<String> enabledNotifiers = new LinkedHashSet<>();
     private Map<String, HealthCheckTask> registeredTasks = new HashMap<>();
     private boolean enabled;
     private boolean historicalTraceEnabled;
@@ -164,22 +161,6 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
         events.register(this);
         configuration = habitat.getService(HealthCheckServiceConfiguration.class);
         if (configuration != null) {
-            if (configuration.getNotifierList() != null && configuration.getNotifierList().isEmpty()) {
-                try {
-                    ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
-                        @Override
-                        public Object run(final HealthCheckServiceConfiguration configurationProxy)
-                                throws PropertyVetoException, TransactionFailure {
-                            LogNotifier notifier = configurationProxy.createChild(LogNotifier.class);
-                            configurationProxy.getNotifierList().add(notifier);
-                            return configurationProxy;
-                        }
-                    }, configuration);
-                } catch (TransactionFailure e) {
-                    logger.log(Level.SEVERE, "Error occurred while setting initial log notifier", e);
-                }
-            }
-
             if (Boolean.parseBoolean(configuration.getEnabled())) {
                 enabled = true;
             }
@@ -218,7 +199,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 }
                 logger.info("Payara Health Check Service Started.");
             }
-
+            
             bootstrapNotifierList();
         }
     }
@@ -227,38 +208,36 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
      * Starts all notifiers that have been enable with the healthcheck service.
      */
     public synchronized void bootstrapNotifierList() {
-        notifierExecutionOptionsList = new ArrayList<>();
+        enabledNotifiers.clear();
         if (configuration.getNotifierList() != null) {
-            for (Notifier notifier : configuration.getNotifierList()) {
-                ConfigView view = ConfigSupport.getImpl(notifier);
-                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
-                NotifierExecutionOptionsFactory<Notifier> factory = executionOptionsFactoryStore.get(annotation.type());
-                if (factory != null) {
-                    notifierExecutionOptionsList.add(factory.build(notifier));
-                }
-            }
-        }
-        if (notifierExecutionOptionsList.isEmpty()) {
-            // Add logging execution options by default
-            LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
-            logNotifierExecutionOptions.setEnabled(true);
-            notifierExecutionOptionsList.add(logNotifierExecutionOptions);
+            configuration.getNotifierList().forEach(enabledNotifiers::add);
         }
     }
 
     private void executeTasks() {
         for (String registeredTaskKey : registeredTasks.keySet()) {
             HealthCheckTask registeredTask = registeredTasks.get(registeredTaskKey);
+            HealthCheckExecutionOptions healthCheckExecutionOptions = registeredTask.getCheck().getOptions();
             logger.info("Scheduling Health Check for task: " + registeredTask.getName());
 
-            if (registeredTask.getCheck().getOptions().isEnabled()) {
+            if (healthCheckExecutionOptions.isEnabled()) {
                 ScheduledFuture<?> checker = executor.scheduleAtFixedRate(registeredTask, 0,
-                        registeredTask.getCheck().getOptions().getTime(),
-                        registeredTask.getCheck().getOptions().getUnit());
+                        healthCheckExecutionOptions.getTime(),
+                        healthCheckExecutionOptions.getUnit());
                 if (scheduledCheckers != null) {
                     scheduledCheckers.add(checker);
                 }
             }
+
+            exposeToMicroProfileHealthEndPoint(healthCheckExecutionOptions, registeredTask);
+        }
+    }
+
+    private void exposeToMicroProfileHealthEndPoint(HealthCheckExecutionOptions healthCheckExecutionOptions, HealthCheckTask registeredTask) {
+        if (healthCheckExecutionOptions.isEnabled() && healthCheckExecutionOptions.isAddToMicroProfileHealthCheck()) {
+            events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_CHECKER_ADD_TO_MICROPROFILE_HEALTH, registeredTask));
+        } else {
+            events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_CHECKER_REMOVE_FROM_MICROPROFILE_HEALTH, registeredTask));
         }
     }
 
@@ -306,18 +285,19 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
      */
     public void shutdownHealthCheck() {
         Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
-        
+
         if (historicalTraceTask != null) {
             historicalTraceTask.cancel(false);
             historicalTraceTask = null;
         }
-        
+
         if (scheduledCheckers != null) {
             for (ScheduledFuture<?> scheduledChecker : scheduledCheckers) {
                 scheduledChecker.cancel(false);
             }
             scheduledCheckers.clear();
         }
+        events.send(new Event(PayaraHealthCheckServiceEvents.HEALTHCHECK_SERVICE_DISABLED));
     }
 
     public BaseHealthCheck getCheck(String serviceName) {
@@ -381,11 +361,11 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     }
 
     /**
-     * Gets a list of all the options of all notifiers configured with the healthcheck service.
+     * Gets a list of all notifiers enabled the healthcheck service.
      * @return 
      */
-    public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
-        return notifierExecutionOptionsList;
+    public Set<String> getEnabledNotifiers() {
+        return enabledNotifiers;
     }
 
     @Override

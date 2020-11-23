@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,9 +50,9 @@ public class HealthCheckWithThresholdExecutionOptions extends HealthCheckExecuti
     private int thresholdWarning;
     private int thresholdGood;
 
-    public HealthCheckWithThresholdExecutionOptions(boolean enabled, long time, TimeUnit unit, String
+    public HealthCheckWithThresholdExecutionOptions(boolean enabled, long time, TimeUnit unit, boolean addToMicroProfileHealth, String
             thresholdCritical, String thresholdWarning, String thresholdGood) {
-        super(enabled, time, unit);
+        super(enabled, time, unit, addToMicroProfileHealth);
         this.thresholdCritical = Integer.parseInt(thresholdCritical);
         this.thresholdWarning = Integer.parseInt(thresholdWarning);
         this.thresholdGood = Integer.parseInt(thresholdGood);

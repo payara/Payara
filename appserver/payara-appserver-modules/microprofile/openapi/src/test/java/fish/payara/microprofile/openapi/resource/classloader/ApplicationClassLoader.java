@@ -46,26 +46,15 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ws.rs.core.Application;
-
 public class ApplicationClassLoader extends ClassLoader {
 
-    private Set<Class<?>> appClasses;
+    private final Set<Class<?>> appClasses;
 
-    public ApplicationClassLoader(Application app, Set<Class<?>> extraClasses) {
+    public ApplicationClassLoader(Set<Class<?>> extraClasses) {
         super();
         appClasses = new HashSet<>();
-        appClasses.add(app.getClass());
-        appClasses.addAll(app.getClasses());
         if (extraClasses != null) {
             appClasses.addAll(extraClasses);
-        }
-        for (Class<?> clazz : appClasses) {
-            try {
-                loadClass(clazz.getName());
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -73,13 +62,9 @@ public class ApplicationClassLoader extends ClassLoader {
         return appClasses;
     }
 
-    public ApplicationClassLoader(Application app) {
-        this(app, null);
-    }
-
     private Class<?> getClass(String name) throws ClassNotFoundException {
         String file = name.replace('.', File.separatorChar) + ".class";
-        byte[] b = null;
+        byte[] b;
         try {
             b = loadClassData(file);
             Class<?> c = defineClass(name, b, 0, b.length);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -46,7 +46,6 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  * Information about the web services defined in a single module.
@@ -65,13 +64,14 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
      * Default constructor.
      */
     public WebServicesDescriptor() {
-        webServices = new HashSet<WebService>();
+        webServices = new HashSet<>();
     }
 
     /**
      * @return the default version of the deployment descriptor
      * loaded by this descriptor
      */
+    @Override
     public String getDefaultSpecVersion() {
         return "1.3";//TODO fix this WebServicesDescriptorNode.SPEC_VERSION;
     }
@@ -88,6 +88,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
         return !(webServices.isEmpty());
     }
 
+    @Override
     public boolean isEmpty() {
         return webServices.isEmpty();
     }
@@ -114,7 +115,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
     }
 
     public Collection<WebService> getWebServices() {
-        return new HashSet<WebService>(webServices);
+        return new HashSet<>(webServices);
     }
 
     /**
@@ -122,8 +123,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
      * @return WebServiceEndpoint or null if not found
      */
     public WebServiceEndpoint getEndpointByName(String endpointName) {
-        for(Iterator iter = getEndpoints().iterator(); iter.hasNext();) {
-            WebServiceEndpoint next = (WebServiceEndpoint) iter.next();
+        for (WebServiceEndpoint next : getEndpoints()) {
             if( next.getEndpointName().equals(endpointName) ) {
                 return next;
             }
@@ -136,7 +136,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
     }
 
     public Collection<WebServiceEndpoint> getEndpointsImplementedBy(EjbDescriptor ejb) {
-        Collection<WebServiceEndpoint> endpoints = new HashSet();
+        Collection<WebServiceEndpoint> endpoints = new HashSet<>();
         if( ejb instanceof EjbSessionDescriptor ) {
             for(WebServiceEndpoint next : getEndpoints()) {
                 if( next.implementedByEjbComponent(ejb) ) {
@@ -152,7 +152,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
     }
 
     public Collection<WebServiceEndpoint> getEndpointsImplementedBy(WebComponentDescriptor desc) {
-        Collection<WebServiceEndpoint> endpoints = new HashSet();
+        Collection<WebServiceEndpoint> endpoints = new HashSet<>();
         for(WebServiceEndpoint next : getEndpoints()) {
             if( next.implementedByWebComponent(desc) ) {
                 endpoints.add(next);
@@ -162,13 +162,14 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
     }
 
     public Collection<WebServiceEndpoint> getEndpoints() {
-        Collection allEndpoints = new HashSet();
+        Collection<WebServiceEndpoint> allEndpoints = new HashSet<>();
         for(WebService webService : webServices) {
             allEndpoints.addAll( webService.getEndpoints() );
         }
         return allEndpoints;
     }
 
+    @Override
     public ArchiveType getModuleType() {
         if (bundleDesc!=null) {
           return bundleDesc.getModuleType();
@@ -181,18 +182,21 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
     // Dummy RootDeploymentDescriptor implementations for methods that
     // do not apply to WebServicesDescriptor.
     //
+    @Override
     public String getModuleID() { return ""; }
+    @Override
     public ClassLoader getClassLoader() { return null; }
+    @Override
     public boolean isApplication() {return false; }
 
     /**
      * Returns a formatted String of the attributes of this object.
      */
+    @Override
     public void print(StringBuilder toStringBuilder) {
 	super.print(toStringBuilder);
         if (hasWebServices()) {
-            for (Iterator itr = getWebServices().iterator();itr.hasNext();) {
-                WebService aWebService = (WebService) itr.next();
+            for (WebService aWebService : getWebServices()) {
                 toStringBuilder.append("\n Web Service : ");
                 aWebService.print(toStringBuilder);
             }

@@ -39,7 +39,9 @@
  */
 package fish.payara.microprofile.metrics.impl;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -50,6 +52,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.ConcurrentGauge;
@@ -87,6 +91,8 @@ import org.eclipse.microprofile.metrics.Timer;
 @Vetoed
 public class MetricRegistryImpl extends MetricRegistry {
 
+    private static final Logger LOGGER = Logger.getLogger(MetricRegistryImpl.class.getName());
+
     static final class MetricFamily<T extends Metric> {
         final Metadata metadata;
         final ConcurrentMap<MetricID, T> metrics = new ConcurrentHashMap<>();
@@ -106,6 +112,7 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     private final ConcurrentMap<String, MetricFamily<?>> metricsFamiliesByName = new ConcurrentHashMap<>();
     private final Clock clock;
+    private final List<MetricRegistrationListener> listeners = new ArrayList<>();
 
     public MetricRegistryImpl() {
         this(Clock.defaultClock());
@@ -113,6 +120,11 @@ public class MetricRegistryImpl extends MetricRegistry {
 
     public MetricRegistryImpl(Clock clock) {
         this.clock = clock;
+    }
+
+    public MetricRegistryImpl addListener(MetricRegistrationListener listener) {
+        listeners.add(listener);
+        return this;
     }
 
     @Override
@@ -458,7 +470,18 @@ public class MetricRegistryImpl extends MetricRegistry {
         if (current != newMetric) {
             checkNotAGauge(name, newMetadata);
         }
+        notifyRegistrationListeners(metricID);
         return current;
+    }
+
+    private void notifyRegistrationListeners(MetricID metricID) {
+        for (MetricRegistrationListener l : listeners) {
+            try {
+                l.onRegistration(metricID, this);
+            } catch (RuntimeException ex) {
+                LOGGER.log(Level.WARNING, "Registration listener threw exception:", ex);
+            }
+        }
     }
 
     private static void checkNameIsNotNullOrEmpty(String name) {
