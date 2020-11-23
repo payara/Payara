@@ -43,11 +43,12 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.HashMap;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
-import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class ServerImpl extends ExtensibleImpl<Server> implements Server {
@@ -60,7 +61,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         Server from = new ServerImpl();
         from.setDescription(annotation.getValue("description", String.class));
         from.setUrl(annotation.getValue("url", String.class));
-        Map<String, ServerVariable> variables = new HashMap<>();
+        Map<String, ServerVariable> variables = new LinkedHashMap<>();
         extractAnnotations(annotation, context, "variables", "name", ServerVariableImpl::createInstance, variables);
         from.setVariables(variables);
         return from;
@@ -87,15 +88,19 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
     }
 
     @Override
-    public ServerVariables getVariables() {
-        return variables instanceof ServerVariables || variables == null 
-                ? (ServerVariables) variables
-                : new ServerVariablesImpl(variables);
+    public Map<String, ServerVariable> getVariables() {
+        return variables;
     }
 
     @Override
-    public void setVariables(ServerVariables variables) {
-        this.variables = variables;
+    public Server addVariable(String variableName, ServerVariable variable) {
+        variables.put(variableName, variable);
+        return this;
+    }
+
+    @Override
+    public void removeVariable(String variableName) {
+        variables.remove(variableName);
     }
 
     @Override
@@ -111,17 +116,35 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         to.setUrl(mergeProperty(to.getUrl(), from.getUrl(), override));
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
         if (from.getVariables() != null) {
-            if (to.getVariables() == null) {
-                to.setVariables(new ServerVariablesImpl());
-            }
             for (String serverVariableName : from.getVariables().keySet()) {
-                ServerVariablesImpl.merge(
+                merge(
                         serverVariableName,
                         from.getVariables().get(serverVariableName),
                         to.getVariables(),
                         override
                 );
             }
+        }
+    }
+
+    public static void merge(String serverVariableName, ServerVariable from,
+            Map<String, ServerVariable> to, boolean override) {
+        if (from == null) {
+            return;
+        }
+        org.eclipse.microprofile.openapi.models.servers.ServerVariable variable = new ServerVariableImpl();
+        variable.setDefaultValue(mergeProperty(variable.getDefaultValue(), from.getDefaultValue(), override));
+        variable.setDescription(mergeProperty(variable.getDescription(), from.getDescription(), override));
+        if (from.getEnumeration()!= null && !from.getEnumeration().isEmpty()) {
+            if (variable.getEnumeration() == null) {
+                variable.setEnumeration(new ArrayList<>());
+            }
+            for (String value : from.getEnumeration()) {
+                variable.addEnumeration(value);
+            }
+        }
+        if ((to.containsKey(serverVariableName) && override) || !to.containsKey(serverVariableName)) {
+            to.put(serverVariableName, variable);
         }
     }
 

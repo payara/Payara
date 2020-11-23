@@ -108,6 +108,7 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
         }
 
         org.eclipse.microprofile.openapi.models.responses.APIResponse response = to
+                .getAPIResponses()
                 .getOrDefault(responseName, new APIResponseImpl());
         to.addAPIResponse(responseName, response);
 

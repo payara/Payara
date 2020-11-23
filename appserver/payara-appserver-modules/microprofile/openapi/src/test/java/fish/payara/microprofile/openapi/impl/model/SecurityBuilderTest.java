@@ -42,9 +42,10 @@ package fish.payara.microprofile.openapi.impl.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import java.util.Arrays;
+import java.util.HashMap;
+
 import static org.eclipse.microprofile.openapi.OASFactory.createOAuthFlow;
 import static org.eclipse.microprofile.openapi.OASFactory.createOAuthFlows;
-import static org.eclipse.microprofile.openapi.OASFactory.createScopes;
 import static org.eclipse.microprofile.openapi.OASFactory.createSecurityRequirement;
 import static org.eclipse.microprofile.openapi.OASFactory.createSecurityScheme;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -62,6 +63,7 @@ import org.junit.Test;
 public class SecurityBuilderTest extends OpenApiBuilderTest {
 
     @Override
+    @SuppressWarnings("serial")
     protected void setupBaseDocument(OpenAPI document) {
         document.addSecurityRequirement(createSecurityRequirement()
                 .addScheme("scheme1", "scope1")
@@ -72,9 +74,10 @@ public class SecurityBuilderTest extends OpenApiBuilderTest {
                 .authorizationUrl("authorizationUrl")
                 .tokenUrl("tokenUrl")
                 .refreshUrl("refreshUrl")
-                .scopes(createScopes()
-                        .addScope("scope", "description")
-                        .addExtension("x-ext", "ext-value"))
+                .scopes(new HashMap<String, String>() {{
+                    put("scope", "description");
+                    put("x-ext", "ext-value");
+                }})
                 .addExtension("x-ext", "ext-value");
 
         document.getComponents().addSecurityScheme("scheme1", createSecurityScheme()

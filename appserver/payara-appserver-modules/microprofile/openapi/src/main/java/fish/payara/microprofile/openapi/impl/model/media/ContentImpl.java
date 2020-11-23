@@ -43,7 +43,6 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.media.Content;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
@@ -115,7 +114,7 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
             MediaType fromMediaType = from.getMediaType(typeName);
 
             // Get or create the corresponding media type
-            MediaType toMediaType = to.getOrDefault(typeName, new MediaTypeImpl());
+            MediaType toMediaType = to.getMediaTypes().getOrDefault(typeName, new MediaTypeImpl());
             to.addMediaType(typeName, toMediaType);
 
             // Merge encoding

@@ -156,7 +156,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
             CallbackImpl fromImpl = (CallbackImpl) from;
             String urlExpression = fromImpl.getUrlExpression();
             if (urlExpression != null && !urlExpression.isEmpty()) {
-                PathItem pathItem = to.getOrDefault(urlExpression, new PathItemImpl());
+                PathItem pathItem = to.getPathItems().getOrDefault(urlExpression, new PathItemImpl());
                 to.addPathItem(urlExpression, pathItem);
                 if (fromImpl.getOperations() != null) {
                     for (Operation callbackOperation : fromImpl.getOperations()) {

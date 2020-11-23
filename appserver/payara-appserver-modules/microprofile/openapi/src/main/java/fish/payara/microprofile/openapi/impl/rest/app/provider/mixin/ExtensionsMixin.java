@@ -51,7 +51,6 @@ import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
-import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 
 public interface ExtensionsMixin {
 
@@ -78,9 +77,6 @@ public interface ExtensionsMixin {
 
     @JsonIgnore
     Map<HttpMethod, Operation> getOperations();
-
-    @JsonIgnore
-    void setVariables(ServerVariables variables);
 
     @JsonProperty("variables")
     void setVariables(Map<String, ServerVariable> variables);

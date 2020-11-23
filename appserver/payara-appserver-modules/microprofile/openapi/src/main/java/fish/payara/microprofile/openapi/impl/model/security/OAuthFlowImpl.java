@@ -41,9 +41,12 @@ package fish.payara.microprofile.openapi.impl.model.security;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
-import org.eclipse.microprofile.openapi.models.security.Scopes;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlow {
@@ -51,8 +54,9 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
     private String authorizationUrl;
     private String tokenUrl;
     private String refreshUrl;
-    private Scopes scopes;
+    private Map<String, String> scopes = new LinkedHashMap<>();
 
+    @SuppressWarnings("unchecked")
     public static OAuthFlow createInstance(AnnotationModel annotation) {
         OAuthFlow from = new OAuthFlowImpl();
         from.setAuthorizationUrl(annotation.getValue("authorizationUrl", String.class));
@@ -60,9 +64,9 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
         from.setRefreshUrl(annotation.getValue("refreshUrl", String.class));
         List<AnnotationModel> scopesAnnotation = annotation.getValue("scopes", List.class);
         if (scopesAnnotation != null) {
-            Scopes scopes = new ScopesImpl();
+            Map<String, String> scopes = new LinkedHashMap<>();
             for (AnnotationModel scopeAnnotation : scopesAnnotation) {
-                scopes.addScope(
+                scopes.put(
                         scopeAnnotation.getValue("name", String.class),
                         scopeAnnotation.getValue("description", String.class)
                 );
@@ -103,13 +107,24 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
     }
 
     @Override
-    public Scopes getScopes() {
+    public Map<String, String> getScopes() {
         return scopes;
     }
 
     @Override
-    public void setScopes(Scopes scopes) {
+    public void setScopes(Map<String, String> scopes) {
         this.scopes = scopes;
+    }
+
+    @Override
+    public OAuthFlow addScope(String scope, String description) {
+        scopes.put(scope, description);
+        return this;
+    }
+
+    @Override
+    public void removeScope(String scope) {
+        scopes.remove(scope);
     }
 
     public static void merge(OAuthFlow from, OAuthFlow to, boolean override) {

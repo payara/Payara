@@ -187,42 +187,6 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public Map<HttpMethod, Operation> getOperations() {
-        return readOperationsMap();
-    }
-
-    @Override
-    public List<Operation> readOperations() {
-        List<Operation> allOperations = new ArrayList<>();
-        if (this.get != null) {
-            allOperations.add(this.get);
-        }
-        if (this.put != null) {
-            allOperations.add(this.put);
-        }
-        if (this.head != null) {
-            allOperations.add(this.head);
-        }
-        if (this.post != null) {
-            allOperations.add(this.post);
-        }
-        if (this.delete != null) {
-            allOperations.add(this.delete);
-        }
-        if (this.patch != null) {
-            allOperations.add(this.patch);
-        }
-        if (this.options != null) {
-            allOperations.add(this.options);
-        }
-        if (this.trace != null) {
-            allOperations.add(this.trace);
-        }
-
-        return allOperations;
-    }
-
-    @Override
-    public Map<HttpMethod, Operation> readOperationsMap() {
         Map<HttpMethod, Operation> result = new EnumMap<>(HttpMethod.class);
 
         if (this.get != null) {
@@ -251,6 +215,39 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
         }
 
         return result;
+    }
+
+    @Override
+    public void setOperation(HttpMethod httpMethod, Operation operation) {
+        if (httpMethod == null) {
+            return;
+        }
+        switch (httpMethod) {
+            case GET:
+                this.get = operation;
+                break;
+            case PUT:
+                this.put = operation;
+                break;
+            case POST:
+                this.post = operation;
+                break;
+            case DELETE:
+                this.delete = operation;
+                break;
+            case OPTIONS:
+                this.options = operation;
+                break;
+            case HEAD:
+                this.head = operation;
+                break;
+            case PATCH:
+                this.patch = operation;
+                break;
+            case TRACE:
+                this.trace = operation;
+                break;
+        }
     }
 
     @Override

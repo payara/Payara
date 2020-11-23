@@ -94,7 +94,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         if (requestBody != null) {
             from.setRequestBody(RequestBodyImpl.createInstance(requestBody, context));
         }
-        extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from.getResponses());
+        extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, (APIResponsesImpl) from.getResponses());
         extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks());
         from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
         extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from.getSecurity());
@@ -336,7 +336,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
             RequestBodyImpl.merge(from.getRequestBody(), to.getRequestBody(), override, context);
         }
         if (from.getResponses() != null) {
-            for (APIResponse response : from.getResponses().values()) {
+            for (APIResponse response : from.getResponses().getAPIResponses().values()) {
                 APIResponsesImpl.merge(response, to.getResponses(), override, context);
             }
         }

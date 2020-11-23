@@ -53,6 +53,7 @@ public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implement
 
     protected List<String> enumeration = new ArrayList<>();
 
+    @SuppressWarnings("unchecked")
     public static ServerVariable createInstance(AnnotationModel annotation, ApiContext context) {
         ServerVariable from = new ServerVariableImpl();
         from.setDescription(annotation.getValue("description", String.class));

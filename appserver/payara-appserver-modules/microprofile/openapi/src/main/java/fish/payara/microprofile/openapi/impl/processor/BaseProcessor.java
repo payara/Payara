@@ -122,7 +122,7 @@ public class BaseProcessor implements OASProcessor {
             for (Entry<String, Set<String>> entry : config.getOperationServerMap().entrySet()) {
 
                 // Find the matching operation
-                for (PathItem pathItem : api.getPaths().values()) {
+                for (PathItem pathItem : api.getPaths().getPathItems().values()) {
                     for (Operation operation : pathItem.getOperations().values()) {
                         if (operation.getOperationId().equals(entry.getKey())) {
 
@@ -146,6 +146,6 @@ public class BaseProcessor implements OASProcessor {
 
     private static void removeEmptyPaths(OpenAPI api) {
         PathItem emptyItem = new PathItemImpl();
-        api.getPaths().entrySet().removeIf(entry -> emptyItem.equals(entry.getValue()));
+        api.getPaths().getPathItems().entrySet().removeIf(entry -> emptyItem.equals(entry.getValue()));
     }
 }

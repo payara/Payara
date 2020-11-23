@@ -163,7 +163,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getOrDefault(context.getPath(), new PathItemImpl());
+        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
         Operation operation = new OperationImpl();
@@ -184,7 +184,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getOrDefault(context.getPath(), new PathItemImpl());
+        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
         Operation operation = new OperationImpl();
@@ -205,7 +205,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getOrDefault(context.getPath(), new PathItemImpl());
+        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
         Operation operation = new OperationImpl();
@@ -226,7 +226,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getOrDefault(context.getPath(), new PathItemImpl());
+        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
         Operation operation = new OperationImpl();
@@ -247,7 +247,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getOrDefault(context.getPath(), new PathItemImpl());
+        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
         Operation operation = new OperationImpl();
@@ -268,7 +268,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getOrDefault(context.getPath(), new PathItemImpl());
+        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
         Operation operation = new OperationImpl();
@@ -289,7 +289,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getOrDefault(context.getPath(), new PathItemImpl());
+        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
         Operation operation = new OperationImpl();
@@ -307,7 +307,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitProduces(AnnotationModel produces, AnnotatedElement element, ApiContext context) {
         if (element instanceof MethodModel && context.getWorkingOperation() != null) {
             for (APIResponse response : context.getWorkingOperation()
-                    .getResponses().values()) {
+                    .getResponses().getAPIResponses().values()) {
 
                 if (response != null) {
                     // Find the wildcard return type
@@ -772,13 +772,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
             // If a content was added, and a schema type exists, reconfigure the schema type
             if (matchedParam.getContent() != null
-                    && !matchedParam.getContent().values().isEmpty()
+                    && !matchedParam.getContent().getMediaTypes().isEmpty()
                     && matchedParam.getSchema() != null
                     && matchedParam.getSchema().getType() != null) {
                 SchemaType type = matchedParam.getSchema().getType();
                 matchedParam.setSchema(null);
 
-                for (MediaType mediaType : matchedParam.getContent().values()) {
+                for (MediaType mediaType : matchedParam.getContent().getMediaTypes().values()) {
                     if (mediaType.getSchema() == null) {
                         mediaType.setSchema(new SchemaImpl());
                     }

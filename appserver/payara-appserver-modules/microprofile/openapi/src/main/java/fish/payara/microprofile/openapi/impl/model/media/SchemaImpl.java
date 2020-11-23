@@ -40,7 +40,6 @@
 package fish.payara.microprofile.openapi.impl.model.media;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
@@ -113,6 +112,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     @JsonIgnore
     private String implementation;
 
+    @SuppressWarnings("unchecked")
     public static Schema createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
         from.setDefaultValue(annotation.getValue("defaultValue", Object.class));
@@ -486,17 +486,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         this.properties.remove(key);
     }
 
-    @JsonProperty
-    @Override
-    public Object getAdditionalProperties() {
-        return additionalProperties;
-    }
-
-    @Override
-    public void setAdditionalProperties(Schema additionalProperties) {
-        this.additionalProperties = additionalProperties;
-    }
-
     @JsonIgnore
     @Override
     public Schema getAdditionalPropertiesSchema() {
@@ -701,11 +690,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         this.oneOf.remove(oneOf);
     }
 
-    @Override
-    public void setAdditionalProperties(Boolean additionalProperties) {
-        this.additionalProperties = additionalProperties;
-    }
-
     public String getImplementation() {
         return implementation;
     }
@@ -839,7 +823,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 Type type = context.getType(implementationClass);
                 String schemaName = null;
                 if (type instanceof ExtensibleType) {
-                    ExtensibleType implementationType = (ExtensibleType) type;
+                    ExtensibleType<?> implementationType = (ExtensibleType<?>) type;
                     AnnotationInfo annotationInfo = context.getAnnotationInfo(implementationType);
                     AnnotationModel annotation = annotationInfo.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
                     // Get the schema name

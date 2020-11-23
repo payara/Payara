@@ -58,12 +58,10 @@ import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
 import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowImpl;
 import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowsImpl;
-import fish.payara.microprofile.openapi.impl.model.security.ScopesImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerVariableImpl;
-import fish.payara.microprofile.openapi.impl.model.servers.ServerVariablesImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -93,12 +91,10 @@ import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
-import org.eclipse.microprofile.openapi.models.security.Scopes;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
-import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 import org.eclipse.microprofile.openapi.models.tags.Tag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -143,17 +139,13 @@ public class ModelInvariantsTest {
         assertAddIgnoresNull(new APIResponseImpl(), APIResponse::addHeader, (obj, key) -> obj.getHeaders().containsKey(key));
         assertAddIgnoresNull(new APIResponseImpl(), APIResponse::addLink, (obj, key) -> obj.getLinks().containsKey(key));
         assertAddIgnoresNull(new APIResponseImpl(), APIResponse::addExtension, hasExtension);
-        assertAddIgnoresNull(new APIResponsesImpl(), APIResponses::addApiResponse, APIResponses::hasAPIResponse);
         assertAddIgnoresNull(new APIResponsesImpl(), APIResponses::addAPIResponse, APIResponses::hasAPIResponse);
         assertAddIgnoresNull(new APIResponsesImpl(), APIResponses::addExtension, hasExtension);
         assertAddIgnoresNull(new OAuthFlowImpl(), OAuthFlow::addExtension, hasExtension);
         assertAddIgnoresNull(new OAuthFlowsImpl(), OAuthFlows::addExtension, hasExtension);
-        assertAddIgnoresNull(new ScopesImpl(), Scopes::addExtension, hasExtension);
         assertAddIgnoresNull(new SecuritySchemeImpl(), SecurityScheme::addExtension, hasExtension);
         assertAddIgnoresNull(new ServerImpl(), Server::addExtension, hasExtension);
         assertAddIgnoresNull(new ServerVariableImpl(), ServerVariable::addExtension, hasExtension);
-        assertAddIgnoresNull(new ServerVariablesImpl(), ServerVariables::addServerVariable, ServerVariables::hasServerVariable);
-        assertAddIgnoresNull(new ServerVariablesImpl(), ServerVariables::addExtension, hasExtension);
         assertAddIgnoresNull(new TagImpl(), Tag::addExtension, hasExtension);
         assertAddIgnoresNull(new ComponentsImpl(), Components::addCallback, (obj, key) -> obj.getCallbacks().containsKey(key));
         assertAddIgnoresNull(new ComponentsImpl(), Components::addExample, (obj, key) -> obj.getExamples().containsKey(key));
@@ -176,8 +168,9 @@ public class ModelInvariantsTest {
 
     @Test
     public void ScopesAddScopeDoesAcceptNull() {
-        Scopes scopes = new ScopesImpl().addScope("foo", null);
-        assertTrue(scopes.hasScope("foo"));
+        OAuthFlow flow = new OAuthFlowImpl();
+        flow.addScope("foo", null);
+        assertTrue(flow.getScopes().containsKey("foo"));
     }
 
     @Test

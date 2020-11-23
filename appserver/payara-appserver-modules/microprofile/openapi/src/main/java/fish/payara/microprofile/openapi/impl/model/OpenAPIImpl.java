@@ -52,7 +52,6 @@ import java.util.List;
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.info.Info;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
@@ -210,12 +209,6 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
     @Override
     public void setPaths(Paths paths) {
         this.paths = paths;
-    }
-
-    @Override
-    public OpenAPI path(String name, PathItem path) {
-        paths.addPathItem(name, path);
-        return this;
     }
 
     @Override

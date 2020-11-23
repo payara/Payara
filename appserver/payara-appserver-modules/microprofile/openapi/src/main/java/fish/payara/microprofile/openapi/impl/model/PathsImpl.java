@@ -84,7 +84,7 @@ public class PathsImpl extends ExtensibleTreeMap<PathItem, Paths> implements Pat
         if (from == null || to == null) {
             return;
         }
-        from.entrySet().forEach(entry -> {
+        from.getPathItems().entrySet().forEach(entry -> {
             if (!to.hasPathItem(entry.getKey())) {
                 to.addPathItem(entry.getKey(), entry.getValue());
             } else {
