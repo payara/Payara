@@ -878,7 +878,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         try {
             if (certs != null) {
                 // Certificate credential used to authenticate
-                WebAndEjbToJaasBridge.doX500Login(createSubjectWithCerts(certs), moduleID);
+                WebAndEjbToJaasBridge.doX500Login(createSubjectWithCerts(certs), realmName, moduleID);
             } else if (digestParams != null) {
                 // Digest credential used to authenticate
                 WebAndEjbToJaasBridge.login(new DigestCredentials(realmName, username, digestParams));
