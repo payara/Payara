@@ -328,7 +328,7 @@ public class MetricRegistryImpl implements MetricRegistry {
 
     @Override
     public ConcurrentGauge getConcurrentGauge(MetricID metricID) {
-        return null;
+        return getMetric(metricID, ConcurrentGauge.class);
     }
 
     @Override
