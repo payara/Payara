@@ -386,18 +386,21 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             }
         }
 
-        if (context.getWorkingOperation() != null) {
+        final Operation workingOperation = context.getWorkingOperation();
+        if (workingOperation != null) {
             // If there's no request body, fill out a new one right down to the schema
-            if (context.getWorkingOperation().getRequestBody() == null) {
-                context.getWorkingOperation().setRequestBody(new RequestBodyImpl().content(new ContentImpl()
+            if (workingOperation.getRequestBody() == null) {
+                workingOperation.setRequestBody(new RequestBodyImpl().content(new ContentImpl()
                         .addMediaType(javax.ws.rs.core.MediaType.WILDCARD, new MediaTypeImpl()
                                 .schema(new SchemaImpl()))));
             }
 
-            // Set the request body type accordingly.
-            context.getWorkingOperation().getRequestBody().getContent()
-                    .getMediaType(javax.ws.rs.core.MediaType.WILDCARD).getSchema()
-                    .setType(formSchemaType);
+            for (MediaType mediaType : workingOperation.getRequestBody().getContent().getMediaTypes().values()) {
+                final Schema schema = mediaType.getSchema();
+                if (schema != null) {
+                    schema.setType(formSchemaType);
+                }
+            }
         }
     }
 
@@ -676,7 +679,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitOperation(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         OperationImpl.merge(OperationImpl.createInstance(annotation, context), context.getWorkingOperation(), true);
         // If the operation should be hidden, remove it
-        if (annotation.getValue("hidden", Boolean.class)) {
+        final Boolean hidden = annotation.getValue("hidden", Boolean.class);
+        if (hidden != null && hidden) {
             ModelUtils.removeOperation(context.getApi().getPaths().getPathItem(context.getPath()),
                     context.getWorkingOperation());
         }
@@ -715,7 +719,12 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public void visitAPIResponse(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         APIResponseImpl apiResponse = APIResponseImpl.createInstance(annotation, context);
-        APIResponsesImpl.merge(apiResponse, context.getWorkingOperation().getResponses(), true, context);
+        Operation workingOperation = context.getWorkingOperation();
+        if (workingOperation == null) {
+            // TODO: handle exception mappers here
+            return;
+        }
+        APIResponsesImpl.merge(apiResponse, workingOperation.getResponses(), true, context);
 
         // If an APIResponse has been processed that isn't the default
         String responseCode = apiResponse.getResponseCode();
@@ -730,11 +739,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                         .map(a -> a.getValue("responseCode", String.class))
                         .noneMatch(code -> code == null || code.isEmpty() || code.equals(APIResponses.DEFAULT))) {
                     // Then remove the default response
-                    context.getWorkingOperation().getResponses()
+                    workingOperation.getResponses()
                             .removeAPIResponse(APIResponses.DEFAULT);
                 }
             } else {
-                context.getWorkingOperation().getResponses()
+                workingOperation.getResponses()
                         .removeAPIResponse(APIResponses.DEFAULT);
             }
         }

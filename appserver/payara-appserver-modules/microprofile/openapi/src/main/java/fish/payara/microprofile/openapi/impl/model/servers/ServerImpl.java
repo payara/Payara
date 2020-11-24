@@ -55,7 +55,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
     private String url;
     private String description;
-    private Map<String, ServerVariable> variables;
+    private Map<String, ServerVariable> variables = new LinkedHashMap<>();
 
     public static Server createInstance(AnnotationModel annotation, ApiContext context) {
         Server from = new ServerImpl();
