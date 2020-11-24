@@ -43,6 +43,7 @@ package org.glassfish.kernel.embedded;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.v3.server.GFDomainXml;
 import org.glassfish.server.ServerEnvironmentImpl;
+
 import javax.inject.Inject;
 
 import java.io.File;
@@ -62,29 +63,28 @@ public class EmbeddedDomainXml extends GFDomainXml {
     StartupContext startupContext;
 
     @Override
-    protected URL getDomainXml(ServerEnvironmentImpl env) throws IOException {
+    protected URL getDomainXml(final ServerEnvironmentImpl env) throws IOException {
         return getDomainXml(startupContext);
     }
 
-    static URL getDomainXml(StartupContext startupContext) throws IOException {
-        String configFileURI = startupContext.getArguments().getProperty(
-                "org.glassfish.embeddable.configFileURI");
+    static URL getDomainXml(final StartupContext startupContext) throws IOException {
+        final String configFileURI = startupContext.getArguments()
+            .getProperty("org.glassfish.embeddable.configFileURI");
         if (configFileURI != null) { // user specified domain.xml
             return URI.create(configFileURI).toURL();
         }
-        String instanceRoot = startupContext.getArguments().getProperty(
-                "com.sun.aas.instanceRoot");
-        File domainXml = new File(instanceRoot, "config/domain.xml");
+
+        final String instanceRoot = startupContext.getArguments().getProperty("com.sun.aas.instanceRoot");
+        final File domainXml = new File(instanceRoot, "config/domain.xml");
         if (domainXml.exists()) { // domain/config/domain.xml, if exists.
             return domainXml.toURI().toURL();
         }
-        return EmbeddedDomainXml.class.getClassLoader().getResource(
-                "org/glassfish/embed/domain.xml");
+
+        return EmbeddedDomainXml.class.getClassLoader().getResource("config/domain.xml");
     }
 
     @Override
     protected void upgrade() {
         // for now, we don't upgrade in embedded mode...
     }
-
 }
