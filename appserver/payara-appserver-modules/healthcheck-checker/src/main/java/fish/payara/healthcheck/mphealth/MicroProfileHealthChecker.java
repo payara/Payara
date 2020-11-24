@@ -59,8 +59,8 @@ import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import fish.payara.appserver.micro.services.PayaraInstanceImpl;
 import fish.payara.micro.ClusterCommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.microprofile.healthcheck.config.MicroprofileHealthCheckConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
-import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -229,10 +229,10 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
             String instanceName = server.getName();
             tasks.put(instanceName, payaraExecutorService.submit(() -> {
                 // get the remote server's MP HealthCheck config
-                MetricsHealthCheckConfiguration metricsConfig = server.getConfig()
-                        .getExtensionByType(MetricsHealthCheckConfiguration.class);
-                if (metricsConfig != null && Boolean.valueOf(metricsConfig.getEnabled())) {
-                    return pingHealthEndpoint(buildURI(server, metricsConfig.getEndpoint()));
+                MicroprofileHealthCheckConfiguration healthCheckConfig = server.getConfig()
+                        .getExtensionByType(MicroprofileHealthCheckConfiguration.class);
+                if (healthCheckConfig != null && Boolean.valueOf(healthCheckConfig.getEnabled())) {
+                    return pingHealthEndpoint(buildURI(server, healthCheckConfig.getEndpoint()));
                 }
                 return -1;
             }));

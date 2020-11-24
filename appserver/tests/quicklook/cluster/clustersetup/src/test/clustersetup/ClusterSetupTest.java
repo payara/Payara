@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+
 package test.clustersetup;
 
 import com.sun.appserv.test.AdminBaseDevTest;
-import java.io.File;
 import org.testng.annotations.Test;
 import org.testng.Assert;
 
@@ -59,7 +59,7 @@ public class ClusterSetupTest extends AdminBaseDevTest {
     final String i1name = "eein1-with-a-very-very-very-long-name";
     final String i2name = "eein2";
     final String domain = System.getProperty("domain.name", "test-domain");
-    
+
     String i1url = "http://localhost:" + port1;
     String i2url = "http://localhost:" + port2;
 
@@ -67,7 +67,7 @@ public class ClusterSetupTest extends AdminBaseDevTest {
 
     @Test
     public void createClusterTest() throws Exception {
-        
+
         // Try to see if there's an existing cluster config, if so tear it down
         try {
             deleteInstance();
@@ -75,7 +75,7 @@ public class ClusterSetupTest extends AdminBaseDevTest {
         } catch (Exception e) {
             // Ignore
         }
-        
+
         // Create a cluster and two instances
         retStatus = report(tn + "create-cluster", asadmin("create-cluster", cname));
         Assert.assertEquals(retStatus, true, "Create Cluster failed ...");
@@ -85,26 +85,26 @@ public class ClusterSetupTest extends AdminBaseDevTest {
     public void createInstanceTest() throws Exception {
         report(tn + "create-local-instance1",
                 asadmin(
-                    "create-local-instance", 
-                    "--cluster", cname, 
-                    "--node", "localhost-" + domain, 
-                    "--systemproperties", 
+                    "create-local-instance",
+                    "--cluster", cname,
+                    "--node", "localhost-" + domain,
+                    "--systemproperties",
                         "HTTP_LISTENER_PORT=18080:HTTP_SSL_LISTENER_PORT=18181:IIOP_SSL_LISTENER_PORT=13800:"
                         + "IIOP_LISTENER_PORT=13700:JMX_SYSTEM_CONNECTOR_PORT=17676:IIOP_SSL_MUTUALAUTH_PORT=13801:"
                         + "JMS_PROVIDER_PORT=18686:ASADMIN_LISTENER_PORT=14848",
                     i1name));
-        
+
         retStatus = report(tn + "create-local-instance2",
                 asadmin(
-                    "create-local-instance", 
-                    "--cluster", cname, 
-                    "--node", "localhost-" + domain, 
+                    "create-local-instance",
+                    "--cluster", cname,
+                    "--node", "localhost-" + domain,
                     "--systemproperties",
                         "HTTP_LISTENER_PORT=28080:HTTP_SSL_LISTENER_PORT=28181:IIOP_SSL_LISTENER_PORT=23800:"
                         + "IIOP_LISTENER_PORT=23700:JMX_SYSTEM_CONNECTOR_PORT=27676:IIOP_SSL_MUTUALAUTH_PORT=23801:"
                         + "JMS_PROVIDER_PORT=28686:ASADMIN_LISTENER_PORT=24848",
                    i2name));
-        
+
         Assert.assertEquals(retStatus, true, "Create instance failed ...");
     }
 
@@ -113,19 +113,19 @@ public class ClusterSetupTest extends AdminBaseDevTest {
         // Start the instances
         report(tn + "start-local-instance1", asadmin("start-local-instance", "--node", "localhost-" + domain, i1name));
         report(tn + "start-local-instance2", asadmin("start-local-instance", "--node", "localhost-" + domain, i2name));
-        
+
         System.out.println("Waiting for 5 sec...");
-        
+
         Thread.currentThread().sleep(5000);
-        
+
         // Check that the instances are there
-        report(tn + "list-instances", asadmin("list-instances"));
-        report(tn + "getindex1", matchString("GlassFish Server", getURL(i1url)));
-        retStatus = report(tn + "getindex2", matchString("Payara Server", getURL(i2url)));
-        
+        retStatus = report(tn + "list-instances", asadmin("list-instances"));
+        retStatus &= report(tn + "getindex1", matchString("Payara Server", getURL(i1url)));
+        retStatus &= report(tn + "getindex2", matchString("Payara Server", getURL(i2url)));
+
         Assert.assertEquals(retStatus, true, "Start instance failed ...");
     }
-    
+
     public void deleteInstance() throws Exception {
         AsadminReturn ar1 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", i1name);
         AsadminReturn ar2 = asadminWithOutput("stop-local-instance", "--node", "localhost-" + domain, "--kill", i2name);

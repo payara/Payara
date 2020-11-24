@@ -39,19 +39,24 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fish.payara.microprofile.openapi.api.processor.OASProcessor;
-import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
-import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.merge;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
+import static java.util.logging.Level.WARNING;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+
+import fish.payara.microprofile.openapi.activation.OpenApiSniffer;
+import fish.payara.microprofile.openapi.api.processor.OASProcessor;
+import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
+import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
+import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
 
 /**
  * A processor to process a static document in the <code>META-INF</code>
@@ -73,13 +78,9 @@ public class FileProcessor implements OASProcessor {
 
     public FileProcessor(ClassLoader appClassLoader) {
         try {
-            // Search for a the correct file
-            URL fileUrl = appClassLoader.getResource("META-INF/openapi.json");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("../../META-INF/openapi.json");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("META-INF/openapi.yaml");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("../../META-INF/openapi.yaml");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("META-INF/openapi.yml");
-            fileUrl = (fileUrl != null) ? fileUrl : appClassLoader.getResource("../../META-INF/openapi.yml");
+            // Search for a valid static file
+            // WebAppClassLoader root is found in WEB-INF/classes, so paths need relativising
+            URL fileUrl = getFirstValidOpenApiResource(appClassLoader, "../../");
 
             // If the file is found, configure the public variables
             if (fileUrl != null) {
@@ -111,6 +112,17 @@ public class FileProcessor implements OASProcessor {
             }
         }
         return api;
+    }
+
+    private static final URL getFirstValidOpenApiResource(ClassLoader classLoader, String prefix) {
+        for (String path : OpenApiSniffer.OPENAPI_YAML_FILE_PATHS) {
+            final String resourceName = (prefix + "/" + path).replace("//", "/");
+            final URL resource = classLoader.getResource(resourceName);
+            if (resource != null) {
+                return resource;
+            }
+        }
+        return null;
     }
 
 }

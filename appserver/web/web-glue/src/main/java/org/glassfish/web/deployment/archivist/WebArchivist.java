@@ -61,7 +61,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.web.LogFacade;
-import org.glassfish.web.WarType;
+import org.glassfish.web.sniffer.WarType;
 import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.deployment.io.WebDeploymentDescriptorFile;
 import org.glassfish.web.deployment.util.*;
