@@ -103,7 +103,6 @@ public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<Dynamo
                 | IOException ex) {
             LOGGER.log(Level.WARNING, "Unable to get value from password aliases", ex);
         }
-
     }
 
     @Override

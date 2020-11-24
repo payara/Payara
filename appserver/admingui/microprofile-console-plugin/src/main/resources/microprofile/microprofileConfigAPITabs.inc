@@ -96,6 +96,14 @@
           gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/gcpConfigSourceConfiguration.jsf?configName=#{configName}");
           />
     </sun:tab>
+     <sun:tab id="microProfileConfigHashiCorpSecretsConfigSourceTab" immediate="$boolean{true}" 
+             text="$resource{i18n_microprofile.microprofile.configuration.hashicorpSecretsConfigSourceTab}" 
+             toolTip="$resource{i18n_microprofile.microprofile.configuration.hashicorpSecretsConfigSourceTab} Tab" >
+        <!command
+          setSessionAttribute(key="microprofileConfigTabs" value="microProfileConfigHashiCorpSecretsConfigSourceTab");
+          gf.redirect(page="#{request.contextPath}/microprofile/microprofile/specs/configAPI/hashicorpConfigSourceConfiguration.jsf?configName=#{configName}");
+          />
+    </sun:tab>
     <sun:tab id="microProfileJdbcConfigSourceTab" immediate="$boolean{true}" 
              text="$resource{i18n_microprofile.microprofile.configuration.jdbcConfigSourceTab}" 
              toolTip="$resource{i18n_microprofile.microprofile.configuration.jdbcConfigSourceTab} Tab" >
