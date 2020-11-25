@@ -74,12 +74,12 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 /**
  * The {@link FaultTolerancePolicy} describes the effective aggregated policies to use for a particular {@link Method}
  * when adding fault tolerant behaviour to it.
- * 
+ *
  * The policies are extracted from FT annotations and the {@link FaultToleranceConfig}.
- * 
+ *
  * In contrast to the plain annotations the policies do consider configuration overrides and include validation of the
  * effective values.
- * 
+ *
  * The policy class also reduces the need to analyse FT annotations for each invocation and works as a consistent source
  * of truth throughout the processing of FT behaviour that is convenient to pass around as a single immutable value.
  *
@@ -94,7 +94,7 @@ public final class FaultTolerancePolicy implements Serializable {
     /**
      * A simple cache with a fix {@link #TTL} with a policy for each target method.
      */
-    private static final ConcurrentHashMap<Class<?>, Map<Method, FaultTolerancePolicy>> POLICY_BY_METHOD 
+    private static final ConcurrentHashMap<Class<?>, Map<Method, FaultTolerancePolicy>> POLICY_BY_METHOD
         = new ConcurrentHashMap<>();
 
     /**
@@ -107,7 +107,7 @@ public final class FaultTolerancePolicy implements Serializable {
     }
 
     public static FaultTolerancePolicy asAnnotated(Class<?> target, Method annotated) {
-        return create(new StaticAnalysisContext(target, annotated), 
+        return create(new StaticAnalysisContext(target, annotated),
                 FaultToleranceConfig.asAnnotated(target, annotated));
     }
 
@@ -123,7 +123,7 @@ public final class FaultTolerancePolicy implements Serializable {
     public static FaultTolerancePolicy get(InvocationContext context, Supplier<FaultToleranceConfig> configSpplier)
             throws FaultToleranceDefinitionException {
         return POLICY_BY_METHOD.computeIfAbsent(context.getTarget().getClass(), target -> new ConcurrentHashMap<>())
-                .compute(context.getMethod(), (method, policy) -> 
+                .compute(context.getMethod(), (method, policy) ->
                     policy != null && !policy.isExpired() ? policy : create(context, configSpplier.get()));
     }
 
@@ -236,21 +236,21 @@ public final class FaultTolerancePolicy implements Serializable {
 
     /**
      * Wraps {@link InvocationContext#proceed()} with fault tolerance behaviour.
-     * 
+     *
      * Processing has 6 stages:
      * <pre>
-     * 1) Asynchronous 
-     * 2) Fallback 
-     * 3) Retry 
-     * 4) Circuit Breaker 
-     * 5) Timeout 
+     * 1) Asynchronous
+     * 2) Fallback
+     * 3) Retry
+     * 4) Circuit Breaker
+     * 5) Timeout
      * 6) Bulkhead
      * </pre>
      * The call chain goes from 1) down to 6) skipping stages that are not requested by this policy.
-     * 
+     *
      * Asynchronous execution branches to new threads in stage 1) and 3) each executed by the
      * {@link FaultToleranceService#runAsynchronous(CompletableFuture, Callable)}.
-     * 
+     *
      * @param context intercepted call context
      * @param ftmContextSupplier the environment used to execute the FT behaviour
      * @return the result of {@link InvocationContext#proceed()} after applying FT behaviour
@@ -262,12 +262,19 @@ public final class FaultTolerancePolicy implements Serializable {
             return context.proceed();
         }
         FaultToleranceMethodContext ftmContext = ftmContextSupplier.get();
-        FaultToleranceMetrics metrics = ftmContext.getMetrics(isMetricsEnabled);
+        FaultToleranceMetrics metrics = ftmContext.getMetrics(isMetricsEnabled).bind(isFallbackPresent());
         try {
-            metrics.incrementInvocationsTotal();
-            return processAsynchronousStage(ftmContext, metrics);
+            Object res = processAsynchronousStage(ftmContext, metrics);
+            if (res instanceof CompletableFuture
+                    && isAsynchronous() && !asynchronous.isSuccessWhenCompletedExceptionally()
+                    && ((CompletableFuture<?>) res).isCompletedExceptionally()) {
+                metrics.incrementInvocationsExceptionThrown();
+            } else {
+                metrics.incrementInvocationsValueReturned();
+            }
+            return res;
         } catch (Exception | Error ex) {
-            metrics.incrementInvocationsFailedTotal();
+            metrics.incrementInvocationsExceptionThrown();
             throw ex;
         }
     }
@@ -304,10 +311,7 @@ public final class FaultTolerancePolicy implements Serializable {
             public boolean completeExceptionally(Throwable ex) {
                 logger.log(Level.FINE, "Asynchronous computation completed with exception", ex);
                 if (ex instanceof ExecutionException) {
-                    metrics.incrementInvocationsFailedTotal();
                     return super.completeExceptionally(ex.getCause());
-                } else if (ex instanceof FaultToleranceException || !asynchronous.isSuccessWhenCompletedExceptionally()) {
-                    metrics.incrementInvocationsFailedTotal();
                 }
                 return super.completeExceptionally(ex);
             }
@@ -363,23 +367,24 @@ public final class FaultTolerancePolicy implements Serializable {
                     logger.log(Level.FINER, "Attempting retry.");
                     invocation.metrics.incrementRetryRetriesTotal();
                 }
-                Object resultValue = isAsynchronous() 
+                Object resultValue = isAsynchronous()
                         ? processRetryAsync(invocation)
                         : processCircuitBreakerStage(invocation, null);
-                if (firstAttempt) {
-                    invocation.metrics.incrementRetryCallsSucceededNotRetriedTotal();
-                } else {
-                    invocation.metrics.incrementRetryCallsSucceededRetriedTotal();
-                }
+                invocation.metrics.incrementRetryCallsValueReturned();
                 return resultValue;
             } catch (Exception | Error ex) {
                 boolean timedOut = retryTimeoutTime != null && System.currentTimeMillis() >= retryTimeoutTime;
                 if (!timedOut && !retry.retryOn(ex)) {
+                    invocation.metrics.incrementRetryCallsExceptionNotRetryable();
                     throw ex; // counts as "success"
                 }
                 if (timedOut || attemptsLeft <= 0) {
                     logger.log(Level.FINE, "Retry attemp failed. Giving up{0}", timedOut ? " due to time-out." : ".");
-                    invocation.metrics.incrementRetryCallsFailedTotal();
+                    if (timedOut) {
+                        invocation.metrics.incrementRetryCallsMaxDurationReached();
+                    } else {
+                        invocation.metrics.incrementRetryCallsMaxRetriesReached();
+                    }
                     throw ex;
                 }
                 logger.log(Level.FINE, "Retry attempt failed. {0} attempts left.", attemptsLeft);
@@ -389,7 +394,7 @@ public final class FaultTolerancePolicy implements Serializable {
             }
         }
         // this line should never be reached as we throw above
-        throw new FaultToleranceException("Retry failed"); 
+        throw new FaultToleranceException("Retry failed");
     }
 
     private CompletableFuture<Object> processRetryAsync(FaultToleranceInvocation invocation) throws Exception {
@@ -402,7 +407,7 @@ public final class FaultTolerancePolicy implements Serializable {
             return asyncAttempt;
         } catch (ExecutionException ex) { // this ExecutionException is from calling get() above in case completed exceptionally
             Throwable cause = ex.getCause();
-            if (cause instanceof ExecutionException) { 
+            if (cause instanceof ExecutionException) {
                 // this cause ExecutionException is caused by annotated method returned a Future that completed exceptionally
                 if (asynchronous.isSuccessWhenCompletedExceptionally()) {
                     CompletableFuture<Object> exceptionalResult = new CompletableFuture<>();
@@ -452,10 +457,12 @@ public final class FaultTolerancePolicy implements Serializable {
             try {
                 resultValue = processTimeoutStage(invocation, asyncAttempt);
             } catch (Exception | Error ex) {
-                invocation.metrics.incrementCircuitbreakerCallsFailedTotal();
                 if (circuitBreaker.isFailure(ex)) {
+                    invocation.metrics.incrementCircuitbreakerCallsFailedTotal();
                     logger.log(Level.FINE, "Exception causes CircuitBreaker to transit: half-open => open");
                     openCircuit(invocation, state);
+                } else {
+                    invocation.metrics.incrementCircuitbreakerCallsSucceededTotal();
                 }
                 throw ex;
             }
@@ -514,7 +521,7 @@ public final class FaultTolerancePolicy implements Serializable {
         long timeoutTime = System.currentTimeMillis() + timeoutDuration;
         Thread current = Thread.currentThread();
         AtomicBoolean timedOut = new AtomicBoolean(false);
-        Future<?> timeout = invocation.context.runDelayed(timeoutDuration, () -> { 
+        Future<?> timeout = invocation.context.runDelayed(timeoutDuration, () -> {
             logger.log(Level.FINE, "Interrupting attempt due to timeout.");
             timedOut.set(true);
             current.interrupt();

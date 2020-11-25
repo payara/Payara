@@ -72,7 +72,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.control.RequestContextController;
 import javax.inject.Inject;
 import javax.interceptor.InvocationContext;
@@ -120,7 +119,7 @@ public class FaultToleranceServiceImpl
     @Inject
     private MetricsService metricsService;
 
-    private final ConcurrentMap<String, FaultToleranceMethodContextImpl> methodByTargetObjectAndName = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, FaultToleranceMethodContextImpl> contextByMethodId = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, BindableFaultToleranceConfig> configByApplication = new ConcurrentHashMap<>();
     private ThreadPoolExecutor asyncExecutorService;
     private ScheduledExecutorService delayExecutorService;
@@ -160,9 +159,9 @@ public class FaultToleranceServiceImpl
     private void cleanMethodContexts() {
         final long ttl = TimeUnit.MINUTES.toMillis(1);
         int cleaned = 0;
-        for (String key : new HashSet<>(methodByTargetObjectAndName.keySet())) {
+        for (String key : new HashSet<>(contextByMethodId.keySet())) {
             try {
-                Object newValue = methodByTargetObjectAndName.compute(key,
+                Object newValue = contextByMethodId.compute(key,
                         (k, methodContext) -> methodContext.isExpired(ttl) ? null : methodContext);
                 if (newValue == null) {
                     cleaned++;
@@ -172,7 +171,7 @@ public class FaultToleranceServiceImpl
             }
         }
         if (cleaned > 0) {
-            String allClean = methodByTargetObjectAndName.isEmpty() ? ".All clean." : ".";
+            String allClean = contextByMethodId.isEmpty() ? ".All clean." : ".";
             logger.log(Level.INFO, "Cleaned {0} expired FT method contexts" + allClean, cleaned);
         }
     }
@@ -212,7 +211,7 @@ public class FaultToleranceServiceImpl
     @Override
     @MonitoringData(ns = "ft")
     public void collect(MonitoringDataCollector collector) {
-        for (Entry<String, FaultToleranceMethodContextImpl> methodValue : methodByTargetObjectAndName.entrySet()) {
+        for (Entry<String, FaultToleranceMethodContextImpl> methodValue : contextByMethodId.entrySet()) {
             String group = methodValue.getKey();
             MonitoringDataCollector methodCollector = collector.group(group);
             FaultToleranceMethodContext context = methodValue.getValue();
@@ -253,9 +252,9 @@ public class FaultToleranceServiceImpl
                 key -> new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
     }
 
-    private MetricRegistry getApplicationMetricRegistry() {
+    private MetricRegistry getBaseMetricRegistry() {
         try {
-            return metricsService.getApplicationRegistry();
+            return metricsService.getOrAddRegistry(MetricRegistry.Type.BASE.getName());
         } catch (Exception e) {
             return null;
         }
@@ -310,7 +309,7 @@ public class FaultToleranceServiceImpl
     @Override
     public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
             RequestContextController requestContextController) {
-        FaultToleranceMethodContextImpl methodContext = methodByTargetObjectAndName //
+        FaultToleranceMethodContextImpl methodContext = contextByMethodId //
                 .computeIfAbsent(getTargetMethodId(context),
                         key -> createMethodContext(key, context, requestContextController));
         return methodContext.in(context, policy);
@@ -318,7 +317,7 @@ public class FaultToleranceServiceImpl
 
     private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context,
             RequestContextController requestContextController) {
-        MetricRegistry metricRegistry = getApplicationMetricRegistry();
+        MetricRegistry metricRegistry = getBaseMetricRegistry();
         FaultToleranceMetrics metrics = metricRegistry == null
                 ? FaultToleranceMetrics.DISABLED
                 : new MethodFaultToleranceMetrics(metricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
@@ -333,12 +332,14 @@ public class FaultToleranceServiceImpl
      * It is essential that the computed signature is referring to the {@link Method} as defined by the target
      * {@link Object} class not its declaring {@link Class} as this could be different when called via an abstract
      * {@link Method} implemented or overridden by the target {@link Class}.
+     *
+     * Since MP FT 3.0 all instances of a class share same state object for the same method. Or in other words the FT
+     * context is not specific to an instance but to the annotated class and method.
      */
     private static String getTargetMethodId(InvocationContext context) {
         Object target = context.getTarget();
         Method method = context.getMethod();
         StringBuilder methodId = new StringBuilder();
-        methodId.append(Integer.toHexString(System.identityHashCode(target))).append('@');
         methodId.append(target.getClass().getName()).append('.').append(method.getName());
         if (method.getParameterCount() > 0) {
             methodId.append('(');

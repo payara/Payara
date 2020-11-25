@@ -41,10 +41,14 @@ package fish.payara.microprofile.faulttolerance;
 
 import java.util.function.LongSupplier;
 
+import org.eclipse.microprofile.faulttolerance.Asynchronous;
+import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.Tag;
+
 /**
  * Encodes the specifics of the FT metrics names using default methods while decoupling rest of the implementation from
  * the {@link org.eclipse.microprofile.metrics.MetricRegistry}.
- * 
+ *
  * The metrics are bound to a specific invocation context which is not an argument to each of the provided methods but
  * passed to the implementation upon construction. For another invocation another metrics instance is bound.
  *
@@ -52,10 +56,22 @@ import java.util.function.LongSupplier;
  */
 public interface FaultToleranceMetrics {
 
+    enum FallbackUsage { applied, notApplied, notDefined }
+
     /**
      * Can be used as NULL object when metrics are disabled so avoid testing for enabled but still do essentially NOOPs.
      */
     FaultToleranceMetrics DISABLED = new FaultToleranceMetrics() { /* does nothing */ };
+
+    Tag[] NO_TAGS = new Tag[0];
+
+    /**
+     * @return a fresh instance bound to the current invocation if the implementation has mutable state or the same
+     *         instance if not
+     */
+    default FaultToleranceMetrics bind(@SuppressWarnings("unused") boolean fallbackDefined) {
+        return this;
+    }
 
 
     /*
@@ -66,9 +82,14 @@ public interface FaultToleranceMetrics {
      * Counters:
      *
      * @param metric full name of the metric with {@code %s} used as placeholder for the method name
+     * @param tags all tags to add for the metric except the {@code method} tag (which is added later internally)
      */
-    default void incrementCounter(String metric) {
+    default void incrementCounter(String metric, Tag... tags) {
         //NOOP (used when metrics are disabled)
+    }
+
+    default void incrementCounter(String metric) {
+        incrementCounter(metric, NO_TAGS);
     }
 
     /**
@@ -76,9 +97,14 @@ public interface FaultToleranceMetrics {
      *
      * @param metric full name of the metric with {@code %s} used as placeholder for the method name
      * @param nanos amount of nanoseconds to add to the histogram (>= 0)
+     * @param tags all tags to add for the metric except the {@code method} tag (which is added later internally)
      */
-    default void addToHistogram(String metric, long nanos) {
+    default void addToHistogram(String metric, long nanos, Tag... tags) {
         //NOOP (used when metrics are disabled)
+    }
+
+    default void addToHistogram(String metric, long nanos) {
+        addToHistogram(metric, nanos, NO_TAGS);
     }
 
     /**
@@ -86,22 +112,43 @@ public interface FaultToleranceMetrics {
      *
      * @param metric full name of the metric with{@code %s} used as placeholder for the method name
      * @param gauge the gauge function to use in case the gauge is not already linked
+     * @param tags all tags to add for the metric except the {@code method} tag (which is added later internally)
      */
-    default void linkGauge(String metric, LongSupplier gauge) {
+    default void linkGauge(String metric, LongSupplier gauge, Tag... tags) {
         //NOOP (used when metrics are disabled)
     }
 
+    default void linkGauge(String metric, LongSupplier gauge) {
+        linkGauge(metric, gauge, NO_TAGS);
+    }
 
     /*
      * @Retry, @Timeout, @CircuitBreaker, @Bulkhead and @Fallback
      */
 
-    default void incrementInvocationsTotal() {
-        incrementCounter("ft.%s.invocations.total");
+    /**
+     * The number of times the method was called when a value was returned.
+     */
+    default void incrementInvocationsValueReturned() {
+        incrementCounter("ft.invocations.total",
+                new Tag("result", "valueReturned"),
+                new Tag("fallback", getFallbackUsage().name()));
     }
 
-    default void incrementInvocationsFailedTotal() {
-        incrementCounter("ft.%s.invocations.failed.total");
+    /**
+     * The number of times the method was called when an exception was thrown.
+     */
+    default void incrementInvocationsExceptionThrown() {
+        incrementCounter("ft.invocations.total",
+                new Tag("result", "exceptionThrown"),
+                new Tag("fallback", getFallbackUsage().name()));
+    }
+
+    /**
+     * @return How fallback was involved in the current execution of the method
+     */
+    default FallbackUsage getFallbackUsage() {
+        return FallbackUsage.notDefined;
     }
 
 
@@ -109,37 +156,97 @@ public interface FaultToleranceMetrics {
      * @Retry
      */
 
-    default void incrementRetryCallsSucceededNotRetriedTotal() {
-        incrementCounter("ft.%s.retry.callsSucceededNotRetried.total");
+    /**
+     * The number of times the retry logic was run. This will always be once per method call.
+     *
+     * When value was returned.
+     */
+    default void incrementRetryCallsValueReturned() {
+        incrementCounter("ft.retry.calls.total",
+                new Tag("retried", String.valueOf(isRetried())),
+                new Tag("retryResult", "valueReturned"));
     }
 
-    default void incrementRetryCallsSucceededRetriedTotal() {
-        incrementCounter("ft.%s.retry.callsSucceededRetried.total");
+    /**
+     * The number of times the retry logic was run. This will always be once per method call.
+     *
+     * When an exception occurred that does not lead to retries.
+     */
+    default void incrementRetryCallsExceptionNotRetryable() {
+        incrementCounter("ft.retry.calls.total",
+                new Tag("retried", String.valueOf(isRetried())),
+                new Tag("retryResult", "exceptionNotRetryable"));
     }
 
-    default void incrementRetryCallsFailedTotal() {
-        incrementCounter("ft.%s.retry.callsFailed.total");
+    /**
+     * The number of times the retry logic was run. This will always be once per method call.
+     *
+     * When maximum total time for retries has been exceeded.
+     */
+    default void incrementRetryCallsMaxDurationReached() {
+        incrementCounter("ft.retry.calls.total",
+                new Tag("retried", String.valueOf(isRetried())),
+                new Tag("retryResult", "maxDurationReached"));
     }
 
+    /**
+     * The number of times the retry logic was run. This will always be once per method call.
+     *
+     * When maximum number of retries has been reached.
+     */
+    default void incrementRetryCallsMaxRetriesReached() {
+        incrementCounter("ft.retry.calls.total",
+                new Tag("retried", "true"),
+                new Tag("retryResult", "maxRetriesReached"));
+    }
+
+    /**
+     * The number of times the method was retried
+     */
     default void incrementRetryRetriesTotal() {
-        incrementCounter("ft.%s.retry.retries.total");
+        incrementCounter("ft.retry.retries.total");
     }
 
+    /**
+     * @return true if {@link #incrementRetryRetriesTotal()} has been called at least once, otherwise false
+     */
+    default boolean isRetried() {
+        return false;
+    }
 
     /*
      * @Timeout
      */
 
-    default void addTimeoutExecutionDuration(long duration) {
-        addToHistogram("ft.%s.timeout.executionDuration", duration);
+    /**
+     * Histogram of execution times for the method
+     *
+     * @param nanos Nanoseconds
+     */
+    default void addTimeoutExecutionDuration(long nanos) {
+        addToHistogram("ft.timeout.executionDuration", nanos);
     }
 
+    /**
+     * The number of times the timeout logic was run. This will usually be once per method call, but may be zero times
+     * if the circuit breaker prevents execution or more than once if the method is retried.
+     *
+     * When method call timed out
+     */
     default void incrementTimeoutCallsTimedOutTotal() {
-        incrementCounter("ft.%s.timeout.callsTimedOut.total");
+        incrementCounter("ft.timeout.calls.total",
+                new Tag("timedOut", "true"));
     }
 
+    /**
+     * The number of times the timeout logic was run. This will usually be once per method call, but may be zero times
+     * if the circuit breaker prevents execution or more than once if the method is retried.
+     *
+     * When method call did not time out
+     */
     default void incrementTimeoutCallsNotTimedOutTotal() {
-        incrementCounter("ft.%s.timeout.callsNotTimedOut.total");
+        incrementCounter("ft.timeout.calls.total",
+                new Tag("timedOut", "false"));
     }
 
 
@@ -147,32 +254,74 @@ public interface FaultToleranceMetrics {
      * @CircuitBreaker
      */
 
+    /**
+     * The number of times the circuit breaker logic was run. This will usually be once per method call, but may be more
+     * than once if the method call is retried.
+     *
+     * The method ran and was successful
+     */
     default void incrementCircuitbreakerCallsSucceededTotal() {
-        incrementCounter("ft.%s.circuitbreaker.callsSucceeded.total");
+        incrementCounter("ft.circuitbreaker.calls.total",
+                new Tag("circuitBreakerResult", "success"));
     }
 
+    /**
+     * The number of times the circuit breaker logic was run. This will usually be once per method call, but may be more
+     * than once if the method call is retried.
+     *
+     * The method ran and failed
+     */
     default void incrementCircuitbreakerCallsFailedTotal() {
-        incrementCounter("ft.%s.circuitbreaker.callsFailed.total");
+        incrementCounter("ft.circuitbreaker.calls.total",
+                new Tag("circuitBreakerResult", "failure"));
     }
 
+    /**
+     * The number of times the circuit breaker logic was run. This will usually be once per method call, but may be more
+     * than once if the method call is retried.
+     *
+     * The method did not run because the circuit breaker was in open state.
+     */
     default void incrementCircuitbreakerCallsPreventedTotal() {
-        incrementCounter("ft.%s.circuitbreaker.callsPrevented.total");
+        incrementCounter("ft.circuitbreaker.calls.total",
+                new Tag("circuitBreakerResult", "circuitBreakerOpen"));
     }
 
+    /**
+     * Number of times the circuit breaker has moved from closed state to open state
+     */
     default void incrementCircuitbreakerOpenedTotal() {
-        incrementCounter("ft.%s.circuitbreaker.opened.total");
+        incrementCounter("ft.circuitbreaker.opened.total");
     }
 
+    /**
+     * Amount of time the circuit breaker has spent in state open.
+     *
+     * Although this metric is a {@link Gauge}, its value increases monotonically.
+     */
     default void linkCircuitbreakerOpenTotal(LongSupplier gauge) {
-        linkGauge("ft.%s.circuitbreaker.open.total", gauge);
+        linkGauge("ft.circuitbreaker.state.total", gauge,
+                new Tag("state", "open"));
     }
 
+    /**
+     * Amount of time the circuit breaker has spent in state half-open.
+     *
+     * Although this metric is a {@link Gauge}, its value increases monotonically.
+     */
     default void linkCircuitbreakerHalfOpenTotal(LongSupplier gauge) {
-        linkGauge("ft.%s.circuitbreaker.halfOpen.total", gauge);
+        linkGauge("ft.circuitbreaker.state.total", gauge,
+                new Tag("state", "halfOpen"));
     }
 
+    /**
+     * Amount of time the circuit breaker has spent in state closed.
+     *
+     * Although this metric is a {@link Gauge}, its value increases monotonically.
+     */
     default void linkCircuitbreakerClosedTotal(LongSupplier gauge) {
-        linkGauge("ft.%s.circuitbreaker.closed.total", gauge);
+        linkGauge("ft.circuitbreaker.state.total", gauge,
+                new Tag("state", "closed"));
     }
 
 
@@ -180,28 +329,66 @@ public interface FaultToleranceMetrics {
      * @Bulkhead
      */
 
+    /**
+     * The number of times the bulkhead logic was run. This will usually be once per method call, but may be zero times
+     * if the circuit breaker prevented execution or more than once if the method call is retried.
+     *
+     * Bulkhead allowed the method call to run.
+     */
     default void incrementBulkheadCallsAcceptedTotal() {
-        incrementCounter("ft.%s.bulkhead.callsAccepted.total");
+        incrementCounter("ft.bulkhead.calls.total",
+                new Tag("bulkheadResult", "accepted"));
     }
 
+    /**
+     * The number of times the bulkhead logic was run. This will usually be once per method call, but may be zero times
+     * if the circuit breaker prevented execution or more than once if the method call is retried.
+     *
+     * Bulkhead did not allow the method call to run.
+     */
     default void incrementBulkheadCallsRejectedTotal() {
-        incrementCounter("ft.%s.bulkhead.callsRejected.total");
+        incrementCounter("ft.bulkhead.calls.total",
+                new Tag("bulkheadResult", "rejected"));
     }
 
+    /**
+     * Number of currently running executions
+     *
+     * @param gauge underlying access wrapped as {@link Gauge}
+     */
     default void linkBulkheadConcurrentExecutions(LongSupplier gauge) {
-        linkGauge("ft.%s.bulkhead.concurrentExecutions", gauge);
+        linkGauge("ft.bulkhead.executionsRunning", gauge);
     }
 
+    /**
+     * Number of executions currently waiting in the queue
+     *
+     * Only added if the method is also annotated with {@link Asynchronous}
+     *
+     * @param gauge underlying access wrapped as {@link Gauge}
+     */
     default void linkBulkheadWaitingQueuePopulation(LongSupplier gauge) {
-        linkGauge("ft.%s.bulkhead.waitingQueue.population", gauge);
+        linkGauge("ft.bulkhead.executionsWaiting", gauge);
     }
 
-    default void addBulkheadExecutionDuration(long duration) {
-        addToHistogram("ft.%s.bulkhead.executionDuration", duration);
+    /**
+     * Histogram of the time that method executions spent running
+     *
+     * @param nanos Nanoseconds
+     */
+    default void addBulkheadExecutionDuration(long nanos) {
+        addToHistogram("ft.bulkhead.runningDuration", nanos);
     }
 
-    default void addBulkheadWaitingDuration(long duration) {
-        addToHistogram("ft.%s.bulkhead.waiting.duration", duration);
+    /**
+     * Histogram of the time that method executions spent waiting in the queue
+     *
+     * Only added if the method is also annotated with {@link Asynchronous}
+     *
+     * @param nanos Nanoseconds
+     */
+    default void addBulkheadWaitingDuration(long nanos) {
+        addToHistogram("ft.bulkhead.waitingDuration", nanos);
     }
 
 
@@ -210,6 +397,6 @@ public interface FaultToleranceMetrics {
      */
 
     default void incrementFallbackCallsTotal() {
-        incrementCounter("ft.%s.fallback.calls.total");
+        //NOOP
     }
 }

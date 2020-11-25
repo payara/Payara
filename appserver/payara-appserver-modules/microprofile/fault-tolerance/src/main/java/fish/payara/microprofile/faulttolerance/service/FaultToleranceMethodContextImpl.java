@@ -75,17 +75,17 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState.Circuit
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 /**
- * The execution context for a FT annotated method. Each {@link Method} for each individual target {@link Object}
- * (instance of the {@link Class} defining the {@link Method}) has its corresponding instance of this
- * {@link FaultToleranceMethodContext}.
- * 
+ * The execution context for a FT annotated method. Each specific {@link Method} on a specific {@link Class} has a
+ * corresponding instance of this {@link FaultToleranceMethodContext}. Multiple instances of that class share a context
+ * (since MP FT 3.0).
+ *
  * When the annotated {@link Method} is invoked this implementation is bound to that context by
  * {@link #in(InvocationContext, FaultTolerancePolicy)} with a fresh instance of this class. It shares all the state
  * with other invocations for the same method except the {@link InvocationContext} and the {@link FaultTolerancePolicy}
  * which are specific for each invocation. This way the full FT invocation state for each method invocation is
  * determined at the beginning of applying FT semantics and cannot change during execution (except for those counters
  * and queues that are meant to track the shared state changes of course).
- * 
+ *
  * @author Jan Bernitt
  */
 public final class FaultToleranceMethodContextImpl implements FaultToleranceMethodContext {
@@ -121,7 +121,7 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
             if (target.get() == null) {
                 return true; // target got GC'd - this is not useful any longer
             }
-            return executingThreadCount.get() == 0 // 
+            return executingThreadCount.get() == 0 //
                     && queuingOrRunningPopulation.get() == 0 //
                     && lastUsed.get() + ttl < currentTimeMillis() //
                     && isStabilyClosedCuicuit();
@@ -188,7 +188,7 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
 
     @Override
     public CircuitBreakerState getState(int requestVolumeThreshold) {
-        return requestVolumeThreshold < 0 
+        return requestVolumeThreshold < 0
                 ? shared.circuitBreakerState.get()
                 : shared.circuitBreakerState.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
     }
@@ -238,7 +238,7 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
                     }
                 } catch (Exception | Error ex) {
                     // Note that even ExecutionException is not unpacked (intentionally)
-                    asyncResult.completeExceptionally(ex); 
+                    asyncResult.completeExceptionally(ex);
                 } finally {
                     if (shared.requestContext != null) {
                         shared.requestContext.deactivate();
