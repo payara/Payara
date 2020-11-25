@@ -45,6 +45,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -69,22 +70,44 @@ public class SecretsDirConfigSourceTest {
     @Before
     public void setUp() throws IOException {
         testDirectory = Files.createTempDirectory("microprofile-config-test");
-        // create a couple of test files
+        
+        // create a couple of test simple files
         Path file1 = Paths.get(testDirectory.toString(), "property1");
         Path file2 = Paths.get(testDirectory.toString(), "property2");
+        Path fileHidden = Paths.get(testDirectory.toString(), ".hidden-property");
         file1 = Files.createFile(file1);
         Files.write(file1, "value1".getBytes());
         file2 = Files.createFile(file2);
         Files.write(file2, "value2".getBytes());
+        fileHidden = Files.createFile(fileHidden);
+        
+        // create a subdirectory structure with test files
+        Path mounted = Paths.get(testDirectory.toString(), "foo", "bar");
+        Files.createDirectories(mounted);
+        
+        Path fileMounted = Paths.get(mounted.toString(), "property3");
+        fileMounted = Files.createFile(fileMounted);
+        Files.write(fileMounted, "value3".getBytes());
+        
+        // create "foo/bar/..data/property4" and symlink from "foo/bar/property4" as done on K8s
+        Path mountedK8s = Paths.get(mounted.toString(), "..data");
+        Files.createDirectories(mountedK8s);
+        Path fileK8sMounted = Paths.get(mountedK8s.toString(), "property4");
+        fileK8sMounted = Files.createFile(fileK8sMounted);
+        Files.write(fileK8sMounted, "value4".getBytes());
+        Path fileK8sSymlink = Paths.get(mounted.toString(), "property4");
+        fileK8sSymlink = Files.createSymbolicLink(fileK8sSymlink, fileK8sMounted);
+    
+        // create & load
         source = new SecretsDirConfigSource(testDirectory);
     }
 
     @After
     public void tearDown() throws IOException {
-        for (File file : testDirectory.toFile().listFiles()) {
-            file.delete();
-        }
-        Files.delete(testDirectory);
+        Files.walk(testDirectory)
+            .sorted(Comparator.reverseOrder())
+            .map(Path::toFile)
+            .forEach(File::delete);
     }
 
     /**
@@ -95,6 +118,8 @@ public class SecretsDirConfigSourceTest {
         Map<String, String> expected = new HashMap<>();
         expected.put("property1", "value1");
         expected.put("property2", "value2");
+        expected.put("foo.bar.property3", "value3");
+        expected.put("foo.bar.property4", "value4");
         assertEquals(expected, source.getProperties());
     }
 
@@ -103,7 +128,7 @@ public class SecretsDirConfigSourceTest {
      */
     @Test
     public void testGetPropertyNames() {
-        assertEquals(new HashSet<>(asList("property1", "property2")), source.getPropertyNames());
+        assertEquals(new HashSet<>(asList("property1", "property2", "foo.bar.property3", "foo.bar.property4")), source.getPropertyNames());
     }
 
     /**
@@ -113,6 +138,8 @@ public class SecretsDirConfigSourceTest {
     public void testGetValue() {
         assertEquals("value1", source.getValue("property1"));
         assertEquals("value2", source.getValue("property2"));
+        assertEquals("value3", source.getValue("foo.bar.property3"));
+        assertEquals("value4", source.getValue("foo.bar.property4"));
     }
 
     /**
@@ -142,7 +169,27 @@ public class SecretsDirConfigSourceTest {
             Files.write(file1, "value1".getBytes());
         }
     }
-
+    
+    /**
+     * Test the changed Property in subdirectories
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testChangePropertyInSubdir() throws IOException {
+        assertEquals("value4", source.getValue("foo.bar.property4"));
+        // change the file
+        Path file = Paths.get(testDirectory.toString(), "foo", "bar", "..data", "property4");
+        Files.write(file, "value-changed".getBytes());
+        try {
+            FileTime nowplus1sec = FileTime.fromMillis(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(1));
+            Files.setLastModifiedTime(file, nowplus1sec);
+            assertEquals("value-changed", source.getValue("foo.bar.property4"));
+        } finally {
+            // clean up
+            Files.write(file, "value4".getBytes());
+        }
+    }
+    
     /**
      * Tests getting a new property as the file has now appeared
      */
@@ -159,7 +206,27 @@ public class SecretsDirConfigSourceTest {
             Files.delete(file1);
         }
     }
-
+    
+    /**
+     * Tests getting a new property as the file has now appeared in a subdirectory
+     */
+    @Test
+    public void testNewFileInSubdir() throws IOException {
+        assertNull(source.getValue("foo.bar.property-new"));
+        // change the file
+        Path file = Paths.get(testDirectory.toString(), "foo", "bar", "..data", "property-new");
+        Files.write(file, "newValue".getBytes());
+        Path fileSymlink = Paths.get(testDirectory.toString(), "foo", "bar", "property-new");
+        Files.createSymbolicLink(fileSymlink, file);
+        try {
+            assertEquals("newValue", source.getValue("foo.bar.property-new"));
+        } finally {
+            // clean up
+            Files.delete(file);
+            Files.delete(fileSymlink);
+        }
+    }
+    
     @Test
     public void testBadDirectoryNoBlowUp() {
         assertNull(new SecretsDirConfigSource(Paths.get(testDirectory.toString(), "FOOBLE")).getValue("BILLY"));

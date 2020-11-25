@@ -43,12 +43,10 @@ import static java.util.Collections.unmodifiableMap;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,9 +63,10 @@ public class SecretsDirConfigSource extends PayaraConfigSource implements Config
     private Path secretsDir;
     private ConcurrentHashMap<String, String> properties;
     private ConcurrentHashMap<String, FileTime> storedModifiedTimes;
+    private ConcurrentHashMap<String, Path> storedPaths;
 
     public SecretsDirConfigSource() {
-        findFile();
+        findDir();
         loadProperties();
     }
 
@@ -97,28 +96,32 @@ public class SecretsDirConfigSource extends PayaraConfigSource implements Config
         String result = properties.get(property);
         if (result != null) {
             try {
-                // check the last modified time
+                // check existence (secret mount might have gone away) and the last modified time
                 FileTime ft = storedModifiedTimes.get(property);
-                Path path = Paths.get(secretsDir.toString(), property);
+                Path path = storedPaths.get(property);
                 if (Files.exists(path) && Files.getLastModifiedTime(path).compareTo(ft) > 0) {
-                    // file  has been modified since last check
-                    result = readFile(property);
+                    // file has been modified since last check, re-read content
+                    result = readFile(path);
                     storedModifiedTimes.put(property, Files.getLastModifiedTime(path));
                     properties.put(property, result);
                 }
             } catch (IOException ex) {
-                Logger.getLogger(SecretsDirConfigSource.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SecretsDirConfigSource.class.getName()).log(Level.SEVERE, "Unable to read file in the directory", ex);
             }
         } else {
             // check whether there is a file there now as there wasn't before
-            Path path = Paths.get(secretsDir.toString(), property);
-            if (Files.exists(path) && Files.isRegularFile(path) && Files.isReadable(path)) {
+            // --> the list of possible paths is used "first match, first serve".
+            List<Path> paths = Arrays.asList(Paths.get(secretsDir.toString(), property),
+                                             Paths.get(secretsDir.toString(), property.replace('.', File.separatorChar)));
+            for (Path path : paths) {
                 try {
-                    result = readFile(property);
+                    result = readFile(path);
                     storedModifiedTimes.put(property, Files.getLastModifiedTime(path));
+                    storedPaths.put(property, path);
                     properties.put(property, result);
+                    break;
                 } catch (IOException ex) {
-                    Logger.getLogger(SecretsDirConfigSource.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(SecretsDirConfigSource.class.getName()).log(Level.SEVERE, "Unable to read file in the directory", ex);
                 }
             }
         }
@@ -130,7 +133,7 @@ public class SecretsDirConfigSource extends PayaraConfigSource implements Config
         return "Secrets Directory";
     }
 
-    private void findFile() {
+    private void findDir() {
         secretsDir = Paths.get(configService.getMPConfig().getSecretDir());
 
         if (!Files.exists(secretsDir) || !Files.isDirectory(secretsDir) || !Files.isReadable(secretsDir)) {
@@ -143,21 +146,14 @@ public class SecretsDirConfigSource extends PayaraConfigSource implements Config
         }
     }
 
-    private String readFile(String name) {
+    private String readFile(Path file) throws IOException {
         String result = null;
-        if (Files.exists(secretsDir) && Files.isDirectory(secretsDir) && Files.isReadable(secretsDir)) {
-            try {
-                Path file = Paths.get(secretsDir.toString(), name);
-                if (Files.exists(file) && Files.isReadable(file)) {
-                    StringBuilder collector = new StringBuilder();
-                    for (String line : Files.readAllLines(file)) {
-                        collector.append(line);
-                    }
-                    result = collector.toString();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(SecretsDirConfigSource.class.getName()).log(Level.SEVERE, null, ex);
+        if (Files.exists(file) && Files.isRegularFile(file) && Files.isReadable(file)) {
+            StringBuilder collector = new StringBuilder();
+            for (String line : Files.readAllLines(file)) {
+                collector.append(line);
             }
+            result = collector.toString();
         }
         return result;
     }
@@ -165,17 +161,34 @@ public class SecretsDirConfigSource extends PayaraConfigSource implements Config
     private void loadProperties() {
         properties = new ConcurrentHashMap<>();
         storedModifiedTimes = new ConcurrentHashMap<>();
+        storedPaths = new ConcurrentHashMap<>();
         if (Files.exists(secretsDir) && Files.isDirectory(secretsDir) && Files.isReadable(secretsDir)) {
-            File files[] = secretsDir.toFile().listFiles();
-            for (File file : files) {
-                try {
-                    if (file.isFile() && file.canRead()) {
-                        properties.put(file.getName(), readFile(file.getName()));
-                        storedModifiedTimes.put(file.getName(), Files.getLastModifiedTime(file.toPath()));
+            try {
+                Files.walkFileTree(secretsDir, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                        return dir.toFile().isHidden() ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
                     }
-                } catch (IOException ex) {
-                    Logger.getLogger(SecretsDirConfigSource.class.getName()).log(Level.SEVERE, "Unable to read file in the directory", ex);
-                }
+    
+                    @Override
+                    public FileVisitResult visitFile(Path path, BasicFileAttributes mainAtts) throws IOException {
+                        File file = path.toFile();
+                        // do not read hidden files, as K8s Secret filenames are symlinks to hidden files with data.
+                        if (file.isFile() && ! file.isHidden() && file.canRead()) {
+                            // 1. get relative path based on the secrets dir ("/foobar"),
+                            // 2. replace all path seps with a ".",
+                            // so "/foobar/test/foo/bar" becomes "test/foo/bar" becomes "test.foo.bar" property name
+                            String property = secretsDir.relativize(path).toString().replace(File.separatorChar, '.');
+                            
+                            properties.put(property, readFile(path));
+                            storedModifiedTimes.put(property, mainAtts.lastModifiedTime());
+                            storedPaths.put(property, path);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            } catch (IOException ex) {
+                Logger.getLogger(SecretsDirConfigSource.class.getName()).log(Level.SEVERE, "Unable to read file in the directory", ex);
             }
         }
     }
