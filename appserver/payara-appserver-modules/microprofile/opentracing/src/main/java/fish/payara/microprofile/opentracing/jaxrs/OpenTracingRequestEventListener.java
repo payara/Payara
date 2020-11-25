@@ -279,12 +279,15 @@ public class OpenTracingRequestEventListener implements RequestEventListener {
 
         // Prepend a slash for safety (so that a pattern of "/blah" or just "blah" will both match)
         final String uriPath = "/" + request.getUriInfo().getPath();
+        // Because the openapi resource path is always empty we need to use the base path
+        final String baseUriPath = request.getUriInfo().getBaseUri().getPath();
         // First, check for the mandatory skips
         if (uriPath.equals("/health")
                 || uriPath.equals("/metrics")
                 || uriPath.contains("/metrics/base")
                 || uriPath.contains("/metrics/vendor")
-                || uriPath.contains("/metrics/application")) {
+                || uriPath.contains("/metrics/application")
+                || baseUriPath.equals("/openapi/")) {
             return false;
         }
 
