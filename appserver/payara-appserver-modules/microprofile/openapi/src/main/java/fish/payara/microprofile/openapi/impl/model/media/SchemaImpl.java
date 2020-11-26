@@ -46,10 +46,12 @@ import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +74,8 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private Object defaultValue;
 
+    @JsonIgnore
+    private String name;
     private String title;
     private BigDecimal multipleOf;
     private BigDecimal maximum;
@@ -113,9 +117,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private String implementation;
 
     @SuppressWarnings("unchecked")
-    public static Schema createInstance(AnnotationModel annotation, ApiContext context) {
+    public static SchemaImpl createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
         from.setDefaultValue(annotation.getValue("defaultValue", Object.class));
+        from.setName(annotation.getValue("name", String.class));
         from.setTitle(annotation.getValue("title", String.class));
         Double multipleOf = annotation.getValue("multipleOf", Double.class);
         if (multipleOf != null) {
@@ -139,6 +144,11 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setUniqueItems(annotation.getValue("uniqueItems", Boolean.class));
         from.setMaxProperties(annotation.getValue("maxProperties", Integer.class));
         from.setMinProperties(annotation.getValue("minProperties", Integer.class));
+
+        final Map<String, Schema> properties = new LinkedHashMap<>();
+        extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, properties);
+        from.setProperties(properties);
+
         from.setRequired(annotation.getValue("requiredProperties", List.class));
         EnumModel typeEnum = annotation.getValue("type", EnumModel.class);
         if (typeEnum != null) {
@@ -698,6 +708,14 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         this.implementation = implementation;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public static void merge(Schema from, Schema to,
             boolean override, ApiContext context) {
 
@@ -747,9 +765,15 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             if (to.getProperties() == null) {
                 to.setProperties(new LinkedHashMap<>());
             }
-            for (String key : from.getProperties().keySet()) {
-                if (!to.getProperties().containsKey(key)) {
-                    to.addProperty(key, from.getProperties().get(key));
+            final Map<String, Schema> toProperties = to.getProperties();
+            for (Entry<String, Schema> fromEntry : from.getProperties().entrySet()) {
+                final String name = fromEntry.getKey();
+                final Schema fromSchema = fromEntry.getValue();
+                if (!toProperties.containsKey(name)) {
+                    toProperties.put(name, fromSchema);
+                } else {
+                    final Schema toSchema = toProperties.get(name);
+                    SchemaImpl.merge(fromSchema, toSchema, override, context);
                 }
             }
         }

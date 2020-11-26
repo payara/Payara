@@ -76,6 +76,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
+
+import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.PathItem;
@@ -537,8 +539,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Add a new schema
         if (schema == null) {
-            schema = new SchemaImpl();
-            context.getApi().getComponents().addSchema(schemaName, schema);
+            final Components components = context.getApi().getComponents();
+            schema = components.getSchemas().getOrDefault(schemaName, new SchemaImpl());
+            components.addSchema(schemaName, schema);
         }
 
         // If there is an annotation
@@ -546,8 +549,14 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             SchemaImpl.merge(SchemaImpl.createInstance(schemaAnnotation, context), schema, true, context);
         }
         for (FieldModel field : clazz.getFields()) {
-            if (!field.isTransient() && !field.getName().startsWith("this$")) {
-                schema.addProperty(field.getName(), createSchema(null, context, field, clazz, parameterizedInterfaces));
+            final String fieldName = field.getName();
+            if (!field.isTransient() && !fieldName.startsWith("this$")) {
+                final Schema existingProperty = schema.getProperties().get(fieldName);
+                final Schema newProperty = createSchema(null, context, field, clazz, parameterizedInterfaces);
+                if (existingProperty != null) {
+                    SchemaImpl.merge(existingProperty, newProperty, true, context);
+                }
+                schema.addProperty(fieldName, newProperty);
             }
         }
 
@@ -613,9 +622,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 = schemas.getOrDefault(parentName, new SchemaImpl());
         schemas.put(parentName, parentSchema);
 
-        Schema property = new SchemaImpl();
+        Schema property = parentSchema.getProperties().getOrDefault(schemaName, new SchemaImpl());
         parentSchema.addProperty(schemaName, property);
+
         property.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
+
         SchemaImpl.merge(schema, property, true, context);
     }
 

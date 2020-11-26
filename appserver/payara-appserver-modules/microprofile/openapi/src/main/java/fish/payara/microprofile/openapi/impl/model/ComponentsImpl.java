@@ -50,9 +50,10 @@ import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Map.Entry;
+
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
 import org.eclipse.microprofile.openapi.models.examples.Example;
@@ -305,11 +306,13 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
         }
         // Handle @Schema
         if (from.getSchemas()!= null) {
-            for (String schemaName : from.getSchemas().keySet()) {
+            for (Entry<String, Schema> fromEntry : from.getSchemas().entrySet()) {
+                final String schemaName = fromEntry.getKey();
                 if (schemaName != null) {
-                    Schema newSchema = new SchemaImpl();
-                    SchemaImpl.merge(from.getSchemas().get(schemaName), newSchema, override, context);
-                    to.addSchema(schemaName, newSchema);
+                    final Schema fromSchema = fromEntry.getValue();
+                    final Schema toSchema = to.getSchemas().getOrDefault(schemaName, new SchemaImpl());
+                    SchemaImpl.merge(fromSchema, toSchema, override, context);
+                    to.getSchemas().put(schemaName, toSchema);
                 }
             }
         }
