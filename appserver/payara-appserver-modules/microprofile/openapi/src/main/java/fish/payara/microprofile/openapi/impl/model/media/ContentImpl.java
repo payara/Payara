@@ -41,10 +41,16 @@ package fish.payara.microprofile.openapi.impl.model.media;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.eclipse.microprofile.openapi.models.media.Content;
+import org.eclipse.microprofile.openapi.models.media.Encoding;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
@@ -69,13 +75,13 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
         }
         MediaType mediaType = new MediaTypeImpl();
         from.addMediaType(typeName, mediaType);
-        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, mediaType.getExamples());
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, mediaType.getExamples(), mediaType::addExample);
         mediaType.setExample(annotation.getValue("example", String.class));
         AnnotationModel schemaAnnotation = annotation.getValue("schema", AnnotationModel.class);
         if (schemaAnnotation != null) {
             mediaType.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        extractAnnotations(annotation, context, "encoding", "name", EncodingImpl::createInstance, mediaType.getEncoding());
+        extractAnnotations(annotation, context, "encoding", "name", EncodingImpl::createInstance, mediaType.getEncoding(), mediaType::addEncoding);
         return from;
     }
 
@@ -94,7 +100,7 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
 
     @Override
     public Map<String, MediaType> getMediaTypes() {
-        return new ContentImpl(this);
+        return ModelUtils.readOnlyView(this);
     }
 
     @Override
@@ -118,15 +124,24 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
             to.addMediaType(typeName, toMediaType);
 
             // Merge encoding
-            for (String encodingName : fromMediaType.getEncoding().keySet()) {
-                EncodingImpl.merge(encodingName,
-                        fromMediaType.getEncoding().get(encodingName),
-                        to.getMediaType(typeName).getEncoding(), override, context);
+            for (Map.Entry<String, Encoding> encoding : fromMediaType.getEncoding().entrySet()) {
+                EncodingImpl.merge(
+                    encoding.getKey(),
+                    encoding.getValue(),
+                    ((MediaTypeImpl) to.getMediaType(typeName)).encoding,
+                    override,
+                    context
+                );
             }
 
             // Merge examples
-            for (String exampleName : fromMediaType.getExamples().keySet()) {
-                ExampleImpl.merge(exampleName, fromMediaType.getExamples().get(exampleName), to.getMediaType(typeName).getExamples(), override);
+            for (Map.Entry<String, Example> example : fromMediaType.getExamples().entrySet()) {
+                ExampleImpl.merge(
+                    example.getKey(),
+                    example.getValue(),
+                    ((MediaTypeImpl) to.getMediaType(typeName)).examples,
+                    override
+                );
             }
             if (fromMediaType.getExample() != null) {
                 to.getMediaType(typeName).setExample(fromMediaType.getExample());

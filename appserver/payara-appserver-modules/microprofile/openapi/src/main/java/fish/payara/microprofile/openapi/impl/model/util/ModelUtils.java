@@ -48,11 +48,16 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
+
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -443,7 +448,8 @@ public final class ModelUtils {
             String type,
             String key,
             BiFunction<AnnotationModel, ApiContext, T> factory,
-            Map<String, T> wrapper) {
+            Map<String, T> wrapper,
+            BiConsumer<String, T> wrapperAddFunction) {
 
         if (wrapper == null) {
             throw new IllegalArgumentException();
@@ -451,7 +457,7 @@ public final class ModelUtils {
         List<AnnotationModel> annotations = annotationModel.getValue(type, List.class);
         if (annotations != null) {
             for (AnnotationModel annotation : annotations) {
-                wrapper.put(
+                wrapperAddFunction.accept(
                         annotation.getValue(key, String.class),
                         factory.apply(annotation, context)
                 );
@@ -464,7 +470,8 @@ public final class ModelUtils {
             ApiContext context,
             String type,
             BiFunction<AnnotationModel, ApiContext, T> factory,
-            List<T> wrapper) {
+            List<T> wrapper,
+            Consumer<T> wrapperAddFunction) {
 
         if (wrapper == null) {
             throw new IllegalArgumentException();
@@ -472,11 +479,24 @@ public final class ModelUtils {
         List<AnnotationModel> annotations = annotationModel.getValue(type, List.class);
         if (annotations != null) {
             for (AnnotationModel annotation : annotations) {
-                wrapper.add(
+                wrapperAddFunction.accept(
                         factory.apply(annotation, context)
                 );
             }
         }
+    }
+    
+    public static <T> void mergeImmutableList(List<T> from, List<T> to, Consumer<List<T>> setFunction) {
+        final List<T> list = new ArrayList<>();
+
+        if (from != null) {
+            list.addAll(from);
+        }
+        if (to != null) {
+            list.addAll(to);
+        }
+
+        setFunction.accept(list);
     }
 
     public static Boolean mergeProperty(Boolean current, boolean offer, boolean override) {
@@ -613,5 +633,19 @@ public final class ModelUtils {
     public static String getSimpleName(String fqn) {
         String simpleName = fqn.substring(fqn.lastIndexOf('.') + 1);
         return simpleName.substring(simpleName.lastIndexOf('$') + 1);
+    }
+
+    public static <K, V> Map<K, V> readOnlyView(Map<K, V> map) {
+        if (map == null) {
+            map = new HashMap<>();
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    public static <T> List<T> readOnlyView(List<T> list) {
+        if (list == null) {
+            return null;
+        }
+        return Collections.unmodifiableList(list);
     }
 }

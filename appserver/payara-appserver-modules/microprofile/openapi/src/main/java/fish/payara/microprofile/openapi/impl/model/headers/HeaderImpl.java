@@ -44,6 +44,8 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
@@ -111,9 +113,9 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
         if (schemaAnnotation != null) {
             from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples());
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples(), from::addExample);
         from.setExample(annotation.getValue("example", Object.class));
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents, from.contents::add);
         return from;
     }
 
@@ -202,7 +204,7 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
     @Override
     public Map<String, Example> getExamples() {
-        return examples;
+        return ModelUtils.readOnlyView(examples);
     }
 
     @Override

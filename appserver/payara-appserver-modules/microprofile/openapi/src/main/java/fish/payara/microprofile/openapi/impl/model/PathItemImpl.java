@@ -41,6 +41,8 @@ package fish.payara.microprofile.openapi.impl.model;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -71,7 +73,7 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     public static PathItem createInstance(AnnotationModel annotation, ApiContext context) {
         PathItem from = new PathItemImpl();
-        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers());
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers(), from::addServer);
         return from;
     }
 
@@ -252,7 +254,7 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public List<Server> getServers() {
-        return servers;
+        return ModelUtils.readOnlyView(servers);
     }
 
     @Override
@@ -275,7 +277,7 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public List<Parameter> getParameters() {
-        return parameters;
+        return ModelUtils.readOnlyView(parameters);
     }
 
     @Override

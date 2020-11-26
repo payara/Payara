@@ -15,6 +15,8 @@ import java.util.TreeMap;
 import org.eclipse.microprofile.openapi.models.Extensible;
 import org.eclipse.microprofile.openapi.models.Reference;
 
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 @JsonSerialize(using = ExtensibleTreeMap.ExtensibleTreeMapSerializer.class)
 public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends TreeMap<String, V>
         implements Extensible<T> {
@@ -32,7 +34,7 @@ public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends Tree
 
     @Override
     public final Map<String, Object> getExtensions() {
-        return extensions;
+        return ModelUtils.readOnlyView(extensions);
     }
 
     @Override

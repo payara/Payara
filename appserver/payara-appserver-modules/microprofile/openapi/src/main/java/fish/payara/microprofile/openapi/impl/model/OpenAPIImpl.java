@@ -83,9 +83,9 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
-        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from.getSecurity());
-        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers());
-        extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from.getTags());
+        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from.getSecurity(), from::addSecurityRequirement);
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers(), from::addServer);
+        extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from.getTags(), from::addTag);
         AnnotationModel components = annotation.getValue("components", AnnotationModel.class);
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));
@@ -129,7 +129,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     @Override
     public List<Server> getServers() {
-        return servers;
+        return ModelUtils.readOnlyView(servers);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     @Override
     public List<SecurityRequirement> getSecurity() {
-        return security;
+        return ModelUtils.readOnlyView(security);
     }
 
     @Override
@@ -182,7 +182,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     @Override
     public List<Tag> getTags() {
-        return tags;
+        return ModelUtils.readOnlyView(tags);
     }
 
     @Override

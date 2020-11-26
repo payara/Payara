@@ -47,15 +47,16 @@ import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeImmutableList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -146,7 +147,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setMinProperties(annotation.getValue("minProperties", Integer.class));
 
         final Map<String, Schema> properties = new LinkedHashMap<>();
-        extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, properties);
+        extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, properties, properties::put);
         from.setProperties(properties);
 
         from.setRequired(annotation.getValue("requiredProperties", List.class));
@@ -192,24 +193,15 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
         List<String> anyOf = annotation.getValue("anyOf", List.class);
         if (anyOf != null) {
-            if (from.getAnyOf() == null) {
-                from.setAnyOf(new ArrayList<>());
-            }
-            from.getAnyOf().addAll(from.getSchemaInstances(anyOf, context));
+            mergeImmutableList(from.getAnyOf(), from.getSchemaInstances(anyOf, context), from::setAnyOf);
         }
         List<String> allOf = annotation.getValue("allOf", List.class);
         if (allOf != null) {
-            if (from.getAllOf() == null) {
-                from.setAllOf(new ArrayList<>());
-            }
-            from.getAllOf().addAll(from.getSchemaInstances(allOf, context));
+            mergeImmutableList(from.getAllOf(), from.getSchemaInstances(allOf, context), from::setAllOf);
         }
         List<String> oneOf = annotation.getValue("oneOf", List.class);
         if (oneOf != null) {
-            if (from.getOneOf() == null) {
-                from.setOneOf(new ArrayList<>());
-            }
-            from.getOneOf().addAll(from.getSchemaInstances(oneOf, context));
+            mergeImmutableList(from.getOneOf(), from.getSchemaInstances(oneOf, context), from::setOneOf);
         }
 
         from.setImplementation(annotation.getValue("implementation", String.class));
@@ -280,7 +272,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<Object> getEnumeration() {
-        return enumeration;
+        return ModelUtils.readOnlyView(enumeration);
     }
 
     @Override
@@ -433,7 +425,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<String> getRequired() {
-        return required;
+        return ModelUtils.readOnlyView(required);
     }
 
     @Override
@@ -475,7 +467,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Map<String, Schema> getProperties() {
-        return properties;
+        return ModelUtils.readOnlyView(properties);
     }
 
     @Override
@@ -639,7 +631,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<Schema> getAllOf() {
-        return allOf;
+        return ModelUtils.readOnlyView(allOf);
     }
 
     @Override
@@ -660,7 +652,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<Schema> getAnyOf() {
-        return this.anyOf;
+        return ModelUtils.readOnlyView(anyOf);
     }
 
     @Override
@@ -681,7 +673,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<Schema> getOneOf() {
-        return this.oneOf;
+        return ModelUtils.readOnlyView(oneOf);
     }
 
     @Override
@@ -770,7 +762,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 final String name = fromEntry.getKey();
                 final Schema fromSchema = fromEntry.getValue();
                 if (!toProperties.containsKey(name)) {
-                    toProperties.put(name, fromSchema);
+                    to.addProperty(name, fromSchema);
                 } else {
                     final Schema toSchema = toProperties.get(name);
                     SchemaImpl.merge(fromSchema, toSchema, override, context);
@@ -815,24 +807,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         if (from.getNot() != null) {
             to.setNot(from.getNot());
         }
-        if (from.getAllOf() != null) {
-            if (to.getAllOf() == null) {
-                to.setAllOf(new ArrayList<>());
-            }
-            to.getAllOf().addAll(from.getAllOf());
-        }
-        if (from.getAnyOf() != null) {
-            if (to.getAnyOf() == null) {
-                to.setAnyOf(new ArrayList<>());
-            }
-            to.getAnyOf().addAll(from.getAnyOf());
-        }
-        if (from.getOneOf() != null) {
-            if (to.getOneOf() == null) {
-                to.setOneOf(new ArrayList<>());
-            }
-            to.getOneOf().addAll(from.getOneOf());
-        }
+        mergeImmutableList(from.getAnyOf(), to.getAnyOf(), to::setAnyOf);
+        mergeImmutableList(from.getAllOf(), to.getAllOf(), to::setAllOf);
+        mergeImmutableList(from.getOneOf(), to.getOneOf(), to::setOneOf);
         if (from instanceof SchemaImpl
                 && ((SchemaImpl) from).getImplementation() != null
                 && context != null

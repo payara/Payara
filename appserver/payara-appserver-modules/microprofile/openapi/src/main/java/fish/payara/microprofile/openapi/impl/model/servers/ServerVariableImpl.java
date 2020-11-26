@@ -41,6 +41,8 @@ package fish.payara.microprofile.openapi.impl.model.servers;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
@@ -87,7 +89,7 @@ public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implement
 
     @Override
     public List<String> getEnumeration() {
-        return enumeration;
+        return ModelUtils.readOnlyView(enumeration);
     }
 
     @Override

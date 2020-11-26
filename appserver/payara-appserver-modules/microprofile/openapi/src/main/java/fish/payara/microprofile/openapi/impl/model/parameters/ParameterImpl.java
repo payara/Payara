@@ -44,6 +44,8 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
@@ -102,9 +104,9 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
         if (schemaAnnotation != null) {
             from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples());
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples(), from::addExample);
         from.setExample(annotation.getValue("example", Object.class));
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents(), from.contents::add);
         return from;
     }
 
@@ -210,7 +212,7 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
 
     @Override
     public Map<String, Example> getExamples() {
-        return examples;
+        return ModelUtils.readOnlyView(examples);
     }
 
     @Override
@@ -252,7 +254,7 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
     }
 
     public List<ContentImpl> getContents() {
-        return contents;
+        return ModelUtils.readOnlyView(contents);
     }
 
     public void setContents(List<ContentImpl> contents) {

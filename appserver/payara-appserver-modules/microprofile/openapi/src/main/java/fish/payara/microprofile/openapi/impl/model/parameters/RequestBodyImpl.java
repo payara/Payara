@@ -42,6 +42,8 @@ package fish.payara.microprofile.openapi.impl.model.parameters;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
@@ -67,7 +69,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents(), from.contents::add);
         return from;
     }
 
@@ -115,7 +117,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
     }
 
     public List<ContentImpl> getContents() {
-        return contents;
+        return ModelUtils.readOnlyView(contents);
     }
 
     public void setContents(List<ContentImpl> contents) {

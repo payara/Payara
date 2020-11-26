@@ -53,6 +53,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.openapi.models.Extensible;
 
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensible<T> {
 
     private static final Logger LOGGER = Logger.getLogger(ExtensibleImpl.class.getName());
@@ -62,7 +64,7 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
 
     @Override
     public Map<String, Object> getExtensions() {
-        return extensions;
+        return ModelUtils.readOnlyView(extensions);
     }
 
     @SuppressWarnings("unchecked")
@@ -109,7 +111,7 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
                         from.getExtensions().get(extensionName),
                         override
                 );
-                to.getExtensions().put(extensionName, value);
+                to.addExtension(extensionName, value);
             }
         }
     }

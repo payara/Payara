@@ -69,7 +69,7 @@ public class OASFilterTest extends OpenApiApplicationTest {
 
         @Override
         public void filterOpenAPI(final OpenAPI openAPI) {
-            openAPI.getComponents().getSchemas().put("SimpleMap", createMapKey());
+            openAPI.getComponents().addSchema("SimpleMap", createMapKey());
         }
 
         private static Schema createMapKey() {

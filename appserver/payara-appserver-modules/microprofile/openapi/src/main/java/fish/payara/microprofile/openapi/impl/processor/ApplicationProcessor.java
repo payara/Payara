@@ -616,11 +616,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Get or create the parent schema object
-        Map<String, Schema> schemas
-                = context.getApi().getComponents().getSchemas();
-        Schema parentSchema
-                = schemas.getOrDefault(parentName, new SchemaImpl());
-        schemas.put(parentName, parentSchema);
+        final Components components = context.getApi().getComponents();
+        Schema parentSchema = components.getSchemas().getOrDefault(parentName, new SchemaImpl());
+        components.addSchema(parentName, parentSchema);
 
         Schema property = parentSchema.getProperties().getOrDefault(schemaName, new SchemaImpl());
         parentSchema.addProperty(schemaName, property);
@@ -703,7 +701,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             String name = annotation.getValue("name", String.class);
             Callback callbackModel = context.getWorkingOperation()
                     .getCallbacks().getOrDefault(name, new CallbackImpl());
-            context.getWorkingOperation().getCallbacks().put(name, callbackModel);
+            context.getWorkingOperation().addCallback(name, callbackModel);
             CallbackImpl.merge(CallbackImpl.createInstance(annotation, context), callbackModel, true, context);
         }
     }
@@ -895,12 +893,15 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitTag(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         Tag from = TagImpl.createInstance(annotation, context);
         if (element instanceof MethodModel) {
-            TagImpl.merge(from, context.getWorkingOperation(), true, context.getApi().getTags());
+            final List<Tag> tags = new ArrayList<>();
+            tags.addAll(context.getApi().getTags());
+            TagImpl.merge(from, context.getWorkingOperation(), true, tags);
+            context.getApi().setTags(tags);
         } else {
             Tag newTag = new TagImpl();
             TagImpl.merge(from, newTag, true);
             if (newTag.getName() != null && !newTag.getName().isEmpty()) {
-                context.getApi().getTags().add(newTag);
+                context.getApi().addTag(newTag);
             }
         }
     }

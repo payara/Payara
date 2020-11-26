@@ -40,6 +40,7 @@
 package fish.payara.microprofile.openapi.impl.model;
 
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
@@ -71,7 +72,7 @@ public class PathsImpl extends ExtensibleTreeMap<PathItem, Paths> implements Pat
 
     @Override
     public Map<String, PathItem> getPathItems() {
-        return new PathsImpl(this);
+        return ModelUtils.readOnlyView(this);
     }
 
     @Override

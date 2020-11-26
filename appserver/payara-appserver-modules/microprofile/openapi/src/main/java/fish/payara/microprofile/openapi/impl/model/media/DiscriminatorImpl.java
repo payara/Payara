@@ -43,6 +43,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 public class DiscriminatorImpl implements Discriminator {
 
     private String propertyName;
@@ -60,7 +62,7 @@ public class DiscriminatorImpl implements Discriminator {
 
     @Override
     public Map<String, String> getMapping() {
-        return mapping;
+        return ModelUtils.readOnlyView(mapping);
     }
 
     @Override

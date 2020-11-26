@@ -49,7 +49,10 @@ import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
 import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
@@ -80,21 +83,21 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     public static Components createInstance(AnnotationModel annotation, ApiContext context) {
         Components from = new ComponentsImpl();
-        extractAnnotations(annotation, context, "schemas", "name", SchemaImpl::createInstance, from.getSchemas());
-        extractAnnotations(annotation, context, "responses", "name", APIResponseImpl::createInstance, from.getResponses());
-        extractAnnotations(annotation, context, "parameters", "name", ParameterImpl::createInstance, from.getParameters());
-        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples());
-        extractAnnotations(annotation, context, "requestBodies", "name", RequestBodyImpl::createInstance, from.getRequestBodies());
-        extractAnnotations(annotation, context, "securitySchemes", "securitySchemeName", SecuritySchemeImpl::createInstance, from.getSecuritySchemes());
-        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks());
-        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks());
-        from.getHeaders().putAll(HeaderImpl.createInstances(annotation, context));
+        extractAnnotations(annotation, context, "schemas", "name", SchemaImpl::createInstance, from.getSchemas(), from::addSchema);
+        extractAnnotations(annotation, context, "responses", "name", APIResponseImpl::createInstance, from.getResponses(), from::addResponse);
+        extractAnnotations(annotation, context, "parameters", "name", ParameterImpl::createInstance, from.getParameters(), from::addParameter);
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples(), from::addExample);
+        extractAnnotations(annotation, context, "requestBodies", "name", RequestBodyImpl::createInstance, from.getRequestBodies(), from::addRequestBody);
+        extractAnnotations(annotation, context, "securitySchemes", "securitySchemeName", SecuritySchemeImpl::createInstance, from.getSecuritySchemes(), from::addSecurityScheme);
+        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks(), from::addLink);
+        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks(), from::addCallback);
+        HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
         return from;
     }
 
     @Override
     public Map<String, Schema> getSchemas() {
-        return schemas;
+        return ModelUtils.readOnlyView(schemas);
     }
 
     @Override
@@ -117,7 +120,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, APIResponse> getResponses() {
-        return responses;
+        return ModelUtils.readOnlyView(responses);
     }
 
     @Override
@@ -140,7 +143,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, Parameter> getParameters() {
-        return parameters;
+        return ModelUtils.readOnlyView(parameters);
     }
 
     @Override
@@ -163,7 +166,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, Example> getExamples() {
-        return examples;
+        return ModelUtils.readOnlyView(examples);
     }
 
     @Override
@@ -186,7 +189,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, RequestBody> getRequestBodies() {
-        return requestBodies;
+        return ModelUtils.readOnlyView(requestBodies);
     }
 
     @Override
@@ -209,7 +212,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, Header> getHeaders() {
-        return headers;
+        return ModelUtils.readOnlyView(headers);
     }
 
     @Override
@@ -232,7 +235,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, SecurityScheme> getSecuritySchemes() {
-        return securitySchemes;
+        return ModelUtils.readOnlyView(securitySchemes);
     }
 
     @Override
@@ -255,7 +258,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, Link> getLinks() {
-        return links;
+        return ModelUtils.readOnlyView(links);
     }
 
     @Override
@@ -278,7 +281,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, Callback> getCallbacks() {
-        return callbacks;
+        return ModelUtils.readOnlyView(callbacks);
     }
 
     @Override
@@ -312,7 +315,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                     final Schema fromSchema = fromEntry.getValue();
                     final Schema toSchema = to.getSchemas().getOrDefault(schemaName, new SchemaImpl());
                     SchemaImpl.merge(fromSchema, toSchema, override, context);
-                    to.getSchemas().put(schemaName, toSchema);
+                    to.addSchema(schemaName, toSchema);
                 }
             }
         }

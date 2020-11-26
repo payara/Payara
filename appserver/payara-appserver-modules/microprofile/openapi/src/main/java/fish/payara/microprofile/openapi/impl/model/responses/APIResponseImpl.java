@@ -44,6 +44,8 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
@@ -51,6 +53,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
 import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.eclipse.microprofile.openapi.models.links.Link;
 import org.eclipse.microprofile.openapi.models.media.Content;
@@ -70,9 +74,9 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
     public static APIResponseImpl createInstance(AnnotationModel annotation, ApiContext context) {
         APIResponseImpl from = new APIResponseImpl();
         from.setDescription(annotation.getValue("description", String.class));
-        from.getHeaders().putAll(HeaderImpl.createInstances(annotation, context));
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
-        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks());
+        HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents, from.contents::add);
+        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks(), from::addLink);
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
@@ -93,7 +97,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public Map<String, Header> getHeaders() {
-        return headers;
+        return ModelUtils.readOnlyView(headers);
     }
 
     @Override
@@ -126,7 +130,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public Map<String, Link> getLinks() {
-        return links;
+        return ModelUtils.readOnlyView(links);
     }
 
     @Override
@@ -210,19 +214,24 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
             ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
         }
         if (from.getHeaders()!= null) {
-            for (String headerName : from.getHeaders().keySet()) {
+            for (Entry<String, Header> header : from.getHeaders().entrySet()) {
                 HeaderImpl.merge(
-                        headerName,
-                        from.getHeaders().get(headerName),
-                        to.getHeaders(),
-                        override,
-                        context
+                    header.getKey(),
+                    header.getValue(),
+                    ((APIResponseImpl) to).headers,
+                    override,
+                    context
                 );
             }
         }
         if (from.getLinks() != null) {
-            for (String linkName : from.getLinks().keySet()) {
-                LinkImpl.merge(linkName, from.getLinks().get(linkName), to.getLinks(), override);
+            for (Entry<String, Link> link : from.getLinks().entrySet()) {
+                LinkImpl.merge(
+                    link.getKey(),
+                    link.getValue(),
+                    ((APIResponseImpl) to).links,
+                    override
+                );
             }
         }
     }

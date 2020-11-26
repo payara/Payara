@@ -40,6 +40,8 @@
 package fish.payara.microprofile.openapi.impl.model.security;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
 import java.util.LinkedHashMap;
@@ -108,7 +110,7 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
 
     @Override
     public Map<String, String> getScopes() {
-        return scopes;
+        return ModelUtils.readOnlyView(scopes);
     }
 
     @Override

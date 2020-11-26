@@ -41,6 +41,8 @@ package fish.payara.microprofile.openapi.impl.model.servers;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 
@@ -62,7 +64,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         from.setDescription(annotation.getValue("description", String.class));
         from.setUrl(annotation.getValue("url", String.class));
         Map<String, ServerVariable> variables = new LinkedHashMap<>();
-        extractAnnotations(annotation, context, "variables", "name", ServerVariableImpl::createInstance, variables);
+        extractAnnotations(annotation, context, "variables", "name", ServerVariableImpl::createInstance, variables, from::addVariable);
         from.setVariables(variables);
         return from;
     }
@@ -89,7 +91,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
     @Override
     public Map<String, ServerVariable> getVariables() {
-        return variables;
+        return ModelUtils.readOnlyView(variables);
     }
 
     @Override

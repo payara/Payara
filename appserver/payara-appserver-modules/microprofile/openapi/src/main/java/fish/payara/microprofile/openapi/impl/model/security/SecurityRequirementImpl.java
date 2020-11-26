@@ -40,6 +40,8 @@
 package fish.payara.microprofile.openapi.impl.model.security;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,7 +96,7 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
 
     @Override
     public Map<String, List<String>> getSchemes() {
-        return new SecurityRequirementImpl(this);
+        return ModelUtils.readOnlyView(this);
     }
 
     @Override

@@ -47,6 +47,8 @@ import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import java.util.ArrayList;
@@ -89,23 +91,24 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
         from.setOperationId(annotation.getValue("operationId", String.class));
-        extractAnnotations(annotation, context, "parameters", ParameterImpl::createInstance, from.getParameters());
+        extractAnnotations(annotation, context, "parameters", ParameterImpl::createInstance, from.getParameters(),from::addParameter);
         AnnotationModel requestBody = annotation.getValue("requestBody", AnnotationModel.class);
         if (requestBody != null) {
             from.setRequestBody(RequestBodyImpl.createInstance(requestBody, context));
         }
-        extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, (APIResponsesImpl) from.getResponses());
-        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks());
+        final APIResponsesImpl responses = (APIResponsesImpl) from.getResponses();
+        extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, responses, responses::addAPIResponse);
+        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks(), from::addCallback);
         from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
-        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from.getSecurity());
-        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers());
+        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from.getSecurity(), from::addSecurityRequirement);
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers(), from::addServer);
         from.setMethod(annotation.getValue("method", String.class));
         return from;
     }
 
     @Override
     public List<String> getTags() {
-        return tags;
+        return ModelUtils.readOnlyView(tags);
     }
 
     @Override
@@ -166,7 +169,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public List<Parameter> getParameters() {
-        return parameters;
+        return ModelUtils.readOnlyView(parameters);
     }
 
     @Override
@@ -209,7 +212,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public Map<String, Callback> getCallbacks() {
-        return callbacks;
+        return ModelUtils.readOnlyView(callbacks);
     }
 
     @Override
@@ -248,7 +251,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public List<SecurityRequirement> getSecurity() {
-        return security;
+        return ModelUtils.readOnlyView(security);
     }
 
     @Override
@@ -269,7 +272,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public List<Server> getServers() {
-        return servers;
+        return ModelUtils.readOnlyView(servers);
     }
 
     @Override
