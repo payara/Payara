@@ -277,7 +277,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void setEnumeration(List<Object> enumeration) {
-        this.enumeration = enumeration;
+        this.enumeration.clear();
+        if (enumeration != null) {
+            this.enumeration.addAll(enumeration);
+        }
     }
 
     @Override
@@ -430,7 +433,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void setRequired(List<String> required) {
-        this.required = required;
+        this.required.clear();
+        if (required != null) {
+            this.required.addAll(required);
+        }
     }
 
     @Override
@@ -472,7 +478,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void setProperties(Map<String, Schema> properties) {
-        this.properties = properties;
+        this.properties.clear();
+        if (properties != null) {
+            this.properties.putAll(properties);
+        }
     }
 
     @Override
@@ -636,7 +645,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void setAllOf(List<Schema> allOf) {
-        this.allOf = allOf;
+        this.allOf.clear();
+        if (allOf != null) {
+            this.allOf.addAll(allOf);
+        }
     }
 
     @Override
@@ -657,7 +669,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void setAnyOf(List<Schema> anyOf) {
-        this.anyOf = anyOf;
+        this.anyOf.clear();
+        if (anyOf != null) {
+            this.anyOf.addAll(anyOf);
+        }
     }
 
     @Override
@@ -678,7 +693,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void setOneOf(List<Schema> oneOf) {
-        this.oneOf = oneOf;
+        this.oneOf.clear();
+        if (oneOf != null) {
+            this.oneOf.addAll(oneOf);
+        }
     }
 
     @Override

@@ -637,7 +637,7 @@ public final class ModelUtils {
 
     public static <K, V> Map<K, V> readOnlyView(Map<K, V> map) {
         if (map == null) {
-            map = new HashMap<>();
+            return null;
         }
         return Collections.unmodifiableMap(map);
     }

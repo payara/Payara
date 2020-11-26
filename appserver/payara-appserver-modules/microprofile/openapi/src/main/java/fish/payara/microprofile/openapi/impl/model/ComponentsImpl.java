@@ -102,7 +102,10 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void setSchemas(Map<String, Schema> schemas) {
-        this.schemas = schemas;
+        this.schemas.clear();
+        if (schemas != null) {
+            this.schemas.putAll(schemas);
+        }
     }
 
     @Override
@@ -125,7 +128,10 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void setResponses(Map<String, APIResponse> responses) {
-        this.responses = responses;
+        this.responses.clear();
+        if (responses != null) {
+            this.responses.putAll(responses);
+        }
     }
 
     @Override
@@ -148,7 +154,10 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void setParameters(Map<String, Parameter> parameters) {
-        this.parameters = parameters;
+        this.parameters.clear();
+        if (parameters != null) {
+            this.parameters.putAll(parameters);
+        }
     }
 
     @Override
@@ -171,7 +180,10 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void setExamples(Map<String, Example> examples) {
-        this.examples = examples;
+        this.examples.clear();
+        if (examples != null) {
+            this.examples.putAll(examples);
+        }
     }
 
     @Override
@@ -194,7 +206,10 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void setRequestBodies(Map<String, RequestBody> requestBodies) {
-        this.requestBodies = requestBodies;
+        this.requestBodies.clear();
+        if (requestBodies != null) {
+            this.requestBodies.putAll(requestBodies);
+        }
     }
 
     @Override
@@ -217,7 +232,10 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void setHeaders(Map<String, Header> headers) {
-        this.headers = headers;
+        this.headers.clear();
+        if (headers != null) {
+            this.headers.putAll(headers);
+        }
     }
 
     @Override
@@ -240,7 +258,10 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void setSecuritySchemes(Map<String, SecurityScheme> securitySchemes) {
-        this.securitySchemes = securitySchemes;
+        this.securitySchemes.clear();
+        if (securitySchemes != null) {
+            this.securitySchemes.putAll(securitySchemes);
+        }
     }
 
     @Override
@@ -263,7 +284,10 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void setLinks(Map<String, Link> links) {
-        this.links = links;
+        this.links.clear();
+        if (links != null) {
+            this.links.putAll(links);
+        }
     }
 
     @Override
@@ -286,7 +310,10 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void setCallbacks(Map<String, Callback> callbacks) {
-        this.callbacks = callbacks;
+        this.callbacks.clear();
+        if (callbacks != null) {
+            this.callbacks.putAll(callbacks);
+        }
     }
 
     @Override

@@ -94,7 +94,10 @@ public class ServerVariableImpl extends ExtensibleImpl<ServerVariable> implement
 
     @Override
     public void setEnumeration(List<String> enumeration) {
-        this.enumeration = enumeration;
+        this.enumeration.clear();
+        if (enumeration != null) {
+            this.enumeration.addAll(enumeration);
+        }
     }
 
     @Override

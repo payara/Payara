@@ -102,7 +102,10 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public void setHeaders(Map<String, Header> headers) {
-        this.headers = headers;
+        this.headers.clear();
+        if (headers != null) {
+            this.headers.putAll(headers);
+        }
     }
 
     @Override
@@ -135,7 +138,8 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public void setLinks(Map<String, Link> links) {
-        this.links = links;
+        this.links.clear();
+        this.links.putAll(links);
     }
 
     @Override
@@ -177,7 +181,10 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
     }
 
     public void setContents(List<Content> contents) {
-        this.contents = contents;
+        this.contents.clear();
+        if (contents != null) {
+            this.contents.addAll(contents);
+        }
     }
 
     public static void merge(APIResponse from, APIResponse to,

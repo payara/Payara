@@ -66,7 +66,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
     
     private String urlExpression;
 
-    private List<Operation> operations;
+    private List<Operation> operations = new ArrayList<>();
 
     public static Callback createInstance(AnnotationModel annotation, ApiContext context) {
         CallbackImpl from = new CallbackImpl();
@@ -142,7 +142,10 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
     }
 
     public void setOperations(List<Operation> operations) {
-        this.operations = operations;
+        this.operations.clear();
+        if (operations != null) {
+            this.operations.addAll(operations);
+        }
     }
 
     public static void merge(Callback from, Callback to,

@@ -140,7 +140,10 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
     @Override
     public void setParameters(Map<String, Object> parameters) {
-        this.parameters = parameters;
+        this.parameters.clear();
+        if (parameters != null) {
+            this.parameters.putAll(parameters);
+        }
     }
 
     @Override

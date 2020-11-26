@@ -134,7 +134,10 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     @Override
     public void setServers(List<Server> servers) {
-        this.servers = servers;
+        this.servers.clear();
+        if (servers != null) {
+            this.servers.addAll(servers);
+        }
     }
 
     @Override
@@ -166,7 +169,10 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     @Override
     public void setSecurity(List<SecurityRequirement> security) {
-        this.security = security;
+        this.security.clear();
+        if (security != null) {
+            this.security.addAll(security);
+        }
     }
 
     @Override
@@ -187,7 +193,10 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     @Override
     public void setTags(List<Tag> tags) {
-        this.tags = tags;
+        this.tags.clear();
+        if (tags != null) {
+            this.tags.addAll(tags);
+        }
     }
 
     @Override

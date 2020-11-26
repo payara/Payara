@@ -121,7 +121,10 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
     }
 
     public void setContents(List<ContentImpl> contents) {
-        this.contents = contents;
+        this.contents.clear();
+        if (contents != null) {
+            this.contents.addAll(contents);
+        }
     }
 
     public static void merge(RequestBody from, RequestBody to,

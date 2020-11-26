@@ -209,7 +209,10 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
     @Override
     public void setExamples(Map<String, Example> examples) {
-        this.examples = examples;
+        this.examples.clear();
+        if (examples != null) {
+            this.examples.putAll(examples);
+        }
     }
 
     @Override
@@ -250,7 +253,10 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
     }
 
     public void setContents(List<ContentImpl> contents) {
-        this.contents = contents;
+        this.contents.clear();
+        if (contents != null) {
+            this.contents.addAll(contents);
+        }
     }
 
     public static void merge(Header from, Header to,

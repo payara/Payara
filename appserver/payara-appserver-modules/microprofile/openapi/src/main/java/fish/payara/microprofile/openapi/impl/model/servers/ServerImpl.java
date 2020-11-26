@@ -107,7 +107,10 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
     @Override
     public void setVariables(Map<String, ServerVariable> variables) {
-        this.variables = variables;
+        this.variables.clear();
+        if (variables != null) {
+            this.variables.putAll(variables);
+        }
     }
 
     public static void merge(Server from, Server to,

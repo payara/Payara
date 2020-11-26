@@ -113,7 +113,10 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public void setTags(List<String> tags) {
-        this.tags = tags;
+        this.tags.clear();
+        if (tags != null) {
+            this.tags.addAll(tags);
+        }
     }
 
     @Override
@@ -174,7 +177,10 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public void setParameters(List<Parameter> parameters) {
-        this.parameters = parameters;
+        this.parameters.clear();
+        if (parameters != null) {
+            this.parameters.addAll(parameters);
+        }
     }
 
     @Override
@@ -217,7 +223,10 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public void setCallbacks(Map<String, Callback> callbacks) {
-        this.callbacks = callbacks;
+        this.callbacks.clear();
+        if (callbacks != null) {
+            this.callbacks.putAll(callbacks);
+        }
     }
 
     @Override
@@ -256,7 +265,10 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public void setSecurity(List<SecurityRequirement> security) {
-        this.security = security;
+        this.security.clear();
+        if (security != null) {
+            this.security.addAll(security);
+        }
     }
 
     @Override
@@ -277,7 +289,10 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     @Override
     public void setServers(List<Server> servers) {
-        this.servers = servers;
+        this.servers.clear();
+        if (servers != null) {
+            this.servers.addAll(servers);
+        }
     }
 
     @Override

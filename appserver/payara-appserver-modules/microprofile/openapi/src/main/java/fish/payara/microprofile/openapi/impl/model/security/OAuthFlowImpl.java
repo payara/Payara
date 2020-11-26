@@ -115,7 +115,10 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
 
     @Override
     public void setScopes(Map<String, String> scopes) {
-        this.scopes = scopes;
+        this.scopes.clear();
+        if (scopes != null) {
+            this.scopes.putAll(scopes);
+        }
     }
 
     @Override

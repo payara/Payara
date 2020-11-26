@@ -259,7 +259,10 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public void setServers(List<Server> servers) {
-        this.servers = servers;
+        this.servers.clear();
+        if (servers != null) {
+            this.servers.addAll(servers);
+        }
     }
 
     @Override
@@ -282,7 +285,10 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public void setParameters(List<Parameter> parameters) {
-        this.parameters = parameters;
+        this.parameters.clear();
+        if (parameters != null) {
+            this.parameters.addAll(parameters);
+        }
     }
 
     @Override

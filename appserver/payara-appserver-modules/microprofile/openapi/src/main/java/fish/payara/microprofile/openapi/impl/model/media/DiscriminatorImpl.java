@@ -67,7 +67,10 @@ public class DiscriminatorImpl implements Discriminator {
 
     @Override
     public void setMapping(Map<String, String> mapping) {
-        this.mapping = mapping;
+        this.mapping.clear();
+        if (mapping != null) {
+            this.mapping.putAll(mapping);
+        }
     }
 
     @Override

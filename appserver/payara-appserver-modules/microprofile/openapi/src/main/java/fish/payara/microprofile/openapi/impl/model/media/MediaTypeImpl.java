@@ -73,7 +73,10 @@ public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaTyp
 
     @Override
     public void setExamples(Map<String, Example> examples) {
-        this.examples = examples;
+        this.examples.clear();
+        if (examples != null) {
+            this.examples.putAll(examples);
+        }
     }
 
     @Override
@@ -106,7 +109,8 @@ public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaTyp
 
     @Override
     public void setEncoding(Map<String, Encoding> encoding) {
-        this.encoding = encoding;
+        this.encoding.clear();
+        this.encoding.putAll(encoding);
     }
 
     @Override

@@ -93,7 +93,10 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
     @Override
     public void setHeaders(Map<String, Header> headers) {
-        this.headers = headers;
+        this.headers.clear();
+        if (headers != null) {
+            this.headers.putAll(headers);
+        }
     }
 
     @Override

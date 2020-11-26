@@ -217,7 +217,10 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
 
     @Override
     public void setExamples(Map<String, Example> examples) {
-        this.examples = examples;
+        this.examples.clear();
+        if (examples != null) {
+            this.examples.putAll(examples);
+        }
     }
 
     @Override
@@ -258,7 +261,10 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
     }
 
     public void setContents(List<ContentImpl> contents) {
-        this.contents = contents;
+        this.contents.clear();
+        if (contents != null) {
+            this.contents.addAll(contents);
+        }
     }
 
     @Override
