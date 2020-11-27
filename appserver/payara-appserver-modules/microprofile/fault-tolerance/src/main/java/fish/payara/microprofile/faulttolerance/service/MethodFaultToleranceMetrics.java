@@ -40,6 +40,7 @@
 package fish.payara.microprofile.faulttolerance.service;
 
 import static java.lang.System.arraycopy;
+import static org.eclipse.microprofile.metrics.MetricUnits.NANOSECONDS;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -49,8 +50,10 @@ import java.util.function.LongSupplier;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
+import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
@@ -109,13 +112,19 @@ final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
     @Override
     public void addToHistogram(String metric, long duration, Tag... tags) {
         histogramsByMetricID.computeIfAbsent(withMethodTag(metric, tags),
-                key -> registry.histogram(key)).update(duration);
+                key -> registry.histogram(withUnit(key, NANOSECONDS), key.getTagsAsArray())).update(duration);
     }
 
     @Override
-    public void linkGauge(String metric, LongSupplier gauge, Tag... tags) {
+    public void linkGauge(String metric, LongSupplier gauge, String unit, Tag... tags) {
         gaugesByMetricID.computeIfAbsent(withMethodTag(metric, tags),
-                key -> registry.gauge(key, () -> gauge.getAsLong()));
+                key -> MetricUnits.NONE.equals(unit)
+                    ? registry.gauge(key, () -> gauge.getAsLong())
+                    : registry.gauge(withUnit(key, unit), () -> gauge.getAsLong(), key.getTagsAsArray()));
+    }
+
+    private static Metadata withUnit(MetricID key, String unit) {
+        return Metadata.builder().withName(key.getName()).withUnit(unit).build();
     }
 
     private MetricID withMethodTag(String metric, Tag[] tags) {

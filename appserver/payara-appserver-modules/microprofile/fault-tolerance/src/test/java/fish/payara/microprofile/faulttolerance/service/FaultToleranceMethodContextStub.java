@@ -44,7 +44,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -102,7 +102,7 @@ public class FaultToleranceMethodContextStub implements FaultToleranceMethodCont
         if (concurrentExecutions == null) {
             throw new UnsupportedOperationException();
         }
-        return maxConcurrentThreads < 0 
+        return maxConcurrentThreads < 0
                 ? concurrentExecutions.get()
                 : concurrentExecutions.updateAndGet(
                     value -> value != null ? value : new ArrayBlockingQueue<>(maxConcurrentThreads));
@@ -127,12 +127,17 @@ public class FaultToleranceMethodContextStub implements FaultToleranceMethodCont
     }
 
     @Override
-    public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> task)
+    public void runAsynchronous(AsyncFuture asyncResult, Callable<Object> task)
             throws RejectedExecutionException {
+        boolean returned = false;
         try {
-            asyncResult.complete(AsynchronousPolicy.toFuture(task.call()).get());
-        } catch (Exception e) {
-            asyncResult.completeExceptionally(e);
+            Object res = task.call();
+            returned = true;
+            Object futureResult = AsynchronousPolicy.toFuture(res).get();
+            asyncResult.complete(futureResult);
+        } catch (Exception ex) {
+            asyncResult.setExceptionThrown(!returned);
+            asyncResult.completeExceptionally(returned && ex instanceof ExecutionException ? ex.getCause() : ex);
         }
     }
 

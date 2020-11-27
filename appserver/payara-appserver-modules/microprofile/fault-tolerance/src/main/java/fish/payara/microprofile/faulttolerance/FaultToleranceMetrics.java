@@ -43,6 +43,7 @@ import java.util.function.LongSupplier;
 
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
 
 /**
@@ -112,14 +113,15 @@ public interface FaultToleranceMetrics {
      *
      * @param metric full name of the metric with{@code %s} used as placeholder for the method name
      * @param gauge the gauge function to use in case the gauge is not already linked
+     * @param unit one of the units defined in {@link MetricUnits}
      * @param tags all tags to add for the metric except the {@code method} tag (which is added later internally)
      */
-    default void linkGauge(String metric, LongSupplier gauge, Tag... tags) {
+    default void linkGauge(String metric, LongSupplier gauge, String unit, Tag... tags) {
         //NOOP (used when metrics are disabled)
     }
 
-    default void linkGauge(String metric, LongSupplier gauge) {
-        linkGauge(metric, gauge, NO_TAGS);
+    default void linkGauge(String metric, LongSupplier gauge, String unit) {
+        linkGauge(metric, gauge, unit, NO_TAGS);
     }
 
     /*
@@ -295,32 +297,32 @@ public interface FaultToleranceMetrics {
     }
 
     /**
-     * Amount of time the circuit breaker has spent in state open.
+     * Amount of time in nanoseconds the circuit breaker has spent in state open.
      *
      * Although this metric is a {@link Gauge}, its value increases monotonically.
      */
     default void linkCircuitbreakerOpenTotal(LongSupplier gauge) {
-        linkGauge("ft.circuitbreaker.state.total", gauge,
+        linkGauge("ft.circuitbreaker.state.total", gauge, MetricUnits.NANOSECONDS,
                 new Tag("state", "open"));
     }
 
     /**
-     * Amount of time the circuit breaker has spent in state half-open.
+     * Amount of time in nanoseconds the circuit breaker has spent in state half-open.
      *
      * Although this metric is a {@link Gauge}, its value increases monotonically.
      */
     default void linkCircuitbreakerHalfOpenTotal(LongSupplier gauge) {
-        linkGauge("ft.circuitbreaker.state.total", gauge,
+        linkGauge("ft.circuitbreaker.state.total", gauge, MetricUnits.NANOSECONDS,
                 new Tag("state", "halfOpen"));
     }
 
     /**
-     * Amount of time the circuit breaker has spent in state closed.
+     * Amount of time in nanoseconds the circuit breaker has spent in state closed.
      *
      * Although this metric is a {@link Gauge}, its value increases monotonically.
      */
     default void linkCircuitbreakerClosedTotal(LongSupplier gauge) {
-        linkGauge("ft.circuitbreaker.state.total", gauge,
+        linkGauge("ft.circuitbreaker.state.total", gauge, MetricUnits.NANOSECONDS,
                 new Tag("state", "closed"));
     }
 
@@ -357,7 +359,7 @@ public interface FaultToleranceMetrics {
      * @param gauge underlying access wrapped as {@link Gauge}
      */
     default void linkBulkheadConcurrentExecutions(LongSupplier gauge) {
-        linkGauge("ft.bulkhead.executionsRunning", gauge);
+        linkGauge("ft.bulkhead.executionsRunning", gauge, MetricUnits.NONE);
     }
 
     /**
@@ -368,7 +370,7 @@ public interface FaultToleranceMetrics {
      * @param gauge underlying access wrapped as {@link Gauge}
      */
     default void linkBulkheadWaitingQueuePopulation(LongSupplier gauge) {
-        linkGauge("ft.bulkhead.executionsWaiting", gauge);
+        linkGauge("ft.bulkhead.executionsWaiting", gauge, MetricUnits.NONE);
     }
 
     /**

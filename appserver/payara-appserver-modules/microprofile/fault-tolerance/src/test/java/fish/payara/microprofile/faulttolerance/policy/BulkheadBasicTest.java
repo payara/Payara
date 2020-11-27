@@ -60,7 +60,7 @@ import org.junit.Test;
 
 /**
  * Tests the basic correctness of {@link Bulkhead} handling.
- * 
+ *
  * @author Jan Bernitt
  */
 public class BulkheadBasicTest extends AbstractBulkheadTest {
@@ -70,7 +70,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
     /**
      * Makes 2 concurrent request that should succeed acquiring a bulkhead permit. Further attempts fail. After
      * completing the first request the 3 attempt succeeds. Any further attempt again fails after that.
-     * 
+     *
      * Needs a timeout because incorrect implementation could otherwise lead to endless waiting.
      */
     @Test(timeout = 3000)
@@ -89,7 +89,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
     }
 
     @Bulkhead(value = 4)
-    @Retry(retryOn = { BulkheadException.class }, delay = 20, delayUnit = ChronoUnit.MILLIS, 
+    @Retry(retryOn = { BulkheadException.class }, delay = 20, delayUnit = ChronoUnit.MILLIS,
     maxRetries = 3, maxDuration = 100, jitter = 0)
     public String bulkheadWithoutQueueWithRetry_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccessDirectly(waiter);
@@ -111,7 +111,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
     }
 
     @Bulkhead(value = 4)
-    @Retry(retryOn = { BulkheadException.class }, delay = 20, delayUnit = ChronoUnit.MILLIS, 
+    @Retry(retryOn = { BulkheadException.class }, delay = 20, delayUnit = ChronoUnit.MILLIS,
             maxRetries = 3, maxDuration = 100, jitter = 0)
     public String bulkheadWithoutQueueNoWaitingWithRetry_Method(Future<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccessDirectly(waiter);
@@ -121,7 +121,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
      * First two request can acquire a bulkhead permit.
      * Following two request can acquire a queue permit.
      * Fifth request fails.
-     * 
+     *
      * Needs a timeout because incorrect implementation could otherwise lead to endless waiting.
      */
     @Test(timeout = 3000)
@@ -133,7 +133,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         Thread queueAndExec1 = callBulkheadWithNewThreadAndWaitFor(commonWaiter);
         Thread queueAndExec2 = callBulkheadWithNewThreadAndWaitFor(commonWaiter);
         waitUntilPermitsAquired(2, 2);
-        assertFurtherThreadThrowsBulkheadException(); 
+        assertFurtherThreadThrowsBulkheadException();
         commonWaiter.complete(null);
         waitUntilPermitsAquired(0, 0);
         assertEnteredAndExited(4, 4);
@@ -193,7 +193,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         Thread exec1 = callBulkheadWithNewThreadAndWaitFor(commonWaiter);
         Thread exec2 = callBulkheadWithNewThreadAndWaitFor(exec2Waiter);
         // must wait here to ensure these two threads actually are the ones getting permits
-        waitUntilPermitsAquired(2, 0); 
+        waitUntilPermitsAquired(2, 0);
         Thread queueing1 = callBulkheadWithNewThreadAndWaitFor(commonWaiter);
         Thread queueing2 = callBulkheadWithNewThreadAndWaitFor(commonWaiter);
         waitUntilPermitsAquired(2, 2);

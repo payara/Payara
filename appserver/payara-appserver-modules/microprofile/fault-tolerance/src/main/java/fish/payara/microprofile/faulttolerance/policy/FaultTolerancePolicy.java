@@ -67,6 +67,7 @@ import org.eclipse.microprofile.faulttolerance.exceptions.TimeoutException;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext.AsyncFuture;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
@@ -265,9 +266,7 @@ public final class FaultTolerancePolicy implements Serializable {
         FaultToleranceMetrics metrics = ftmContext.getMetrics(isMetricsEnabled).bind(isFallbackPresent());
         try {
             Object res = processAsynchronousStage(ftmContext, metrics);
-            if (res instanceof CompletableFuture
-                    && isAsynchronous() && !asynchronous.isSuccessWhenCompletedExceptionally()
-                    && ((CompletableFuture<?>) res).isCompletedExceptionally()) {
+            if (isAsyncExceptionThrown(res)) {
                 metrics.incrementInvocationsExceptionThrown();
             } else {
                 metrics.incrementInvocationsValueReturned();
@@ -277,6 +276,14 @@ public final class FaultTolerancePolicy implements Serializable {
             metrics.incrementInvocationsExceptionThrown();
             throw ex;
         }
+    }
+
+    private boolean isAsyncExceptionThrown(Object res) {
+        if (res instanceof AsyncFuture) {
+            AsyncFuture async = (AsyncFuture) res;
+            return async.isExceptionThrown() || async.isCompletedExceptionally() && !asynchronous.isSuccessWhenCompletedExceptionally();
+        }
+        return false;
     }
 
     /**
@@ -289,7 +296,7 @@ public final class FaultTolerancePolicy implements Serializable {
         }
         logger.log(Level.FINER, "Proceeding invocation with asynchronous semantics");
         Set<Thread> workers = ConcurrentHashMap.newKeySet();
-        CompletableFuture<Object> asyncResult = new CompletableFuture<Object>() {
+        AsyncFuture asyncResult = new AsyncFuture() {
 
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
@@ -301,19 +308,6 @@ public final class FaultTolerancePolicy implements Serializable {
                     return true;
                 }
                 return false;
-            }
-
-            /**
-             * Note that the exception is expected to be the exception thrown when trying to resolve the future returned
-             * by the annotated method.
-             */
-            @Override
-            public boolean completeExceptionally(Throwable ex) {
-                logger.log(Level.FINE, "Asynchronous computation completed with exception", ex);
-                if (ex instanceof ExecutionException) {
-                    return super.completeExceptionally(ex.getCause());
-                }
-                return super.completeExceptionally(ex);
             }
         };
         FaultToleranceInvocation invocation = new FaultToleranceInvocation(context, metrics, asyncResult, workers);
@@ -397,8 +391,8 @@ public final class FaultTolerancePolicy implements Serializable {
         throw new FaultToleranceException("Retry failed");
     }
 
-    private CompletableFuture<Object> processRetryAsync(FaultToleranceInvocation invocation) throws Exception {
-        CompletableFuture<Object> asyncAttempt = new CompletableFuture<>();
+    private AsyncFuture processRetryAsync(FaultToleranceInvocation invocation) throws Exception {
+        AsyncFuture asyncAttempt = new AsyncFuture();
         invocation.context.runAsynchronous(asyncAttempt,
                 () -> invocation.runStageWithWorker(() -> processCircuitBreakerStage(invocation, asyncAttempt)));
         try {
@@ -406,17 +400,11 @@ public final class FaultTolerancePolicy implements Serializable {
             invocation.timeoutIfConcludedConcurrently();
             return asyncAttempt;
         } catch (ExecutionException ex) { // this ExecutionException is from calling get() above in case completed exceptionally
-            Throwable cause = ex.getCause();
-            if (cause instanceof ExecutionException) {
-                // this cause ExecutionException is caused by annotated method returned a Future that completed exceptionally
-                if (asynchronous.isSuccessWhenCompletedExceptionally()) {
-                    CompletableFuture<Object> exceptionalResult = new CompletableFuture<>();
-                    exceptionalResult.completeExceptionally(cause.getCause()); // unwrap
-                    return exceptionalResult;
-                }
-                rethrow(cause.getCause()); // for retry handling return plain cause
+            if (!asyncAttempt.isExceptionThrown() && asynchronous.isSuccessWhenCompletedExceptionally()) {
+                invocation.timeoutIfConcludedConcurrently();
+                return asyncAttempt;
             }
-            rethrow(cause);
+            rethrow(ex.getCause());
             return null; // not reachable
         }
     }

@@ -48,6 +48,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
@@ -218,17 +219,24 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         }
     }
 
+    /**
+     * OBS! Unit tests implement a stub context with a simplified version of this implementation that needs to be
+     * updated properly whenever this method is changed in order to have comparable behaviour in tests.
+     */
     @Override
-    public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> task)
+    public void runAsynchronous(AsyncFuture asyncResult, Callable<Object> task)
             throws RejectedExecutionException {
         Runnable completionTask = () -> {
             if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
+                boolean returned = false;
                 try {
                     trace("runAsynchronous");
                     if (shared.requestContext != null) {
                         shared.requestContext.activate();
                     }
-                    Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
+                    Object res = task.call();
+                    Future<?> futureResult = AsynchronousPolicy.toFuture(res);
+                    returned = true;
                     if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
                         if (!asyncResult.isDone()) {
                             asyncResult.complete(futureResult.get());
@@ -237,8 +245,9 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
                         futureResult.cancel(true);
                     }
                 } catch (Exception | Error ex) {
-                    // Note that even ExecutionException is not unpacked (intentionally)
-                    asyncResult.completeExceptionally(ex);
+                    // Note that even ExecutionException unpacked to the exception originally used to complete the future
+                    asyncResult.setExceptionThrown(!returned);
+                    asyncResult.completeExceptionally(returned && ex instanceof ExecutionException ? ex.getCause() : ex);
                 } finally {
                     if (shared.requestContext != null) {
                         shared.requestContext.deactivate();

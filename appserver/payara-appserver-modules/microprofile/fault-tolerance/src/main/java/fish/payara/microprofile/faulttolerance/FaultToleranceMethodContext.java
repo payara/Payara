@@ -44,6 +44,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,9 +55,22 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 public interface FaultToleranceMethodContext {
 
+    class AsyncFuture extends CompletableFuture<Object> {
+
+        private volatile boolean exceptionThrown;
+
+        public void setExceptionThrown(boolean exceptionThrown) {
+            this.exceptionThrown = exceptionThrown;
+        }
+
+        public boolean isExceptionThrown() {
+            return exceptionThrown;
+        }
+    }
+
     /**
      * Returns the {@link FaultToleranceMetrics} to use.
-     * 
+     *
      * @param enabled true, if metrics are enabled for the method, else false
      * @return the {@link FaultToleranceMetrics} to use, {@link FaultToleranceMetrics#DISABLED} when not enabled.
      */
@@ -68,7 +82,7 @@ public interface FaultToleranceMethodContext {
 
     /**
      * Get or create the {@link CircuitBreakerState}.
-     * 
+     *
      * @param requestVolumeThreshold when negative no state is created if it does not already exist
      * @return the created or existing state, or null if non existed and requestVolumeThreshold was null
      */
@@ -76,7 +90,7 @@ public interface FaultToleranceMethodContext {
 
     /**
      * Get or create the {@link BlockingQueue} for bulkhead.
-     * 
+     *
      * @param maxConcurrentThreads when negative no queue is created if it does not already exist
      * @return the created or existing queue, or null if non existed and requestVolumeThreshold was null
      */
@@ -84,7 +98,7 @@ public interface FaultToleranceMethodContext {
 
     /**
      * Get the bulkhead thread count.
-     * 
+     *
      * @return This are number of threads that are either waiting or running in the bulkhead.
      */
     AtomicInteger getQueuingOrRunningPopulation();
@@ -95,7 +109,7 @@ public interface FaultToleranceMethodContext {
 
     /**
      * Proceeds execution to the annotated method body.
-     * 
+     *
      * @return result returned by the annotated method
      * @throws Exception in case the annotated method threw an {@link Exception}.
      */
@@ -103,7 +117,7 @@ public interface FaultToleranceMethodContext {
 
     /**
      * Delays the current thread by the given duration. The delay is traced.
-     * 
+     *
      * @param delayMillis the time to sleep in milliseconds
      * @param context     current context delayed
      * @throws InterruptedException In case waiting is interrupted
@@ -112,7 +126,7 @@ public interface FaultToleranceMethodContext {
 
     /**
      * Runs a given task after a certain waiting time.
-     * 
+     *
      * @param delayMillis time to wait in milliseconds before running the given task
      * @param task        operation to run
      * @return A future that can be cancelled if the operation should no longer be run
@@ -121,7 +135,7 @@ public interface FaultToleranceMethodContext {
 
     /**
      * Runs the task asynchronously and completes the given asyncResult with the its outcome.
-     * 
+     *
      * @param asyncResult a not yet completed {@link CompletableFuture} that should receive the result of the operation
      *                    when it is executed
      * @param context     the currently processed context (for e.g. tracing)
@@ -129,13 +143,13 @@ public interface FaultToleranceMethodContext {
      * @throws RejectedExecutionException In case the task could not be accepted for execution. Usually due to too many
      *                                    work in progress.
      */
-    void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> task)
+    void runAsynchronous(AsyncFuture asyncResult, Callable<Object> task)
             throws RejectedExecutionException;
 
     /**
      * Invokes the instance of the given {@link FallbackHandler} {@link Class} defined in the given context to handle
      * the given {@link Exception}.
-     * 
+     *
      * @param fallbackClass the type of {@link FallbackHandler} to resolve or instantiate and use
      * @param context       the currently processed context to use for arguments
      * @param ex            the {@link Exception} thrown by the FT processing to handle by the {@link FallbackHandler}
@@ -147,7 +161,7 @@ public interface FaultToleranceMethodContext {
 
     /**
      * Invokes the given fallback {@link Method} in the given context.
-     * 
+     *
      * @param fallbackMethod the {@link Method} to invoke
      * @param context        the currently processed context to use for target instance and method arguments
      * @return the result returned by the invoked fallback method
@@ -161,7 +175,7 @@ public interface FaultToleranceMethodContext {
 
     /**
      * Starts tracing the given context named with the given method label.
-     * 
+     *
      * @param method  the label to use for the trace
      * @param context the currently processed context
      */
