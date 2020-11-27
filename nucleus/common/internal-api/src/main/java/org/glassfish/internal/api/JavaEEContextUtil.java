@@ -101,9 +101,9 @@ public interface JavaEEContextUtil {
     String getInstanceComponentId();
 
     /**
-     * @return true if component is loaded / available
+     * @return true if component is loaded / running
      */
-    boolean isLoaded();
+    boolean isRunning();
 
     /**
      * Set a valid component invocation that's empty,
