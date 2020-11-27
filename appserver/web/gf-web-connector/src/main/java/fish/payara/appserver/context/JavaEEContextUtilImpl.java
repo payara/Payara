@@ -138,7 +138,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
 
     public class InstanceImpl implements Instance {
         private final String componentId;
-        private ComponentInvocation cachedInvocation;
+        private volatile ComponentInvocation cachedInvocation;
 
 
         /**
@@ -176,8 +176,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
                 // same as invocation, or app not running
                 return new ContextImpl.Context(null, invocationManager, null);
             }
-            ensureCached();
-            ComponentInvocation newInvocation = cachedInvocation.clone();
+            ComponentInvocation newInvocation = ensureCached().clone();
             invocationManager.preInvoke(newInvocation);
             return new ContextImpl.Context(newInvocation, invocationManager,
                     Utility.setContextClassLoader(getInvocationClassLoader()));
@@ -208,8 +207,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         @Override
         public Context setApplicationClassLoader() {
             ClassLoader cl = null;
-            if (cachedInvocation != null) {
-                cl = getClassLoaderForEnvironment((JndiNameEnvironment) cachedInvocation.getJNDIEnvironment());
+            ComponentInvocation localCachedInvocation = cachedInvocation;
+            if (localCachedInvocation != null) {
+                cl = getClassLoaderForEnvironment((JndiNameEnvironment) localCachedInvocation.getJNDIEnvironment());
             } else if (componentId != null) {
                 cl = getClassLoaderForEnvironment(compEnvMgr.getJndiNameEnvironment(componentId));
             }
@@ -224,10 +224,11 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
             return componentId;
         }
 
-        private void ensureCached() {
+        private ComponentInvocation ensureCached() {
+            ComponentInvocation localCachedInvocation = cachedInvocation;
             // empty objects not allowed
-            if (cachedInvocation != null) {
-                return;
+            if (localCachedInvocation != null) {
+                return localCachedInvocation;
             }
             JndiNameEnvironment jndiEnv = compEnvMgr.getJndiNameEnvironment(componentId);
             if (jndiEnv != null) { // create invocation only for valid JNDI environment
@@ -236,6 +237,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
                 throw new IllegalStateException(String.format("Cannot cache invocation: %s", componentId));
             }
             checkState();
+            return localCachedInvocation;
         }
 
         @Override
@@ -281,13 +283,14 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         }
 
         private void checkState() {
-            if (componentId == null && cachedInvocation != null) {
+            ComponentInvocation localCachedInvocation = cachedInvocation;
+            if (componentId == null && localCachedInvocation != null) {
                 // empty invocation
                 throw new IllegalStateException("Cannot have non-null cached invocation for an empty component");
             }
-            if (cachedInvocation != null) {
+            if (localCachedInvocation != null) {
                 // check for validity of cached invocation
-                if (cachedInvocation.getComponentId() == null || cachedInvocation.getJNDIEnvironment() == null) {
+                if (localCachedInvocation.getComponentId() == null || localCachedInvocation.getJNDIEnvironment() == null) {
                     throw new IllegalStateException("Invalid Cached Invocation - either componentID or JNDIEnvironment is null");
                 }
             }
