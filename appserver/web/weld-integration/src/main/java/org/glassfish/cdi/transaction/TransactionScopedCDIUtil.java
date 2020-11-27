@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -288,7 +288,7 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public Object create(CreationalContext<Object> ctx) {
-            try (Context eeCtx = ctxUtil.isPresent()? ctxUtil.get().pushContext() : null) {
+            try (Context eeCtx = ctxUtil.isPresent() ? ctxUtil.get().pushContext() : null) {
                 Object instance = injectionTarget.produce(ctx);
                 injectionTarget.inject(instance, ctx);
                 injectionTarget.postConstruct(instance);
@@ -298,7 +298,7 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public void destroy(Object instance, CreationalContext<Object> ctx) {
-            try (Context eeCtx = ctxUtil.isPresent()? ctxUtil.get().pushContext() : null) {
+            try (Context eeCtx = ctxUtil.isPresent() ? ctxUtil.get().pushContext() : null) {
                 injectionTarget.preDestroy(instance);
                 injectionTarget.dispose(instance);
             }

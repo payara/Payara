@@ -196,8 +196,23 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
          * @param currentInvocation non-null current invocation
          */
         private InstanceImpl(ComponentInvocation currentInvocation) {
-            componentId = currentInvocation.getComponentId();
+            boolean isApplicationComponent = false;
+            if (currentInvocation.getComponentId() != null) {
+                componentId = currentInvocation.getComponentId();
+            } else if (currentInvocation.getJNDIEnvironment() instanceof JndiNameEnvironment) {
+                componentId = DOLUtils.getApplicationName((JndiNameEnvironment)currentInvocation.jndiEnvironment);
+                isApplicationComponent = true;
+            } else {
+                // checkState() later should error out due to this condition
+                componentId = null;
+            }
             cachedInvocation = currentInvocation.clone();
+            if (isApplicationComponent) {
+                // application components don't have component ID, just application name
+                // here we set component ID on the cached object to application name so internal state
+                // is set correctly
+                cachedInvocation.setComponentId(componentId);
+            }
             cachedInvocation.clearRegistry();
             checkState();
         }
