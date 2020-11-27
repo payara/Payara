@@ -56,7 +56,9 @@ public class EjbInvocationFactory {
     }
 
     public EjbInvocation create() {
-        return new EjbInvocation(compEnvId, container);
+        EjbInvocation ejbInv = new EjbInvocation(compEnvId, container);
+        ejbInv.jndiEnvironment = container.getEjbDescriptor();
+        return ejbInv;
     }
 
     public <C extends ComponentContext> EjbInvocation create(Object ejb, C ctx) {
@@ -64,6 +66,7 @@ public class EjbInvocationFactory {
         ejbInv.ejb = ejb;
         ejbInv.instance = ejb;
         ejbInv.context = ctx;
+        ejbInv.jndiEnvironment = container.getEjbDescriptor();
 
         return ejbInv;
     }
