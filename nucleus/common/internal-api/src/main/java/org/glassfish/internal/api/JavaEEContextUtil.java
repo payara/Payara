@@ -49,73 +49,94 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface JavaEEContextUtil {
     /**
-     * pushes Java EE invocation context onto the invocation stack
-     * use try-with-resources to pop the context
+     * Creates an empty instance, i.e. if the empty context is pushed
+     * on top of another context, the other context will be 'suppressed'
+     * for the duration of this context
      *
-     * @return the new context that was created
+     * @return new empty instance
      */
-    Context pushContext();
+    Instance empty();
 
     /**
-     * pushes invocation context onto the stack
-     * Also creates Request scope
-     * use try-with-resources to pop the context
+     * captures current invocation and returns it as an instance
      *
-     * @return new context that was created
+     * @return new captured instance
      */
-    Context pushRequestContext();
+    Instance currentInvocation() throws IllegalStateException;
 
     /**
-     * set context class loader by internal state of this instance
-     * @return context so class loader can be reset
-     */
-    Context setApplicationClassLoader();
-
-    /**
-     * Sets the state of this instance from current invocation context
-     */
-    void setInstanceContext();
-
-    /**
-     * sets component ID for this instance and re-generates the invocation based on it
      *
-     * @param componentId
-     * @return self for fluent API
+     * @param componentId component id for this instance
+     * if componentId is null, it will be equivalent of calling empty()
+     * which will create an empty instance
+     *
+     * @return new instance based on componentId
      */
-    JavaEEContextUtil setInstanceComponentId(String componentId);
+    Instance fromComponentId(String componentId);
 
     /**
-     * @return Class Loader that's associated with current invocation
-     *         or null if there is no current invocation
+     * @return Class Loader that's associated with current invocation or null if
+     * there is no current invocation
      */
-
     ClassLoader getInvocationClassLoader();
+
     /**
-     * @return component ID for the current invocation (not this instance), or null
+     * @return component ID for the current invocation (not this instance), or
+     * null
      */
     String getInvocationComponentId();
 
     /**
-     * @return component ID for the current instance, or null
+     * specific, immutable instance of the context
      */
-    String getInstanceComponentId();
+    interface Instance {
+        /**
+         * pushes Java EE invocation context onto the invocation stack use
+         * try-with-resources to pop the context
+         *
+         * @return the new context that was created
+         */
+        Context pushContext();
 
-    /**
-     * @return true if component is loaded / running
-     */
-    boolean isRunning();
+        /**
+         * pushes invocation context onto the stack Also creates Request scope
+         * use try-with-resources to pop the context
+         *
+         * @return new context that was created
+         */
+        Context pushRequestContext();
 
-    /**
-     * Set a valid component invocation that's empty,
-     * i.e. doesn't belong to any module
-     */
-    void setEmptyInvocation();
+        /**
+         * set context class loader by component id of this instance
+         * for empty component, class loader remains unset and the
+         * context is a no-op (no re-set gets done) so it's a no-op
+         *
+         * @return context so class loader can be reset
+         */
+        Context setApplicationClassLoader();
 
-    /**
-     * remove associated invocation from this instance, in case the underlying app unloaded
-     * but component ID remains, just in case the app is reloaded
-     */
-    void clearInstanceInvocation();
+        /**
+         * @return component ID for the current instance, or null if empty instance
+         */
+        String getInstanceComponentId();
+
+        /**
+         * @return true if component is loaded / running
+         */
+        boolean isRunning();
+
+        /**
+         * @return true if this is an empty context
+         */
+        boolean isEmpty();
+
+        /**
+         * remove cached invocation from this instance, in case the
+         * underlying app unloaded but component ID remains, just in case the
+         * app is reloaded
+         */
+        void clearInstanceInvocation();
+    }
 
     interface Context extends Closeable {};
     interface Closeable extends AutoCloseable {
