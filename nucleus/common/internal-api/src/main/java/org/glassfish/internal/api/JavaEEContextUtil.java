@@ -84,9 +84,9 @@ public interface JavaEEContextUtil {
     String getInvocationComponentId();
 
     /**
-     * @return true if current invocation exists and is running
+     * @return true if current invocation exists and is loaded / ready
      */
-    public boolean isRunningInvocation();
+    public boolean isInvocationLoaded();
 
     /**
      * specific, immutable, thread-safe instance of the context
@@ -128,6 +128,11 @@ public interface JavaEEContextUtil {
          * @return true if component is loaded and running
          */
         boolean isRunning();
+
+        /**
+         * @return true if component is loaded and starting
+         */
+        boolean isLoaded();
 
         /**
          * @return true if this is an empty context

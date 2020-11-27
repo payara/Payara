@@ -117,9 +117,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
     }
 
     @Override
-    public boolean isRunningInvocation() {
+    public boolean isInvocationLoaded() {
         ComponentInvocation inv = invocationManager.getCurrentInvocation();
-        return inv != null ? isRunning(inv.getComponentId()) : false;
+        return inv != null ? isLoadedOrRunning(inv.getComponentId(), false) : false;
     }
 
     private ClassLoader getClassLoaderForEnvironment(JndiNameEnvironment componentEnv) {
@@ -141,7 +141,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         return newInvocation;
     }
 
-    private boolean isRunning(String componentId) {
+    private boolean isLoadedOrRunning(String componentId, boolean running) {
         if (componentId == null) {
             // empty component cannot be running
             return false;
@@ -152,7 +152,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
             Collection<ModuleInfo> modules = appInfo.getModuleInfos();
             String moduleName = DOLUtils.getModuleName(env);
             if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
-                    .anyMatch(moduleInfo -> !moduleInfo.isRunning())) {
+                    .anyMatch(moduleInfo -> running ? !moduleInfo.isRunning() : !moduleInfo.isLoaded())) {
                 return false;
             }
         }
@@ -268,7 +268,12 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
 
         @Override
         public boolean isRunning() {
-            return JavaEEContextUtilImpl.this.isRunning(componentId);
+            return JavaEEContextUtilImpl.this.isLoadedOrRunning(componentId, true);
+        }
+
+        @Override
+        public boolean isLoaded() {
+            return JavaEEContextUtilImpl.this.isLoadedOrRunning(componentId, false);
         }
 
         @Override
@@ -282,7 +287,7 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         }
 
         private boolean isValidAndNotEmpty() {
-            return isCurrentInvocationPresentAndSame() || isRunning();
+            return isCurrentInvocationPresentAndSame() || isLoaded();
         }
 
         private boolean isCurrentInvocationPresentAndSame() {
