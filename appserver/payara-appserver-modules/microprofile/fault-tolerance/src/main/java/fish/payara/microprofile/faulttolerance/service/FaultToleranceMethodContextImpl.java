@@ -235,8 +235,8 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
                         shared.requestContext.activate();
                     }
                     Object res = task.call();
-                    Future<?> futureResult = AsynchronousPolicy.toFuture(res);
                     returned = true;
+                    Future<?> futureResult = AsynchronousPolicy.toFuture(res);
                     if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
                         if (!asyncResult.isDone()) {
                             asyncResult.complete(futureResult.get());
