@@ -39,15 +39,17 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -64,9 +66,9 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
     protected String openapi;
     protected Info info;
     protected ExternalDocumentation externalDocs;
-    protected List<Server> servers = new ArrayList<>();
-    protected List<SecurityRequirement> security = new ArrayList<>();
-    protected List<Tag> tags = new ArrayList<>();
+    protected List<Server> servers = createList();
+    protected List<SecurityRequirement> security = createList();
+    protected List<Tag> tags = createList();
     protected Paths paths = new PathsImpl();
     protected Components components = new ComponentsImpl();
     
@@ -129,85 +131,95 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     @Override
     public List<Server> getServers() {
-        return ModelUtils.readOnlyView(servers);
+        return readOnlyView(servers);
     }
 
     @Override
     public void setServers(List<Server> servers) {
-        this.servers.clear();
-        if (servers != null) {
-            this.servers.addAll(servers);
-        }
+        this.servers = createList(servers);
     }
 
     @Override
     public OpenAPI addServer(Server server) {
-        if (server.getUrl() != null) {
-            for (Server existingServer : getServers()) {
-                // If a server with the same URL is found, merge them
-                if (server.getUrl().equals(existingServer.getUrl())) {
-                    ModelUtils.merge(server, existingServer, true);
-                    return this;
+        if (server != null) {
+            if (servers == null) {
+                servers = createList();
+            }
+            if (server.getUrl() != null) {
+                for (Server existingServer : getServers()) {
+                    // If a server with the same URL is found, merge them
+                    if (server.getUrl().equals(existingServer.getUrl())) {
+                        ModelUtils.merge(server, existingServer, true);
+                        return this;
+                    }
                 }
             }
+    
+            // If a server with the same URL doesn't exist, create it
+            servers.add(server);
         }
-
-        // If a server with the same URL doesn't exist, create it
-        servers.add(server);
         return this;
     }
 
     @Override
     public void removeServer(Server server) {
-        servers.remove(server);
-    }
-
-    @Override
-    public List<SecurityRequirement> getSecurity() {
-        return ModelUtils.readOnlyView(security);
-    }
-
-    @Override
-    public void setSecurity(List<SecurityRequirement> security) {
-        this.security.clear();
-        if (security != null) {
-            this.security.addAll(security);
+        if (servers != null) {
+            servers.remove(server);
         }
     }
 
     @Override
+    public List<SecurityRequirement> getSecurity() {
+        return readOnlyView(security);
+    }
+
+    @Override
+    public void setSecurity(List<SecurityRequirement> security) {
+        this.security = createList(security);
+    }
+
+    @Override
     public OpenAPI addSecurityRequirement(SecurityRequirement securityRequirement) {
-        security.add(securityRequirement);
+        if (securityRequirement != null) {
+            if (security == null) {
+                security = createList();
+            }
+            security.add(securityRequirement);
+        }
         return this;
     }
 
     @Override
     public void removeSecurityRequirement(SecurityRequirement securityRequirement) {
-        security.remove(securityRequirement);
-    }
-
-    @Override
-    public List<Tag> getTags() {
-        return ModelUtils.readOnlyView(tags);
-    }
-
-    @Override
-    public void setTags(List<Tag> tags) {
-        this.tags.clear();
-        if (tags != null) {
-            this.tags.addAll(tags);
+        if (security != null) {
+            security.remove(securityRequirement);
         }
     }
 
     @Override
+    public List<Tag> getTags() {
+        return readOnlyView(tags);
+    }
+
+    @Override
+    public void setTags(List<Tag> tags) {
+        this.tags = createList(tags);
+    }
+
+    @Override
     public OpenAPI addTag(Tag tag) {
+        if (tags == null) {
+            tags = createList();
+        }
         tags.add(tag);
         return this;
     }
 
     @Override
     public void removeTag(Tag tag) {
-        tags.remove(tag);
+        if (tags != null) {
+            tags.remove(tag);
+        }
     }
 
     @Override
@@ -285,7 +297,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
             for (Tag tag : from.getTags()) {
                 if (tag != null) {
                     if (to.getTags() == null) {
-                        to.setTags(new ArrayList<>());
+                        to.setTags(createList());
                     }
                     Tag newTag = new TagImpl();
                     TagImpl.merge(tag, newTag, override);

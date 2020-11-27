@@ -39,10 +39,10 @@
  */
 package fish.payara.microprofile.openapi.impl.model.responses;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.responses.APIResponse;
@@ -76,7 +76,7 @@ public class APIResponsesImpl extends ExtensibleTreeMap<APIResponse, APIResponse
 
     @Override
     public Map<String, APIResponse> getAPIResponses() {
-        return ModelUtils.readOnlyView(this);
+        return readOnlyView(this);
     }
 
     @Override

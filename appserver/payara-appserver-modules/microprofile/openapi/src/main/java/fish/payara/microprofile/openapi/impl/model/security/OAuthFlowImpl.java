@@ -40,11 +40,11 @@
 package fish.payara.microprofile.openapi.impl.model.security;
 
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +56,7 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
     private String authorizationUrl;
     private String tokenUrl;
     private String refreshUrl;
-    private Map<String, String> scopes = new LinkedHashMap<>();
+    private Map<String, String> scopes = createMap();
 
     @SuppressWarnings("unchecked")
     public static OAuthFlow createInstance(AnnotationModel annotation) {
@@ -66,7 +66,7 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
         from.setRefreshUrl(annotation.getValue("refreshUrl", String.class));
         List<AnnotationModel> scopesAnnotation = annotation.getValue("scopes", List.class);
         if (scopesAnnotation != null) {
-            Map<String, String> scopes = new LinkedHashMap<>();
+            Map<String, String> scopes = createMap();
             for (AnnotationModel scopeAnnotation : scopesAnnotation) {
                 scopes.put(
                         scopeAnnotation.getValue("name", String.class),
@@ -110,26 +110,30 @@ public class OAuthFlowImpl extends ExtensibleImpl<OAuthFlow> implements OAuthFlo
 
     @Override
     public Map<String, String> getScopes() {
-        return ModelUtils.readOnlyView(scopes);
+        return readOnlyView(scopes);
     }
 
     @Override
     public void setScopes(Map<String, String> scopes) {
-        this.scopes.clear();
-        if (scopes != null) {
-            this.scopes.putAll(scopes);
-        }
+        this.scopes = createMap(scopes);
     }
 
     @Override
     public OAuthFlow addScope(String scope, String description) {
-        scopes.put(scope, description);
+        if (scope != null) {
+            if (scopes == null){
+                scopes = createMap();
+            }
+            scopes.put(scope, description);
+        }
         return this;
     }
 
     @Override
     public void removeScope(String scope) {
-        scopes.remove(scope);
+        if (scopes != null) {
+            scopes.remove(scope);
+        }
     }
 
     public static void merge(OAuthFlow from, OAuthFlow to, boolean override) {

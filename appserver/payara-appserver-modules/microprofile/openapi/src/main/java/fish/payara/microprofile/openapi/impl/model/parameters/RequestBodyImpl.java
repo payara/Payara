@@ -42,12 +42,13 @@ package fish.payara.microprofile.openapi.impl.model.parameters;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.ArrayList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import java.util.List;
 import org.eclipse.microprofile.openapi.models.media.Content;
 import org.eclipse.microprofile.openapi.models.parameters.RequestBody;
@@ -57,7 +58,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
 
     private String description;
     private Content content = new ContentImpl();
-    private List<ContentImpl> contents = new ArrayList<>();
+    private List<ContentImpl> contents = createList();
     private Boolean required;
     private String ref;
 
@@ -117,7 +118,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
     }
 
     public List<ContentImpl> getContents() {
-        return ModelUtils.readOnlyView(contents);
+        return readOnlyView(contents);
     }
 
     public void setContents(List<ContentImpl> contents) {

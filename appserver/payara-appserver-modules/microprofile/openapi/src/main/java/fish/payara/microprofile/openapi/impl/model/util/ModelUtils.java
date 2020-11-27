@@ -51,8 +51,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -647,5 +649,38 @@ public final class ModelUtils {
             return null;
         }
         return Collections.unmodifiableList(list);
+    }
+
+    public static <T> List<T> createList() {
+        return new ArrayList<>();
+    }
+
+    public static <T> List<T> createList(Collection<? extends T> items) {
+        if (items == null) {
+            return null;
+        }
+        return new ArrayList<>(items);
+    }
+
+    public static <K, V> Map<K, V> createMap() {
+        return new LinkedHashMap<>();
+    }
+
+    public static <K, V> Map<K, V> createMap(Map<? extends K, ? extends V> items) {
+        if (items == null) {
+            return null;
+        }
+        return new LinkedHashMap<>(items);
+    }
+
+    public static <K, V> Map<K, V> createOrderedMap() {
+        return new TreeMap<>();
+    }
+
+    public static <K, V> Map<K, V> createOrderedMap(Map<? extends K, ? extends V> items) {
+        if (items == null) {
+            return null;
+        }
+        return new TreeMap<>(items);
     }
 }

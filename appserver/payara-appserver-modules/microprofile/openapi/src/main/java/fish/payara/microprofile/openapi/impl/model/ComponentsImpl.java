@@ -49,12 +49,12 @@ import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
 import fish.payara.microprofile.openapi.impl.model.parameters.RequestBodyImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createOrderedMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.eclipse.microprofile.openapi.models.Components;
@@ -71,15 +71,15 @@ import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class ComponentsImpl extends ExtensibleImpl<Components> implements Components {
 
-    protected Map<String, Schema> schemas = new TreeMap<>();
-    protected Map<String, APIResponse> responses = new TreeMap<>();
-    protected Map<String, Parameter> parameters = new TreeMap<>();
-    protected Map<String, Example> examples = new TreeMap<>();
-    protected Map<String, RequestBody> requestBodies = new TreeMap<>();
-    protected Map<String, Header> headers = new TreeMap<>();
-    protected Map<String, SecurityScheme> securitySchemes = new TreeMap<>();
-    protected Map<String, Link> links = new TreeMap<>();
-    protected Map<String, Callback> callbacks = new TreeMap<>();
+    protected Map<String, Schema> schemas = createOrderedMap();
+    protected Map<String, APIResponse> responses = createOrderedMap();
+    protected Map<String, Parameter> parameters = createOrderedMap();
+    protected Map<String, Example> examples = createOrderedMap();
+    protected Map<String, RequestBody> requestBodies = createOrderedMap();
+    protected Map<String, Header> headers = createOrderedMap();
+    protected Map<String, SecurityScheme> securitySchemes = createOrderedMap();
+    protected Map<String, Link> links = createOrderedMap();
+    protected Map<String, Callback> callbacks = createOrderedMap();
 
     public static Components createInstance(AnnotationModel annotation, ApiContext context) {
         Components from = new ComponentsImpl();
@@ -97,20 +97,20 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, Schema> getSchemas() {
-        return ModelUtils.readOnlyView(schemas);
+        return readOnlyView(schemas);
     }
 
     @Override
     public void setSchemas(Map<String, Schema> schemas) {
-        this.schemas.clear();
-        if (schemas != null) {
-            this.schemas.putAll(schemas);
-        }
+        this.schemas = createOrderedMap(schemas);
     }
 
     @Override
     public Components addSchema(String key, Schema schema) {
         if (schema != null) {
+            if (schemas == null) {
+                schemas = createOrderedMap();
+            }
             schemas.put(key, schema);
         }
         return this;
@@ -118,25 +118,27 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void removeSchema(String key) {
-        schemas.remove(key);
+        if (schemas != null) {
+            schemas.remove(key);
+        }
     }
 
     @Override
     public Map<String, APIResponse> getResponses() {
-        return ModelUtils.readOnlyView(responses);
+        return readOnlyView(responses);
     }
 
     @Override
     public void setResponses(Map<String, APIResponse> responses) {
-        this.responses.clear();
-        if (responses != null) {
-            this.responses.putAll(responses);
-        }
+        this.responses = createOrderedMap(responses);
     }
 
     @Override
     public Components addResponse(String key, APIResponse response) {
         if (response != null) {
+            if (responses == null) {
+                responses = createOrderedMap();
+            }
             responses.put(key, response);
         }
         return this;
@@ -144,25 +146,27 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void removeResponse(String key) {
-        responses.remove(key);
+        if (responses != null) {
+            responses.remove(key);
+        }
     }
 
     @Override
     public Map<String, Parameter> getParameters() {
-        return ModelUtils.readOnlyView(parameters);
+        return readOnlyView(parameters);
     }
 
     @Override
     public void setParameters(Map<String, Parameter> parameters) {
-        this.parameters.clear();
-        if (parameters != null) {
-            this.parameters.putAll(parameters);
-        }
+        this.parameters = createOrderedMap(parameters);
     }
 
     @Override
     public Components addParameter(String key, Parameter parameter) {
         if (parameter != null) {
+            if (parameters == null) {
+                parameters = createOrderedMap();
+            }
             parameters.put(key, parameter);
         }
         return this;
@@ -170,25 +174,27 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void removeParameter(String key) {
-        parameters.remove(key);
+        if (parameters != null) {
+            parameters.remove(key);
+        }
     }
 
     @Override
     public Map<String, Example> getExamples() {
-        return ModelUtils.readOnlyView(examples);
+        return readOnlyView(examples);
     }
 
     @Override
     public void setExamples(Map<String, Example> examples) {
-        this.examples.clear();
-        if (examples != null) {
-            this.examples.putAll(examples);
-        }
+        this.examples = createOrderedMap(examples);
     }
 
     @Override
     public Components addExample(String key, Example example) {
         if (example != null) {
+            if (examples == null) {
+                examples = createOrderedMap();
+            }
             examples.put(key, example);
         }
         return this;
@@ -196,25 +202,27 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void removeExample(String key) {
-        examples.remove(key);
+        if (examples != null) {
+            examples.remove(key);
+        }
     }
 
     @Override
     public Map<String, RequestBody> getRequestBodies() {
-        return ModelUtils.readOnlyView(requestBodies);
+        return readOnlyView(requestBodies);
     }
 
     @Override
     public void setRequestBodies(Map<String, RequestBody> requestBodies) {
-        this.requestBodies.clear();
-        if (requestBodies != null) {
-            this.requestBodies.putAll(requestBodies);
-        }
+        this.requestBodies = createOrderedMap(requestBodies);
     }
 
     @Override
     public Components addRequestBody(String key, RequestBody requestBody) {
         if (requestBody != null) {
+            if (requestBodies == null) {
+                requestBodies = createOrderedMap();
+            }
             requestBodies.put(key, requestBody);
         }
         return this;
@@ -222,25 +230,27 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void removeRequestBody(String key) {
-        requestBodies.remove(key);
+        if (requestBodies != null) {
+            requestBodies.remove(key);
+        }
     }
 
     @Override
     public Map<String, Header> getHeaders() {
-        return ModelUtils.readOnlyView(headers);
+        return readOnlyView(headers);
     }
 
     @Override
     public void setHeaders(Map<String, Header> headers) {
-        this.headers.clear();
-        if (headers != null) {
-            this.headers.putAll(headers);
-        }
+        this.headers = createOrderedMap(headers);
     }
 
     @Override
     public Components addHeader(String key, Header header) {
         if (header != null) {
+            if (headers == null) {
+                headers = createOrderedMap();
+            }
             headers.put(key, header);
         }
         return this;
@@ -248,25 +258,27 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void removeHeader(String key) {
-        headers.remove(key);
+        if (headers != null) {
+            headers.remove(key);
+        }
     }
 
     @Override
     public Map<String, SecurityScheme> getSecuritySchemes() {
-        return ModelUtils.readOnlyView(securitySchemes);
+        return readOnlyView(securitySchemes);
     }
 
     @Override
     public void setSecuritySchemes(Map<String, SecurityScheme> securitySchemes) {
-        this.securitySchemes.clear();
-        if (securitySchemes != null) {
-            this.securitySchemes.putAll(securitySchemes);
-        }
+        this.securitySchemes = createOrderedMap(securitySchemes);
     }
 
     @Override
     public Components addSecurityScheme(String key, SecurityScheme securityScheme) {
         if (securityScheme != null) {
+            if (securitySchemes == null) {
+                securitySchemes = createOrderedMap();
+            }
             securitySchemes.put(key, securityScheme);
         }
         return this;
@@ -274,25 +286,27 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void removeSecurityScheme(String key) {
-        securitySchemes.remove(key);
+        if (securitySchemes != null) {
+            securitySchemes.remove(key);
+        }
     }
 
     @Override
     public Map<String, Link> getLinks() {
-        return ModelUtils.readOnlyView(links);
+        return readOnlyView(links);
     }
 
     @Override
     public void setLinks(Map<String, Link> links) {
-        this.links.clear();
-        if (links != null) {
-            this.links.putAll(links);
-        }
+        this.links = createOrderedMap(links);
     }
 
     @Override
     public Components addLink(String key, Link link) {
         if (link != null) {
+            if (links == null) {
+                links = createOrderedMap();
+            }
             links.put(key, link);
         }
         return this;
@@ -300,25 +314,27 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void removeLink(String key) {
-        links.remove(key);
+        if (links != null) {
+            links.remove(key);
+        }
     }
 
     @Override
     public Map<String, Callback> getCallbacks() {
-        return ModelUtils.readOnlyView(callbacks);
+        return readOnlyView(callbacks);
     }
 
     @Override
     public void setCallbacks(Map<String, Callback> callbacks) {
-        this.callbacks.clear();
-        if (callbacks != null) {
-            this.callbacks.putAll(callbacks);
-        }
+        this.callbacks = createOrderedMap(callbacks);
     }
 
     @Override
     public Components addCallback(String key, Callback callback) {
         if (callback != null) {
+            if (callbacks == null) {
+                callbacks = createOrderedMap();
+            }
             callbacks.put(key, callback);
         }
         return this;
@@ -326,7 +342,9 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public void removeCallback(String key) {
-        callbacks.remove(key);
+        if (callbacks != null) {
+            callbacks.remove(key);
+        }
     }
 
     public static void merge(Components from, Components to,

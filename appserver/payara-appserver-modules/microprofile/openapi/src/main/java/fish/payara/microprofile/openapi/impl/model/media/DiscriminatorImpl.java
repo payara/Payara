@@ -39,16 +39,17 @@
  */
 package fish.payara.microprofile.openapi.impl.model.media;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import org.eclipse.microprofile.openapi.models.media.Discriminator;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import java.util.Map;
+
+import org.eclipse.microprofile.openapi.models.media.Discriminator;
 
 public class DiscriminatorImpl implements Discriminator {
 
     private String propertyName;
-    private Map<String, String> mapping = new LinkedHashMap<>();
+    private Map<String, String> mapping = createMap();
 
     @Override
     public String getPropertyName() {
@@ -62,20 +63,20 @@ public class DiscriminatorImpl implements Discriminator {
 
     @Override
     public Map<String, String> getMapping() {
-        return ModelUtils.readOnlyView(mapping);
+        return readOnlyView(mapping);
     }
 
     @Override
     public void setMapping(Map<String, String> mapping) {
-        this.mapping.clear();
-        if (mapping != null) {
-            this.mapping.putAll(mapping);
-        }
+        this.mapping = createMap(mapping);
     }
 
     @Override
     public Discriminator addMapping(String name, String value) {
         if (value != null) {
+            if (mapping == null) {
+                mapping = createMap();
+            }
             mapping.put(name, value);
         }
         return this;
@@ -83,6 +84,8 @@ public class DiscriminatorImpl implements Discriminator {
 
     @Override
     public void removeMapping(String name) {
-        mapping.remove(name);
+        if (mapping != null) {
+            mapping.remove(name);
+        }
     }
 }

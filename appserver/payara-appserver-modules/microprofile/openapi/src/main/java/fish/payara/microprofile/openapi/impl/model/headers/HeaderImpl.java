@@ -44,14 +44,14 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.examples.Example;
@@ -71,13 +71,13 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
     private Style style;
     private Boolean explode;
     private Schema schema;
-    private Map<String, Example> examples = new LinkedHashMap<>();
+    private Map<String, Example> examples = createMap();
     private Object example;
     private Content content = new ContentImpl();
-    private List<ContentImpl> contents = new ArrayList<>();
+    private List<ContentImpl> contents = createList();
 
     public static Map<String, Header> createInstances(AnnotationModel annotation, ApiContext context) {
-        Map<String, Header> map = new LinkedHashMap<>();
+        Map<String, Header> map = createMap();
         List<AnnotationModel> headers = annotation.getValue("headers", List.class);
         if (headers != null) {
             for (AnnotationModel header : headers) {
@@ -204,20 +204,20 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
     @Override
     public Map<String, Example> getExamples() {
-        return ModelUtils.readOnlyView(examples);
+        return readOnlyView(examples);
     }
 
     @Override
     public void setExamples(Map<String, Example> examples) {
-        this.examples.clear();
-        if (examples != null) {
-            this.examples.putAll(examples);
-        }
+        this.examples = createMap(examples);
     }
 
     @Override
     public Header addExample(String key, Example examplesItem) {
         if (examplesItem != null) {
+            if (this.examples == null) {
+                this.examples = createMap();
+            }
             this.examples.put(key, examplesItem);
         }
         return this;
@@ -225,7 +225,9 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
     @Override
     public void removeExample(String key) {
-        this.examples.remove(key);
+        if (examples != null) {
+            examples.remove(key);
+        }
     }
 
     @Override
@@ -253,10 +255,7 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
     }
 
     public void setContents(List<ContentImpl> contents) {
-        this.contents.clear();
-        if (contents != null) {
-            this.contents.addAll(contents);
-        }
+        this.contents = createList(contents);
     }
 
     public static void merge(Header from, Header to,

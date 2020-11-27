@@ -41,13 +41,13 @@ package fish.payara.microprofile.openapi.impl.model.servers;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
@@ -57,13 +57,13 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
     private String url;
     private String description;
-    private Map<String, ServerVariable> variables = new LinkedHashMap<>();
+    private Map<String, ServerVariable> variables = createMap();
 
     public static Server createInstance(AnnotationModel annotation, ApiContext context) {
         Server from = new ServerImpl();
         from.setDescription(annotation.getValue("description", String.class));
         from.setUrl(annotation.getValue("url", String.class));
-        Map<String, ServerVariable> variables = new LinkedHashMap<>();
+        Map<String, ServerVariable> variables = createMap();
         extractAnnotations(annotation, context, "variables", "name", ServerVariableImpl::createInstance, variables, from::addVariable);
         from.setVariables(variables);
         return from;
@@ -91,26 +91,30 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
 
     @Override
     public Map<String, ServerVariable> getVariables() {
-        return ModelUtils.readOnlyView(variables);
+        return readOnlyView(variables);
     }
 
     @Override
     public Server addVariable(String variableName, ServerVariable variable) {
-        variables.put(variableName, variable);
+        if (variableName != null && variable != null) {
+            if (variables == null) {
+                variables = createMap();
+            }
+            variables.put(variableName, variable);
+        }
         return this;
     }
 
     @Override
     public void removeVariable(String variableName) {
-        variables.remove(variableName);
+        if (variables != null) {
+            variables.remove(variableName);
+        }
     }
 
     @Override
     public void setVariables(Map<String, ServerVariable> variables) {
-        this.variables.clear();
-        if (variables != null) {
-            this.variables.putAll(variables);
-        }
+        this.variables = createMap(variables);
     }
 
     public static void merge(Server from, Server to,
@@ -142,7 +146,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         variable.setDescription(mergeProperty(variable.getDescription(), from.getDescription(), override));
         if (from.getEnumeration()!= null && !from.getEnumeration().isEmpty()) {
             if (variable.getEnumeration() == null) {
-                variable.setEnumeration(new ArrayList<>());
+                variable.setEnumeration(createList());
             }
             for (String value : from.getEnumeration()) {
                 variable.addEnumeration(value);

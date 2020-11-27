@@ -39,12 +39,13 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -68,8 +69,8 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
     protected Operation head;
     protected Operation patch;
     protected Operation trace;
-    protected List<Server> servers = new ArrayList<>();
-    protected List<Parameter> parameters = new ArrayList<>();
+    protected List<Server> servers = createList();
+    protected List<Parameter> parameters = createList();
 
     public static PathItem createInstance(AnnotationModel annotation, ApiContext context) {
         PathItem from = new PathItemImpl();
@@ -254,20 +255,20 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public List<Server> getServers() {
-        return ModelUtils.readOnlyView(servers);
+        return readOnlyView(servers);
     }
 
     @Override
     public void setServers(List<Server> servers) {
-        this.servers.clear();
-        if (servers != null) {
-            this.servers.addAll(servers);
-        }
+        this.servers = createList(servers);
     }
 
     @Override
     public PathItem addServer(Server server) {
         if (server != null) {
+            if (servers == null) {
+                servers = createList();
+            }
             servers.add(server);
         }
         return this;
@@ -275,25 +276,27 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public void removeServer(Server server) {
-        servers.remove(server);
+        if (servers != null) {
+            servers.remove(server);
+        }
     }
 
     @Override
     public List<Parameter> getParameters() {
-        return ModelUtils.readOnlyView(parameters);
+        return readOnlyView(parameters);
     }
 
     @Override
     public void setParameters(List<Parameter> parameters) {
-        this.parameters.clear();
-        if (parameters != null) {
-            this.parameters.addAll(parameters);
-        }
+        this.parameters = createList(parameters);
     }
 
     @Override
     public PathItem addParameter(Parameter parameter) {
         if (parameter != null) {
+            if (parameters == null) {
+                parameters = createList();
+            }
             parameters.add(parameter);
         }
         return this;
@@ -301,7 +304,9 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public void removeParameter(Parameter parameter) {
-        parameters.remove(parameter);
+        if (parameters != null) {
+            parameters.remove(parameter);
+        }
     }
 
     @Override

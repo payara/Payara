@@ -44,13 +44,14 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -64,10 +65,10 @@ import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIResponse {
 
     private String description;
-    private Map<String, Header> headers = new LinkedHashMap<>();
+    private Map<String, Header> headers = createMap();
     private Content content = new ContentImpl();
-    private List<Content> contents = new ArrayList<>();
-    private Map<String, Link> links = new LinkedHashMap<>();
+    private List<Content> contents = createList();
+    private Map<String, Link> links = createMap();
     private String ref;
     private String responseCode;
 
@@ -97,20 +98,20 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public Map<String, Header> getHeaders() {
-        return ModelUtils.readOnlyView(headers);
+        return readOnlyView(headers);
     }
 
     @Override
     public void setHeaders(Map<String, Header> headers) {
-        this.headers.clear();
-        if (headers != null) {
-            this.headers.putAll(headers);
-        }
+        this.headers = createMap(headers);
     }
 
     @Override
     public APIResponse addHeader(String name, Header header) {
         if (header != null) {
+            if (headers == null) {
+                headers = createMap();
+            }
             headers.put(name, header);
         }
         return this;
@@ -118,7 +119,9 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public void removeHeader(String name) {
-        headers.remove(name);
+        if (headers != null) {
+            headers.remove(name);
+        }
     }
 
     @Override
@@ -133,18 +136,20 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public Map<String, Link> getLinks() {
-        return ModelUtils.readOnlyView(links);
+        return readOnlyView(links);
     }
 
     @Override
     public void setLinks(Map<String, Link> links) {
-        this.links.clear();
-        this.links.putAll(links);
+        this.links = createMap(links);
     }
 
     @Override
     public APIResponse addLink(String name, Link link) {
         if (link != null) {
+            if (links == null) {
+                links = createMap();
+            }
             links.put(name, link);
         }
         return this;
@@ -152,7 +157,9 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
     @Override
     public void removeLink(String name) {
-        links.remove(name);
+        if (links != null) {
+            links.remove(name);
+        }
     }
 
     @Override
@@ -181,10 +188,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
     }
 
     public void setContents(List<Content> contents) {
-        this.contents.clear();
-        if (contents != null) {
-            this.contents.addAll(contents);
-        }
+        this.contents = createList(contents);
     }
 
     public static void merge(APIResponse from, APIResponse to,

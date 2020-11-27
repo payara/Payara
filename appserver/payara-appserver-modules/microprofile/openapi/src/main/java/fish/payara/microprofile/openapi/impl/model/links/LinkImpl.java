@@ -42,13 +42,13 @@ package fish.payara.microprofile.openapi.impl.model.links;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -61,7 +61,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
     private String operationRef;
     private String operationId;
-    private Map<String, Object> parameters = new LinkedHashMap<>();
+    private Map<String, Object> parameters = createMap();
     private Object requestBody;
     private String description;
     private String ref;
@@ -135,28 +135,30 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
     @Override
     public Map<String, Object> getParameters() {
-        return ModelUtils.readOnlyView(parameters);
+        return readOnlyView(parameters);
     }
 
     @Override
     public void setParameters(Map<String, Object> parameters) {
-        this.parameters.clear();
-        if (parameters != null) {
-            this.parameters.putAll(parameters);
-        }
+        this.parameters = createMap(parameters);
     }
 
     @Override
     public Link addParameter(String name, Object parameter) {
         if (parameter != null) {
-            this.parameters.put(name, parameter);
+            if (parameters == null) {
+                parameters = createMap();
+            }
+            parameters.put(name, parameter);
         }
         return this;
     }
 
     @Override
     public void removeParameter(String name) {
-        this.parameters.remove(name);
+        if (parameters != null) {
+            parameters.remove(name);
+        }
     }
 
     @Override

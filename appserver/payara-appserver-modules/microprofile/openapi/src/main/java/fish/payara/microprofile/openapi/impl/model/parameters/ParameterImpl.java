@@ -44,13 +44,14 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.examples.Example;
@@ -74,10 +75,10 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
     private Boolean explode;
     private Boolean allowReserved;
     private Schema schema;
-    private Map<String, Example> examples = new LinkedHashMap<>();
+    private Map<String, Example> examples = createMap();
     private Object example;
     private Content content = new ContentImpl();
-    private List<ContentImpl> contents = new ArrayList<>();
+    private List<ContentImpl> contents = createList();
 
     public static Parameter createInstance(AnnotationModel annotation, ApiContext context) {
         ParameterImpl from = new ParameterImpl();
@@ -212,20 +213,24 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
 
     @Override
     public Map<String, Example> getExamples() {
-        return ModelUtils.readOnlyView(examples);
+        return readOnlyView(examples);
     }
 
     @Override
     public void setExamples(Map<String, Example> examples) {
-        this.examples.clear();
-        if (examples != null) {
-            this.examples.putAll(examples);
+        if (examples == null) {
+            this.examples = null;
+        } else {
+            this.examples = createMap(examples);
         }
     }
 
     @Override
     public Parameter addExample(String key, Example example) {
         if (example != null) {
+            if (this.examples == null) {
+                this.examples = createMap();
+            }
             this.examples.put(key, example);
         }
         return this;
@@ -233,7 +238,9 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
 
     @Override
     public void removeExample(String key) {
-        this.examples.remove(key);
+        if (this.examples != null) {
+            this.examples.remove(key);
+        }
     }
 
     @Override
@@ -257,14 +264,11 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
     }
 
     public List<ContentImpl> getContents() {
-        return ModelUtils.readOnlyView(contents);
+        return readOnlyView(contents);
     }
 
     public void setContents(List<ContentImpl> contents) {
-        this.contents.clear();
-        if (contents != null) {
-            this.contents.addAll(contents);
-        }
+        this.contents = createList(contents);
     }
 
     @Override

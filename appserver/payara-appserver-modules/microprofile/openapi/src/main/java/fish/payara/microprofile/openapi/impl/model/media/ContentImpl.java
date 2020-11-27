@@ -41,9 +41,9 @@ package fish.payara.microprofile.openapi.impl.model.media;
 
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -100,7 +100,7 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
 
     @Override
     public Map<String, MediaType> getMediaTypes() {
-        return ModelUtils.readOnlyView(this);
+        return readOnlyView(this);
     }
 
     @Override

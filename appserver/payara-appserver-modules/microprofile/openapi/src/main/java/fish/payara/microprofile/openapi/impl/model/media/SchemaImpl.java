@@ -46,13 +46,14 @@ import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeImmutableList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -91,9 +92,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Boolean uniqueItems;
     private Integer maxProperties;
     private Integer minProperties;
-    private List<String> required = new ArrayList<>();
+    private List<String> required = createList();
     private SchemaType type;
-    private Map<String, Schema> properties = new LinkedHashMap<>();
+    private Map<String, Schema> properties = createMap();
     private String description;
     private String format;
     private String ref;
@@ -104,13 +105,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private ExternalDocumentation externalDocs;
     private Boolean deprecated;
     private XML xml;
-    private List<Object> enumeration = new ArrayList<>();
+    private List<Object> enumeration = createList();
     private Discriminator discriminator;
 
     private Schema not;
-    private List<Schema> anyOf = new ArrayList<>();
-    private List<Schema> allOf = new ArrayList<>();
-    private List<Schema> oneOf = new ArrayList<>();
+    private List<Schema> anyOf = createList();
+    private List<Schema> allOf = createList();
+    private List<Schema> oneOf = createList();
 
     private Object additionalProperties;
     private Schema items;
@@ -146,7 +147,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setMaxProperties(annotation.getValue("maxProperties", Integer.class));
         from.setMinProperties(annotation.getValue("minProperties", Integer.class));
 
-        final Map<String, Schema> properties = new LinkedHashMap<>();
+        final Map<String, Schema> properties = createMap();
         extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, properties, properties::put);
         from.setProperties(properties);
 
@@ -209,7 +210,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     private List<Schema> getSchemaInstances(List<String> fromList, ApiContext context) {
-        List<Schema> to = new ArrayList<>();
+        List<Schema> to = createList();
         if (fromList != null) {
             for (String from : fromList) {
                 Schema schema = getSchemaInstance(from, context);
@@ -272,20 +273,20 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<Object> getEnumeration() {
-        return ModelUtils.readOnlyView(enumeration);
+        return readOnlyView(enumeration);
     }
 
     @Override
     public void setEnumeration(List<Object> enumeration) {
-        this.enumeration.clear();
-        if (enumeration != null) {
-            this.enumeration.addAll(enumeration);
-        }
+        this.enumeration = createList(enumeration);
     }
 
     @Override
     public Schema addEnumeration(Object enumerationItem) {
         if (enumerationItem != null) {
+            if (this.enumeration == null) {
+                this.enumeration = createList();
+            }
             this.enumeration.add(enumerationItem);
         }
         return this;
@@ -293,7 +294,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void removeEnumeration(Object enumeration) {
-        this.enumeration.remove(enumeration);
+        if (this.enumeration != null) {
+            this.enumeration.remove(enumeration);
+        }
     }
 
     @Override
@@ -428,27 +431,31 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<String> getRequired() {
-        return ModelUtils.readOnlyView(required);
+        return readOnlyView(required);
     }
 
     @Override
     public void setRequired(List<String> required) {
-        this.required.clear();
-        if (required != null) {
-            this.required.addAll(required);
-        }
+        this.required = createList(required);
     }
 
     @Override
     public Schema addRequired(String requiredItem) {
-        this.required.add(requiredItem);
-        Collections.sort(required);
+        if (requiredItem != null) {
+            if (required == null) {
+                required = createList();
+            }
+            required.add(requiredItem);
+            Collections.sort(required);
+        }
         return this;
     }
 
     @Override
     public void removeRequired(String required) {
-        this.required.remove(required);
+        if (this.required != null) {
+            this.required.remove(required);
+        }
     }
 
     @Override
@@ -473,20 +480,20 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Map<String, Schema> getProperties() {
-        return ModelUtils.readOnlyView(properties);
+        return readOnlyView(properties);
     }
 
     @Override
     public void setProperties(Map<String, Schema> properties) {
-        this.properties.clear();
-        if (properties != null) {
-            this.properties.putAll(properties);
-        }
+        this.properties = createMap(properties);
     }
 
     @Override
     public Schema addProperty(String key, Schema propertiesItem) {
         if (propertiesItem != null) {
+            if (this.properties == null) {
+                this.properties = createMap();
+            }
             this.properties.put(key, propertiesItem);
         }
         return this;
@@ -494,7 +501,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void removeProperty(String key) {
-        this.properties.remove(key);
+        if (this.properties != null) {
+            this.properties.remove(key);
+        }
     }
 
     @JsonIgnore
@@ -640,74 +649,86 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<Schema> getAllOf() {
-        return ModelUtils.readOnlyView(allOf);
+        return readOnlyView(allOf);
     }
 
     @Override
     public void setAllOf(List<Schema> allOf) {
-        this.allOf.clear();
-        if (allOf != null) {
-            this.allOf.addAll(allOf);
-        }
+        this.allOf = createList(allOf);
     }
 
     @Override
     public Schema addAllOf(Schema allOf) {
-        this.allOf.add(allOf);
+        if (allOf != null) {
+            if (this.allOf == null) {
+                this.allOf = createList();
+            }
+            this.allOf.add(allOf);
+        }
         return this;
     }
 
     @Override
     public void removeAllOf(Schema allOf) {
-        this.allOf.remove(allOf);
-    }
-
-    @Override
-    public List<Schema> getAnyOf() {
-        return ModelUtils.readOnlyView(anyOf);
-    }
-
-    @Override
-    public void setAnyOf(List<Schema> anyOf) {
-        this.anyOf.clear();
-        if (anyOf != null) {
-            this.anyOf.addAll(anyOf);
+        if (this.allOf != null) {
+            this.allOf.remove(allOf);
         }
     }
 
     @Override
+    public List<Schema> getAnyOf() {
+        return readOnlyView(anyOf);
+    }
+
+    @Override
+    public void setAnyOf(List<Schema> anyOf) {
+        this.anyOf = createList(anyOf);
+    }
+
+    @Override
     public Schema addAnyOf(Schema anyOf) {
-        this.anyOf.add(anyOf);
+        if (anyOf != null) {
+            if (this.anyOf == null) {
+                this.anyOf = createList();
+            }
+            this.anyOf.add(anyOf);
+        }
         return this;
     }
 
     @Override
     public void removeAnyOf(Schema anyOf) {
-        this.anyOf.remove(anyOf);
-    }
-
-    @Override
-    public List<Schema> getOneOf() {
-        return ModelUtils.readOnlyView(oneOf);
-    }
-
-    @Override
-    public void setOneOf(List<Schema> oneOf) {
-        this.oneOf.clear();
-        if (oneOf != null) {
-            this.oneOf.addAll(oneOf);
+        if (this.anyOf != null) {
+            this.anyOf.remove(anyOf);
         }
     }
 
     @Override
+    public List<Schema> getOneOf() {
+        return readOnlyView(oneOf);
+    }
+
+    @Override
+    public void setOneOf(List<Schema> oneOf) {
+        this.oneOf = createList(oneOf);
+    }
+
+    @Override
     public Schema addOneOf(Schema oneOf) {
-        this.oneOf.add(oneOf);
+        if (oneOf != null) {
+            if (this.oneOf == null) {
+                this.oneOf = createList();
+            }
+            this.oneOf.add(oneOf);
+        }
         return this;
     }
 
     @Override
     public void removeOneOf(Schema oneOf) {
-        this.oneOf.remove(oneOf);
+        if (this.oneOf != null) {
+            this.oneOf.remove(oneOf);
+        }
     }
 
     public String getImplementation() {
@@ -760,7 +781,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         to.setMinProperties(mergeProperty(to.getMinProperties(), from.getMinProperties(), override));
         if (from.getRequired() != null && !from.getRequired().isEmpty()) {
             if (to.getRequired() == null) {
-                to.setRequired(new ArrayList<>());
+                to.setRequired(createList());
             }
             for (String value : from.getRequired()) {
                 if (!to.getRequired().contains(value)) {
@@ -773,7 +794,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
         if (from.getProperties() != null && !from.getProperties().isEmpty()) {
             if (to.getProperties() == null) {
-                to.setProperties(new LinkedHashMap<>());
+                to.setProperties(createMap());
             }
             final Map<String, Schema> toProperties = to.getProperties();
             for (Entry<String, Schema> fromEntry : from.getProperties().entrySet()) {
@@ -802,7 +823,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
         if (from.getEnumeration() != null && from.getEnumeration().size() > 0) {
             if (to.getEnumeration() == null) {
-                to.setEnumeration(new ArrayList<>());
+                to.setEnumeration(createList());
             }
             for (Object value : from.getEnumeration()) {
                 if (!to.getEnumeration().contains(value)) {

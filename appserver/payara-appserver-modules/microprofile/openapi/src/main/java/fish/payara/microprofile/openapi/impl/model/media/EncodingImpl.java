@@ -42,11 +42,11 @@ package fish.payara.microprofile.openapi.impl.model.media;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
-import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -57,7 +57,7 @@ import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
     private String contentType;
-    private Map<String, Header> headers = new LinkedHashMap<>();
+    private Map<String, Header> headers = createMap();
     private Style style;
     private Boolean explode;
     private Boolean allowReserved;
@@ -88,20 +88,20 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
     @Override
     public Map<String, Header> getHeaders() {
-        return ModelUtils.readOnlyView(headers);
+        return readOnlyView(headers);
     }
 
     @Override
     public void setHeaders(Map<String, Header> headers) {
-        this.headers.clear();
-        if (headers != null) {
-            this.headers.putAll(headers);
-        }
+        this.headers = createMap(headers);
     }
 
     @Override
     public Encoding addHeader(String key, Header header) {
         if (header != null) {
+            if (headers == null) {
+                headers = createMap();
+            }
             headers.put(key, header);
         }
         return this;
@@ -109,7 +109,9 @@ public class EncodingImpl extends ExtensibleImpl<Encoding> implements Encoding {
 
     @Override
     public void removeHeader(String key) {
-        headers.remove(key);
+        if (headers != null) {
+            headers.remove(key);
+        }
     }
 
     @Override
