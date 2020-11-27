@@ -250,6 +250,11 @@ public class AzureSecretsConfigSource extends ConfiguredExtensionConfigSource<Az
     }
 
     @Override
+    public String getSource() {
+        return "cloud";
+    }
+
+    @Override
     public String getName() {
         return "azure";
     }

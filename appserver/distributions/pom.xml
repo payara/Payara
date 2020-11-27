@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.2020.6-SNAPSHOT</version>
+        <version>5.2020.7-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.distributions</groupId>
@@ -83,9 +83,7 @@
         <temp.dir>${project.build.directory}/dependency</temp.dir>
         <include.group.ids>fish.payara.server.internal.packager,fish.payara.server.internal.registration</include.group.ids>
         <template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar</template.jar>
-        <production-domain.template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/production-domain.jar</production-domain.template.jar>
         <create-gf-domain.args>--user admin create-domain --template=${template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-gf-domain.args>
-        <create-domain.production.args>--user admin create-domain --template=${production-domain.template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost production</create-domain.production.args>
         <validation.xml.root>${project.build.directory}/stage</validation.xml.root>
     </properties>
 
@@ -155,14 +153,6 @@
                             <configuration>
                                 <executable>${stage.dir}/${install.dir.name}/bin/asadmin</executable>
                                 <commandlineArgs>${create-gf-domain.args}</commandlineArgs>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>create-production-domain</id>
-                            <phase>process-resources</phase>
-                            <configuration>
-                                <executable>${stage.dir}/${install.dir.name}/bin/asadmin</executable>
-                                <commandlineArgs>${create-domain.production.args}</commandlineArgs>
                             </configuration>
                         </execution>
                     </executions>

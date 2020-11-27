@@ -39,27 +39,40 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
+import java.io.Closeable;
+import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-public class JDBCConfigSourceHelper {
+import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
 
-    private static final Logger logger = Logger.getLogger(JDBCConfigSourceHelper.class.getName());
+public class JDBCConfigSourceHelper implements Closeable {
 
-    private PreparedStatement selectOne = null;
-    private PreparedStatement selectAll = null;
+    private static final Logger LOGGER = Logger.getLogger(JDBCConfigSourceHelper.class.getName());
+
+    private final Connection connection;
+
+    private final PreparedStatement selectOne;
+    private final PreparedStatement selectAll;
 
     public JDBCConfigSourceHelper(JDBCConfigSourceConfiguration configuration) {
+
         String jdbcJNDIName = configuration.getJndiName();
+
+        Connection connection = null;
+        PreparedStatement selectOne = null;
+        PreparedStatement selectAll = null;
+
         if (jdbcJNDIName != null && !jdbcJNDIName.trim().isEmpty()) {
             DataSource datasource = getDatasource(jdbcJNDIName);
             if (datasource != null) {
@@ -69,13 +82,18 @@ public class JDBCConfigSourceHelper {
                 String queryOne = "select " + valueColumn + " from " + table + " where " + keyColumn + " = ?";
                 String queryAll = "select " + keyColumn + ", " + valueColumn + " from " + table;
                 try {
-                    selectOne = datasource.getConnection().prepareStatement(queryOne);
-                    selectAll = datasource.getConnection().prepareStatement(queryAll);
+                    connection = datasource.getConnection();
+                    selectOne = connection.prepareStatement(queryOne);
+                    selectAll = connection.prepareStatement(queryAll);
                 } catch (SQLException ex) {
-                    logger.info(ex.getLocalizedMessage());
+                    LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                 }
             }
         }
+
+        this.connection = connection;
+        this.selectOne = selectOne;
+        this.selectAll = selectAll;
     }
 
     public synchronized String getConfigValue(String propertyName) {
@@ -87,7 +105,7 @@ public class JDBCConfigSourceHelper {
                     return resultSet.getString(1);
                 }
             } catch (SQLException ex) {
-                // ignore the exception as another source may have the property
+                LOGGER.log(Level.WARNING, "Error in config source SQL execution", ex);
             }
         }
         return null;
@@ -102,10 +120,21 @@ public class JDBCConfigSourceHelper {
                     result.put(resultSet.getString(1), resultSet.getString(2));
                 }
             } catch (SQLException ex) {
-                // ignore it
+                LOGGER.log(Level.WARNING, "Error in config source SQL execution", ex);
             }
         }
         return result;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new IOException("Error closing JDBC connection from config source", e);
+            }
+        }
     }
 
     private DataSource getDatasource(String jndiName) {
@@ -113,7 +142,7 @@ public class JDBCConfigSourceHelper {
             InitialContext ctx = new InitialContext();
             return (DataSource) ctx.lookup(jndiName);
         } catch (NamingException ex) {
-            logger.warning("Could not find the datasource:" + ex.getMessage());
+            LOGGER.warning("Could not find the datasource:" + ex.getMessage());
         }
         return null;
     }

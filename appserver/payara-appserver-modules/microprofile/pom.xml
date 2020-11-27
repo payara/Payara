@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>5.2020.6-SNAPSHOT</version>
+        <version>5.2020.7-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
@@ -63,5 +63,6 @@ holder.
         <!-- Extension of opentracing for Jax-ws, split out due to web distribution not having Jax-ws -->
         <module>opentracing-jaxws</module>
         <module>microprofile-common</module>
+        <module>microprofile-connector</module>
     </modules>
 </project>

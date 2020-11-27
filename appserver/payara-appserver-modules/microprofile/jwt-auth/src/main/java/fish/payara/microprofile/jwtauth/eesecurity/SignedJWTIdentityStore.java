@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,19 +39,13 @@
  */
 package fish.payara.microprofile.jwtauth.eesecurity;
 
-import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
-import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
+import static java.lang.Thread.currentThread;
+import static java.util.logging.Level.INFO;
+import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
+import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
+import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
+import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
 
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.IdentityStore;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,13 +57,29 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import static java.lang.Thread.currentThread;
-import static java.util.logging.Level.FINEST;
-import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
-import static org.eclipse.microprofile.jwt.config.Names.*;
+import javax.enterprise.inject.spi.DeploymentException;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
+import javax.security.enterprise.identitystore.CredentialValidationResult;
+import javax.security.enterprise.identitystore.IdentityStore;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+
+import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
+import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
 
 /**
  * Identity store capable of asserting that a signed JWT token is valid
@@ -123,15 +133,16 @@ public class SignedJWTIdentityStore implements IdentityStore {
             JsonWebTokenImpl jsonWebToken
                     = jwtTokenParser.verify(acceptedIssuer, publicKey.get());
 
-            List<String> groups = new ArrayList<>(
-                    jsonWebToken.getClaim("groups"));
+            Set<String> groups = new HashSet<>();
+            Collection<String> groupClaims = jsonWebToken.getClaim("groups");
+            if (groupClaims != null) {
+                groups.addAll(groupClaims);
+            }
 
-            return new CredentialValidationResult(
-                    jsonWebToken,
-                    new HashSet<>(groups));
+            return new CredentialValidationResult(jsonWebToken, groups);
 
         } catch (Exception e) {
-            LOGGER.log(FINEST, "Exception trying to parse JWT token.", e);
+            LOGGER.log(INFO, "Exception trying to parse JWT token.", e);
         }
 
         return INVALID_RESULT;

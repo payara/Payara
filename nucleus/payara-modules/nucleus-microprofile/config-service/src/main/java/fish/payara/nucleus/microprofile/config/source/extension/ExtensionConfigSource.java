@@ -52,4 +52,6 @@ public interface ExtensionConfigSource extends ConfigSource {
     default void bootstrap() {}
 
     default void destroy() {}
+    
+    String getSource();
 }

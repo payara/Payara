@@ -3,7 +3,6 @@
 def pom
 def DOMAIN_NAME
 def payaraBuildNumber
-def rc
 pipeline {
     agent any
     options {
@@ -28,14 +27,7 @@ pipeline {
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
-
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Certificates Expiring Soon  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    rc = sh(returnStatus: true, script: "keytool -list -v -keystore \'${pwd()}/nucleus/admin/template/src/main/resources/config/cacerts.jks\' -storepass \'changeit\' | grep -E \"Valid from:.*`date +'%b' --date='+1 month'`.*`date +'%Y'`|`date +'%b'`.*`date +'%Y'`\"")
-                    if(rc != 1) {
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Certificates Expiring Soon  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                }
+              }
             }
         }
         stage('Build') {
@@ -44,8 +36,7 @@ pipeline {
                 withCredentials([usernameColonPassword(credentialsId: 'JenkinsNexusUser', variable: 'NEXUS_USER')]) {
                     sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
-                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
-                    -Dsurefire.rerunFailingTestsCount=2"""
+                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber}"""
                 }
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -70,7 +61,6 @@ pipeline {
                 -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara5/glassfish\" \
                 -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/jre/lib/security/cacerts \
                 -Djavax.xml.accessExternalSchema=all \
-                -Dsurefire.rerunFailingTestsCount=2 \
                 -f appserver/tests/quicklook/pom.xml"""
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -109,7 +99,7 @@ pipeline {
             steps{
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                    branches: [[name: "*/master"]],
+                    branches: [[name: "*/microprofile-4.0"]],
                     userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
@@ -126,7 +116,7 @@ pipeline {
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'                    
+                    junit '**/target/surefire-reports/*.xml'
                 }
             }
         }

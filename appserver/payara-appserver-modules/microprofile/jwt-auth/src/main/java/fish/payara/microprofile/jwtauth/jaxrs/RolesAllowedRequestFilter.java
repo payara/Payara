@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -77,18 +77,38 @@ public class RolesAllowedRequestFilter implements ContainerRequestFilter {
     private final SecurityContext securityContext;
 
     private final String[] rolesAllowed;
+    private final boolean permitAll;
+
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
     RolesAllowedRequestFilter(HttpServletRequest request, HttpServletResponse response, String[] rolesAllowed) {
+        this(request, response, rolesAllowed, false);
+    }
+
+    RolesAllowedRequestFilter(HttpServletRequest request, HttpServletResponse response) {
+        this(request, response, null, true);
+    }
+
+    private RolesAllowedRequestFilter(HttpServletRequest request, HttpServletResponse response, String[] rolesAllowed, boolean permitAll) {
         this.request = request;
         this.response = response;
         this.rolesAllowed = rolesAllowed;
         this.securityContext = CDI.current().select(SecurityContext.class).get();
+        this.permitAll = permitAll;
+        // If permitAll, roles allowed should be null. Otherwise roles allowed should not be null
+        assert permitAll == (rolesAllowed == null);
     }
 
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
+
+        // Still perform authentication to fill SecurityContext
+        if (permitAll) {
+            securityContext.authenticate(request, response, withParams());
+            return;
+        }
+
         if (rolesAllowed.length > 0 && !isAuthenticated()) {
 
             AuthenticationStatus status =  securityContext.authenticate(request, response, withParams());

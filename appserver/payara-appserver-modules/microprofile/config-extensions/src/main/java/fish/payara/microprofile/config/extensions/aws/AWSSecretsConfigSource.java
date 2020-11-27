@@ -92,6 +92,7 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
                     .region(configuration.getRegionName())
                     .serviceName("secretsmanager")
                     .version("2017-10-17")
+                    .ContentType("application/x-amz-json-1.1")
                     .method(HttpMethod.POST)
                     .data(Json.createObjectBuilder().add("SecretId", configuration.getSecretName()).build());
 
@@ -152,6 +153,11 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
     @Override
     public boolean setValue(String key, String value) {
         return modifySecret(HttpMethod.POST, key, value);
+    }
+
+    @Override
+    public String getSource() {
+        return "cloud";
     }
 
     @Override

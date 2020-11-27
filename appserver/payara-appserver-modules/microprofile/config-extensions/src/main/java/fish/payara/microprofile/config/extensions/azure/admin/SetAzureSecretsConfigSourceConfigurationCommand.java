@@ -68,6 +68,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.source.extension.BaseSetConfigSourceConfigurationCommand;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import org.glassfish.api.ActionReport;
 
 @Service(name = "set-azure-config-source-configuration")
 @PerLookup
@@ -90,10 +91,10 @@ public class SetAzureSecretsConfigSourceConfigurationCommand extends BaseSetConf
     @Param(optional = true, name = "client-id", alias = "clientId")
     protected String clientId;
 
-    @Param(optional = true, name = "key-vault-name", alias = "keyVaultname")
+    @Param(optional = true, name = "key-vault-name", alias = "keyVaultName")
     protected String keyVaultName;
 
-    @Param(optional = true, name = "private-key-file", alias = "privateKeyPath")
+    @Param(optional = true, name = "private-key-file", alias = "privateKeyFile")
     private File privateKeyFile;
 
     @Param(optional = true)
@@ -103,8 +104,8 @@ public class SetAzureSecretsConfigSourceConfigurationCommand extends BaseSetConf
     private ServerEnvironment env;
 
     @Override
-    protected void applyValues(AzureSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
-        super.applyValues(configuration);
+    protected void applyValues(ActionReport report, AzureSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(report, configuration);
         if (StringUtils.ok(tenantId)) {
             configuration.setTenantId(tenantId);
         }
