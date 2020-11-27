@@ -185,8 +185,9 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
         private Context pushEmptyContext() {
             JndiNameEnvironment env = (JndiNameEnvironment)Proxy.newProxyInstance(Utility.getClassLoader(),
                     new Class[] { JndiNameEnvironment.class }, (proxy, method, args) -> null);
-            return new ContextImpl.Context(createInvocation(env, "___EMPTY___"),
-                    invocationManager, Utility.getClassLoader());
+            ComponentInvocation newInvocation = createInvocation(env, "___EMPTY___");
+            invocationManager.preInvoke(newInvocation);
+            return new ContextImpl.Context(newInvocation, invocationManager, Utility.getClassLoader());
         }
 
         @Override
@@ -232,7 +233,8 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil {
             }
             JndiNameEnvironment jndiEnv = compEnvMgr.getJndiNameEnvironment(componentId);
             if (jndiEnv != null) { // create invocation only for valid JNDI environment
-                cachedInvocation = createInvocation(jndiEnv, componentId);
+                localCachedInvocation = createInvocation(jndiEnv, componentId);
+                cachedInvocation = localCachedInvocation;
             } else {
                 throw new IllegalStateException(String.format("Cannot cache invocation: %s", componentId));
             }
