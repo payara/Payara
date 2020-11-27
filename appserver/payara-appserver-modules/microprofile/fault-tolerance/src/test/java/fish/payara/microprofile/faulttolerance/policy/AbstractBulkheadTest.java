@@ -80,20 +80,25 @@ import fish.payara.microprofile.faulttolerance.test.TestUtils;
 
 abstract class AbstractBulkheadTest {
 
-    protected final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
+    protected final FaultToleranceServiceStub service = createService();
 
-        @Override
-        public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
-            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
+    protected FaultToleranceServiceStub createService() {
+        return new FaultToleranceServiceStub() {
 
-                @Override
-                public void delay(long delayMillis) throws InterruptedException {
-                    waitSome(delayMillis);
-                }
-            };
-        }
+            @Override
+            public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
+                return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
 
-    };
+                    @Override
+                    public void delay(long delayMillis) throws InterruptedException {
+                        waitSome(delayMillis);
+                    }
+                };
+            }
+
+        };
+    }
+
     final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = service.getConcurrentExecutionsReference();
     final AtomicInteger waitingQueuePopulation = service.getWaitingQueuePopulationReference();
     protected final CompletableFuture<Void> commonWaiter = new CompletableFuture<>();
@@ -392,7 +397,10 @@ abstract class AbstractBulkheadTest {
     }
 
     void assertFurtherThreadThrowsBulkheadException() {
-        int attemptCount = 10;
+        assertFurtherThreadThrowsBulkheadException(10);
+    }
+
+    void assertFurtherThreadThrowsBulkheadException(int attemptCount) {
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
         List<Thread> attemptingCallers = new ArrayList<>();
         Map<Thread, BulkheadException> bulkheadExceptions = new ConcurrentHashMap<>();

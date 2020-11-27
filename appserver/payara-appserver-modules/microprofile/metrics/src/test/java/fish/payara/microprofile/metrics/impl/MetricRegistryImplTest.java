@@ -280,12 +280,9 @@ public class MetricRegistryImplTest {
         Method dummy = getClass().getMethods()[0];
         Gauge<?> gauge1 = new GaugeImpl<>(dummy, this);
         Gauge<?> gauge2 = new GaugeImpl<>(dummy, this);
-        assertException("Gauge type metric['%s'] is not reusable",
-            name -> registry.register(withName(name), gauge1),
-            name -> registry.register(withName(name), gauge2));
-        assertException("Gauge type metric['%s'] is not reusable",
-            name -> registry.register(name, gauge1),
-            name -> registry.register(name, gauge2));
+        String name = nextName();
+        registry.register(withName(name), gauge1);
+        assertSame(gauge1, registry.register(withName(name), gauge2));
     }
 
     @Test

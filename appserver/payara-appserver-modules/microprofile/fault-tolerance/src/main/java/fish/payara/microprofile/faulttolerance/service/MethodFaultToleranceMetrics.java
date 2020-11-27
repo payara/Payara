@@ -63,7 +63,7 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
  *
  * @author Jan Bernitt
  */
-final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
+public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
 
     private final MetricRegistry registry;
     /**
@@ -77,7 +77,7 @@ final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
     private FallbackUsage fallbackUsage;
     private boolean retried;
 
-    MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
+    public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
         this(registry, canonicalMethodName, FallbackUsage.notDefined, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(), new ConcurrentHashMap<>());
     }
 
