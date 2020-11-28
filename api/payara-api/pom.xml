@@ -107,6 +107,7 @@
                                     fish.payara.cdi.auth.roles,
                                     fish.payara.cdi.jsr107.impl,
                                     fish.payara.cluster,
+                                    fish.payara.context,
                                     fish.payara.jacc,
                                     fish.payara.micro.cdi,
                                     fish.payara.nucleus.requesttracing.api,
