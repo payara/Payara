@@ -219,7 +219,7 @@ public class TransactionScopedCDIUtil {
             catch(MultiException e) {
                 log(e.getMessage());
             }
-            this.ctxUtil = ctxUtil.map(util -> util.currentInvocation());
+            this.ctxUtil = ctxUtil.map(JavaEEContextUtil::currentInvocation);
         }
 
         private void setInjectionTarget(InjectionTarget<Object> injectionTarget) {
@@ -243,7 +243,7 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public Set<Annotation> getQualifiers() {
-            Set<Annotation> qualifiers = new HashSet<Annotation>();
+            Set<Annotation> qualifiers = new HashSet<>();
             qualifiers.add(new DefaultAnnotationLiteral());
             qualifiers.add(new AnyAnnotationLiteral());
             return qualifiers;
