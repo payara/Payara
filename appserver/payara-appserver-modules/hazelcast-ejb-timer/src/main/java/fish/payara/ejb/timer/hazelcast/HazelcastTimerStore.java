@@ -39,7 +39,9 @@
  */
 package fish.payara.ejb.timer.hazelcast;
 
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
+import com.hazelcast.cp.lock.FencedLock;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.EJBTimerSchedule;
 import com.sun.ejb.containers.EJBTimerService;
@@ -1166,7 +1168,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
 
     @Override
     public void memberRemoved(MemberEvent event) {
-        ILock hazelcastLock = hazelcast.getLock("EJB-TIMER-LOCK");
+        FencedLock hazelcastLock = hazelcast.getCPSubsystem().getLock("EJB-TIMER-LOCK");
         hazelcastLock.lock();
         try {
             Collection<HZTimer> allTimers = pkCache.values();
