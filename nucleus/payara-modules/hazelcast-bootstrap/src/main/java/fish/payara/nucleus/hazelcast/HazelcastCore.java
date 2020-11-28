@@ -342,11 +342,18 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 }
             } else { // there is no config override
                 config.setClassLoader(clh.getCommonClassLoader());
+
+                // The below are to test split-brain scenario,
+                // see https://github.com/hazelcast/hazelcast/issues/17586
+                // and https://github.com/hazelcast/hazelcast/issues/17260
 //                config.setProperty(MAX_NO_HEARTBEAT_SECONDS.getName(), "5");
 //                config.setProperty(HEARTBEAT_INTERVAL_SECONDS.getName(), "1");
 //                config.setProperty(MERGE_FIRST_RUN_DELAY_SECONDS.getName(), "5");
 //                config.setProperty(MERGE_NEXT_RUN_DELAY_SECONDS.getName(), "5");
-                config.setProperty(WAIT_SECONDS_BEFORE_JOIN.getName(), "0");
+
+                // can't quite set it to zero yet because of:
+                // https://github.com/hazelcast/hazelcast/issues/17586
+                config.setProperty(WAIT_SECONDS_BEFORE_JOIN.getName(), "1");
 
                 if(ctxUtil != null) {
                     SerializationConfig serializationConfig = new SerializationConfig();
