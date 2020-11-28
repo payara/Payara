@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.node;
 
 import static com.sun.enterprise.deployment.xml.DeclaredPermissionsTagNames.PERMS_ROOT;
@@ -63,8 +64,8 @@ public class PermissionsNode extends AbstractBundleNode<PermissionsDescriptor> {
     // The XML tag associated with this Node
     public final static XMLElement ROOT_ELEMENT = new XMLElement(DeclaredPermissionsTagNames.PERMS_ROOT);
 
-    private final static List<String> initSystemIDs() {
-        List<String> systemIDs = new ArrayList<String>();
+    private static List<String> initSystemIDs() {
+        List<String> systemIDs = new ArrayList<>();
         systemIDs.add(SCHEMA_ID);
         
         return unmodifiableList(systemIDs);
@@ -115,7 +116,7 @@ public class PermissionsNode extends AbstractBundleNode<PermissionsDescriptor> {
     }
 
     @Override
-    public List getSystemIDs() {
+    public List<String> getSystemIDs() {
         return systemIDs;
     }
 
@@ -124,6 +125,7 @@ public class PermissionsNode extends AbstractBundleNode<PermissionsDescriptor> {
         return SPEC_VERSION;
     }
 
+    @Override
     protected XMLElement getXMLRootTag() {
         return ROOT_ELEMENT;
     }

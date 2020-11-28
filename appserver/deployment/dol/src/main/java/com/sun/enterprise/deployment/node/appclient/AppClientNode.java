@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.node.appclient;
 
 import java.util.ArrayList;
@@ -75,6 +76,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.ApplicationClientTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.util.logging.Level;
 
 /**
  * This class is responsible for handling app clients
@@ -82,7 +84,6 @@ import com.sun.enterprise.deployment.xml.WebServicesTagNames;
  * @author  Sheetal Vartak
  * @version
  */
-
 @Service
 public class AppClientNode extends AbstractBundleNode<ApplicationClientDescriptor> {
 
@@ -106,7 +107,7 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
     public final static XMLElement tag = new XMLElement(ApplicationClientTagNames.APPLICATION_CLIENT_TAG);
 
     private static List<String> initSystemIDs() {
-        final ArrayList<String> systemIDs = new ArrayList<String>();
+        final ArrayList<String> systemIDs = new ArrayList<>();
         systemIDs.add(SCHEMA_ID);
         systemIDs.add(SCHEMA_ID_14);
         systemIDs.add(SCHEMA_ID_15);
@@ -150,7 +151,7 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
      * @return the doctype tag name
      */
     @Override
-    public String registerBundle(Map publicIDToDTD) {
+    public String registerBundle(Map<String, String> publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
         return tag.getQName();
@@ -158,7 +159,7 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
     
     @Override
     public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
-        Map<String,Class<?>> result = new HashMap<String,Class<?>>();
+        Map<String,Class<?>> result = new HashMap<>();
         result.put(AppClientRuntimeNode.registerBundle(publicIDToDTD), AppClientRuntimeNode.class);
         result.put(GFAppClientRuntimeNode.registerBundle(publicIDToDTD), GFAppClientRuntimeNode.class);
         
@@ -168,7 +169,7 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
     @Override
     public void addDescriptor(Object  newDescriptor) {       
         if (newDescriptor instanceof EjbReference) {            
-            DOLUtils.getDefaultLogger().fine("Adding ejb ref " + newDescriptor);
+            DOLUtils.getDefaultLogger().log(Level.FINE, "Adding ejb ref {0}", newDescriptor);
             (getDescriptor()).addEjbReferenceDescriptor(
                         (EjbReference) newDescriptor);
         } else {
@@ -182,9 +183,9 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
     }
 
     @Override
-    protected Map getDispatchTable() {
+    protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
-        Map table = super.getDispatchTable();
+        Map<String, String> table = super.getDispatchTable();
         table.put(ApplicationClientTagNames.CALLBACK_HANDLER, "setCallbackHandler");        
         return table;
     }

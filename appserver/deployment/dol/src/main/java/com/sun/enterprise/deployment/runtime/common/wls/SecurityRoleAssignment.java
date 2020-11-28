@@ -65,7 +65,7 @@ public class SecurityRoleAssignment extends RuntimeDescriptor {
     private static final long serialVersionUID = -8950600974064582673L;
     
     private String roleName; // mandatory element
-    private List<String> principals = new ArrayList<String>();
+    private List<String> principals = new ArrayList<>();
     private boolean externallyDefined;
 
     public String getRoleName() {

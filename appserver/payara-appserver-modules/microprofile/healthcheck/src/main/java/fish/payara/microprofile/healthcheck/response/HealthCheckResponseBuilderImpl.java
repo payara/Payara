@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.eclipse.microprofile.health.HealthCheckResponse;
-import org.eclipse.microprofile.health.HealthCheckResponse.State;
+import org.eclipse.microprofile.health.HealthCheckResponse.Status;
 import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
@@ -54,7 +54,7 @@ import static org.glassfish.common.util.StringHelper.isEmpty;
 public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
 
     private String name;
-    private State state;
+    private Status status;
     private final Optional<Map<String, Object>> data = Optional.of(new HashMap<>());
     
     @Override
@@ -103,22 +103,22 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
 
     @Override
     public HealthCheckResponseBuilder up() {
-        this.state = State.UP;
+        this.status = Status.UP;
         return this;
     }
 
     @Override
     public HealthCheckResponseBuilder down() {
-        this.state = State.DOWN;
+        this.status = Status.DOWN;
         return this;
     }
 
     @Override
-    public HealthCheckResponseBuilder state(boolean up) {
+    public HealthCheckResponseBuilder status(boolean up) {
         if (up) {
-            this.state = State.UP;
+            this.status = Status.UP;
         } else {
-            this.state = State.DOWN;
+            this.status = Status.DOWN;
         }
         
         return this;
@@ -126,9 +126,9 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
 
     @Override
     public HealthCheckResponse build() {
-         validate();
+        validate();
         // Just use the basic HealthCheckResponse implementation
-        HealthCheckResponse healthCheckResponse = new HealthCheckResponseImpl(name, state, data);
+        HealthCheckResponse healthCheckResponse = new HealthCheckResponseImpl(name, status, data);
         return healthCheckResponse;
     }
     
@@ -136,8 +136,8 @@ public class HealthCheckResponseBuilderImpl extends HealthCheckResponseBuilder {
         if (isEmpty(name)) {
             throw new IllegalArgumentException("Healthcheck name is not defined");
         }
-        if (state == null) {
-            throw new IllegalArgumentException(String.format("Healthcheck [%s] state is not defined", name));
+        if (status == null) {
+            throw new IllegalArgumentException(String.format("Healthcheck [%s] status is not defined", name));
         }
     }
     

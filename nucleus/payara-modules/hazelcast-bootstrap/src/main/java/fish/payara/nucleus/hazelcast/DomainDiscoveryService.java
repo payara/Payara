@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,23 +47,22 @@ import com.hazelcast.spi.discovery.integration.DiscoveryServiceSettings;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.io.InstanceDirs;
+import static fish.payara.nucleus.hazelcast.MemberAddressPicker.initAddress;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.grizzly.utils.Holder;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 
@@ -75,6 +74,7 @@ import org.glassfish.internal.api.ServerContext;
  */
 public class DomainDiscoveryService implements DiscoveryService {
     private static Logger logger = Logger.getLogger(DomainDiscoveryService.class.getName());
+    private final Holder.LazyHolder<InetAddress> chosenAddress = Holder.LazyHolder.lazyHolder(MemberAddressPicker::findMyAddress);
 
     public DomainDiscoveryService(DiscoveryServiceSettings settings) {
     }
@@ -102,6 +102,7 @@ public class DomainDiscoveryService implements DiscoveryService {
                 if (dasHost == null || dasHost.isEmpty()) {
                     dasHost = hzConfig.getDASBindAddress();
                 }
+                dasHost = Optional.ofNullable(initAddress(dasHost, 0)).map(InetSocketAddress::getHostString).orElse("");
 
                 if (dasHost.isEmpty()) {
                     // ok drag it off the properties file
@@ -118,7 +119,7 @@ public class DomainDiscoveryService implements DiscoveryService {
 
                 if (dasHost.isEmpty() || dasHost.equals("127.0.0.1") || dasHost.equals("localhost")) {
                     logger.fine("Looks like the DAS IP is loopback or empty let's find the actual IP of this machine as that is where the DAS is");
-                    addLocalNodes(nodes, Integer.valueOf(hzConfig.getDasPort()));
+                    nodes.add(new SimpleDiscoveryNode(new Address(chosenAddress.get(), Integer.parseInt(hzConfig.getDasPort()))));
                 } else {
                     logger.log(Level.FINE, "DAS should be listening on {0}", dasHost);
                     nodes.add(new SimpleDiscoveryNode(new Address(dasHost, Integer.valueOf(hzConfig.getDasPort()))));
@@ -141,16 +142,17 @@ public class DomainDiscoveryService implements DiscoveryService {
             try {
                 logger.log(Level.FINE, "We are Payara Micro therefore adding DAS {0}", hzConfig.getDASPublicAddress());
                 // check if user has added locahost as unlikely to work
-                String dasHost = hzConfig.getDASPublicAddress();
+                String dasHost = Optional.ofNullable(initAddress(hzConfig.getDASPublicAddress(), 0))
+                        .map(InetSocketAddress::getHostString).orElse("");
                 if (hzConfig.getDasPort().equals("4848")) {
                     logger.log(Level.WARNING,"You have specified 4848 as the datagrid domain port however this is the default DAS admin port, the default domain datagrid port is 4900");
                 }
                 if (dasHost.isEmpty() || dasHost.equals("127.0.0.1") || dasHost.equals("localhost")) {
-                    addLocalNodes(nodes, Integer.valueOf(hzConfig.getDasPort()));
+                    nodes.add(new SimpleDiscoveryNode(new Address(chosenAddress.get(), Integer.parseInt(hzConfig.getDasPort()))));
                 } else {
-                    nodes.add(new SimpleDiscoveryNode(new Address(InetAddress.getByName(hzConfig.getDASPublicAddress()), Integer.valueOf(hzConfig.getDasPort()))));
+                    nodes.add(new SimpleDiscoveryNode(new Address(InetAddress.getByName(dasHost), Integer.valueOf(hzConfig.getDasPort()))));
                 }
-            } catch (UnknownHostException | SocketException | NumberFormatException ex) {
+            } catch (UnknownHostException | NumberFormatException ex) {
                 Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
@@ -159,11 +161,7 @@ public class DomainDiscoveryService implements DiscoveryService {
 
             // Embedded runtimese don't have nodes
             if (domain.getNodes() == null) {
-                try {
-                    addLocalNodes(nodes, Integer.valueOf(hzConfig.getStartPort()));
-                } catch (IOException ex) {
-                    Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                nodes.add(new SimpleDiscoveryNode(new Address(chosenAddress.get(), Integer.parseInt(hzConfig.getStartPort()))));
             } else {
                 for (Node node : domain.getNodes().getNode()) {
                     try {
@@ -174,7 +172,7 @@ public class DomainDiscoveryService implements DiscoveryService {
                                     Integer.valueOf(hzConfig.getStartPort()))));
                         } else {
                             // we need to add our IP address so add each interface address with the start port
-                            addLocalNodes(nodes, Integer.valueOf(hzConfig.getStartPort()));
+                            nodes.add(new SimpleDiscoveryNode(new Address(chosenAddress.get(), Integer.parseInt(hzConfig.getStartPort()))));
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(DomainDiscoveryService.class.getName()).log(Level.SEVERE, null, ex);
@@ -184,21 +182,6 @@ public class DomainDiscoveryService implements DiscoveryService {
         }
 
         return nodes;
-    }
-
-    private void addLocalNodes(List<DiscoveryNode> nodes, int port) throws SocketException, NumberFormatException {
-        Enumeration e = NetworkInterface.getNetworkInterfaces();
-        while (e.hasMoreElements()) {
-            NetworkInterface ni = (NetworkInterface) e.nextElement();
-            if (!ni.isLoopback()) {
-                for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
-                    if (ia.getAddress() instanceof Inet4Address && !ia.getAddress().isLoopbackAddress()) {
-                        logger.log(Level.FINE, "Adding network interface {0}", ia.getAddress());
-                        nodes.add(new SimpleDiscoveryNode(new Address(ia.getAddress(), port)));
-                    }
-                }
-            }
-        }
     }
 
     @Override

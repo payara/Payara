@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
  */
 package com.sun.enterprise.admin.servermgmt;
 
@@ -283,13 +283,14 @@ public class KeystoreManager {
     }
 
     /**
-     * Copies all non-expired certificates from the currently used JDK to the Payara trust store.
+     * Cleans the given truststore of invalid certs and copies all valid certificates 
+     * from the currently used JDK to the given trust store.
      *
      * @param trustStore the trust store to copy the certificates to.
      * @param masterPassword the password to the trust store.
      * @throws RepositoryException if an error occured a {@link RepositoryException} will wrap the original exception
      */
-    protected void copyCertificatesFromJdk(File trustStore, String masterPassword) throws RepositoryException {
+    protected void updateCertificates(File trustStore, String masterPassword) throws RepositoryException {
         // Gets the location of the JDK trust store.
         String javaHome = System.getProperty("java.home").concat("/").replaceAll("//", "/");
         String jreHome;
@@ -323,8 +324,10 @@ public class KeystoreManager {
             throw new RepositoryException("Unexpected exception reading Keystore file.", ex);
         }
 
+        removeExpiredCerts(destTrustStore);
+        
         // Load the valid certificates to the store
-        Map<String, Certificate> validCerts = getValidCertificateAliases(javaTrustStore, "changeit");
+        Map<String, Certificate> validCerts = getValidCertificates(javaTrustStore);
         try {
             for (Entry<String,Certificate> alias : validCerts.entrySet()) {
                 Certificate cert = alias.getValue();
@@ -344,10 +347,43 @@ public class KeystoreManager {
             throw new RepositoryException("Unexpected exception writing certificates to the Keystore file.", ex);
         }
     }
+    
+    private void removeExpiredCerts(KeyStore store) throws RepositoryException {
+        
+        Map<String, Certificate> invalidCerts = getInvalidCertificates(store);
+        for(Entry<String,Certificate> alias : invalidCerts.entrySet()){
+            try {
+                store.deleteEntry(alias.getKey());
+            } catch (KeyStoreException ex) {
+                throw new RepositoryException("Could not delete invalid cert", ex);
+            }
+        }
+        
+    }
+    
+    /**
+     * Gets the valid certs from the given KeyStore as a map by their alias
+     * @param keyStore the KeyStore to get the certs from
+     * @return map of valid certs. Key is alias of the cert
+     * @throws RepositoryException 
+     */
+    protected Map<String, Certificate> getValidCertificates(KeyStore keyStore) throws RepositoryException {
+        return getCertificates(keyStore, true);
+    }
+    
+    /**
+     * Gets the invalid certs from the given KeyStore as a map by their alias
+     * @param keyStore the KeyStore to get the certs from
+     * @return map of invalid certs. Kkey is alias of the cert
+     * @throws RepositoryException 
+     */
+    protected Map<String, Certificate> getInvalidCertificates(KeyStore keyStore) throws RepositoryException {
+        return getCertificates(keyStore, false);
+    }
+    
+    private  Map<String, Certificate> getCertificates(KeyStore keyStore, boolean returnValidCerts) throws RepositoryException {
 
-    protected Map<String, Certificate> getValidCertificateAliases(KeyStore keyStore, String keyStorePassword) throws RepositoryException {
-
-        Map<String, Certificate> validCerts = new HashMap<>();
+        Map<String, Certificate> certs = new HashMap<>();
 
         try {
             for (String alias : Collections.list(keyStore.aliases())) {
@@ -356,9 +392,13 @@ public class KeystoreManager {
                     X509Certificate xCert = (X509Certificate) cert;
                     try {
                         xCert.checkValidity();
-                        validCerts.put(alias, cert);
+                        if(returnValidCerts) {
+                            certs.put(alias, cert);
+                        }
                     } catch (CertificateExpiredException | CertificateNotYetValidException e) {
-                        // Ignore invalid certificates
+                        if(!returnValidCerts) { // return invalid
+                            certs.put(alias, cert);
+                        }
                     }
                 }
             }
@@ -366,8 +406,10 @@ public class KeystoreManager {
             throw new RepositoryException("Keystore hasn't been initialized.", ex);
         }
 
-        return validCerts;
+        return certs;
     }
+    
+    
 
     /**
      * Copies a certificate from a keyStore to a trustStore.

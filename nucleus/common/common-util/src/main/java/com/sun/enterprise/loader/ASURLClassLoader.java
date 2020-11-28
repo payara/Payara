@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -119,6 +119,8 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         Must be 'volatile'; not all access is within 'synchronized' eg it is used in toString().
     */
     private volatile String doneSnapshot;
+
+    private boolean mustLoadInThisStackFrame;
 
     /** streams opened by this loader */
     private final List<SentinelInputStream> streams = new CopyOnWriteArrayList<>();
@@ -360,6 +362,31 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
     }
 
     /**
+     * To be used when loading classes that are absolutely necessary for tha app
+     * to work, ignoring expensive negative lookups.
+     *
+     * Since DirWatched is being used, there is a possibility of a race condition
+     * when OS doesn't deliver file creation events fast enough.
+     * This method will disable DirWatcher for lookups.
+     * @param loader instance which should be
+     * @return AutoCloseable to be used with try-with-resources
+     * so the value gets reset when stack frame is existed
+     */
+    public static AutoCloseable mustLoadFrom(ClassLoader loader) {
+        if (loader instanceof ASURLClassLoader) {
+            ASURLClassLoader self = (ASURLClassLoader)loader;
+            return self.mustLoad();
+        } else {
+            return () -> {};
+        }
+    }
+
+    private AutoCloseable mustLoad() {
+        mustLoadInThisStackFrame = true;
+        return () -> mustLoadInThisStackFrame = false;
+    }
+
+    /**
      * Create a new instance of a sibling classloader
      * @return a new instance of a class loader that has the same visibility
      *  as this class loader
@@ -469,7 +496,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
         synchronized(this) {
             for (final URLEntry u : this.urlSet) {
-                if (!u.hasItem(name)) {
+                if (!u.hasItem(name, this)) {
                     continue;
                 }
                 final URL url = findResource0(u, name);
@@ -752,7 +779,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         String entryName = name.replace('.', '/') + ".class";
 
         for (URLEntry u : this.urlSet) {
-            if (!u.hasItem(entryName)) {
+            if (!u.hasItem(entryName, this)) {
                 continue;
             }
 
@@ -955,8 +982,8 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             }
         }
 
-        boolean hasItem(String item) {
-            return presenceCheck.test(item);
+        boolean hasItem(String item, ASURLClassLoader classLoader) {
+            return classLoader.mustLoadInThisStackFrame || presenceCheck.test(item);
         }
 
           /**
@@ -1107,7 +1134,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             }
             super.finalize();
         }
-        
+
         /**
          * Returns the vector of open streams; creates it if needed.
          *

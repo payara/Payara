@@ -150,6 +150,7 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
+import com.sun.enterprise.loader.ASURLClassLoader;
 import static java.util.logging.Level.FINE;
 import static java.util.stream.Collectors.toList;
 
@@ -589,8 +590,16 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             namingManager = ejbContainerUtilImpl.getGlassfishNamingManager();
             transactionManager = ejbContainerUtilImpl.getTransactionManager();
 
-            // get Class objects for creating new EJBs
-            ejbClass = loader.loadClass(ejbDescriptor.getEjbImplClassName());
+            // URLClassLoader now uses DirWatcher because negative lookups are expensive (on Windows).
+            // However, DirWatcher, since it relies on OS events, may not actually be up to date
+            // and may not know that classes already exist (race condition)
+            // here we tell URLClassLoader that the class must exist in this loader, and
+            // ignore DirWatcher for this loader. Internally, this is stored in a boolean variable
+            // and the Auto-Closeable will clear out that value
+            try (AutoCloseable closeable = ASURLClassLoader.mustLoadFrom(loader)) {
+                // get Class objects for creating new EJBs
+                ejbClass = loader.loadClass(ejbDescriptor.getEjbImplClassName());
+            }
 
             containerStateManager = new EJBContainerStateManager(this);
             containerTransactionManager = new EJBContainerTransactionManager(this, ejbDesc);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.runtime;
 
@@ -46,9 +46,7 @@ import org.glassfish.deployment.common.Descriptor;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This base class defines common behaviour and data for all runtime descriptors.
@@ -181,7 +179,7 @@ public abstract class RuntimeDescriptor extends Descriptor {
     private List getIndexedProperty(String name) {
         Object o = getValue(name);
         if (o == null) {
-            return new ArrayList();
+            return new ArrayList<>();
         } else {
             return (List) o;
         }

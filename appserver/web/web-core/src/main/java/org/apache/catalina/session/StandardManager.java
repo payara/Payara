@@ -669,24 +669,23 @@ public class StandardManager extends ManagerBase implements Lifecycle, PropertyC
         }
 
         // Write the number of active sessions, followed by the details
-        StandardSession[] currentStandardSessions = null;
+        final StandardSession[] currentStandardSessions;
         synchronized (sessions) {
             if (log.isLoggable(Level.FINE))
                 log.log(Level.FINE, "Unloading {0} sessions", sessions.size());
             try {
                 // START SJSAS 6375689
-                for (Session actSession : findSessions()) {
+                for (final Session actSession : findSessions()) {
                     StandardSession session = (StandardSession) actSession;
                     session.passivate();
                 }
                 // END SJSAS 6375689
-                Session[] currentSessions = findSessions();
-                int size = currentSessions.length;
+                final List<Session> currentSessions = findSessions();
+                int size = currentSessions.size();
                 currentStandardSessions = new StandardSession[size];
                 oos.writeObject(size);
                 for (int i = 0; i < size; i++) {
-                    StandardSession session =
-                        (StandardSession) currentSessions[i];
+                    final StandardSession session = (StandardSession) currentSessions.get(i);
                     currentStandardSessions[i] = session;
                     /* SJSAS 6375689
                     session.passivate();
@@ -882,21 +881,19 @@ public class StandardManager extends ManagerBase implements Lifecycle, PropertyC
         }
 
         // Expire all active sessions and notify their listeners
-        Session sessions[] = findSessions();
-        if (sessions != null) {
-            for (Session session : sessions) {
-                if (!session.isValid()) {
-                    continue;
-                }
-                try {
-                    session.expire();
-                } catch (Throwable t) {
-                    // Ignore
-                } finally {
-                    // Measure against memory leaking if references to the session
-                    // object are kept in a shared field somewhere
-                    session.recycle();
-                }
+        final List<Session> sessions = findSessions();
+        for (final Session session : sessions) {
+            if (!session.isValid()) {
+                continue;
+            }
+            try {
+                session.expire();
+            } catch (Throwable t) {
+                // Ignore
+            } finally {
+                // Measure against memory leaking if references to the session
+                // object are kept in a shared field somewhere
+                session.recycle();
             }
         }
 
@@ -985,16 +982,14 @@ public class StandardManager extends ManagerBase implements Lifecycle, PropertyC
 
         long timeNow = System.currentTimeMillis();
 
-        Session[] sessions = findSessions();
-        if (sessions != null) {
-            for (Session session : sessions) {
-                StandardSession sess = (StandardSession) session;
-                if (sess.lockBackground()) {
-                    try {
-                        sess.isValid();
-                    } finally {
-                        sess.unlockBackground();
-                    }
+        final List<Session> sessions = findSessions();
+        for (final Session session : sessions) {
+            final StandardSession sess = (StandardSession) session;
+            if (sess.lockBackground()) {
+                try {
+                    sess.isValid();
+                } finally {
+                    sess.unlockBackground();
                 }
             }
         }

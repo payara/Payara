@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -49,7 +50,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.Resource;
 import javax.annotation.Resources;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,14 +68,13 @@ public class ResourcesHandler extends ResourceHandler {
      * This entry point is used both for a single @EJB and iteratively
      * from a compound @EJBs processor.
      */
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
-            ResourceContainerContext[] rcContexts)
-            throws AnnotationProcessorException {
+    @Override
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts) throws AnnotationProcessorException {
 
         Resources resourcesAn = (Resources)ainfo.getAnnotation();
         
         Resource[] resourceAns = resourcesAn.value();
-        List<HandlerProcessingResult> results = new ArrayList<HandlerProcessingResult>();
+        List<HandlerProcessingResult> results = new ArrayList<>();
         
         for(Resource res : resourceAns) {
             results.add(processResource(ainfo, rcContexts, res));

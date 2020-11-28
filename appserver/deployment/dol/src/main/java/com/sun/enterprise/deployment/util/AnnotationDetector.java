@@ -37,33 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.annotation.introspection.AnnotationScanner;
 import com.sun.enterprise.deployment.annotation.introspection.ClassFile;
 import com.sun.enterprise.deployment.annotation.introspection.ConstantPoolInfo;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.classmodel.reflect.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.File;
-import java.io.FileFilter;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Enumeration;
-import java.util.jar.JarFile;
-import java.util.jar.JarEntry;
 import java.util.Collection;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URI;
-import java.net.URL;
 
 /**
  * Abstract superclass for specific types of annotation detectors.
@@ -94,7 +88,7 @@ public class AnnotationDetector {
             return hasAnnotationInArchive(archive);
         }
 
-        List<URI> uris = new ArrayList<URI>();
+        List<URI> uris = new ArrayList<>();
         uris.add(archive.getURI());
         try {
             uris.addAll(DOLUtils.getLibraryJarURIs(null, archive));
@@ -149,18 +143,12 @@ public class AnnotationDetector {
     protected boolean containsAnnotation(InputStream is, long size) 
         throws IOException {
         boolean result = false;
-        // check if it contains top level annotations...
-        ReadableByteChannel channel = null;
-        try {
-            channel = Channels.newChannel(is);
-            if (channel!=null) {
-                result = classFile.containsAnnotation(channel, size);
-             }
-             return result;
-        } finally {
+         // check if it contains top level annotations...
+        try (ReadableByteChannel channel = Channels.newChannel(is)) {
             if (channel != null) {
-                channel.close();
+                result = classFile.containsAnnotation(channel, size);
             }
+            return result;
         }
     }
 }

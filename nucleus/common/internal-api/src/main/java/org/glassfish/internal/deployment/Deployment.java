@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
@@ -162,6 +162,13 @@ public interface Deployment {
      * and decide whether to abort undeployment
      */
     public final EventTypes<DeploymentContext> UNDEPLOYMENT_VALIDATION = EventTypes.create("Undeployment_Validation", DeploymentContext.class);
+
+    /**
+     * This event is thrown before the STOP deployment phase, notably from the disable and undeploy asadmin commands.
+     * It is used to mark the context unavailable before stopping the application and its engines, in cases where
+     * implementing the ApplicationLifecycleInterceptor interface will cause a circular dependency
+     */
+    EventTypes<ApplicationInfo> DISABLE_START = EventTypes.create("Disable_Start", ApplicationInfo.class);
 
 
     public interface DeploymentContextBuilder {

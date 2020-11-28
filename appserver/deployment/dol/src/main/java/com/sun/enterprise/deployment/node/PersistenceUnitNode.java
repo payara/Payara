@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
@@ -103,7 +104,8 @@ public class PersistenceUnitNode extends DeploymentDescriptorNode {
      * @see super#getDispatchTable()
      * @see #initDispatchTable()
      */
-    protected Map getDispatchTable() {
+    @Override
+    protected Map<String, String> getDispatchTable() {
         return dispatchTable;
     }
 
@@ -117,7 +119,7 @@ public class PersistenceUnitNode extends DeploymentDescriptorNode {
 
         // we don't do super.getDispatchTable() because we are not
         // interested in any of super classes' disptcah table entries.
-        Map<String, String> table = new HashMap<String, String>();
+        Map<String, String> table = new HashMap<>();
 
         // the values being put into the map represent method names
         // in PersistenceUnitDescriptor class.

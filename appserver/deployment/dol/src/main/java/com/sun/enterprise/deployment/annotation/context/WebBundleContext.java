@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.context;
 
@@ -98,10 +99,9 @@ public class WebBundleContext extends ResourceContainerContextImpl {
         return aeHandler;
     }
     
-    public HandlerChainContainer[] 
-            getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
+    public HandlerChainContainer[] getHandlerChainContainers(boolean serviceSideHandlerChain, Class declaringClass) {
         if(serviceSideHandlerChain) {
-            List<WebServiceEndpoint> result = new ArrayList<WebServiceEndpoint>();            
+            List<WebServiceEndpoint> result = new ArrayList<>();            
             for (WebServiceEndpoint endpoint : getDescriptor().getWebServices().getEndpoints()) {
                 if (endpoint.getWebComponentImpl().getWebComponentImplementation().equals(declaringClass.getName())) {
                     result.add(endpoint);
@@ -109,7 +109,7 @@ public class WebBundleContext extends ResourceContainerContextImpl {
             }            
             return(result.toArray(new HandlerChainContainer[result.size()]));
         } else {
-            List<ServiceReferenceDescriptor> result = new ArrayList<ServiceReferenceDescriptor>();
+            List<ServiceReferenceDescriptor> result = new ArrayList<>();
             result.addAll(getDescriptor().getServiceReferenceDescriptors());
             return(result.toArray(new HandlerChainContainer[result.size()]));
         }

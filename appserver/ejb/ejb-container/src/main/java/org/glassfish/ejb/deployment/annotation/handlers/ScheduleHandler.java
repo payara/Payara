@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
@@ -72,6 +73,7 @@ public class ScheduleHandler extends AbstractAttributeHandler {
     public ScheduleHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
 
@@ -106,11 +108,10 @@ public class ScheduleHandler extends AbstractAttributeHandler {
                     ejbDesc.addScheduledTimerDescriptor(sd);
 
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("@@@ Found Schedule on " + annMethod);
+                        logger.log(Level.FINE, "@@@ Found Schedule on {0}", annMethod);
                         
-                        logger.fine("@@@ TimerConfig : " + 
-                                ((sd.getInfo() != null && !sd.getInfo().equals(""))? sd.getInfo() : null) + 
-                                " # " + sd.getPersistent());
+                        logger.log(Level.FINE, "@@@ TimerConfig : {0} # {1}", 
+                                new Object[]{(sd.getInfo() != null && !sd.getInfo().equals(""))? sd.getInfo() : null, sd.getPersistent()});
                     }
                 }
             }
@@ -124,12 +125,14 @@ public class ScheduleHandler extends AbstractAttributeHandler {
      * require to be processed (if present) before it processes it's own 
      * annotation type.
      */
+    @Override
+    @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getTypeDependencies() {
-        
         return new Class[] {Stateless.class, Singleton.class, MessageDriven.class};
                 
     }
 
+    @Override
     protected boolean supportTypeInheritance() {
         return true;
     }

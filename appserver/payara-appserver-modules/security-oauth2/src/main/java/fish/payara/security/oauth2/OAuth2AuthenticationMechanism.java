@@ -40,13 +40,19 @@
 package fish.payara.security.oauth2;
 
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.inject.Typed;
-import javax.inject.Inject;
 
+import javax.el.ELProcessor;
+import javax.enterprise.inject.Typed;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
+import javax.inject.Inject;
 import javax.json.Json;
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.security.enterprise.AuthenticationException;
@@ -59,23 +65,14 @@ import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStoreHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Form;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import fish.payara.security.annotations.OAuth2AuthenticationDefinition;
-import fish.payara.security.oauth2.api.OAuth2State;
-import javax.el.ELProcessor;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import javax.json.JsonNumber;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.glassfish.config.support.TranslatedConfigView;
+
+import fish.payara.security.annotations.OAuth2AuthenticationDefinition;
+import fish.payara.security.oauth2.api.OAuth2State;
 
 /**
  * The AuthenticationMechanism used for authenticate users using the OAuth2 protocol
@@ -189,53 +186,49 @@ public class OAuth2AuthenticationMechanism implements HttpAuthenticationMechanis
      */
     private AuthenticationStatus validateCallback(HttpServletRequest request, HttpMessageContext context) {
         logger.log(Level.FINER, "User Authenticated, now getting authorisation token");
-        Client jaxrsClient = ClientBuilder.newClient();
 
+        Map<String, String> formData = new HashMap<>();
         //Creates a new JAX-RS form with all paramters
-        Form form = new Form()
-                .param("grant_type", "authorization_code")
-                .param("client_id", clientID)
-                .param("client_secret", new String(clientSecret))
-                .param("code", request.getParameter("code"))
-                .param("state", state.getState());
+        formData.put("grant_type", "authorization_code");
+        formData.put("client_id", clientID);
+        formData.put("client_secret", new String(clientSecret));
+        formData.put("code", request.getParameter("code"));
+        formData.put("state", state.getState());
         if (redirectURI != null && !redirectURI.isEmpty()) {
-            form.param("redirect_uri", redirectURI);
+            formData.put("redirect_uri", redirectURI);
         }
         if (scopes != null && !scopes.isEmpty()) {
-            form.param("scope", scopes);
+            formData.put("scope", scopes);
         }
         for (String extra : extraParameters) {
             String[] parts = extra.split("=");
-            form.param(parts[0], parts[1]);
+            formData.put(parts[0], parts[1]);
         }
 
-        WebTarget target = jaxrsClient.target(tokenEndpoint);
-        Response oauthResponse = target.request()
-                .accept(MediaType.APPLICATION_JSON)
-                .header("referer", request.getRequestURL().toString())
-                .post(Entity.form(form));
+        OAuth2Client client = new OAuth2Client(tokenEndpoint, request.getRequestURL().toString(), formData);
 
         // Get back the result of the REST request
-        String result = oauthResponse.readEntity(String.class);
-        JsonObject object = readJsonObject(result);
-        logger.log(Level.FINEST, "Response code from endpoint: {0}", oauthResponse.getStatus());
-        if (oauthResponse.getStatus() != 200) {
+        Response response = client.authenticate();
+        String resultString = response.readEntity(String.class);
+        JsonObject result = readJsonObject(resultString);
+        logger.log(Level.FINEST, "Response code from endpoint: {0}", response.getStatus());
+        if (response.getStatus() != 200) {
 
-            String error = object.getString("error", "Unknown Error");
-            String errorDescription = object.getString("error_description", "Unknown");
+            String error = result.getString("error", "Unknown Error");
+            String errorDescription = result.getString("error_description", "Unknown");
             logger.log(Level.WARNING, "[OAUTH-001] Error occurred authenticating user: {0} caused by {1}", new Object[]{error, errorDescription});
             return context.notifyContainerAboutLogin(CredentialValidationResult.INVALID_RESULT);
         } else {
 
-            tokenHolder.setAccessToken(object.getString("access_token"));
-            tokenHolder.setRefreshToken(object.getString("refresh_token", null));
-            tokenHolder.setScope(object.getString("scope", null));
-            JsonNumber expiresIn = object.getJsonNumber("expires_in");
+            tokenHolder.setAccessToken(result.getString("access_token"));
+            tokenHolder.setRefreshToken(result.getString("refresh_token", null));
+            tokenHolder.setScope(result.getString("scope", null));
+            JsonNumber expiresIn = result.getJsonNumber("expires_in");
             if (expiresIn != null) {
                 tokenHolder.setExpiresIn(expiresIn.longValue());
             }
 
-            RememberMeCredential credential = new RememberMeCredential(result);
+            RememberMeCredential credential = new RememberMeCredential(resultString);
             CredentialValidationResult validationResult = identityStoreHandler.validate(credential);
             return context.notifyContainerAboutLogin(validationResult);
         }

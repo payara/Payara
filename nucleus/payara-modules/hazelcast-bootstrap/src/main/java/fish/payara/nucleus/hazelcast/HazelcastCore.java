@@ -412,7 +412,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             // add an interfaces configuration
            String[] interfaceNames = configuration.getInterface().split(",");
             for (String interfaceName : interfaceNames) {
-                nConfig.getInterfaces().addInterface(interfaceName);
+                nConfig.getInterfaces().addInterface(interfaceName.trim());
             }
             nConfig.getInterfaces().setEnabled(true);
         } else {

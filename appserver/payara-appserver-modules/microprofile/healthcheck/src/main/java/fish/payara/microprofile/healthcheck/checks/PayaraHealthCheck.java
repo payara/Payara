@@ -53,9 +53,9 @@ import org.eclipse.microprofile.health.HealthCheckResponseBuilder;
 public class PayaraHealthCheck implements HealthCheck {
 
     private String name;
-    private BaseHealthCheck checker;
+    private BaseHealthCheck<?, ?> checker;
 
-    public PayaraHealthCheck(String name, BaseHealthCheck checker) {
+    public PayaraHealthCheck(String name, BaseHealthCheck<?, ?> checker) {
         this.name = name;
         this.checker = checker;
     }
@@ -63,14 +63,14 @@ public class PayaraHealthCheck implements HealthCheck {
     @Override
     public HealthCheckResponse call() {
         HealthCheckResponseBuilder responseBuilder = HealthCheckResponse.named(name);
-        boolean state = true;
+        boolean status = true;
 
         checker.doCheck();
         List<HealthCheckResultEntry> healthCheckResults = checker.getMostRecentResult().getEntries();
 
         if (healthCheckResults.isEmpty()) {
             responseBuilder.withData("Message", "No result to display");
-            return responseBuilder.state(state).build();
+            return responseBuilder.status(status).build();
         }
         
         for (HealthCheckResultEntry healthCheckResultEntry : healthCheckResults) {
@@ -81,10 +81,10 @@ public class PayaraHealthCheck implements HealthCheck {
         if (!healthStatus.trim().isEmpty()) {
             responseBuilder.withData("HealthCheckStatus", healthStatus);
             if (healthStatus.equals("CRITICAL") || healthStatus.equals("CHECK_ERROR")) {
-                state = false;
+                status = false;
             }
         }
 
-        return responseBuilder.state(state).build();
+        return responseBuilder.status(status).build();
     }
 }

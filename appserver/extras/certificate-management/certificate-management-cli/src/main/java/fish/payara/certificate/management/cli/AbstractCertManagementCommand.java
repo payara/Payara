@@ -137,7 +137,7 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
                         serverDir.getPath() + File.separator + "config" + File.separator +
                                 "domain-passwords", masterPassword());
                 keystorePassword = passwordAliasStore.get(
-                        TranslatedConfigView.getAlias(new String(keystorePassword), "ALIAS"));
+                        TranslatedConfigView.getAlias(new String(keystorePassword)));
             }
         } else {
             // Default to master
@@ -168,7 +168,7 @@ public abstract class AbstractCertManagementCommand extends LocalDomainCommand {
                         serverDir.getPath() + File.separator + "config" + File.separator +
                                 "domain-passwords", masterPassword());
                 truststorePassword = passwordAliasStore.get(
-                        TranslatedConfigView.getAlias(new String(truststorePassword), "ALIAS"));
+                        TranslatedConfigView.getAlias(new String(truststorePassword)));
             }
         } else {
             // Default to master

@@ -62,9 +62,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
-import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
-import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -85,13 +83,16 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
+import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
 import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
 import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
 import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
 import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
 import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
 import fish.payara.nucleus.microprofile.config.converters.LongConverter;
+import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
 import fish.payara.nucleus.microprofile.config.converters.StringConverter;
+import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
@@ -100,11 +101,13 @@ import fish.payara.nucleus.microprofile.config.source.EnvironmentConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
+import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
 import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
+import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSourceService;
 
 /**
  * This Service implements the Microprofile Config API and provides integration
@@ -145,6 +148,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     // a config used at the server level when there is no application associated with the thread
     private Config serverLevelConfig;
+
+    @Inject
+    private ExtensionConfigSourceService extensionService;
 
     /**
      * Logs constructor as finest - may be useful to watch sequence of operations.
@@ -252,6 +258,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
+                sources.addAll(extensionService.getExtensionSources());
                 converters.putAll(getDefaultConverters());
                 serverLevelConfig = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 result = serverLevelConfig;
@@ -264,6 +271,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources(appInfo));
+                sources.addAll(extensionService.getExtensionSources());
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
@@ -311,6 +319,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         sources.add(new PayaraServerProperties());
         sources.add(new SecretsDirConfigSource());
         sources.add(new PasswordAliasConfigSource());
+        sources.add(new JDBCConfigSource());
         if (appName != null) {
             sources.add(new ApplicationConfigSource(appName));
             sources.add(new ModuleConfigSource(appName, moduleName));

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.io.Serializable;
@@ -941,7 +941,7 @@ public abstract class EJBTimerService {
 
     /**
      * Create automatic non-persistent timers defined by the @Schedule 
-     * annotation on the EJB bean. Recover part is a no-op in thise case.
+     * annotation on the EJB bean. Recover part is a no-op in this case.
      * 
      * @return a Map of created timers, where the key is TimerPrimaryKey 
      * and the value is the Method to be executed by the container when the timer with
@@ -1552,6 +1552,17 @@ public abstract class EJBTimerService {
             }
         }
     }
+    
+    /**
+     * Sets failed times to be rescheduled rather than removed.
+     * This is called by {@link fish.payara.ejb.timer.hazelcast.HazelcastTimerStore},
+     * as when an instance is removed from a cluster it is possible that a delivery
+     * could fail in the time in which an instance is removed from the cluster and before
+     * the timer is recreated.
+     */
+    protected void enableRescheduleTimers() {
+        rescheduleFailedTimer = true;
+    }
 
     /**
      * Checks whether this timer is owned by the server instance in
@@ -1708,7 +1719,7 @@ public abstract class EJBTimerService {
     public static class TimerCache {
 
         // Maps timer id to timer state.
-        private Map timers_;
+        private Map<TimerPrimaryKey, RuntimeTimerState> timers_;
 
         // Map of timer information per container.
         //
@@ -1722,7 +1733,7 @@ public abstract class EJBTimerService {
         // in the case where the same entity bean identity has more
         // than one associated timer.
         
-        private Map containerTimers_;
+        private Map<Long, Object> containerTimers_;
 
         // Map of non-persistent timer id to timer state.
         private Map<TimerPrimaryKey, RuntimeTimerState> nonpersistentTimers_;
@@ -1730,9 +1741,9 @@ public abstract class EJBTimerService {
         public TimerCache() {
             // Create unsynchronized collections.  TimerCache will 
             // provide concurrency control.
-            timers_ = new HashMap();
-            containerTimers_ = new HashMap();
-            nonpersistentTimers_ = new HashMap<TimerPrimaryKey, RuntimeTimerState>();
+            timers_ = new HashMap<>();
+            containerTimers_ = new HashMap<>();
+            nonpersistentTimers_ = new HashMap<>();
         }
 
         public synchronized void addTimer(TimerPrimaryKey timerId, 
@@ -1756,7 +1767,7 @@ public abstract class EJBTimerService {
                     // NOTE : This list *can* contain duplicates, since
                     // the same entity bean can be the timed object for 
                     // multiple timers.
-                    entityBeans = new ArrayList();
+                    entityBeans = new ArrayList<>();
                     containerTimers_.put(containerId, entityBeans);
                 } else {
                     entityBeans = (Collection) containerInfo;
@@ -1764,7 +1775,7 @@ public abstract class EJBTimerService {
                 entityBeans.add(timerState.getTimedObjectPrimaryKey());
             } else {
                 Long timerCount = (containerInfo == null) ? 1 :
-                    ((Long) containerInfo).longValue() + 1;
+                    ((Long) containerInfo) + 1;
                 containerTimers_.put(containerId, timerCount);
             }
 
@@ -1780,8 +1791,7 @@ public abstract class EJBTimerService {
                 logger.log(Level.FINE, "Removing timer {0}", timerId);
             }
 
-            RuntimeTimerState timerState = (RuntimeTimerState) 
-                timers_.remove(timerId);
+            RuntimeTimerState timerState = timers_.remove(timerId);
 
             if( timerState == null) {
                 return;
@@ -1807,7 +1817,7 @@ public abstract class EJBTimerService {
                             (timerState.getTimedObjectPrimaryKey());
                     }
                 } else {
-                    long timerCount = ((Long) containerInfo).longValue();
+                    long timerCount = ((Long) containerInfo);
                     if( timerCount == 1 ) {
                         // Only one left -- blow away the container
                         containerTimers_.remove(containerId);
@@ -1821,12 +1831,12 @@ public abstract class EJBTimerService {
 
         public synchronized RuntimeTimerState getTimerState(TimerPrimaryKey 
                                                             timerId) {
-            return (RuntimeTimerState) timers_.get(timerId);
+            return timers_.get(timerId);
         }
 
         public synchronized RuntimeTimerState getNonPersistentTimerState(
                               TimerPrimaryKey timerId) {
-            return (RuntimeTimerState) nonpersistentTimers_.get(timerId);
+            return nonpersistentTimers_.get(timerId);
         }
 
         // True if the given entity bean has any timers and false otherwise.

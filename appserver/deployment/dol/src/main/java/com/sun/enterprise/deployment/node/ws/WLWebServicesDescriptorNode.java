@@ -92,7 +92,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     private final static List<String> systemIDs = initSystemIDs();
 
     private static List<String> initSystemIDs() {
-        List<String> systemIDs = new ArrayList<String>();
+        List<String> systemIDs = new ArrayList<>();
         systemIDs.add(SCHEMA_ID);
         
         return unmodifiableList(systemIDs);

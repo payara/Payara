@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] PAyara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -70,11 +71,11 @@ public class PersistenceUnitDescriptor extends Descriptor {
 
     private String nonJtaDataSource;
 
-    private List<String> mappingFiles = new ArrayList<String>();
+    private final List<String> mappingFiles = new ArrayList<>();
 
-    private List<String> jarFiles = new ArrayList<String>();
+    private final List<String> jarFiles = new ArrayList<>();
 
-    private List<String> classes = new ArrayList<String>();
+    private final List<String> classes = new ArrayList<>();
 
     private Properties properties = new Properties();
 
@@ -101,10 +102,12 @@ public class PersistenceUnitDescriptor extends Descriptor {
     // by PersistenceNode. So any change here has to be reflcted there as
     // well. Compiler won't catch them for you.
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String value) {
         this.name = value;
 
@@ -118,10 +121,12 @@ public class PersistenceUnitDescriptor extends Descriptor {
         this.transactionType = transactionType;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }

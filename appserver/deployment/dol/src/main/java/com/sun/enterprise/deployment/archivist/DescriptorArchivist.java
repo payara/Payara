@@ -41,8 +41,6 @@
 package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.ModuleDescriptor;
@@ -51,8 +49,6 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Collection;
 
 /**
  * This class is responsible for writing deployment descriptors 
