@@ -44,10 +44,22 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +88,22 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
             this.lastModifiedTime = lastModifiedTime;
             this.path = path;
             this.pathDepth = pathDepth;
+        }
+    
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DirProperty that = (DirProperty) o;
+            return pathDepth == that.pathDepth &&
+                property.equals(that.property) &&
+                lastModifiedTime.equals(that.lastModifiedTime) &&
+                path.equals(that.path);
+        }
+    
+        @Override
+        public int hashCode() {
+            return Objects.hash(property, lastModifiedTime, path, pathDepth);
         }
     }
     
