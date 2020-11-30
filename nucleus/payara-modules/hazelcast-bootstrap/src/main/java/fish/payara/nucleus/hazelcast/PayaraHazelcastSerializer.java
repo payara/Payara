@@ -57,9 +57,9 @@ import org.glassfish.internal.api.JavaEEContextUtil.Instance;
  * @since 4.1.2.173
  */
 public class PayaraHazelcastSerializer implements StreamSerializer<Object> {
+    private static final Logger log = Logger.getLogger(PayaraHazelcastSerializer.class.getName());
     private final JavaEEContextUtil ctxUtil;
     private final StreamSerializer<Object> delegate;
-    private static final Logger log = Logger.getLogger(PayaraHazelcastSerializer.class.getName());
 
 
     @SuppressWarnings("unchecked")
