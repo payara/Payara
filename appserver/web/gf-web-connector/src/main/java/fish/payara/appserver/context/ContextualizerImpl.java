@@ -39,8 +39,8 @@
  */
 package fish.payara.appserver.context;
 
-import fish.payara.context.ContextProducer;
-import fish.payara.context.Contextualizer;
+import org.glassfish.internal.api.ContextProducer;
+import org.glassfish.internal.api.Contextualizer;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;

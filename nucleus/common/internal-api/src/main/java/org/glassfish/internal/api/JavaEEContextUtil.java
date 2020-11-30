@@ -39,7 +39,6 @@
  */
 package org.glassfish.internal.api;
 
-import fish.payara.context.ContextProducer;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -51,7 +50,14 @@ import org.jvnet.hk2.annotations.Contract;
 public interface JavaEEContextUtil extends ContextProducer {
     @Override Instance empty();
     @Override Instance currentInvocation() throws IllegalStateException;
-    @Override Instance fromComponentId(String componentId) throws IllegalArgumentException;
+
+    /**
+     *
+     * @param componentId component id for this instance, non-null
+     *
+     * @return new instance based on componentId
+     */
+    ContextProducer.Instance fromComponentId(String componentId) throws IllegalArgumentException;
 
     interface Instance extends ContextProducer.Instance {
         @Override Context pushContext();
