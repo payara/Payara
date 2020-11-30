@@ -188,22 +188,6 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         }
     }
     
-    class DirConfigFileVisitor extends SimpleFileVisitor<Path> {
-        /**
-         * Ignore hidden directories
-         */
-        @Override
-        public FileVisitResult preVisitDirectory(java.nio.file.Path dir, BasicFileAttributes attrs) throws IOException {
-            return dir.toFile().isHidden() ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
-        }
-    
-        @Override
-        public FileVisitResult visitFile(Path path, BasicFileAttributes mainAtts) throws IOException {
-            updatePropertyFromPath(path, mainAtts);
-            return FileVisitResult.CONTINUE;
-        }
-    }
-    
     private Path directory;
     private ConcurrentHashMap<String, DirProperty> properties = new ConcurrentHashMap<>();
     private static Logger logger = Logger.getLogger(DirConfigSource.class.getName());
@@ -281,7 +265,20 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     void initializePropertiesFromPath(Path topmostDir) throws IOException {
         if (Files.exists(topmostDir) && Files.isDirectory(topmostDir) && Files.isReadable(topmostDir)) {
             // initialize properties on first run
-            Files.walkFileTree(topmostDir, new DirConfigFileVisitor());
+            Files.walkFileTree(topmostDir, new SimpleFileVisitor<Path>() {
+                // Ignore hidden directories
+                @Override
+                public FileVisitResult preVisitDirectory(java.nio.file.Path dir, BasicFileAttributes attrs) throws IOException {
+                    return dir.toFile().isHidden() ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+                }
+    
+                // Read and ingest all files and dirs present
+                @Override
+                public FileVisitResult visitFile(Path path, BasicFileAttributes mainAtts) throws IOException {
+                    updatePropertyFromPath(path, mainAtts);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
         } else {
             throw new IOException("Given directory '"+topmostDir+"' is no directory or cannot be read.");
         }
