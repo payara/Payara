@@ -57,7 +57,7 @@ public interface JavaEEContextUtil extends ContextProducer {
      *
      * @return new instance based on componentId
      */
-    ContextProducer.Instance fromComponentId(String componentId) throws IllegalArgumentException;
+    Instance fromComponentId(String componentId) throws IllegalArgumentException;
 
     interface Instance extends ContextProducer.Instance {
         @Override Context pushContext();
