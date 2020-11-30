@@ -37,11 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.jpa;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.enterprise.admin.cli.Environment;
+import com.sun.enterprise.admin.cli.ProgramOptions;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
+import com.sun.enterprise.admin.report.PlainTextActionReporter;
+import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.module.bootstrap.StartupContext;
@@ -73,6 +79,13 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 
 
 /**
@@ -204,6 +217,35 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
             @Override void visitPUD(PersistenceUnitDescriptor pud, DeploymentContext context) {
                 if(referencedPus.contains(pud)) {
                     boolean isDas = isDas();
+                    if (isDas && !isTargetDas(context.getCommandParameters(DeployCommandParameters.class))) {
+
+                        DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
+
+                        //If on DAS and not generating schema for remotes then return here
+                        String jpaScemaGeneration = pud.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
+                        String eclipselinkSchemaGeneration = pud.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
+                        if ("none".equals(jpaScemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
+                            return;
+                        } else {
+                            InternalSystemAdministrator kernelIdentity = Globals.getDefaultHabitat().getService(InternalSystemAdministrator.class);
+                            CommandRunner commandRunner = Globals.getDefaultHabitat().getService(CommandRunner.class);
+                            CommandRunner.CommandInvocation getTranslatedValueCommand = commandRunner.getCommandInvocation("_get-translated-config-value", new PlainTextActionReporter(), kernelIdentity.getSubject());
+                            ParameterMap params = new ParameterMap();
+                            params.add("propertyName", pud.getJtaDataSource());
+                            params.add("target", deployParams.target);
+                            getTranslatedValueCommand.parameters(params);
+                            getTranslatedValueCommand.execute();
+                            ActionReport report = getTranslatedValueCommand.report();
+                            if (report.hasSuccesses() && report.getSubActionsReport().size() == 1) {
+                                ActionReport subReport = report.getSubActionsReport().get(0);
+                                String value = subReport.getMessage().replace(deployParams.target + ":", "");
+                                pud.setJtaDataSource(value.trim());
+                            } else {
+                                logger.log(Level.SEVERE, report.getMessage(), report.getFailureCause());
+                            }
+
+                        }
+                    }
 
                     // While running in embedded mode, it is not possible to guarantee that entity classes are not loaded by the app classloader before transformers are installed
                     // If that happens, weaving will not take place and EclipseLink will throw up. Provide users an option to disable weaving by passing the flag.
@@ -231,6 +273,10 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                         if (dcp.isSkipDSFailure() && ExceptionUtil.isDSFailure(e)) {
                             logger.log(Level.WARNING, "Resource communication failure exception skipped while loading the pu " + pud.getName(), e);
                         } else {
+                            if (e.getCause() instanceof ConnectorRuntimeException) {
+                               logger.log(Level.SEVERE, "{0} is not a valid data source. If you are using variable replacement then"
+                                       + "ensure that is available on the DAS.");
+                            }
                             throw e;
                         }
                     }
