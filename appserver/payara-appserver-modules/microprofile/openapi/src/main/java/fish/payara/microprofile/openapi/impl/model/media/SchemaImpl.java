@@ -40,11 +40,17 @@
 package fish.payara.microprofile.openapi.impl.model.media;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
@@ -59,7 +65,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static java.util.logging.Level.WARNING;
+
 import java.util.logging.Logger;
+
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -67,16 +75,16 @@ import org.eclipse.microprofile.openapi.models.media.XML;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.ClassModel;
 import org.glassfish.hk2.classmodel.reflect.EnumModel;
-import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
 import org.glassfish.hk2.classmodel.reflect.Type;
 
+// Never serialise the 'name' property, but allow deserialization
+@JsonIgnoreProperties(value = "name", allowSetters = true)
 public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private static final Logger LOGGER = Logger.getLogger(SchemaImpl.class.getName());
 
     private Object defaultValue;
 
-    @JsonIgnore
     private String name;
     private String title;
     private BigDecimal multipleOf;
@@ -117,6 +125,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Schema items;
     @JsonIgnore
     private String implementation;
+
+    public static SchemaImpl valueOf(String content) throws JsonMappingException, JsonProcessingException {
+        return ObjectMapperFactory
+                .createJson()
+                .readValue(content, SchemaImpl.class);
+    }
 
     @SuppressWarnings("unchecked")
     public static SchemaImpl createInstance(AnnotationModel annotation, ApiContext context) {
@@ -854,29 +868,23 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 && context != null
                 && context.getApi().getComponents().getSchemas() != null) {
             String implementationClass = ((SchemaImpl) from).getImplementation();
-            
+
             if (to instanceof SchemaImpl) {
                 ((SchemaImpl) to).setImplementation(mergeProperty(((SchemaImpl)to).getImplementation(), ((SchemaImpl) from).getImplementation(), override));
             }
             
             if (!implementationClass.equals("java.lang.Void")) {
                 Type type = context.getType(implementationClass);
-                String schemaName = null;
-                if (type instanceof ExtensibleType) {
-                    ExtensibleType<?> implementationType = (ExtensibleType<?>) type;
-                    AnnotationInfo annotationInfo = context.getAnnotationInfo(implementationType);
-                    AnnotationModel annotation = annotationInfo.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
-                    // Get the schema name
-                    if (annotation != null) {
-                        schemaName = annotation.getValue("name", String.class);
-                    }
-                }
-                if (schemaName == null || schemaName.isEmpty()) {
+                String schemaName;
+                if (type != null) {
+                    schemaName = ModelUtils.getSchemaName(context, type);
+                } else {
                     schemaName = ModelUtils.getSimpleName(implementationClass);
                 }
                 // Get the schema reference, and copy it's values over to the new schema model
                 Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
                 if (copyFrom == null) {
+                    // If the class hasn't been parsed
                     SchemaType schemaType = ModelUtils.getSchemaType(implementationClass, context);
                     copyFrom = new SchemaImpl().type(schemaType);
                 }

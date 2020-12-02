@@ -64,6 +64,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -123,6 +125,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
         addSchemasToPaths();
     }
 
+    @SuppressWarnings("unchecked")
     public final void processAnnotation(ClassModel annotatedClass, ApiVisitor visitor) {
         AnnotationInfo annotations = context.getAnnotationInfo(annotatedClass);
         processAnnotation((E) annotatedClass, annotations, visitor, new OpenApiContext(context, annotatedClass));
@@ -142,7 +145,6 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void processAnnotation(E element, AnnotationInfo annotations, ApiVisitor visitor, OpenApiContext context) {
 
         for (Class<? extends Annotation> annotationClass : getAnnotationVisitor(visitor).keySet()) {
@@ -200,8 +202,11 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
             annotationVisitor.put(CookieParam.class, visitor::visitCookieParam);
             annotationVisitor.put(FormParam.class, visitor::visitFormParam);
 
-            // All other OpenAPI annotations
+            // Visit Schema objects
             annotationVisitor.put(Schema.class, visitor::visitSchema);
+            annotationVisitor.put(XmlRootElement.class, visitor::visitSchema);
+
+            // All other OpenAPI annotations
             annotationVisitor.put(Server.class, visitor::visitServer);
             annotationVisitor.put(Servers.class, visitor::visitServers);
             annotationVisitor.put(Extensions.class, visitor::visitExtensions);

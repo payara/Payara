@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.openapi.impl.config;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,15 +49,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.stream.Collectors.toSet;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.OASModelReader;
 import org.glassfish.hk2.classmodel.reflect.Type;
+
+import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 
 public class OpenApiConfiguration {
 
@@ -72,6 +75,7 @@ public class OpenApiConfiguration {
     private static final String SERVERS_KEY = "mp.openapi.servers";
     private static final String PATH_PREFIX_KEY = "mp.openapi.servers.path.";
     private static final String OPERATION_PREFIX_KEY = "mp.openapi.servers.operation.";
+    private static final String SCHEMA_DEFINITIONS_PREFIX_KEY = "mp.openapi.schema.";
 
     private Class<? extends OASModelReader> modelReader;
     private Class<? extends OASFilter> filter;
@@ -84,6 +88,7 @@ public class OpenApiConfiguration {
     private List<String> servers = new ArrayList<>();
     private Map<String, Set<String>> pathServerMap = new HashMap<>();
     private Map<String, Set<String>> operationServerMap = new HashMap<>();
+    private Map<String, SchemaImpl> schemaMap = new HashMap<>();
 
     public OpenApiConfiguration(ClassLoader applicationClassLoader) {
         // Find the correct configuration instance
@@ -105,6 +110,7 @@ public class OpenApiConfiguration {
             parseServers(propertyName, config);
             parsePathServer(propertyName, config);
             parseOperationServer(propertyName, config);
+            parseSchema(propertyName, config);
         }
     }
 
@@ -185,6 +191,13 @@ public class OpenApiConfiguration {
         return operationServerMap;
     }
 
+    /**
+     * @return a map of schema objects
+     */
+    public Map<String, SchemaImpl> getSchemaMap() {
+        return schemaMap;
+    }
+
     private void parseModelReader(String propertyName, Config config) {
         if (propertyName.equals(MODEL_READER_KEY)) {
             this.modelReader = parseClass(propertyName, config, "Model Reader", OASModelReader.class);
@@ -250,6 +263,13 @@ public class OpenApiConfiguration {
         if (propertyName.startsWith(OPERATION_PREFIX_KEY)) {
             final String operationServer = propertyName.replaceFirst(OPERATION_PREFIX_KEY, "");
             operationServerMap.put(operationServer, parseSet(propertyName, config));
+        }
+    }
+
+    private void parseSchema(String propertyName, Config config) {
+        if (propertyName.startsWith(SCHEMA_DEFINITIONS_PREFIX_KEY)) {
+            final String schemaName = propertyName.replaceFirst(SCHEMA_DEFINITIONS_PREFIX_KEY, "");
+            schemaMap.put(schemaName, config.getValue(propertyName, SchemaImpl.class));
         }
     }
 

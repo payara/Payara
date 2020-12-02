@@ -69,6 +69,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
+
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -505,10 +507,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     private void vistEnumClass(AnnotationModel schemaAnnotation, EnumType enumType, ApiContext context) {
         // Get the schema object name
-        String schemaName = (schemaAnnotation == null) ? null : schemaAnnotation.getValue("name", String.class);
-        if (schemaName == null || schemaName.isEmpty()) {
-            schemaName = enumType.getSimpleName();
-        }
+        String schemaName = ModelUtils.getSchemaName(context, enumType, schemaAnnotation);
         Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
 
         Schema newSchema = new SchemaImpl();
@@ -532,10 +531,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             ApiContext context) {
 
         // Get the schema object name
-        String schemaName = (schemaAnnotation == null) ? null : schemaAnnotation.getValue("name", String.class);
-        if (schemaName == null || schemaName.isEmpty()) {
-            schemaName = clazz.getSimpleName();
-        }
+        String schemaName = ModelUtils.getSchemaName(context, clazz, schemaAnnotation);
 
         // Add a new schema
         if (schema == null) {
@@ -544,10 +540,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             components.addSchema(schemaName, schema);
         }
 
-        // If there is an annotation
+        // If there is an annotation, parse its configuration
         if (schemaAnnotation != null) {
-            SchemaImpl.merge(SchemaImpl.createInstance(schemaAnnotation, context), schema, true, context);
+            SchemaImpl.merge(SchemaImpl.createInstance(schemaAnnotation, context), schema, false, context);
         }
+
         for (FieldModel field : clazz.getFields()) {
             final String fieldName = field.getName();
             if (!field.isTransient() && !fieldName.startsWith("this$")) {
@@ -565,32 +562,30 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // If there is an extending class, add the data
-        if (clazz.getParent() != null) {
-            ClassModel superClass = clazz.getParent();
+        final ClassModel superClass = clazz.getParent();
+        if (superClass != null && !superClass.getName().startsWith("java.")) {
 
-            // If the super class is legitimate
-            if (superClass != null) {
+            // Get the parent annotation
+            AnnotationModel parentSchemAnnotation = context.getAnnotationInfo(superClass)
+                    .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
 
-                // Get the parent schema annotation
-                AnnotationModel parentSchemAnnotation = context.getAnnotationInfo(superClass)
-                        .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
+            ParameterizedInterfaceModel parameterizedInterface = clazz.getParameterizedInterface(superClass);
+            if (parameterizedInterface == null) {
+                // Create a schema for the parent
+                final Schema parentSchema = visitSchemaClass(null, parentSchemAnnotation, superClass, Collections.emptyList(), context);
 
-                ParameterizedInterfaceModel parameterizedInterface = clazz.getParameterizedInterface(superClass);
-                if (parameterizedInterface == null) {
-                    // Create a schema for the parent
-                    visitSchemaClass(null, parentSchemAnnotation, superClass, Collections.emptyList(), context);
+                // Get the superclass schema name
+                String parentSchemaName = ModelUtils.getSchemaName(context, superClass, parentSchemAnnotation);
 
-                    // Get the superclass schema name
-                    String parentSchemaName = parentSchemAnnotation == null ? null : parentSchemAnnotation.getValue("name", String.class);
-                    if (parentSchemaName == null || parentSchemaName.isEmpty()) {
-                        parentSchemaName = superClass.getSimpleName();
-                    }
+                // Link the schemas
+                schema.addAllOf(new SchemaImpl().ref(parentSchemaName));
 
-                    // Link the schemas
-                    schema.addAllOf(new SchemaImpl().ref(parentSchemaName));
-                } else {
-                    visitSchemaClass(schema, parentSchemAnnotation, superClass, parameterizedInterface.getParametizedTypes(), context);
+                // Add all the parent schema properties
+                for (Entry<String, Schema> property : parentSchema.getProperties().entrySet()) {
+                    schema.addProperty(property.getKey(), property.getValue());
                 }
+            } else {
+                visitSchemaClass(schema, parentSchemAnnotation, superClass, parameterizedInterface.getParametizedTypes(), context);
             }
         }
         return schema;
@@ -598,10 +593,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     public void visitSchemaField(AnnotationModel schemaAnnotation, FieldModel field, ApiContext context) {
         // Get the schema object name
-        String schemaName = (schemaAnnotation == null) ? null : schemaAnnotation.getValue("name", String.class);
-        if (schemaName == null || schemaName.isEmpty()) {
-            schemaName = field.getName();
-        }
+        String schemaName = ModelUtils.getSchemaName(context, field, schemaAnnotation);
         Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
 
         // Get the parent schema object name
@@ -1184,6 +1176,19 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      */
     private boolean insertObjectReference(ApiContext context, Reference<?> referee, AnnotatedElement referenceClass, String referenceClassName) {
 
+        // Firstly check if it's been already defined (i.e. config property definition)
+        for (Entry<String, Schema> schemaEntry : context.getApi().getComponents().getSchemas().entrySet()) {
+            final Schema entryValue = schemaEntry.getValue();
+            if (entryValue instanceof SchemaImpl) {
+                final SchemaImpl entryValueImpl = (SchemaImpl) entryValue;
+                final String implementationClass = entryValueImpl.getImplementation();
+                if (implementationClass != null && implementationClass.equals(referenceClassName)) {
+                    referee.setRef(schemaEntry.getKey());
+                    return true;
+                }
+            }
+        }
+
         // If the object is a java core class
         if (referenceClassName == null || referenceClassName.startsWith("java.")) {
             return false;
@@ -1203,13 +1208,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             ExtensibleType referenceClassType = (ExtensibleType) referenceClass;
             final AnnotationModel schemaAnnotation = context.getAnnotationInfo(referenceClassType)
                     .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
-            String schemaName = null;
-            if (schemaAnnotation != null) {
-                schemaName = schemaAnnotation.getValue("name", String.class);
-            }
-            if (schemaName == null || schemaName.isEmpty()) {
-                schemaName = ModelUtils.getSimpleName(referenceClassName);
-            }
+            String schemaName = ModelUtils.getSchemaName(context, referenceClass, schemaAnnotation);
             // Set the reference name
             referee.setRef(schemaName);
 

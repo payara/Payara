@@ -48,6 +48,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -86,7 +87,9 @@ import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
+import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
 import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.ParameterizedType;
 
@@ -275,6 +278,54 @@ public final class ModelUtils {
         if (operation.equals(pathItem.getTRACE())) {
             pathItem.setTRACE(null);
         }
+    }
+
+    public static String getSchemaName(ApiContext context, AnnotatedElement type) {
+        return getSchemaName(context, type, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static String getSchemaName(ApiContext context, AnnotatedElement type, AnnotationModel annotation) {
+
+        assert type != null;
+        // context and annotation can be null
+        
+        // Get the name from the passed annotation first
+        if (annotation != null) {
+            final String name = annotation.getValue("name", String.class);
+            if (name != null && !name.isEmpty()) {
+                return name;
+            }
+        }
+
+        final Class<? extends Annotation>[] ANNOTATION_TYPES = new Class[] {
+            org.eclipse.microprofile.openapi.annotations.media.Schema.class,
+            javax.xml.bind.annotation.XmlRootElement.class
+        };
+
+        for (Class<? extends Annotation> annotationType : ANNOTATION_TYPES) {
+
+            final AnnotationModel annotationModel;
+
+            if (context != null && type instanceof ExtensibleType) {
+                ExtensibleType<?> implementationType = (ExtensibleType<?>) type;
+                AnnotationInfo annotationInfo = context.getAnnotationInfo(implementationType);
+                annotationModel = annotationInfo.getAnnotation(annotationType);
+            } else {
+                // Fetch the annotation manually
+                annotationModel = type.getAnnotation(annotationType.getName());
+            }
+
+            // Get the schema name if the annotation exists
+            if (annotationModel != null) {
+                final String name = annotationModel.getValue("name", String.class);
+                if (name != null && !name.isEmpty()) {
+                    return name;
+                }
+            }
+        }
+
+        return getSimpleName(type.getName());
     }
 
     public static SchemaType getSchemaType(ParameterizedType type, ApiContext context) {
@@ -589,6 +640,10 @@ public final class ModelUtils {
     public static <T> void merge(T from, T to, boolean override) {
         if (from != null && to != null) {
             for (Field f : to.getClass().getDeclaredFields()) {
+                // Skip static or synthetic fields
+                if (f.isSynthetic() || Modifier.isStatic(f.getModifiers())) {
+                    continue;
+                }
                 f.setAccessible(true);
                 try {
                     // Get the new and old value
