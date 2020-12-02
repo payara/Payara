@@ -254,7 +254,7 @@ public class FaultToleranceServiceImpl
 
     private MetricRegistry getBaseMetricRegistry() {
         try {
-            return metricsService.getOrAddRegistry(MetricRegistry.Type.BASE.getName());
+            return metricsService.getContext(true).getBaseRegistry();
         } catch (Exception e) {
             return null;
         }
