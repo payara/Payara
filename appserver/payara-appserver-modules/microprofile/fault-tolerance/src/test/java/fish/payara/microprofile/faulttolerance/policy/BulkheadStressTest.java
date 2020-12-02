@@ -89,7 +89,7 @@ public class BulkheadStressTest extends AbstractBulkheadTest {
         Thread[] callers = new Thread[concurrentCallers];
         for (int i = 0; i < concurrentCallers; i++) {
             waiters[i] = new CompletableFuture<>();
-            callers[i] = callBulkheadWithNewThreadAndWaitFor(waiters[i]);
+            callers[i] = callMethodWithNewThreadAndWaitFor(waiters[i]);
             if (i > maxSimultaneousWorkers) {
                 for (int j = 0; j < i / maxSimultaneousWorkers; j++) {
                     waitSome(rng.nextInt(speed*4));
@@ -124,6 +124,6 @@ public class BulkheadStressTest extends AbstractBulkheadTest {
         assertMaxConcurrentExecution(maxSimultaneousWorkers);
         // the number of threads that ever entered the method should be between the number of threads that completed waiting
         // and all threads
-        assertRange(bulkheadMethodReturned - 1, concurrentCallers, bulkheadMethodCallCount.get());
+        assertRange(bulkheadMethodReturned - 1, concurrentCallers, annotatedMethodCallCount.get());
     }
 }
