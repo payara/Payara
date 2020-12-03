@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,37 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.hazelcast.contextproxy;
 
-import java.io.Serializable;
+package fish.payara.appserver.context;
+
+import com.sun.enterprise.util.Utility;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
-import javax.cache.processor.EntryProcessor;
-import javax.cache.processor.EntryProcessorException;
-import javax.cache.processor.MutableEntry;
+import org.glassfish.internal.api.JavaEEContextUtil.Instance;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * push Java EE environment before invoking delegate
  *
  * @author lprimak
- * @param <K>
- * @param <V>
- * @param <T>
  */
-public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>, Serializable {
-    @Override
-    public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
-        try (Context ctx = ctxUtilInst.pushContext()) {
-            return delegate.process(me, os);
+public class JavaEEContextUtilTest {
+    private JavaEEContextUtil ctxUtil;
+    @Before
+    public void setUp() {
+        ctxUtil = new JavaEEContextUtilImpl();
+    }
+
+    @Test
+    public void empty() {
+        Instance empty = ctxUtil.empty();
+        assertTrue(empty.isEmpty());
+        assertTrue(empty.isLoaded());
+        assertNull(empty.getInstanceComponentId());
+        ClassLoader cl = Utility.getClassLoader();
+        try (Context ctx = empty.setApplicationClassLoader()) {
+            assertEquals("inside empty context", Utility.getClassLoader(), cl);
         }
+        assertEquals("outside empty context", Utility.getClassLoader(), cl);
     }
-
-    public EntryProcessorProxy(EntryProcessor<K, V, T> delegate, JavaEEContextUtil.Instance ctxUtilInst) {
-        this.delegate = delegate;
-        this.ctxUtilInst = ctxUtilInst;
-    }
-
-    private final EntryProcessor<K, V, T> delegate;
-    private final JavaEEContextUtil.Instance ctxUtilInst;
-    private static final long serialVersionUID = 1L;
 }

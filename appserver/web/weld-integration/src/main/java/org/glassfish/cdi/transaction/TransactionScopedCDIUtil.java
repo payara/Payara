@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -202,7 +202,7 @@ public class TransactionScopedCDIUtil {
 
         private Class<?> beanClass;
         private InjectionTarget<Object> injectionTarget = null;
-        private final Optional<JavaEEContextUtil> ctxUtil;
+        private final Optional<JavaEEContextUtil.Instance> ctxUtil;
 
         public BeanWrapper(Class<?> beanClass) {
             this.beanClass = beanClass;
@@ -219,7 +219,7 @@ public class TransactionScopedCDIUtil {
             catch(MultiException e) {
                 log(e.getMessage());
             }
-            this.ctxUtil = ctxUtil;
+            this.ctxUtil = ctxUtil.map(JavaEEContextUtil::currentInvocation);
         }
 
         private void setInjectionTarget(InjectionTarget<Object> injectionTarget) {
@@ -243,7 +243,7 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public Set<Annotation> getQualifiers() {
-            Set<Annotation> qualifiers = new HashSet<Annotation>();
+            Set<Annotation> qualifiers = new HashSet<>();
             qualifiers.add(new DefaultAnnotationLiteral());
             qualifiers.add(new AnyAnnotationLiteral());
             return qualifiers;
@@ -288,7 +288,7 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public Object create(CreationalContext<Object> ctx) {
-            try (Context eeCtx = ctxUtil.isPresent()? ctxUtil.get().pushContext() : null) {
+            try (Context eeCtx = ctxUtil.isPresent() ? ctxUtil.get().pushContext() : null) {
                 Object instance = injectionTarget.produce(ctx);
                 injectionTarget.inject(instance, ctx);
                 injectionTarget.postConstruct(instance);
@@ -298,7 +298,7 @@ public class TransactionScopedCDIUtil {
 
         @Override
         public void destroy(Object instance, CreationalContext<Object> ctx) {
-            try (Context eeCtx = ctxUtil.isPresent()? ctxUtil.get().pushContext() : null) {
+            try (Context eeCtx = ctxUtil.isPresent() ? ctxUtil.get().pushContext() : null) {
                 injectionTarget.preDestroy(instance);
                 injectionTarget.dispose(instance);
             }
