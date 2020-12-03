@@ -121,14 +121,13 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     @Override
     public void destroy() {
         getClusteredSingletonMap().delete(getClusteredSessionKey());
-        ILock oldLockValue = lock.getAndSet(null);
-        if (oldLockValue != null) {
-            oldLockValue.destroy();
-        }
 
+        // CP locks and AtomicLong's can't be destroyed, as per https://github.com/hazelcast/hazelcast/issues/17498
+        // so we just release the references to them and reset to zero where we can
+        lock.set(null);
         IAtomicLong oldCountValue = count.getAndSet(null);
         if (oldCountValue != null) {
-            oldCountValue.destroy();
+            oldCountValue.set(0);
         }
     }
 
