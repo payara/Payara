@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.container.common.spi;
+package com.flowlogix.clust.singleton.startup;
 
-import com.hazelcast.core.IAtomicLong;
-import com.hazelcast.core.ILock;
-import com.hazelcast.core.IMap;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
+import com.flowlogix.clust.singleton.api.InterceptedSingletonAPI;
+import com.flowlogix.clust.singleton.api.SingletonAPI;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.Timeout;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+import javax.inject.Inject;
+import lombok.extern.java.Log;
 
 /**
- * Common methods for Clustered Singletons
- * Both CDI and EJB implementations use these methods
  *
  * @author lprimak
  */
-public interface ClusteredSingletonLookup {
-    ILock getDistributedLock();
-    boolean isDistributedLockEnabled();
-    IMap<String, Object> getClusteredSingletonMap();
-    String getClusteredSessionKey();
-    boolean isClusteredEnabled();
-    IAtomicLong getClusteredUsageCount();
-    /**
-     * destroys usage count and distributed lock objects
-     */
-    void destroy();
-    HazelcastCore getHazelcastCore();
-
-    enum SingletonType {
-        EJB, CDI
+@Singleton
+@Startup
+@Log
+public class AppStartup {
+    @PostConstruct
+    void postConstruct() {
+        ts.createSingleActionTimer(0, new TimerConfig(null, false));
     }
+
+    @Timeout
+    void init() {
+        annotatedAPI.waitForTimer();
+        log.info("First Time ...");
+        doInit();
+        log.info("Second Time ...");
+        doInit();
+    }
+
+
+    void doInit() {
+        log.info(descAPI.getHello());
+        log.info(annotatedAPI.getHello());
+        log.info(cdiAPI.getHello());
+        cdiAPI.getHello();
+        annotatedAPI.async();
+    }
+
+
+    private @EJB(lookup = "java:module/ClusteredSingletonEjbXml1") SingletonAPI descAPI;
+    private @EJB InterceptedSingletonAPI annotatedAPI;
+    private @Inject SingletonAPI cdiAPI;
+    private @Resource TimerService ts;
 }

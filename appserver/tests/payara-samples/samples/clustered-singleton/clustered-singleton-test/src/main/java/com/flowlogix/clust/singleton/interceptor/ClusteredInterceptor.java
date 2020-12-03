@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.container.common.spi;
+package com.flowlogix.clust.singleton.interceptor;
 
-import com.hazelcast.core.IAtomicLong;
-import com.hazelcast.core.ILock;
-import com.hazelcast.core.IMap;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
+import com.flowlogix.clust.singleton.ClusteredSingletonInterceptedEJB;
+import java.io.Serializable;
+import javax.interceptor.AroundConstruct;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.AroundTimeout;
+import javax.interceptor.InvocationContext;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.extern.java.Log;
 
 /**
- * Common methods for Clustered Singletons
- * Both CDI and EJB implementations use these methods
  *
  * @author lprimak
  */
-public interface ClusteredSingletonLookup {
-    ILock getDistributedLock();
-    boolean isDistributedLockEnabled();
-    IMap<String, Object> getClusteredSingletonMap();
-    String getClusteredSessionKey();
-    boolean isClusteredEnabled();
-    IAtomicLong getClusteredUsageCount();
-    /**
-     * destroys usage count and distributed lock objects
-     */
-    void destroy();
-    HazelcastCore getHazelcastCore();
-
-    enum SingletonType {
-        EJB, CDI
+@Log
+public class ClusteredInterceptor implements Serializable {
+    @AroundConstruct
+    @SneakyThrows
+    public void aroundConstruct(InvocationContext ctx) {
+        log.info("AroundConstruct");
+        ctx.proceed();
+        ClusteredSingletonInterceptedEJB target = (ClusteredSingletonInterceptedEJB)ctx.getTarget();
+        target.setConstructorInterceptorCalled();
     }
+
+    @AroundTimeout
+    @SneakyThrows
+    public Object aroundTimeout(InvocationContext ctx) {
+        log.info("AroundTimeout");
+        @Cleanup InterceptorCommon.InterceptorData cd = ic.setData(ctx, AroundTimeoutKey, AroundTimeoutValue);
+        return ctx.proceed();
+    }
+
+    @AroundInvoke
+    @SneakyThrows
+    public Object aroundInvoke(InvocationContext ctx) {
+        log.info("AroundInvoke");
+        @Cleanup InterceptorCommon.InterceptorData cd = ic.setData(ctx, AroundInvokeKey, AroundInvokeValue);
+        return ctx.proceed();
+    }
+
+
+    public static final String AroundTimeoutKey = "AroundTimeout";
+    public static final String AroundTimeoutValue = "timeout";
+    public static final String AroundInvokeKey = "AroundInvoke";
+    public static final String AroundInvokeValue = "invoke";
+
+
+    private final InterceptorCommon ic = new InterceptorCommon();
 }

@@ -62,6 +62,7 @@
             <!-- Only run against remote -->
             <modules>
                 <module>clustered-singleton-ejb</module>
+                <module>clustered-singleton-test</module>
             </modules>
         </profile>
     </profiles>

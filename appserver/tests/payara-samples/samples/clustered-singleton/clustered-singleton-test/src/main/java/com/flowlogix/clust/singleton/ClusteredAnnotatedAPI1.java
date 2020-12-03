@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.container.common.spi;
+package com.flowlogix.clust.singleton;
 
-import com.hazelcast.core.IAtomicLong;
-import com.hazelcast.core.ILock;
-import com.hazelcast.core.IMap;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
+import com.flowlogix.clust.singleton.api.AnnotatedSingletonAPI;
+import fish.payara.cluster.Clustered;
+import javax.ejb.Singleton;
+import javax.enterprise.inject.Vetoed;
+import lombok.experimental.Delegate;
+import lombok.extern.java.Log;
 
 /**
- * Common methods for Clustered Singletons
- * Both CDI and EJB implementations use these methods
  *
  * @author lprimak
  */
-public interface ClusteredSingletonLookup {
-    ILock getDistributedLock();
-    boolean isDistributedLockEnabled();
-    IMap<String, Object> getClusteredSingletonMap();
-    String getClusteredSessionKey();
-    boolean isClusteredEnabled();
-    IAtomicLong getClusteredUsageCount();
-    /**
-     * destroys usage count and distributed lock objects
-     */
-    void destroy();
-    HazelcastCore getHazelcastCore();
-
-    enum SingletonType {
-        EJB, CDI
+@Clustered(keyName = "ClusteredAnnotated1")
+@Singleton(name = "ClusteredSingletonAnnotatedEJB1")
+@Vetoed @Log
+public class ClusteredAnnotatedAPI1 implements AnnotatedSingletonAPI {
+    @Override
+    public String getHello() {
+        return String.format("Clustered Annotated API EJB Hello (1): %s", sc);
     }
+
+    protected final @Delegate SingletonCommon sc = new SingletonCommon(this);
+
+    private static final long serialVersionUID = 1L;
 }

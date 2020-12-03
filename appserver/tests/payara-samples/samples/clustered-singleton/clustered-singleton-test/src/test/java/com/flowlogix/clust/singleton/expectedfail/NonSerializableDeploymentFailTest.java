@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.container.common.spi;
+package com.flowlogix.clust.singleton.expectedfail;
 
-import com.hazelcast.core.IAtomicLong;
-import com.hazelcast.core.ILock;
-import com.hazelcast.core.IMap;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
+import fish.payara.cluster.Clustered;
+import javax.ejb.Singleton;
+import lombok.extern.java.Log;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.ShouldThrowException;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
- * Common methods for Clustered Singletons
- * Both CDI and EJB implementations use these methods
  *
  * @author lprimak
  */
-public interface ClusteredSingletonLookup {
-    ILock getDistributedLock();
-    boolean isDistributedLockEnabled();
-    IMap<String, Object> getClusteredSingletonMap();
-    String getClusteredSessionKey();
-    boolean isClusteredEnabled();
-    IAtomicLong getClusteredUsageCount();
-    /**
-     * destroys usage count and distributed lock objects
-     */
-    void destroy();
-    HazelcastCore getHazelcastCore();
+@RunWith(Arquillian.class)
+@Log
+public class NonSerializableDeploymentFailTest {
+    @Deployment @ShouldThrowException(RuntimeException.class)
+    public static WebArchive createDeployment() {
+        log.info("Please Ignore the following SEVERE: exit_code, it's expected");
+        return ShrinkWrap.create(WebArchive.class)
+                .addPackage(NonSerializableDeploymentFailTest.class.getPackage());
+    }
 
-    enum SingletonType {
-        EJB, CDI
+    @Clustered
+    @Singleton
+    static public class NonSerializableClusteredSingleton {
+
+    }
+
+    @Test
+    public void dummy() {
     }
 }

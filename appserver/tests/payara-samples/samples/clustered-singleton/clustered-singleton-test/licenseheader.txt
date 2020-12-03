@@ -1,0 +1,43 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix}DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+${licensePrefix}
+${licensePrefix}Copyright (c) [2016-${date?date?string("yyyy")}] Payara Foundation and/or its affiliates. All rights reserved.
+${licensePrefix}
+${licensePrefix}The contents of this file are subject to the terms of either the GNU
+${licensePrefix}General Public License Version 2 only ("GPL") or the Common Development
+${licensePrefix}and Distribution License("CDDL") (collectively, the "License").  You
+${licensePrefix}may not use this file except in compliance with the License.  You can
+${licensePrefix}obtain a copy of the License at
+${licensePrefix}https://github.com/payara/Payara/blob/master/LICENSE.txt
+${licensePrefix}See the License for the specific
+${licensePrefix}language governing permissions and limitations under the License.
+${licensePrefix}
+${licensePrefix}When distributing the software, include this License Header Notice in each
+${licensePrefix}file and include the License file at glassfish/legal/LICENSE.txt.
+${licensePrefix}
+${licensePrefix}GPL Classpath Exception:
+${licensePrefix}The Payara Foundation designates this particular file as subject to the "Classpath"
+${licensePrefix}exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+${licensePrefix}file that accompanied this code.
+${licensePrefix}
+${licensePrefix}Modifications:
+${licensePrefix}If applicable, add the following below the License Header, with the fields
+${licensePrefix}enclosed by brackets [] replaced by your own identifying information:
+${licensePrefix}"Portions Copyright [year] [name of copyright owner]"
+${licensePrefix}
+${licensePrefix}Contributor(s):
+${licensePrefix}If you wish your version of this file to be governed by only the CDDL or
+${licensePrefix}only the GPL Version 2, indicate your decision by adding "[Contributor]
+${licensePrefix}elects to include this software in this distribution under the [CDDL or GPL
+${licensePrefix}Version 2] license."  If you don't indicate a single choice of license, a
+${licensePrefix}recipient has the option to distribute your version of this file under
+${licensePrefix}either the CDDL, the GPL Version 2 or to extend the choice of license to
+${licensePrefix}its licensees as provided above.  However, if you add GPL Version 2 code
+${licensePrefix}and therefore, elected the GPL Version 2 license, then the option applies
+${licensePrefix}only if the new code is made subject to such option by the copyright
+${licensePrefix}holder.
+<#if licenseLast??>
+${licenseLast}
+</#if>
