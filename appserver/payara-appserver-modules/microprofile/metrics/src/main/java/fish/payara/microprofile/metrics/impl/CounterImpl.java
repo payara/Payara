@@ -117,6 +117,6 @@ public class CounterImpl implements Counter {
 
     @Override
     public String toString() {
-        return "Counter["+getCount()+"]";
+        return "Counter[" + getCount() + "]";
     }
 }

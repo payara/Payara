@@ -39,12 +39,21 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
+import static java.util.Arrays.asList;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.LongSupplier;
 
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
-import org.eclipse.microprofile.metrics.Gauge;
+import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.Tag;
+
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
+import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 /**
  * Encodes the specifics of the FT metrics names using default methods while decoupling rest of the implementation from
@@ -67,17 +76,98 @@ public interface FaultToleranceMetrics {
     Tag[] NO_TAGS = new Tag[0];
 
     /**
-     * @return a fresh instance bound to the current invocation if the implementation has mutable state or the same
-     *         instance if not
+     * @return a instance on the basis of this {@link FaultToleranceMetrics} that is properly adopted to the provided
+     *         context and policy. This can be the same instance if no change is required or a new one if a change of
+     *         internal state is required.
+     *
+     *         As part of binding to the context and policy this method also should register all metrics that make sense
+     *         for the provided policy in case this has not been done already.
      */
-    default FaultToleranceMetrics bind(@SuppressWarnings("unused") boolean fallbackDefined) {
+    default FaultToleranceMetrics bindTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
+        if (policy.isMetricsEnabled && !isRegistered()) {
+            String[] fallbackTag = policy.isFallbackPresent()
+                    ? new String[] {"fallback", "applied", "notApplied"}
+                    : new String[] {"fallback", "notDefined"};
+            register(MetricType.COUNTER, "ft.invocations.total", new String[][]{
+                {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
+            if (policy.isRetryPresent()) {
+                List<String> retryResultTag = new ArrayList<>(asList("retryResult", "valueReturned", "exceptionNotRetryable"));
+                if (policy.retry.isMaxRetriesSet()) {
+                    retryResultTag.add("maxRetriesReached");
+                }
+                if (policy.retry.isMaxDurationSet()) {
+                    retryResultTag.add("maxDurationReached");
+                }
+                register(MetricType.COUNTER, "ft.retry.calls.total", new String[][]{
+                    {"retried", "true", "false"}, retryResultTag.toArray(new String[0])});
+                register(MetricType.COUNTER, "ft.retry.retries.total");
+            }
+            if (policy.isTimeoutPresent()) {
+                register(MetricType.COUNTER, "ft.timeout.calls.total", new String[][] {
+                    {"timedOut", "true", "false"}});
+                register(MetricType.HISTOGRAM, "ft.timeout.executionDuration");
+            }
+            if (policy.isCircuitBreakerPresent()) {
+                register(MetricType.COUNTER, "ft.circuitbreaker.calls.total", new String[][] {
+                    {"circuitBreakerResult", "success", "failure", "circuitBreakerOpen"}});
+                CircuitBreakerState state = context.getState(policy.circuitBreaker.requestVolumeThreshold);
+                register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosOpen, "state", "open");
+                register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosHalfOpen, "state", "halfOpen");
+                register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosClosed, "state", "closed");
+                register(MetricType.COUNTER, "ft.circuitbreaker.opened.total");
+            }
+            if (policy.isBulkheadPresent()) {
+                register(MetricType.COUNTER, "ft.bulkhead.calls.total", new String[][] {
+                    {"bulkheadResult", "accepted", "rejected"}});
+                BlockingQueue<Thread> running = context.getConcurrentExecutions(policy.bulkhead.value);
+                register("ft.bulkhead.executionsRunning", null, running::size);
+                register(MetricType.HISTOGRAM, "ft.bulkhead.runningDuration");
+                if (policy.isAsynchronous()) {
+                    AtomicInteger queuingOrRunning = context.getQueuingOrRunningPopulation();
+                    register("ft.bulkhead.executionsWaiting", null, () -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
+                    register(MetricType.HISTOGRAM, "ft.bulkhead.waitingDuration");
+                }
+            }
+        }
         return this;
     }
-
 
     /*
      * Generic (to be implemented/overridden)
      */
+
+    /**
+     * @return true if all metrics for the method represented by this {@link FaultToleranceMetrics} instance has been
+     *         registered.
+     */
+    default boolean isRegistered() {
+        return true;
+    }
+
+    /**
+     * Registration:
+     *
+     * Registers a metric for each permutation of the tags. Infers unit from type.
+     *
+     * @param type {@link MetricType#COUNTER} (assumes no unit) or {@link MetricType#HISTOGRAM} (assumes {@link MetricUnits#NANOSECONDS})
+     * @param metric name of the metric(s)
+     * @param tags tag name and possible values
+     */
+    default void register(MetricType type, String metric, String[]... tags) {
+        //NOOP
+    }
+
+    /**
+     * Gauge registration:
+     *
+     * @param metric name of the gauge metric
+     * @param unit unit of the gauge metric (null is {@link MetricUnits#NONE})
+     * @param gauge a supplier function for the gauge
+     * @param tag tag name and value if the gauge uses a tag
+     */
+    default void register(String metric, String unit, LongSupplier gauge, String... tag) {
+        //NOOP
+    }
 
     /**
      * Counters:
@@ -106,22 +196,6 @@ public interface FaultToleranceMetrics {
 
     default void addToHistogram(String metric, long nanos) {
         addToHistogram(metric, nanos, NO_TAGS);
-    }
-
-    /**
-     * Gauge:
-     *
-     * @param metric full name of the metric with{@code %s} used as placeholder for the method name
-     * @param gauge the gauge function to use in case the gauge is not already linked
-     * @param unit one of the units defined in {@link MetricUnits}
-     * @param tags all tags to add for the metric except the {@code method} tag (which is added later internally)
-     */
-    default void linkGauge(String metric, LongSupplier gauge, String unit, Tag... tags) {
-        //NOOP (used when metrics are disabled)
-    }
-
-    default void linkGauge(String metric, LongSupplier gauge, String unit) {
-        linkGauge(metric, gauge, unit, NO_TAGS);
     }
 
     /*
@@ -296,37 +370,6 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.circuitbreaker.opened.total");
     }
 
-    /**
-     * Amount of time in nanoseconds the circuit breaker has spent in state open.
-     *
-     * Although this metric is a {@link Gauge}, its value increases monotonically.
-     */
-    default void linkCircuitbreakerOpenTotal(LongSupplier gauge) {
-        linkGauge("ft.circuitbreaker.state.total", gauge, MetricUnits.NANOSECONDS,
-                new Tag("state", "open"));
-    }
-
-    /**
-     * Amount of time in nanoseconds the circuit breaker has spent in state half-open.
-     *
-     * Although this metric is a {@link Gauge}, its value increases monotonically.
-     */
-    default void linkCircuitbreakerHalfOpenTotal(LongSupplier gauge) {
-        linkGauge("ft.circuitbreaker.state.total", gauge, MetricUnits.NANOSECONDS,
-                new Tag("state", "halfOpen"));
-    }
-
-    /**
-     * Amount of time in nanoseconds the circuit breaker has spent in state closed.
-     *
-     * Although this metric is a {@link Gauge}, its value increases monotonically.
-     */
-    default void linkCircuitbreakerClosedTotal(LongSupplier gauge) {
-        linkGauge("ft.circuitbreaker.state.total", gauge, MetricUnits.NANOSECONDS,
-                new Tag("state", "closed"));
-    }
-
-
     /*
      * @Bulkhead
      */
@@ -351,26 +394,6 @@ public interface FaultToleranceMetrics {
     default void incrementBulkheadCallsRejectedTotal() {
         incrementCounter("ft.bulkhead.calls.total",
                 new Tag("bulkheadResult", "rejected"));
-    }
-
-    /**
-     * Number of currently running executions
-     *
-     * @param gauge underlying access wrapped as {@link Gauge}
-     */
-    default void linkBulkheadConcurrentExecutions(LongSupplier gauge) {
-        linkGauge("ft.bulkhead.executionsRunning", gauge, MetricUnits.NONE);
-    }
-
-    /**
-     * Number of executions currently waiting in the queue
-     *
-     * Only added if the method is also annotated with {@link Asynchronous}
-     *
-     * @param gauge underlying access wrapped as {@link Gauge}
-     */
-    default void linkBulkheadWaitingQueuePopulation(LongSupplier gauge) {
-        linkGauge("ft.bulkhead.executionsWaiting", gauge, MetricUnits.NONE);
     }
 
     /**

@@ -41,7 +41,12 @@ package fish.payara.nucleus.healthcheck.cpool;
 
 import com.hazelcast.util.function.BiConsumer;
 import com.hazelcast.util.function.Consumer;
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.PoolStatus;
@@ -113,7 +118,7 @@ public class ConnectionPoolHealthCheck
     @Override
     protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
-        consumeAllJdbcResources(createConsumer((info, usedPercentage) -> 
+        consumeAllJdbcResources(createConsumer((info, usedPercentage) ->
             result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
                     info.getName() + " Usage (%): " + new DecimalFormat("#.00").format(usedPercentage)))
         ));
@@ -129,7 +134,7 @@ public class ConnectionPoolHealthCheck
     @MonitoringData(ns = "health", intervalSeconds = 8)
     public void collect(MonitoringDataCollector collector) {
         if (options != null && options.isEnabled()) {
-            consumeAllJdbcResources(createConsumer((info, usedPercentage) -> 
+            consumeAllJdbcResources(createConsumer((info, usedPercentage) ->
                 collector.group(info.getName()).collect("PoolUsage", usedPercentage.longValue())
             ));
         }

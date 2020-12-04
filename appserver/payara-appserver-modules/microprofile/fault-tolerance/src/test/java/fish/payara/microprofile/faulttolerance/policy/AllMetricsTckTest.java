@@ -39,11 +39,15 @@
  */
 package fish.payara.microprofile.faulttolerance.policy;
 
+import static fish.payara.microprofile.faulttolerance.test.TestUtils.parseMetricID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 import java.time.temporal.ChronoUnit;
+import java.util.SortedMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import javax.interceptor.InvocationContext;
@@ -55,10 +59,6 @@ import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.metrics.*;
-import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Metric;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.junit.Test;
 
@@ -68,6 +68,7 @@ import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodConte
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 import fish.payara.microprofile.faulttolerance.service.MethodFaultToleranceMetrics;
+import fish.payara.microprofile.faulttolerance.test.TestUtils;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 
 /**
@@ -130,9 +131,13 @@ public class AllMetricsTckTest extends AbstractRecordingTest {
         }
     }
 
+    /**
+     * Scenario is inspired by the TCK test of same name but more strict
+     */
     @Test
     public void testMetricUnits() throws Exception  {
         Future<?> res = (Future<?>) callMethodDirectly(null);
+        assertNoExceptionsThrown();
         assertEquals("Success", res.get());
 
         for (FTMetrics metric : FTMetrics.values()) {
@@ -142,6 +147,7 @@ public class AllMetricsTckTest extends AbstractRecordingTest {
             assertEquals("Incorrect type for metric " + name, MetricType.from(metric.type), metadata.getTypeRaw());
             assertEquals("Incorrect unit for metric" + name, metric.unit, metadata.getUnit());
         }
+
     }
 
     @Retry(maxRetries = 5)
@@ -154,7 +160,74 @@ public class AllMetricsTckTest extends AbstractRecordingTest {
         return bodyWaitThenReturnSuccess(waiter);
     }
 
+    /**
+     * Scenario does not exist in TCK, it makes a more strict assertions about the metrics expected after 1 successful call
+     */
+    @Test
+    public void testMetricRegistrations() throws Exception {
+        Future<?> res = (Future<?>) callMethodDirectly(null);
+        assertNoExceptionsThrown();
+        assertEquals("Success", res.get());
+
+        String methodName = "fish.payara.microprofile.faulttolerance.policy.AllMetricsTckTest.testMetricRegistrations_Method";
+        SortedMap<MetricID, Metric> metrics = registry.getMetrics(
+                (metricID, metric) -> methodName.equals(metricID.getTags().get("method")));
+        assertEquals(29, metrics.size());
+        // which should be the 29 metrics below...
+        assertHasMetric(Counter.class, "ft.invocations.total[method=%s,result=valueReturned,fallback=applied]", methodName);
+        assertHasMetric(Counter.class, "ft.invocations.total[method=%s,result=valueReturned,fallback=notApplied]", methodName);
+        assertHasMetric(Counter.class, "ft.invocations.total[method=%s,result=exceptionThrown,fallback=applied]", methodName);
+        assertHasMetric(Counter.class, "ft.invocations.total[method=%s,result=exceptionThrown,fallback=notApplied]", methodName);
+        assertHasMetric(Counter.class, "ft.retry.calls.total[method=%s,retried=true,retryResult=valueReturned]", methodName);
+        assertHasMetric(Counter.class, "ft.retry.calls.total[method=%s,retried=true,retryResult=exceptionNotRetryable]", methodName);
+        assertHasMetric(Counter.class, "ft.retry.calls.total[method=%s,retried=true,retryResult=maxRetriesReached]", methodName);
+        assertHasMetric(Counter.class, "ft.retry.calls.total[method=%s,retried=true,retryResult=maxDurationReached]", methodName);
+        assertHasMetric(Counter.class, "ft.retry.calls.total[method=%s,retried=false,retryResult=valueReturned]", methodName);
+        assertHasMetric(Counter.class, "ft.retry.calls.total[method=%s,retried=false,retryResult=exceptionNotRetryable]", methodName);
+        assertHasMetric(Counter.class, "ft.retry.calls.total[method=%s,retried=false,retryResult=maxRetriesReached]", methodName);
+        assertHasMetric(Counter.class, "ft.retry.calls.total[method=%s,retried=false,retryResult=maxDurationReached]", methodName);
+        assertHasMetric(Counter.class, "ft.retry.retries.total[method=%s]", methodName);
+        assertHasMetric(Counter.class, "ft.timeout.calls.total[method=%s,timedOut=true]", methodName);
+        assertHasMetric(Counter.class, "ft.timeout.calls.total[method=%s,timedOut=false]", methodName);
+        assertHasMetric(Histogram.class, "ft.timeout.executionDuration[method=%s]", methodName);
+        assertHasMetric(Counter.class, "ft.circuitbreaker.calls.total[method=%s,circuitBreakerResult=success]", methodName);
+        assertHasMetric(Counter.class, "ft.circuitbreaker.calls.total[method=%s,circuitBreakerResult=failure]", methodName);
+        assertHasMetric(Counter.class, "ft.circuitbreaker.calls.total[method=%s,circuitBreakerResult=circuitBreakerOpen]", methodName);
+        assertHasMetric(Gauge.class, "ft.circuitbreaker.state.total[method=%s,state=open]", methodName);
+        assertHasMetric(Gauge.class, "ft.circuitbreaker.state.total[method=%s,state=closed]", methodName);
+        assertHasMetric(Gauge.class, "ft.circuitbreaker.state.total[method=%s,state=halfOpen]", methodName);
+        assertHasMetric(Counter.class, "ft.circuitbreaker.opened.total[method=%s]", methodName);
+        assertHasMetric(Counter.class, "ft.bulkhead.calls.total[method=%s,bulkheadResult=accepted]", methodName);
+        assertHasMetric(Counter.class, "ft.bulkhead.calls.total[method=%s,bulkheadResult=rejected]", methodName);
+        assertHasMetric(Gauge.class, "ft.bulkhead.executionsRunning[method=%s]", methodName);
+        assertHasMetric(Gauge.class, "ft.bulkhead.executionsWaiting[method=%s]", methodName);
+        assertHasMetric(Histogram.class, "ft.bulkhead.runningDuration[method=%s]", methodName);
+        assertHasMetric(Histogram.class, "ft.bulkhead.waitingDuration[method=%s]", methodName);
+    }
+
+    @Retry(maxRetries = 5)
+    @Bulkhead(3)
+    @Timeout(value = 1, unit = ChronoUnit.MINUTES)
+    @CircuitBreaker(failureRatio = 1.0, requestVolumeThreshold = 20)
+    @Fallback(fallbackMethod = "doFallback")
+    @Asynchronous
+    public Future<String> testMetricRegistrations_Method(CompletableFuture<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccess(waiter);
+    }
+
     public Future<String> doFallback(CompletableFuture<Void> waiter) throws Exception {
         return bodyWaitThenReturnSuccess(waiter);
+    }
+
+    private void assertHasMetric(Class<? extends Metric> type, String metric, Object...args) {
+        if (args.length > 0) {
+            metric = String.format(metric, args);
+        }
+        MetricID metricID = parseMetricID(metric);
+        Metric m = registry.getMetric(metricID);
+        assertNotNull("Metric does not exist: " + metric, m);
+        Metadata metadata = registry.getMetadata(metricID.getName());
+        assertNotNull(metadata);
+        assertEquals(MetricType.from(type), metadata.getTypeRaw());
     }
 }

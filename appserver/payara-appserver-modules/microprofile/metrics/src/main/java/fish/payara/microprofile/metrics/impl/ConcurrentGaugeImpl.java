@@ -104,4 +104,8 @@ public class ConcurrentGaugeImpl extends CompleteMinuteMinMaxTracker implements 
         return min == null ? 0L : min.longValue();
     }
 
+    @Override
+    public String toString() {
+        return "ConcurrentGauge[" + getCount() + "]";
+    }
 }

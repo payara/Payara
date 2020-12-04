@@ -242,6 +242,13 @@ abstract class AbstractRecordingTest {
         return c;
     }
 
+    void assertNoExceptionsThrown() {
+        if (!executionErrorsByThread.isEmpty()) {
+            assertEquals(executionErrorsByThread.toString(),
+                    0, executionErrorsByThread.size());
+        }
+    }
+
     void assertExecutionResult(String expected, Thread... forThreads) {
         waitUntilThreadResultIsPresent(forThreads);
         for (Thread t : forThreads) {

@@ -263,7 +263,7 @@ public final class FaultTolerancePolicy implements Serializable {
             return context.proceed();
         }
         FaultToleranceMethodContext ftmContext = ftmContextSupplier.get();
-        FaultToleranceMetrics metrics = ftmContext.getMetrics(isMetricsEnabled).bind(isFallbackPresent());
+        FaultToleranceMetrics metrics = ftmContext.getMetrics(isMetricsEnabled).bindTo(ftmContext, this);
         try {
             Object res = processAsynchronousStage(ftmContext, metrics);
             if (isAsyncExceptionThrown(res)) {
@@ -428,11 +428,6 @@ public final class FaultTolerancePolicy implements Serializable {
         }
         logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
         CircuitBreakerState state = invocation.context.getState(circuitBreaker.requestVolumeThreshold);
-        if (isMetricsEnabled) {
-            invocation.metrics.linkCircuitbreakerOpenTotal(state::nanosOpen);
-            invocation.metrics.linkCircuitbreakerHalfOpenTotal(state::nanosHalfOpen);
-            invocation.metrics.linkCircuitbreakerClosedTotal(state::nanosClosed);
-        }
         Object resultValue = null;
         switch (state.getCircuitState()) {
         default:
@@ -558,9 +553,6 @@ public final class FaultTolerancePolicy implements Serializable {
         final int runCapacity = bulkhead.value;
         final int queueCapacity = async ? bulkhead.waitingTaskQueue : 0;
         AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
-        if (isMetricsEnabled && async) {
-            invocation.metrics.linkBulkheadWaitingQueuePopulation(() -> Math.max(0, queuingOrRunning.get() - runCapacity));
-        }
         while (true) {
             final int currentlyIn = queuingOrRunning.get();
             if (currentlyIn >= runCapacity + queueCapacity) {
@@ -578,7 +570,6 @@ public final class FaultTolerancePolicy implements Serializable {
                     BlockingQueue<Thread> running = invocation.context.getConcurrentExecutions(runCapacity);
                     if (isMetricsEnabled) {
                         invocation.metrics.incrementBulkheadCallsAcceptedTotal();
-                        invocation.metrics.linkBulkheadConcurrentExecutions(running::size);
                     }
                     logger.log(Level.FINER, "Attempting to enter bulkhead execution.");
                     long waitingSince = System.nanoTime();
