@@ -44,21 +44,17 @@ package org.jvnet.hk2.config;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Dom.Child;
 
-import jakarta.validation.constraints.NotNull;
 import javax.xml.stream.XMLInputFactory;
 import static javax.xml.stream.XMLStreamConstants.*;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.stream.StreamSource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -166,25 +162,26 @@ public class ConfigParser {
         ConfigModel model = document.getModelByElementName(in.getLocalName());
         if(model==null) {
             String localName = in.getLocalName();
-            Logger.getAnonymousLogger().severe("Ignoring unrecognized element "+in.getLocalName() + " at " + in.getLocation());
+            Logger.getLogger(ConfigParser.class.getName()).log(Level.SEVERE, "Ignoring unrecognized element {0} at {1}",
+                    new Object[]{in.getLocalName(), in.getLocation()});
             // flush the sub element content from the parser
             int depth=1;
             while(depth>0) {
                 final int tag = in.next();
                 if (tag==START_ELEMENT && in.getLocalName().equals(localName)) {
-                    if (Logger.getAnonymousLogger().isLoggable(Level.FINE)) {
-                        Logger.getAnonymousLogger().fine("Found child of same type "+localName+" ignoring too");
+                    if (Logger.getLogger(ConfigParser.class.getName()).isLoggable(Level.FINE)) {
+                        Logger.getLogger(ConfigParser.class.getName()).fine("Found child of same type "+localName+" ignoring too");
                     }
                     depth++;
                 }
                 if (tag==END_ELEMENT && in.getLocalName().equals(localName)) {
-                    if (Logger.getAnonymousLogger().isLoggable(Level.FINE)) {
-                        Logger.getAnonymousLogger().fine("closing element type " + localName);
+                    if (Logger.getLogger(ConfigParser.class.getName()).isLoggable(Level.FINE)) {
+                        Logger.getLogger(ConfigParser.class.getName()).fine("closing element type " + localName);
                     }
                     depth--;
                 }
-                if (Logger.getAnonymousLogger().isLoggable(Level.FINE) && tag==START_ELEMENT) {
-                    Logger.getAnonymousLogger().fine("Jumping over " + in.getLocalName());
+                if (Logger.getLogger(ConfigParser.class.getName()).isLoggable(Level.FINE) && tag==START_ELEMENT) {
+                     Logger.getLogger(ConfigParser.class.getName()).fine("Jumping over " + in.getLocalName());
                 }
             }
             return null;
