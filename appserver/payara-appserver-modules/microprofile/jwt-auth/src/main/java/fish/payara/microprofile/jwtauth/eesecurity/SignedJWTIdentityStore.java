@@ -46,13 +46,12 @@ import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
+import java.io.*;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
@@ -65,6 +64,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.enterprise.inject.spi.DeploymentException;
 import javax.json.Json;
@@ -80,6 +80,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 
 import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
 import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
+import org.glassfish.grizzly.http.util.ContentType;
 
 /**
  * Identity store capable of asserting that a signed JWT token is valid
@@ -217,10 +218,14 @@ public class SignedJWTIdentityStore implements IdentityStore {
             return Optional.empty();
         }
 
-        byte[] byteBuffer = new byte[16384];
-        try (InputStream inputStream = publicKeyURL.openStream()) {
-            String key = new String(byteBuffer, 0, inputStream.read(byteBuffer));
-            return createPublicKey(key, keyID);
+        URLConnection urlConnection = publicKeyURL.openConnection();
+        ContentType contentType = ContentType.newContentType(urlConnection.getContentType());
+
+        Charset charset = contentType.getCharacterEncoding() != null ? Charset.forName(contentType.getCharacterEncoding()) : Charset.defaultCharset();
+        try (InputStream inputStream = urlConnection.getInputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))){
+            String keyContents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+            return createPublicKey(keyContents, keyID);
         }
     }
 
