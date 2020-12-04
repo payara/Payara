@@ -219,7 +219,8 @@ public class TransactionScopedCDIUtil {
             catch(MultiException e) {
                 log(e.getMessage());
             }
-            this.ctxUtil = ctxUtil.map(JavaEEContextUtil::currentInvocation);
+            this.ctxUtil = ctxUtil.map(ctx -> ctx.getInvocationComponentId() != null ?
+                    ctx.currentInvocation() : ctx.empty());
         }
 
         private void setInjectionTarget(InjectionTarget<Object> injectionTarget) {
