@@ -37,25 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.web;
 
-import org.apache.catalina.HttpRequest;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Realm;
-import org.apache.catalina.Request;
-import org.apache.catalina.Response;
-import org.apache.catalina.Session;
-import org.apache.catalina.SessionEvent;
+import org.apache.catalina.*;
 import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
+
 import org.glassfish.web.LogFacade;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -110,12 +108,12 @@ public class GlassFishSingleSignOn extends SingleSignOn
     /**
      * Number of cache hits
      */
-    private final AtomicInteger hitCount = new AtomicInteger(0);
+    private AtomicInteger hitCount = new AtomicInteger(0);
 
     /**
      * Number of cache misses
      */
-    private final AtomicInteger missCount = new AtomicInteger(0);
+    private AtomicInteger missCount = new AtomicInteger(0);
 
     // ------------------------------------------------------------- Properties
 
@@ -248,12 +246,18 @@ public class GlassFishSingleSignOn extends SingleSignOn
      *
      * @param request The servlet request we are processing
      * @param response The servlet response we are creating
+     * @param context The valve context used to invoke the next valve in the current processing pipeline
      *
-     * @return the valve flag
+     * @exception IOException if an input/output error occurs
+     * @exception ServletException if a servlet error occurs
+     */
+    /**
+     * IASRI 4665318 public void invoke(Request request, Response response, ValveContext context) throws IOException,
+     * ServletException {
      */
     // START OF IASRI 4665318
     @Override
-    public int invoke(final Request request, final Response response) {
+    public int invoke(Request request, Response response) throws IOException, ServletException {
         // END OF IASRI 4665318
 
         // If this is not an HTTP request and response, just pass them on
@@ -288,8 +292,7 @@ public class GlassFishSingleSignOn extends SingleSignOn
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, LogFacade.CHECKING_SSO_COOKIE);
         }
-
-        final Cookie[] cookies = hreq.getCookies();
+        Cookie cookies[] = hreq.getCookies();
         if (cookies == null) {
             return INVOKE_NEXT;
         }
@@ -430,10 +433,13 @@ public class GlassFishSingleSignOn extends SingleSignOn
         }
         // S1AS8 6155481 END
         // Look up and remove the corresponding SingleSignOnEntry
-        final SingleSignOnEntry sso = this.cache.remove(ssoId);
-        if (sso == null) {
-            return;
+        SingleSignOnEntry sso = null;
+        synchronized (cache) {
+            sso = (SingleSignOnEntry) cache.remove(ssoId);
         }
+
+        if (sso == null)
+            return;
 
         // Expire any associated sessions
         sso.expireSessions();
@@ -458,24 +464,30 @@ public class GlassFishSingleSignOn extends SingleSignOn
         long tooOld = System.currentTimeMillis() - ssoMaxInactive * 1000L;
         // S1AS8 6155481 START
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, LogFacade.SSO_EXPIRATION_STARTED, this.cache.size());
+            logger.log(Level.FINE, LogFacade.SSO_EXPIRATION_STARTED, cache.size());
         }
         // S1AS8 6155481 END
-        final ArrayList<String> removals = new ArrayList<>(this.cache.size() / 2);
+        ArrayList<String> removals = new ArrayList<String>(cache.size() / 2);
 
         // build list of removal targets
 
         // Note that only those SSO entries which are NOT associated with
-        // any session are eligible for removal here.
+        // any session are elegible for removal here.
         // Currently no session association ever happens so this covers all
         // SSO entries. However, this should be addressed separately.
 
         try {
-            this.cache.forEach((ssoId, sso) -> {
-                if (sso.isEmpty() && sso.getLastAccessTime() < tooOld) {
-                    removals.add(ssoId);
+            synchronized (cache) {
+
+                Iterator<String> it = cache.keySet().iterator();
+                while (it.hasNext()) {
+                    String key = it.next();
+                    SingleSignOnEntry sso = (SingleSignOnEntry) cache.get(key);
+                    if (sso.isEmpty() && sso.getLastAccessTime() < tooOld) {
+                        removals.add(key);
+                    }
                 }
-            });
+            }
 
             int removalCount = removals.size();
             // S1AS8 6155481 START
@@ -483,13 +495,13 @@ public class GlassFishSingleSignOn extends SingleSignOn
                 logger.log(Level.FINE, LogFacade.SSO_CACHE_EXPIRE, removalCount);
             }
             // S1AS8 6155481 END
-            // deregister any eligible sso entries
-            for (final String removal : removals) {
+            // deregister any elegible sso entries
+            for (int i = 0; i < removalCount; i++) {
                 // S1AS8 6155481 START
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, LogFacade.SSO_EXPRIRATION_REMOVING_ENTRY, removal);
+                    logger.log(Level.FINE, LogFacade.SSO_EXPRIRATION_REMOVING_ENTRY, removals.get(i));
                 }
-                deregister(removal);
+                deregister(removals.get(i));
             }
             // S1AS8 6155481 END
         } catch (Throwable e) { // don't let thread die
@@ -596,7 +608,7 @@ public class GlassFishSingleSignOn extends SingleSignOn
      * @return Number of sessions participating in SSO
      */
     public int getActiveSessionCount() {
-        return this.cache.size();
+        return cache.size();
     }
 
     /**

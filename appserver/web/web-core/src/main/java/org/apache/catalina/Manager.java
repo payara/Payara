@@ -65,7 +65,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.*;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.List;
 //END OF 6364900
 
 /**
@@ -95,20 +94,20 @@ public interface Manager {
     /**
      * Return the Container with which this Manager is associated.
      */
-    Container getContainer();
+    public Container getContainer();
 
     /**
      * Set the Container with which this Manager is associated.
      *
      * @param container The newly associated Container
      */
-    void setContainer(Container container);
+    public void setContainer(Container container);
 
     /**
      * Return the distributable flag for the sessions supported by
      * this Manager.
      */
-    boolean getDistributable();
+    public boolean getDistributable();
 
     /**
      * Set the distributable flag for the sessions supported by this
@@ -117,30 +116,30 @@ public interface Manager {
      *
      * @param distributable The new distributable flag
      */
-    void setDistributable(boolean distributable);
+    public void setDistributable(boolean distributable);
 
     /**
      * Return descriptive information about this Manager implementation and
      * the corresponding version number, in the format
      * <code>&lt;description&gt;/&lt;version&gt;</code>.
      */
-    String getInfo();
+    public String getInfo();
 
     /**
      * Same as getMaxInactiveIntervalSeconds
      */
-    int getMaxInactiveInterval();
+    public int getMaxInactiveInterval();
 
     /**
      * Return the default maximum inactive interval (in seconds)
      * for Sessions created by this Manager.
      */
-    int getMaxInactiveIntervalSeconds();
+    public int getMaxInactiveIntervalSeconds();
 
     /**
      * Same as setMaxInactiveIntervalSeconds
      */
-    void setMaxInactiveInterval(int interval);
+    public void setMaxInactiveInterval(int interval);
 
     /**
      * Set the default maximum inactive interval (in seconds)
@@ -148,7 +147,7 @@ public interface Manager {
      *
      * @param interval The new default value
      */
-    void setMaxInactiveIntervalSeconds(int interval);
+    public void setMaxInactiveIntervalSeconds(int interval);
 
     /**
      * Gets the session id length (in bytes) of Sessions created by
@@ -156,7 +155,7 @@ public interface Manager {
      *
      * @return The session id length
      */
-    int getSessionIdLength();
+    public int getSessionIdLength();
 
     /**
      * Sets the session id length (in bytes) for Sessions created by this
@@ -164,31 +163,31 @@ public interface Manager {
      *
      * @param length The session id length
      */
-    void setSessionIdLength(int length);
+    public void setSessionIdLength(int length);
 
     /** 
      * Same as getSessionCount
      */
-    int getSessionCounter();
+    public int getSessionCounter();
 
     /** 
      * Returns the total number of sessions created by this manager.
      *
      * @return Total number of sessions created by this manager.
      */
-    int getSessionCount();
+    public int getSessionCount();
 
     /** 
      * Same as setSessionCount
      */
-    void setSessionCounter(int sessionCounter);
+    public void setSessionCounter(int sessionCounter);
 
     /** 
      * Sets the total number of sessions created by this manager.
      *
      * @param sessionCounter Total number of sessions created by this manager.
      */
-    void setSessionCount(int sessionCounter);
+    public void setSessionCount(int sessionCounter);
 
     /**
      * Gets the maximum number of sessions that have been active at the same
@@ -197,7 +196,7 @@ public interface Manager {
      * @return Maximum number of sessions that have been active at the same
      * time
      */
-    int getMaxActive();
+    public int getMaxActive();
 
     /**
      * (Re)sets the maximum number of sessions that have been active at the
@@ -206,28 +205,28 @@ public interface Manager {
      * @param maxActive Maximum number of sessions that have been active at
      * the same time.
      */
-    void setMaxActive(int maxActive);
+    public void setMaxActive(int maxActive);
 
     /** 
      * Gets the number of currently active sessions.
      *
      * @return Number of currently active sessions
      */
-    int getActiveSessions();
+    public int getActiveSessions();
 
     /**
      * Gets the number of sessions that have expired.
      *
      * @return Number of sessions that have expired
      */
-    int getExpiredSessions();
+    public int getExpiredSessions();
 
     /**
      * Sets the number of sessions that have expired.
      *
      * @param expiredSessions Number of sessions that have expired
      */
-    void setExpiredSessions(int expiredSessions);
+    public void setExpiredSessions(int expiredSessions);
 
     /**
      * Gets the number of sessions that were not created because the maximum
@@ -235,7 +234,7 @@ public interface Manager {
      *
      * @return Number of rejected sessions
      */
-    int getRejectedSessions();
+    public int getRejectedSessions();
 
     /**
      * Sets the number of sessions that were not created because the maximum
@@ -243,12 +242,12 @@ public interface Manager {
      *
      * @param rejectedSessions Number of rejected sessions
      */
-    void setRejectedSessions(int rejectedSessions);
+    public void setRejectedSessions(int rejectedSessions);
 
     /**
      * Same as getSessionMaxAliveTimeSeconds
      */
-    int getSessionMaxAliveTime();
+    public int getSessionMaxAliveTime();
 
     /**
      * Gets the longest time (in seconds) that an expired session had been
@@ -257,12 +256,12 @@ public interface Manager {
      * @return Longest time (in seconds) that an expired session had been
      * alive.
      */
-    int getSessionMaxAliveTimeSeconds();
+    public int getSessionMaxAliveTimeSeconds();
 
     /**
      * Same as setSessionMaxAliveTimeSeconds
      */
-    void setSessionMaxAliveTime(int sessionMaxAliveTime);
+    public void setSessionMaxAliveTime(int sessionMaxAliveTime);
 
     /**
      * Sets the longest time (in seconds) that an expired session had been
@@ -271,12 +270,12 @@ public interface Manager {
      * @param sessionMaxAliveTime Longest time (in seconds) that an expired
      * session had been alive.
      */
-    void setSessionMaxAliveTimeSeconds(int sessionMaxAliveTime);
+    public void setSessionMaxAliveTimeSeconds(int sessionMaxAliveTime);
 
     /**
      * Same as getSessionAverageAliveTimeSeconds
      */
-    int getSessionAverageAliveTime();
+    public int getSessionAverageAliveTime();
 
     /**
      * Gets the average time (in seconds) that expired sessions had been
@@ -285,12 +284,12 @@ public interface Manager {
      * @return Average time (in seconds) that expired sessions had been
      * alive.
      */
-    int getSessionAverageAliveTimeSeconds();
+    public int getSessionAverageAliveTimeSeconds();
 
     /**
      * Same as setSessionAverageAliveTimeSeconds
      */
-    void setSessionAverageAliveTime(int sessionAverageAliveTime);
+    public void setSessionAverageAliveTime(int sessionAverageAliveTime);
 
     /**
      * Sets the average time (in seconds) that expired sessions had been
@@ -299,7 +298,7 @@ public interface Manager {
      * @param sessionAverageAliveTime Average time (in seconds) that expired
      * sessions had been alive.
      */
-    void setSessionAverageAliveTimeSeconds(int sessionAverageAliveTime);
+    public void setSessionAverageAliveTimeSeconds(int sessionAverageAliveTime);
 
 
     // --------------------------------------------------------- Public Methods
@@ -309,14 +308,14 @@ public interface Manager {
      *
      * @param session Session to be added
      */
-    void add(Session session);
+    public void add(Session session);
 
     /**
      * Add a property change listener to this component.
      *
      * @param listener The listener to add
      */
-    void addPropertyChangeListener(PropertyChangeListener listener);
+    public void addPropertyChangeListener(PropertyChangeListener listener);
 
     /**
      * Change the session ID of the current session to a new randomly generated
@@ -324,14 +323,14 @@ public interface Manager {
      * 
      * @param session   The session to change the session ID for
      */
-    void changeSessionId(Session session);
+    public void changeSessionId(Session session);
 
     /**
      * Get a session from the recycled ones or create a new empty one.
      * The PersistentManager manager does not need to create session data
      * because it reads it from the Store.
-     */
-    Session createEmptySession();
+     */                                                                         
+    public Session createEmptySession();
 
     /**
      * Construct and return a new session object, based on the default
@@ -343,7 +342,7 @@ public interface Manager {
      * @exception IllegalStateException if a new session cannot be
      *  instantiated for any reason
      */
-    Session createSession();
+    public Session createSession();
 
     // START S1AS8PE 4817642
     /**
@@ -359,7 +358,7 @@ public interface Manager {
      * @return the new session, or <code>null</code> if a session with the
      * requested id already exists
      */
-    Session createSession(String sessionId);
+    public Session createSession(String sessionId);
     // END S1AS8PE 4817642
 
     /**
@@ -373,7 +372,7 @@ public interface Manager {
      * @exception IOException if an input/output error occurs while
      *  processing this request
      */
-    Session findSession(String id) throws IOException;
+    public Session findSession(String id) throws IOException;
 
     /**
      * Finds and returns the session with the given id that also satisfies
@@ -393,7 +392,7 @@ public interface Manager {
      *
      * @exception IOException if an IO error occurred
      */
-    Session findSession(String id, String version) throws IOException;
+    public Session findSession(String id, String version) throws IOException;
 
     /**
      * Gets the session with the given id from the given request.
@@ -403,7 +402,7 @@ public interface Manager {
      * @return the requested session, or null if not found
      * @throws IOException
      */
-    Session findSession(String id, HttpServletRequest request) throws IOException;
+    public Session findSession(String id, HttpServletRequest request) throws IOException;
 
     /**
      * Returns true if this session manager supports session versioning, false
@@ -412,14 +411,13 @@ public interface Manager {
      * @return true if this session manager supports session versioning, false
      * otherwise.
      */
-    boolean isSessionVersioningSupported();
+    public boolean isSessionVersioningSupported();
 
     /**
      * Return the set of active Sessions associated with this Manager.
-     * If this Manager has no active Sessions, a empty list is returned.
-     * @return associated sessions
+     * If this Manager has no active Sessions, a zero-length array is returned.
      */
-    List<Session> findSessions();
+    public Session[] findSessions();
 
     /**
      * Load any currently active sessions that were previously unloaded
@@ -430,21 +428,21 @@ public interface Manager {
      *  found during the reload
      * @exception IOException if an input/output error occurs
      */
-    void load() throws ClassNotFoundException, IOException;
+    public void load() throws ClassNotFoundException, IOException;
 
     /**
      * Remove this Session from the active Sessions for this Manager.
      *
      * @param session Session to be removed
      */
-    void remove(Session session);
+    public void remove(Session session);
 
     /**
      * Remove a property change listener from this component.
      *
      * @param listener The listener to remove
      */
-    void removePropertyChangeListener(PropertyChangeListener listener);
+    public void removePropertyChangeListener(PropertyChangeListener listener);
 
     /**
      * Save any currently active sessions in the appropriate persistence
@@ -453,21 +451,21 @@ public interface Manager {
      *
      * @exception IOException if an input/output error occurs
      */
-    void unload() throws IOException;
+    public void unload() throws IOException;
 
     //PWC Extension
     //START OF RIMOD# 4820359 -- Support for iWS6.0 session managers
     /**
      * Perform any operations when the request is finished.
      */
-    void update(HttpSession session) throws Exception;
+    public void update(HttpSession session) throws Exception;
     //END OF RIMOD# 4820359
 
     //START OF 6364900
-    boolean lockSession(ServletRequest request) throws ServletException;
-    void unlockSession(ServletRequest request);
-    void preRequestDispatcherProcess(ServletRequest request, ServletResponse response);
-    void postRequestDispatcherProcess(ServletRequest request, ServletResponse response);
+    public boolean lockSession(ServletRequest request) throws ServletException;
+    public void unlockSession(ServletRequest request);
+    public void preRequestDispatcherProcess(ServletRequest request, ServletResponse response);
+    public void postRequestDispatcherProcess(ServletRequest request, ServletResponse response);
     //END OF 6364900
 
     /**
@@ -477,7 +475,7 @@ public interface Manager {
      * @return the cookie representation of the given session
      * @throws IOException
      */
-    Cookie toCookie(Session session) throws IOException;
+    public Cookie toCookie(Session session) throws IOException;
 
     /**
      * Checks the given session attribute name and value to make sure they comply with any
@@ -491,5 +489,5 @@ public interface Manager {
      * @throws IllegalArgumentException if the given session attribute name or value violate
      * any restrictions set forth by this session manager
      */
-    void checkSessionAttribute(String name, Object value) throws IllegalArgumentException;
+    public void checkSessionAttribute(String name, Object value) throws IllegalArgumentException;
 }

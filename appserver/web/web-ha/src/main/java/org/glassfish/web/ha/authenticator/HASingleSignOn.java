@@ -42,15 +42,17 @@ package org.glassfish.web.ha.authenticator;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.security.web.GlassFishSingleSignOn;
+
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.web.ha.LogFacade;
+import org.glassfish.web.ha.session.management.HAStoreBase;
 
-import java.security.Principal;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.security.Principal;
 
 /**
  * @author Shing Wai Chan
@@ -70,7 +72,7 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
     }
 
     @Override
-    protected void deregister(final String ssoId) {
+    protected void deregister(String ssoId) {
 
         //S1AS8 6155481 START
         if (logger.isLoggable(Level.FINE)) {
@@ -78,16 +80,19 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
         }
         //S1AS8 6155481 END
         // Look up and remove the corresponding SingleSignOnEntry
-        final SingleSignOnEntry sso = this.cache.remove(ssoId);
-        if (sso == null) {
-            return;
+        SingleSignOnEntry sso = null;
+        synchronized (cache) {
+            sso = cache.remove(ssoId);
         }
+
+        if (sso == null)
+            return;
 
         // Expire any associated sessions
         sso.expireSessions();
 
         try {
-            this.ssoEntryMetadataBackingStore.remove(ssoId);
+            ssoEntryMetadataBackingStore.remove(ssoId);
         } catch(BackingStoreException ex) {
             throw new IllegalStateException(ex);
         }
@@ -105,23 +110,18 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
                     + "' with auth type '" + authType + "' and realmName '" + realmName + "'");
         }
 
-        final HASingleSignOnEntry ssoEntry = new HASingleSignOnEntry(
-            ssoId,
-            principal,
-            authType,
-            username,
-            realmName,
-            // revisit maxIdleTime 1000000, version 0
-            System.currentTimeMillis(),
-            1000000,
-            0,
-            ioUtils
-        );
-
-        this.cache.put(ssoId, ssoEntry);
+        HASingleSignOnEntry ssoEntry = null;
+        synchronized (cache) {
+            ssoEntry = new HASingleSignOnEntry(ssoId, principal, authType,
+                    username, realmName,
+                    // revisit maxIdleTime 1000000, version 0
+                    System.currentTimeMillis(), 1000000, 0,
+                    ioUtils);
+            cache.put(ssoId, ssoEntry);
+        }
 
         try {
-            this.ssoEntryMetadataBackingStore.save(ssoId, ssoEntry.getMetadata(), true);
+            ssoEntryMetadataBackingStore.save(ssoId, ssoEntry.getMetadata(), true);
         } catch(BackingStoreException ex) {
             throw new IllegalStateException(ex);
         }
@@ -151,21 +151,23 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
     }
 
     @Override
-    protected SingleSignOnEntry lookup(final String ssoId, final long ssoVersion) {
+    protected SingleSignOnEntry lookup(String ssoId, long ssoVersion) {
         SingleSignOnEntry ssoEntry = super.lookup(ssoId, ssoVersion);
         if (ssoEntry != null && ssoVersion > ssoEntry.getVersion()) {
             // clean the old cache
-            this.cache.remove(ssoId);
+            synchronized(cache) {
+                cache.remove(ssoId);
+            }
             ssoEntry = null;
         }
-
         if (ssoEntry == null) {
             // load from ha store
             try {
-                final HASingleSignOnEntryMetadata mdata = this.ssoEntryMetadataBackingStore.load(ssoId, null);
+                HASingleSignOnEntryMetadata mdata =
+                    ssoEntryMetadataBackingStore.load(ssoId, null);
                 if (mdata != null) {
                     ssoEntry = new HASingleSignOnEntry(getContainer(), mdata, ioUtils);
-                    this.cache.put(ssoId, ssoEntry);
+                    cache.put(ssoId, ssoEntry);
                 }
             } catch(BackingStoreException ex) {
                 throw new IllegalStateException(ex);

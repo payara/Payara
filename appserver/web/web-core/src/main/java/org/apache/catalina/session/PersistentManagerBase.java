@@ -594,14 +594,21 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
      * Hercules: modified method
      */
     protected void processExpires() {
+
         if (!started)
             return;
 
-        final List<Session> sessions = findSessions();
-        for (final Session session1 : sessions) {
+        Session sessions[] = findSessions();
+
+        for (Session session1 : sessions) {
             StandardSession session = (StandardSession) session1;
+            /* START CR 6363689
+            if (!session.isValid()) {
+            */
+            // START CR 6363689
             if(!session.getIsValid() || session.hasExpired()) {
-                if(session.lockBackground()) {
+                // END CR 6363689
+                if(session.lockBackground()) { 
                     try {
                         session.expire();
                     } finally {
@@ -944,21 +951,20 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         if (store == null)
             return;
 
-        final List<Session> sessions = findSessions();
-        if (sessions.isEmpty())
+        Session sessions[] = findSessions();
+        int n = sessions.length;
+        if (n == 0)
             return;
 
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, LogFacade.SAVING_PERSISTED_SESSION, sessions.size());
+            log.log(Level.FINE, LogFacade.SAVING_PERSISTED_SESSION, String.valueOf(n));
         }
-
-        for (final Session session : sessions) {
+        for (int i = 0; i < n; i++)
             try {
-                swapOut(session);
+                swapOut(sessions[i]);
             } catch (IOException e) {
                 // This is logged in writeSession()
             }
-        }
 
     }
 
@@ -1255,12 +1261,11 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
             unload();
         } else {
             // Expire all active sessions
-            final List<Session> sessions = findSessions();
-            for (final Session session1 : sessions) {
-                final StandardSession session = (StandardSession) session1;
-                if (!session.isValid()) {
+            Session sessions[] = findSessions();
+            for (Session session1 : sessions) {
+                StandardSession session = (StandardSession) session1;
+                if (!session.isValid())
                     continue;
-                }
                 session.expire();
             }
         }
@@ -1315,15 +1320,15 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         if (!isStarted() || maxIdleSwap < 0)
             return;
 
-        final List<Session> sessions = findSessions();
-        final long timeNow = System.currentTimeMillis();
+        Session sessions[] = findSessions();
+        long timeNow = System.currentTimeMillis();
 
         // Swap out all sessions idle longer than maxIdleSwap
         // FIXME: What's preventing us from mangling a session during
         // a request?
         if (maxIdleSwap >= 0) {
-            for (final Session session1 : sessions) {
-                final StandardSession session = (StandardSession) session1;
+            for (Session session1 : sessions) {
+                StandardSession session = (StandardSession) session1;
                 if (!session.isValid())
                     continue;
                 int timeIdle = // Truncate, do not round up
@@ -1349,26 +1354,27 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
      * Hercules: modified method
      */
     protected void processMaxActiveSwaps() {
+        
         if (!isStarted() || getMaxActiveSessions() < 0)
             return;
 
-        final List<Session> sessions = findSessions();
+        Session sessions[] = findSessions();
 
         // FIXME: Smarter algorithm (LRU)
-        if (sessions.size() <= getMaxActiveSessions())
+        if (getMaxActiveSessions() >= sessions.length)
             return;
 
         if(log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, LogFacade.TOO_MANY_ACTIVE_SESSION, sessions.size());
+            log.log(Level.FINE, LogFacade.TOO_MANY_ACTIVE_SESSION, sessions.length);
         }
-        int toswap = sessions.size() - getMaxActiveSessions();
+        int toswap = sessions.length - getMaxActiveSessions();
         long timeNow = System.currentTimeMillis();
 
-        for (int i = 0; i < sessions.size() && toswap > 0; i++) {
+        for (int i = 0; i < sessions.length && toswap > 0; i++) {
             int timeIdle = // Truncate, do not round up
-                (int) ((timeNow - sessions.get(i).getLastAccessedTime()) / 1000L);
+                (int) ((timeNow - sessions[i].getLastAccessedTime()) / 1000L);
             if (timeIdle > minIdleSwap) {
-                StandardSession session = (StandardSession) sessions.get(i);
+                StandardSession session = (StandardSession) sessions[i];
                 //skip the session if it cannot be locked
                 if(session.lockBackground()) {
                     if(log.isLoggable(Level.FINE)) {
@@ -1376,8 +1382,12 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
                     }
                     try {
                         swapOut(session);
-                    } catch (Exception e) {
+                    } catch (java.util.ConcurrentModificationException e1) {
+                        // This is logged in writeSession()                           
+                    } catch (IOException e) {
                         // This is logged in writeSession()
+                    } catch (Exception e) {
+                        // This is logged in writeSession()                        
                     } finally {
                         session.unlockBackground();
                     }
@@ -1398,8 +1408,8 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         if (!isStarted() || maxIdleBackup < 0)
             return;
 
-        final List<Session> sessions = findSessions();
-        final long timeNow = System.currentTimeMillis();
+        Session sessions[] = findSessions();
+        long timeNow = System.currentTimeMillis();
 
         // Back up all sessions idle longer than maxIdleBackup
         if (maxIdleBackup >= 0) {
@@ -1417,8 +1427,12 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
                         }
                         try {
                             writeSession(session);
-                        } catch (Exception e) {
+                        } catch (java.util.ConcurrentModificationException e1) {
+                            // This is logged in writeSession()                            
+                        } catch (IOException e) {
                             // This is logged in writeSession()
+                        } catch (Exception e) {
+                            // This is logged in writeSession()                                
                         } finally {
                             session.unlockBackground();
                         }
@@ -1428,4 +1442,11 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         }
 
     }
+    
+    public String getMonitorAttributeValues() {
+        //FIXME if desired for monitoring 'file'
+        return "";
+    }    
+
+
 }

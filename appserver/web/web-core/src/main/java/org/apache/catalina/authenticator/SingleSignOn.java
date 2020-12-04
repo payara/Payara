@@ -57,11 +57,12 @@
  */
 // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.authenticator;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.text.MessageFormat;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 import javax.servlet.ServletException;
@@ -118,7 +119,7 @@ public class SingleSignOn extends ValveBase
      * The cache of SingleSignOnEntry instances for authenticated Principals, keyed by the cookie value that is used to
      * select them.
      */
-    protected final ConcurrentMap<String, SingleSignOnEntry> cache = new ConcurrentHashMap<>();
+    protected Map<String, SingleSignOnEntry> cache = new HashMap<String, SingleSignOnEntry>();
 
     /**
      * The lifecycle event support for this component.
@@ -433,7 +434,9 @@ public class SingleSignOn extends ValveBase
 
         // see if we are the last session, if so blow away ssoId
         if (sso.isEmpty()) {
-            this.cache.remove(ssoId);
+            synchronized (cache) {
+                cache.remove(ssoId);
+            }
         }
     }
 
@@ -446,21 +449,17 @@ public class SingleSignOn extends ValveBase
      * @param username Username used to authenticate this user
      * @param password Password used to authenticate this user
      */
-    protected void register(
-        final String ssoId,
-        final Principal principal,
-        final String authType,
-        final String username,
-        final char[] password,
-        final String realmName
-    ) {
+    protected void register(String ssoId, Principal principal, String authType, String username, char[] password, String realmName) {
+
         if (debug >= 1) {
             String msg = MessageFormat.format(rb.getString(LogFacade.REGISTERING_SSO_INFO),
                     new Object[] { ssoId, principal.getName(), authType });
             log(msg);
         }
+        synchronized (cache) {
+            cache.put(ssoId, new SingleSignOnEntry(ssoId, 0L, principal, authType, username, realmName));
+        }
 
-        this.cache.put(ssoId, new SingleSignOnEntry(ssoId, 0L, principal, authType, username, realmName));
     }
 
     // ------------------------------------------------------ Protected Methods
@@ -502,8 +501,12 @@ public class SingleSignOn extends ValveBase
      *
      * @param ssoId Single sign on identifier to look up
      */
-    protected SingleSignOnEntry lookup(final String ssoId) {
-        return this.cache.get(ssoId);
+    protected SingleSignOnEntry lookup(String ssoId) {
+
+        synchronized (cache) {
+            return cache.get(ssoId);
+        }
+
     }
 
     /**
