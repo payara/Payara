@@ -52,6 +52,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
@@ -219,9 +220,22 @@ public class SignedJWTIdentityStore implements IdentityStore {
         }
 
         URLConnection urlConnection = publicKeyURL.openConnection();
+        Charset charset = Charset.defaultCharset();
         ContentType contentType = ContentType.newContentType(urlConnection.getContentType());
-
-        Charset charset = contentType.getCharacterEncoding() != null ? Charset.forName(contentType.getCharacterEncoding()) : Charset.defaultCharset();
+        if(contentType != null) {
+            String charEncoding = contentType.getCharacterEncoding();
+            if(charEncoding != null) {
+                try {
+                    if (!Charset.isSupported(charEncoding)) {
+                        LOGGER.warning("Charset " + charEncoding + " for remote public key not supported, using default charset instead");
+                    } else {
+                        charset = Charset.forName(contentType.getCharacterEncoding());
+                    }
+                }catch (IllegalCharsetNameException ex){
+                    LOGGER.severe("Charset " + ex.getCharsetName() + " for remote public key not support, Cause: " + ex.getMessage());
+                }
+            }
+        }
         try (InputStream inputStream = urlConnection.getInputStream();
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))){
             String keyContents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
