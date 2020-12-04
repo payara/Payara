@@ -41,6 +41,7 @@ package fish.payara.samples.clustered.singleton;
 
 import fish.payara.samples.clustered.singleton.api.AnnotatedSingletonAPI;
 import fish.payara.cluster.Clustered;
+import java.util.UUID;
 import java.util.logging.Logger;
 import javax.ejb.Singleton;
 import javax.enterprise.inject.Vetoed;
@@ -68,7 +69,7 @@ public class ClusteredAnnotatedAPI1 implements AnnotatedSingletonAPI {
     }
 
     @Override
-    public java.util.UUID getState() {
+    public UUID getState() {
         return this.sc.getState();
     }
 }
