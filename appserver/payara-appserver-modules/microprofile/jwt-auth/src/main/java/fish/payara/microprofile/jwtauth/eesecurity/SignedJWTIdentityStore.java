@@ -219,9 +219,16 @@ public class SignedJWTIdentityStore implements IdentityStore {
         }
 
         URLConnection urlConnection = publicKeyURL.openConnection();
+        Charset charset = Charset.defaultCharset();
         ContentType contentType = ContentType.newContentType(urlConnection.getContentType());
-
-        Charset charset = contentType.getCharacterEncoding() != null ? Charset.forName(contentType.getCharacterEncoding()) : Charset.defaultCharset();
+        if(contentType != null) {
+            String charEncoding = contentType.getCharacterEncoding();
+            if(!Charset.isSupported(charEncoding)){
+                LOGGER.severe("Charset " + charEncoding + " for remote public key not supported, using default charset instead");
+            }else {
+                charset = contentType.getCharacterEncoding() != null ? Charset.forName(contentType.getCharacterEncoding()) : Charset.defaultCharset();
+            }
+        }
         try (InputStream inputStream = urlConnection.getInputStream();
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))){
             String keyContents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
