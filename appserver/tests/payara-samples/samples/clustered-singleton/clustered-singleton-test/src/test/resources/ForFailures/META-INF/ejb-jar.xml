@@ -6,8 +6,8 @@
     <enterprise-beans>
         <session>
             <ejb-name>NonSerializableSingleton</ejb-name>
-            <business-remote>com.flowlogix.clust.singleton.api.SingletonAPI</business-remote>
-            <ejb-class>com.flowlogix.clust.singleton.expectedfail.NonSerializableSingleton</ejb-class>
+            <business-remote>fish.payara.samples.clustered.singleton.api.SingletonAPI</business-remote>
+            <ejb-class>fish.payara.samples.clustered.singleton.expectedfail.NonSerializableSingleton</ejb-class>
             <session-type>Singleton</session-type>
             <transaction-type>Container</transaction-type>
         </session>

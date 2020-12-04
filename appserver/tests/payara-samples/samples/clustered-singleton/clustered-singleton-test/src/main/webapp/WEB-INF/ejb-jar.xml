@@ -6,15 +6,15 @@
     <enterprise-beans>
         <session>
             <ejb-name>ClusteredSingletonEjbXml1</ejb-name>
-            <business-local>com.flowlogix.clust.singleton.api.SingletonAPI</business-local>
-            <ejb-class>com.flowlogix.clust.singleton.ClusteredSingletonEjbXml</ejb-class>
+            <business-local>fish.payara.samples.clustered.singleton.api.SingletonAPI</business-local>
+            <ejb-class>fish.payara.samples.clustered.singleton.ClusteredSingletonEjbXml</ejb-class>
             <session-type>Singleton</session-type>
             <transaction-type>Container</transaction-type>
         </session>
         <session>
             <ejb-name>ClusteredSingletonEjbXml2</ejb-name>
-            <business-local>com.flowlogix.clust.singleton.api.SingletonAPI</business-local>
-            <ejb-class>com.flowlogix.clust.singleton.ClusteredSingletonEjbXml2</ejb-class>
+            <business-local>fish.payara.samples.clustered.singleton.api.SingletonAPI</business-local>
+            <ejb-class>fish.payara.samples.clustered.singleton.ClusteredSingletonEjbXml2</ejb-class>
             <session-type>Singleton</session-type>
             <transaction-type>Container</transaction-type>
         </session>
