@@ -56,6 +56,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -471,11 +472,17 @@ public class GlassFishSingleSignOn extends SingleSignOn
         // SSO entries. However, this should be addressed separately.
 
         try {
-            this.cache.forEach((ssoId, sso) -> {
-                if (sso.isEmpty() && sso.getLastAccessTime() < tooOld) {
-                    removals.add(ssoId);
+            synchronized (cache) {
+
+                Iterator<String> it = cache.keySet().iterator();
+                while (it.hasNext()) {
+                    String key = it.next();
+                    SingleSignOnEntry sso = (SingleSignOnEntry) cache.get(key);
+                    if (sso.isEmpty() && sso.getLastAccessTime() < tooOld) {
+                        removals.add(key);
+                    }
                 }
-            });
+            }
 
             int removalCount = removals.size();
             // S1AS8 6155481 START
