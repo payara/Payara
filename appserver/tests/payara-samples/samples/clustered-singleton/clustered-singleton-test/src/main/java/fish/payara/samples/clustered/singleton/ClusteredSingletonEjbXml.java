@@ -41,21 +41,29 @@ package fish.payara.samples.clustered.singleton;
 
 import fish.payara.samples.clustered.singleton.api.SingletonAPI;
 import java.io.Serializable;
+import java.util.UUID;
 import javax.enterprise.inject.Vetoed;
-import lombok.experimental.Delegate;
 
 /**
- *
  * @author lprimak
  */
 @Vetoed
 public class ClusteredSingletonEjbXml implements SingletonAPI, Serializable {
+    private static final long serialVersionUID = 1L;
+    private final SingletonCommon sc = new SingletonCommon(this);
+
     @Override
     public String getHello() {
         return String.format("Descriptor EJB Hello: %s", sc);
     }
 
-    private final @Delegate SingletonCommon sc = new SingletonCommon(this);
+    @Override
+    public void randomizeState() {
+        this.sc.randomizeState();
+    }
 
-    private static final long serialVersionUID = 1L;
+    @Override
+    public UUID getState() {
+        return this.sc.getState();
+    }
 }

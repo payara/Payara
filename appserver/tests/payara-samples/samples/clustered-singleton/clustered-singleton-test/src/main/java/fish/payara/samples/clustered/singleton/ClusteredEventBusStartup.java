@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  * https://github.com/payara/Payara/blob/master/LICENSE.txt
  * See the License for the specific
  * language governing permissions and limitations under the License.
- * 
+ *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
  * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
- * 
+ *
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -43,33 +43,32 @@ import fish.payara.cluster.Clustered;
 import fish.payara.micro.cdi.Outbound;
 import java.io.Serializable;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import lombok.extern.java.Log;
 
 /**
- *
  * @author lprimak
  */
-
 @Clustered
-@Singleton @Startup @Log
+@Singleton @Startup
 public class ClusteredEventBusStartup implements Serializable {
-    @Schedule(hour = "*", minute="*", second = "*/1", persistent = false)
+    private static final Logger log = Logger.getLogger(ClusteredEventBusStartup.class.getName());
+    private static final long serialVersionUID = 1L;
+    private Stock stock;
+    private int numInvocations;
+    @Inject
+    @Outbound(loopBack = true)
+    private Event<Stock> stockEvents;
+
+    @Schedule(hour = "*", minute = "*", second = "*/1", persistent = false)
     private void generatePrice() {
         ++numInvocations;
         stock = new Stock("PYA", "Some very long description of Payara", Math.random() * 100.0);
         log.log(Level.INFO, "Sock: {0}, numInvocations: {1}", new Object[] { stock, numInvocations });
         stockEvents.fire(stock);
     }
-
-    private Stock stock;
-    private int numInvocations;
-    @Inject
-    @Outbound(loopBack = true)
-    private Event<Stock> stockEvents;
-    private static final long serialVersionUID = 1L;
 }

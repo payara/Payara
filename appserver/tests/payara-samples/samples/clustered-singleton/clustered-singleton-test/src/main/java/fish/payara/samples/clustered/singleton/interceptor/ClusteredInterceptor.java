@@ -41,51 +41,53 @@ package fish.payara.samples.clustered.singleton.interceptor;
 
 import fish.payara.samples.clustered.singleton.ClusteredSingletonInterceptedEJB;
 import java.io.Serializable;
+import java.util.logging.Logger;
 import javax.interceptor.AroundConstruct;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
 import javax.interceptor.InvocationContext;
-import lombok.Cleanup;
-import lombok.SneakyThrows;
-import lombok.extern.java.Log;
 
 /**
- *
  * @author lprimak
  */
-@Log
 public class ClusteredInterceptor implements Serializable {
-    @AroundConstruct
-    @SneakyThrows
-    public void aroundConstruct(InvocationContext ctx) {
-        log.info("AroundConstruct");
-        ctx.proceed();
-        ClusteredSingletonInterceptedEJB target = (ClusteredSingletonInterceptedEJB)ctx.getTarget();
-        target.setConstructorInterceptorCalled();
-    }
-
-    @AroundTimeout
-    @SneakyThrows
-    public Object aroundTimeout(InvocationContext ctx) {
-        log.info("AroundTimeout");
-        @Cleanup InterceptorCommon.InterceptorData cd = ic.setData(ctx, AroundTimeoutKey, AroundTimeoutValue);
-        return ctx.proceed();
-    }
-
-    @AroundInvoke
-    @SneakyThrows
-    public Object aroundInvoke(InvocationContext ctx) {
-        log.info("AroundInvoke");
-        @Cleanup InterceptorCommon.InterceptorData cd = ic.setData(ctx, AroundInvokeKey, AroundInvokeValue);
-        return ctx.proceed();
-    }
-
-
+    private static final Logger log = Logger.getLogger(ClusteredInterceptor.class.getName());
+    private static final long serialVersionUID = 1L;
     public static final String AroundTimeoutKey = "AroundTimeout";
     public static final String AroundTimeoutValue = "timeout";
     public static final String AroundInvokeKey = "AroundInvoke";
     public static final String AroundInvokeValue = "invoke";
-
-
     private final InterceptorCommon ic = new InterceptorCommon();
+
+    @AroundConstruct
+    public void aroundConstruct(InvocationContext ctx) {
+        try {
+            log.info("AroundConstruct");
+            ctx.proceed();
+            ClusteredSingletonInterceptedEJB target = (ClusteredSingletonInterceptedEJB) ctx.getTarget();
+            target.setConstructorInterceptorCalled();
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @AroundTimeout
+    public Object aroundTimeout(InvocationContext ctx) {
+        log.info("AroundTimeout");
+        try (InterceptorCommon.InterceptorData cd = ic.setData(ctx, AroundTimeoutKey, AroundTimeoutValue)) {
+            return ctx.proceed();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @AroundInvoke
+    public Object aroundInvoke(InvocationContext ctx) {
+        log.info("AroundInvoke");
+        try (InterceptorCommon.InterceptorData cd = ic.setData(ctx, AroundInvokeKey, AroundInvokeValue)) {
+            return ctx.proceed();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

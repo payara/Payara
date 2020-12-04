@@ -44,7 +44,9 @@ import fish.payara.samples.clustered.singleton.interceptor.ClusteredInterceptor;
 import fish.payara.samples.clustered.singleton.interceptor.TimerRanFlag;
 import fish.payara.cluster.Clustered;
 import java.io.Serializable;
+import java.util.UUID;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -59,21 +61,29 @@ import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.enterprise.inject.Vetoed;
 import javax.interceptor.Interceptors;
-import lombok.SneakyThrows;
-import lombok.experimental.Delegate;
-import lombok.extern.java.Log;
 
 /**
- *
  * @author lprimak
  */
 @Clustered
 @Singleton(name = "ClusteredSingletonInterceptedEJB")
 @Vetoed
-@Log
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 @Interceptors(ClusteredInterceptor.class)
 public class ClusteredSingletonInterceptedEJB implements InterceptedSingletonAPI, Serializable {
+    private static final Logger log = Logger.getLogger(ClusteredSingletonInterceptedEJB.class.getName());
+    private static final long serialVersionUID = 1L;
+    private final SingletonCommon sc = new SingletonCommon(this);
+    @Resource
+    private transient TimerService ts;
+    @Resource
+    private transient SessionContext ctx;
+    private boolean constructorIntercepted;
+    private boolean timerIntercepted;
+    private boolean invocationIntercepted;
+    @EJB
+    private transient TimerRanFlag timerRan;
+
     public ClusteredSingletonInterceptedEJB() {
         log.log(Level.INFO, "{0} - Constructor", getClass().getSimpleName());
     }
@@ -98,10 +108,13 @@ public class ClusteredSingletonInterceptedEJB implements InterceptedSingletonAPI
     }
 
     @Override
-    @SneakyThrows(InterruptedException.class)
     public void waitForTimer() {
-        for(int ii = 0; ii < 1000 && !timerRan.isTimerRan(); ++ii) {
-            Thread.sleep(5);
+        try {
+            for (int ii = 0; ii < 1000 && !timerRan.isTimerRan(); ++ii) {
+                Thread.sleep(5);
+            }
+        } catch (final InterruptedException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -112,6 +125,17 @@ public class ClusteredSingletonInterceptedEJB implements InterceptedSingletonAPI
 
     public void setConstructorInterceptorCalled() {
         constructorIntercepted = true;
+    }
+
+
+    @Override
+    public void randomizeState() {
+        this.sc.randomizeState();
+    }
+
+    @Override
+    public UUID getState() {
+        return this.sc.getState();
     }
 
     @Override
@@ -128,14 +152,4 @@ public class ClusteredSingletonInterceptedEJB implements InterceptedSingletonAPI
                 ctx.getContextData().get(ClusteredInterceptor.AroundTimeoutKey).equals(ClusteredInterceptor.AroundTimeoutValue)
                 : "".equals(ClusteredInterceptor.AroundTimeoutValue);
     }
-
-    private final @Delegate SingletonCommon sc = new SingletonCommon(this);
-    private transient @Resource TimerService ts;
-    private transient @Resource SessionContext ctx;
-    private boolean constructorIntercepted;
-    private boolean timerIntercepted;
-    private boolean invocationIntercepted;
-    private transient @EJB TimerRanFlag timerRan;
-
-    private static final long serialVersionUID = 1L;
 }

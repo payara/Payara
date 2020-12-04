@@ -41,25 +41,34 @@ package fish.payara.samples.clustered.singleton;
 
 import fish.payara.samples.clustered.singleton.api.AnnotatedSingletonAPI;
 import fish.payara.cluster.Clustered;
+import java.util.logging.Logger;
 import javax.ejb.Singleton;
 import javax.enterprise.inject.Vetoed;
-import lombok.experimental.Delegate;
-import lombok.extern.java.Log;
 
 /**
- *
  * @author lprimak
  */
 @Clustered(keyName = "ClusteredAnnotated1")
 @Singleton(name = "ClusteredSingletonAnnotatedEJB1")
-@Vetoed @Log
+@Vetoed
 public class ClusteredAnnotatedAPI1 implements AnnotatedSingletonAPI {
+    private static final Logger log = Logger.getLogger(ClusteredAnnotatedAPI1.class.getName());
+    private static final long serialVersionUID = 1L;
+    protected final SingletonCommon sc = new SingletonCommon(this);
+
     @Override
     public String getHello() {
         return String.format("Clustered Annotated API EJB Hello (1): %s", sc);
     }
 
-    protected final @Delegate SingletonCommon sc = new SingletonCommon(this);
 
-    private static final long serialVersionUID = 1L;
+    @Override
+    public void randomizeState() {
+        this.sc.randomizeState();
+    }
+
+    @Override
+    public java.util.UUID getState() {
+        return this.sc.getState();
+    }
 }

@@ -41,6 +41,7 @@ package fish.payara.samples.clustered.singleton.startup;
 
 import fish.payara.samples.clustered.singleton.api.InterceptedSingletonAPI;
 import fish.payara.samples.clustered.singleton.api.SingletonAPI;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -50,7 +51,6 @@ import javax.ejb.Timeout;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.inject.Inject;
-import lombok.extern.java.Log;
 
 /**
  *
@@ -58,8 +58,13 @@ import lombok.extern.java.Log;
  */
 @Singleton
 @Startup
-@Log
 public class AppStartup {
+    private static final Logger log = Logger.getLogger(AppStartup.class.getName());
+    private @EJB(lookup = "java:module/ClusteredSingletonEjbXml1") SingletonAPI descAPI;
+    private @EJB InterceptedSingletonAPI annotatedAPI;
+    private @Inject SingletonAPI cdiAPI;
+    private @Resource TimerService ts;
+
     @PostConstruct
     void postConstruct() {
         ts.createSingleActionTimer(0, new TimerConfig(null, false));
@@ -82,10 +87,4 @@ public class AppStartup {
         cdiAPI.getHello();
         annotatedAPI.async();
     }
-
-
-    private @EJB(lookup = "java:module/ClusteredSingletonEjbXml1") SingletonAPI descAPI;
-    private @EJB InterceptedSingletonAPI annotatedAPI;
-    private @Inject SingletonAPI cdiAPI;
-    private @Resource TimerService ts;
 }

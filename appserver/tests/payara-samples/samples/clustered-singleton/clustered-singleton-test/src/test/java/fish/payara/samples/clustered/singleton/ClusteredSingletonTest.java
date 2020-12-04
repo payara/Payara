@@ -44,10 +44,10 @@ import fish.payara.samples.clustered.singleton.api.InterceptedSingletonAPI;
 import fish.payara.samples.clustered.singleton.api.Secondary;
 import fish.payara.samples.clustered.singleton.api.SingletonAPI;
 import java.io.File;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
-import lombok.extern.java.Log;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -61,12 +61,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author lprimak
  */
 @RunWith(Arquillian.class)
-@Log
 public class ClusteredSingletonTest {
+    private static final Logger log = Logger.getLogger(ClusteredSingletonTest.class.getName());
+
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "cst.war")

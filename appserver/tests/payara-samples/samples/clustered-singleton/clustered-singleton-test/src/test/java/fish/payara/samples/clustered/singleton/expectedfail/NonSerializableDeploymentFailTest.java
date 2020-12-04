@@ -40,8 +40,8 @@
 package fish.payara.samples.clustered.singleton.expectedfail;
 
 import fish.payara.cluster.Clustered;
+import java.util.logging.Logger;
 import javax.ejb.Singleton;
-import lombok.extern.java.Log;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.ShouldThrowException;
 import org.jboss.arquillian.junit.Arquillian;
@@ -51,15 +51,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
  * @author lprimak
  */
 @RunWith(Arquillian.class)
-@Log
 public class NonSerializableDeploymentFailTest {
+    private static final Logger log = Logger.getLogger(NonSerializableDeploymentFailTest.class.getName());
+
     @Deployment @ShouldThrowException(RuntimeException.class)
     public static WebArchive createDeployment() {
-        log.info("Please Ignore the following SEVERE: exit_code, it's expected");
+        log.info("Please Ignore the following SEVERE: exit_code, it\'s expected");
         return ShrinkWrap.create(WebArchive.class)
                 .addPackage(NonSerializableDeploymentFailTest.class.getPackage());
     }

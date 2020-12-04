@@ -43,22 +43,24 @@ import fish.payara.samples.clustered.singleton.api.SingletonAPI;
 import fish.payara.cluster.Clustered;
 import fish.payara.cluster.DistributedLockType;
 import java.io.Serializable;
+import java.util.UUID;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
-import lombok.experimental.Delegate;
-import lombok.extern.java.Log;
 
 /**
- *
  * @author lprimak
  */
 @ApplicationScoped
 @Clustered(keyName = "ClusteredSingletonCDI1", lock = DistributedLockType.LOCK)
-@Log
 @Default
 public class ClusteredSingletonCDI1 implements SingletonAPI, Serializable {
+    private static final Logger log = Logger.getLogger(ClusteredSingletonCDI1.class.getName());
+    private static final long serialVersionUID = 1L;
+    protected final SingletonCommon sc = new SingletonCommon(this);
+
     @Override
     public String getHello() {
         return String.format("CDI Bean Hello (1): %s", sc);
@@ -67,13 +69,20 @@ public class ClusteredSingletonCDI1 implements SingletonAPI, Serializable {
     @PostConstruct
     void postConstruct() {
         log.info("CDI1 PostConstruct");
-
     }
+
     @PreDestroy
     void preDestroy() {
         log.info("CDI1 PreDestroy");
     }
 
-    protected final @Delegate SingletonCommon sc = new SingletonCommon(this);
-    private static final long serialVersionUID = 1L;
+    @Override
+    public void randomizeState() {
+        this.sc.randomizeState();
+    }
+
+    @Override
+    public UUID getState() {
+        return this.sc.getState();
+    }
 }

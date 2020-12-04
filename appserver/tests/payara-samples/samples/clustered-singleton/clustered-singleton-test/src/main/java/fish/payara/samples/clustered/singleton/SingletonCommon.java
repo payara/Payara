@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  * https://github.com/payara/Payara/blob/master/LICENSE.txt
  * See the License for the specific
  * language governing permissions and limitations under the License.
- * 
+ *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
  * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
- * 
+ *
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -41,33 +41,39 @@ package fish.payara.samples.clustered.singleton;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Objects;
 import java.util.UUID;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.java.Log;
+import java.util.logging.Logger;
 
 /**
- *
  * @author lprimak
  */
-@RequiredArgsConstructor
-@Log
 public class SingletonCommon implements Serializable {
-    @SneakyThrows
+    private static final Logger log = Logger.getLogger(SingletonCommon.class.getName());
+    private static final long serialVersionUID = 1L;
+    private final Object parent;
+    private UUID state = UUID.randomUUID();
+
     @Override
     public String toString() {
-        return String.format("instance = 0x%x, host = %s, State(UUID) = %s",
-                Objects.hashCode(parent), InetAddress.getLocalHost().getHostName(), getState());
+        try {
+            return String.format("instance = 0x%x, host = %s, State(UUID) = %s",
+                    Objects.hashCode(parent), InetAddress.getLocalHost().getHostName(), getState());
+        } catch (final UnknownHostException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public void randomizeState() {
         state = UUID.randomUUID();
     }
 
-    private final Object parent;
-    private @Getter UUID state = UUID.randomUUID();
+    public SingletonCommon(final Object parent) {
+        this.parent = parent;
+    }
 
-    private static final long serialVersionUID = 1L;
+    public UUID getState() {
+        return this.state;
+    }
 }

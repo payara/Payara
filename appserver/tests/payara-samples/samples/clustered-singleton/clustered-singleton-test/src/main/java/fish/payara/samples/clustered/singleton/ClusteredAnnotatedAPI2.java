@@ -41,22 +41,22 @@ package fish.payara.samples.clustered.singleton;
 
 import fish.payara.samples.clustered.singleton.api.AnnotatedSingletonAPI;
 import fish.payara.cluster.Clustered;
+import java.util.logging.Logger;
 import javax.ejb.Singleton;
 import javax.enterprise.inject.Vetoed;
-import lombok.extern.java.Log;
 
 /**
- *
  * @author lprimak
  */
 @Clustered(keyName = "ClusteredAnnotated1")
 @Singleton(name = "ClusteredSingletonAnnotatedEJB2")
-@Vetoed @Log
+@Vetoed
 public class ClusteredAnnotatedAPI2 extends ClusteredAnnotatedAPI1 implements AnnotatedSingletonAPI {
+    private static final Logger log = Logger.getLogger(ClusteredAnnotatedAPI2.class.getName());
+    private static final long serialVersionUID = 1L;
+
     @Override
     public String getHello() {
         return String.format("Clustered Annotated API EJB Hello (2): %s", sc);
     }
-
-    private static final long serialVersionUID = 1L;
 }
