@@ -37,10 +37,10 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+# Portions Copyright [2020] [Payara Foundation and/or its affiliates]
 
 -exportcontents: org.glassfish.web.sniffer; \
 		 org.glassfish.web.config.serverbeans; \
          org.glassfish.web.plugin.common; \
-         fish.payara.appserver.context;
+         fish.payara.appserver.context; \
 		 version=${project.osgi.version}
