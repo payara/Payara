@@ -69,6 +69,7 @@ import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
  */
 public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
 
+    private final FaultTolerancePolicy policy;
     private final MetricRegistry registry;
     /**
      * This is "cached" as soon as an instance is bound using the
@@ -82,12 +83,13 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     private boolean retried;
 
     public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
-        this(registry, canonicalMethodName, FallbackUsage.notDefined, new AtomicBoolean(), new ConcurrentHashMap<>(),
+        this(null, registry, canonicalMethodName, FallbackUsage.notDefined, new AtomicBoolean(), new ConcurrentHashMap<>(),
                 new ConcurrentHashMap<>());
     }
 
-    private MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName, FallbackUsage fallbackUsage,
+    private MethodFaultToleranceMetrics(FaultTolerancePolicy policy, MetricRegistry registry, String canonicalMethodName, FallbackUsage fallbackUsage,
             AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, Map<MetricID, Histogram> histogramsByMetricID) {
+        this.policy = policy;
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
         this.fallbackUsage = fallbackUsage;
@@ -96,10 +98,18 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         this.histogramsByMetricID = histogramsByMetricID;
     }
 
+    /**
+     * The first thread calling creates the metrics all thread calling the same method work with. Other threads have to
+     * wait until these metrics actually exist. The easiest to make that happen was to make this method synchronised.
+     * The {@link #registered} is still an {@link AtomicBoolean} so that a state change affects other
+     * {@link MethodFaultToleranceMetrics} instances for the same method that were created in the meantime as well.
+     */
     @Override
-    public FaultToleranceMetrics bindTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
-        FaultToleranceMetrics.super.bindTo(context, policy); // trigger registration if needed
-        return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
+    public synchronized FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
+        if (registered.compareAndSet(false, true)) {
+            FaultToleranceMetrics.super.boundTo(context, policy); // trigger registration if needed
+        }
+        return new MethodFaultToleranceMetrics(policy, registry, canonicalMethodName,
                 policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
                 registered, countersByMetricID, histogramsByMetricID);
     }
@@ -107,11 +117,6 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     /*
      * General Metrics
      */
-
-    @Override
-    public boolean isRegistered() {
-        return !registered.compareAndSet(false, true);
-    }
 
     @Override
     public void register(MetricType type, String metric, String[]... tagsPermutations) {

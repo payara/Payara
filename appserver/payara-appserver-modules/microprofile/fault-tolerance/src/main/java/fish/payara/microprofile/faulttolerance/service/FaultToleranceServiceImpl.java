@@ -309,10 +309,11 @@ public class FaultToleranceServiceImpl
     @Override
     public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
             RequestContextController requestContextController) {
-        FaultToleranceMethodContextImpl methodContext = contextByMethodId //
-                .computeIfAbsent(getTargetMethodId(context),
-                        key -> createMethodContext(key, context, requestContextController));
-        return methodContext.in(context, policy);
+        // NB: within multi-application container the method context is also identified by the application,
+        //     multiple applications do NOT share a context
+        String fullMethodId = getApplicationContext(context) + ":" + getTargetMethodId(context);
+        return contextByMethodId.computeIfAbsent(fullMethodId,
+                        methodId -> createMethodContext(methodId, context, requestContextController)).boundTo(context, policy);
     }
 
     private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context,
@@ -336,7 +337,7 @@ public class FaultToleranceServiceImpl
      * Since MP FT 3.0 all instances of a class share same state object for the same method. Or in other words the FT
      * context is not specific to an instance but to the annotated class and method.
      */
-    private static String getTargetMethodId(InvocationContext context) {
+    public static String getTargetMethodId(InvocationContext context) {
         Object target = context.getTarget();
         Method method = context.getMethod();
         StringBuilder methodId = new StringBuilder();

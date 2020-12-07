@@ -49,6 +49,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 
 import javax.interceptor.InvocationContext;
 
@@ -58,6 +59,7 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 public class FaultToleranceMethodContextStub implements FaultToleranceMethodContext {
@@ -66,14 +68,22 @@ public class FaultToleranceMethodContextStub implements FaultToleranceMethodCont
     private final AtomicReference<CircuitBreakerState> state;
     private final AtomicReference<BlockingQueue<Thread>> concurrentExecutions;
     private final AtomicInteger queuingOrRunningPopulation;
+    private final BiFunction<InvocationContext, FaultTolerancePolicy, FaultToleranceMethodContext> binder;
 
     public FaultToleranceMethodContextStub(InvocationContext context, AtomicReference<CircuitBreakerState> state,
             AtomicReference<BlockingQueue<Thread>> concurrentExecutions,
-            AtomicInteger queuingOrRunningPopulation) {
+            AtomicInteger queuingOrRunningPopulation,
+            BiFunction<InvocationContext, FaultTolerancePolicy, FaultToleranceMethodContext> binder) {
         this.context = context;
         this.state = state;
         this.concurrentExecutions = concurrentExecutions;
         this.queuingOrRunningPopulation = queuingOrRunningPopulation;
+        this.binder = binder;
+    }
+
+    @Override
+    public FaultToleranceMethodContext boundTo(InvocationContext context, FaultTolerancePolicy policy) {
+        return binder.apply(context, policy);
     }
 
     @Override

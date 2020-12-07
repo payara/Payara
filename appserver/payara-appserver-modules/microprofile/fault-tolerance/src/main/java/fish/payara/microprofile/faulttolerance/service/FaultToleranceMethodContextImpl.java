@@ -47,7 +47,6 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -81,7 +80,7 @@ import fish.payara.notification.requesttracing.RequestTraceSpan;
  * (since MP FT 3.0).
  *
  * When the annotated {@link Method} is invoked this implementation is bound to that context by
- * {@link #in(InvocationContext, FaultTolerancePolicy)} with a fresh instance of this class. It shares all the state
+ * {@link #boundTo(InvocationContext, FaultTolerancePolicy)} with a fresh instance of this class. It shares all the state
  * with other invocations for the same method except the {@link InvocationContext} and the {@link FaultTolerancePolicy}
  * which are specific for each invocation. This way the full FT invocation state for each method invocation is
  * determined at the beginning of applying FT semantics and cannot change during execution (except for those counters
@@ -160,7 +159,8 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         return shared.isExpired(ttl);
     }
 
-    public FaultToleranceMethodContextImpl in(InvocationContext context, FaultTolerancePolicy policy) {
+    @Override
+    public FaultToleranceMethodContext boundTo(InvocationContext context, FaultTolerancePolicy policy) {
         return new FaultToleranceMethodContextImpl(shared, context, policy);
     }
 

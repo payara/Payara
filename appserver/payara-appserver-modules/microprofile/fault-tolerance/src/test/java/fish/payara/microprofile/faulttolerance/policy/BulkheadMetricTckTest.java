@@ -48,55 +48,22 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.concurrent.Future;
 
-import javax.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.MetricID;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.Snapshot;
 import org.eclipse.microprofile.metrics.Tag;
 import org.junit.Test;
-
-import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
-import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
-import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextStub;
-import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
-import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
-import fish.payara.microprofile.faulttolerance.service.MethodFaultToleranceMetrics;
-import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 
 /**
  * Based on MP FT TCK Test {@code org.eclipse.microprofile.fault.tolerance.tck.metrics.BulkheadMetricTest}.
  *
  * @author Jan Bernitt
  */
-public class BulkheadMetricTckTest extends AbstractRecordingTest {
-
-    MetricRegistry registry;
-
-    @Override
-    protected FaultToleranceServiceStub createService() {
-        registry = new MetricRegistryImpl(Type.BASE);
-        return new FaultToleranceServiceStub() {
-
-            @Override
-            public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
-                FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(registry, FaultToleranceUtils.getCanonicalMethodName(context));
-                return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
-
-                    @Override
-                    public FaultToleranceMetrics getMetrics(boolean enabled) {
-                        return metrics;
-                    }
-                };
-            }
-        };
-    }
+public class BulkheadMetricTckTest extends AbstractMetricTest {
 
     /**
      * Scenario is equivalent to the TCK test of same name but not 100% identical

@@ -42,15 +42,10 @@ package fish.payara.microprofile.faulttolerance.policy;
 import static fish.payara.microprofile.faulttolerance.test.TestUtils.parseMetricID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-
 import java.time.temporal.ChronoUnit;
 import java.util.SortedMap;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
@@ -59,50 +54,14 @@ import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.metrics.*;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.junit.Test;
-
-import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
-import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
-import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextStub;
-import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
-import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
-import fish.payara.microprofile.faulttolerance.service.MethodFaultToleranceMetrics;
-import fish.payara.microprofile.faulttolerance.test.TestUtils;
-import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 
 /**
  * Based on MP FT TCK Test {@code org.eclipse.microprofile.fault.tolerance.tck.metrics.AllMetricsTest}.
  *
  * @author Jan Bernitt
  */
-public class AllMetricsTckTest extends AbstractRecordingTest {
-
-    MetricRegistry registry;
-
-    @Override
-    protected FaultToleranceServiceStub createService() {
-        registry = new MetricRegistryImpl(Type.BASE);
-        return new FaultToleranceServiceStub() {
-
-            @Override
-            public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
-                FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(registry, FaultToleranceUtils.getCanonicalMethodName(context));
-                return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
-
-                    @Override
-                    public FaultToleranceMetrics getMetrics(boolean enabled) {
-                        return metrics;
-                    }
-
-                    @Override
-                    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
-                        return CompletableFuture.completedFuture(null);
-                    }
-                };
-            }
-        };
-    }
+public class AllMetricsTckTest extends AbstractMetricTest {
 
     private enum FTMetrics {
 

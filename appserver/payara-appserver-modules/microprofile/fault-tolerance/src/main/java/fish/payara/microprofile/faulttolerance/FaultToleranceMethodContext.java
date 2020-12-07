@@ -44,13 +44,15 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.interceptor.InvocationContext;
+
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 public interface FaultToleranceMethodContext {
@@ -67,6 +69,8 @@ public interface FaultToleranceMethodContext {
             return exceptionThrown;
         }
     }
+
+    FaultToleranceMethodContext boundTo(InvocationContext context, FaultTolerancePolicy policy);
 
     /**
      * Returns the {@link FaultToleranceMetrics} to use.

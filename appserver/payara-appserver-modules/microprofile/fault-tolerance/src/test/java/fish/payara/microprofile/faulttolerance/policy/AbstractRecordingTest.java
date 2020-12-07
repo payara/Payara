@@ -68,8 +68,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
+import javax.interceptor.InvocationContext;
+
 import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
 import fish.payara.microprofile.faulttolerance.test.TestUtils;
 
@@ -159,18 +162,21 @@ abstract class AbstractRecordingTest {
      */
 
     Thread callMethodWithNewThreadAndWaitFor(CompletableFuture<Void> waiter) {
-        Method annotatedMethod = TestUtils.getAnnotatedMethod();
-        Runnable task = () ->  callMethodDirectly(waiter, annotatedMethod);
+        return callMethodWithNewThreadAndWaitFor(waiter, TestUtils.getAnnotatedMethod(), this);
+    }
+
+    Thread callMethodWithNewThreadAndWaitFor(CompletableFuture<Void> waiter, Method annotatedMethod, Object target) {
+        Runnable task = () ->  callMethodDirectly(waiter, annotatedMethod, target);
         return startDaemonThreadWith(task);
     }
 
     Object callMethodDirectly(CompletableFuture<Void> waiter) {
-        return callMethodDirectly(waiter, TestUtils.getAnnotatedMethod());
+        return callMethodDirectly(waiter, TestUtils.getAnnotatedMethod(), this);
     }
 
-    private Object callMethodDirectly(CompletableFuture<Void> waiter, Method annotatedMethod) {
+    private Object callMethodDirectly(CompletableFuture<Void> waiter, Method annotatedMethod, Object target) {
         try {
-            Object res = proceedToResultValue(this, annotatedMethod, waiter);
+            Object res = proceedToResultValue(target, annotatedMethod, waiter);
             recordCallerResult(res);
             return res;
         } catch (Exception e) {
@@ -341,10 +347,24 @@ abstract class AbstractRecordingTest {
         }
     }
 
-    Object proceedToResultValue(Object test, Method annotatedMethod, Future<Void> argument) throws Exception {
-        FaultTolerancePolicy policy = FaultTolerancePolicy.asAnnotated(test.getClass(), annotatedMethod);
-        StaticAnalysisContext context = new StaticAnalysisContext(test, annotatedMethod, argument);
+    Object proceedToResultValue(Object target, Method annotatedMethod, Future<Void> argument) throws Exception {
+        FaultTolerancePolicy policy = createPolicy(target, annotatedMethod);
+        InvocationContext context = createInvocationContext(target, annotatedMethod, argument);
         return policy.proceed(context, () -> service.getMethodContext(context, policy));
+    }
+
+    FaultToleranceMethodContext createMethodContext(Object target, Method annotatedMethod, Future<Void> argument) {
+        FaultTolerancePolicy policy = createPolicy(target, annotatedMethod);
+        InvocationContext context = createInvocationContext(target, annotatedMethod, argument);
+        return service.getMethodContext(context, policy);
+    }
+
+    static InvocationContext createInvocationContext(Object target, Method annotatedMethod, Future<Void> argument) {
+        return new StaticAnalysisContext(target, annotatedMethod, argument);
+    }
+
+    static FaultTolerancePolicy createPolicy(Object target, Method annotatedMethod) {
+        return FaultTolerancePolicy.asAnnotated(target.getClass(), annotatedMethod);
     }
 
     CompletableFuture<String> bodyWaitThenReturnSuccess(Future<Void> waiter) throws Exception {
@@ -398,7 +418,10 @@ abstract class AbstractRecordingTest {
     }
 
     void assertFurtherThreadThrowsBulkheadException(int attemptCount) {
-        Method annotatedMethod = TestUtils.getAnnotatedMethod();
+        assertFurtherThreadThrowsBulkheadException(attemptCount, TestUtils.getAnnotatedMethod(), this);
+    }
+
+    void assertFurtherThreadThrowsBulkheadException(int attemptCount, Method annotatedMethod, Object target) {
         List<Thread> attemptingCallers = new ArrayList<>();
         Map<Thread, BulkheadException> bulkheadExceptions = new ConcurrentHashMap<>();
         Map<Thread, Object> otherOutcomes = new ConcurrentHashMap<>();
@@ -406,7 +429,7 @@ abstract class AbstractRecordingTest {
             attemptingCallers.add(startDaemonThreadWith(() -> {
                 Thread currentThread = Thread.currentThread();
                 try {
-                    Object resultValue = proceedToResultValue(this, annotatedMethod, null);
+                    Object resultValue = proceedToResultValue(target, annotatedMethod, null);
                     if (resultValue instanceof Future) {
                         otherOutcomes.put(currentThread, ((Future<?>) resultValue).get()); // should throw the exception
                     } else {

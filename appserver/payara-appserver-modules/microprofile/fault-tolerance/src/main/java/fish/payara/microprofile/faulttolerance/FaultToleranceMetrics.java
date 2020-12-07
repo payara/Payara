@@ -83,8 +83,8 @@ public interface FaultToleranceMetrics {
      *         As part of binding to the context and policy this method also should register all metrics that make sense
      *         for the provided policy in case this has not been done already.
      */
-    default FaultToleranceMetrics bindTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
-        if (policy.isMetricsEnabled && !isRegistered()) {
+    default FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
+        if (policy.isMetricsEnabled) {
             String[] fallbackTag = policy.isFallbackPresent()
                     ? new String[] {"fallback", "applied", "notApplied"}
                     : new String[] {"fallback", "notDefined"};
@@ -135,14 +135,6 @@ public interface FaultToleranceMetrics {
     /*
      * Generic (to be implemented/overridden)
      */
-
-    /**
-     * @return true if all metrics for the method represented by this {@link FaultToleranceMetrics} instance has been
-     *         registered.
-     */
-    default boolean isRegistered() {
-        return true;
-    }
 
     /**
      * Registration:

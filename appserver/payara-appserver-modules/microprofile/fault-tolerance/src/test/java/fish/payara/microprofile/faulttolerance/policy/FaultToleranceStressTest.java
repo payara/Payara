@@ -39,13 +39,13 @@
  */
 package fish.payara.microprofile.faulttolerance.policy;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.oneOf;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -121,8 +121,10 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
     final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
-            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
+        protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
+                FaultTolerancePolicy policy) {
+            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation,
+                    (c, p) -> createMethodContext(methodId, c, p)) {
                 @Override
                 public CircuitBreakerState getState(int requestVolumeThreshold) {
                     circuitStateAccessCount.incrementAndGet();
