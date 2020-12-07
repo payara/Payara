@@ -10,15 +10,6 @@
     <packaging>pom</packaging>
     <name>Payara Docker Images</name>
 
-    <modules>
-        <module>basic</module>
-        <module>server-full</module>
-        <module>server-web</module>
-        <module>server-node</module>
-        <module>micro</module>
-        <module>tests</module>
-    </modules>
-
     <properties>
         <payara.version>${project.version}</payara.version>
         <docker.noCache>true</docker.noCache>
@@ -58,6 +49,35 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>DefaultBuild</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>basic</module>
+                <module>server-full</module>
+                <module>server-web</module>
+                <module>server-node</module>
+                <module>micro</module>
+                <module>tests</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>QuickBuild</id>
+            <activation>
+                <property>
+                    <name>QuickBuild</name>
+                </property>
+            </activation>
+            <modules>
+                <module>basic</module>
+                <module>server-full</module>
+                <module>server-node</module>
+                <module>micro</module>
+                <module>tests</module>
+            </modules>
+        </profile>
         <profile>
             <id>generate-docker-images-only-if-dockerfile-exists</id>
             <activation>
