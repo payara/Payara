@@ -114,6 +114,9 @@ public class DirConfigSourceTest {
         examples.put(Paths.get(testDirectory.toString(), "/foo.bar.test/ex"), "foo.bar.test.ex");
         examples.put(Paths.get(testDirectory.toString(), "/foo/bar.test/ex"), "foo.bar.test.ex");
         examples.put(Paths.get(testDirectory.toString(), "/foo.bar/test/ex"), "foo.bar.test.ex");
+        
+        // we ignore the last file extension. always. this might lead to unexpected behaviour for a user.
+        // best advice: do not use dots in filename, only in directory names.
         examples.put(Paths.get(testDirectory.toString(), "/foo/bar/test/ex.txt"), "foo.bar.test.ex");
         examples.put(Paths.get(testDirectory.toString(), "/foo/bar/test/ex.tar.gz"), "foo.bar.test.ex.tar");
         examples.put(Paths.get(testDirectory.toString(), "/foo.bar/test.ex"), "foo.bar.test");

@@ -210,11 +210,6 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     DirConfigSource(Path directory) {
         super(true);
         this.directory = directory;
-        try {
-            initializePropertiesFromPath(this.directory);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error during setup of MicroProfile Config Directory Source", e);
-        }
     }
 
     @Override
@@ -316,13 +311,25 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     
     String parsePropertyNameFromPath(Path path) {
         // 1. get relative path based on the config dir ("/config"),
-        String property = directory.relativize(path.getParent()).toString();
+        String property = "";
+        if (! path.getParent().equals(directory))
+            property += directory.relativize(path.getParent()).toString() + File.separatorChar;
         // 2. ignore all file suffixes after last dot
-        property += path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf('.')-1);
+        property += removeFileExtension(path.getFileName().toString());
         // 3. replace all path seps with a ".",
         property = property.replace(File.separatorChar, '.');
         // so "/config/foo/bar/test/one.txt" becomes "foo/bar/test/one.txt" becomes "foo.bar.test.one" property name
         return property;
+    }
+    
+    String removeFileExtension(String filename) {
+        if (filename == null || ! filename.contains("."))
+            return filename;
+        int lastIndex = filename.lastIndexOf('.');
+        // dot does not belong to file, but parent dir
+        if (filename.lastIndexOf(File.separatorChar) > lastIndex)
+            return filename;
+        return filename.substring(0, lastIndex);
     }
     
     /**
