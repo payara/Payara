@@ -297,6 +297,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return new PayaraConfigBuilder(this);
     }
 
+    public PayaraExecutorService getExecutor() {
+        return this.executorService;
+    }
+    
     Config getNamedConfig(String applicationName) {
         Config result = null;
         ApplicationInfo info = applicationRegistry.get(applicationName);
@@ -322,7 +326,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         sources.add(new SystemPropertyConfigSource());
         sources.add(new JNDIConfigSource());
         sources.add(new PayaraServerProperties());
-        sources.add(new DirConfigSource(executorService));
+        sources.add(new DirConfigSource());
         sources.add(new PasswordAliasConfigSource());
         sources.add(new JDBCConfigSource());
         if (appName != null) {

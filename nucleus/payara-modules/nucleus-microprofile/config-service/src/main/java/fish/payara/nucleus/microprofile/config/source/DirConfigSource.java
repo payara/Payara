@@ -191,14 +191,14 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     
     private static final Logger logger = Logger.getLogger(DirConfigSource.class.getName());
     private Path directory;
-    private ConcurrentHashMap<String, DirProperty> properties = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, DirProperty> properties = new ConcurrentHashMap<>();
     
-    public DirConfigSource(PayaraExecutorService executorService) {
+    public DirConfigSource() {
         try {
             // get the directory from the app server config
             this.directory = findDir();
             // create the watcher for the directory
-            executorService.submit(new DirPropertyWatcher(this.directory));
+            configService.getExecutor().submit(new DirPropertyWatcher(this.directory));
             // initial loading
             initializePropertiesFromPath(this.directory);
         } catch (IOException e) {
@@ -207,7 +207,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     }
 
     // Used for testing only with explicit dependency injection
-    DirConfigSource(Path directory, PayaraExecutorService executorService) {
+    DirConfigSource(Path directory) {
         super(true);
         this.directory = directory;
         try {
