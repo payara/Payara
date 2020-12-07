@@ -69,7 +69,6 @@ import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
  */
 public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
 
-    private final FaultTolerancePolicy policy;
     private final MetricRegistry registry;
     /**
      * This is "cached" as soon as an instance is bound using the
@@ -83,13 +82,12 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     private boolean retried;
 
     public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
-        this(null, registry, canonicalMethodName, FallbackUsage.notDefined, new AtomicBoolean(), new ConcurrentHashMap<>(),
+        this(registry, canonicalMethodName, FallbackUsage.notDefined, new AtomicBoolean(), new ConcurrentHashMap<>(),
                 new ConcurrentHashMap<>());
     }
 
-    private MethodFaultToleranceMetrics(FaultTolerancePolicy policy, MetricRegistry registry, String canonicalMethodName, FallbackUsage fallbackUsage,
+    private MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName, FallbackUsage fallbackUsage,
             AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, Map<MetricID, Histogram> histogramsByMetricID) {
-        this.policy = policy;
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
         this.fallbackUsage = fallbackUsage;
@@ -109,7 +107,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         if (registered.compareAndSet(false, true)) {
             FaultToleranceMetrics.super.boundTo(context, policy); // trigger registration if needed
         }
-        return new MethodFaultToleranceMetrics(policy, registry, canonicalMethodName,
+        return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
                 policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
                 registered, countersByMetricID, histogramsByMetricID);
     }
