@@ -47,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.Comparator;
@@ -66,37 +67,7 @@ public class DirConfigSourceTest {
     
     @BeforeClass
     public static void setUp() throws IOException {
-        testDirectory = Files.createTempDirectory("microprofile-config-test");
-        
-        /*
-        // create a couple of test simple files
-        Path file1 = Paths.get(testDirectory.toString(), "property1");
-        Path file2 = Paths.get(testDirectory.toString(), "property2");
-        Path fileHidden = Paths.get(testDirectory.toString(), ".hidden-property");
-        file1 = Files.createFile(file1);
-        Files.write(file1, "value1".getBytes());
-        file2 = Files.createFile(file2);
-        Files.write(file2, "value2".getBytes());
-        fileHidden = Files.createFile(fileHidden);
-        
-        // create a subdirectory structure with test files
-        Path mounted = Paths.get(testDirectory.toString(), "foo", "bar");
-        Files.createDirectories(mounted);
-        
-        Path fileMounted = Paths.get(mounted.toString(), "property3");
-        fileMounted = Files.createFile(fileMounted);
-        Files.write(fileMounted, "value3".getBytes());
-        
-        // create "foo/bar/..data/property4" and symlink from "foo/bar/property4" as done on K8s
-        Path mountedK8s = Paths.get(mounted.toString(), "..data");
-        Files.createDirectories(mountedK8s);
-        Path fileK8sMounted = Paths.get(mountedK8s.toString(), "property4");
-        fileK8sMounted = Files.createFile(fileK8sMounted);
-        Files.write(fileK8sMounted, "value4".getBytes());
-        Path fileK8sSymlink = Paths.get(mounted.toString(), "property4");
-        fileK8sSymlink = Files.createSymbolicLink(fileK8sSymlink, fileK8sMounted);
-        */
-    
+        testDirectory = Files.createTempDirectory("microprofile-config-test-");
         // create & load
         source = new DirConfigSource(testDirectory);
     }
@@ -224,7 +195,7 @@ public class DirConfigSourceTest {
     }
 
     @Test
-    public void testInitializeProperties() throws IOException {
+    public void testInitializeProperties_SimpleFiles() throws IOException {
         // given
         // only the most specific should be picked up (=test3)
         writeFile(testDirectory, "foo.bar.test", "test");
@@ -236,6 +207,26 @@ public class DirConfigSourceTest {
         
         //then
         assertEquals("test3", source.getValue("foo.bar.test"));
+    }
+    
+    @Test
+    public void testInitializeProperties_IgnoreHidden() throws IOException {
+        // given
+        // none of these should be picked up (hidden file or dir)
+        writeFile(testDirectory, ".hidden.bar.test", "test");
+        writeFile(testDirectory, ".hidden/bar.test", "test");
+        //when
+        source.initializePropertiesFromPath(testDirectory);
+        //then
+        assertEquals(null, source.getValue("hidden.bar.test"));
+    }
+    
+    @Test(expected = IOException.class)
+    public void testInitializeProperties_FailDirectory() throws IOException {
+        // given
+        Path failDir = Paths.get("/tmp/fail-112312");
+        //when & then
+        source.initializePropertiesFromPath(failDir);
     }
     
     public static Path writeFile(Path parentDir, String filename, String content) throws IOException {
