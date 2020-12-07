@@ -19,12 +19,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.extras</groupId>
-            <artifactId>server-web-docker-image</artifactId>
-            <version>${project.version}</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.extras</groupId>
             <artifactId>server-node-docker-image</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
@@ -100,4 +94,44 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+         <profile>
+            <id>DefaultBuild</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>fish.payara.extras</groupId>
+                    <artifactId>server-web-docker-image</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>QuickBuild</id>
+            <activation>
+                <property>
+                    <name>QuickBuild</name>
+                </property>
+            </activation>
+            <build>
+
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <excludes>
+                                    <exclude>**/PayaraServerWebTest.java</exclude>
+                                </excludes>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
 </project>
