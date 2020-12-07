@@ -292,7 +292,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
             // Conflict handling:
             // When this property is already present, check how to solve the conflict.
             // This property file will be skipped if the file we already have is deeper in the file tree...
-            if (checkLongestMatchForPath(property, path)) {
+            if (! isLongerMatchForPath(property, path)) {
                 return;
             }
             
@@ -344,7 +344,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
      * @param path
      * @return true if more specific, false if not
      */
-    boolean checkLongestMatchForPath(String property, Path path) {
+    boolean isLongerMatchForPath(String property, Path path) {
         // Make path relative to config directory
         // NOTE: we will never have a path containing "..", as our tree walkers are always inside this "root".
         Path relativePath = directory.relativize(path);
@@ -381,7 +381,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
                 this.directory
             );
         }
-        return null;
+        throw new IOException("Cannot read property from '"+path.toString()+"'.");
     }
 
 }

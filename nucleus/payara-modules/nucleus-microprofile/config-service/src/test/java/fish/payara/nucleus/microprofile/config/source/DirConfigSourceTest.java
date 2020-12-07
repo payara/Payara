@@ -43,6 +43,7 @@ import org.junit.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,6 +68,7 @@ public class DirConfigSourceTest {
     public static void setUp() throws IOException {
         testDirectory = Files.createTempDirectory("microprofile-config-test");
         
+        /*
         // create a couple of test simple files
         Path file1 = Paths.get(testDirectory.toString(), "property1");
         Path file2 = Paths.get(testDirectory.toString(), "property2");
@@ -93,6 +95,7 @@ public class DirConfigSourceTest {
         Files.write(fileK8sMounted, "value4".getBytes());
         Path fileK8sSymlink = Paths.get(mounted.toString(), "property4");
         fileK8sSymlink = Files.createSymbolicLink(fileK8sSymlink, fileK8sMounted);
+        */
     
         // create & load
         source = new DirConfigSource(testDirectory);
@@ -145,7 +148,7 @@ public class DirConfigSourceTest {
         source.setProperties(props);
         
         // when & then
-        assertFalse(source.checkLongestMatchForPath(property, Paths.get(testDirectory.toString(), "foo/bar.test/ex")));
+        assertFalse(source.isLongerMatchForPath(property, Paths.get(testDirectory.toString(), "foo/bar.test/ex")));
     }
     
     @Test
@@ -162,7 +165,7 @@ public class DirConfigSourceTest {
         source.setProperties(props);
         
         // when & then
-        assertTrue(source.checkLongestMatchForPath(property, Paths.get(testDirectory.toString(), "foo/bar/test/ex")));
+        assertTrue(source.isLongerMatchForPath(property, Paths.get(testDirectory.toString(), "foo/bar/test/ex")));
     }
     
     @Test
@@ -179,7 +182,7 @@ public class DirConfigSourceTest {
         source.setProperties(props);
         
         // when & then
-        assertTrue(source.checkLongestMatchForPath(property, Paths.get(testDirectory.toString(), "foo.bar/test/ex.one.txt")));
+        assertTrue(source.isLongerMatchForPath(property, Paths.get(testDirectory.toString(), "foo.bar/test/ex.one.txt")));
     }
     
     @Test
@@ -196,6 +199,50 @@ public class DirConfigSourceTest {
         source.setProperties(props);
         
         // when & then
-        assertTrue(source.checkLongestMatchForPath("foo.bar.test.ex.two", Paths.get(testDirectory.toString(), "foo.bar/test/ex.two.txt")));
+        assertTrue(source.isLongerMatchForPath("foo.bar.test.ex.two", Paths.get(testDirectory.toString(), "foo.bar/test/ex.two.txt")));
     }
+    
+    @Test
+    public void testRemovePropertyFromPath() {
+        // given
+        Map<String,DirConfigSource.DirProperty> props = new HashMap<>();
+        // a property with a most specific path
+        String property = "foo.bar.test";
+        props.put(property,
+            new DirConfigSource.DirProperty(
+                "test", FileTime.from(Instant.now()),
+                Paths.get(testDirectory.toString(), "foo/bar/test"),
+                testDirectory));
+        source.setProperties(props);
+        assertEquals("test", source.getValue(property));
+        
+        // when
+        source.removePropertyFromPath(Paths.get(testDirectory.toString(), "foo/bar/test"));
+        // then
+        assertTrue(source.getValue(property) == null);
+        
+    }
+
+    @Test
+    public void testInitializeProperties() throws IOException {
+        // given
+        // only the most specific should be picked up (=test3)
+        writeFile(testDirectory, "foo.bar.test", "test");
+        writeFile(testDirectory, "foo.bar/test", "test2");
+        writeFile(testDirectory, "foo/bar/test", "test3");
+        
+        //when
+        source.initializePropertiesFromPath(testDirectory);
+        
+        //then
+        assertEquals("test3", source.getValue("foo.bar.test"));
+    }
+    
+    public static Path writeFile(Path parentDir, String filename, String content) throws IOException {
+        Path file = Paths.get(parentDir.toString(), filename);
+        Files.createDirectories(file.getParent());
+        Files.write(file, content.getBytes(StandardCharsets.UTF_8));
+        return file;
+    }
+
 }
