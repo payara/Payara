@@ -79,16 +79,16 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 public class DirConfigSource extends PayaraConfigSource implements ConfigSource {
 
     static final class DirProperty {
-        final String property;
+        final String propertyValue;
         final FileTime lastModifiedTime;
         final Path path;
         final int pathDepth;
         
-        DirProperty(String property, FileTime lastModifiedTime, Path path, int pathDepth) {
-            this.property = property;
+        DirProperty(String propertyValue, FileTime lastModifiedTime, Path path, Path rootPath) {
+            this.propertyValue = propertyValue;
             this.lastModifiedTime = lastModifiedTime;
             this.path = path;
-            this.pathDepth = pathDepth;
+            this.pathDepth = rootPath.relativize(path).getNameCount();
         }
     
         @Override
@@ -97,14 +97,14 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
             if (o == null || getClass() != o.getClass()) return false;
             DirProperty that = (DirProperty) o;
             return pathDepth == that.pathDepth &&
-                property.equals(that.property) &&
+                propertyValue.equals(that.propertyValue) &&
                 lastModifiedTime.equals(that.lastModifiedTime) &&
                 path.equals(that.path);
         }
     
         @Override
         public int hashCode() {
-            return Objects.hash(property, lastModifiedTime, path, pathDepth);
+            return Objects.hash(propertyValue, lastModifiedTime, path, pathDepth);
         }
     }
     
@@ -215,7 +215,13 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     @Override
     public Map<String, String> getProperties() {
         return unmodifiableMap(properties.entrySet().stream()
-                                    .collect(toMap(Map.Entry::getKey, e -> e.getValue().property)));
+                                    .collect(toMap(Map.Entry::getKey, e -> e.getValue().propertyValue)));
+    }
+    
+    // Test use only
+    void setProperties(Map<String, DirProperty> properties) {
+        this.properties.clear();
+        this.properties.putAll(properties);
     }
 
     @Override
@@ -231,7 +237,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     @Override
     public String getValue(String property) {
         DirProperty result = properties.get(property);
-        return result == null ? null : result.property;
+        return result == null ? null : result.propertyValue;
     }
 
     @Override
@@ -350,7 +356,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         
         // Check if this element has a higher path depth (longest match)
         // Example: "foo.bar/test/one.txt" (depth 2) wins over "foo.bar.test.one.txt" (depth 0)
-        boolean depth = old.pathDepth > relativePath.getNameCount();
+        boolean depth = old.pathDepth < relativePath.getNameCount();
         
         // In case that both pathes have the same depth, we need to check on the position of dots.
         // Example: /config/foo.bar/test/one.txt is less specific than /config/foo/bar.test/one.txt
@@ -372,7 +378,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
                 new String(Files.readAllBytes(path), StandardCharsets.UTF_8),
                 mainAtts.lastModifiedTime(),
                 path.toAbsolutePath(),
-                directory.relativize(path).getNameCount()
+                this.directory
             );
         }
         return null;

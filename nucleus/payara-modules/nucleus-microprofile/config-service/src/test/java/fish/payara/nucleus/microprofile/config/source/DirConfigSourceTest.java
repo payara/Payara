@@ -47,6 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,8 +56,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class DirConfigSourceTest {
 
@@ -110,24 +110,92 @@ public class DirConfigSourceTest {
     public void testParsePropertyNameFromPath() {
         // given
         Map<Path,String> examples = new HashMap<>();
-        examples.put(Paths.get(testDirectory.toString(), "/foo/bar/test/ex"), "foo.bar.test.ex");
-        examples.put(Paths.get(testDirectory.toString(), "/foo.bar.test/ex"), "foo.bar.test.ex");
-        examples.put(Paths.get(testDirectory.toString(), "/foo/bar.test/ex"), "foo.bar.test.ex");
-        examples.put(Paths.get(testDirectory.toString(), "/foo.bar/test/ex"), "foo.bar.test.ex");
+        examples.put(Paths.get(testDirectory.toString(), "foo/bar/test/ex"), "foo.bar.test.ex");
+        examples.put(Paths.get(testDirectory.toString(), "foo.bar.test/ex"), "foo.bar.test.ex");
+        examples.put(Paths.get(testDirectory.toString(), "foo/bar.test/ex"), "foo.bar.test.ex");
+        examples.put(Paths.get(testDirectory.toString(), "foo.bar/test/ex"), "foo.bar.test.ex");
         
         // we ignore the last file extension. always. this might lead to unexpected behaviour for a user.
         // best advice: do not use dots in filename, only in directory names.
-        examples.put(Paths.get(testDirectory.toString(), "/foo/bar/test/ex.txt"), "foo.bar.test.ex");
-        examples.put(Paths.get(testDirectory.toString(), "/foo/bar/test/ex.tar.gz"), "foo.bar.test.ex.tar");
-        examples.put(Paths.get(testDirectory.toString(), "/foo.bar/test.ex"), "foo.bar.test");
-        examples.put(Paths.get(testDirectory.toString(), "/foo/bar.test.ex"), "foo.bar.test");
-        examples.put(Paths.get(testDirectory.toString(), "/foo.bar.test.ex"), "foo.bar.test");
-        examples.put(Paths.get(testDirectory.toString(), "/foo/bar/test.ex"), "foo.bar.test");
+        examples.put(Paths.get(testDirectory.toString(), "foo/bar/test/ex.txt"), "foo.bar.test.ex");
+        examples.put(Paths.get(testDirectory.toString(), "foo/bar/test/ex.tar.gz"), "foo.bar.test.ex.tar");
+        examples.put(Paths.get(testDirectory.toString(), "foo.bar/test.ex"), "foo.bar.test");
+        examples.put(Paths.get(testDirectory.toString(), "foo/bar.test.ex"), "foo.bar.test");
+        examples.put(Paths.get(testDirectory.toString(), "foo.bar.test.ex"), "foo.bar.test");
+        examples.put(Paths.get(testDirectory.toString(), "foo/bar/test.ex"), "foo.bar.test");
         
         // when & then
         for (Map.Entry<Path, String> ex : examples.entrySet()) {
             System.out.println(ex.getKey()+" = "+ex.getValue());
             assertEquals(ex.getValue(), source.parsePropertyNameFromPath(ex.getKey()));
         }
+    }
+    
+    @Test
+    public void testCheckLongestMatchForPath_PathDepthLessSpecific() {
+        // given
+        Map<String,DirConfigSource.DirProperty> props = new HashMap<>();
+        // a property with a most specific path
+        String property = "foo.bar.test.ex";
+        props.put(property,
+                  new DirConfigSource.DirProperty(
+                      "test", FileTime.from(Instant.now()),
+                      Paths.get(testDirectory.toString(), "foo/bar/test/ex"),
+                      testDirectory));
+        source.setProperties(props);
+        
+        // when & then
+        assertFalse(source.checkLongestMatchForPath(property, Paths.get(testDirectory.toString(), "foo/bar.test/ex")));
+    }
+    
+    @Test
+    public void testCheckLongestMatchForPath_PathDepthMoreSpecific() {
+        // given
+        Map<String,DirConfigSource.DirProperty> props = new HashMap<>();
+        // a property with a most specific path
+        String property = "foo.bar.test.ex";
+        props.put(property,
+            new DirConfigSource.DirProperty(
+                "test", FileTime.from(Instant.now()),
+                Paths.get(testDirectory.toString(), "foo.bar/test/ex"),
+                testDirectory));
+        source.setProperties(props);
+        
+        // when & then
+        assertTrue(source.checkLongestMatchForPath(property, Paths.get(testDirectory.toString(), "foo/bar/test/ex")));
+    }
+    
+    @Test
+    public void testCheckLongestMatchForPath_PathDepthEqualMoreSpecific() {
+        // given
+        Map<String,DirConfigSource.DirProperty> props = new HashMap<>();
+        // a property with a most specific path
+        String property = "foo.bar.test.ex.one";
+        props.put(property,
+            new DirConfigSource.DirProperty(
+                "test", FileTime.from(Instant.now()),
+                Paths.get(testDirectory.toString(), "foo.bar/test.ex/one"),
+                testDirectory));
+        source.setProperties(props);
+        
+        // when & then
+        assertTrue(source.checkLongestMatchForPath(property, Paths.get(testDirectory.toString(), "foo.bar/test/ex.one.txt")));
+    }
+    
+    @Test
+    public void testCheckLongestMatchForPath_PropNotPresent() {
+        // given
+        Map<String,DirConfigSource.DirProperty> props = new HashMap<>();
+        // a property with a most specific path
+        String property = "foo.bar.test.ex.one";
+        props.put(property,
+            new DirConfigSource.DirProperty(
+                "test", FileTime.from(Instant.now()),
+                Paths.get(testDirectory.toString(), "foo.bar/test.ex/one"),
+                testDirectory));
+        source.setProperties(props);
+        
+        // when & then
+        assertTrue(source.checkLongestMatchForPath("foo.bar.test.ex.two", Paths.get(testDirectory.toString(), "foo.bar/test/ex.two.txt")));
     }
 }
