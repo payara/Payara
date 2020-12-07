@@ -89,7 +89,6 @@ public class BulkheadLifecycleTckTest extends AbstractRecordingTest {
                 callMethodWithNewThreadAndWaitFor(commonWaiter, service2, service2a);
                 callMethodWithNewThreadAndWaitFor(commonWaiter, service2, service2b);
             }
-            //TODO issue is that the same queue is used because of the stub context => use real impl?
             await().atMost(2, TimeUnit.SECONDS).until(() -> barrier.get() == 16);
 
             assertFurtherThreadThrowsBulkheadException(1, service1, service1a);
