@@ -44,6 +44,7 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -63,9 +64,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableMap;
+import static java.util.stream.Collectors.toMap;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -77,11 +78,11 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
  */
 public class DirConfigSource extends PayaraConfigSource implements ConfigSource {
 
-    class DirProperty {
-        String property;
-        FileTime lastModifiedTime;
-        Path path;
-        int pathDepth;
+    static final class DirProperty {
+        final String property;
+        final FileTime lastModifiedTime;
+        final Path path;
+        final int pathDepth;
         
         DirProperty(String property, FileTime lastModifiedTime, Path path, int pathDepth) {
             this.property = property;
@@ -107,11 +108,11 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         }
     }
     
-    class DirPropertyWatcher implements Runnable {
+    final class DirPropertyWatcher implements Runnable {
     
-        private Logger logger = Logger.getLogger(DirConfigSource.class.getName());
-        WatchService watcher = FileSystems.getDefault().newWatchService();
-        ConcurrentHashMap<WatchKey, Path> keys = new ConcurrentHashMap<>();
+        private final Logger logger = Logger.getLogger(DirConfigSource.class.getName());
+        private final WatchService watcher = FileSystems.getDefault().newWatchService();
+        private final ConcurrentHashMap<WatchKey, Path> watchedFileKeys = new ConcurrentHashMap<>();
         
         DirPropertyWatcher(Path topmostDir) throws IOException {
             if (Files.exists(topmostDir) && Files.isDirectory(topmostDir) && Files.isReadable(topmostDir)) {
@@ -135,7 +136,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         
         void register(Path dir) throws IOException {
             WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-            keys.putIfAbsent(key, dir);
+            watchedFileKeys.putIfAbsent(key, dir);
         }
         
         @Override
@@ -149,7 +150,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
                     return;
                 }
                 
-                Path workDir = keys.get(key);
+                Path workDir = watchedFileKeys.get(key);
                 for (WatchEvent<?> event : key.pollEvents()) {
                     WatchEvent.Kind<?> kind = event.kind();
             
@@ -169,7 +170,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
                             updatePropertyFromPath(path, Files.readAttributes(path, BasicFileAttributes.class));
                         }
                         if (Files.isRegularFile(path) && (kind == ENTRY_DELETE)) {
-                            properties.remove(parsePropertyNameFromPath(path));
+                            removePropertyFromPath(path);
                         }
                     } catch (IOException e) {
                         logger.log(Level.SEVERE, "Could not process event '"+kind+"' on '"+path+"'", e);
@@ -179,24 +180,23 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
                 // Reset key (obligatory) and remove from set if directory no longer accessible
                 boolean valid = key.reset();
                 if (!valid) {
-                    keys.remove(key);
+                    watchedFileKeys.remove(key);
                     
                     // all directories became inaccessible, even topmostDir!
-                    if (keys.isEmpty()) break;
+                    if (watchedFileKeys.isEmpty()) break;
                 }
             }
         }
     }
     
+    private static final Logger logger = Logger.getLogger(DirConfigSource.class.getName());
     private Path directory;
     private ConcurrentHashMap<String, DirProperty> properties = new ConcurrentHashMap<>();
-    private static Logger logger = Logger.getLogger(DirConfigSource.class.getName());
     
     public DirConfigSource(PayaraExecutorService executorService) {
-        // get the directory from the app server config
-        findDir();
-        
         try {
+            // get the directory from the app server config
+            this.directory = findDir();
             // create the watcher for the directory
             executorService.submit(new DirPropertyWatcher(this.directory));
             // initial loading
@@ -219,12 +219,8 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
 
     @Override
     public Map<String, String> getProperties() {
-        return unmodifiableMap(properties
-                                    .entrySet()
-                                    .stream()
-                                    .collect(
-                                        Collectors.toMap(Map.Entry::getKey, e -> e.getValue().property)
-                                    ));
+        return unmodifiableMap(properties.entrySet().stream()
+                                    .collect(toMap(Map.Entry::getKey, e -> e.getValue().property)));
     }
 
     @Override
@@ -248,18 +244,19 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         return "Directory";
     }
 
-    private void findDir() {
+    private Path findDir() throws IOException {
+        String path = configService.getMPConfig().getSecretDir();
         List<Path> candidates = Arrays.asList(
-                                    Paths.get(configService.getMPConfig().getSecretDir()),
+                                    Paths.get(path),
                                     // let's try it relative to server environment root
-                                    Paths.get(System.getProperty("com.sun.aas.instanceRoot"), configService.getMPConfig().getSecretDir())
+                                    Paths.get(System.getProperty("com.sun.aas.instanceRoot"), path)
                                 );
         for (Path candidate : candidates) {
             if (Files.exists(candidate) || Files.isDirectory(candidate) || Files.isReadable(candidate)) {
-                this.directory = candidate;
-                return;
+                return candidate;
             }
         }
+        throw new IOException("Given MPCONFIG directory '"+path+"' is no directory or cannot be read.");
     }
     
     void initializePropertiesFromPath(Path topmostDir) throws IOException {
@@ -365,7 +362,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     DirProperty readPropertyFromPath(Path path, BasicFileAttributes mainAtts) throws IOException {
         if (Files.exists(path) && Files.isRegularFile(path) && Files.isReadable(path)) {
             return new DirProperty(
-                new String(Files.readAllBytes(path)),
+                new String(Files.readAllBytes(path), StandardCharsets.UTF_8),
                 mainAtts.lastModifiedTime(),
                 path.toAbsolutePath(),
                 directory.relativize(path).getNameCount()
