@@ -45,7 +45,7 @@
 
         <dependency>
             <groupId>fish.payara.samples</groupId>
-            <artifactId>test-utils</artifactId>
+            <artifactId>samples-test-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.htmlunit</groupId>

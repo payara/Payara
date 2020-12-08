@@ -84,7 +84,7 @@ made subject to such option by the copyright holder. -->
 
         <dependency>
             <groupId>fish.payara.samples</groupId>
-            <artifactId>test-utils</artifactId>
+            <artifactId>samples-test-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.rest.client</groupId>

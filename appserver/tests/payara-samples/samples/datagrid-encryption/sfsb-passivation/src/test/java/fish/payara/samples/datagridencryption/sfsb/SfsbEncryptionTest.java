@@ -40,6 +40,14 @@
 package fish.payara.samples.datagridencryption.sfsb;
 
 import fish.payara.samples.ServerOperations;
+
+import java.net.URL;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -50,12 +58,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import java.net.URL;
 
 /**
  * @author Andrew Pielage <andrew.pielage@payara.fish>
@@ -69,17 +71,22 @@ public class SfsbEncryptionTest {
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "sfsb-passivation.war")
-                .addPackage("fish.payara.samples.datagridencryption.sfsb");
+                .addPackage("fish.payara.samples.datagridencryption.sfsb")
+                .addClass(ServerOperations.class);
     }
 
     @BeforeClass
     public static void enableSecurity() {
-        ServerOperations.enableDataGridEncryption();
+        if (ServerOperations.isServer()) {
+            ServerOperations.enableDataGridEncryption();
+        }
     }
 
     @AfterClass
     public static void resetSecurity() {
-        ServerOperations.disableDataGridEncryption();
+        if (ServerOperations.isServer()) {
+            ServerOperations.disableDataGridEncryption();
+        }
     }
 
     @Test
