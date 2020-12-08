@@ -143,7 +143,7 @@
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.10.2</jackson.version>
         <snakeyaml.version>1.25</snakeyaml.version>
-        <hazelcast.version>4.1</hazelcast.version>
+        <hazelcast.version>4.2</hazelcast.version>
         <hazelcast.kubernetes.version>2.2</hazelcast.kubernetes.version>
         <jaxb-api.version>2.3.2</jaxb-api.version>
         <jaxb-impl.version>2.3.2</jaxb-impl.version>
