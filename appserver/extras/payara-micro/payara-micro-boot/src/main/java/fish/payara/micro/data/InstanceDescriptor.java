@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Class describing an instance of Payara
@@ -107,7 +108,7 @@ public interface InstanceDescriptor extends Serializable {
     /**
      * @return the memberUUID
      */
-    String getMemberUUID();
+    UUID getMemberUUID();
 
     /**
      * Checks whether or not this instance is described as a Lite Hazelcast

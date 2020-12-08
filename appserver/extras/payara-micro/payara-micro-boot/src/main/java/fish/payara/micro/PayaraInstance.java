@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.jvnet.hk2.annotations.Contract;
@@ -65,15 +66,15 @@ public interface PayaraInstance {
 
     void addCDIListener(CDIEventListener listener);
 
-    Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters);
+    Map<UUID, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters);
 
-    Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters);
+    Map<UUID, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<UUID> memberGUIDs, String command, String... parameters);
 
     ClusterCommandResult executeLocalAsAdmin(String command, String... parameters);
 
     Set<InstanceDescriptor> getClusteredPayaras();
 
-    InstanceDescriptor getDescriptor(String member);
+    InstanceDescriptor getDescriptor(UUID member);
 
     String getInstanceName();
 
@@ -91,9 +92,9 @@ public interface PayaraInstance {
 
     void removeCDIListener(CDIEventListener listener);
 
-    <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable);
+    <T extends Serializable> Map<UUID, Future<T>> runCallable(Collection<UUID> memberUUIDS, Callable<T> callable);
 
-    <T extends Serializable> Map<String, Future<T>> runCallable(Callable<T> callable);
+    <T extends Serializable> Map<UUID, Future<T>> runCallable(Callable<T> callable);
 
     void setInstanceName(String instanceName);
     

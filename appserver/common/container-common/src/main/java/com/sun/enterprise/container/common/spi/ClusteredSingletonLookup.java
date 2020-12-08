@@ -39,9 +39,9 @@
  */
 package com.sun.enterprise.container.common.spi;
 
-import com.hazelcast.core.IAtomicLong;
-import com.hazelcast.core.ILock;
-import com.hazelcast.core.IMap;
+import com.hazelcast.cp.IAtomicLong;
+import com.hazelcast.cp.lock.FencedLock;
+import com.hazelcast.map.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 /**
@@ -51,7 +51,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
  * @author lprimak
  */
 public interface ClusteredSingletonLookup {
-    ILock getDistributedLock();
+    FencedLock getDistributedLock();
     boolean isDistributedLockEnabled();
     IMap<String, Object> getClusteredSingletonMap();
     String getClusteredSessionKey();

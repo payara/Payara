@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -119,7 +120,7 @@ public class SendAsadminCommand implements AdminCommand
         if (payaraMicro.isClustered())
         {
             // Get the subset of targets if provided, otherwise just get all clustered Micro instances
-            Map<String, InstanceDescriptor> targetInstanceDescriptors = getTargetInstanceDescriptors(targets);
+            Map<UUID, InstanceDescriptor> targetInstanceDescriptors = getTargetInstanceDescriptors(targets);
             
             // Add any explicit targets to our list of target GUIDS
             targetInstanceDescriptors.putAll(getExplicitTargetInstanceDescriptors(explicitTargets));
@@ -137,7 +138,7 @@ public class SendAsadminCommand implements AdminCommand
             }
             
             // Run the asadmin command against the targets (or all instances if no targets given)          
-            Map<String, Future<ClusterCommandResult>> results = payaraMicro.executeClusteredASAdmin(
+            Map<UUID, Future<ClusterCommandResult>> results = payaraMicro.executeClusteredASAdmin(
                     targetInstanceDescriptors.keySet(), command, parameters);
             
             // Check the command results for any failures
@@ -146,7 +147,7 @@ public class SendAsadminCommand implements AdminCommand
                 List<String> warningMessages = new ArrayList<>();
                 List<String> failureMessages = new ArrayList<>();
                 
-                for (Map.Entry<String, Future<ClusterCommandResult>> result : results.entrySet()) {
+                for (Map.Entry<UUID, Future<ClusterCommandResult>> result : results.entrySet()) {
                     try
                     {
                         ClusterCommandResult commandResult = result.getValue().get();
@@ -303,8 +304,8 @@ public class SendAsadminCommand implements AdminCommand
      * @param targets The targets to match
      * @return A map of the target instance GUIDs and their respective InstanceDescriptors
      */
-    private Map<String, InstanceDescriptor> getTargetInstanceDescriptors(String targets) {
-        Map<String, InstanceDescriptor> targetInstanceDescriptors = new HashMap<>();
+    private Map<UUID, InstanceDescriptor> getTargetInstanceDescriptors(String targets) {
+        Map<UUID, InstanceDescriptor> targetInstanceDescriptors = new HashMap<>();
         
         // Get all of the clustered instances
         Set<InstanceDescriptor> instances = payaraMicro.getClusteredPayaras();
@@ -393,8 +394,8 @@ public class SendAsadminCommand implements AdminCommand
      * @param explicitTargets The explicit targets
      * @return A map of the target instance GUIDs and their respective InstanceDescriptors
      */
-    private Map<String, InstanceDescriptor> getExplicitTargetInstanceDescriptors(String[] explicitTargets) {
-        Map<String, InstanceDescriptor> targetInstanceDescriptors = new HashMap<>();
+    private Map<UUID, InstanceDescriptor> getExplicitTargetInstanceDescriptors(String[] explicitTargets) {
+        Map<UUID, InstanceDescriptor> targetInstanceDescriptors = new HashMap<>();
         if (explicitTargets == null) {
             return targetInstanceDescriptors;
         }
