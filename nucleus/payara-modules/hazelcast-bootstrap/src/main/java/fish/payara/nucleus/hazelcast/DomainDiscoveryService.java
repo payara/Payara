@@ -39,10 +39,11 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import com.hazelcast.nio.Address;
+import com.hazelcast.cluster.Address;
 import com.hazelcast.spi.discovery.DiscoveryNode;
 import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
 import com.hazelcast.spi.discovery.integration.DiscoveryService;
+import com.hazelcast.spi.discovery.integration.DiscoveryServiceSettings;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.io.InstanceDirs;
@@ -74,6 +75,10 @@ import org.glassfish.internal.api.ServerContext;
 public class DomainDiscoveryService implements DiscoveryService {
     private static Logger logger = Logger.getLogger(DomainDiscoveryService.class.getName());
     private final Holder.LazyHolder<InetAddress> chosenAddress = Holder.LazyHolder.lazyHolder(MemberAddressPicker::findMyAddress);
+
+    public DomainDiscoveryService(DiscoveryServiceSettings settings) {
+
+    }
 
     @Override
     public void start() {
@@ -186,7 +191,7 @@ public class DomainDiscoveryService implements DiscoveryService {
     }
 
     @Override
-    public Map<String, Object> discoverLocalMetadata() {
+    public Map<String, String> discoverLocalMetadata() {
         return Collections.emptyMap();
     }
 

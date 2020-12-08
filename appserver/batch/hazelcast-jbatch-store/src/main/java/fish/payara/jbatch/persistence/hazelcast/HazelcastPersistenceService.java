@@ -1,7 +1,7 @@
 /*
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of the Common Development
     and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,8 +17,8 @@
 package fish.payara.jbatch.persistence.hazelcast;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.IdGenerator;
+import com.hazelcast.flakeidgen.FlakeIdGenerator;
+import com.hazelcast.map.IMap;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
 import com.ibm.jbatch.container.jobinstance.RuntimeFlowInSplitExecution;
@@ -56,8 +56,8 @@ public class HazelcastPersistenceService implements IPersistenceManagerService{
     private IMap jobInstanceMap;
     private IMap checkpointMAP;
     private HazelcastInstance theInstance;
-    private IdGenerator jobInstanceIdGenerator;
-    private IdGenerator checkpointIdGenerator;
+    private FlakeIdGenerator jobInstanceIdGenerator;
+    private FlakeIdGenerator checkpointIdGenerator;
 
     @Override
     public int jobOperatorGetJobInstanceCount(String jobName) {
@@ -274,8 +274,8 @@ public class HazelcastPersistenceService implements IPersistenceManagerService{
             theInstance = HazelcastInstance.class.cast(ctx.lookup(hazelcastJNDIName));
             jobInstanceMap = theInstance.getMap(JOB_INSTANCE_MAP);
             checkpointMAP = theInstance.getMap(CHECKPOINTMAP);
-            jobInstanceIdGenerator = theInstance.getIdGenerator(JOB_INSTANCE_MAP+"ID");
-            checkpointIdGenerator = theInstance.getIdGenerator(CHECKPOINTMAP + "ID");
+            jobInstanceIdGenerator = theInstance.getFlakeIdGenerator(JOB_INSTANCE_MAP+"ID");
+            checkpointIdGenerator = theInstance.getFlakeIdGenerator(CHECKPOINTMAP + "ID");
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastPersistenceService.class.getName()).log(Level.SEVERE, "Unable to find the Hazelcast Instance for JBatch Persistence", ex);
         }

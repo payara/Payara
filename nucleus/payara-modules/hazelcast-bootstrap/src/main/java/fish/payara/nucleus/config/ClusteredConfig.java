@@ -37,6 +37,9 @@
  */
 package fish.payara.nucleus.config;
 
+import com.hazelcast.cluster.Member;
+import com.hazelcast.cluster.MembershipAdapter;
+import com.hazelcast.cluster.MembershipEvent;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
@@ -50,12 +53,10 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.Member;
-import com.hazelcast.core.MembershipAdapter;
-import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.ReplicatedMap;
+import com.hazelcast.replicatedmap.ReplicatedMap;
 
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.UUID;
 
 /**
  * The {@link ClusteredConfig} can hold configurations that should have a common values that is based on local
@@ -85,7 +86,7 @@ public class ClusteredConfig extends MembershipAdapter {
     @Inject
     private HazelcastCore hzCore;
 
-    private String membershipListenerRegistrationId;
+    private UUID membershipListenerRegistrationId;
 
     /**
      * The names of the {@link ReplicatedMap}s holding the instances values of shared configurations.
@@ -169,7 +170,7 @@ public class ClusteredConfig extends MembershipAdapter {
         }
     }
 
-    private static String instanceName(Member member) {
-        return member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+    private String instanceName(Member member) {
+        return hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
     }
 }

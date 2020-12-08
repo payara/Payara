@@ -39,7 +39,7 @@
  */
 package fish.payara.micro.cdi.extension.cluster;
 
-import com.hazelcast.core.IAtomicLong;
+import com.hazelcast.cp.IAtomicLong;
 import fish.payara.cluster.Clustered;
 import fish.payara.cluster.DistributedLockType;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;

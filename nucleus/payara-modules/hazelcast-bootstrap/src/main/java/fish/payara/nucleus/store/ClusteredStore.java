@@ -41,9 +41,9 @@ package fish.payara.nucleus.store;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
+import com.hazelcast.map.LocalMapStats;
 import com.hazelcast.map.impl.MapService;
-import com.hazelcast.monitor.LocalMapStats;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.events.HazelcastEvents;
@@ -62,6 +62,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -106,7 +107,7 @@ public class ClusteredStore implements EventListener, MonitoringDataSource {
         }
     }
 
-    public String getInstanceId() {
+    public UUID getInstanceId() {
         return hzCore.getUUID();
     }
     
