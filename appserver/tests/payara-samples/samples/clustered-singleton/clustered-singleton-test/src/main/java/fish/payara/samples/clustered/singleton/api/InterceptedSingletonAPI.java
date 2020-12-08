@@ -37,50 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension.cluster;
+package fish.payara.samples.clustered.singleton.api;
 
-import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
-import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
-import fish.payara.cluster.Clustered;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import javax.ejb.Local;
 
 /**
- * implements CDI-based clustered singleton lookups
  *
  * @author lprimak
  */
-public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
-    private final BeanManager beanManager;
-    private final AtomicReference<String> sessionKey = new AtomicReference<>();
-
-    public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
-        super(componentId, CDI);
-        this.beanManager = beanManager;
-    }
-
-    @Override
-    public String getClusteredSessionKey() {
-        return sessionKey.get();
-    }
-
-    void setClusteredSessionKeyIfNotSet(Class<?> beanClass, Clustered clusteredAnnotation) {
-        sessionKey.updateAndGet(v -> v != null ? v : makeSessionKey(beanClass, clusteredAnnotation));
-    }
-
-    private String makeSessionKey(Class<?> beanClass, Clustered clusteredAnnotation) {
-        Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
-        if (managedBeans.size() > 1) {
-            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
-        }
-        if (managedBeans.size() == 1) {
-            Bean<?> bean = managedBeans.iterator().next();
-            return getBeanName(bean, getAnnotation(beanManager, bean));
-        }
-        return ClusterScopeContext.firstNonNull(clusteredAnnotation.keyName(), beanClass.getName());
-    }
+@Local
+public interface InterceptedSingletonAPI extends SingletonAPI {
+    void waitForTimer();
+    boolean isConsistent();
+    void async();
 }

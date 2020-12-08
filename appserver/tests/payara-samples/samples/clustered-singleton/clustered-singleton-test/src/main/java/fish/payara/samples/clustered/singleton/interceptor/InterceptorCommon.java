@@ -37,50 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension.cluster;
+package fish.payara.samples.clustered.singleton.interceptor;
 
-import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
-import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
-import fish.payara.cluster.Clustered;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import java.io.Serializable;
+import javax.interceptor.InvocationContext;
 
 /**
- * implements CDI-based clustered singleton lookups
- *
  * @author lprimak
  */
-public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
-    private final BeanManager beanManager;
-    private final AtomicReference<String> sessionKey = new AtomicReference<>();
+public class InterceptorCommon implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
-        super(componentId, CDI);
-        this.beanManager = beanManager;
+    public InterceptorData setData(InvocationContext ctx, String key, Object value) {
+        return new InterceptorData(ctx, key).setData(value);
     }
 
-    @Override
-    public String getClusteredSessionKey() {
-        return sessionKey.get();
-    }
+    public static class InterceptorData implements AutoCloseable {
+        private final InvocationContext ctx;
+        private final String key;
 
-    void setClusteredSessionKeyIfNotSet(Class<?> beanClass, Clustered clusteredAnnotation) {
-        sessionKey.updateAndGet(v -> v != null ? v : makeSessionKey(beanClass, clusteredAnnotation));
-    }
-
-    private String makeSessionKey(Class<?> beanClass, Clustered clusteredAnnotation) {
-        Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
-        if (managedBeans.size() > 1) {
-            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
+        public InterceptorData(final InvocationContext ctx, final String key) {
+            this.ctx = ctx;
+            this.key = key;
         }
-        if (managedBeans.size() == 1) {
-            Bean<?> bean = managedBeans.iterator().next();
-            return getBeanName(bean, getAnnotation(beanManager, bean));
+
+        public InterceptorData setData(Object value) {
+            ctx.getContextData().put(key, value);
+            return this;
         }
-        return ClusterScopeContext.firstNonNull(clusteredAnnotation.keyName(), beanClass.getName());
+
+        @Override
+        public void close() {
+            ctx.getContextData().remove(key);
+        }
     }
 }

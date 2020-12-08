@@ -37,50 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension.cluster;
+package fish.payara.samples.clustered.singleton.interceptor;
 
-import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
-import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
-import fish.payara.cluster.Clustered;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import fish.payara.samples.clustered.singleton.ClusteredSingletonInterceptedEJB;
+import java.io.Serializable;
+import java.util.logging.Logger;
+import javax.interceptor.AroundConstruct;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.AroundTimeout;
+import javax.interceptor.InvocationContext;
 
 /**
- * implements CDI-based clustered singleton lookups
- *
  * @author lprimak
  */
-public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
-    private final BeanManager beanManager;
-    private final AtomicReference<String> sessionKey = new AtomicReference<>();
+public class ClusteredInterceptor implements Serializable {
+    private static final Logger log = Logger.getLogger(ClusteredInterceptor.class.getName());
+    private static final long serialVersionUID = 1L;
+    public static final String AroundTimeoutKey = "AroundTimeout";
+    public static final String AroundTimeoutValue = "timeout";
+    public static final String AroundInvokeKey = "AroundInvoke";
+    public static final String AroundInvokeValue = "invoke";
+    private final InterceptorCommon ic = new InterceptorCommon();
 
-    public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
-        super(componentId, CDI);
-        this.beanManager = beanManager;
-    }
-
-    @Override
-    public String getClusteredSessionKey() {
-        return sessionKey.get();
-    }
-
-    void setClusteredSessionKeyIfNotSet(Class<?> beanClass, Clustered clusteredAnnotation) {
-        sessionKey.updateAndGet(v -> v != null ? v : makeSessionKey(beanClass, clusteredAnnotation));
-    }
-
-    private String makeSessionKey(Class<?> beanClass, Clustered clusteredAnnotation) {
-        Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
-        if (managedBeans.size() > 1) {
-            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
+    @AroundConstruct
+    public void aroundConstruct(InvocationContext ctx) {
+        try {
+            log.info("AroundConstruct");
+            ctx.proceed();
+            ClusteredSingletonInterceptedEJB target = (ClusteredSingletonInterceptedEJB) ctx.getTarget();
+            target.setConstructorInterceptorCalled();
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
         }
-        if (managedBeans.size() == 1) {
-            Bean<?> bean = managedBeans.iterator().next();
-            return getBeanName(bean, getAnnotation(beanManager, bean));
+    }
+
+    @AroundTimeout
+    public Object aroundTimeout(InvocationContext ctx) {
+        log.info("AroundTimeout");
+        try (InterceptorCommon.InterceptorData cd = ic.setData(ctx, AroundTimeoutKey, AroundTimeoutValue)) {
+            return ctx.proceed();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
-        return ClusterScopeContext.firstNonNull(clusteredAnnotation.keyName(), beanClass.getName());
+    }
+
+    @AroundInvoke
+    public Object aroundInvoke(InvocationContext ctx) {
+        log.info("AroundInvoke");
+        try (InterceptorCommon.InterceptorData cd = ic.setData(ctx, AroundInvokeKey, AroundInvokeValue)) {
+            return ctx.proceed();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

@@ -37,50 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension.cluster;
+package fish.payara.samples.clustered.singleton;
 
-import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
-import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
+import fish.payara.samples.clustered.singleton.api.SingletonAPI;
 import fish.payara.cluster.Clustered;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import fish.payara.cluster.DistributedLockType;
+import java.io.Serializable;
+import java.util.UUID;
+import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 
 /**
- * implements CDI-based clustered singleton lookups
- *
  * @author lprimak
  */
-public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
-    private final BeanManager beanManager;
-    private final AtomicReference<String> sessionKey = new AtomicReference<>();
+@ApplicationScoped
+@Clustered(keyName = "ClusteredSingletonCDI1", lock = DistributedLockType.LOCK)
+@Default
+public class ClusteredSingletonCDI1 implements SingletonAPI, Serializable {
+    private static final Logger log = Logger.getLogger(ClusteredSingletonCDI1.class.getName());
+    private static final long serialVersionUID = 1L;
+    protected final SingletonCommon sc = new SingletonCommon(this);
 
-    public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
-        super(componentId, CDI);
-        this.beanManager = beanManager;
+    @Override
+    public String getHello() {
+        return String.format("CDI Bean Hello (1): %s", sc);
+    }
+
+    @PostConstruct
+    void postConstruct() {
+        log.info("CDI1 PostConstruct");
+    }
+
+    @PreDestroy
+    void preDestroy() {
+        log.info("CDI1 PreDestroy");
     }
 
     @Override
-    public String getClusteredSessionKey() {
-        return sessionKey.get();
+    public void randomizeState() {
+        this.sc.randomizeState();
     }
 
-    void setClusteredSessionKeyIfNotSet(Class<?> beanClass, Clustered clusteredAnnotation) {
-        sessionKey.updateAndGet(v -> v != null ? v : makeSessionKey(beanClass, clusteredAnnotation));
-    }
-
-    private String makeSessionKey(Class<?> beanClass, Clustered clusteredAnnotation) {
-        Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
-        if (managedBeans.size() > 1) {
-            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
-        }
-        if (managedBeans.size() == 1) {
-            Bean<?> bean = managedBeans.iterator().next();
-            return getBeanName(bean, getAnnotation(beanManager, bean));
-        }
-        return ClusterScopeContext.firstNonNull(clusteredAnnotation.keyName(), beanClass.getName());
+    @Override
+    public UUID getState() {
+        return this.sc.getState();
     }
 }

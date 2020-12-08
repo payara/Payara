@@ -37,50 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension.cluster;
+package fish.payara.samples.clustered.singleton;
 
-import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
-import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
 import fish.payara.cluster.Clustered;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import fish.payara.micro.cdi.Outbound;
+import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.Schedule;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 
 /**
- * implements CDI-based clustered singleton lookups
- *
  * @author lprimak
  */
-public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
-    private final BeanManager beanManager;
-    private final AtomicReference<String> sessionKey = new AtomicReference<>();
+@Clustered
+@Singleton @Startup
+public class ClusteredEventBusStartup implements Serializable {
+    private static final Logger log = Logger.getLogger(ClusteredEventBusStartup.class.getName());
+    private static final long serialVersionUID = 1L;
+    private Stock stock;
+    private int numInvocations;
+    @Inject
+    @Outbound(loopBack = true)
+    private Event<Stock> stockEvents;
 
-    public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
-        super(componentId, CDI);
-        this.beanManager = beanManager;
-    }
-
-    @Override
-    public String getClusteredSessionKey() {
-        return sessionKey.get();
-    }
-
-    void setClusteredSessionKeyIfNotSet(Class<?> beanClass, Clustered clusteredAnnotation) {
-        sessionKey.updateAndGet(v -> v != null ? v : makeSessionKey(beanClass, clusteredAnnotation));
-    }
-
-    private String makeSessionKey(Class<?> beanClass, Clustered clusteredAnnotation) {
-        Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
-        if (managedBeans.size() > 1) {
-            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
-        }
-        if (managedBeans.size() == 1) {
-            Bean<?> bean = managedBeans.iterator().next();
-            return getBeanName(bean, getAnnotation(beanManager, bean));
-        }
-        return ClusterScopeContext.firstNonNull(clusteredAnnotation.keyName(), beanClass.getName());
+    @Schedule(hour = "*", minute = "*", second = "*/1", persistent = false)
+    private void generatePrice() {
+        ++numInvocations;
+        stock = new Stock("PYA", "Some very long description of Payara", Math.random() * 100.0);
+        log.log(Level.INFO, "Sock: {0}, numInvocations: {1}", new Object[] { stock, numInvocations });
+        stockEvents.fire(stock);
     }
 }

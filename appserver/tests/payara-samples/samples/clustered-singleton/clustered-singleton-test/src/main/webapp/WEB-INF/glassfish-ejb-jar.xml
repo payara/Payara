@@ -1,0 +1,16 @@
+<!DOCTYPE glassfish-ejb-jar PUBLIC "-//GlassFish.org// DTD GlassFish Application Server 3.1 EJB 3.1//EN" "http://glassfish.org/dtds/glassfish-ejb-jar_3_1-1.dtd">
+<glassfish-ejb-jar>
+    <enterprise-beans>
+        <ejb>
+            <ejb-name>ClusteredSingletonEjbXml1</ejb-name>
+            <clustered-bean>true</clustered-bean>
+            <clustered-key-name>ClusteredSingletonEjbXml</clustered-key-name>
+        </ejb>
+        <ejb>
+            <ejb-name>ClusteredSingletonEjbXml2</ejb-name>
+            <clustered-bean>true</clustered-bean>
+            <clustered-key-name>ClusteredSingletonEjbXml</clustered-key-name>
+        </ejb>
+    </enterprise-beans>
+    <disable-nonportable-jndi-names>true</disable-nonportable-jndi-names>
+</glassfish-ejb-jar>

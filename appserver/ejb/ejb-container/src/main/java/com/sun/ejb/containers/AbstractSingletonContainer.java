@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -121,7 +121,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
     private final InvocationInfo postConstructInvInfo;
     private final InvocationInfo preDestroyInvInfo;
 
-    protected final ClusteredSingletonLookup clusteredLookup = //
+    protected final ClusteredSingletonLookup clusteredLookup =
         new ClusteredSingletonLookupImpl(ejbDescriptor, componentId);
 
 
@@ -712,8 +712,7 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
                 EjbSessionDescriptor sessDesc = (EjbSessionDescriptor) ejbDescriptor;
                 IAtomicLong count = clusteredLookup.getClusteredUsageCount();
                 if (count.decrementAndGet() <= 0) {
-                    clusteredLookup.getClusteredSingletonMap().delete(clusteredLookup.getClusteredSessionKey());
-                    count.destroy();
+                    clusteredLookup.destroy();
                 } else if (sessDesc.dontCallPreDestroyOnDetach()) {
                     doPreDestroy = false;
                 }

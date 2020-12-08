@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,14 +57,15 @@ import org.glassfish.internal.api.Globals;
  * @author lprimak
  */
 public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingletonLookup {
-
     private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final String componentId;
     private final SingletonType singletonType;
     private final String keyPrefix;
     private final String mapKey;
     private final AtomicReference<String> sessionHzKey = new AtomicReference<>();
-    private final AtomicReference<String> lockKey = new AtomicReference<>();
+    private final AtomicReference<ILock> lock = new AtomicReference<>();
+    private final AtomicReference<IAtomicLong> count = new AtomicReference<>();
+
 
     public ClusteredSingletonLookupImplBase(String componentId, SingletonType singletonType) {
         this.componentId = componentId;
@@ -81,26 +82,13 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
         return mapKey;
     }
 
-    protected final String getLockKey() {
-        return lockKey.updateAndGet(v -> v != null ? v : makeLockKey());
-    }
-
     public final String getSessionHzKey() {
         return sessionHzKey.updateAndGet(v -> v != null ? v : makeSessionHzKey());
     }
 
-    /**
-     * {@link #getSessionHzKey()} and {@link #getLockKey()} are dependent on {@link #getClusteredSessionKey()} so should
-     * its value change cache keys need to be invalidated using this method.
-     */
-    protected final void invalidateKeys() {
-        sessionHzKey.set(null);
-        lockKey.set(null);
-    }
-
     @Override
     public ILock getDistributedLock() {
-        return getHazelcastInstance().getLock(getLockKey());
+        return lock.updateAndGet(v -> v != null ? v : getHazelcastInstance().getLock(makeLockKey()));
     }
 
     @Override
@@ -109,8 +97,8 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     }
 
     @Override
-    public  IAtomicLong getClusteredUsageCount() {
-        return getHazelcastInstance().getAtomicLong(getSessionHzKey()+ "/count");
+    public IAtomicLong getClusteredUsageCount() {
+        return count.updateAndGet(v -> v != null ? v : getHazelcastInstance().getAtomicLong(makeCountKey()));
     }
 
     private HazelcastInstance getHazelcastInstance() {
@@ -131,6 +119,19 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     }
 
     @Override
+    public void destroy() {
+        getClusteredSingletonMap().delete(getClusteredSessionKey());
+
+        // CP locks and AtomicLong's can't be destroyed, as per https://github.com/hazelcast/hazelcast/issues/17498
+        // so we just release the references to them and reset to zero where we can
+        lock.set(null);
+        IAtomicLong oldCountValue = count.getAndSet(null);
+        if (oldCountValue != null) {
+            oldCountValue.set(0);
+        }
+    }
+
+    @Override
     public HazelcastCore getHazelcastCore() {
         return hzCore;
     }
@@ -145,6 +146,10 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     private String makeLockKey() {
         return getSessionHzKey() + "/lock";
+    }
+
+    private String makeCountKey() {
+        return getSessionHzKey() + "/count";
     }
 
     private String makeSessionHzKey() {

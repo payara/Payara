@@ -37,50 +37,54 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cdi.extension.cluster;
+package fish.payara.samples.clustered.singleton.startup;
 
-import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
-import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
-import fish.payara.cluster.Clustered;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
-import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import fish.payara.samples.clustered.singleton.api.InterceptedSingletonAPI;
+import fish.payara.samples.clustered.singleton.api.SingletonAPI;
+import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.Timeout;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+import javax.inject.Inject;
 
 /**
- * implements CDI-based clustered singleton lookups
  *
  * @author lprimak
  */
-public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
-    private final BeanManager beanManager;
-    private final AtomicReference<String> sessionKey = new AtomicReference<>();
+@Singleton
+@Startup
+public class AppStartup {
+    private static final Logger log = Logger.getLogger(AppStartup.class.getName());
+    private @EJB(lookup = "java:module/ClusteredSingletonEjbXml1") SingletonAPI descAPI;
+    private @EJB InterceptedSingletonAPI annotatedAPI;
+    private @Inject SingletonAPI cdiAPI;
+    private @Resource TimerService ts;
 
-    public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
-        super(componentId, CDI);
-        this.beanManager = beanManager;
+    @PostConstruct
+    void postConstruct() {
+        ts.createSingleActionTimer(0, new TimerConfig(null, false));
     }
 
-    @Override
-    public String getClusteredSessionKey() {
-        return sessionKey.get();
+    @Timeout
+    void init() {
+        annotatedAPI.waitForTimer();
+        log.info("First Time ...");
+        doInit();
+        log.info("Second Time ...");
+        doInit();
     }
 
-    void setClusteredSessionKeyIfNotSet(Class<?> beanClass, Clustered clusteredAnnotation) {
-        sessionKey.updateAndGet(v -> v != null ? v : makeSessionKey(beanClass, clusteredAnnotation));
-    }
 
-    private String makeSessionKey(Class<?> beanClass, Clustered clusteredAnnotation) {
-        Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
-        if (managedBeans.size() > 1) {
-            throw new IllegalArgumentException("Multiple beans found for " + beanClass);
-        }
-        if (managedBeans.size() == 1) {
-            Bean<?> bean = managedBeans.iterator().next();
-            return getBeanName(bean, getAnnotation(beanManager, bean));
-        }
-        return ClusterScopeContext.firstNonNull(clusteredAnnotation.keyName(), beanClass.getName());
+    void doInit() {
+        log.info(descAPI.getHello());
+        log.info(annotatedAPI.getHello());
+        log.info(cdiAPI.getHello());
+        cdiAPI.getHello();
+        annotatedAPI.async();
     }
 }
