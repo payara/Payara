@@ -113,9 +113,9 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
         if (schemaAnnotation != null) {
             from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples(), from::addExample);
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from::addExample);
         from.setExample(annotation.getValue("example", Object.class));
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents, from.contents::add);
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents::add);
         return from;
     }
 

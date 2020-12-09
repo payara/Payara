@@ -105,9 +105,9 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
         if (schemaAnnotation != null) {
             from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples(), from::addExample);
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from::addExample);
         from.setExample(annotation.getValue("example", Object.class));
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents(), from.contents::add);
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents::add);
         return from;
     }
 

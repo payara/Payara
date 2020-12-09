@@ -85,9 +85,9 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
-        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from.getSecurity(), from::addSecurityRequirement);
-        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers(), from::addServer);
-        extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from.getTags(), from::addTag);
+        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from::addSecurityRequirement);
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
+        extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from::addTag);
         AnnotationModel components = annotation.getValue("components", AnnotationModel.class);
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));

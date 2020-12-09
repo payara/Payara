@@ -76,8 +76,8 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
         APIResponseImpl from = new APIResponseImpl();
         from.setDescription(annotation.getValue("description", String.class));
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents, from.contents::add);
-        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks(), from::addLink);
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents::add);
+        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from::addLink);
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);

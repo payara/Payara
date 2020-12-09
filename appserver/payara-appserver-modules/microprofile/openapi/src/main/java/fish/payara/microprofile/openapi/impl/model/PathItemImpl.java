@@ -74,7 +74,7 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     public static PathItem createInstance(AnnotationModel annotation, ApiContext context) {
         PathItem from = new PathItemImpl();
-        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers(), from::addServer);
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         return from;
     }
 

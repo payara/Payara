@@ -92,17 +92,16 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
         }
         from.setOperationId(annotation.getValue("operationId", String.class));
-        extractAnnotations(annotation, context, "parameters", ParameterImpl::createInstance, from.getParameters(),from::addParameter);
+        extractAnnotations(annotation, context, "parameters", ParameterImpl::createInstance, from::addParameter);
         AnnotationModel requestBody = annotation.getValue("requestBody", AnnotationModel.class);
         if (requestBody != null) {
             from.setRequestBody(RequestBodyImpl.createInstance(requestBody, context));
         }
-        final APIResponsesImpl responses = (APIResponsesImpl) from.getResponses();
-        extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, responses, responses::addAPIResponse);
-        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks(), from::addCallback);
+        extractAnnotations(annotation, context, "responses", "responseCode", APIResponseImpl::createInstance, from.responses::addAPIResponse);
+        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from::addCallback);
         from.setDeprecated(annotation.getValue("deprecated", Boolean.class));
-        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from.getSecurity(), from::addSecurityRequirement);
-        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers(), from::addServer);
+        extractAnnotations(annotation, context, "security", SecurityRequirementImpl::createInstance, from::addSecurityRequirement);
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         from.setMethod(annotation.getValue("method", String.class));
         return from;
     }

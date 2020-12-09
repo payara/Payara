@@ -78,7 +78,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
         if (urlExpression != null && !urlExpression.isEmpty()) {
             from.setUrlExpression(urlExpression);
             List<Operation> operations = createList();
-            extractAnnotations(annotation, context, "operations", OperationImpl::createInstance, operations, operations::add);
+            extractAnnotations(annotation, context, "operations", OperationImpl::createInstance, operations::add);
             from.setOperations(operations);
         }
         return from;

@@ -47,7 +47,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
-import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
 
@@ -161,9 +160,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setMaxProperties(annotation.getValue("maxProperties", Integer.class));
         from.setMinProperties(annotation.getValue("minProperties", Integer.class));
 
-        final Map<String, Schema> properties = createMap();
-        extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, properties, properties::put);
-        from.setProperties(properties);
+        extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, from::addProperty);
 
         from.setRequired(annotation.getValue("requiredProperties", List.class));
         EnumModel typeEnum = annotation.getValue("type", EnumModel.class);

@@ -75,13 +75,13 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
         }
         MediaType mediaType = new MediaTypeImpl();
         from.addMediaType(typeName, mediaType);
-        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, mediaType.getExamples(), mediaType::addExample);
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, mediaType::addExample);
         mediaType.setExample(annotation.getValue("example", String.class));
         AnnotationModel schemaAnnotation = annotation.getValue("schema", AnnotationModel.class);
         if (schemaAnnotation != null) {
             mediaType.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        extractAnnotations(annotation, context, "encoding", "name", EncodingImpl::createInstance, mediaType.getEncoding(), mediaType::addEncoding);
+        extractAnnotations(annotation, context, "encoding", "name", EncodingImpl::createInstance, mediaType::addEncoding);
         return from;
     }
 

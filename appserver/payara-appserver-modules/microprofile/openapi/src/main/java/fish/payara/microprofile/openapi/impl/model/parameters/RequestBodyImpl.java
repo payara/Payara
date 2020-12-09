@@ -70,7 +70,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
         }
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents(), from.contents::add);
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents::add);
         return from;
     }
 

@@ -501,11 +501,10 @@ public final class ModelUtils {
             String type,
             String key,
             BiFunction<AnnotationModel, ApiContext, T> factory,
-            Map<String, T> wrapper,
             BiConsumer<String, T> wrapperAddFunction) {
 
-        if (wrapper == null) {
-            throw new IllegalArgumentException();
+        if (wrapperAddFunction == null) {
+            throw new IllegalArgumentException("null wrapperAddFunction. This is required to modify OpenAPI documents");
         }
         List<AnnotationModel> annotations = annotationModel.getValue(type, List.class);
         if (annotations != null) {
@@ -523,11 +522,10 @@ public final class ModelUtils {
             ApiContext context,
             String type,
             BiFunction<AnnotationModel, ApiContext, T> factory,
-            List<T> wrapper,
             Consumer<T> wrapperAddFunction) {
 
-        if (wrapper == null) {
-            throw new IllegalArgumentException();
+        if (wrapperAddFunction == null) {
+            throw new IllegalArgumentException("null wrapperAddFunction. This is required to modify OpenAPI documents");
         }
         List<AnnotationModel> annotations = annotationModel.getValue(type, List.class);
         if (annotations != null) {

@@ -83,14 +83,14 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     public static Components createInstance(AnnotationModel annotation, ApiContext context) {
         Components from = new ComponentsImpl();
-        extractAnnotations(annotation, context, "schemas", "name", SchemaImpl::createInstance, from.getSchemas(), from::addSchema);
-        extractAnnotations(annotation, context, "responses", "name", APIResponseImpl::createInstance, from.getResponses(), from::addResponse);
-        extractAnnotations(annotation, context, "parameters", "name", ParameterImpl::createInstance, from.getParameters(), from::addParameter);
-        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples(), from::addExample);
-        extractAnnotations(annotation, context, "requestBodies", "name", RequestBodyImpl::createInstance, from.getRequestBodies(), from::addRequestBody);
-        extractAnnotations(annotation, context, "securitySchemes", "securitySchemeName", SecuritySchemeImpl::createInstance, from.getSecuritySchemes(), from::addSecurityScheme);
-        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from.getLinks(), from::addLink);
-        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from.getCallbacks(), from::addCallback);
+        extractAnnotations(annotation, context, "schemas", "name", SchemaImpl::createInstance, from::addSchema);
+        extractAnnotations(annotation, context, "responses", "name", APIResponseImpl::createInstance, from::addResponse);
+        extractAnnotations(annotation, context, "parameters", "name", ParameterImpl::createInstance, from::addParameter);
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from::addExample);
+        extractAnnotations(annotation, context, "requestBodies", "name", RequestBodyImpl::createInstance, from::addRequestBody);
+        extractAnnotations(annotation, context, "securitySchemes", "securitySchemeName", SecuritySchemeImpl::createInstance, from::addSecurityScheme);
+        extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from::addLink);
+        extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from::addCallback);
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
         return from;
     }

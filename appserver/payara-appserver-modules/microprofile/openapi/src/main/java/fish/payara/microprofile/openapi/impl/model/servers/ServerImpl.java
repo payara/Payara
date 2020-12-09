@@ -63,9 +63,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
         Server from = new ServerImpl();
         from.setDescription(annotation.getValue("description", String.class));
         from.setUrl(annotation.getValue("url", String.class));
-        Map<String, ServerVariable> variables = createMap();
-        extractAnnotations(annotation, context, "variables", "name", ServerVariableImpl::createInstance, variables, from::addVariable);
-        from.setVariables(variables);
+        extractAnnotations(annotation, context, "variables", "name", ServerVariableImpl::createInstance, from::addVariable);
         return from;
     }
 
@@ -129,7 +127,7 @@ public class ServerImpl extends ExtensibleImpl<Server> implements Server {
                 merge(
                         serverVariableName,
                         from.getVariables().get(serverVariableName),
-                        to.getVariables(),
+                        ((ServerImpl) to).variables,
                         override
                 );
             }
