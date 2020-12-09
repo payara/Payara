@@ -77,7 +77,7 @@ public class CircuitBreakerBasicTest {
         @Override
         protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
                 FaultTolerancePolicy policy) {
-            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation,
+            return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
                     (c, p) -> createMethodContext(methodId, c, p)) {
 
                 @Override

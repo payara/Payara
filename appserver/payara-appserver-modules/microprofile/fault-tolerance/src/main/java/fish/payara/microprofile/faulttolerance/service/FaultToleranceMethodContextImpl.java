@@ -179,8 +179,8 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     }
 
     @Override
-    public FaultToleranceMetrics getMetrics(boolean enabled) {
-        return enabled ? shared.metrics : FaultToleranceMetrics.DISABLED;
+    public FaultToleranceMetrics getMetrics() {
+        return policy.isMetricsEnabled ? shared.metrics : FaultToleranceMetrics.DISABLED;
     }
 
     /*
@@ -188,14 +188,18 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
      */
 
     @Override
-    public CircuitBreakerState getState(int requestVolumeThreshold) {
+    public CircuitBreakerState getState() {
+        int requestVolumeThreshold = policy.circuitBreaker.requestVolumeThreshold;
         return requestVolumeThreshold < 0
                 ? shared.circuitBreakerState.get()
-                : shared.circuitBreakerState.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
+                : shared.circuitBreakerState.updateAndGet(
+                        value -> value != null ? value :
+                            new CircuitBreakerState(requestVolumeThreshold, policy.circuitBreaker.failureRatio));
     }
 
     @Override
-    public BlockingQueue<Thread> getConcurrentExecutions(int maxConcurrentThreads) {
+    public BlockingQueue<Thread> getConcurrentExecutions() {
+        int maxConcurrentThreads = policy.bulkhead.value;
         return maxConcurrentThreads < 0
                 ? shared.concurrentExecutions.get()
                 : shared.concurrentExecutions.updateAndGet(value -> value != null ? value : new ArrayBlockingQueue<>(maxConcurrentThreads));

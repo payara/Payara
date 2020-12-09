@@ -110,7 +110,7 @@ public interface FaultToleranceMetrics {
             if (policy.isCircuitBreakerPresent()) {
                 register(MetricType.COUNTER, "ft.circuitbreaker.calls.total", new String[][] {
                     {"circuitBreakerResult", "success", "failure", "circuitBreakerOpen"}});
-                CircuitBreakerState state = context.getState(policy.circuitBreaker.requestVolumeThreshold);
+                CircuitBreakerState state = context.getState();
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosOpen, "state", "open");
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosHalfOpen, "state", "halfOpen");
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosClosed, "state", "closed");
@@ -119,7 +119,7 @@ public interface FaultToleranceMetrics {
             if (policy.isBulkheadPresent()) {
                 register(MetricType.COUNTER, "ft.bulkhead.calls.total", new String[][] {
                     {"bulkheadResult", "accepted", "rejected"}});
-                BlockingQueue<Thread> running = context.getConcurrentExecutions(policy.bulkhead.value);
+                BlockingQueue<Thread> running = context.getConcurrentExecutions();
                 register("ft.bulkhead.executionsRunning", null, running::size);
                 register(MetricType.HISTOGRAM, "ft.bulkhead.runningDuration");
                 if (policy.isAsynchronous()) {

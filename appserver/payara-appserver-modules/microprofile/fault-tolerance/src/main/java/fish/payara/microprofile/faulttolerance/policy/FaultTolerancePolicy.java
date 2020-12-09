@@ -263,7 +263,7 @@ public final class FaultTolerancePolicy implements Serializable {
             return context.proceed();
         }
         FaultToleranceMethodContext ftmContext = ftmContextSupplier.get();
-        FaultToleranceMetrics metrics = ftmContext.getMetrics(isMetricsEnabled).boundTo(ftmContext, this);
+        FaultToleranceMetrics metrics = ftmContext.getMetrics().boundTo(ftmContext, this);
         try {
             Object res = processAsynchronousStage(ftmContext, metrics);
             if (isAsyncExceptionThrown(res)) {
@@ -427,7 +427,7 @@ public final class FaultTolerancePolicy implements Serializable {
             return processTimeoutStage(invocation, asyncAttempt);
         }
         logger.log(Level.FINER, "Proceeding invocation with circuitbreaker semantics");
-        CircuitBreakerState state = invocation.context.getState(circuitBreaker.requestVolumeThreshold);
+        CircuitBreakerState state = invocation.context.getState();
         Object resultValue = null;
         switch (state.getCircuitState()) {
         default:
@@ -470,7 +470,7 @@ public final class FaultTolerancePolicy implements Serializable {
                 }
                 failedOn = ex;
             }
-            if (state.isOverFailureThreshold(circuitBreaker.requestVolumeThreshold, circuitBreaker.failureRatio)) {
+            if (state.isOverFailureThreshold()) {
                 logger.log(Level.FINE, "Failure threshold causes CircuitBreaker to transit: closed => open");
                 openCircuit(invocation, state);
             }
@@ -567,7 +567,7 @@ public final class FaultTolerancePolicy implements Serializable {
                 // we are in the queue, yeah
                 try {
                     logger.log(Level.FINE, "Entered bulkhead queue.");
-                    BlockingQueue<Thread> running = invocation.context.getConcurrentExecutions(runCapacity);
+                    BlockingQueue<Thread> running = invocation.context.getConcurrentExecutions();
                     if (isMetricsEnabled) {
                         invocation.metrics.incrementBulkheadCallsAcceptedTotal();
                     }

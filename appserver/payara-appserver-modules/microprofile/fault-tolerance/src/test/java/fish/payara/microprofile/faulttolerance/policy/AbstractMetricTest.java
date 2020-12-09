@@ -72,11 +72,11 @@ abstract class AbstractMetricTest extends AbstractRecordingTest {
             protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
                     FaultTolerancePolicy policy) {
                 FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(registry, FaultToleranceUtils.getCanonicalMethodName(context));
-                return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation,
+                return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
                         (c, p) -> createMethodContext(methodId, c, p)) {
 
                     @Override
-                    public FaultToleranceMetrics getMetrics(boolean enabled) {
+                    public FaultToleranceMetrics getMetrics() {
                         return metrics;
                     }
 

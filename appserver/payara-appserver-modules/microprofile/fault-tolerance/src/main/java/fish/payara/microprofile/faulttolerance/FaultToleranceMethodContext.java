@@ -75,10 +75,9 @@ public interface FaultToleranceMethodContext {
     /**
      * Returns the {@link FaultToleranceMetrics} to use.
      *
-     * @param enabled true, if metrics are enabled for the method, else false
      * @return the {@link FaultToleranceMetrics} to use, {@link FaultToleranceMetrics#DISABLED} when not enabled.
      */
-    FaultToleranceMetrics getMetrics(boolean enabled);
+    FaultToleranceMetrics getMetrics();
 
     /*
      * State
@@ -87,18 +86,16 @@ public interface FaultToleranceMethodContext {
     /**
      * Get or create the {@link CircuitBreakerState}.
      *
-     * @param requestVolumeThreshold when negative no state is created if it does not already exist
      * @return the created or existing state, or null if non existed and requestVolumeThreshold was null
      */
-    CircuitBreakerState getState(int requestVolumeThreshold);
+    CircuitBreakerState getState();
 
     /**
      * Get or create the {@link BlockingQueue} for bulkhead.
      *
-     * @param maxConcurrentThreads when negative no queue is created if it does not already exist
      * @return the created or existing queue, or null if non existed and requestVolumeThreshold was null
      */
-    BlockingQueue<Thread> getConcurrentExecutions(int maxConcurrentThreads);
+    BlockingQueue<Thread> getConcurrentExecutions();
 
     /**
      * Get the bulkhead thread count.

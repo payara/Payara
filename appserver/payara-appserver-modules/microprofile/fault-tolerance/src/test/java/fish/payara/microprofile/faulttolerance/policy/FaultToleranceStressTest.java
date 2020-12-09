@@ -123,18 +123,18 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
         @Override
         protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
                 FaultTolerancePolicy policy) {
-            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation,
+            return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
                     (c, p) -> createMethodContext(methodId, c, p)) {
                 @Override
-                public CircuitBreakerState getState(int requestVolumeThreshold) {
+                public CircuitBreakerState getState() {
                     circuitStateAccessCount.incrementAndGet();
-                    return super.getState(requestVolumeThreshold);
+                    return super.getState();
                 }
 
                 @Override
-                public BlockingQueue<Thread> getConcurrentExecutions(int maxConcurrentThreads) {
+                public BlockingQueue<Thread> getConcurrentExecutions() {
                     concurrentExecutionsAccessCount.incrementAndGet();
-                    return super.getConcurrentExecutions(maxConcurrentThreads);
+                    return super.getConcurrentExecutions();
                 }
 
                 @Override
