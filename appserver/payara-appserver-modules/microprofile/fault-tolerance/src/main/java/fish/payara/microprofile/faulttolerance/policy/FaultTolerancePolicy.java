@@ -266,8 +266,15 @@ public final class FaultTolerancePolicy implements Serializable {
         FaultToleranceMetrics metrics = ftmContext.getMetrics().boundTo(ftmContext, this);
         try {
             Object res = processAsynchronousStage(ftmContext, metrics);
-            if (isAsyncExceptionThrown(res)) {
-                metrics.incrementInvocationsExceptionThrown();
+            if (res instanceof AsyncFuture) {
+                AsyncFuture async = (AsyncFuture) res;
+                res = async.whenComplete((value, ex) -> { // first evaluate async when the results are in...
+                    if (isExceptionThrown(async)) {
+                        metrics.incrementInvocationsExceptionThrown();
+                    } else {
+                        metrics.incrementInvocationsValueReturned();
+                    }
+                });
             } else {
                 metrics.incrementInvocationsValueReturned();
             }
@@ -278,12 +285,8 @@ public final class FaultTolerancePolicy implements Serializable {
         }
     }
 
-    private boolean isAsyncExceptionThrown(Object res) {
-        if (res instanceof AsyncFuture) {
-            AsyncFuture async = (AsyncFuture) res;
-            return async.isExceptionThrown() || async.isCompletedExceptionally() && !asynchronous.isSuccessWhenCompletedExceptionally();
-        }
-        return false;
+    private boolean isExceptionThrown(AsyncFuture async) {
+        return async.isExceptionThrown() || async.isCompletedExceptionally() && !asynchronous.isSuccessWhenCompletedExceptionally();
     }
 
     /**
