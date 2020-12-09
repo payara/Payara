@@ -209,7 +209,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         if (!isEnabled()) {
             return null;
         }
-        String name = getApplicationName();
+        String name = appKeyOf(getApplicationName());
         if (!createIfNotExists) {
             return contextByName.get(name);
         }
@@ -221,6 +221,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
         if (!isEnabled()) {
             return null;
         }
+        name = appKeyOf(name);
         if (MetricsContext.SERVER_CONTEXT_NAME.equals(name)) {
             return contextByName.computeIfAbsent(name, key -> new MetricsContextImpl(key));
         }
@@ -478,8 +479,7 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
      * @param applicationName The name of the application to create
      */
     public void registerApplication(String applicationName) {
-        String name = applicationName.toLowerCase();
-        contextByName.put(name, new MetricsContextImpl(name));
+        // creation is lazy
     }
 
     /**
@@ -488,7 +488,11 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
      * @param applicationName The name of the application to remove
      */
     public void deregisterApplication(String applicationName) {
-        contextByName.remove(applicationName.toLowerCase());
+        contextByName.remove(appKeyOf(applicationName));
+    }
+
+    private static String appKeyOf(String name) {
+        return name == null ? null : name.toLowerCase();
     }
 
     /**
