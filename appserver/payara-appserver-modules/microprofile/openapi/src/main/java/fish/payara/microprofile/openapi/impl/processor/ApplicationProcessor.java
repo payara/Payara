@@ -723,10 +723,19 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitAPIResponse(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         APIResponseImpl apiResponse = APIResponseImpl.createInstance(annotation, context);
         Operation workingOperation = context.getWorkingOperation();
+
+        // Handle exception mappers
         if (workingOperation == null) {
-            // TODO: handle exception mappers here
+            if (element instanceof MethodModel && "toResponse".equals(element.getName())) {
+                final MethodModel methodModel = (MethodModel) element;
+                final String exceptionType = methodModel.getParameter(0).getTypeName();
+                context.addMappedExceptionResponse(exceptionType, apiResponse);
+            } else {
+                LOGGER.warning("Unrecognised annotation position at: " + element.shortDesc());
+            }
             return;
         }
+
         APIResponsesImpl.merge(apiResponse, workingOperation.getResponses(), true, context);
 
         // If an APIResponse has been processed that isn't the default
@@ -995,21 +1004,33 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * @param method the {@link Method} to model the default response on.
      * @return the newly created {@link APIResponse}.
      */
-    private APIResponse insertDefaultResponse(ApiContext context,
+    private void insertDefaultResponse(ApiContext context,
             Operation operation, MethodModel method) {
+
+        final APIResponses responses = new APIResponsesImpl();
+        operation.setResponses(responses);
+
+        // Add the default response
         APIResponse defaultResponse = new APIResponseImpl();
+        responses.addAPIResponse(APIResponses.DEFAULT, defaultResponse);
         defaultResponse.setDescription("Default Response.");
 
-        // Create the default response with a wildcard mediatype
+        // Configure the default response with a wildcard mediatype
         MediaType mediaType = new MediaTypeImpl().schema(
                 createSchema(context, method.getReturnType())
         );
         defaultResponse.getContent().addMediaType(javax.ws.rs.core.MediaType.WILDCARD, mediaType);
 
-        // Add the default response
-        operation.setResponses(new APIResponsesImpl().addAPIResponse(
-                APIResponses.DEFAULT, defaultResponse));
-        return defaultResponse;
+        // Add responses for the applicable declared exceptions
+        for (String exceptionType : method.getExceptionTypes()) {
+            final APIResponseImpl mappedResponse = (APIResponseImpl) context.getMappedExceptionResponses().get(exceptionType);
+            if (mappedResponse != null) {
+                final String responseCode = mappedResponse.getResponseCode();
+                if (responseCode != null) {
+                    responses.addAPIResponse(responseCode, mappedResponse);
+                }
+            }
+        }
     }
 
     /**

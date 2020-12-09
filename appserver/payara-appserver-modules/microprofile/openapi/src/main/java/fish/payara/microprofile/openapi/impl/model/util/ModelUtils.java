@@ -645,38 +645,40 @@ public final class ModelUtils {
                 f.setAccessible(true);
                 try {
                     // Get the new and old value
-                    Object newValue = f.get(from);
-                    Object currentValue = f.get(to);
-                    if (newValue != null) {
-                        if (newValue instanceof Map) {
-                            Map<Object, Object> newMap = (Map<Object, Object>) newValue;
-                            Map<Object, Object> currentMap = (Map<Object, Object>) currentValue;
-                            for (Entry<Object, Object> entry : newMap.entrySet()) {
-                                if (!currentMap.containsKey(entry.getKey())) {
-                                    currentMap.put(entry.getKey(), entry.getValue());
-                                } else {
-                                    merge(entry.getValue(), currentMap.get(entry.getKey()), override);
-                                }
+                    Object fromValue = f.get(from);
+                    Object toValue = f.get(to);
+
+                    // If there is no 'from', ignore
+                    if (fromValue == null) {
+                        continue;
+                    }
+
+                    if (fromValue instanceof Map && toValue != null) {
+                        Map<Object, Object> fromMap = (Map<Object, Object>) fromValue;
+                        Map<Object, Object> toMap = (Map<Object, Object>) toValue;
+                        for (Entry<Object, Object> entry : fromMap.entrySet()) {
+                            if (!toMap.containsKey(entry.getKey())) {
+                                toMap.put(entry.getKey(), entry.getValue());
+                            } else {
+                                merge(entry.getValue(), toMap.get(entry.getKey()), override);
                             }
                         }
-                        else if (newValue instanceof Collection) {
-                            Collection<Object> newCollection = (Collection<Object>) newValue;
-                            Collection<Object> currentCollection = (Collection<Object>) currentValue;
-                            for (Object o : newCollection) {
-                                if (!currentCollection.contains(o)) {
-                                    currentCollection.add(o);
-                                }
+                    } else if (fromValue instanceof Collection && toValue != null) {
+                        Collection<Object> fromCollection = (Collection<Object>) fromValue;
+                        Collection<Object> toCollection = (Collection<Object>) toValue;
+                        for (Object o : fromCollection) {
+                            if (!toCollection.contains(o)) {
+                                toCollection.add(o);
                             }
                         }
-                       else if (newValue instanceof Constructible) {
-                            if (currentValue == null) {
-                                f.set(to, newValue.getClass().newInstance());
-                                currentValue = f.get(to);
-                            }
-                            merge(newValue, currentValue, override);
-                        } else {
-                            f.set(to, mergeProperty(f.get(to), f.get(from), override));
+                    } else if (fromValue instanceof Constructible) {
+                        if (toValue == null) {
+                            f.set(to, fromValue.getClass().newInstance());
+                            toValue = f.get(to);
                         }
+                        merge(fromValue, toValue, override);
+                    } else {
+                        f.set(to, mergeProperty(f.get(to), f.get(from), override));
                     }
                 } catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
                     // Ignore errors

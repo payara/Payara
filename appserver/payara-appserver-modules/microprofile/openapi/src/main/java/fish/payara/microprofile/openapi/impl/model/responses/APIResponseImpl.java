@@ -52,6 +52,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extrac
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -76,7 +77,13 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
         APIResponseImpl from = new APIResponseImpl();
         from.setDescription(annotation.getValue("description", String.class));
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents::add);
+        final List<Content> contents = new ArrayList<>();
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
+        if (contents.size() == 1) {
+            from.setContent(contents.get(0));
+        } else {
+            from.setContents(contents);
+        }
         extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from::addLink);
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
