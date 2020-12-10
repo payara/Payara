@@ -268,7 +268,7 @@ public final class FaultTolerancePolicy implements Serializable {
             Object res = processAsynchronousStage(ftmContext, metrics);
             if (res instanceof AsyncFuture) {
                 AsyncFuture async = (AsyncFuture) res;
-                res = async.whenComplete((value, ex) -> { // first evaluate async when the results are in...
+                async.whenComplete((value, ex) -> { // first evaluate async when the results are in...
                     if (isExceptionThrown(async)) {
                         metrics.incrementInvocationsExceptionThrown();
                     } else {
@@ -303,14 +303,14 @@ public final class FaultTolerancePolicy implements Serializable {
 
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
-                if (super.cancel(mayInterruptIfRunning)) {
+                boolean res = super.cancel(mayInterruptIfRunning);
+                if (mayInterruptIfRunning) {
                     logger.log(Level.FINE, "Asynchronous computation was cancelled by caller.");
                     if (mayInterruptIfRunning) {
                         workers.forEach(worker -> worker.interrupt());
                     }
-                    return true;
                 }
-                return false;
+                return res;
             }
         };
         FaultToleranceInvocation invocation = new FaultToleranceInvocation(context, metrics, asyncResult, workers);
@@ -552,11 +552,11 @@ public final class FaultTolerancePolicy implements Serializable {
             return proceed(invocation);
         }
         logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
-        final boolean async = isAsynchronous();
-        final boolean exitIsOnCompletion = async && bulkhead.exitIsOnCompletion;
+        final boolean isAsync = isAsynchronous();
+        final boolean exitIsOnCompletion = isAsync && bulkhead.exitIsOnCompletion;
         boolean directExit = false; // Whether or not we semantically leave the bulkhead when leaving this method
         final int runCapacity = bulkhead.value;
-        final int queueCapacity = async ? bulkhead.waitingTaskQueue : 0;
+        final int queueCapacity = isAsync ? bulkhead.waitingTaskQueue : 0;
         AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
         while (true) {
             final int currentlyIn = queuingOrRunning.get();
@@ -584,7 +584,7 @@ public final class FaultTolerancePolicy implements Serializable {
                         // can we run now?
                         running.put(currentThread);
                     } finally {
-                        if (async) {
+                        if (isAsync) {
                             invocation.metrics.addBulkheadWaitingDuration(Math.max(1, System.nanoTime() - waitingSince));
                         }
                     }
@@ -598,12 +598,14 @@ public final class FaultTolerancePolicy implements Serializable {
                             return res;
                         }
                         directExit = false; // if we make if here exit is going to happen on completion
-                        return ((CompletionStage<?>) res).whenComplete((value, exception) -> {
+                        CompletionStage<?> asyncResult = ((CompletionStage<?>) res);
+                        asyncResult.whenComplete((value, exception) -> {
                             invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
                             // successful or not, we are out...
                             running.remove(currentThread);
                             queuingOrRunning.decrementAndGet();
                         });
+                        return asyncResult; //OBS! we do not want to return the result of 'whenComplete' call because this gobbles cancel
                     } finally {
                         if (directExit) {
                             invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
