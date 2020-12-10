@@ -552,7 +552,8 @@ public final class FaultTolerancePolicy implements Serializable {
         }
         logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
         final boolean async = isAsynchronous();
-        final boolean exitOnCompletion = async && bulkhead.exitOnCompletion;
+        final boolean exitIsOnCompletion = async && bulkhead.exitIsOnCompletion;
+        boolean directExit = false; // Whether or not we semantically leave the bulkhead when leaving this method
         final int runCapacity = bulkhead.value;
         final int queueCapacity = async ? bulkhead.waitingTaskQueue : 0;
         AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
@@ -567,6 +568,7 @@ public final class FaultTolerancePolicy implements Serializable {
             }
             // did someone else get next in row in the meantime?
             if (queuingOrRunning.compareAndSet(currentlyIn, currentlyIn + 1)) {
+                directExit = true;
                 // we are in the queue, yeah
                 try {
                     logger.log(Level.FINE, "Entered bulkhead queue.");
@@ -591,9 +593,10 @@ public final class FaultTolerancePolicy implements Serializable {
                         logger.log(Level.FINE, "Entered bulkhead execution.");
                         // ok, lets run
                         Object res = proceed(invocation);
-                        if (!exitOnCompletion) {
+                        if (!exitIsOnCompletion) {
                             return res;
                         }
+                        directExit = false; // if we make if here exit is going to happen on completion
                         return ((CompletionStage<?>) res).whenComplete((value, exception) -> {
                             invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
                             // successful or not, we are out...
@@ -601,15 +604,15 @@ public final class FaultTolerancePolicy implements Serializable {
                             queuingOrRunning.decrementAndGet();
                         });
                     } finally {
-                        if (!exitOnCompletion) {
+                        if (directExit) {
                             invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
                             // successful or not, we are out...
                             running.remove(currentThread);
                         }
                     }
                 } finally {
-                    // no we are leaving get out of queue area as well
-                    if (!exitOnCompletion) {
+                    // get out of bulkhead unless this first occurs on completion of the CompletionStage
+                    if (directExit) {
                         queuingOrRunning.decrementAndGet();
                     }
                 }

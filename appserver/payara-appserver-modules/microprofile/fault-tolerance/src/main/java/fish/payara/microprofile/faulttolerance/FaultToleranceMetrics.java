@@ -264,7 +264,7 @@ public interface FaultToleranceMetrics {
      */
     default void incrementRetryCallsMaxRetriesReached() {
         incrementCounter("ft.retry.calls.total",
-                new Tag("retried", "true"),
+                new Tag("retried", String.valueOf(isRetried())),
                 new Tag("retryResult", "maxRetriesReached"));
     }
 
