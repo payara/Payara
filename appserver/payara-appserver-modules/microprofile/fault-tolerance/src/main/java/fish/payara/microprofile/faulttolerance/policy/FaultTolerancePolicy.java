@@ -425,7 +425,7 @@ public final class FaultTolerancePolicy implements Serializable {
     /**
      * Stage that takes care of the {@link CircuitBreakerPolicy} handling.
      */
-    private Object processCircuitBreakerStage(FaultToleranceInvocation invocation, CompletableFuture<Object> asyncAttempt) throws Exception {
+    private Object processCircuitBreakerStage(FaultToleranceInvocation invocation, AsyncFuture asyncAttempt) throws Exception {
         if (!isCircuitBreakerPresent()) {
             return processTimeoutStage(invocation, asyncAttempt);
         }
@@ -498,7 +498,7 @@ public final class FaultTolerancePolicy implements Serializable {
     /**
      * Stage that takes care of the {@link TimeoutPolicy} handling.
      */
-    private Object processTimeoutStage(FaultToleranceInvocation invocation, CompletableFuture<Object> asyncAttempt) throws Exception {
+    private Object processTimeoutStage(FaultToleranceInvocation invocation, AsyncFuture asyncAttempt) throws Exception {
         if (!isTimeoutPresent()) {
             return processBulkheadStage(invocation);
         }
@@ -514,6 +514,7 @@ public final class FaultTolerancePolicy implements Serializable {
             invocation.metrics.incrementTimeoutCallsTimedOutTotal();
             if (asyncAttempt != null) {
                 // we do this since interrupting not necessarily returns directly or ever but the attempt should timeout now
+                asyncAttempt.setExceptionThrown(true);
                 asyncAttempt.completeExceptionally(new TimeoutException());
             }
         });
