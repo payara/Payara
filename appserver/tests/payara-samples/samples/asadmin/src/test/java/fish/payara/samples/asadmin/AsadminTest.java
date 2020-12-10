@@ -66,6 +66,7 @@ import org.jvnet.hk2.config.UnsatisfiedDependencyException;
 
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.PayaraTestShrinkWrap;
+import fish.payara.samples.ServerOperations;
 
 @RunWith(PayaraArquillianTestRunner.class)
 public abstract class AsadminTest {
@@ -77,7 +78,7 @@ public abstract class AsadminTest {
     @Deployment
     public static Archive<?> deploy() {
         return PayaraTestShrinkWrap.getJavaArchive()
-                .addClasses(AsadminTest.class);
+                .addClasses(AsadminTest.class, ServerOperations.class);
     }
 
     @Before
