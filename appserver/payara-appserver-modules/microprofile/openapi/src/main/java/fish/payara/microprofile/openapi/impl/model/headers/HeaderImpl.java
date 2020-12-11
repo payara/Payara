@@ -74,7 +74,6 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
     private Map<String, Example> examples = createMap();
     private Object example;
     private Content content = new ContentImpl();
-    private List<ContentImpl> contents = createList();
 
     public static Map<String, Header> createInstances(AnnotationModel annotation, ApiContext context) {
         Map<String, Header> map = createMap();
@@ -115,7 +114,13 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
         }
         extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from::addExample);
         from.setExample(annotation.getValue("example", Object.class));
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents::add);
+
+        List<ContentImpl> contents = createList();
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
+        for (ContentImpl content : contents) {
+            ContentImpl.merge(content, from.content, true, context);
+        }
+
         return from;
     }
 
@@ -250,14 +255,6 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
         this.content = content;
     }
 
-    public List<ContentImpl> getContents() {
-        return contents;
-    }
-
-    public void setContents(List<ContentImpl> contents) {
-        this.contents = createList(contents);
-    }
-
     public static void merge(Header from, Header to,
             boolean override, ApiContext context) {
         if (from == null) {
@@ -286,17 +283,6 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
                     Example example = new ExampleImpl();
                     ExampleImpl.merge(from.getExamples().get(exampleName), example, override);
                     to.addExample(exampleName, example);
-                }
-            }
-        }
-        if (from instanceof HeaderImpl) {
-            HeaderImpl fromImpl = (HeaderImpl)from;
-            if (fromImpl.getContents() != null) {
-                if (to.getContent() == null) {
-                    to.setContent(new ContentImpl());
-                }
-                for (ContentImpl content : fromImpl.getContents()) {
-                    ContentImpl.merge(content, to.getContent(), override, context);
                 }
             }
         }

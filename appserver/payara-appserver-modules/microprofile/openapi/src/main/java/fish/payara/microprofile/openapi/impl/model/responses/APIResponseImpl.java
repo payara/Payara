@@ -52,7 +52,6 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extrac
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -68,7 +67,6 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
     private String description;
     private Map<String, Header> headers = createMap();
     private Content content = new ContentImpl();
-    private List<Content> contents = createList();
     private Map<String, Link> links = createMap();
     private String ref;
     private String responseCode;
@@ -77,13 +75,13 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
         APIResponseImpl from = new APIResponseImpl();
         from.setDescription(annotation.getValue("description", String.class));
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
-        final List<Content> contents = new ArrayList<>();
+
+        final List<ContentImpl> contents = createList();
         extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
-        if (contents.size() == 1) {
-            from.setContent(contents.get(0));
-        } else {
-            from.setContents(contents);
+        for (ContentImpl content : contents) {
+            ContentImpl.merge(content, from.content, true, context);
         }
+
         extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from::addLink);
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
@@ -190,14 +188,6 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
         this.responseCode = responseCode;
     }
 
-    public List<Content> getContents() {
-        return contents;
-    }
-
-    public void setContents(List<Content> contents) {
-        this.contents = createList(contents);
-    }
-
     public static void merge(APIResponse from, APIResponse to,
             boolean override, ApiContext context) {
         if (from == null) {
@@ -212,24 +202,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
             if (to.getContent() == null) {
                 to.setContent(new ContentImpl());
             }
-            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
-        }
-        if (from instanceof APIResponseImpl) {
-            APIResponseImpl fromImpl = (APIResponseImpl) from;
-            if (fromImpl.getContents() != null) {
-                if (to.getContent() == null) {
-                    to.setContent(new ContentImpl());
-                }
-                for (Content content : fromImpl.getContents()) {
-                    ContentImpl.merge((ContentImpl)content, to.getContent(), override, context);
-                }
-            }
-        }
-        if (from.getContent() != null) {
-            if (to.getContent() == null) {
-                to.setContent(new ContentImpl());
-            }
-            ContentImpl.merge((ContentImpl)from.getContent(), to.getContent(), override, context);
+            ContentImpl.merge((ContentImpl) from.getContent(), to.getContent(), override, context);
         }
         if (from.getHeaders()!= null) {
             for (Entry<String, Header> header : from.getHeaders().entrySet()) {

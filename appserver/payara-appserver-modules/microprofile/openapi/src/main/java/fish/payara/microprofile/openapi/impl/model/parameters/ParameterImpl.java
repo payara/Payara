@@ -107,7 +107,13 @@ public class ParameterImpl extends ExtensibleImpl<Parameter> implements Paramete
         }
         extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from::addExample);
         from.setExample(annotation.getValue("example", Object.class));
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.contents::add);
+        
+        final List<ContentImpl> contents = createList();
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
+        for (ContentImpl content : contents) {
+            ContentImpl.merge(content, from.content, true, context);
+        }
+
         return from;
     }
 
