@@ -48,17 +48,17 @@
         <artifactId>payara-nucleus-parent</artifactId>
         <version>5.2020.8-SNAPSHOT</version>
     </parent>
-    
+
     <groupId>fish.payara.server.internal.test-utils</groupId>
     <artifactId>test-utils</artifactId>
     <packaging>pom</packaging>
-    <name>Test Utilities Modules</name>  
-    
+    <name>Test Utilities Modules</name>
+
     <modules>
         <module>utils</module>
         <module>utils-ng</module>
     </modules>
-    
+
     <build>
         <pluginManagement>
             <plugins>
@@ -71,5 +71,5 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-    </build>    
+    </build>
 </project>
