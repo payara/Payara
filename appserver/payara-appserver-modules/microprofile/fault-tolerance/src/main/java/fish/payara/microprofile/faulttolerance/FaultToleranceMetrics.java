@@ -119,13 +119,16 @@ public interface FaultToleranceMetrics {
             if (policy.isBulkheadPresent()) {
                 register(MetricType.COUNTER, "ft.bulkhead.calls.total", new String[][] {
                     {"bulkheadResult", "accepted", "rejected"}});
-                BlockingQueue<Thread> running = context.getConcurrentExecutions();
-                register("ft.bulkhead.executionsRunning", null, running::size);
                 register(MetricType.HISTOGRAM, "ft.bulkhead.runningDuration");
                 if (policy.isAsynchronous()) {
+                    BlockingQueue<Thread> running = context.getConcurrentExecutions();
+                    register("ft.bulkhead.executionsRunning", null, running::size);
                     AtomicInteger queuingOrRunning = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsWaiting", null, () -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
                     register(MetricType.HISTOGRAM, "ft.bulkhead.waitingDuration");
+                } else {
+                    AtomicInteger running = context.getQueuingOrRunningPopulation();
+                    register("ft.bulkhead.executionsRunning", null, running::get);
                 }
             }
         }

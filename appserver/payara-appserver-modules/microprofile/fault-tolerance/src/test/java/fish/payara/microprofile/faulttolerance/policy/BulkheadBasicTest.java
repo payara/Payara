@@ -296,17 +296,18 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         });
     }
 
-    @Test
+    @Test(timeout = 3000)
     public void bulkheadWithoutQueueWithAsyncCompletionStageExitsOnCompletion() {
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         waitUntilPermitsAquired(2, 0);
         assertFurtherThreadThrowsBulkheadException10();
         assertEquals(2, threadsEntered.size());
-        assertEquals(2, threadsExited.size());
+        assertEquals(0, threadsExited.size());
         waitSome(50);
         commonWaiter.complete(null);
         waitUntilPermitsAquired(0, 0);
+        assertEquals(2, threadsExited.size());
     }
 
     @Asynchronous
@@ -316,7 +317,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         return bodyReturnThenWaitOnCompletionWithSuccess(waiter);
     }
 
-    @Test
+    @Test(timeout = 3000)
     public void bulkheadWithQueueWithAsyncCompletionStageExitsOnCompletion() {
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         callMethodWithNewThreadAndWaitFor(commonWaiter);
@@ -325,7 +326,7 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         waitUntilPermitsAquired(2, 2);
         assertFurtherThreadThrowsBulkheadException10();
         assertEquals(2, threadsEntered.size());
-        assertEquals(2, threadsExited.size());
+        assertEquals(0, threadsExited.size());
         waitSome(50);
         commonWaiter.complete(null);
         waitUntilPermitsAquired(0, 0);

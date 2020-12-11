@@ -397,20 +397,13 @@ abstract class AbstractRecordingTest {
     }
 
     <T> CompletionStage<T> bodyReturnThenWaitOnCompletion(Future<Void> waiter, Supplier<T> result) {
-        Thread currentThread = Thread.currentThread();
-        try {
-            threadsEntered.add(currentThread);
-            return CompletableFuture.supplyAsync(() -> {
-                try {
-                    waiter.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    throw null;
-                }
-                return result.get();
-            });
-        } finally {
-            threadsExited.add(currentThread);
-        }
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return bodyWaitThenReturn(waiter, result);
+            } catch (Exception e) {
+                return null;
+            }
+        });
     }
 
     void assertFurtherThreadThrowsBulkheadException10() {
@@ -466,8 +459,7 @@ abstract class AbstractRecordingTest {
 
     void waitUntilPermitsAquired(int concurrentExecutions, int waitingQueuePopulation) {
         waitSomeUntil(() -> {
-            BlockingQueue<Thread> queue = this.concurrentExecutions.get();
-            int actualConcurrentExecutions = queue == null ? 0 : queue.size();
+            int actualConcurrentExecutions = concurrentExecutionsCount.get();
             return concurrentExecutions == actualConcurrentExecutions
                     && waitingQueuePopulation == this.waitingQueuePopulation.get() - actualConcurrentExecutions;
         });
@@ -498,7 +490,7 @@ abstract class AbstractRecordingTest {
     }
 
     private int assertConcurrentExecutions(int expectedConcurrentExecutions) {
-        int actualConcurrentExecutions = this.concurrentExecutions.get().size();
+        int actualConcurrentExecutions = concurrentExecutionsCount.get();
         assertEquals(expectedConcurrentExecutions, actualConcurrentExecutions);
         return actualConcurrentExecutions;
     }

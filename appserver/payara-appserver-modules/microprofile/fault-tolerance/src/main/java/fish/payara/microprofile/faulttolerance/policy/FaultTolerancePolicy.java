@@ -564,27 +564,23 @@ public final class FaultTolerancePolicy implements Serializable {
                 invocation.metrics.incrementBulkheadCallsRejectedTotal();
                 throw new BulkheadException("No free work or queue space.");
             }
-            if (queueCapacity > 0) {
-                logger.log(Level.FINER, "Attempting to enter bulkhead queue.");
-            }
+            logger.log(Level.FINER, "Attempting to enter bulkhead.");
             // did someone else get next in row in the meantime?
             if (queuingOrRunning.compareAndSet(currentlyIn, currentlyIn + 1)) {
-                directExit = true;
                 // we are in the queue, yeah
+                directExit = true;
                 try {
-                    logger.log(Level.FINE, "Entered bulkhead queue.");
+                    logger.log(Level.FINE, "Entered bulkhead.");
+                    invocation.metrics.incrementBulkheadCallsAcceptedTotal();
                     BlockingQueue<Thread> running = invocation.context.getConcurrentExecutions();
-                    if (isMetricsEnabled) {
-                        invocation.metrics.incrementBulkheadCallsAcceptedTotal();
-                    }
                     logger.log(Level.FINER, "Attempting to enter bulkhead execution.");
-                    long waitingSince = System.nanoTime();
                     final Thread currentThread = Thread.currentThread();
-                    try {
-                        // can we run now?
-                        running.put(currentThread);
-                    } finally {
-                        if (isAsync) {
+                    if (isAsync) {
+                        long waitingSince = System.nanoTime();
+                        try {
+                            // wait until we can run...
+                            running.put(currentThread);
+                        } finally {
                             invocation.metrics.addBulkheadWaitingDuration(Math.max(1, System.nanoTime() - waitingSince));
                         }
                     }
@@ -609,8 +605,9 @@ public final class FaultTolerancePolicy implements Serializable {
                     } finally {
                         if (directExit) {
                             invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
-                            // successful or not, we are out...
-                            running.remove(currentThread);
+                            if (isAsync) {
+                                running.remove(currentThread);
+                            }
                         }
                     }
                 } finally {
