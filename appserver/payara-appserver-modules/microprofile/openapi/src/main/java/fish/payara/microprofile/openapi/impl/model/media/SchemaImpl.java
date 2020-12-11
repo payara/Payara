@@ -134,6 +134,23 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     @SuppressWarnings("unchecked")
     public static SchemaImpl createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
+
+        String ref = annotation.getValue("ref", String.class);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+            return from;
+        }
+        
+        EnumModel typeEnum = annotation.getValue("type", EnumModel.class);
+        if (typeEnum != null) {
+            from.setType(SchemaType.valueOf(typeEnum.getValue()));
+        }
+
+        final String implementationClass = annotation.getValue("implementation", String.class);
+        if (implementationClass != null) {
+            setImplementation(from, implementationClass, true, context);
+        }
+
         from.setDefaultValue(annotation.getValue("defaultValue", Object.class));
         from.setName(annotation.getValue("name", String.class));
         from.setTitle(annotation.getValue("title", String.class));
@@ -163,16 +180,8 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, from::addProperty);
 
         from.setRequired(annotation.getValue("requiredProperties", List.class));
-        EnumModel typeEnum = annotation.getValue("type", EnumModel.class);
-        if (typeEnum != null) {
-            from.setType(SchemaType.valueOf(typeEnum.getValue()));
-        }
         from.setDescription(annotation.getValue("description", String.class));
         from.setFormat(annotation.getValue("format", String.class));
-        String ref = annotation.getValue("ref", String.class);
-        if (ref != null && !ref.isEmpty()) {
-            from.setRef(ref);
-        }
         from.setNullable(annotation.getValue("nullable", Boolean.class));
         from.setReadOnly(annotation.getValue("readOnly", Boolean.class));
         from.setWriteOnly(annotation.getValue("writeOnly", Boolean.class));
@@ -216,7 +225,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             mergeImmutableList(from.getOneOf(), from.getSchemaInstances(oneOf, context), from::setOneOf);
         }
 
-        from.setImplementation(annotation.getValue("implementation", String.class));
         return from;
     }
 
@@ -768,38 +776,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             applyReference(to, from.getRef());
             return;
         }
-        if (from instanceof SchemaImpl
-                && ((SchemaImpl) from).getImplementation() != null
-                && context != null
-                && context.getApi().getComponents().getSchemas() != null) {
-            String implementationClass = ((SchemaImpl) from).getImplementation();
-
-            if (to instanceof SchemaImpl) {
-                ((SchemaImpl) to).setImplementation(mergeProperty(((SchemaImpl)to).getImplementation(), ((SchemaImpl) from).getImplementation(), override));
-            }
-            
-            if (!implementationClass.equals("java.lang.Void")) {
-                Type type = context.getType(implementationClass);
-                String schemaName;
-                if (type != null) {
-                    schemaName = ModelUtils.getSchemaName(context, type);
-                } else {
-                    schemaName = ModelUtils.getSimpleName(implementationClass);
-                }
-                // Get the schema reference, and copy it's values over to the new schema model
-                Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
-                if (copyFrom == null) {
-                    // If the class hasn't been parsed
-                    SchemaType schemaType = ModelUtils.getSchemaType(implementationClass, context);
-                    copyFrom = new SchemaImpl().type(schemaType);
-                }
-                if (to.getType() == SchemaType.ARRAY) {
-                    to.setItems(new SchemaImpl());
-                    ModelUtils.merge(copyFrom, to.getItems(), true);
-                } else {
-                    ModelUtils.merge(copyFrom, to, true);
-                }
-                to.setRef(null);
+        if (from.getType() != null) {
+            to.setType(mergeProperty(to.getType(), from.getType(), override));
+        }
+        if (from instanceof SchemaImpl && to instanceof SchemaImpl) {
+            final String fromImplementation = ((SchemaImpl) from).getImplementation();
+            if (fromImplementation != null) {
+                setImplementation((SchemaImpl) to, fromImplementation, override, context);
             }
         }
         to.setDefaultValue(mergeProperty(to.getDefaultValue(), from.getDefaultValue(), override));
@@ -833,9 +816,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                     to.addRequired(value);
                 }
             }
-        }
-        if (from.getType() != null) {
-            to.setType(mergeProperty(to.getType(), from.getType(), override));
         }
         if (from.getProperties() != null && !from.getProperties().isEmpty()) {
             if (to.getProperties() == null) {
@@ -894,6 +874,38 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         mergeImmutableList(from.getAnyOf(), to.getAnyOf(), to::setAnyOf);
         mergeImmutableList(from.getAllOf(), to.getAllOf(), to::setAllOf);
         mergeImmutableList(from.getOneOf(), to.getOneOf(), to::setOneOf);
+    }
+
+    private static void setImplementation(SchemaImpl schema, String implementationClass, boolean override, ApiContext context) {
+        if (context.getApi().getComponents().getSchemas() != null) {
+            if (schema instanceof SchemaImpl) {
+                schema.setImplementation(mergeProperty(((SchemaImpl)schema).getImplementation(), implementationClass, override));
+            }
+            
+            if (!implementationClass.equals("java.lang.Void")) {
+                Type type = context.getType(implementationClass);
+                String schemaName;
+                if (type != null) {
+                    schemaName = ModelUtils.getSchemaName(context, type);
+                } else {
+                    schemaName = ModelUtils.getSimpleName(implementationClass);
+                }
+                // Get the schema reference, and copy it's values over to the new schema model
+                Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
+                if (copyFrom == null) {
+                    // If the class hasn't been parsed
+                    SchemaType schemaType = ModelUtils.getSchemaType(implementationClass, context);
+                    copyFrom = new SchemaImpl().type(schemaType);
+                }
+                if (schema.getType() == SchemaType.ARRAY) {
+                    schema.setItems(new SchemaImpl());
+                    ModelUtils.merge(copyFrom, schema.getItems(), true);
+                } else {
+                    ModelUtils.merge(copyFrom, schema, true);
+                }
+                schema.setRef(null);
+            }
+        }
     }
 
 }
