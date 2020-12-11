@@ -768,6 +768,40 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             applyReference(to, from.getRef());
             return;
         }
+        if (from instanceof SchemaImpl
+                && ((SchemaImpl) from).getImplementation() != null
+                && context != null
+                && context.getApi().getComponents().getSchemas() != null) {
+            String implementationClass = ((SchemaImpl) from).getImplementation();
+
+            if (to instanceof SchemaImpl) {
+                ((SchemaImpl) to).setImplementation(mergeProperty(((SchemaImpl)to).getImplementation(), ((SchemaImpl) from).getImplementation(), override));
+            }
+            
+            if (!implementationClass.equals("java.lang.Void")) {
+                Type type = context.getType(implementationClass);
+                String schemaName;
+                if (type != null) {
+                    schemaName = ModelUtils.getSchemaName(context, type);
+                } else {
+                    schemaName = ModelUtils.getSimpleName(implementationClass);
+                }
+                // Get the schema reference, and copy it's values over to the new schema model
+                Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
+                if (copyFrom == null) {
+                    // If the class hasn't been parsed
+                    SchemaType schemaType = ModelUtils.getSchemaType(implementationClass, context);
+                    copyFrom = new SchemaImpl().type(schemaType);
+                }
+                if (to.getType() == SchemaType.ARRAY) {
+                    to.setItems(new SchemaImpl());
+                    ModelUtils.merge(copyFrom, to.getItems(), true);
+                } else {
+                    ModelUtils.merge(copyFrom, to, true);
+                }
+                to.setRef(null);
+            }
+        }
         to.setDefaultValue(mergeProperty(to.getDefaultValue(), from.getDefaultValue(), override));
         to.setTitle(mergeProperty(to.getTitle(), from.getTitle(), override));
         if (from.getMultipleOf() != null && from.getMultipleOf().compareTo(BigDecimal.ZERO) > 0) {
@@ -860,41 +894,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         mergeImmutableList(from.getAnyOf(), to.getAnyOf(), to::setAnyOf);
         mergeImmutableList(from.getAllOf(), to.getAllOf(), to::setAllOf);
         mergeImmutableList(from.getOneOf(), to.getOneOf(), to::setOneOf);
-        if (from instanceof SchemaImpl
-                && ((SchemaImpl) from).getImplementation() != null
-                && context != null
-                && context.getApi().getComponents().getSchemas() != null) {
-            String implementationClass = ((SchemaImpl) from).getImplementation();
-
-            if (to instanceof SchemaImpl) {
-                ((SchemaImpl) to).setImplementation(mergeProperty(((SchemaImpl)to).getImplementation(), ((SchemaImpl) from).getImplementation(), override));
-            }
-            
-            if (!implementationClass.equals("java.lang.Void")) {
-                Type type = context.getType(implementationClass);
-                String schemaName;
-                if (type != null) {
-                    schemaName = ModelUtils.getSchemaName(context, type);
-                } else {
-                    schemaName = ModelUtils.getSimpleName(implementationClass);
-                }
-                // Get the schema reference, and copy it's values over to the new schema model
-                Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
-                if (copyFrom == null) {
-                    // If the class hasn't been parsed
-                    SchemaType schemaType = ModelUtils.getSchemaType(implementationClass, context);
-                    copyFrom = new SchemaImpl().type(schemaType);
-                }
-                if (to.getType() == SchemaType.ARRAY) {
-                    to.setItems(new SchemaImpl());
-                    ModelUtils.merge(copyFrom, to.getItems(), true);
-                } else {
-                    ModelUtils.merge(copyFrom, to, true);
-                }
-                to.setRef(null);
-            }
-        }
-
     }
 
 }

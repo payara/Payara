@@ -446,8 +446,16 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         newParameter.setSchema(schema);
 
-        if (context.getWorkingOperation() != null) {
-            context.getWorkingOperation().addParameter(newParameter);
+        final Operation workingOperation = context.getWorkingOperation();
+        if (workingOperation != null) {
+            for (Parameter parameter : workingOperation.getParameters()) {
+                final String parameterName = parameter.getName();
+                if (parameterName != null && parameterName.equals(newParameter.getName())) {
+                    ParameterImpl.merge(newParameter, parameter, false, context);
+                    return;
+                }
+            }
+            workingOperation.addParameter(newParameter);
         } else {
             LOGGER.log(
                     SEVERE,
@@ -773,7 +781,13 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitParameters(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         List<AnnotationModel> parameters = annotation.getValue("value", List.class);
         if (parameters != null) {
-            parameters.forEach(parameter -> visitParameter(parameter, element, context));
+            for (AnnotationModel paramAnnotation : parameters) {
+                final Parameter parameter = ParameterImpl.createInstance(paramAnnotation, context);
+                final Operation workingOperation = context.getWorkingOperation();
+                if (workingOperation != null) {
+                    workingOperation.addParameter(parameter);
+                }
+            }
         }
     }
 

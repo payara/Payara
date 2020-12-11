@@ -43,6 +43,7 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 import java.util.LinkedHashMap;
@@ -115,20 +116,21 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
             return;
         }
 
-        for (String typeName : from.getMediaTypes().keySet()) {
+        for (Map.Entry<String, MediaType> fromEntry : from.getMediaTypes().entrySet()) {
 
-            MediaType fromMediaType = from.getMediaType(typeName);
+            final String typeName = fromEntry.getKey();
+            final MediaType fromMediaType = fromEntry.getValue();
 
             // Get or create the corresponding media type
-            MediaType toMediaType = to.getMediaTypes().getOrDefault(typeName, new MediaTypeImpl());
-            to.addMediaType(typeName, toMediaType);
 
+            MediaTypeImpl toMediaType = (MediaTypeImpl) to.getMediaTypes().getOrDefault(typeName, new MediaTypeImpl());
+            to.addMediaType(typeName, toMediaType);
             // Merge encoding
             for (Map.Entry<String, Encoding> encoding : fromMediaType.getEncoding().entrySet()) {
                 EncodingImpl.merge(
                     encoding.getKey(),
                     encoding.getValue(),
-                    ((MediaTypeImpl) to.getMediaType(typeName)).encoding,
+                    toMediaType.encoding,
                     override,
                     context
                 );
@@ -139,13 +141,12 @@ public class ContentImpl extends LinkedHashMap<String, MediaType> implements Con
                 ExampleImpl.merge(
                     example.getKey(),
                     example.getValue(),
-                    ((MediaTypeImpl) to.getMediaType(typeName)).examples,
+                    toMediaType.examples,
                     override
                 );
             }
-            if (fromMediaType.getExample() != null) {
-                to.getMediaType(typeName).setExample(fromMediaType.getExample());
-            }
+
+            toMediaType.setExample(mergeProperty(toMediaType.getExample(), fromMediaType.getExample(), override));
 
             // Merge schema
             if (fromMediaType.getSchema() != null) {
