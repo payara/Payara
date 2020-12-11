@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation]
 
 package com.sun.common.util.logging;
 
@@ -50,24 +50,24 @@ import java.util.logging.Level;
  * @author rinamdar
  */
 public class GFLogRecord extends LogRecord {
-    
+
     /**
-     * SVUID for serialization compatibility 
+     * SVUID for serialization compatibility
      */
     private static final long serialVersionUID = -818792012235891720L;
-    
+
     private String threadName;
-    
+
     public GFLogRecord(Level level, String msg) {
         super(level, msg);
     }
-        
+
     public GFLogRecord(LogRecord record) {
         this(record.getLevel(), record.getMessage());
-        
+
         this.setLoggerName(record.getLoggerName());
         this.setMillis(record.getMillis());
-        this.setParameters(record.getParameters());
+        this.setParameters(transformParameters(record.getParameters()));
         this.setResourceBundle(record.getResourceBundle());
         this.setResourceBundleName(record.getResourceBundleName());
         this.setSequenceNumber(record.getSequenceNumber());
@@ -83,5 +83,32 @@ public class GFLogRecord extends LogRecord {
 
     public void setThreadName(String threadName) {
         this.threadName = threadName;
+    }
+
+    /**
+     * CUSTOM-55
+     * in case of an object passed as a parameter, call it's toString() method
+     * to resolve it's values in the current thread, instead of waiting for queues / etc
+     * so there is no possibility of state change of the object between threads
+     * Append the original parameters at the end, as they are used for by some logging formatters,
+     * such as JSON logging formatter for context
+     *
+     * @param params
+     * @return parameter array
+     */
+    private Object[] transformParameters(Object[] params) {
+        if (params == null) {
+            return null;
+        }
+        Object[] result = new Object[params.length * 2];
+        for (int stringIndex = 0, originalIndex = params.length; stringIndex < params.length;
+                ++stringIndex, ++originalIndex) {
+            Object param = params[stringIndex];
+            if (param != null) {
+                result[stringIndex] = param.toString();
+                result[originalIndex] = params[stringIndex];
+            }
+        }
+        return result;
     }
 }
