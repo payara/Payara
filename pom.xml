@@ -171,7 +171,7 @@
         <jakarta.security.jacc-api.version>1.6.1</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>1.1.3</jakarta.security.auth.message-api.version>
         <jms-api.version>2.0.2</jms-api.version>
-        <mq.version>5.1.1.final.payara-p5</mq.version>
+        <mq.version>5.1.1.final.payara-p6</mq.version>
         <jakarta.batch-api.version>1.0.2</jakarta.batch-api.version>
         <com.ibm.jbatch.container.version>1.0.3.payara-p3</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
