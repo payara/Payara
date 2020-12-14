@@ -86,6 +86,29 @@ public class GFLogRecord extends LogRecord {
     }
 
     /**
+     * wrap log record with {@link GFLogRecord} if not already
+     * if setThreadName is true, sets thread name to current
+     *
+     * @param record
+     * @param setThreadName
+     * @return wrapped record
+     */
+    public static GFLogRecord wrap(LogRecord record, boolean setThreadName) {
+        GFLogRecord wrappedRecord;
+        if (record instanceof GFLogRecord) {
+            wrappedRecord = (GFLogRecord)record;
+        } else {
+            wrappedRecord = new GFLogRecord(record);
+        }
+        // Check there is actually a set thread name
+        if (setThreadName && wrappedRecord.getThreadName() == null) {
+            wrappedRecord.setThreadName(Thread.currentThread().getName());
+        }
+
+        return wrappedRecord;
+    }
+
+    /**
      * CUSTOM-55
      * in case of an object passed as a parameter, call it's toString() method
      * to resolve it's values in the current thread, instead of waiting for queues / etc
@@ -96,17 +119,18 @@ public class GFLogRecord extends LogRecord {
      * @param params
      * @return parameter array
      */
-    private Object[] transformParameters(Object[] params) {
+    private static Object[] transformParameters(Object[] params) {
         if (params == null) {
             return null;
         }
         Object[] result = new Object[params.length * 2];
-        for (int stringIndex = 0, originalIndex = params.length; stringIndex < params.length;
-                ++stringIndex, ++originalIndex) {
-            Object param = params[stringIndex];
+        for (int stringParamsIndex = 0, originalParamsIndex = params.length;
+                stringParamsIndex < params.length;
+                ++stringParamsIndex, ++originalParamsIndex) {
+            Object param = params[stringParamsIndex];
             if (param != null) {
-                result[stringIndex] = param.toString();
-                result[originalIndex] = params[stringIndex];
+                result[stringParamsIndex] = param.toString();
+                result[originalParamsIndex] = params[stringParamsIndex];
             }
         }
         return result;

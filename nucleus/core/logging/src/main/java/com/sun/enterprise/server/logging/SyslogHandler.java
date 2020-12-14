@@ -180,11 +180,12 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     /**
      * Publishes the logrecord storing it in our queue
      */
+    @Override
     public void publish( LogRecord record ) {
         if (pump == null)
             return;
 
-        GFLogRecord wrappedRecord = new GFLogRecord(record);
+        GFLogRecord wrappedRecord = GFLogRecord.wrap(record, false);
         try {
             pendingRecords.add(wrappedRecord);
         } catch(IllegalStateException e) {

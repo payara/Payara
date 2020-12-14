@@ -155,7 +155,7 @@ public class FileLoggerHandler extends Handler {
                 return;
         }
 
-        GFLogRecord wrappedRecord = new GFLogRecord(record);
+        GFLogRecord wrappedRecord = GFLogRecord.wrap(record, false);
         try {
             pendingRecords.add(wrappedRecord);
         } catch(IllegalStateException e) {
