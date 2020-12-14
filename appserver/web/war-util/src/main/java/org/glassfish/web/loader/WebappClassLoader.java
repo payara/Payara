@@ -408,6 +408,15 @@ public class WebappClassLoader
     private static final boolean IS_JDK_VERSION_HIGHER_THAN_8 = JDK.getMajor() > 8;
     private static Boolean isMultiReleaseJar;
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
+    
+    private static int INSTANCE_COUNT;
+    {
+        INSTANCE_COUNT++;
+    }
+    
+    public int getInstanceCount() {
+        return WebappClassLoader.INSTANCE_COUNT;
+    }
 
     static {
 
