@@ -341,6 +341,27 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
         return bodyReturnThenWaitOnCompletionWithSuccess(waiter);
     }
 
+    @Test(timeout = 3000)
+    public void bulkheadWithoutQueueSingleCapacity() {
+        callMethodWithNewThreadAndWaitFor(commonWaiter);
+        waitUntilPermitsAquired(1, 0);
+        assertFurtherThreadThrowsBulkheadException10();
+        commonWaiter.complete(null);
+        waitUntilPermitsAquired(0, 0);
+        CompletableFuture<Void> waiter = new CompletableFuture<>();
+        callMethodWithNewThreadAndWaitFor(waiter);
+        waitUntilPermitsAquired(1, 0);
+        assertFurtherThreadThrowsBulkheadException10();
+        waiter.complete(null);
+        waitUntilPermitsAquired(0, 0);
+        callWithConcurrentCallers(100, 1);
+    }
+
+    @Bulkhead(1)
+    public String bulkheadWithoutQueueSingleCapacity_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccessDirectly(waiter);
+    }
+
     private void callAndWait(int expectedMaxConcurrentExecutions) {
         CompletableFuture<Void> waiterExec1 = new CompletableFuture<>();
         List<Thread> execs = new ArrayList<>();
@@ -365,13 +386,15 @@ public class BulkheadBasicTest extends AbstractBulkheadTest {
     }
 
     private void callWithConcurrentCallers(int numberOfCallers, int expectedMaxConcurrentCallers) {
+        int success0 = countExecutionResults("Success");
+        int errors0 = countExecutionErrors(BulkheadException.class);
         for (int i = 0; i < numberOfCallers; i++) {
             callMethodWithNewThreadAndWaitFor(null);
         }
         waitUnitAllCallersDone();
         assertMaxConcurrentExecution(expectedMaxConcurrentCallers);
-        int success = countExecutionResults("Success");
-        int failedWithBulkheadException = countExecutionErrors(BulkheadException.class);
+        int success = countExecutionResults("Success") - success0;
+        int failedWithBulkheadException = countExecutionErrors(BulkheadException.class) - errors0;
         assertTrue(success > 0);
         assertEquals(numberOfCallers, success + failedWithBulkheadException);
     }

@@ -558,7 +558,8 @@ public final class FaultTolerancePolicy implements Serializable {
         final int runCapacity = bulkhead.value;
         final int queueCapacity = isAsync ? bulkhead.waitingTaskQueue : 0;
         AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
-        while (true) {
+        final int maxAttemps = 5;
+        for (int i = 0; i < maxAttemps; i++) {
             final int currentlyIn = queuingOrRunning.get();
             if (currentlyIn >= runCapacity + queueCapacity) {
                 invocation.metrics.incrementBulkheadCallsRejectedTotal();
@@ -618,6 +619,8 @@ public final class FaultTolerancePolicy implements Serializable {
                 }
             }
         }
+        invocation.metrics.incrementBulkheadCallsRejectedTotal();
+        throw new BulkheadException("No free work or queue space.");
     }
 
     /**
