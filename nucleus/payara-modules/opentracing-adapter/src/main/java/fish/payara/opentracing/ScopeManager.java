@@ -62,7 +62,7 @@ import io.opentracing.Span;
 
 /**
  * Manages OpenTracing Spans and Scopes
- * 
+ *
  * @author jonathan coustick
  * @since 5.183
  * @see io.opentracing.ScopeManager
@@ -72,13 +72,21 @@ public class ScopeManager implements io.opentracing.ScopeManager {
     ThreadLocal<OpenTracingScope> activeScope = new ThreadLocal<>();
 
     @Override
-    public Scope activate(Span span, boolean autoClose) {
-        return new OpenTracingScope(this, span, autoClose);
+    public Scope activate(Span span) {
+        return new OpenTracingScope(this, span);
+    }
+
+    public OpenTracingScope activeScope() {
+        return activeScope.get();
     }
 
     @Override
-    public Scope active() {
-        return activeScope.get();
+    public Span activeSpan() {
+        OpenTracingScope scope = activeScope();
+        if (scope != null) {
+            return scope.span();
+        }
+        return null;
     }
-    
+
 }
