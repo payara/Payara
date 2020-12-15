@@ -231,8 +231,9 @@ public class PayaraConfigTest {
     }
 
     @Test
-    public void defaultTTLisOneMinute() {
-        assertEquals(60 * 1000L, new PayaraConfig(emptyList(), emptyMap()).getTTL());
+    public void ttlParameterIsRespected() {
+        final long ttl = 60 * 1000L;
+        assertEquals(ttl, new PayaraConfig(emptyList(), emptyMap(), ttl).getCacheDurationSeconds());
     }
 
     private <T> void assertCachedValue(ConfigSource source, String key, Class<T> propertyType, T expectedValue1,
