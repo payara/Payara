@@ -41,6 +41,11 @@
             <artifactId>log4j</artifactId>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>payara-jul-extensions</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>server-full-docker-image</artifactId>
             <type>pom</type>
