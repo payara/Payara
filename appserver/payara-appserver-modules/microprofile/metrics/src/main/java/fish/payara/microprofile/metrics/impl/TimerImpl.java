@@ -55,6 +55,7 @@
 
 package fish.payara.microprofile.metrics.impl;
 
+import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import javax.enterprise.inject.Vetoed;
@@ -125,9 +126,13 @@ public class TimerImpl implements Timer {
      * @param duration the length of the duration
      * @param unit the scale unit of {@code duration}
      */
-    @Override
     public void update(long duration, TimeUnit unit) {
         update(unit.toNanos(duration));
+    }
+
+    @Override
+    public void update(Duration duration) {
+        update(duration.toNanos());
     }
 
     /**
@@ -174,6 +179,11 @@ public class TimerImpl implements Timer {
     @Override
     public Timer.Context time() {
         return new Context(this, clock);
+    }
+
+    @Override
+    public Duration getElapsedTime() {
+        return Duration.ofNanos(histogram.getSum());
     }
 
     @Override
@@ -240,7 +250,7 @@ public class TimerImpl implements Timer {
         @Override
         public long stop() {
             final long elapsed = clock.getTick() - startTime;
-            timer.update(elapsed, TimeUnit.NANOSECONDS);
+            timer.update(Duration.ofNanos(elapsed));
             return elapsed;
         }
 

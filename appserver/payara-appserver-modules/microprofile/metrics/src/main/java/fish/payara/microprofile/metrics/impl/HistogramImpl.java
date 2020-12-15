@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -55,6 +55,7 @@
 
 package fish.payara.microprofile.metrics.impl;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import javax.enterprise.inject.Vetoed;
 import org.eclipse.microprofile.metrics.Histogram;
@@ -71,6 +72,7 @@ public class HistogramImpl implements Histogram {
 
     private final Reservoir reservoir;
     private final LongAdder count;
+    private final AtomicLong sum;
 
     /**
      * Creates a new {@link HistogramImpl} using an
@@ -88,6 +90,7 @@ public class HistogramImpl implements Histogram {
     public HistogramImpl(Reservoir reservoir) {
         this.reservoir = reservoir;
         this.count = new LongAdder();
+        this.sum = new AtomicLong();
     }
 
     /**
@@ -108,6 +111,7 @@ public class HistogramImpl implements Histogram {
     @Override
     public void update(long value) {
         count.increment();
+        sum.getAndAdd(value);
         reservoir.update(value);
     }
 
@@ -119,6 +123,11 @@ public class HistogramImpl implements Histogram {
     @Override
     public long getCount() {
         return count.sum();
+    }
+
+    @Override
+    public long getSum() {
+        return sum.get();
     }
 
     @Override

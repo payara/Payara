@@ -17,6 +17,7 @@ application_response_time_stddev_seconds 6.52907E-4
 # TYPE application_response_time_seconds summary
 # HELP application_response_time_seconds Server response time for /index.html
 application_response_time_seconds_count 80
+application_response_time_seconds_sum 0.023
 application_response_time_seconds{quantile="0.5"} 2.93324E-4
 application_response_time_seconds{quantile="0.75"} 3.44914E-4
 application_response_time_seconds{quantile="0.95"} 5.436470E-4

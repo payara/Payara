@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.metrics.writer;
 
+import static java.lang.System.arraycopy;
 import static java.util.Arrays.asList;
 
 import java.io.IOException;
@@ -72,12 +73,14 @@ public class MetricsWriterImpl implements MetricsWriter {
     private final MetricExporter exporter;
     private final Supplier<Set<String>> registryNames;
     private final Function<String, MetricRegistry> getMetricsRegistryByName;
+    private final Tag[] globalTags;
 
     public MetricsWriterImpl(MetricExporter exporter, Supplier<Set<String>> registryNames,
-            Function<String, MetricRegistry> getMetricsRegistryByName) {
+            Function<String, MetricRegistry> getMetricsRegistryByName, Tag... globalTags) {
         this.exporter = exporter;
         this.registryNames = registryNames;
         this.getMetricsRegistryByName = getMetricsRegistryByName;
+        this.globalTags = globalTags;
     }
 
     @Override
@@ -140,23 +143,30 @@ public class MetricsWriterImpl implements MetricsWriter {
         }
     }
 
-    private static void writeRegistry(MetricExporter exporter, String registryName, MetricRegistryImpl registry,
+    private void writeRegistry(MetricExporter exporter, String registryName, MetricRegistryImpl registry,
             boolean addAppTag) {
         for (String metricName : registry.getNames()) {
             writeMetricFamily(exporter, registryName, metricName, registry, addAppTag);
         }
     }
 
-    private static void writeMetricFamily(MetricExporter exporter, String registryName, String metricName,
+    private void writeMetricFamily(MetricExporter exporter, String registryName, String metricName,
             MetricRegistryImpl registry, boolean addAppTag) {
         Metadata metadata = registry.getMetadata(metricName);
         for (Entry<MetricID, Metric> metric : registry.getMetrics(metricName).entrySet()) {
             MetricID metricID = metric.getKey();
+            if (globalTags.length > 0) {
+                Tag[]  tagsWithoutGlobal = metricID.getTagsAsArray();
+                Tag[] tags = new Tag[tagsWithoutGlobal.length +  globalTags.length];
+                arraycopy(globalTags, 0, tags, 0, globalTags.length);
+                arraycopy(tagsWithoutGlobal, 0, tags, globalTags.length, tagsWithoutGlobal.length);
+                metricID = new MetricID(metricName, tags);
+            }
             if (addAppTag) {
                 Tag[] tagsWithoutApp = metricID.getTagsAsArray();
                 Tag[] tags = Arrays.copyOf(tagsWithoutApp, tagsWithoutApp.length + 1);
                 tags[tagsWithoutApp.length] = new Tag("_app", registryName);
-                metricID = new MetricID(metricID.getName(), tags);
+                metricID = new MetricID(metricName, tags);
             }
             exporter.export(metricID, metric.getValue(), metadata);
         }

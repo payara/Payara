@@ -57,22 +57,23 @@ import org.eclipse.microprofile.metrics.SimpleTimer;
  * @since 5.202
  */
 @Vetoed
-public class SimpleTimerImpl implements SimpleTimer {
+public class SimpleTimerImpl extends CompleteMinuteMinMaxTracker implements SimpleTimer {
 
     private final AtomicLong callCount = new AtomicLong();
     private final AtomicLong totalDurationNanos = new AtomicLong();
-    private final Clock clock;
 
     public SimpleTimerImpl(Clock clock) {
-        this.clock = clock;
+        super(clock);
     }
 
     @Override
     public void update(Duration duration) {
         // synchronisation note: since there is no way of synchronously reading both updated values it does not matter
         // that both updates cannot be together atomically. Each is thread-safe on its own and that is as good as it gets
-        totalDurationNanos.addAndGet(duration.toNanos());
+        long nanos = duration.toNanos();
+        totalDurationNanos.addAndGet(nanos);
         callCount.incrementAndGet();
+        updateValue(nanos);
     }
 
     @Override
@@ -108,6 +109,18 @@ public class SimpleTimerImpl implements SimpleTimer {
     @Override
     public long getCount() {
         return callCount.get();
+    }
+
+    @Override
+    public Duration getMaxTimeDuration() {
+        Long nanos = getMaxValue();
+        return nanos == null ? null : Duration.ofNanos(nanos);
+    }
+
+    @Override
+    public Duration getMinTimeDuration() {
+        Long nanos = getMinValue();
+        return nanos == null ? null : Duration.ofNanos(nanos);
     }
 
     private static final class Context implements SimpleTimer.Context {

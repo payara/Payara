@@ -71,8 +71,10 @@ import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricFilter;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.Tag;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -109,7 +111,7 @@ public class MetricRegistryImplTest {
         return Metadata.builder(FILLED).withName(name);
     }
 
-    private final MetricRegistryImpl registry = new MetricRegistryImpl();
+    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
 
     @Before
     public void setUp() {
@@ -204,7 +206,7 @@ public class MetricRegistryImplTest {
     }
 
     @Test
-    public void registerByMetadataAcceptsNonReusableInstancesWithSameNameButDifferentTags() {
+    public void registerByMetadataAcceptsInstancesWithSameNameButDifferentTags() {
         EnumSet<MetricType> types = EnumSet.allOf(MetricType.class);
         types.remove(MetricType.INVALID); // obviously
         types.remove(MetricType.GAUGE); // gauges cannot be created
@@ -212,25 +214,21 @@ public class MetricRegistryImplTest {
             String name = nextName();
             for (int i = 0; i < 10; i++) {
                 final int n = i;
-                MetadataBuilder metadata = withNameAnd(name).notReusable().withType(type);
+                MetadataBuilder metadata = withNameAnd(name).withType(type);
                 Runnable register = () -> registry.register(metadata.build(), null, new Tag("a", "b" + n));
                 register.run(); // first time should work
-                try {
-                    assertException("Metric ['"+name+"'] already exists and declared not reusable", register);
-                } catch (AssertionError e) {
-                    fail(type + ": " + e.getMessage());
-                }
+                register.run(); // works again as all metrics are reusable
             }
         }
     }
 
     @Test
-    public void registerByMetadataAcceptsNonReusableGaugeWithSameNameButDifferentTags() {
+    public void registerByMetadataAcceptsGaugeWithSameNameButDifferentTags() {
         String name = nextName();
         Gauge<Long> gauge1 = () -> 1L;
-        registry.register(withNameAnd(name).notReusable().build(), gauge1, new Tag("a", "b"));
+        registry.register(withNameAnd(name).build(), gauge1, new Tag("a", "b"));
         Gauge<Long> gauge2 = () -> 2L;
-        registry.register(withNameAnd(name).notReusable().build(), gauge2, new Tag("a", "c"));
+        registry.register(withNameAnd(name).build(), gauge2, new Tag("a", "c"));
     }
 
     @Test
@@ -243,7 +241,7 @@ public class MetricRegistryImplTest {
         registry.register(withName(name), new TimerImpl(), ab);
         registry.register(withName(name), new TimerImpl(), ac);
         assertEquals(2, registry.getTimers().size());
-        Map<MetricID, Metric> metrics = registry.getMetrics(name);
+        Map<MetricID, Metric> metrics = registry.getMetrics((metricID, metric) -> metricID.getName().equals(name));
         assertEquals(2, metrics.size());
         assertTrue(metrics.containsKey(metricAb));
         assertTrue(metrics.containsKey(metricAc));
@@ -263,22 +261,8 @@ public class MetricRegistryImplTest {
 
     @Test
     public void registerByMetadataThrowsExceptionWhenNameIsEmpty() {
-        assertException("Metric name must not be null or empty",
+        assertException("Name must not be empty",
             () -> registry.register(withName(""), new MeterImpl()));
-    }
-
-    @Test
-    public void registerByMetadataThrowsExceptionWhenExistingMetadataForSameNameIsDifferent_NotReuableExisting() {
-        assertException("Metric ['%s'] already exists and declared not reusable",
-            name -> registry.register(withNameAnd(name).notReusable().build(), new HistogramImpl()),
-            name -> registry.register(withName(name), new HistogramImpl()));
-    }
-
-    @Test
-    public void registerByMetadataThrowsExceptionWhenExistingMetadataForSameNameIsDifferent_NotReuableRegistered() {
-        assertException("Metric ['%s'] already exists and declared reusable but registration call declares the metric to not be reusable",
-            name -> registry.register(withName(name), new HistogramImpl()),
-            name -> registry.register(withNameAnd(name).notReusable().build(), new HistogramImpl()));
     }
 
     @Test
@@ -306,7 +290,7 @@ public class MetricRegistryImplTest {
 
     @Test
     public void registerByMetadataThrowsExceptionWhenExistingMetadataForSameNameIsDifferent_NotSameMetadata() {
-        assertException("Metadata ['DefaultMetadata{name='%s', type=counter, unit='unit', reusable=true, description='description', displayName='display'}'] already registered, does not match provided ['DefaultMetadata{name='%s', type=counter, unit='unit', reusable=true, description='description', displayName='other'}']",
+        assertException("Metadata ['DefaultMetadata{name='%s', type=counter, unit='unit', description='description', displayName='display'}'] already registered, does not match provided ['DefaultMetadata{name='%s', type=counter, unit='unit', description='description', displayName='other'}']",
             name -> registry.register(withName(name), new CounterImpl()),
             name -> registry.register(withNameAnd(name).withDisplayName("other").build(), new CounterImpl()));
     }
