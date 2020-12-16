@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.2020.7-SNAPSHOT</version>
+        <version>5.2020.8-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.packager</groupId>
@@ -154,7 +154,6 @@
         <module>asadmin-recorder</module>
         <module>JMX-Monitoring</module>
         <module>payara-micro</module>
-        <module>zendesk-support</module>
         <module>payara-api</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>

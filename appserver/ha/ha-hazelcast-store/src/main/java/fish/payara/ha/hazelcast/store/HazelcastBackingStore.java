@@ -113,6 +113,6 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
         if (!clusteredStore.isEnabled()) {
             throw new BackingStoreException("Hazelcast is not enabled, please enable Hazelcast");
         }
-        instanceName = clusteredStore.getInstanceId();
+        instanceName = clusteredStore.getInstanceId().toString();
     }
 }

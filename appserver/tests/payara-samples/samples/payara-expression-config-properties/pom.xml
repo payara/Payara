@@ -46,7 +46,7 @@
     <parent>
         <artifactId>payara-samples-profiled-tests</artifactId>
         <groupId>fish.payara.samples</groupId>
-        <version>5.2020.7-SNAPSHOT</version>
+        <version>5.2020.8-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -74,7 +74,7 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.samples</groupId>
-            <artifactId>test-utils</artifactId>
+            <artifactId>samples-test-utils</artifactId>
         </dependency>
     </dependencies>
 

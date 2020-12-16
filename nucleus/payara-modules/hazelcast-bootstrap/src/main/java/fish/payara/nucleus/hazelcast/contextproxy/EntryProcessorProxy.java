@@ -57,17 +57,17 @@ import javax.cache.processor.MutableEntry;
 public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>, Serializable {
     @Override
     public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
-        try (Context ctx = ctxUtil.pushContext()) {
+        try (Context ctx = ctxUtilInst.pushContext()) {
             return delegate.process(me, os);
         }
     }
 
-    public EntryProcessorProxy(EntryProcessor<K, V, T> delegate, JavaEEContextUtil ctxUtil) {
+    public EntryProcessorProxy(EntryProcessor<K, V, T> delegate, JavaEEContextUtil.Instance ctxUtilInst) {
         this.delegate = delegate;
-        this.ctxUtil = ctxUtil;
+        this.ctxUtilInst = ctxUtilInst;
     }
 
     private final EntryProcessor<K, V, T> delegate;
-    private final JavaEEContextUtil ctxUtil;
+    private final JavaEEContextUtil.Instance ctxUtilInst;
     private static final long serialVersionUID = 1L;
 }

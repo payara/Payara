@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>5.2020.7-SNAPSHOT</version>
+        <version>5.2020.8-SNAPSHOT</version>
     </parent>
     
     
@@ -447,6 +447,14 @@
       <dependency>
           <groupId>jakarta.enterprise</groupId>
           <artifactId>jakarta.enterprise.cdi-api</artifactId>
+      </dependency>
+
+      <!-- Request tracing for remote eJB -->
+      <dependency>
+        <scope>runtime</scope>
+        <groupId>fish.payara.server.internal.ejb</groupId>
+        <artifactId>ejb-opentracing</artifactId>
+        <version>${project.version}</version>
       </dependency>
 
     </dependencies>

@@ -39,14 +39,15 @@
  */
 package fish.payara.samples.asadmin;
 
+import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.samples.ServerOperations;
+
 import java.util.function.Supplier;
 
 import org.glassfish.embeddable.CommandResult;
 import org.junit.Before;
 import org.junit.Test;
-
-import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 
 /**
  * Verifies the correctness of the {@code SetHealthCheckServiceNotifierConfiguration} command.
@@ -63,22 +64,27 @@ public class SetHealthCheckNotifierConfigurationTest extends AsadminTest {
     public void setUp() {
         config = getConfigExtensionByType("server-config", HealthCheckServiceConfiguration.class);
         service = getService(HealthCheckService.class);
-        
+
         this.isLogNotifierConfigEnabled = () -> config.getNotifierList().contains("log-notifier");
         this.isLogNotifierEnabled = () -> service.getEnabledNotifiers().contains("log-notifier");
     }
 
     @Test
     public void enabledIsMandatory() {
-        assertMissingParameter("enabled", asadmin("set-healthcheck-configuration", 
+        assertMissingParameter("enabled", asadmin("set-healthcheck-configuration",
                 "--setNotifiers", "log-notifier"));
     }
 
     @Test
     public void notifierNamesAreAccepted() {
-        final String[] names = { "log-notifier", "jms-notifier", "cdieventbus-notifier", "eventbus-notifier" };
+        final String[] names;
+        if (ServerOperations.isMicro()) {
+            names = new String[] {"log-notifier", "cdieventbus-notifier", "eventbus-notifier"};
+        } else {
+            names = new String[] {"log-notifier", "jms-notifier", "cdieventbus-notifier", "eventbus-notifier"};
+        }
         for (String notiferName : names) {
-            CommandResult result = asadmin("set-healthcheck-configuration", 
+            CommandResult result = asadmin("set-healthcheck-configuration",
                     "--enableNotifiers", notiferName,
                     "--enabled", "true");
             assertSuccess(result); // just check the name got accepted
@@ -87,7 +93,7 @@ public class SetHealthCheckNotifierConfigurationTest extends AsadminTest {
 
     @Test
     public void incorrectNotifierNamesAreNotAccepted() {
-        CommandResult result = asadmin("set-healthcheck-configuration", 
+        CommandResult result = asadmin("set-healthcheck-configuration",
                 "--enableNotifiers", "log-notifier,bad-notifier",
                 "--enabled", "true");
         assertFailure(result);
@@ -96,13 +102,13 @@ public class SetHealthCheckNotifierConfigurationTest extends AsadminTest {
     @Test
     public void enabledAffectsConfigButNotService() {
         boolean logEnabled = isLogNotifierEnabled.get();
-        CommandResult result = asadmin("set-healthcheck-configuration", 
+        CommandResult result = asadmin("set-healthcheck-configuration",
                 "--disableNotifiers", "log-notifier",
                 "--enabled", "true");
         assertSuccess(result);
         assertFalse(isLogNotifierConfigEnabled.get());
         assertUnchanged(logEnabled, isLogNotifierEnabled.get());
-        result = asadmin("set-healthcheck-configuration", 
+        result = asadmin("set-healthcheck-configuration",
                 "--enableNotifiers", "log-notifier",
                 "--enabled", "false");
         assertTrue(isLogNotifierConfigEnabled.get());
@@ -112,14 +118,14 @@ public class SetHealthCheckNotifierConfigurationTest extends AsadminTest {
     @Test
     public void enabledDynamicAffectsConfigAndService() {
         ensureHealthChecksAreEnabled();
-        CommandResult result = asadmin("set-healthcheck-configuration", 
+        CommandResult result = asadmin("set-healthcheck-configuration",
                 "--disableNotifiers", "log-notifier",
                 "--enabled", "true",
                 "--dynamic", "true");
         assertSuccess(result);
         assertFalse(isLogNotifierConfigEnabled.get());
         assertFalse(isLogNotifierEnabled.get());
-        result = asadmin("set-healthcheck-configuration", 
+        result = asadmin("set-healthcheck-configuration",
                 "--enableNotifiers", "log-notifier",
                 "--enabled", "false",
                 "--dynamic", "true");
@@ -134,8 +140,8 @@ public class SetHealthCheckNotifierConfigurationTest extends AsadminTest {
         if (service.isEnabled()) {
             return; // already enabled, fine
         }
-        assertSuccess(asadmin("set-healthcheck-configuration", 
-                "--enabled", "true", 
+        assertSuccess(asadmin("set-healthcheck-configuration",
+                "--enabled", "true",
                 "--dynamic", "true"));
     }
 }

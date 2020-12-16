@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,11 @@ package fish.payara.micro.cdi.extension.cluster;
 
 import com.sun.enterprise.container.common.impl.util.ClusteredSingletonLookupImplBase;
 import static com.sun.enterprise.container.common.spi.ClusteredSingletonLookup.SingletonType.CDI;
+import fish.payara.cluster.Clustered;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnnotation;
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
@@ -53,9 +55,8 @@ import javax.enterprise.inject.spi.BeanManager;
  * @author lprimak
  */
 public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBase {
-
     private final BeanManager beanManager;
-    private final ThreadLocal<String> sessionKey = new ThreadLocal<>();
+    private final AtomicReference<String> sessionKey = new AtomicReference<>();
 
     public ClusteredSingletonLookupImpl(BeanManager beanManager, String componentId) {
         super(componentId, CDI);
@@ -67,15 +68,19 @@ public class ClusteredSingletonLookupImpl extends ClusteredSingletonLookupImplBa
         return sessionKey.get();
     }
 
-    void setClusteredSessionKey(Class<?> beanClass) {
+    void setClusteredSessionKeyIfNotSet(Class<?> beanClass, Clustered clusteredAnnotation) {
+        sessionKey.updateAndGet(v -> v != null ? v : makeSessionKey(beanClass, clusteredAnnotation));
+    }
+
+    private String makeSessionKey(Class<?> beanClass, Clustered clusteredAnnotation) {
         Set<Bean<?>> managedBeans = beanManager.getBeans(beanClass);
         if (managedBeans.size() > 1) {
             throw new IllegalArgumentException("Multiple beans found for " + beanClass);
         }
         if (managedBeans.size() == 1) {
             Bean<?> bean = managedBeans.iterator().next();
-            sessionKey.set(getBeanName(bean, getAnnotation(beanManager, bean)));
-            invalidateKeys();
+            return getBeanName(bean, getAnnotation(beanManager, bean));
         }
+        return ClusterScopeContext.firstNonNull(clusteredAnnotation.keyName(), beanClass.getName());
     }
 }

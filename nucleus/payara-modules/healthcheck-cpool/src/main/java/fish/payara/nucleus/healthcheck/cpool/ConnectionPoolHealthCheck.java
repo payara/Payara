@@ -39,8 +39,6 @@
  */
 package fish.payara.nucleus.healthcheck.cpool;
 
-import com.hazelcast.util.function.BiConsumer;
-import com.hazelcast.util.function.Consumer;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
@@ -68,6 +66,8 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @author mertcaliskan

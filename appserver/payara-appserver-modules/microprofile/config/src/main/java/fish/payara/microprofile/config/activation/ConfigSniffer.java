@@ -58,6 +58,18 @@ public class ConfigSniffer extends MicroProfileSniffer {
     }
 
     @Override
+    public String[] getIncompatibleSnifferTypes() {
+        // This sniffer is always active, so don't throw errors for any other sniffers
+        return new String[0];
+    }
+
+    @Override
+    public boolean isUserVisible() {
+        // Always active, so don't clutter the user with this information
+        return false;
+    }
+
+    @Override
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return null;
     }

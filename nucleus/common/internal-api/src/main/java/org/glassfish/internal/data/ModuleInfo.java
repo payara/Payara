@@ -101,6 +101,7 @@ public class ModuleInfo {
     protected final String name;
     protected final Events events;
     private Properties moduleProps;
+    private boolean loaded = false;
     private boolean started = false;
     private ClassLoader moduleClassLoader;
     private Set<ClassLoader> classLoaders = new HashSet<>();
@@ -161,6 +162,14 @@ public class ModuleInfo {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isRunning() {
+        return started;
+    }
+
+    public boolean isLoaded() {
+        return loaded;
     }
 
     public Properties getModuleProps() {
@@ -268,6 +277,7 @@ public class ModuleInfo {
         if (started)
             return;
         
+        loaded = true;
         ClassLoader currentClassLoader  = 
             Thread.currentThread().getContextClassLoader();
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
@@ -322,7 +332,8 @@ public class ModuleInfo {
                         engine.getContainerInfo().getSniffer().getModuleType(),e );
                 }
             }
-            started=false;
+            started = false;
+            loaded = false;
             if (events!=null) {
                 events.send(new Event<ModuleInfo>(Deployment.MODULE_STOPPED, this), false);
             }
@@ -441,5 +452,6 @@ public class ModuleInfo {
     public void reset() {
         cleanClassLoaders();
         started = false;
+        loaded = false;
     }
 }

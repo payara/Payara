@@ -46,13 +46,13 @@ import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
 import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
+import java.io.*;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
@@ -65,6 +65,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.enterprise.inject.spi.DeploymentException;
 import javax.json.Json;
@@ -80,10 +81,11 @@ import org.eclipse.microprofile.config.ConfigProvider;
 
 import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
 import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
+import org.glassfish.grizzly.http.util.ContentType;
 
 /**
  * Identity store capable of asserting that a signed JWT token is valid
- * according to the MP-JWT 1.0 spec.
+ * according to the MP-JWT 1.1 spec.
  *
  * @author Arjan Tijms
  */
@@ -96,6 +98,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
     private final String acceptedIssuer;
     private final Optional<Boolean> enabledNamespace;
     private final Optional<String> customNamespace;
+    private final Optional<Boolean> disableTypeVerification;
 
     private final Config config;
 
@@ -109,10 +112,11 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
         enabledNamespace = readEnabledNamespace(properties);
         customNamespace = readCustomNamespace(properties);
+        disableTypeVerification = readDisableTypeVerification(properties);
     }
 
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
-        final JwtTokenParser jwtTokenParser = new JwtTokenParser(enabledNamespace, customNamespace);
+        final JwtTokenParser jwtTokenParser = new JwtTokenParser(enabledNamespace, customNamespace, disableTypeVerification);
         try {
             jwtTokenParser.parse(signedJWTCredential.getSignedJWT());
             String keyID = jwtTokenParser.getKeyID();
@@ -172,6 +176,10 @@ public class SignedJWTIdentityStore implements IdentityStore {
         return properties.isPresent() ? Optional.ofNullable(properties.get().getProperty("custom.namespace", null)) : Optional.empty();
     }
 
+    private Optional<Boolean> readDisableTypeVerification(Optional<Properties> properties) {
+        return properties.isPresent() ? Optional.ofNullable(Boolean.valueOf(properties.get().getProperty("disable.type.verification", "false"))) : Optional.empty();
+    }
+
     private Optional<PublicKey> readDefaultPublicKey() throws Exception {
         return readPublicKeyFromLocation("/publicKey.pem", null);
     }
@@ -211,10 +219,27 @@ public class SignedJWTIdentityStore implements IdentityStore {
             return Optional.empty();
         }
 
-        byte[] byteBuffer = new byte[16384];
-        try (InputStream inputStream = publicKeyURL.openStream()) {
-            String key = new String(byteBuffer, 0, inputStream.read(byteBuffer));
-            return createPublicKey(key, keyID);
+        URLConnection urlConnection = publicKeyURL.openConnection();
+        Charset charset = Charset.defaultCharset();
+        ContentType contentType = ContentType.newContentType(urlConnection.getContentType());
+        if(contentType != null) {
+            String charEncoding = contentType.getCharacterEncoding();
+            if(charEncoding != null) {
+                try {
+                    if (!Charset.isSupported(charEncoding)) {
+                        LOGGER.warning("Charset " + charEncoding + " for remote public key not supported, using default charset instead");
+                    } else {
+                        charset = Charset.forName(contentType.getCharacterEncoding());
+                    }
+                }catch (IllegalCharsetNameException ex){
+                    LOGGER.severe("Charset " + ex.getCharsetName() + " for remote public key not support, Cause: " + ex.getMessage());
+                }
+            }
+        }
+        try (InputStream inputStream = urlConnection.getInputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))){
+            String keyContents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+            return createPublicKey(keyContents, keyID);
         }
     }
 
@@ -291,5 +316,4 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
         throw new IllegalStateException("No matching JWK for KeyID.");
     }
-
 }

@@ -337,18 +337,18 @@ public class ComponentInvocation implements Cloneable {
     /**
      * @return Registry associated with this invocation for the given <code>key</code>
      */
-    public Object getRegistryFor(Class key) {
+    public<T> T getRegistryFor(Class<T> key) {
         if (registry == null) {
             return null;
         } else {
-            return registry.get(key);
+            return (T)registry.get(key);
         }
     }
 
     /**
      * Associate given <code></code>registry</code> with given <code>key</code> for this invocation
      */
-    public void setRegistryFor(Class key, Object payLoad) {
+    public<T> void setRegistryFor(Class<T> key, T payLoad) {
         if (registry == null) {
             registry = new HashMap<>();
         }

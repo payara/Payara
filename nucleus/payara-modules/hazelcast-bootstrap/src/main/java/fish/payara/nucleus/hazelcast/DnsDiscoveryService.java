@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,7 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import com.hazelcast.nio.Address;
+import com.hazelcast.cluster.Address;
 import com.hazelcast.spi.discovery.DiscoveryNode;
 import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
 import com.hazelcast.spi.discovery.integration.DiscoveryService;
@@ -138,7 +138,7 @@ public class DnsDiscoveryService implements DiscoveryService {
     }
 
     @Override
-    public Map<String, Object> discoverLocalMetadata() {
+    public Map<String, String> discoverLocalMetadata() {
         return Collections.emptyMap();
     }
 

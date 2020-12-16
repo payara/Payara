@@ -138,13 +138,11 @@ public class MicroprofileSecureEndpointTest {
 
         try {
             webClient.getPage(base + "../metrics");
+            fail("/metrics could be accessed without proper security credentials");
         } catch (FailingHttpStatusCodeException e) {
             assertNotNull(e);
             assertEquals(SC_UNAUTHORIZED, e.getStatusCode());
-            return;
         }
-
-        fail("/metrics could be accessed without proper security credentials");
     }
 
     @Test
@@ -153,13 +151,12 @@ public class MicroprofileSecureEndpointTest {
 
         try {
             webClient.getPage(base + "../health");
+            fail("/health could be accessed without proper security credentials");
         } catch (FailingHttpStatusCodeException e) {
             assertNotNull(e);
             assertEquals(SC_UNAUTHORIZED, e.getStatusCode());
             return;
         }
-
-        fail("/health could be accessed without proper security credentials");
     }
 
     @Test
@@ -168,13 +165,11 @@ public class MicroprofileSecureEndpointTest {
 
         try {
             webClient.getPage(base + "../openapi");
+            fail("/openapi could be accessed without proper security credentials");
         } catch (FailingHttpStatusCodeException e) {
             assertNotNull(e);
             assertEquals(SC_UNAUTHORIZED, e.getStatusCode());
-            return;
         }
-
-        fail("/openapi could be accessed without proper security credentials");
     }
 
 }

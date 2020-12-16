@@ -81,7 +81,7 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ITopic;
+import com.hazelcast.topic.ITopic;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
@@ -101,6 +101,7 @@ import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import io.opentracing.tag.Tag;
 
 /**
  * This implementation of the {@link MonitoringConsoleRuntime} connects the Payara independent parts of the monitoring
@@ -355,8 +356,12 @@ public class MonitoringConsoleRuntimeImpl
                         .addField("endTime", span.getTraceEndTime().toEpochMilli())
                         .addField("duration", span.getSpanDuration())
                         .addChild("tags");
-                    for (Entry<String, String> tag : span.getSpanTags().entrySet()) {
-                        tags.addField(tag.getKey(), tag.getValue());
+                    for (Entry<Object, String> tag : span.getSpanTags().entrySet()) {
+                        if (tag.getKey() instanceof Tag) {
+                            tags.addField(((Tag)tag.getKey()).getKey(), tag.getValue());
+                        } else {
+                            tags.addField(tag.getKey().toString(), tag.getValue());
+                        }
                     }
                 }
                 matches.add(data);

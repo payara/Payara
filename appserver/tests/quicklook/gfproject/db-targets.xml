@@ -146,6 +146,7 @@
 <target name="sql-common" depends="initprop">
   <echo message="sql.file = ${sql.file}"/>
   <echo message="db.class.path = ${db.class.path}"/>
+  <echo message="db.url = ${db.url}"/>
   <sql
     driver="${db.driver}"
     url="${db.url}"

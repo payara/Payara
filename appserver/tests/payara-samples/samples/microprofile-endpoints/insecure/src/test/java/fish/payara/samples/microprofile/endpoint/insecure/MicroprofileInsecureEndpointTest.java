@@ -63,10 +63,10 @@ import org.junit.runner.RunWith;
 import static java.util.Arrays.asList;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author Gaurav Gupta
@@ -81,23 +81,26 @@ public class MicroprofileInsecureEndpointTest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-
         return create(WebArchive.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @BeforeClass
     public static void enableSecurity() {
-        CliCommands.payaraGlassFish(asList("set-metrics-configuration", "--endpoint", "mpmetrics"));
-        CliCommands.payaraGlassFish(asList("set-microprofile-healthcheck-configuration", "--endpoint", "mphealth"));
-        ServerOperations.restartContainer();
+        if (ServerOperations.isServer()) {
+            CliCommands.payaraGlassFish(asList("set-metrics-configuration", "--endpoint", "mpmetrics"));
+            CliCommands.payaraGlassFish(asList("set-microprofile-healthcheck-configuration", "--endpoint", "mphealth"));
+            ServerOperations.restartContainer();
+        }
     }
 
     @AfterClass
     public static void resetSecurity() {
-        CliCommands.payaraGlassFish(asList("set-metrics-configuration", "--endpoint", "metrics"));
-        CliCommands.payaraGlassFish(asList("set-microprofile-healthcheck-configuration", "--endpoint", "health"));
-        ServerOperations.restartContainer();
+        if (ServerOperations.isServer()) {
+            CliCommands.payaraGlassFish(asList("set-metrics-configuration", "--endpoint", "metrics"));
+            CliCommands.payaraGlassFish(asList("set-microprofile-healthcheck-configuration", "--endpoint", "health"));
+            ServerOperations.restartContainer();
+        }
     }
 
     @Before

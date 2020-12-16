@@ -133,7 +133,7 @@ public abstract class MicroProfileSniffer implements Sniffer {
     }
 
     @Override
-    public final String[] getIncompatibleSnifferTypes() {
+    public String[] getIncompatibleSnifferTypes() {
         final String[] types = new String[1];
         types[0] = "connector";
         return types;
@@ -145,7 +145,7 @@ public abstract class MicroProfileSniffer implements Sniffer {
     }
 
     @Override
-    public final boolean isUserVisible() {
+    public boolean isUserVisible() {
         return true;
     }
 

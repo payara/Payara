@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,9 +39,9 @@
  */
 package com.sun.enterprise.container.common.spi;
 
-import com.hazelcast.core.IAtomicLong;
-import com.hazelcast.core.ILock;
-import com.hazelcast.core.IMap;
+import com.hazelcast.cp.IAtomicLong;
+import com.hazelcast.cp.lock.FencedLock;
+import com.hazelcast.map.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 
 /**
@@ -51,12 +51,16 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
  * @author lprimak
  */
 public interface ClusteredSingletonLookup {
-    ILock getDistributedLock();
+    FencedLock getDistributedLock();
     boolean isDistributedLockEnabled();
     IMap<String, Object> getClusteredSingletonMap();
     String getClusteredSessionKey();
     boolean isClusteredEnabled();
     IAtomicLong getClusteredUsageCount();
+    /**
+     * destroys usage count and distributed lock objects
+     */
+    void destroy();
     HazelcastCore getHazelcastCore();
 
     enum SingletonType {
