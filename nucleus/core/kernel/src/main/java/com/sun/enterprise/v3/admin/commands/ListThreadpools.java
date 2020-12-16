@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.commands;
 
@@ -46,19 +47,15 @@ import java.util.List;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ThreadPools;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.internal.api.Target;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 
 import org.jvnet.hk2.annotations.Service;
@@ -67,7 +64,11 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
+import java.util.HashSet;
+import java.util.Set;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.ServiceHandle;
 
 /**
  * List Thread Pools command
@@ -86,13 +87,10 @@ import org.glassfish.api.admin.*;
 })
 public class ListThreadpools implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Config config;
-
     @Inject
     Domain domain;
 
-    @Param(name = "target", primary = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", primary = true, optional=true)
     String target;
 
     @Inject
@@ -100,13 +98,19 @@ public class ListThreadpools implements AdminCommand, AdminCommandSecurity.Preau
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListThreadpools.class);
 
-    @AccessRequired.To("read")
     private ThreadPools threadPools;
     
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
-        config = CLIUtil.updateConfigIfNeeded(config, target, habitat);
-        threadPools  = config.getThreadPools();
+        if (StringUtils.ok(target)) {
+            Config config = habitat.getService(Config.class, target);
+            if (config == null) { //allow target to include or not include the -config part of the name
+                config = habitat.getService(Config.class, target + "-config");
+            }
+            if (config != null) {
+                threadPools  = config.getThreadPools();
+            }
+        }
         return true;
     }
     
@@ -115,8 +119,25 @@ public class ListThreadpools implements AdminCommand, AdminCommandSecurity.Preau
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
+        if (!StringUtils.ok(target)) {
+            List<ServiceHandle<ThreadPool>> pools = habitat.getAllServiceHandles(ThreadPool.class);
+            Set<String> poolNames = new HashSet<>();
+            for (ServiceHandle<ThreadPool> poolHandle : pools) {
+                poolNames.add(poolHandle.getService().getName());
+            }
+            for (String poolName : poolNames) {
+                final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
+                part.setMessage(poolName);
+            }
+            return;
+        }
+        if (threadPools == null) {
+            report.setMessage(localStrings.getLocalString("list.thread.pools.failed", "List Thread Pools failed because of: target " + target + " not found"));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        }
         try {
             List<ThreadPool> poolList = threadPools.getThreadPool();
             for (ThreadPool pool : poolList) {
@@ -127,8 +148,7 @@ public class ListThreadpools implements AdminCommand, AdminCommandSecurity.Preau
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (Exception e) {
             String str = e.getMessage();
-            report.setMessage(localStrings.getLocalString("list.thread.pools" +
-                    ".failed", "List Thread Pools failed because of: " + str));
+            report.setMessage(localStrings.getLocalString("list.thread.pools.failed", "List Thread Pools failed because of: " + str));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }
