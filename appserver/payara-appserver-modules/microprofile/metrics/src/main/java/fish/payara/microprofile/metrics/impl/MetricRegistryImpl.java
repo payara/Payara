@@ -592,12 +592,9 @@ public class MetricRegistryImpl implements MetricRegistry {
                 key -> new MetricFamily<>(newMetadata));
         MetricID metricID = new MetricID(name, tags);
         if (family.metadata != newMetadata) {
-            checkReusableMetadata(name, newMetadata, family.metadata, family.metrics.containsKey(metricID));
+            checkReusableMetadata(name, newMetadata, family.metadata);
         }
         T current = family.metrics.computeIfAbsent(metricID, key -> newMetric);
-        if (current != newMetric) {
-            checkNotAGauge(name, newMetadata);
-        }
         notifyRegistrationListeners(metricID);
         return current;
     }
@@ -618,11 +615,7 @@ public class MetricRegistryImpl implements MetricRegistry {
         }
     }
 
-    private static void checkReusableMetadata(String name, Metadata newMetadata, Metadata existingMetadata, boolean checkReusable) {
-        if (checkReusable) {
-            checkNotAGauge(name, newMetadata);
-        }
-
+    private static void checkReusableMetadata(String name, Metadata newMetadata, Metadata existingMetadata) {
         checkSameType(name, newMetadata, existingMetadata);
 
         if (!existingMetadata.equals(newMetadata)) {
@@ -630,15 +623,6 @@ public class MetricRegistryImpl implements MetricRegistry {
                   "Metadata ['%s'] already registered, does not match provided ['%s']",
                   existingMetadata.toString(), newMetadata.toString()
           ));
-        }
-    }
-
-    private static void checkNotAGauge(String name, Metadata newMetadata) {
-        //reusable does not apply to gauges
-        if (GAUGE.equals(newMetadata.getTypeRaw())) {
-            throw new IllegalArgumentException(String.format(
-                    "Gauge type metric['%s'] is not reusable", name
-            ));
         }
     }
 
@@ -729,10 +713,21 @@ public class MetricRegistryImpl implements MetricRegistry {
         for (Entry<String, MetricFamily<?>> family : metricsFamiliesByName.entrySet()) {
             str.append(family.getKey()).append(": ").append(family.getValue().metadata).append('\n');
             for (Entry<MetricID, ? extends Metric> entry : family.getValue().metrics.entrySet()) {
-                str.append('\t').append(entry.getKey()).append(": ").append(entry.getValue()).append('\n');
+                str.append('\t').append(entry.getKey()).append(": ").append(toString(entry.getValue())).append('\n');
             }
         }
         return str.toString();
+    }
+
+    private static String toString(Metric metric) {
+        if (isLambda(metric) && metric instanceof Gauge) {
+            return "Gauge["+((Gauge<?>)metric).getValue()+"]";
+        }
+        return metric.toString();
+    }
+
+    public static boolean isLambda(Object obj) {
+        return obj.getClass().toString().contains("$$Lambda$");
     }
 
     /**

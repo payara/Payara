@@ -39,40 +39,54 @@
  */
 package fish.payara.microprofile.faulttolerance.policy;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 import javax.interceptor.InvocationContext;
 
-import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextStub;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
+import fish.payara.microprofile.faulttolerance.service.MethodFaultToleranceMetrics;
+import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 
 /**
- * Base class for tests focusing on the behaviour of methods annotated with the {@link Bulkhead} annotation.
+ * Base class for FT tests with {@link FaultToleranceMetrics} "enabled" using the actual implementation classes.
  *
  * @author Jan Bernitt
  */
-abstract class AbstractBulkheadTest extends AbstractRecordingTest {
+abstract class AbstractMetricTest extends AbstractRecordingTest {
+
+    MetricRegistry registry;
 
     @Override
     protected FaultToleranceServiceStub createService() {
+        registry = new MetricRegistryImpl(Type.BASE);
         return new FaultToleranceServiceStub() {
-
             @Override
             protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
                     FaultTolerancePolicy policy) {
+                FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(registry, FaultToleranceUtils.getCanonicalMethodName(context));
                 return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
                         (c, p) -> createMethodContext(methodId, c, p)) {
 
                     @Override
-                    public void delay(long delayMillis) throws InterruptedException {
-                        waitSome(delayMillis); // actually wait and not fail
+                    public FaultToleranceMetrics getMetrics() {
+                        return metrics;
+                    }
+
+                    @Override
+                    public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
+                        return CompletableFuture.completedFuture(null);
                     }
                 };
             }
-
         };
     }
-
 
 }

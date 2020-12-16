@@ -65,7 +65,7 @@ import fish.payara.microprofile.faulttolerance.test.TestUtils;
 
 /**
  * Tests the basic correctness of {@link CircuitBreaker} handling.
- * 
+ *
  * @author Jan Bernitt
  */
 public class CircuitBreakerBasicTest {
@@ -75,8 +75,10 @@ public class CircuitBreakerBasicTest {
     private final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
-            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) { 
+        protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
+                FaultTolerancePolicy policy) {
+            return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
+                    (c, p) -> createMethodContext(methodId, c, p)) {
 
                 @Override
                 public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
@@ -166,7 +168,7 @@ public class CircuitBreakerBasicTest {
         assertProceedToResultValueFails(IllegalStateException.class);
         assertEquals(3, proceedToResultValue().intValue());
         assertProceedToResultValueFails(IllegalStateException.class);
-        assertEquals("Circuit should still be closed as the exception thrown in not matching one the circuit should fail on", 
+        assertEquals("Circuit should still be closed as the exception thrown in not matching one the circuit should fail on",
                 CircuitState.CLOSED, state.get().getCircuitState());
     }
 

@@ -81,6 +81,17 @@ public class BulkheadStressTest extends AbstractBulkheadTest {
         return bodyWaitThenReturnSuccess(null).toCompletableFuture();
     }
 
+    @Test
+    public void bulkheadWithoutQueueSingleCapacity() {
+        loop(0, 100, 3);
+        assertMaxConcurrentExecution(1);
+    }
+
+    @Bulkhead(1)
+    public String bulkheadWithoutQueueSingleCapacity_Method(Future<Void> waiter) throws Exception {
+        return bodyWaitThenReturnSuccessDirectly(null);
+    }
+
     private void loop(int speed, int concurrentCallers, int maxSimultaneousWorkers) {
         int bulkheadMethodReturned = 0;
         Random rng = new Random();
@@ -89,10 +100,11 @@ public class BulkheadStressTest extends AbstractBulkheadTest {
         Thread[] callers = new Thread[concurrentCallers];
         for (int i = 0; i < concurrentCallers; i++) {
             waiters[i] = new CompletableFuture<>();
-            callers[i] = callBulkheadWithNewThreadAndWaitFor(waiters[i]);
+            callers[i] = callMethodWithNewThreadAndWaitFor(waiters[i]);
             if (i > maxSimultaneousWorkers) {
                 for (int j = 0; j < i / maxSimultaneousWorkers; j++) {
-                    waitSome(rng.nextInt(speed*4));
+                    if (speed > 0)
+                        waitSome(rng.nextInt(speed*4));
                     int completedWaiter = rng.nextInt(i);
                     CompletableFuture<Void> completedCall = waiters[completedWaiter];
                     switch (rng.nextInt(4)) {
@@ -102,13 +114,13 @@ public class BulkheadStressTest extends AbstractBulkheadTest {
                             bulkheadMethodReturned++;
                         }
                         break;
-                    case 1: 
+                    case 1:
                         completedCall.cancel(true);
                         break;
-                    case 2: 
+                    case 2:
                         completedCall.cancel(false);
                         break;
-                    case 3: 
+                    case 3:
                         callers[completedWaiter].interrupt();
                     }
                 }
@@ -118,12 +130,13 @@ public class BulkheadStressTest extends AbstractBulkheadTest {
             waiters[i].cancel(true);
         }
         waitUntilPermitsAquired(0, 0);
-        // setting the minimum to max - 1 is not logically correct (could be 1) but we expect the bulkhead to be used fully 
+        // setting the minimum to max - 1 is not logically correct (could be 1) but we expect the bulkhead to be used fully
         // so it really should be its capacity or 1 less in a bad corner case
-        assertRange(speed == 1 ? 1 : maxSimultaneousWorkers - 1, maxSimultaneousWorkers, maxConcurrentExecutionsCount.get());
+        if (speed > 0)
+            assertRange(speed == 1 ? 1 : maxSimultaneousWorkers - 1, maxSimultaneousWorkers, maxConcurrentExecutionsCount.get());
         assertMaxConcurrentExecution(maxSimultaneousWorkers);
         // the number of threads that ever entered the method should be between the number of threads that completed waiting
         // and all threads
-        assertRange(bulkheadMethodReturned - 1, concurrentCallers, bulkheadMethodCallCount.get());
+        assertRange(bulkheadMethodReturned - 1, concurrentCallers, annotatedMethodCallCount.get());
     }
 }

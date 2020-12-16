@@ -58,7 +58,7 @@ import org.junit.Test;
  * {@link FaultTolerancePolicy} level. For many identifiers the terminology of the TCK test is used to make them easier
  * to compare.
  */
-public class BulkheadTckAsyncRetryTest extends AbstractBulkheadTest {
+public class BulkheadAsyncRetryTckTest extends AbstractBulkheadTest {
 
     @Test(timeout = 60 * 1000)
     public void testBulkheadClassAsynchronousPassiveRetry55() {
@@ -93,13 +93,13 @@ public class BulkheadTckAsyncRetryTest extends AbstractBulkheadTest {
         CompletableFuture<Void>[] waiters = new CompletableFuture[bulkheadCapacity];
         for (int i = 0; i < bulkheadCapacity; i++) {
             waiters[i] = new CompletableFuture<>();
-            callers[i] = callBulkheadWithNewThreadAndWaitFor(waiters[i]);
+            callers[i] = callMethodWithNewThreadAndWaitFor(waiters[i]);
         }
         waitUntilPermitsAquired(maxSimultaneousWorkers, maxSimultaneursQueuing);
         waitSome(100);
         assertPermitsAquired(maxSimultaneousWorkers, maxSimultaneursQueuing);
         for (int i = bulkheadCapacity; i < iterations; i++) {
-            callers[i] = callBulkheadWithNewThreadAndWaitFor(commonWaiter);
+            callers[i] = callMethodWithNewThreadAndWaitFor(commonWaiter);
         }
         waitSome(100);
         for (CompletableFuture<Void> w : waiters) {

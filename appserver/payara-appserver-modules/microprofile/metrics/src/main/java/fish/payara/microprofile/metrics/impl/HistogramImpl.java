@@ -134,4 +134,9 @@ public class HistogramImpl implements Histogram {
     public Snapshot getSnapshot() {
         return reservoir.getSnapshot();
     }
+
+    @Override
+    public String toString() {
+        return "Histogram[" + getCount() + "]";
+    }
 }
