@@ -37,14 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.logger;
 
 /**
- * An implementation of FileLoggerHandler which logs to virtual-server property 
+ * An implementation of FileLoggerHandler which logs to virtual-server property
  * log-file when enabled
  */
 
+import com.sun.common.util.logging.GFLogRecord;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -73,7 +75,7 @@ public class FileLoggerHandler extends Handler {
     FileLoggerHandler(String logFile) {
         setLevel(Level.ALL);
         this.logFile = logFile;
-    
+
         try {
             printWriter = new PrintWriter(new FileOutputStream(logFile, true));
     	} catch (IOException e) {
@@ -95,7 +97,7 @@ public class FileLoggerHandler extends Handler {
 
     private void writeLogRecord(LogRecord record) {
         if (printWriter != null) {
-            printWriter.write(getFormatter().format(record)); 
+            printWriter.write(getFormatter().format(record));
             printWriter.flush();
         }
     }
@@ -134,9 +136,9 @@ public class FileLoggerHandler extends Handler {
     public boolean isAssociated() {
         return (association.get() > 0);
     }
-    
+
     /**
-     * Overridden method used to capture log entries   
+     * Overridden method used to capture log entries
      *
      * @param record The log record to be written out.
      */
@@ -152,20 +154,21 @@ public class FileLoggerHandler extends Handler {
             if ( !getFilter().isLoggable(record) )
                 return;
         }
-        
+
+        GFLogRecord wrappedRecord = GFLogRecord.wrap(record, false);
         try {
-            pendingRecords.add(record);
+            pendingRecords.add(wrappedRecord);
         } catch(IllegalStateException e) {
             // queue is full, start waiting
             try {
-                pendingRecords.put(record);
+                pendingRecords.put(wrappedRecord);
             } catch(InterruptedException ex) {
                 // too bad, record is lost...
             }
         }
     }
 
-    
+
     /**
      * Called to close this log handler.
      */
@@ -194,8 +197,8 @@ public class FileLoggerHandler extends Handler {
             }
         }
     }
- 
-    
+
+
     /**
      * Called to flush any cached data that
      * this log handler may contain.
