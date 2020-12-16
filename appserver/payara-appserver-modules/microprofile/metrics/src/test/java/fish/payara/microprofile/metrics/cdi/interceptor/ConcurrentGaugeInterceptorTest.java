@@ -47,12 +47,18 @@ import fish.payara.microprofile.metrics.cdi.MetricUtils;
 import fish.payara.microprofile.metrics.impl.Clock;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
 import fish.payara.microprofile.metrics.test.TestUtils;
+
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.interceptor.InvocationContext;
+
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,13 +80,13 @@ import static org.mockito.Mockito.mock;
 public class ConcurrentGaugeInterceptorTest implements Clock {
 
     private final InvocationContext context = mock(InvocationContext.class);
-    private MetricRegistryImpl registry;
+    private MetricRegistry registry;
 
     private int minute = 0;
 
     @Before
     public void setUp() {
-        registry = new MetricRegistryImpl(this);
+        registry = new MetricRegistryImpl(Type.APPLICATION, this);
     }
 
     @Test
@@ -96,7 +102,7 @@ public class ConcurrentGaugeInterceptorTest implements Clock {
     }
 
     @Test
-    @ConcurrentGauge(reusable = true)
+    @ConcurrentGauge()
     public void concurrentGaugeReusable() throws Exception {
         assertGaugeProbesThreads();
     }
@@ -144,10 +150,23 @@ public class ConcurrentGaugeInterceptorTest implements Clock {
     }
 
     @Test
-    @ConcurrentGauge(absolute = true, name= "name", tags = {"a=b", "b=c"}, reusable = true)
+    @ConcurrentGauge(absolute = true, name= "name", tags = {"a=b", "b=c"})
     public void concurrentGaugeWithAbsoluteNameAndTagsReusable() throws Exception {
         assertGaugeProbesThreads(0);
         assertGaugeProbesThreads(0); // this tries to register the counter again, but it gets reused so we start at 2
+    }
+
+    public static class Bean {
+
+        @ConcurrentGauge
+        public Bean() {
+
+        }
+    }
+
+    @Test
+    public void concurrentGaugeConstructorNoAttributes() throws Exception {
+        assertGaugeProbesThreads(0, Bean.class, Bean.class.getConstructor());
     }
 
     private void assertGaugeProbesThreads() throws Exception {
@@ -157,6 +176,11 @@ public class ConcurrentGaugeInterceptorTest implements Clock {
     private void assertGaugeProbesThreads(long expectedStartCount) throws Exception {
         Method element = TestUtils.getTestMethod();
         Class<?> bean = getClass();
+        assertGaugeProbesThreads(expectedStartCount, bean, element);
+    }
+
+    private <E extends Member & AnnotatedElement> void assertGaugeProbesThreads(long expectedStartCount, Class<?> bean, E element)
+            throws Exception, InterruptedException {
         AnnotationReader<ConcurrentGauge> reader = AnnotationReader.CONCURRENT_GAUGE;
         org.eclipse.microprofile.metrics.ConcurrentGauge gauge = MetricUtils.getOrRegisterByMetadataAndTags(
                 registry, org.eclipse.microprofile.metrics.ConcurrentGauge.class,

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/master/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -97,7 +97,7 @@ public class MBeanMetadataHelper {
                 tags.add(new Tag(tag.getName(), tag.getValue()));
             }
             try {
-                if (metricRegistry.getNames().contains(beanMetadata.getName()) && 
+                if (metricRegistry.getNames().contains(beanMetadata.getName()) &&
                         metricRegistry.getMetricIDs().contains(new MetricID(beanMetadata.getName(), tags.toArray(new Tag[tags.size()])))) {
                     continue;
                 }
@@ -188,7 +188,7 @@ public class MBeanMetadataHelper {
         return unresolvedMetadataList;
     }
 
-    private List<MBeanMetadata> loadAttribute(
+    private static List<MBeanMetadata> loadAttribute(
             ObjectName objName,
             MBeanExpression mBeanExpression,
             MBeanMetadata metadata,
@@ -228,7 +228,7 @@ public class MBeanMetadataHelper {
         return metadataList;
     }
 
-    private List<MBeanMetadata> loadSubAttribute(
+    private static List<MBeanMetadata> loadSubAttribute(
             ObjectName objName,
             MBeanExpression mBeanExpression,
             MBeanMetadata metadata,
@@ -248,7 +248,7 @@ public class MBeanMetadataHelper {
                         subAttribute = subAttrResolvedName;
                         if ("description".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
-                                && metadata.getDescription().isPresent()) {
+                                && metadata.description().isPresent()) {
                             newMetadataBuilder = newMetadataBuilder.withDescription((String) compositeData.get(subAttribute));
                         } else if ("name".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
@@ -256,7 +256,7 @@ public class MBeanMetadataHelper {
                             newMetadataBuilder = newMetadataBuilder.withDisplayName((String) compositeData.get(subAttribute));
                         } else if ("unit".equals(subAttribute)
                                 && compositeData.get(subAttribute) instanceof String
-                                && MetricUnits.NONE.equals(metadata.getUnit().orElse("none"))) {
+                                && MetricUnits.NONE.equals(metadata.unit().orElse("none"))) {
                             newMetadataBuilder = newMetadataBuilder.withUnit((String) compositeData.get(subAttribute));
                         }
                     }
@@ -281,7 +281,7 @@ public class MBeanMetadataHelper {
         return metadataList;
     }
 
-    private MBeanMetadata createMetadata(
+    private static MBeanMetadata createMetadata(
             MBeanMetadata metadata,
             String exp,
             String key,
@@ -309,13 +309,13 @@ public class MBeanMetadataHelper {
                         subAttribute
                 ),
                 formatMetadata(
-                        metadata.getDescription().isPresent() ? metadata.getDescription().get() : metadata.getName(),
+                        metadata.description().isPresent() ? metadata.getDescription() : metadata.getName(),
                         key,
                         attribute,
                         subAttribute
                 ),
                 metadata.getTypeRaw(),
-                metadata.getUnit().orElse(null)
+                metadata.unit().orElse(null)
         );
         for (XmlTag oldTag: metadata.getTags()) {
             XmlTag newTag = new XmlTag();
@@ -326,7 +326,7 @@ public class MBeanMetadataHelper {
         return newMetaData;
     }
 
-    private String formatMetadata(
+    private static String formatMetadata(
             String metadata,
             String dynamicValue,
             String attributeName,

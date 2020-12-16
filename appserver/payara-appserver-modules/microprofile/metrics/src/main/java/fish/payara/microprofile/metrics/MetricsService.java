@@ -69,6 +69,7 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.MetricType;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.SimpleTimer;
@@ -131,12 +132,23 @@ public class MetricsService implements ConfigListener, MonitoringDataSource {
     private static final class MetricRegistryState implements MetricRegistrationListener {
 
         final String registryName;
-        final MetricRegistryImpl registry = new MetricRegistryImpl();
+        final MetricRegistryImpl registry;
         final Queue<MetricID> registeredNotAnnotated = new ConcurrentLinkedQueue<>();
 
         public MetricRegistryState(String registryName) {
             this.registryName = registryName;
+            this.registry = new MetricRegistryImpl(typeOf(registryName));
             registry.addListener(this);
+        }
+
+        private static Type typeOf(String registryName) {
+            if (Type.BASE.getName().equals(registryName)) {
+                return Type.BASE;
+            }
+            if (Type.VENDOR.getName().equals(registryName)) {
+                return Type.VENDOR;
+            }
+            return Type.APPLICATION;
         }
 
         @Override
@@ -194,7 +206,7 @@ public class MetricsService implements ConfigListener, MonitoringDataSource {
                     Object value = ((Gauge<?>) metric).getValue();
                     if (value instanceof Number) {
                         metricCollector.collect(toName(metricID,
-                                getMetricUnitSuffix(state.registry.getMetadata(name).getUnit())), ((Number) value));
+                                getMetricUnitSuffix(state.registry.getMetadata(name).unit())), ((Number) value));
                     }
                 }
             }
@@ -210,7 +222,7 @@ public class MetricsService implements ConfigListener, MonitoringDataSource {
             String property = "Count";
             boolean isGauge = metadata.getTypeRaw() == MetricType.GAUGE;
             if (isGauge) {
-                suffix = getMetricUnitSuffix(metadata.getUnit());
+                suffix = getMetricUnitSuffix(metadata.unit());
                 property = "Value";
             }
             // Note that by convention an annotation with value 0 done before the series collected any value is considered permanent
@@ -235,14 +247,14 @@ public class MetricsService implements ConfigListener, MonitoringDataSource {
     }
 
     private static String[] metadataToAnnotations(String registryName, Metadata metadata, String property) {
-        String unit = metadata.getUnit().orElse(MetricUnits.NONE);
+        String unit = metadata.unit().orElse(MetricUnits.NONE);
         return new String[] {
                 "App", registryName, //
                 "Name", metadata.getName(), //
                 "Type", metadata.getType(), //
                 "Unit", unit, //
                 "DisplayName", metadata.getDisplayName(), //
-                "Description", metadata.getDescription().orElse(""), //
+                "Description", metadata.getDescription(), //
                 "Property", property, //
                 "BaseUnit", MetricUnitsUtils.baseUnit(unit), //
                 "ScaleToBaseUnit", MetricUnitsUtils.scaleToBaseUnit(1L, unit).toString()
@@ -417,7 +429,7 @@ public class MetricsService implements ConfigListener, MonitoringDataSource {
         }
         return state.registry;
     }
-    
+
     public List<MetricRegistry> getAllRegistry() {
         List<MetricRegistry> metricRegistries = new ArrayList<>();
         registriesByName.values().forEach((entry) -> {
@@ -441,7 +453,7 @@ public class MetricsService implements ConfigListener, MonitoringDataSource {
         return getOrAddRegistryInternal(registryName);
     }
 
-    private MetricRegistryImpl getOrAddRegistryInternal(String registryName) {
+    private MetricRegistry getOrAddRegistryInternal(String registryName) {
         return registriesByName.computeIfAbsent(registryName.toLowerCase(), key -> new MetricRegistryState(registryName)).registry;
     }
 
