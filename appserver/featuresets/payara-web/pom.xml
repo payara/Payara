@@ -195,14 +195,6 @@
             <type>zip</type>
         </dependency>
         
-        <!-- zendesk support --><!-- Removed for now -->
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>zendesk-support</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency><!---->
-        
         <!-- environment warning -->
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
