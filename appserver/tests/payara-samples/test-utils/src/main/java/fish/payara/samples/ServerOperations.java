@@ -486,22 +486,33 @@ public class ServerOperations {
 
         webClient.getOptions().setSSLTrustStore(new File(trustStorePath).toURI().toURL(), "changeit", "jks");
 
-        // If the use.cnHost property is we try to extract the host from the server
-        // certificate and use exactly that host for our requests.
-        // This is needed if a server is listening to multiple host names, for instance
-        // localhost and example.com. If the certificate is for example.com, we can't
-        // localhost for the request, as that will not be accepted.
-        if (System.getProperty("use.cnHost") != null) {
-            logger.info("use.cnHost set. Trying to grab CN from certificate and use as host for requests.");
-            baseHttps = getHostFromCertificate(serverCertificateChain, baseHttps);
-        }
-
         logger.info("Using client key store from: " + clientKeyStorePath);
 
         // Client -> Server : the key store's private keys and certificates are used to sign
         // and sent a reply to the server
         webClient.getOptions().setSSLClientCertificate(new File(clientKeyStorePath).toURI().toURL(), "changeit", "jks");
-        return baseHttps;
+        return baseURLForServerHost(baseHttps, serverCertificateChain);
+    }
+
+    public static URL baseURLForServerHost(URL url) {
+        URL httpsUrl = toContainerHttps(url);
+        return baseURLForServerHost(url, getCertificateChainFromServer(httpsUrl.getHost(), httpsUrl.getPort()));
+    }
+
+    /**
+     * transforms URL based on server's SSL host name
+     *
+     * @param url
+     * @param serverCertificateChain
+     * @return
+     */
+    public static URL baseURLForServerHost(URL url, X509Certificate[] serverCertificateChain) {
+        // Try to extract the host from the server
+        // certificate and use exactly that host for our requests.
+        // This is needed if a server is listening to multiple host names, for instance
+        // localhost and example.com. If the certificate is for example.com, we can't
+        // localhost for the request, as that will not be accepted.
+        return getHostFromCertificate(serverCertificateChain, toContainerHttps(url));
     }
 
     public static URL getClientTrustStoreURL(URL baseHttps, String clientKeyStorePath) throws MalformedURLException {
