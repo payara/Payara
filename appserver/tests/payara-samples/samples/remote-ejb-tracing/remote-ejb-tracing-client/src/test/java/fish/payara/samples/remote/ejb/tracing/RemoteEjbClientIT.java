@@ -70,9 +70,9 @@ public class RemoteEjbClientIT {
             EjbRemote ejb = (EjbRemote) context.lookup("java:global/remote-ejb-tracing-server/Ejb");
 
             Tracer tracer = GlobalTracer.get();
-
-            try (Scope scope = tracer.buildSpan("ExecuteEjb").startActive(true)) {
-                Span span = scope.span();
+            Span span = null;
+            try {
+                span = tracer.buildSpan("ExecuteEjb").start();
                 span.setBaggageItem("Wibbles", "Wobbles");
                 String baggageItems = ejb.annotatedMethod();
                 Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
@@ -96,6 +96,10 @@ public class RemoteEjbClientIT {
                         baggageItems.contains("Wibbles : Wabbles")
                         && baggageItems.contains("Nibbles : Nabbles")
                         && baggageItems.contains("Bibbles : Babbles"));
+            } finally {
+                if (span != null) {
+                    span.finish();
+                }
             }
         } catch (NamingException ne) {
             Assert.fail("Failed performing lookup:\n" + ne.getMessage());
@@ -115,10 +119,16 @@ public class RemoteEjbClientIT {
 
             Tracer tracer = GlobalTracer.get();
 
-            try (Scope scope = tracer.buildSpan("ExecuteEjb").startActive(true)) {
+            Span span = null;
+            try {
+                span = tracer.buildSpan("ExecuteEjb").start();
                 String baggageItems = ejb.annotatedMethod();
                 Assert.assertTrue("Baggage items didn't contain transaction ID, received: " + baggageItems,
                         baggageItems.contains("TX-ID"));
+            } finally {
+                if(span != null) {
+                    span.finish();
+                }
             }
         } catch (NamingException ne) {
             Assert.fail("Failed performing lookup:\n" + ne.getMessage());
