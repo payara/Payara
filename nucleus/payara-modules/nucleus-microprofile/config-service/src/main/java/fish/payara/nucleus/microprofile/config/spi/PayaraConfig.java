@@ -72,22 +72,25 @@ public class PayaraConfig implements Config {
 
     private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
 
-    private static final class CacheEntry {
-        final Object value;
+    private static final class CacheEntry<T> {
+        final T value;
         final long expires;
 
-        CacheEntry(Object value, long expires) {
+        CacheEntry(T value, long expires) {
             this.value = value;
-            this.expires = expires;
+            this.expires = expires + currentTimeMillis();
         }
     }
 
     private final List<ConfigSource> sources;
     private final Map<Class<?>, Converter<?>> converters;
     private final long defaultCacheDurationSeconds;
-    private final Map<String, CacheEntry> cachedValuesByProperty = new ConcurrentHashMap<>();
+    private final Map<String, CacheEntry<?>> cachedValuesByProperty = new ConcurrentHashMap<>();
 
-    public PayaraConfig(List<ConfigSource> sources, Map<Class<?>,Converter<?>> converters, long defaultCacheDurationSeconds) {
+    private volatile CacheEntry<Long> configuredCacheValueEntry;
+    private final Object configuredCacheValueLock = new Object();
+
+    public PayaraConfig(List<ConfigSource> sources, Map<Class<?>, Converter<?>> converters, long defaultCacheDurationSeconds) {
         this.sources = sources;
         this.converters = new ConcurrentHashMap<>(converters);
         this.defaultCacheDurationSeconds = defaultCacheDurationSeconds;
@@ -98,7 +101,24 @@ public class PayaraConfig implements Config {
     public long getCacheDurationSeconds() {
         final Converter<Long> converter = (Converter<Long>) converters.get(Long.class);
         if (converter != null) {
-            return getValueConverted(MP_CONFIG_CACHE_DURATION, Long.toString(defaultCacheDurationSeconds), converter);
+            // Atomic block to modify the cached duration value
+            synchronized (configuredCacheValueLock) {
+                // If the value has been found and it hasn't expired
+                if (configuredCacheValueEntry != null && configuredCacheValueEntry.expires > currentTimeMillis()) {
+                    return configuredCacheValueEntry.value;
+                } else {
+                    // Fetch the value from config
+                    final Long value = getValueConverted(MP_CONFIG_CACHE_DURATION, Long.toString(defaultCacheDurationSeconds), converter);
+                    if (value != null) {
+                        // If it's found, cache it
+                        configuredCacheValueEntry = new CacheEntry<Long>(value, value);
+                        return value;
+                    } else {
+                        // Cache the default value (usually that's from the server config)
+                        configuredCacheValueEntry = new CacheEntry<Long>(defaultCacheDurationSeconds, defaultCacheDurationSeconds);
+                    }
+                }
+            }
         }
         return defaultCacheDurationSeconds;
     }
@@ -154,7 +174,7 @@ public class PayaraConfig implements Config {
             if (entry != null && now < entry.expires) {
                 return entry;
             }
-            return new CacheEntry(getValueConverted(propertyName, defaultValue, converter.get()), now + entryTTL);
+            return new CacheEntry<>(getValueConverted(propertyName, defaultValue, converter.get()), entryTTL);
         }).value;
     }
 
