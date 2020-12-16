@@ -117,8 +117,7 @@ public class MicroprofileSecureEndpointTest {
         webClient = new WebClient();
         correctCreds.addCredentials("mp", "mp");
         incorrectCreds.addCredentials("random", "random");
-        ServerOperations.createClientTrustStore(webClient, base, clientKeyStorePath);
-        serverBase = ServerOperations.baseURLForServerHost(base).toString();
+        serverBase = ServerOperations.createClientTrustStore(webClient, base, clientKeyStorePath).toString();
     }
 
     @After
