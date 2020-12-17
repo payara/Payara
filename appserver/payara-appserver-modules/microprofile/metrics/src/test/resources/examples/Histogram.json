@@ -2,6 +2,7 @@
 {
     "daily_value_changes": {
         "count": 2,
+        "sum": 42,
         "min": -1624,
         "max": 26,
         "mean": -799.0,
@@ -13,6 +14,7 @@
         "p99": 26.0,
         "p999": 26.0,
         "count;servlet=two": 2,
+        "sum;servlet=two": 42,
         "min;servlet=two": -1624,
         "max;servlet=two": 26,
         "mean;servlet=two": -799.0,

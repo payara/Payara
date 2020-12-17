@@ -75,7 +75,6 @@ import javax.interceptor.AroundConstruct;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
-import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.Tag;
@@ -127,15 +126,8 @@ public class MetricsInterceptor {
         register(bean, element, AnnotationReader.METERED, registry::meter);
         register(bean, element, AnnotationReader.TIMED, registry::timer);
         register(bean, element, AnnotationReader.SIMPLY_TIMED, registry::simpleTimer);
-
-        if (AnnotationReader.GAUGE.isPresent(bean, element)) {
-            Gauge<?> existingGuage = registry.getGauges().get(AnnotationReader.GAUGE.metricID(bean, element));
-            if (existingGuage == null) {
-                registry.register(AnnotationReader.GAUGE.metadata(bean, element),
-                        new GaugeImpl<>((Method) element, target),
-                        AnnotationReader.GAUGE.tags(AnnotationReader.GAUGE.annotation(bean, element)));
-            }
-        }
+        register(bean, element, AnnotationReader.GAUGE, (metadata, tags) ->
+            registry.gauge(metadata, new GaugeImpl<>((Method) element, target), tags));
     }
 
     private static <E extends Member & AnnotatedElement, T extends Annotation> void register(Class<?> bean, E element,

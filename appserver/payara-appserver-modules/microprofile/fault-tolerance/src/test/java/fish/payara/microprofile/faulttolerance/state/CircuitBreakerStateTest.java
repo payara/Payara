@@ -50,13 +50,13 @@ public class CircuitBreakerStateTest {
 
     @Test
     public void testInitialState() {
-        CircuitBreakerState state = new CircuitBreakerState(1);
+        CircuitBreakerState state = new CircuitBreakerState(1, 0.5d);
         assertEquals("Wrong initial state.", CircuitBreakerState.CircuitState.CLOSED, state.getCircuitState());
     }
 
     @Test
     public void testNanosCumulatedForInitialState() throws Exception {
-        CircuitBreakerState state = new CircuitBreakerState(1);
+        CircuitBreakerState state = new CircuitBreakerState(1, 0.5d);
         Thread.sleep(1);
         assertTrue("Missing nanos after initialisation.", state.updateAndGet(CircuitBreakerState.CircuitState.CLOSED) > 0);
         assertEquals("Unexpected nanos after initialisation.", 0, state.updateAndGet(CircuitBreakerState.CircuitState.HALF_OPEN));
@@ -65,7 +65,7 @@ public class CircuitBreakerStateTest {
 
     @Test
     public void testStateChangeCumulatesForNewState() throws Exception {
-        CircuitBreakerState state = new CircuitBreakerState(1);
+        CircuitBreakerState state = new CircuitBreakerState(1, 0.5d);
         Thread.sleep(1);
         state.setCircuitState(CircuitBreakerState.CircuitState.OPEN);
         Thread.sleep(1);

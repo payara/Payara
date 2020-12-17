@@ -39,9 +39,13 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
+import static fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceImpl.getTargetMethodId;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -57,16 +61,18 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 /**
  * A stub of {@link FaultToleranceService} that can be used in tests as a basis.
- * 
+ *
  * Most methods need to be overridden with test behaviour.
- * 
+ *
  * The {@link #runAsynchronous(CompletableFuture, InvocationContext, Callable)} does run the task synchronous for
  * deterministic tests behaviour.
- * 
+ *
  * @author Jan Bernitt
  *
  */
 public class FaultToleranceServiceStub implements FaultToleranceService {
+
+    private final ConcurrentMap<String, FaultToleranceMethodContext> contextByMethodId = new ConcurrentHashMap<>();
 
     protected final AtomicReference<CircuitBreakerState> state = new AtomicReference<>();
     protected final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = new AtomicReference<>();
@@ -78,9 +84,24 @@ public class FaultToleranceServiceStub implements FaultToleranceService {
     }
 
     @Override
-    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
+    public final FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
+        return getMethodContext(context, policy, null);
+    }
+
+    @Override
+    public final FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
             RequestContextController requestContextController) {
-        return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation);
+        return contextByMethodId.computeIfAbsent(getTargetMethodId(context),
+                methodId ->  {
+                    return createMethodContext(methodId, context, policy);
+                }).boundTo(context, policy);
+    }
+
+    @SuppressWarnings("unused")
+    protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
+            FaultTolerancePolicy policy) {
+        return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
+                (c, p) -> createMethodContext(methodId, c, p));
     }
 
     public AtomicReference<CircuitBreakerState> getStateReference() {
