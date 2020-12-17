@@ -99,8 +99,8 @@ public class PayaraConfig implements Config {
 
     @SuppressWarnings("unchecked")
     public long getCacheDurationSeconds() {
-        final Converter<Long> converter = (Converter<Long>) converters.get(Long.class);
-        if (converter != null) {
+        final Optional<Converter<Long>> converter = Optional.ofNullable((Converter<Long>) converters.get(Long.class));
+        if (converter.isPresent()) {
             // Atomic block to modify the cached duration value
             synchronized (configuredCacheValueLock) {
                 // If the value has been found and it hasn't expired
@@ -163,7 +163,8 @@ public class PayaraConfig implements Config {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getValue(String propertyName, String cacheKey, Long ttl, String defaultValue, Supplier<? extends Converter<T>> converter) {
+    protected <T> T getValue(String propertyName, String cacheKey, Long ttl, String defaultValue,
+            Supplier<Optional<Converter<T>>> converter) {
         long entryTTL = ttl != null ? ttl.longValue() : getCacheDurationSeconds();
         if (entryTTL <= 0) {
             return getValueConverted(propertyName, defaultValue, converter.get());
@@ -178,20 +179,36 @@ public class PayaraConfig implements Config {
         }).value;
     }
 
-    private <T> T getValueConverted(String propertyName, String defaultValue, Converter<T> converter) {
-        String sourceValue = getSourceValue(propertyName);
-        // NOTE: when empty is considered missing by MP this condition needs to add "|| sourceValue.isEmpty()"
-        if (sourceValue == null) {
-            return defaultValue == null ? null : converter.convert(defaultValue);
+    private <T> T getValueConverted(String propertyName, String defaultValue,
+            Optional<Converter<T>> optionalConverter) {
+        final String sourceValue = getSourceValue(propertyName);
+
+        // NOTE: when empty is considered missing by MP this condition needs to add "||
+        // sourceValue.isEmpty()"
+        if (sourceValue == null && defaultValue == null) {
+            return null;
         }
+
+        if (!optionalConverter.isPresent()) {
+            throw new IllegalArgumentException(String.format(
+                "Unable to find converter for property %s with value %s.",
+                propertyName,
+                sourceValue
+            ));
+        }
+
+        final Converter<T> converter = optionalConverter.get();
+
         try {
-            return converter.convert(sourceValue);
+            if (sourceValue != null) {
+                return converter.convert(sourceValue);
+            }
         } catch (IllegalArgumentException ex) {
             if (defaultValue == null) {
                 throw ex;
             }
-            return converter.convert(defaultValue);
         }
+        return converter.convert(defaultValue);
     }
 
     private String getSourceValue(String propertyName) {
@@ -204,29 +221,33 @@ public class PayaraConfig implements Config {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> Converter<T> getConverter(Class<T> propertyType) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public <T> Optional<Converter<T>> getConverter(Class<T> propertyType) {
         if (propertyType.isArray()) {
-            return (Converter<T>) createArrayConverter(propertyType.getComponentType());
+            return (Optional) createArrayConverter(propertyType.getComponentType());
         }
         Class<T> type = (Class<T>) boxedTypeOf(propertyType);
-        Converter<?> converter = converters.get(type);
+        Converter<T> converter = (Converter<T>) converters.get(type);
         if (converter != null) {
-            return (Converter<T>) converter;
+            return Optional.of(converter);
         }
 
         // see if a common sense converter can be created
         Optional<Converter<T>> automaticConverter = AutomaticConverter.forType(type);
         if (automaticConverter.isPresent()) {
             converters.put(type, automaticConverter.get());
-            return automaticConverter.get();
+            return automaticConverter;
         }
 
         throw new IllegalArgumentException("Unable to convert value to type " + type.getTypeName());
     }
 
-    private <E> Converter<Object> createArrayConverter(Class<E> elementType) {
-        return new ArrayConverter<>(elementType, getConverter(elementType));
+    private <E> Optional<Converter<Object>> createArrayConverter(Class<E> elementType) {
+        final Optional<Converter<E>> elementConverter = getConverter(elementType);
+        if (!elementConverter.isPresent()) {
+            return Optional.empty();
+        }
+        return Optional.of(new ArrayConverter<>(elementType, getConverter(elementType).get()));
     }
 
     static Class<?> boxedTypeOf(Class<?> type) {
