@@ -120,8 +120,6 @@ import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigS
 @RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
 public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
-    private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
-
     private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
     private static final String METADATA_KEY = "MICROPROFILE_APP_CONFIG";
     private static final String CUSTOM_SOURCES_KEY = "MICROPROFILE_CUSTOM_SOURCES";
@@ -147,7 +145,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     private MicroprofileConfigConfiguration configuration;
 
     // a config used at the server level when there is no application associated with the thread
-    private Config serverLevelConfig;
+    private PayaraConfig serverLevelConfig;
 
     @Inject
     private ExtensionConfigSourceService extensionService;
@@ -180,13 +178,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return configuration;
     }
 
-    int getCacheDurationSeconds() {
+    long getCacheDurationSeconds() {
         if (serverLevelConfig != null) {
-            java.util.Optional<Integer> cacheDuration = serverLevelConfig.getOptionalValue(MP_CONFIG_CACHE_DURATION,
-                    Integer.class);
-            if (cacheDuration.isPresent()) {
-                return cacheDuration.get();
-            }
+            return serverLevelConfig.getCacheDurationSeconds();
         }
         return Integer.parseInt(getMPConfig().getCacheDurationSeconds());
     }

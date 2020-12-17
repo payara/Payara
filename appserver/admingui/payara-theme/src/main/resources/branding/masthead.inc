@@ -62,6 +62,7 @@
             <sun:hyperlink id="homeLink" toolTip="$resource{i18n.homeLinkTooltip}" target="_top" text="$resource{i18n.masthead.Home}" url="#{request.contextPath}/common/index.jsf" />
             <sun:hyperlink id="versionLink" toolTip="$resource{i18n.versionTooltip}" text="$resource{i18n.masthead.Version}"
                 onClick="javascript: var versionWin = window.open('#{request.contextPath}/common/version.jsf','VersionWindow','scrollbars,resizable,width=800,height=740,top='+((screen.height - (screen.height/1.618)) - (500/2))+',left='+((screen.width-650)/2) ); versionWin.focus(); return false;" onKeyPress="javascript: return true;" />
+            <sun:hyperlink id="enterpriseLink" toolTip="$resource{i18n.enterpriseLinkTooltip}" target="_blank" text="$resource{i18n.masthead.EnterpriseLink}" url="https://www.payara.fish/products/payara-server/" />
             <sun:button id="help" toolTip="$resource{i18n.helpWindowTooltip}" target="_top" text="$resource{i18n.masthead.Help}" onClick="admingui.help.launchHelp(this); return false;" />
             <sun:button id="onlineHelp" toolTip="$resource{i18n.onlineHelpWindowTooltip}" target="_top" text="$resource{i18n.masthead.OnlineHelp}" onClick="admingui.help.launchHelp(); return false;" />
             <sun:button id="logoutLink" rendered="#{showLogoutButton}" toolTip="$resource{i18n.logoutTooltip}" target="_top" text="$resource{i18n.masthead.Logout}"

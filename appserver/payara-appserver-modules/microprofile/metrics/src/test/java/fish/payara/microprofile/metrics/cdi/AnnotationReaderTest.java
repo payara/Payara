@@ -470,19 +470,8 @@ public class AnnotationReaderTest {
 
 
     /*
-     * Metric names when using @Metric on Fields and Methods
+     * Metric names when using @Metric on Fields
      */
-
-    private static class BeanU {
-
-        @Produces
-        @Metric
-        Counter method() { return null; }
-    }
-    @Test
-    public void relativeInferredLocalNameMetricMethod() {
-        assertNamed("<this>.BeanU.method", BeanU.class);
-    }
 
     private static class BeanV {
         @Metric
@@ -491,17 +480,6 @@ public class AnnotationReaderTest {
     @Test
     public void relativeInferredLocalNameMetricField() {
         assertNamed("<this>.BeanV.field", BeanV.class);
-    }
-
-    private static class BeanW {
-
-        @Produces
-        @Metric(name = "producer")
-        Counter method() { return null; }
-    }
-    @Test
-    public void relativeGivenLocalNameMetricMethod() {
-        assertNamed("<this>.BeanW.producer", BeanW.class);
     }
 
     private static class BeanX {
@@ -513,17 +491,6 @@ public class AnnotationReaderTest {
         assertNamed("<this>.BeanX.counter", BeanX.class);
     }
 
-    private static class BeanY {
-
-        @Produces
-        @Metric(name = "producer", absolute = true)
-        Counter method() { return null; }
-    }
-    @Test
-    public void absoluteGivenLocalNameMetricMethod() {
-        assertNamed("producer", BeanY.class);
-    }
-
     private static class BeanZ {
         @Metric(name = "counter", absolute = true)
         Counter field;
@@ -531,17 +498,6 @@ public class AnnotationReaderTest {
     @Test
     public void absoluteGivenLocalNameMetricField() {
         assertNamed("counter", BeanZ.class);
-    }
-
-    private static class BeanAA {
-
-        @Produces
-        @Metric(absolute = true)
-        Counter method() { return null; }
-    }
-    @Test
-    public void absoluteInferredLocalNameMetricMethod() {
-        assertNamed("method", BeanAA.class);
     }
 
     private static class BeanAB {
@@ -640,15 +596,15 @@ public class AnnotationReaderTest {
 
     @Test
     @Counted(name = "name", absolute = true, description = "description", displayName = "displayName",
-        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        unit = "unit", tags = { "a=b", "c=d" })
     @ConcurrentGauge(name = "name", absolute = true, description = "description", displayName = "displayName",
-        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        unit = "unit", tags = { "a=b", "c=d" })
     @Metered(name = "name", absolute = true, description = "description", displayName = "displayName",
-        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        unit = "unit", tags = { "a=b", "c=d" })
     @Timed(name = "name", absolute = true, description = "description", displayName = "displayName",
-        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        unit = "unit", tags = { "a=b", "c=d" })
     @SimplyTimed(name = "name", absolute = true, description = "description", displayName = "displayName",
-        reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+        unit = "unit", tags = { "a=b", "c=d" })
     @Gauge(name = "name", absolute = true, description = "description", displayName = "displayName",
         unit = "unit", tags = { "a=b", "c=d" })
     public void metadataFromMethod() {
@@ -657,15 +613,15 @@ public class AnnotationReaderTest {
 
     private static class BeanAK {
         @Counted(name = "name", absolute = true, description = "description", displayName = "displayName",
-                reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+            unit = "unit", tags = { "a=b", "c=d" })
         @ConcurrentGauge(name = "name", absolute = true, description = "description", displayName = "displayName",
-            reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+            unit = "unit", tags = { "a=b", "c=d" })
         @Metered(name = "name", absolute = true, description = "description", displayName = "displayName",
-            reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+            unit = "unit", tags = { "a=b", "c=d" })
         @Timed(name = "name", absolute = true, description = "description", displayName = "displayName",
-            reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+            unit = "unit", tags = { "a=b", "c=d" })
         @SimplyTimed(name = "name", absolute = true, description = "description", displayName = "displayName",
-            reusable = true, unit = "unit", tags = { "a=b", "c=d" })
+            unit = "unit", tags = { "a=b", "c=d" })
         BeanAK() { /* not important */ }
     }
     @Test
@@ -714,50 +670,6 @@ public class AnnotationReaderTest {
         expected.put(HistogramImpl.class, MetricType.HISTOGRAM);
         expected.put(GaugeImpl.class, MetricType.GAUGE);
         return expected;
-    }
-
-    private static class BeanAM {
-
-        @Metric
-        Counter counter() { return null; }
-        @Metric
-        org.eclipse.microprofile.metrics.ConcurrentGauge concurrentGauge() { return null; }
-        @Metric
-        Meter meter() { return null; }
-        @Metric
-        Timer timer() { return null; }
-        @Metric
-        SimpleTimer simpleTimer() { return null; }
-        @Metric
-        Histogram histogram() { return null; }
-        @Metric
-        org.eclipse.microprofile.metrics.Gauge<Long> gauge() { return null; }
-    }
-    @Test
-    public void metricOnMethodReturningInterfaceType() {
-        assertMetricType(getMetricInterfaceExpectedMapping(), BeanAM.class.getDeclaredMethods(), Method::getReturnType);
-    }
-
-    private static class BeanAN {
-
-        @Metric
-        CounterImpl counter() { return null; }
-        @Metric
-        ConcurrentGaugeImpl concurrentGauge() { return null; }
-        @Metric
-        MeterImpl meter() { return null; }
-        @Metric
-        TimerImpl timer() { return null; }
-        @Metric
-        SimpleTimerImpl simpleTimer() { return null; }
-        @Metric
-        HistogramImpl histogram() { return null; }
-        @Metric
-        GaugeImpl<?> gauge() { return null; }
-    }
-    @Test
-    public void metricOnMethodReturningImplementationType() {
-        assertMetricType(getMetricImplementationExpectedMapping(), BeanAN.class.getDeclaredMethods(), Method::getReturnType);
     }
 
     private static class BeanAO {
@@ -866,10 +778,9 @@ public class AnnotationReaderTest {
     private static void assertMetadataOverride(MetricType expected, Metadata metadata) {
         assertEquals(expected, metadata.getTypeRaw());
         assertEquals("name", metadata.getName());
-        assertEquals("description", metadata.getDescription().get());
+        assertEquals("description", metadata.getDescription());
         assertEquals("displayName", metadata.getDisplayName());
-        assertEquals("unit", metadata.getUnit().get());
-        assertEquals("reuasable", expected != MetricType.GAUGE, metadata.isReusable());
+        assertEquals("unit", metadata.getUnit());
     }
 
     private void assertNamed(String expected) {

@@ -1,6 +1,7 @@
 
 {
     "responseTime": {
+        "elapsedTime": 45678,
         "count": 29382,
         "meanRate": 12.185627192860734,
         "oneMinRate": 12.563,
@@ -16,6 +17,7 @@
         "p98": 2706543.0,
         "p99": 5608694.0,
         "p999": 5608694.0,
+        "elapsedTime;servlet=two": 45678,
         "count;servlet=two": 29382,
         "meanRate;servlet=two": 12.185627192860734,
         "oneMinRate;servlet=two": 12.563,

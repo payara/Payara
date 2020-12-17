@@ -102,7 +102,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
     private Context getContextWithCredentialsSet(String username, String password) {
         Hashtable<String, Object> environment = new Hashtable<>();
         environment.put(INITIAL_CONTEXT_FACTORY, RemoteEJBContextFactory.class.getName());
-        environment.put(PROVIDER_URL, EJB_INVOKER_PROVIDER_URL);
+        environment.put(PROVIDER_URL, getProviderURL());
         environment.put(PROVIDER_AUTH_TYPE, BASIC_AUTH);
         environment.put(PROVIDER_PRINCIPAL, username);
         environment.put(PROVIDER_CREDENTIALS, password);
@@ -113,6 +113,14 @@ public abstract class AbstractRemoteBeanSecurityTest {
             return new InitialContext(environment);
         } catch (NamingException ex) {
             throw new IllegalStateException(ex);
+        }
+    }
+
+    private String getProviderURL() {
+        try {
+            return ServerOperations.baseURLForServerHost(new URL(EJB_INVOKER_PROVIDER_URL)).toString();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -158,7 +166,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
             assertNotNull(beanRemote.method());
             fail("RemoteBean#method must not be accessed for invalid credential");
         } catch (NamingException ex) {
-            assertEquals("Invoker is not available at <" + EJB_INVOKER_PROVIDER_URL + ">: Unauthorized", ex.getExplanation());
+            assertEquals("Invoker is not available at <" + getProviderURL() + ">: Unauthorized", ex.getExplanation());
         }
     }
 

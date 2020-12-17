@@ -105,6 +105,7 @@ import fish.payara.nucleus.requesttracing.sampling.AdaptiveSampleFilter;
 import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
+import io.opentracing.tag.Tag;
 
 /**
  * Main service class that provides methods used by interceptors for tracing
@@ -653,8 +654,12 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
                 attrs.add(String.valueOf(annotationSpan.getStartInstant().toEpochMilli()));
                 attrs.add("End");
                 attrs.add(String.valueOf(annotationSpan.getTraceEndTime().toEpochMilli()));
-                for (Entry<String, String> tag : annotationSpan.getSpanTags().entrySet()) {
-                    attrs.add(tag.getKey());
+                for (Entry<Object, String> tag : annotationSpan.getSpanTags().entrySet()) {
+                    if (tag.getKey() instanceof Tag) {
+                        attrs.add(((Tag) tag.getKey()).getKey());
+                    } else {
+                        attrs.add(tag.getKey().toString());
+                    }
                     attrs.add(tag.getValue());
                 }
                 tracingCollector.group(group)

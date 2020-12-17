@@ -113,7 +113,7 @@ public class ConnectionPoolHealthCheck
     @Override
     protected HealthCheckResult doCheckInternal() {
         HealthCheckResult result = new HealthCheckResult();
-        consumeAllJdbcResources(createConsumer((info, usedPercentage) -> 
+        consumeAllJdbcResources(createConsumer((info, usedPercentage) ->
             result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(usedPercentage),
                     info.getName() + " Usage (%): " + new DecimalFormat("#.00").format(usedPercentage)))
         ));
@@ -129,7 +129,7 @@ public class ConnectionPoolHealthCheck
     @MonitoringData(ns = "health", intervalSeconds = 8)
     public void collect(MonitoringDataCollector collector) {
         if (options != null && options.isEnabled()) {
-            consumeAllJdbcResources(createConsumer((info, usedPercentage) -> 
+            consumeAllJdbcResources(createConsumer((info, usedPercentage) ->
                 collector.group(info.getName()).collect("PoolUsage", usedPercentage.longValue())
             ));
         }

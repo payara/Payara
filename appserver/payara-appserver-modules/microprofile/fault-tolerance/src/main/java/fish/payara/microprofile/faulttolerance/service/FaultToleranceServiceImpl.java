@@ -72,7 +72,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.control.RequestContextController;
 import javax.inject.Inject;
 import javax.interceptor.InvocationContext;
@@ -120,8 +119,8 @@ public class FaultToleranceServiceImpl
     @Inject
     private MetricsService metricsService;
 
-    private final ConcurrentMap<String, FaultToleranceMethodContextImpl> methodByTargetObjectAndName = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, BindableFaultToleranceConfig> configByApplication = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<String, FaultToleranceMethodContextImpl>> contextByAppNameAndMethodId = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, BindableFaultToleranceConfig> configByAppName = new ConcurrentHashMap<>();
     private ThreadPoolExecutor asyncExecutorService;
     private ScheduledExecutorService delayExecutorService;
 
@@ -160,19 +159,21 @@ public class FaultToleranceServiceImpl
     private void cleanMethodContexts() {
         final long ttl = TimeUnit.MINUTES.toMillis(1);
         int cleaned = 0;
-        for (String key : new HashSet<>(methodByTargetObjectAndName.keySet())) {
-            try {
-                Object newValue = methodByTargetObjectAndName.compute(key,
-                        (k, methodContext) -> methodContext.isExpired(ttl) ? null : methodContext);
-                if (newValue == null) {
-                    cleaned++;
+        for (Map<String, FaultToleranceMethodContextImpl> appEntry : contextByAppNameAndMethodId.values()) {
+            for (String key : new HashSet<>(appEntry.keySet())) {
+                try {
+                    Object newValue = appEntry.compute(key,
+                            (k, methodContext) -> methodContext.isExpired(ttl) ? null : methodContext);
+                    if (newValue == null) {
+                        cleaned++;
+                    }
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Failed to clean FT method context for " + key, e);
                 }
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Failed to clean FT method context for " + key, e);
             }
         }
         if (cleaned > 0) {
-            String allClean = methodByTargetObjectAndName.isEmpty() ? ".All clean." : ".";
+            String allClean = contextByAppNameAndMethodId.isEmpty() ? ".All clean." : ".";
             logger.log(Level.INFO, "Cleaned {0} expired FT method contexts" + allClean, cleaned);
         }
     }
@@ -212,16 +213,18 @@ public class FaultToleranceServiceImpl
     @Override
     @MonitoringData(ns = "ft")
     public void collect(MonitoringDataCollector collector) {
-        for (Entry<String, FaultToleranceMethodContextImpl> methodValue : methodByTargetObjectAndName.entrySet()) {
-            String group = methodValue.getKey();
-            MonitoringDataCollector methodCollector = collector.group(group);
-            FaultToleranceMethodContext context = methodValue.getValue();
-            BlockingQueue<Thread> concurrentExecutions = context.getConcurrentExecutions(-1);
-            if (concurrentExecutions != null) {
-                collectBulkheadSemaphores(methodCollector, concurrentExecutions);
-                collectBulkheadSemaphores(methodCollector, concurrentExecutions, context.getQueuingOrRunningPopulation());
+        for (Entry<String, ConcurrentMap<String, FaultToleranceMethodContextImpl>> appEntry : contextByAppNameAndMethodId.entrySet()) {
+            String app = appEntry.getKey();
+            for (Entry<String, FaultToleranceMethodContextImpl> methodEntry  : appEntry.getValue().entrySet()) {
+                MonitoringDataCollector methodCollector = collector.group(methodEntry.getKey()).tag("app", app);
+                FaultToleranceMethodContext context = methodEntry.getValue();
+                BlockingQueue<Thread> concurrentExecutions = context.getConcurrentExecutions();
+                if (concurrentExecutions != null) {
+                    collectBulkheadSemaphores(methodCollector, concurrentExecutions);
+                    collectBulkheadSemaphores(methodCollector, concurrentExecutions, context.getQueuingOrRunningPopulation());
+                }
+                collectCircuitBreakerState(methodCollector, context.getState());
             }
-            collectCircuitBreakerState(methodCollector, context.getState(-1));
         }
     }
 
@@ -249,13 +252,13 @@ public class FaultToleranceServiceImpl
 
     @Override
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
-        return configByApplication.computeIfAbsent(getApplicationContext(context),
+        return configByAppName.computeIfAbsent(getAppName(context),
                 key -> new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
     }
 
-    private MetricRegistry getApplicationMetricRegistry() {
+    private MetricRegistry getBaseMetricRegistry() {
         try {
-            return metricsService.getApplicationRegistry();
+            return metricsService.getContext(true).getBaseRegistry();
         } catch (Exception e) {
             return null;
         }
@@ -266,7 +269,8 @@ public class FaultToleranceServiceImpl
      * @param applicationName The name of the application to remove
      */
     private void deregisterApplication(String applicationName) {
-        configByApplication.remove(applicationName);
+        configByAppName.remove(applicationName);
+        contextByAppNameAndMethodId.remove(applicationName);
     }
 
     /**
@@ -276,7 +280,7 @@ public class FaultToleranceServiceImpl
      * @param context The context of the current invocation
      * @return The application name
      */
-    private String getApplicationContext(InvocationContext context) {
+    private String getAppName(InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         String appName = currentInvocation.getAppName();
         return appName != null ? appName : "common";
@@ -310,15 +314,14 @@ public class FaultToleranceServiceImpl
     @Override
     public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
             RequestContextController requestContextController) {
-        FaultToleranceMethodContextImpl methodContext = methodByTargetObjectAndName //
-                .computeIfAbsent(getTargetMethodId(context),
-                        key -> createMethodContext(key, context, requestContextController));
-        return methodContext.in(context, policy);
+        return contextByAppNameAndMethodId.computeIfAbsent(getAppName(context), appId -> new ConcurrentHashMap<>())
+                    .computeIfAbsent(getTargetMethodId(context),
+                        methodId -> createMethodContext(methodId, context, requestContextController)).boundTo(context, policy);
     }
 
     private FaultToleranceMethodContextImpl createMethodContext(String methodId, InvocationContext context,
             RequestContextController requestContextController) {
-        MetricRegistry metricRegistry = getApplicationMetricRegistry();
+        MetricRegistry metricRegistry = getBaseMetricRegistry();
         FaultToleranceMetrics metrics = metricRegistry == null
                 ? FaultToleranceMetrics.DISABLED
                 : new MethodFaultToleranceMetrics(metricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
@@ -333,12 +336,14 @@ public class FaultToleranceServiceImpl
      * It is essential that the computed signature is referring to the {@link Method} as defined by the target
      * {@link Object} class not its declaring {@link Class} as this could be different when called via an abstract
      * {@link Method} implemented or overridden by the target {@link Class}.
+     *
+     * Since MP FT 3.0 all instances of a class share same state object for the same method. Or in other words the FT
+     * context is not specific to an instance but to the annotated class and method.
      */
-    private static String getTargetMethodId(InvocationContext context) {
+    public static String getTargetMethodId(InvocationContext context) {
         Object target = context.getTarget();
         Method method = context.getMethod();
         StringBuilder methodId = new StringBuilder();
-        methodId.append(Integer.toHexString(System.identityHashCode(target))).append('@');
         methodId.append(target.getClass().getName()).append('.').append(method.getName());
         if (method.getParameterCount() > 0) {
             methodId.append('(');
