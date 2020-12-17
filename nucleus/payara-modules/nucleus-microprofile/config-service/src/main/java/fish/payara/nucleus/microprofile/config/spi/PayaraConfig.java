@@ -281,4 +281,13 @@ public class PayaraConfig implements Config {
         // That's really strange config variable you got there
         return Void.class;
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T unwrap(Class<T> type) {
+        if (type == PayaraConfig.class) {
+            return (T) this;
+        }
+        throw new IllegalArgumentException("Unable to cast config source to type " + type);
+    }
 }
