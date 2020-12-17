@@ -87,7 +87,7 @@
             
     <module>samples</module>
           
-    <module>ClassloaderDataAPI</module>
+    <module>classloader-data-api</module>
       
   </modules>
       

@@ -14,6 +14,8 @@ import org.glassfish.web.loader.WebappClassLoaderFinalizer;
  */
 @Path("instance-count")
 public class InstanceResource {
+    
+    private int previousInstanceCount = 0;
 
     /**
      * Method handling HTTP GET request for Instance Count
@@ -21,6 +23,7 @@ public class InstanceResource {
      * @return int WebappClassLoader instance count
      */
     @GET
+    @Path("new")
     public int getClassLoaderCount() {
         System.gc();
         Reference<? extends WebappClassLoader> referenceFromQueue;
@@ -28,6 +31,13 @@ public class InstanceResource {
             ((WebappClassLoaderFinalizer)referenceFromQueue).cleanupAction();
             referenceFromQueue.clear();
         }
-        return WebappClassLoader.getInstanceCount();
+        previousInstanceCount = WebappClassLoader.getInstanceCount();
+        return previousInstanceCount;
+    }
+    
+    @GET
+    @Path("previous")
+    public int getPreviousInstanceCount() {
+        return previousInstanceCount;
     }
 }

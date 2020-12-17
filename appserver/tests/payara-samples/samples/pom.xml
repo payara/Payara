@@ -250,6 +250,7 @@
                 <module>ejb-http-remoting</module>
                 <module>remote-ejb-tracing</module>
                 <module>rolesallowed-unprotected-methods</module>
+                <module>classloader-leak-check</module>
             </modules>
             <dependencies>
                 <dependency>
@@ -258,6 +259,11 @@
                     <version>${arquillian.payara.remote.version}</version>
                     <scope>test</scope>
                     <optional>true</optional>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.samples</groupId>
+                    <artifactId>classloader-data-api</artifactId>
+                    <version>${project.version}</version>
                 </dependency>
             </dependencies>
             <build>
@@ -279,6 +285,34 @@
                                 <payara.domain.name>${payara.domain.name}</payara.domain.name>
                             </systemPropertyVariables>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.glassfish.build</groupId>
+                        <artifactId>glassfishbuild-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deploy-WCL-API</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${payara.home}/glassfish/bin/asadmin</executable>
+                                    <commandlineArgs>deploy ${project.build.directory}/../ClassloaderDataAPI/target/ClassloaderDataAPI.war</commandlineArgs>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>undeploy-WCL-API</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${payara.home}/glassfish/bin/asadmin</executable>
+                                    <commandlineArgs>undeploy ClassloaderDataAPI.war</commandlineArgs>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
