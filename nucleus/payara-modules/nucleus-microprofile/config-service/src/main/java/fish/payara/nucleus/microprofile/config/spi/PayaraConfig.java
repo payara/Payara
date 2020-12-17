@@ -42,6 +42,7 @@ package fish.payara.nucleus.microprofile.config.spi;
 import fish.payara.nucleus.microprofile.config.converters.ArrayConverter;
 import fish.payara.nucleus.microprofile.config.converters.AutomaticConverter;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
 
@@ -135,6 +136,32 @@ public class PayaraConfig implements Config {
     }
 
     @Override
+    public ConfigValue getConfigValue(String propertyName) {
+        for (ConfigSource source : sources) {
+            String sourceValue = source.getValue(propertyName);
+            if (sourceValue != null) {
+                return new ConfigValueImpl(
+                    propertyName,
+                    sourceValue,
+                    source.getName(),
+                    source.getOrdinal()
+                );
+            }
+        }
+        return null;
+    }
+
+    private String getSourceValue(String propertyName) {
+        for (ConfigSource source : sources) {
+            String sourceValue = source.getValue(propertyName);
+            if (sourceValue != null) {
+                return sourceValue;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
         return Optional.ofNullable(getValueInternal(propertyName, propertyType));
     }
@@ -209,16 +236,6 @@ public class PayaraConfig implements Config {
             }
         }
         return converter.convert(defaultValue);
-    }
-
-    private String getSourceValue(String propertyName) {
-        for (ConfigSource source : sources) {
-            String sourceValue = source.getValue(propertyName);
-            if (sourceValue != null) {
-                return sourceValue;
-            }
-        }
-        return null;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
