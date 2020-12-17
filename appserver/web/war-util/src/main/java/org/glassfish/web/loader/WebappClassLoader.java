@@ -89,6 +89,7 @@ import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -410,16 +411,23 @@ public class WebappClassLoader
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
     
     private static int INSTANCE_COUNT;
+    public static ReferenceQueue<WebappClassLoader> referenceQueue;
+    public static ArrayList<WebappClassLoaderFinalizer> list;
     {
         INSTANCE_COUNT++;
+        list.add(new WebappClassLoaderFinalizer(this, referenceQueue));
     }
     
-    public int getInstanceCount() {
-        return WebappClassLoader.INSTANCE_COUNT;
+    public static int getInstanceCount() {
+        return INSTANCE_COUNT;
+    }
+    
+    public static void decreaseInstanceCount() {
+        INSTANCE_COUNT--;
     }
 
     static {
-
+        
         if (!IS_JDK_VERSION_HIGHER_THAN_8) {
             isMultiReleaseJar = false;
         } else {
