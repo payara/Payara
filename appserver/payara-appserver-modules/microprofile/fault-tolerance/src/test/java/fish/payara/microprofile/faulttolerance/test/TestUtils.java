@@ -47,6 +47,8 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.Tag;
 
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 
@@ -115,5 +117,42 @@ public class TestUtils {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /**
+     * Parses text form of a {@link MetricID} back to object.
+     *
+     * This supports both the result of calling {@link MetricID#toString()} as well as a simplified more user friendly form illustrated in the examples below:
+     *
+     * <pre>
+     * my-metric-name
+     * my-metric-name[tag=value,tag=value]
+     * </pre>
+     *
+     * @param metric text form of a {@link MetricID}
+     * @return
+     */
+    public static MetricID parseMetricID(String metric) {
+        int startOfTags = metric.indexOf('[');
+        if (startOfTags < 0) { // no tags, must be simple format
+            return new MetricID(metric);
+        }
+        int endOfTags = metric.indexOf(']');
+        String[] tagNameValues = metric.substring(startOfTags + 1, endOfTags).split(",");
+        Tag[] tags = new Tag[tagNameValues.length];
+        for (int i = 0; i < tagNameValues.length; i++) {
+            String tag = tagNameValues[i];
+            int endOfName = tag.indexOf('=');
+            String value = tag.substring(endOfName + 1);
+            if (value.startsWith("\"") && value.endsWith("\"")) {
+                value = value.substring(1, value.length() -1);
+            }
+            tags[i] = new Tag(tag.substring(0, endOfName), value);
+        }
+        if (metric.startsWith("MetricID{")) {
+            int startOfName = metric.indexOf('\'');
+            return new MetricID(metric.substring(startOfName+1, metric.indexOf('\'', startOfName+1)), tags);
+        }
+        return new MetricID(metric.substring(0, startOfTags), tags);
     }
 }

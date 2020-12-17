@@ -123,6 +123,11 @@ public class SimpleTimerImpl extends CompleteMinuteMinMaxTracker implements Simp
         return nanos == null ? null : Duration.ofNanos(nanos);
     }
 
+    @Override
+    public String toString() {
+        return "SimpleTimer[" + getCount() + "]";
+    }
+
     private static final class Context implements SimpleTimer.Context {
 
         private final SimpleTimer timer;

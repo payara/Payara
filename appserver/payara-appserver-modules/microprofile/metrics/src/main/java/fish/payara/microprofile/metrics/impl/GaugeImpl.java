@@ -77,4 +77,8 @@ public class GaugeImpl<T extends Object> implements Gauge<T>, Supplier<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Gauge[" + getValue() + "]";
+    }
 }

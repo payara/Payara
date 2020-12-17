@@ -223,6 +223,11 @@ public class TimerImpl implements Timer {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Timer[" + getCount() + "]";
+    }
+
     /**
      * A timing context.
      *

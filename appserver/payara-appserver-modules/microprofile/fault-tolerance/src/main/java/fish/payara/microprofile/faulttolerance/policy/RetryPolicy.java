@@ -52,7 +52,7 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 
 /**
  * The resolved "cached" information of a {@link Retry} annotation an a specific method.
- * 
+ *
  * @author Jan Bernitt
  */
 public final class RetryPolicy extends Policy {
@@ -126,7 +126,7 @@ public final class RetryPolicy extends Policy {
      * <li>Otherwise the thrown object is rethrown.
      * </ol>
      * </blockquote>
-     * 
+     *
      * @param ex an {@link Error} or an {@link Exception}
      * @return true, if a retry should occur, else false.
      */
@@ -144,12 +144,20 @@ public final class RetryPolicy extends Policy {
 
     public long jitteredDelay() {
         long duration = Duration.of(delay, delayUnit).toMillis();
-        return jitter == 0L 
+        return jitter == 0L
                 ? duration
                 : duration + ThreadLocalRandom.current().nextLong(0, Duration.of(jitter, jitterDelayUnit).toMillis());
     }
 
     public int totalAttempts() {
         return maxRetries < 0 ? Integer.MAX_VALUE : maxRetries + 1;
+    }
+
+    public boolean isMaxRetriesSet() {
+        return maxRetries >= 0;
+    }
+
+    public boolean isMaxDurationSet() {
+        return maxDuration > 0L;
     }
 }

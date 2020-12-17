@@ -109,7 +109,7 @@ public class MetricsResource extends HttpServlet {
             response.sendError(SC_FORBIDDEN, "MicroProfile Metrics Service is disabled");
             return;
         }
-        metricsService.reregisterMetadataConfig();
+        metricsService.refresh();
 
         String pathInfo = request.getPathInfo() != null ? request.getPathInfo().substring(1) : EMPTY_STRING;
         String[] pathInfos = pathInfo.split("/");
@@ -155,17 +155,17 @@ public class MetricsResource extends HttpServlet {
         if (GET.equalsIgnoreCase(method)) {
             if (APPLICATION_JSON.equals(contentType)) {
                 return new MetricsWriterImpl(new JsonExporter(writer, Mode.GET, true),
-                    service::getAllRegistryNames, service::getRegistry, getGlobalTags());
+                    service.getContextNames(), service::getContext, getGlobalTags());
             }
             if (TEXT_PLAIN.equals(contentType)) {
                 return new MetricsWriterImpl(new OpenMetricsExporter(writer),
-                    service::getAllRegistryNames, service::getRegistry, getGlobalTags());
+                    service.getContextNames(), service::getContext, getGlobalTags());
             }
         }
         if (OPTIONS.equalsIgnoreCase(method)) {
             if (APPLICATION_JSON.equals(contentType)) {
                 return new MetricsWriterImpl(new JsonExporter(writer, Mode.OPTIONS, true),
-                        service::getAllRegistryNames, service::getRegistry, getGlobalTags());
+                        service.getContextNames(), service::getContext, getGlobalTags());
             }
         }
         return null;

@@ -51,7 +51,7 @@ import org.eclipse.microprofile.faulttolerance.Fallback;
 /**
  * Utility class to find a {@link Method} of a certain name with the same argument types as a given sample method as
  * required to lookup the {@link Fallback}'s fallback method.
- * 
+ *
  * @author Jan Bernitt
  */
 public final class MethodLookupUtils {
@@ -63,6 +63,14 @@ public final class MethodLookupUtils {
     public static Method findMethodWithMatchingNameAndArguments(String name, Method sample) {
         Class<?> currentType = sample.getDeclaringClass();
         while (currentType != Object.class) {
+            try {
+                Method candidate = currentType.getDeclaredMethod(name, sample.getParameterTypes());
+                if (isMatchingParameterList(sample, candidate)) {
+                    return candidate;
+                }
+            } catch (NoSuchMethodException | SecurityException e) {
+                // continue search
+            }
             for (Method candidate : currentType.getDeclaredMethods()) {
                 if (name.equals(candidate.getName()) && isMatchingParameterList(sample, candidate)) {
                     return candidate;
@@ -97,7 +105,7 @@ public final class MethodLookupUtils {
     }
 
     private static boolean isMatchingType(Type sample, Type candidate) {
-        return sample.equals(candidate) 
+        return sample.equals(candidate)
                 || (candidate instanceof TypeVariable)
                 || (candidate instanceof GenericArrayType)
                 || isMatchingGenericType(sample, candidate)
