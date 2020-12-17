@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.samples</groupId>
+        <artifactId>payara-samples</artifactId>
+        <version>5.2020.8-SNAPSHOT</version>
+    </parent>
+    
+    <groupId>fish.payara.samples</groupId>
+    <artifactId>ClassloaderDataAPI</artifactId>
+    <version>5.2020.8-SNAPSHOT</version>
+    
+    <packaging>war</packaging>
+    <name>Payara Samples - ClassLoader Data API</name>
+    <description>A REST API Application for retrieving an instance count of 
+        WebappClassLoader from an instance of Payara Server</description>
+    
+    <properties>
+        <jersey.version>3.0.0</jersey.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.glassfish.jersey</groupId>
+                <artifactId>jersey-bom</artifactId>
+                <version>${jersey.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+        </dependency>
+        
+        <!-- Payara Dependencies -->
+        <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>war-util</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <finalName>ClassloaderDataAPI</finalName>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <inherited>true</inherited>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
