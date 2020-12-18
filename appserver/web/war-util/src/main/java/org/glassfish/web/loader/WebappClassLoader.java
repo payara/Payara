@@ -411,8 +411,8 @@ public class WebappClassLoader
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
     
     private static int INSTANCE_COUNT;
-    public static ReferenceQueue<WebappClassLoader> referenceQueue;
-    public static ArrayList<WebappClassLoaderFinalizer> list;
+    public static ReferenceQueue<WebappClassLoader> referenceQueue = new ReferenceQueue<WebappClassLoader>();
+    public static ArrayList<WebappClassLoaderFinalizer> list = new ArrayList<WebappClassLoaderFinalizer>();
     {
         INSTANCE_COUNT++;
         list.add(new WebappClassLoaderFinalizer(this, referenceQueue));
