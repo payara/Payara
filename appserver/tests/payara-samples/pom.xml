@@ -84,10 +84,10 @@
   <modules>
             
     <module>test-utils</module>
-            
-    <module>samples</module>
-          
+    
     <module>classloader-data-api</module>
+    
+    <module>samples</module>
       
   </modules>
       
