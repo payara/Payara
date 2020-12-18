@@ -43,36 +43,18 @@ import static java.lang.Thread.currentThread;
 import static java.util.logging.Level.INFO;
 import static javax.security.enterprise.identitystore.CredentialValidationResult.INVALID_RESULT;
 import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
-import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY;
-import static org.eclipse.microprofile.jwt.config.Names.VERIFIER_PUBLIC_KEY_LOCATION;
 
-import java.io.*;
-import java.math.BigInteger;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import javax.enterprise.inject.spi.DeploymentException;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 
@@ -81,7 +63,6 @@ import org.eclipse.microprofile.config.ConfigProvider;
 
 import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
 import fish.payara.microprofile.jwtauth.jwt.JwtTokenParser;
-import org.glassfish.grizzly.http.util.ContentType;
 
 /**
  * Identity store capable of asserting that a signed JWT token is valid
@@ -93,14 +74,13 @@ public class SignedJWTIdentityStore implements IdentityStore {
 
     private static final Logger LOGGER = Logger.getLogger(SignedJWTIdentityStore.class.getName());
 
-    private static final String RSA_ALGORITHM = "RSA";
-
     private final String acceptedIssuer;
     private final Optional<Boolean> enabledNamespace;
     private final Optional<String> customNamespace;
     private final Optional<Boolean> disableTypeVerification;
 
     private final Config config;
+    private final JwtPublicKeyStore publicKeyStore;
 
     public SignedJWTIdentityStore() {
         config = ConfigProvider.getConfig();
@@ -113,6 +93,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
         enabledNamespace = readEnabledNamespace(properties);
         customNamespace = readCustomNamespace(properties);
         disableTypeVerification = readDisableTypeVerification(properties);
+        publicKeyStore = new JwtPublicKeyStore(readPublicKeyCacheTTL(properties));
     }
 
     public CredentialValidationResult validate(SignedJWTCredential signedJWTCredential) {
@@ -121,19 +102,10 @@ public class SignedJWTIdentityStore implements IdentityStore {
             jwtTokenParser.parse(signedJWTCredential.getSignedJWT());
             String keyID = jwtTokenParser.getKeyID();
 
-            Optional<PublicKey> publicKey = readDefaultPublicKey();
-            if (!publicKey.isPresent()) {
-                publicKey = readMPEmbeddedPublicKey(keyID);
-            }
-            if (!publicKey.isPresent()) {
-                publicKey = readMPPublicKeyFromLocation(keyID);
-            }
-            if (!publicKey.isPresent()) {
-                throw new IllegalStateException("No PublicKey found");
-            }
+            PublicKey publicKey = publicKeyStore.getPublicKey(keyID);
 
             JsonWebTokenImpl jsonWebToken
-                    = jwtTokenParser.verify(acceptedIssuer, publicKey.get());
+                    = jwtTokenParser.verify(acceptedIssuer, publicKey);
 
             Set<String> groups = new HashSet<>();
             Collection<String> groupClaims = jsonWebToken.getClaim("groups");
@@ -179,141 +151,13 @@ public class SignedJWTIdentityStore implements IdentityStore {
     private Optional<Boolean> readDisableTypeVerification(Optional<Properties> properties) {
         return properties.isPresent() ? Optional.ofNullable(Boolean.valueOf(properties.get().getProperty("disable.type.verification", "false"))) : Optional.empty();
     }
-
-    private Optional<PublicKey> readDefaultPublicKey() throws Exception {
-        return readPublicKeyFromLocation("/publicKey.pem", null);
+    
+    private Long readPublicKeyCacheTTL(Optional<Properties> properties) {
+        return properties
+        		.map(props -> props.getProperty("publicKey.cache.ttl"))
+        		.map(Long::valueOf)
+        		.orElseGet( () -> TimeUnit.SECONDS.convert(5, TimeUnit.MINUTES));
     }
 
-    private Optional<PublicKey> readMPEmbeddedPublicKey(String keyID) throws Exception {
-        Optional<String> key = config.getOptionalValue(VERIFIER_PUBLIC_KEY, String.class);
-        if (!key.isPresent()) {
-            return Optional.empty();
-        }
-        return createPublicKey(key.get(), keyID);
-    }
-
-    private Optional<PublicKey> readMPPublicKeyFromLocation(String keyID) throws Exception {
-        Optional<String> locationOpt = config.getOptionalValue(VERIFIER_PUBLIC_KEY_LOCATION, String.class);
-
-        if (!locationOpt.isPresent()) {
-            return Optional.empty();
-        }
-
-        String publicKeyLocation = locationOpt.get();
-
-        return readPublicKeyFromLocation(publicKeyLocation, keyID);
-    }
-
-    private Optional<PublicKey> readPublicKeyFromLocation(String publicKeyLocation, String keyID) throws Exception {
-
-        URL publicKeyURL = currentThread().getContextClassLoader().getResource(publicKeyLocation);
-
-        if (publicKeyURL == null) {
-            try {
-                publicKeyURL = new URL(publicKeyLocation);
-            } catch (MalformedURLException ex) {
-                publicKeyURL = null;
-            }
-        }
-        if (publicKeyURL == null) {
-            return Optional.empty();
-        }
-
-        URLConnection urlConnection = publicKeyURL.openConnection();
-        Charset charset = Charset.defaultCharset();
-        ContentType contentType = ContentType.newContentType(urlConnection.getContentType());
-        if(contentType != null) {
-            String charEncoding = contentType.getCharacterEncoding();
-            if(charEncoding != null) {
-                try {
-                    if (!Charset.isSupported(charEncoding)) {
-                        LOGGER.warning("Charset " + charEncoding + " for remote public key not supported, using default charset instead");
-                    } else {
-                        charset = Charset.forName(contentType.getCharacterEncoding());
-                    }
-                }catch (IllegalCharsetNameException ex){
-                    LOGGER.severe("Charset " + ex.getCharsetName() + " for remote public key not support, Cause: " + ex.getMessage());
-                }
-            }
-        }
-        try (InputStream inputStream = urlConnection.getInputStream();
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))){
-            String keyContents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            return createPublicKey(keyContents, keyID);
-        }
-    }
-
-    private Optional<PublicKey> createPublicKey(String key, String keyID) throws Exception {
-        try {
-            return Optional.of(createPublicKeyFromPem(key));
-        } catch (Exception pemEx) {
-            try {
-                return Optional.of(createPublicKeyFromJWKS(key, keyID));
-            } catch (Exception jwksEx) {
-                throw new DeploymentException(jwksEx);
-            }
-        }
-    }
-
-    private PublicKey createPublicKeyFromPem(String key) throws Exception {
-        key = key.replaceAll("-----BEGIN (.*)-----", "")
-                .replaceAll("-----END (.*)----", "")
-                .replaceAll("\r\n", "")
-                .replaceAll("\n", "")
-                .trim();
-
-        byte[] keyBytes = Base64.getDecoder().decode(key);
-        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(keyBytes);
-        return KeyFactory.getInstance(RSA_ALGORITHM)
-                .generatePublic(publicKeySpec);
-
-    }
-
-    private PublicKey createPublicKeyFromJWKS(String jwksValue, String keyID) throws Exception {
-        JsonObject jwks = parseJwks(jwksValue);
-        JsonArray keys = jwks.getJsonArray("keys");
-        JsonObject jwk = keys != null ? findJwk(keys, keyID) : jwks;
-
-        // the public exponent
-        byte[] exponentBytes = Base64.getUrlDecoder().decode(jwk.getString("e"));
-        BigInteger exponent = new BigInteger(1, exponentBytes);
-
-        // the modulus
-        byte[] modulusBytes = Base64.getUrlDecoder().decode(jwk.getString("n"));
-        BigInteger modulus = new BigInteger(1, modulusBytes);
-
-        RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(modulus, exponent);
-        return KeyFactory.getInstance(RSA_ALGORITHM)
-                .generatePublic(publicKeySpec);
-    }
-
-    private JsonObject parseJwks(String jwksValue) throws Exception {
-        JsonObject jwks;
-        try (JsonReader reader = Json.createReader(new StringReader(jwksValue))) {
-            jwks = reader.readObject();
-        } catch (Exception ex) {
-            // if jwks is encoded
-            byte[] jwksDecodedValue = Base64.getDecoder().decode(jwksValue);
-            try (InputStream jwksStream = new ByteArrayInputStream(jwksDecodedValue);
-                    JsonReader reader = Json.createReader(jwksStream)) {
-                jwks = reader.readObject();
-            }
-        }
-        return jwks;
-    }
-
-    private JsonObject findJwk(JsonArray keys, String keyID) {
-        if (Objects.isNull(keyID) && keys.size() > 0) {
-            return keys.getJsonObject(0);
-        }
-
-        for (JsonValue value : keys) {
-            JsonObject jwk = value.asJsonObject();
-            if (Objects.equals(keyID, jwk.getString("kid"))) {
-                return jwk;
-            }
-        }
-
-        throw new IllegalStateException("No matching JWK for KeyID.");
-    }
+    
 }
