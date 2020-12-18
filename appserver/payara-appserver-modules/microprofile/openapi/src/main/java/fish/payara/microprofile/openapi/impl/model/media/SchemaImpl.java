@@ -489,6 +489,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         return isRequired;
     }
 
+    public void setRequired(boolean isRequired) {
+        this.isRequired = isRequired;
+    }
+
     @Override
     public void removeRequired(String required) {
         if (this.required != null) {

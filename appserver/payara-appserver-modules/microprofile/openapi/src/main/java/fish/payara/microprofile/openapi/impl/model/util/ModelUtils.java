@@ -90,6 +90,7 @@ import org.eclipse.microprofile.openapi.models.parameters.Parameter.In;
 import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
+import org.glassfish.hk2.classmodel.reflect.FieldModel;
 import org.glassfish.hk2.classmodel.reflect.MethodModel;
 import org.glassfish.hk2.classmodel.reflect.ParameterizedType;
 
@@ -280,34 +281,25 @@ public final class ModelUtils {
         }
     }
 
-    public static String getSchemaName(ApiContext context, AnnotatedElement type) {
-        return getSchemaName(context, type, null);
-    }
-
     @SuppressWarnings("unchecked")
-    public static String getSchemaName(ApiContext context, AnnotatedElement type, AnnotationModel annotation) {
+    public static String getSchemaName(ApiContext context, AnnotatedElement type) {
 
         assert type != null;
         // context and annotation can be null
-        
-        // Get the name from the passed annotation first
-        if (annotation != null) {
-            final String name = annotation.getValue("name", String.class);
-            if (name != null && !name.isEmpty()) {
-                return name;
-            }
-        }
 
         final Class<? extends Annotation>[] ANNOTATION_TYPES = new Class[] {
             org.eclipse.microprofile.openapi.annotations.media.Schema.class,
-            javax.xml.bind.annotation.XmlRootElement.class
+            javax.xml.bind.annotation.XmlRootElement.class,
+            javax.xml.bind.annotation.XmlElement.class
         };
 
         for (Class<? extends Annotation> annotationType : ANNOTATION_TYPES) {
 
-            final AnnotationModel annotationModel;
+            AnnotationModel annotationModel;
 
+            // Fetch the element annotations
             if (context != null && type instanceof ExtensibleType) {
+                // Fetch the annotation from the cache
                 ExtensibleType<?> implementationType = (ExtensibleType<?>) type;
                 AnnotationInfo annotationInfo = context.getAnnotationInfo(implementationType);
                 annotationModel = annotationInfo.getAnnotation(annotationType);
@@ -316,16 +308,36 @@ public final class ModelUtils {
                 annotationModel = type.getAnnotation(annotationType.getName());
             }
 
+            // Fields can be named by their accessors
+            if (annotationModel == null) {
+                if (type instanceof FieldModel) {
+                    final FieldModel field = (FieldModel) type;
+                    final String accessorName = getAccessorName(field.getName());
+                    for (MethodModel method : field.getDeclaringType().getMethods()) {
+                        // Check if it's the accessor
+                        if (accessorName.equals(method.getName())) {
+                            annotationModel = type.getAnnotation(annotationType.getName());
+                            break;
+                        }
+                    }
+                }
+            }
+
             // Get the schema name if the annotation exists
             if (annotationModel != null) {
                 final String name = annotationModel.getValue("name", String.class);
-                if (name != null && !name.isEmpty()) {
+                if (name != null && !name.isEmpty() && !name.equals("##default")) {
                     return name;
                 }
             }
         }
 
         return getSimpleName(type.getName());
+    }
+
+    public static String getAccessorName(String fieldName) {
+        char firstCharacter = Character.toUpperCase(fieldName.charAt(0));
+        return "get" + firstCharacter + fieldName.substring(1);
     }
 
     public static SchemaType getSchemaType(ParameterizedType type, ApiContext context) {
@@ -361,6 +373,9 @@ public final class ModelUtils {
                 || Float.class.getName().equals(typeName)
                 || Double.class.getName().equals(typeName)) {
             return SchemaType.NUMBER;
+        }
+        if (typeName != null && typeName.endsWith("[]")) {
+            return SchemaType.ARRAY;
         }
         Class clazz = null;
         try {
