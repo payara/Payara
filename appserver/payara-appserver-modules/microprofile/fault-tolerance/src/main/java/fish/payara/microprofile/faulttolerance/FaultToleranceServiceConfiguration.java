@@ -64,29 +64,35 @@ public interface FaultToleranceServiceConfiguration extends ConfigExtension {
     public void setManagedScheduledExecutorService(String managedScheduledExecutorServiceName);
 
     /**
+     * @deprecated Managed thread pools are used since 5.2020.8 (again)
      * @return The maximum number of threads used to run asynchronous methods concurrently. This is the upper limit. The
      *         executor will vary the actual pool size depending on demand up to this upper limit. If no demand exist
      *         the actual pool size is zero.
      */
+    @Deprecated
     @Attribute(defaultValue = "2000", dataType = Integer.class)
     @Min(value = 20)
     String getAsyncMaxPoolSize();
     void setAsyncMaxPoolSize(String asyncMaxPoolSize);
 
     /**
+     * @deprecated Managed thread pools are used since 5.2020.8 (again)
      * @return The maximum number of threads used to schedule delayed execution and detect timeouts processing FT
      *         semantics. This should be understood as upper limit. The implementation might choose to keep up to this
      *         number of threads alive or vary the actual pool size according to demands.
      */
+    @Deprecated
     @Attribute(defaultValue = "20", dataType = Integer.class)
     @Min(value = 1)
     String getDelayMaxPoolSize();
     void setDelayMaxPoolSize(String delayMaxPoolSize);
 
     /**
+     * @deprecated Managed thread pools are used since 5.2020.8 (again)
      * @return The number of seconds an idle worker in the async pool has to be out of work before it is disposed and
      *         the pool scales down in size. Changes to this setting are dynamically applied and do not need a restart.
      */
+    @Deprecated
     @Attribute(defaultValue = "60", dataType = Integer.class)
     @Min(value = 20)
     @Max(value = 60 * 60)

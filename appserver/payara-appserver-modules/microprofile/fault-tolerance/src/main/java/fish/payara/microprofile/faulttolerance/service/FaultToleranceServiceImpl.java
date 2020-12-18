@@ -57,24 +57,27 @@ import static java.lang.Integer.parseInt;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.enterprise.context.control.RequestContextController;
 import javax.inject.Inject;
 import javax.interceptor.InvocationContext;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
@@ -121,32 +124,20 @@ public class FaultToleranceServiceImpl
 
     private final ConcurrentMap<String, ConcurrentMap<String, FaultToleranceMethodContextImpl>> contextByAppNameAndMethodId = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, BindableFaultToleranceConfig> configByAppName = new ConcurrentHashMap<>();
-    private ThreadPoolExecutor asyncExecutorService;
+    private ExecutorService asyncExecutorService;
     private ScheduledExecutorService delayExecutorService;
 
     @PostConstruct
-    public void postConstruct() {
+    public void postConstruct() throws NamingException {
         events.register(this);
         invocationManager = serviceLocator.getService(InvocationManager.class);
         requestTracingService = serviceLocator.getService(RequestTracingService.class);
         config = serviceLocator.getService(FaultToleranceServiceConfiguration.class);
-        delayExecutorService = Executors.newScheduledThreadPool(getMaxDelayPoolSize());
-        asyncExecutorService = new ThreadPoolExecutor(0, getMaxAsyncPoolSize(), getAsyncPoolKeepAliveInSeconds(),
-                TimeUnit.SECONDS, new SynchronousQueue<Runnable>(true)); // a fair queue => FIFO
+        InitialContext context = new InitialContext();
+        asyncExecutorService = (ManagedExecutorService) context.lookup(config.getManagedExecutorService());
+        delayExecutorService = (ManagedScheduledExecutorService) context.lookup(config.getManagedScheduledExecutorService());
         int interval = getCleanupIntervalInMinutes();
         delayExecutorService.scheduleAtFixedRate(this::cleanMethodContexts, interval, interval, TimeUnit.MINUTES);
-        if (config != null) {
-            if (!"concurrent/__defaultManagedExecutorService".equals(config.getManagedExecutorService())) {
-                logger.log(Level.WARNING,
-                        "Fault tolerance executor service was configured to managed executor service {0}. This option has been replaced by 'async-max-pool-size' to set the maximum size of a fixed Fault Tolerance pool.",
-                        config.getManagedExecutorService());
-            }
-            if (!"concurrent/__defaultManagedScheduledExecutorService".equals(config.getManagedScheduledExecutorService())) {
-                logger.log(Level.WARNING,
-                        "Fault tolerance scheduled executor service was configured to managed scheduled executor service {0}. This option has been replaced by 'delay-max-pool-size' to set the maximum size of a fixed Fault Tolerance pool.",
-                        config.getManagedScheduledExecutorService());
-            }
-        }
     }
 
     /**
@@ -176,18 +167,6 @@ public class FaultToleranceServiceImpl
             String allClean = contextByAppNameAndMethodId.isEmpty() ? ".All clean." : ".";
             logger.log(Level.INFO, "Cleaned {0} expired FT method contexts" + allClean, cleaned);
         }
-    }
-
-    private int getMaxDelayPoolSize() {
-        return config == null ? 20 : parseInt(config.getDelayMaxPoolSize());
-    }
-
-    private int getMaxAsyncPoolSize() {
-        return config == null ? 2000 : parseInt(config.getAsyncMaxPoolSize());
-    }
-
-    private int getAsyncPoolKeepAliveInSeconds() {
-        return config == null ? 60 : parseInt(config.getAsyncPoolKeepAliveInSeconds());
     }
 
     private int getCleanupIntervalInMinutes() {
@@ -276,7 +255,6 @@ public class FaultToleranceServiceImpl
     /**
      * Gets the application name from the invocation manager. Failing that, it will use the module name, component name,
      * or method signature (in that order).
-     * @param invocationManager The invocation manager to get the application name from
      * @param context The context of the current invocation
      * @return The application name
      */
@@ -325,9 +303,7 @@ public class FaultToleranceServiceImpl
         FaultToleranceMetrics metrics = metricRegistry == null
                 ? FaultToleranceMetrics.DISABLED
                 : new MethodFaultToleranceMetrics(metricRegistry, FaultToleranceUtils.getCanonicalMethodName(context));
-        asyncExecutorService.setMaximumPoolSize(getMaxAsyncPoolSize()); // lazy update of max size
-        asyncExecutorService.setKeepAliveTime(getAsyncPoolKeepAliveInSeconds(), TimeUnit.SECONDS);
-        logger.log(Level.INFO, "Creating FT method context for {0}", methodId);
+        logger.log(Level.FINE, "Creating FT method context for {0}", methodId);
         return new FaultToleranceMethodContextImpl(requestContextController, this, metrics, asyncExecutorService,
                 delayExecutorService, context.getTarget());
     }
