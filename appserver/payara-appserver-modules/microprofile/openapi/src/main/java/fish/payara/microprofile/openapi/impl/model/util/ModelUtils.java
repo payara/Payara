@@ -464,6 +464,23 @@ public final class ModelUtils {
         return null;
     }
 
+    public static boolean isVoid(ParameterizedType type) {
+        if (type == null) {
+            return true;
+        }
+        final String typeName = type.getTypeName();
+        if (typeName == null) {
+            return true;
+        }
+        if ("void".equals(typeName)) {
+            return true;
+        }
+        if ("java.lang.Void".equals(typeName)) {
+            return true;
+        }
+        return false;
+    }
+
     public static boolean isAnnotationNull(Annotation annotation) {
         if (annotation == null) {
             return true;

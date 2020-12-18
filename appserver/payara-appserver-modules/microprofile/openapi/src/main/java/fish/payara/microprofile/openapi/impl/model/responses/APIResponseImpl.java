@@ -44,6 +44,8 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.headers.HeaderImpl;
 import fish.payara.microprofile.openapi.impl.model.links.LinkImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
+import fish.payara.microprofile.openapi.impl.model.media.MediaTypeImpl;
+import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
@@ -55,6 +57,8 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOn
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.openapi.models.headers.Header;
 import org.eclipse.microprofile.openapi.models.links.Link;
@@ -77,6 +81,18 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
 
         final List<ContentImpl> contents = createList();
+
+        // If the annotation is @APIResponseSchema, parse the schema and description
+        final String implementationClass = annotation.getValue("value", String.class);
+        if (implementationClass != null) {
+            ContentImpl content = new ContentImpl()
+                    .addMediaType(MediaType.WILDCARD, new MediaTypeImpl()
+                            .schema(SchemaImpl.fromImplementation(implementationClass, context)));
+            contents.add(content);
+            
+            from.setDescription(annotation.getValue("responseDescription", String.class));
+        }
+
         extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
         for (ContentImpl content : contents) {
             ContentImpl.merge(content, from.content, true, context);
@@ -88,6 +104,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
             from.setRef(ref);
         }
         from.setResponseCode(annotation.getValue("responseCode", String.class));
+
         return from;
     }
 

@@ -78,6 +78,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponseSchema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirements;
@@ -216,6 +217,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
             annotationVisitor.put(Callbacks.class, visitor::visitCallbacks);
             annotationVisitor.put(APIResponse.class, visitor::visitAPIResponse);
             annotationVisitor.put(APIResponses.class, visitor::visitAPIResponses);
+            annotationVisitor.put(APIResponseSchema.class, visitor::visitAPIResponseSchema);
             annotationVisitor.put(Parameters.class, visitor::visitParameters);
             annotationVisitor.put(Parameter.class, visitor::visitParameter);
             annotationVisitor.put(ExternalDocumentation.class, visitor::visitExternalDocumentation);

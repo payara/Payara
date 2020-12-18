@@ -78,6 +78,9 @@ public interface ExtensionsMixin {
     @JsonIgnore
     Map<HttpMethod, Operation> getOperations();
 
+    @JsonIgnore
+    String getMethod();
+
     @JsonProperty("variables")
     void setVariables(Map<String, ServerVariable> variables);
 

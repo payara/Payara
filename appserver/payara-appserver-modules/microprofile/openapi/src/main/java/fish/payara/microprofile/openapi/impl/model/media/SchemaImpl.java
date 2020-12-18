@@ -881,6 +881,14 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             if (schema instanceof SchemaImpl) {
                 schema.setImplementation(mergeProperty(((SchemaImpl)schema).getImplementation(), implementationClass, override));
             }
+
+            if (implementationClass.endsWith("[]")) {
+                implementationClass = implementationClass.substring(0, implementationClass.length() - 2);
+                final SchemaImpl itemSchema = new SchemaImpl();
+                schema.setItems(itemSchema);
+                schema.setType(SchemaType.ARRAY);
+                schema = itemSchema;
+            }
             
             if (!implementationClass.equals("java.lang.Void")) {
                 Type type = context.getType(implementationClass);
@@ -906,6 +914,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 schema.setRef(null);
             }
         }
+    }
+
+    public static SchemaImpl fromImplementation(String implementationClass, ApiContext context) {
+        final SchemaImpl schema = new SchemaImpl();
+        setImplementation(schema, implementationClass, true, context);
+        return schema;
     }
 
 }

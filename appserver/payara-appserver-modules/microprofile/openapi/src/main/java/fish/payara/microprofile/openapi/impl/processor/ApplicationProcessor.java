@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.openapi.impl.processor;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isVoid;
+
 import fish.payara.microprofile.openapi.api.processor.OASProcessor;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.api.visitor.ApiVisitor;
@@ -64,20 +66,24 @@ import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.Response.Status;
 
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
@@ -131,7 +137,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     private final ClassLoader appClassLoader;
 
-    private OpenApiWalker apiWalker;
+    private OpenApiWalker<?> apiWalker;
 
     /**
      * @param allTypes parsed application classes
@@ -148,7 +154,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public OpenAPI process(OpenAPI api, OpenApiConfiguration config) {
         if (config == null || !config.getScanDisable()) {
-            this.apiWalker = new OpenApiWalker(
+            this.apiWalker = new OpenApiWalker<>(
                     api,
                     allTypes,
                     config == null ? allowedTypes : config.getValidClasses(allowedTypes),
@@ -170,9 +176,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
-        Operation operation = new OperationImpl();
+        OperationImpl operation = new OperationImpl();
         pathItem.setGET(operation);
         operation.setOperationId(element.getName());
+        operation.setMethod(HttpMethod.GET);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
@@ -191,9 +198,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
-        Operation operation = new OperationImpl();
+        OperationImpl operation = new OperationImpl();
         pathItem.setPOST(operation);
         operation.setOperationId(element.getName());
+        operation.setMethod(HttpMethod.POST);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
@@ -212,9 +220,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
-        Operation operation = new OperationImpl();
+        OperationImpl operation = new OperationImpl();
         pathItem.setPUT(operation);
         operation.setOperationId(element.getName());
+        operation.setMethod(HttpMethod.PUT);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
@@ -233,9 +242,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
-        Operation operation = new OperationImpl();
+        OperationImpl operation = new OperationImpl();
         pathItem.setDELETE(operation);
         operation.setOperationId(element.getName());
+        operation.setMethod(HttpMethod.DELETE);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
@@ -254,9 +264,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
-        Operation operation = new OperationImpl();
+        OperationImpl operation = new OperationImpl();
         pathItem.setHEAD(operation);
         operation.setOperationId(element.getName());
+        operation.setMethod(HttpMethod.HEAD);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
@@ -275,9 +286,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
-        Operation operation = new OperationImpl();
+        OperationImpl operation = new OperationImpl();
         pathItem.setOPTIONS(operation);
         operation.setOperationId(element.getName());
+        operation.setMethod(HttpMethod.OPTIONS);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
@@ -296,9 +308,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
         context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
 
-        Operation operation = new OperationImpl();
+        OperationImpl operation = new OperationImpl();
         pathItem.setPATCH(operation);
         operation.setOperationId(element.getName());
+        operation.setMethod(HttpMethod.PATCH);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
@@ -775,6 +788,60 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (responses != null) {
             responses.forEach(response -> visitAPIResponse(response, element, context));
         }
+    }
+
+    @Override
+    public void visitAPIResponseSchema(AnnotationModel apiResponseSchema, AnnotatedElement element,
+            ApiContext context) {
+        final APIResponseImpl response = APIResponseImpl.createInstance(apiResponseSchema, context);
+
+        final OperationImpl operation = (OperationImpl) context.getWorkingOperation();
+
+        // If response code hasn't been specified
+        String responseCode = response.getResponseCode();
+        if (responseCode == null || responseCode.isEmpty()) {
+            assert element instanceof MethodModel;
+            final MethodModel method = (MethodModel) element;
+
+            if (isVoid(method.getReturnType())) {
+                if (HttpMethod.POST.equals(operation.getMethod())) {
+                    responseCode = "201";
+                } else if (Arrays.asList(method.getArgumentTypes()).contains("javax.ws.rs.container.AsyncResponse")) {
+                    responseCode = "200";
+                } else {
+                    responseCode = "204";
+                }
+            } else {
+                responseCode = "200";
+            }
+        }
+        response.setResponseCode(responseCode);
+
+        // If the response description hasn't been specified
+        final String responseDescription = response.getDescription();
+        if (responseDescription == null || responseDescription.isEmpty()) {
+            try {
+                final int statusInt = Integer.parseInt(responseCode);
+                final Status status = Status.fromStatusCode(statusInt);
+                if (status != null) {
+                    response.setDescription(status.getReasonPhrase());
+                }
+            } catch (NumberFormatException ex) {
+                LOGGER.log(Level.FINE, "Unrecognised status code, description will be empty", ex);
+            }
+        }
+
+        final APIResponses responses = operation.getResponses();
+
+        // Remove the default response
+        final APIResponse defaultResponse = responses.getAPIResponse(APIResponses.DEFAULT);
+        if (defaultResponse != null) {
+            responses.removeAPIResponse(APIResponses.DEFAULT);
+            responses.addAPIResponse(responseCode, defaultResponse);
+        }
+
+        // Add the generated response
+        APIResponsesImpl.merge(response, responses, true, context);
     }
 
     @Override
