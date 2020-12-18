@@ -199,7 +199,7 @@ public class FaultToleranceServiceImpl
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
             deregisterApplication(info.getName());
-            FaultTolerancePolicy.clean();
+            FaultTolerancePolicy.clean(info.getAppClassLoader());
         } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             if (asyncExecutorService != null) {
                 asyncExecutorService.shutdownNow();
