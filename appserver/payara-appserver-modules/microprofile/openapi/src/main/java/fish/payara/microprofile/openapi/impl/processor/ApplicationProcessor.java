@@ -615,7 +615,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     public void visitSchemaField(AnnotationModel schemaAnnotation, FieldModel field, ApiContext context) {
         // Get the schema object name
         String schemaName = ModelUtils.getSchemaName(context, field, schemaAnnotation);
-        Schema schema = SchemaImpl.createInstance(schemaAnnotation, context);
+        SchemaImpl schema = SchemaImpl.createInstance(schemaAnnotation, context);
 
         // Get the parent schema object name
         String parentName = null;
@@ -635,6 +635,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         Schema property = parentSchema.getProperties().getOrDefault(schemaName, new SchemaImpl());
         parentSchema.addProperty(schemaName, property);
+        if (schema.isRequired()) {
+            parentSchema.addRequired(schemaName);
+        }
 
         if (property.getRef() == null) {
             property.setType(ModelUtils.getSchemaType(field.getTypeName(), context));

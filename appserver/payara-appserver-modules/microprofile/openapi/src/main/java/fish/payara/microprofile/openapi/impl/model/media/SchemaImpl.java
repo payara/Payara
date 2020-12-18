@@ -124,6 +124,8 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Schema items;
     @JsonIgnore
     private String implementation;
+    @JsonIgnore
+    private boolean isRequired;
 
     public static SchemaImpl valueOf(String content) throws JsonMappingException, JsonProcessingException {
         return ObjectMapperFactory
@@ -176,10 +178,21 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setUniqueItems(annotation.getValue("uniqueItems", Boolean.class));
         from.setMaxProperties(annotation.getValue("maxProperties", Integer.class));
         from.setMinProperties(annotation.getValue("minProperties", Integer.class));
+        from.setRequired(annotation.getValue("requiredProperties", List.class));
+
+        final Boolean isRequired = annotation.getValue("required", Boolean.class);
+        if (isRequired != null) {
+            from.isRequired = isRequired;
+        }
 
         extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, from::addProperty);
+        for (Entry<String, Schema> property : from.getProperties().entrySet()) {
+            final SchemaImpl propertySchema = (SchemaImpl) property.getValue();
+            if (propertySchema.isRequired) {
+                from.addRequired(property.getKey());
+            }
+        }
 
-        from.setRequired(annotation.getValue("requiredProperties", List.class));
         from.setDescription(annotation.getValue("description", String.class));
         from.setFormat(annotation.getValue("format", String.class));
         from.setNullable(annotation.getValue("nullable", Boolean.class));
@@ -464,10 +477,16 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             if (required == null) {
                 required = createList();
             }
-            required.add(requiredItem);
+            if (!required.contains(requiredItem)) {
+                required.add(requiredItem);
+            }
             Collections.sort(required);
         }
         return this;
+    }
+
+    public boolean isRequired() {
+        return isRequired;
     }
 
     @Override
