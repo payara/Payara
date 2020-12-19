@@ -191,9 +191,9 @@ public class JwtTokenParser {
      * @return if the JWT has expired
      */
     private boolean checkNotExpired(Map<String, JsonValue> presentedClaims) {
-        final int currentTime = (int) (System.currentTimeMillis() / 1000);
-        final int expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).intValue();
-        final int issueTime = ((JsonNumber) presentedClaims.get(iat.name())).intValue();
+        final long currentTime = System.currentTimeMillis() / 1000;
+        final long expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).longValue();
+        final long issueTime = ((JsonNumber) presentedClaims.get(iat.name())).longValue();
 
         return currentTime < expiredTime && issueTime < expiredTime;
     }
