@@ -43,7 +43,7 @@
 <!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.extras</groupId>
@@ -104,7 +104,7 @@
                             <tasks>
                                 <ant dir="." antfile="../build.xml" target="create.distribution">
                                     <property name="finaljar"
-                                              value="${project.build.directory}/payara-embedded-all.jar"/>
+                                      value="${project.build.directory}/payara-embedded-all.jar"/>
                                     <property name="bundlename" value="fish.payara.extras.embedded.all"/>
                                     <property name="install.dir.name" value="${install.dir.name}"/>
                                 </ant>
@@ -378,6 +378,13 @@
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jmx-monitoring-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>opentracing-jaxws-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
