@@ -100,12 +100,14 @@ public interface FaultToleranceServiceConfiguration extends ConfigExtension {
     void setAsyncPoolKeepAliveInSeconds(String asyncPoolKeepAliveInSeconds);
 
     /**
+     * @deprecated cleaning of FT state has been removed in 5.2020.8
      * @return The interval duration in minutes for the background job that cleans expired FT state. Changes do need a
      *         restart of the server.
      */
     @Attribute(defaultValue = "1", dataType = Integer.class)
     @Min(value = 1)
     @Max(value = 60 * 24)
+    @Deprecated
     String getCleanupIntervalInMinutes();
     void setCleanupIntervalInMinutes(String cleanupIntervalInMinutes);
 }

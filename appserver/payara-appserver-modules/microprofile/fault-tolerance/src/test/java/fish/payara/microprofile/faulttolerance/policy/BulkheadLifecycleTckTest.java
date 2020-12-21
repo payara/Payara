@@ -1,8 +1,5 @@
 package fish.payara.microprofile.faulttolerance.policy;
 
-import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -14,13 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.interceptor.InvocationContext;
-
-import org.eclipse.microprofile.faulttolerance.Bulkhead;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricRegistry.Type;
-import org.junit.Test;
-
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextStub;
@@ -28,6 +18,13 @@ import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 import fish.payara.microprofile.faulttolerance.service.MethodFaultToleranceMetrics;
 import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
+import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
+import org.junit.Test;
+
+import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Based on MP FT TCK Test {@code org.eclipse.microprofile.fault.tolerance.tck.bulkhead.lifecycle.BulkheadLifecycleTest}.
@@ -36,24 +33,29 @@ import fish.payara.microprofile.metrics.impl.MetricRegistryImpl;
  */
 public class BulkheadLifecycleTckTest extends AbstractRecordingTest {
 
+    static final AtomicInteger barrier = new AtomicInteger();
     MetricRegistry registry;
+
+    static void inService(CompletableFuture<Void> waiter) throws InterruptedException, ExecutionException {
+        barrier.incrementAndGet();
+        waiter.get();
+    }
 
     @Override
     protected FaultToleranceServiceStub createService() {
         // this test needs to use more advanced state per method as multiple methods are involved
         // therefore the below special setup where we have state per method as in the actual implementation
-        final Map<String, AtomicReference<BlockingQueue<Thread>>> concurrentExecutionByMethodId = new ConcurrentHashMap<>();
-        final Map<String, AtomicInteger> waitingQueuePopulationByMethodId = new ConcurrentHashMap<>();
+        final Map<Object, AtomicReference<BlockingQueue<Thread>>> concurrentExecutionByMethodId = new ConcurrentHashMap<>();
+        final Map<Object, AtomicInteger> waitingQueuePopulationByMethodId = new ConcurrentHashMap<>();
+
         registry = new MetricRegistryImpl(Type.BASE);
         return new FaultToleranceServiceStub() {
             @Override
-            protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
-                    FaultTolerancePolicy policy) {
-                FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(registry, FaultToleranceUtils.getCanonicalMethodName(context));
-                return new FaultToleranceMethodContextStub(context, policy, state,
-                        concurrentExecutionByMethodId.computeIfAbsent(methodId, key -> new AtomicReference<>()),
-                        waitingQueuePopulationByMethodId.computeIfAbsent(methodId, key -> new AtomicInteger()),
-                        (c, p) -> createMethodContext(methodId, c, p)) {
+            protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {
+                FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(registry, FaultToleranceUtils.getCanonicalMethodName(ctx.context));
+                return new FaultToleranceMethodContextStub(ctx, state,
+                        concurrentExecutionByMethodId.computeIfAbsent(ctx.key, key -> new AtomicReference<>()),
+                        waitingQueuePopulationByMethodId.computeIfAbsent(ctx.key, key -> new AtomicInteger())) {
 
                     @Override
                     public FaultToleranceMetrics getMetrics() {
@@ -68,8 +70,6 @@ public class BulkheadLifecycleTckTest extends AbstractRecordingTest {
             }
         };
     }
-
-    static final AtomicInteger barrier = new AtomicInteger();
 
     /**
      * Scenario is equivalent to the TCK test of same name but not 100% identical
@@ -116,10 +116,5 @@ public class BulkheadLifecycleTckTest extends AbstractRecordingTest {
         public void service(CompletableFuture<Void> waiter) throws Exception {
             inService(waiter);
         }
-    }
-
-    static void inService(CompletableFuture<Void> waiter) throws InterruptedException, ExecutionException {
-        barrier.incrementAndGet();
-        waiter.get();
     }
 }
