@@ -105,6 +105,8 @@ public interface ApiVisitor {
 
     void visitRequestBody(AnnotationModel requestBody, AnnotatedElement element, ApiContext context);
 
+    void visitRequestBodySchema(AnnotationModel requestBodySchema, AnnotatedElement element, ApiContext context);
+
     void visitAPIResponse(AnnotationModel apiResponse, AnnotatedElement element, ApiContext context);
 
     void visitAPIResponses(AnnotationModel apiResponses, AnnotatedElement element, ApiContext context);

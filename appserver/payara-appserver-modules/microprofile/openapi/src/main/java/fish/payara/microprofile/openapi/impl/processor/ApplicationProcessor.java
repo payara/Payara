@@ -767,6 +767,22 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     @Override
+    public void visitRequestBodySchema(AnnotationModel requestBodySchema, AnnotatedElement element,
+            ApiContext context) {
+        if (element instanceof MethodModel || element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+            final RequestBody currentRequestBody = context.getWorkingOperation().getRequestBody();
+            if (currentRequestBody != null) {
+                final String implementationClass = requestBodySchema.getValue("value", String.class);
+                final SchemaImpl schema = SchemaImpl.fromImplementation(implementationClass, context);
+
+                for (MediaType mediaType : currentRequestBody.getContent().getMediaTypes().values()) {
+                    mediaType.setSchema(schema);
+                }
+            }
+        }
+    }
+
+    @Override
     public void visitAPIResponse(AnnotationModel annotation, AnnotatedElement element, ApiContext context) {
         APIResponseImpl apiResponse = APIResponseImpl.createInstance(annotation, context);
         Operation workingOperation = context.getWorkingOperation();

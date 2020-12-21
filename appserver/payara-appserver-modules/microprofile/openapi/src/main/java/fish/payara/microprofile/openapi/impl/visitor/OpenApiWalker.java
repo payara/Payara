@@ -77,6 +77,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBodySchema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponseSchema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -234,6 +235,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
 
             // OpenAPI response
             annotationVisitor.put(RequestBody.class, visitor::visitRequestBody);
+            annotationVisitor.put(RequestBodySchema.class, visitor::visitRequestBodySchema);
         }
         return annotationVisitor;
     }
