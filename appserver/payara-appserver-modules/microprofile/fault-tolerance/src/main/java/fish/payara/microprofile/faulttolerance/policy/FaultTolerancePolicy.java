@@ -247,7 +247,8 @@ public final class FaultTolerancePolicy implements Serializable {
 
         @Override
         public String toString() {
-            return "FaultToleranceInvocation[context="+context.toString()+", isDone="+asyncResult.isDone()+"]";
+            return "FaultToleranceInvocation[context=" + context.toString() + ", isDone=" +
+                    (asyncResult == null ? "(sync)" : asyncResult.isDone()) + "]";
         }
     }
 
@@ -420,12 +421,12 @@ public final class FaultTolerancePolicy implements Serializable {
             return asyncAttempt;
         } catch (ExecutionException ex) { // this ExecutionException is from calling get() above in case completed exceptionally
             if (!asyncAttempt.isExceptionThrown() && asynchronous.isSuccessWhenCompletedExceptionally()) {
-                invocation.timeoutIfConcludedConcurrently();
+            invocation.timeoutIfConcludedConcurrently();
                 return asyncAttempt;
             }
             rethrow(ex.getCause());
             return null; // not reachable
-        }
+                }
     }
 
     private static void rethrow(Throwable t) throws Exception {
@@ -574,8 +575,7 @@ public final class FaultTolerancePolicy implements Serializable {
         final int runCapacity = bulkhead.value;
         final int queueCapacity = isAsync ? bulkhead.waitingTaskQueue : 0;
         AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
-        final int maxAttemps = 5;
-        for (int i = 0; i < maxAttemps; i++) {
+        while (true) {
             final int currentlyIn = queuingOrRunning.get();
             if (currentlyIn >= runCapacity + queueCapacity) {
                 invocation.metrics.incrementBulkheadCallsRejectedTotal();
@@ -638,8 +638,6 @@ public final class FaultTolerancePolicy implements Serializable {
                 }
             }
         }
-        invocation.metrics.incrementBulkheadCallsRejectedTotal();
-        throw new BulkheadException("No free work or queue space.");
     }
 
     /**
