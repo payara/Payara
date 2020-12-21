@@ -105,6 +105,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
@@ -409,21 +410,11 @@ public class WebappClassLoader
     private static final boolean IS_JDK_VERSION_HIGHER_THAN_8 = JDK.getMajor() > 8;
     private static Boolean isMultiReleaseJar;
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
-    
-    private static int INSTANCE_COUNT;
+
     public static ReferenceQueue<WebappClassLoader> referenceQueue = new ReferenceQueue<WebappClassLoader>();
     public static ArrayList<WebappClassLoaderFinalizer> list = new ArrayList<WebappClassLoaderFinalizer>();
     {
-        INSTANCE_COUNT++;
         list.add(new WebappClassLoaderFinalizer(this, referenceQueue));
-    }
-    
-    public static int getInstanceCount() {
-        return INSTANCE_COUNT;
-    }
-    
-    public static void decreaseInstanceCount() {
-        INSTANCE_COUNT--;
     }
 
     static {

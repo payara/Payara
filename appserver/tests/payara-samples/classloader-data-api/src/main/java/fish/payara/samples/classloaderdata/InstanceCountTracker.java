@@ -41,7 +41,6 @@ package fish.payara.samples.classloaderdata;
 
 import java.lang.ref.Reference;
 import org.glassfish.web.loader.WebappClassLoader;
-import org.glassfish.web.loader.WebappClassLoaderFinalizer;
 
 /**
  *
@@ -53,14 +52,14 @@ public class InstanceCountTracker {
     
     public static int getInstanceCount() {
         System.gc();
-        Reference<? extends WebappClassLoader> referenceFromQueue;
-        while((referenceFromQueue = WebappClassLoader.referenceQueue.poll()) != null) {
-            ((WebappClassLoaderFinalizer)referenceFromQueue).cleanupAction();
-            referenceFromQueue.clear();
+        int newCount = 0;
+        Reference<?> reference;
+        while((reference = WebappClassLoader.referenceQueue.poll()) != null) {
+            newCount++;
+            reference.clear();
         }
-        int newCount = WebappClassLoader.getInstanceCount();
         previousInstanceCount = newCount;
-        return previousInstanceCount;
+        return newCount;
     }
     
     public static int getPreviousInstanceCount() {

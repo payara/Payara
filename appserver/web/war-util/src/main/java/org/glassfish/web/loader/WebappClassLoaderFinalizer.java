@@ -52,8 +52,4 @@ public class WebappClassLoaderFinalizer extends PhantomReference<WebappClassLoad
         super(t, rq);
     }
     
-    public void cleanupAction() {
-        WebappClassLoader.decreaseInstanceCount();
-    }
-    
 }
