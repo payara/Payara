@@ -20,6 +20,7 @@ public class InstanceResource {
      * @return int WebappClassLoader instance count
      */
     @GET
+    @Path("update")
     public int getClassLoaderCount() {
         return instanceCountService.getCurrentCount();
     }
