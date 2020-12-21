@@ -137,6 +137,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     public static SchemaImpl createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
 
+        if (annotation == null) {
+            return from;
+        }
+
         String ref = annotation.getValue("ref", String.class);
         if (ref != null && !ref.isEmpty()) {
             from.setRef(ref);
