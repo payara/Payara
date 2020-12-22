@@ -56,6 +56,9 @@ import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
@@ -82,6 +85,8 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
     protected List<SecurityRequirement> security = createList();
     protected List<Server> servers = createList();
     protected String method;
+    @JsonIgnore
+    protected List<String> exceptionTypes = createList();
 
     public static Operation createInstance(AnnotationModel annotation, ApiContext context) {
         OperationImpl from = new OperationImpl();
@@ -328,6 +333,14 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
     public void setMethod(String method) {
         this.method = method;
+    }
+
+    public List<String> getExceptionTypes() {
+        return readOnlyView(exceptionTypes);
+    }
+
+    public void addExceptionType(String type) {
+        exceptionTypes.add(type);
     }
 
     public static void merge(Operation from, Operation to,

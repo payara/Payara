@@ -795,7 +795,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             if (element instanceof MethodModel && "toResponse".equals(element.getName())) {
                 final MethodModel methodModel = (MethodModel) element;
                 final String exceptionType = methodModel.getParameter(0).getTypeName();
-                context.addMappedExceptionResponse(exceptionType, apiResponse);
+                mapException(context, exceptionType, apiResponse);
             } else {
                 LOGGER.warning("Unrecognised annotation position at: " + element.shortDesc());
             }
@@ -842,6 +842,18 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         final OperationImpl operation = (OperationImpl) context.getWorkingOperation();
 
+        // Handle exception mappers
+        if (operation == null) {
+            if (element instanceof MethodModel && "toResponse".equals(element.getName())) {
+                final MethodModel methodModel = (MethodModel) element;
+                final String exceptionType = methodModel.getParameter(0).getTypeName();
+                mapException(context, exceptionType, response);
+            } else {
+                LOGGER.warning("Unrecognised annotation position at: " + element.shortDesc());
+            }
+            return;
+        }
+
         // If response code hasn't been specified
         String responseCode = response.getResponseCode();
         if (responseCode == null || responseCode.isEmpty()) {
@@ -887,6 +899,32 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         // Add the generated response
         APIResponsesImpl.merge(response, responses, true, context);
+    }
+
+    /**
+     * When an exception mapper is encountered, register the mapped response and
+     * find any operations already parsed that this exception mapper is applicable
+     * to
+     */
+    private void mapException(ApiContext context, String exceptionType, APIResponseImpl exceptionResponse) {
+        // Don't allow null responses
+        if (exceptionResponse.getDescription() == null || exceptionResponse.getDescription().isEmpty()) {
+            exceptionResponse.setDescription(ModelUtils.getSimpleName(exceptionType));
+        }
+        context.addMappedExceptionResponse(exceptionType, exceptionResponse);
+        final String exceptionStatus = exceptionResponse.getResponseCode();
+
+        if (exceptionStatus != null) {
+            for (PathItem path : context.getApi().getPaths().getPathItems().values()) {
+                for (Operation operation : path.getOperations().values()) {
+                    if (((OperationImpl) operation).getExceptionTypes().contains(exceptionType)) {
+                        operation.getResponses().addAPIResponse(exceptionStatus, exceptionResponse);
+                    } 
+                }
+            }
+        } else {
+            LOGGER.fine("Failed to add mapped response as no response code was provided");
+        }
     }
 
     @Override
@@ -1131,9 +1169,9 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
      * @return the newly created {@link APIResponse}.
      */
     private void insertDefaultResponse(ApiContext context,
-            Operation operation, MethodModel method) {
+            OperationImpl operation, MethodModel method) {
 
-        final APIResponses responses = new APIResponsesImpl();
+        final APIResponsesImpl responses = new APIResponsesImpl();
         operation.setResponses(responses);
 
         // Add the default response
@@ -1156,6 +1194,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     responses.addAPIResponse(responseCode, mappedResponse);
                 }
             }
+            operation.addExceptionType(exceptionType);
         }
     }
 
