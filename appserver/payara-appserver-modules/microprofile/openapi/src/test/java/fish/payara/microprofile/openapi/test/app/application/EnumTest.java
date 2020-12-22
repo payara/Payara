@@ -41,7 +41,6 @@ package fish.payara.microprofile.openapi.test.app.application;
 
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;

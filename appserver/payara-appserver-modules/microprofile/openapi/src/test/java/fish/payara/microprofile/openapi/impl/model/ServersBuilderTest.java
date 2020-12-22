@@ -82,7 +82,7 @@ public class ServersBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void serverHasExpectedFields() {
-        JsonNode server = path(getOpenAPIJson(), "servers.0");
+        JsonNode server = path(getOpenAPIJson(), "servers.[0]");
         assertNotNull(server);
         assertEquals("url", server.get("url").textValue());
         assertEquals("description", server.get("description").textValue());
@@ -91,7 +91,7 @@ public class ServersBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void serverVariablesHasExpectedFields() {
-        JsonNode var1 = path(getOpenAPIJson(), "servers.0.variables.var1");
+        JsonNode var1 = path(getOpenAPIJson(), "servers.[0].variables.var1");
         assertNotNull(var1);
         assertEquals("defaultValue", var1.get("default").textValue());
         assertEquals("description", var1.get("description").textValue());

@@ -100,7 +100,7 @@ public class SecurityBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void securityRequirementHasExpectedFields() {
-        JsonNode security = path(getOpenAPIJson(), "security.0");
+        JsonNode security = path(getOpenAPIJson(), "security.[0]");
         assertNotNull(security);
         assertTrue(security.get("scheme1").isArray());
         assertTrue(security.get("scheme2").isArray());
