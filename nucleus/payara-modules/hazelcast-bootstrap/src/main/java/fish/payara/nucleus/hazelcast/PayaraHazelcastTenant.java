@@ -131,7 +131,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
 
     @Override
     public boolean isAvailable(Tenantable tenantable) {
-        if (!contextInstance.isLoaded()) {
+        if (contextInstance.isLoaded()) {
             return true;
         }
         if (!tenantable.requiresTenantContext() || tenantNotRequired(tenantable)) {
@@ -152,7 +152,7 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
         } finally {
             lock.unlock();
         }
-        return false;        
+        return false;
     }
 
     @Override
