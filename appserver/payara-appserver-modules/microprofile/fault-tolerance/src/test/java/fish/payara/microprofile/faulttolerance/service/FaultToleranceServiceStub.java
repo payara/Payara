@@ -39,8 +39,6 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
-import static fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceImpl.getTargetMethodId;
-
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -48,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 
 import javax.enterprise.context.control.RequestContextController;
 import javax.interceptor.InvocationContext;
@@ -56,7 +55,6 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
-import fish.payara.microprofile.faulttolerance.service.Stereotypes;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 /**
@@ -72,11 +70,28 @@ import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
  */
 public class FaultToleranceServiceStub implements FaultToleranceService {
 
-    private final ConcurrentMap<String, FaultToleranceMethodContext> contextByMethodId = new ConcurrentHashMap<>();
+    private final ConcurrentMap<MethodKey, FaultToleranceMethodContext> contextByMethodId = new ConcurrentHashMap<>();
 
     protected final AtomicReference<CircuitBreakerState> state = new AtomicReference<>();
     protected final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = new AtomicReference<>();
     protected final AtomicInteger waitingQueuePopulation = new AtomicInteger();
+
+    protected class StubContext {
+        public final InvocationContext context;
+        public final FaultTolerancePolicy policy;
+        private final MethodKey methodKey;
+        public final Object key;
+        public BiFunction<InvocationContext, FaultTolerancePolicy, FaultToleranceMethodContext> binder;
+
+        protected StubContext(MethodKey key, InvocationContext context, FaultTolerancePolicy policy) {
+            this.methodKey = key;
+            this.key = key;
+            this.context = context;
+            this.policy = policy;
+            this.binder = (i, p) -> createMethodContext(methodKey, i, p);
+        }
+
+    }
 
     @Override
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
@@ -91,17 +106,18 @@ public class FaultToleranceServiceStub implements FaultToleranceService {
     @Override
     public final FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
             RequestContextController requestContextController) {
-        return contextByMethodId.computeIfAbsent(getTargetMethodId(context),
-                methodId ->  {
-                    return createMethodContext(methodId, context, policy);
-                }).boundTo(context, policy);
+        return contextByMethodId.computeIfAbsent(new MethodKey(context),
+                key -> createMethodContext(key, context, policy)).boundTo(context, policy);
     }
 
     @SuppressWarnings("unused")
-    protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
-            FaultTolerancePolicy policy) {
-        return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
-                (c, p) -> createMethodContext(methodId, c, p));
+    protected final FaultToleranceMethodContext createMethodContext(MethodKey key, InvocationContext context,
+                                                              FaultTolerancePolicy policy) {
+        return stubMethodContext(new StubContext(key, context, policy));
+    }
+
+    protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {
+        return new FaultToleranceMethodContextStub(ctx, state, concurrentExecutions, waitingQueuePopulation);
     }
 
     public AtomicReference<CircuitBreakerState> getStateReference() {

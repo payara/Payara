@@ -41,7 +41,6 @@ package fish.payara.microprofile.faulttolerance.service;
 
 import static java.lang.System.currentTimeMillis;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -71,7 +70,6 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
-import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState.CircuitState;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 /**
@@ -92,6 +90,7 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
 
     private static final Logger logger = Logger.getLogger(FaultToleranceMethodContextImpl.class.getName());
 
+
     static final class FaultToleranceMethodState {
 
         final RequestContextController requestContext;
@@ -99,7 +98,6 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         final FaultToleranceMetrics metrics;
         final ExecutorService asyncExecution;
         final ScheduledExecutorService delayedExecution;
-        final WeakReference<Object> target;
         final AtomicReference<CircuitBreakerState> circuitBreakerState = new AtomicReference<>();
         final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = new AtomicReference<>();
         final AtomicInteger queuingOrRunningPopulation = new AtomicInteger();
@@ -107,29 +105,13 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         final AtomicLong lastUsed = new AtomicLong(currentTimeMillis());
 
         FaultToleranceMethodState(RequestContextController requestContext, FaultToleranceRequestTracing requestTracing,
-                FaultToleranceMetrics metrics, ExecutorService asyncExecution,
-                ScheduledExecutorService delayedExecution, WeakReference<Object> target) {
+                                  FaultToleranceMetrics metrics, ExecutorService asyncExecution,
+                                  ScheduledExecutorService delayedExecution) {
             this.requestContext = requestContext;
             this.requestTracing = requestTracing;
             this.metrics = metrics;
             this.asyncExecution = asyncExecution;
             this.delayedExecution = delayedExecution;
-            this.target = target;
-        }
-
-        public boolean isExpired(long ttl) {
-            if (target.get() == null) {
-                return true; // target got GC'd - this is not useful any longer
-            }
-            return executingThreadCount.get() == 0 //
-                    && queuingOrRunningPopulation.get() == 0 //
-                    && lastUsed.get() + ttl < currentTimeMillis() //
-                    && isStabilyClosedCuicuit();
-        }
-
-        private boolean isStabilyClosedCuicuit() {
-            CircuitBreakerState state = circuitBreakerState.get();
-            return state == null || state.getCircuitState() == CircuitState.CLOSED && state.isClosedOutcomeSuccessOnly();
         }
     }
 
@@ -140,28 +122,30 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     private final FaultToleranceMethodState shared;
     private final InvocationContext context;
     private final FaultTolerancePolicy policy;
+    private final String appName;
 
-    public FaultToleranceMethodContextImpl(RequestContextController requestContext, FaultToleranceRequestTracing requestTracing, FaultToleranceMetrics metrics,
-            ExecutorService asyncExecution, ScheduledExecutorService delayedExecution, Object target) {
-        this(new FaultToleranceMethodState(requestContext, requestTracing, metrics, asyncExecution, delayedExecution,
-                new WeakReference<>(target)), null, null);
+    public String getAppName() {
+        return appName;
     }
 
-    private FaultToleranceMethodContextImpl(FaultToleranceMethodState shared, InvocationContext context,
+    public FaultToleranceMethodContextImpl(RequestContextController requestContext, FaultToleranceRequestTracing requestTracing, FaultToleranceMetrics metrics,
+                                           ExecutorService asyncExecution, ScheduledExecutorService delayedExecution, String appName) {
+        this(new FaultToleranceMethodState(requestContext, requestTracing, metrics, asyncExecution, delayedExecution
+        ), appName, null, null);
+    }
+
+    private FaultToleranceMethodContextImpl(FaultToleranceMethodState shared, String appName, InvocationContext context,
             FaultTolerancePolicy policy) {
         this.shared = shared;
         this.context = context;
         this.policy = policy;
+        this.appName = appName;
         shared.lastUsed.accumulateAndGet(currentTimeMillis(), Long::max);
-    }
-
-    public boolean isExpired(long ttl) {
-        return shared.isExpired(ttl);
     }
 
     @Override
     public FaultToleranceMethodContext boundTo(InvocationContext context, FaultTolerancePolicy policy) {
-        return new FaultToleranceMethodContextImpl(shared, context, policy);
+        return new FaultToleranceMethodContextImpl(shared, appName, context, policy);
     }
 
     @Override
@@ -243,7 +227,7 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
                     Future<?> futureResult = AsynchronousPolicy.toFuture(res);
                     if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
                         if (!asyncResult.isDone()) {
-                            asyncResult.complete(futureResult.get());
+                             asyncResult.complete(futureResult.get());
                         }
                     } else {
                         futureResult.cancel(true);
@@ -297,4 +281,8 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         shared.requestTracing.endSpan();
     }
 
+    @Override
+    public String toString() {
+        return super.toString()+"[method="+context.getMethod()+", target="+ context.getTarget()+", sharedState=" + shared + "]";
+    }
 }

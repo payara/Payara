@@ -71,17 +71,16 @@ public class FaultToleranceMethodContextStub implements FaultToleranceMethodCont
     private final AtomicInteger queuingOrRunningPopulation;
     private final BiFunction<InvocationContext, FaultTolerancePolicy, FaultToleranceMethodContext> binder;
 
-    public FaultToleranceMethodContextStub(InvocationContext context, FaultTolerancePolicy policy,
-            AtomicReference<CircuitBreakerState> state,
-            AtomicReference<BlockingQueue<Thread>> concurrentExecutions,
-            AtomicInteger queuingOrRunningPopulation,
-            BiFunction<InvocationContext, FaultTolerancePolicy, FaultToleranceMethodContext> binder) {
-        this.context = context;
-        this.policy = policy;
+    public FaultToleranceMethodContextStub(FaultToleranceServiceStub.StubContext ctx,
+                                           AtomicReference<CircuitBreakerState> state,
+                                           AtomicReference<BlockingQueue<Thread>> concurrentExecutions,
+                                           AtomicInteger queuingOrRunningPopulation) {
+        this.context = ctx.context;
+        this.policy = ctx.policy;
         this.state = state;
         this.concurrentExecutions = concurrentExecutions;
         this.queuingOrRunningPopulation = queuingOrRunningPopulation;
-        this.binder = binder;
+        this.binder = ctx.binder;
     }
 
     @Override

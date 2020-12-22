@@ -75,10 +75,8 @@ public class CircuitBreakerBasicTest {
     private final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
 
         @Override
-        protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
-                FaultTolerancePolicy policy) {
-            return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
-                    (c, p) -> createMethodContext(methodId, c, p)) {
+        protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {
+            return new FaultToleranceMethodContextStub(ctx, state, concurrentExecutions, waitingQueuePopulation) {
 
                 @Override
                 public Future<?> runDelayed(long delayMillis, Runnable task) throws Exception {
