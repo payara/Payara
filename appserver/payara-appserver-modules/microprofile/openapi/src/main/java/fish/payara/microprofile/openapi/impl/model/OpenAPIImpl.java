@@ -141,23 +141,31 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI {
 
     @Override
     public OpenAPI addServer(Server server) {
-        if (server != null) {
-            if (servers == null) {
-                servers = createList();
-            }
-            if (server.getUrl() != null) {
-                for (Server existingServer : getServers()) {
-                    // If a server with the same URL is found, merge them
-                    if (server.getUrl().equals(existingServer.getUrl())) {
-                        ModelUtils.merge(server, existingServer, true);
-                        return this;
-                    }
-                }
-            }
-    
-            // If a server with the same URL doesn't exist, create it
-            servers.add(server);
+        if (server == null) {
+            return this;
         }
+
+        final String serverUrl = server.getUrl();
+
+        if (serverUrl == null) {
+            return this;
+        }
+
+        if (servers == null) {
+            servers = createList();
+        }
+
+        for (Server existingServer : getServers()) {
+            // If a server with the same URL is found, merge them
+            if (serverUrl.equals(existingServer.getUrl())) {
+                ModelUtils.merge(server, existingServer, true);
+                return this;
+            }
+        }
+
+        // If a server with the same URL doesn't exist, create it
+        servers.add(server);
+
         return this;
     }
 

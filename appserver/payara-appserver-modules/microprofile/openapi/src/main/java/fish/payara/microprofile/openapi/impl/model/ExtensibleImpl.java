@@ -88,10 +88,7 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
 
     @Override
     public void setExtensions(Map<String, Object> extensions) {
-        this.extensions.clear();
-        for (Entry<String, Object> entry : extensions.entrySet()) {
-            this.extensions.put(extensionName(entry.getKey()), entry.getValue());
-        }
+        this.extensions = createMap(extensions);
     }
 
     public static String extensionName(String name) {
@@ -109,15 +106,16 @@ public abstract class ExtensibleImpl<T extends Extensible<T>> implements Extensi
         if (to.getExtensions() == null) {
             to.setExtensions(createMap());
         }
-        if (!from.getExtensions().isEmpty()) {
-            for (String extensionName : from.getExtensions().keySet()) {
-                Object value = mergeProperty(
-                        to.getExtensions().get(extensionName),
-                        from.getExtensions().get(extensionName),
-                        override
-                );
-                to.addExtension(extensionName, value);
-            }
+        if (from.getExtensions().isEmpty()) {
+            return;
+        }
+        for (String extensionName : from.getExtensions().keySet()) {
+            Object value = mergeProperty(
+                    to.getExtensions().get(extensionName),
+                    from.getExtensions().get(extensionName),
+                    override
+            );
+            to.addExtension(extensionName, value);
         }
     }
 
