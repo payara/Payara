@@ -132,27 +132,27 @@ public class PayaraHazelcastTenant implements TenantControl, DataSerializable {
     @Override
     public boolean isAvailable(Tenantable tenantable) {
         if (!contextInstance.isLoaded()) {
-            if (!tenantable.requiresTenantContext() || tenantNotRequired(tenantable)) {
-                return true;
-            }
-            lock.lock();
-            try {
-                String componentId = contextInstance.getInstanceComponentId();
-                int unavailableCount = blockedCounts.compute(componentId, (k, v) -> v == null ? 0 : ++v);
-                log.log(unavailableCount > 100 ? Level.INFO : Level.FINEST,
-                        String.format("BLOCKED: tenant not available: %s, module %s, Operation: %s",
-                                componentId, moduleName, tenantable.getClass().getName()));
-                if (unavailableCount > 100) {
-                    blockedCounts.remove(componentId);
-                }
-                condition.await(100, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ex) {
-            } finally {
-                lock.unlock();
-            }
-            return false;
+            return true;
         }
-        return true;
+        if (!tenantable.requiresTenantContext() || tenantNotRequired(tenantable)) {
+            return true;
+        }
+        lock.lock();
+        try {
+            String componentId = contextInstance.getInstanceComponentId();
+            int unavailableCount = blockedCounts.compute(componentId, (k, v) -> v == null ? 0 : ++v);
+            log.log(unavailableCount > 100 ? Level.INFO : Level.FINEST,
+                    String.format("BLOCKED: tenant not available: %s, module %s, Operation: %s",
+                            componentId, moduleName, tenantable.getClass().getName()));
+            if (unavailableCount > 100) {
+                blockedCounts.remove(componentId);
+            }
+            condition.await(100, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+        } finally {
+            lock.unlock();
+        }
+        return false;        
     }
 
     @Override
