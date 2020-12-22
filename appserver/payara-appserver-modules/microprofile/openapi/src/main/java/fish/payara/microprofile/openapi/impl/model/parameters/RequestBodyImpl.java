@@ -72,7 +72,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
         final List<ContentImpl> contents = createList();
         extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
         for (ContentImpl content : contents) {
-            ContentImpl.merge(content, from.content, true, context);
+            content.getMediaTypes().forEach(from.content::addMediaType);
         }
 
         return from;

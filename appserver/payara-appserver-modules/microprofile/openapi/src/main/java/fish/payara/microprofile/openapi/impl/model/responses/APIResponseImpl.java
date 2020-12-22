@@ -95,7 +95,7 @@ public class APIResponseImpl extends ExtensibleImpl<APIResponse> implements APIR
 
         extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
         for (ContentImpl content : contents) {
-            ContentImpl.merge(content, from.content, true, context);
+            content.getMediaTypes().forEach(from.content::addMediaType);
         }
 
         extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from::addLink);
