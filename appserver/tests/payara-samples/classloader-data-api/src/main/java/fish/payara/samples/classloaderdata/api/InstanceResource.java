@@ -39,7 +39,7 @@
  */
 package fish.payara.samples.classloaderdata.api;
 
-import fish.payara.samples.classloaderdata.InstanceCountService;
+import fish.payara.samples.classloaderdata.InstanceCountTracker;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 /**
@@ -50,8 +50,6 @@ import javax.ws.rs.Path;
  */
 @Path("instance-count")
 public class InstanceResource {
-    
-    private InstanceCountService instanceCountService = new InstanceCountService();
 
     /**
      * Method handling HTTP GET request for Instance Count
@@ -61,12 +59,12 @@ public class InstanceResource {
     @GET
     @Path("update")
     public int getClassLoaderCount() {
-        return instanceCountService.getCurrentCount();
+        return InstanceCountTracker.getInstanceCount();
     }
     
     @GET
     @Path("previous")
     public int getPreviousInstanceCount() {
-        return instanceCountService.getPreviousCount();
+        return InstanceCountTracker.getPreviousInstanceCount();
     }
 }
