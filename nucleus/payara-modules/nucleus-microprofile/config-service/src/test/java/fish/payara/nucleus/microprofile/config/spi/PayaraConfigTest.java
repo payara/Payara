@@ -56,6 +56,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,6 +92,16 @@ public class PayaraConfigTest {
     @Test
     public void booleanArrayConversion() {
         assertArrayEquals(new boolean[] { true, false, true }, config.getValue("bool2", boolean[].class));
+    }
+
+    @Test
+    public void configValueTest() {
+        ConfigValue value = config.getValue("key1", ConfigValue.class);
+        assertEquals("key1", value.getName());
+        assertEquals("value1", value.getRawValue());
+        assertEquals("value1", value.getValue());
+        assertEquals("S1", value.getSourceName());
+        assertEquals(100, value.getSourceOrdinal());
     }
 
     @Test

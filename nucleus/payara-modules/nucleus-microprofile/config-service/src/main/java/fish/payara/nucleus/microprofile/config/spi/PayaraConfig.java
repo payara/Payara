@@ -127,6 +127,9 @@ public class PayaraConfig implements Config {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
+        if (propertyType == ConfigValue.class) {
+            return (T) getConfigValue(propertyName);
+        }
         if (propertyType == ConfigValueResolver.class) {
             return (T) new ConfigValueResolverImpl(this, propertyName);
         }

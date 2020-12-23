@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
@@ -118,6 +119,9 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T as(Class<T> type, T defaultValue) {
+        if (type == ConfigValue.class) {
+            return (T) Optional.ofNullable(config.getConfigValue(propertyName)).orElse((ConfigValue) defaultValue);
+        }
         return asValue(propertyName, getCacheKey(propertyName, type), ttl, defaultValue,
                 () -> Optional.of(
                         type.isArray()
