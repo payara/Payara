@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,44 +37,57 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi.impl.model.security;
+package fish.payara.microprofile.openapi.test.app.application;
 
-import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
-import java.util.Map;
-import org.eclipse.microprofile.openapi.models.security.Scopes;
+import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
+import static org.junit.Assert.assertEquals;
 
-public class ScopesImpl extends ExtensibleTreeMap<String, Scopes> implements Scopes {
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 
-    private static final long serialVersionUID = -615440059031779085L;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
-    public ScopesImpl() {
-        super();
+import org.junit.Test;
+
+import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
+
+@Path("enum")
+public class EnumTest extends OpenApiApplicationTest {
+
+    @Path("/add")
+    @POST
+    String add(Data body) {
+        return null;
     }
 
-    public ScopesImpl(Map<String, ? extends String> scopes) {
-        super(scopes);
+    class Data {
+        MyEnum prop1;
     }
 
-    @Override
-    public Scopes addScope(String name, String item) {
-        this.put(name, item); // this DOES accept null!
-        return this;
+    enum MyEnum {
+        A, B, C
     }
 
-    @Override
-    public void removeScope(String scope) {
-        this.remove(scope);
+    @Test
+    public void testSchemaReferenceCreated() {
+        assertEquals("#/components/schemas/Data",
+                path(getOpenAPIJson(), "paths./test/enum/add.post.requestBody.content.*/*.schema.$ref").asText());
     }
 
-    @Override
-    public Map<String, String> getScopes() {
-        return new ScopesImpl(this);
+    @Test
+    public void testEnumPropertyReferenceCreated() {
+        JsonNode data = path(getOpenAPIJson(), "components.schemas.Data.properties.prop1.$ref");
+        assertEquals("#/components/schemas/MyEnum", data.asText());
     }
 
-    @Override
-    public void setScopes(Map<String, String> items) {
-        clear();
-        putAll(items);
+    @Test
+    public void testEnumSchemaCreated() {
+        ArrayNode enumProps = (ArrayNode) path(getOpenAPIJson(), "components.schemas.MyEnum.enum");
+        assertEquals("A", enumProps.get(0).textValue());
+        assertEquals("B", enumProps.get(1).textValue());
+        assertEquals("C", enumProps.get(2).textValue());
+        assertEquals("Enum contained an incorrect number of props: " + enumProps, 3, enumProps.size());
     }
 
 }

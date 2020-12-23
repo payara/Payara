@@ -65,7 +65,7 @@ public class TagsBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void tagHasExpectedFields() {
-        JsonNode tag = path(getOpenAPIJson(), "tags.0");
+        JsonNode tag = path(getOpenAPIJson(), "tags.[0]");
         assertNotNull(tag);
         assertEquals("name", tag.get("name").textValue());
         assertEquals("description", tag.get("description").textValue());

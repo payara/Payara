@@ -39,10 +39,13 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
-import java.util.ArrayList;
+
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -66,12 +69,12 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
     protected Operation head;
     protected Operation patch;
     protected Operation trace;
-    protected List<Server> servers = new ArrayList<>();
-    protected List<Parameter> parameters = new ArrayList<>();
+    protected List<Server> servers = createList();
+    protected List<Parameter> parameters = createList();
 
     public static PathItem createInstance(AnnotationModel annotation, ApiContext context) {
         PathItem from = new PathItemImpl();
-        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from.getServers());
+        extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         return from;
     }
 
@@ -187,42 +190,6 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public Map<HttpMethod, Operation> getOperations() {
-        return readOperationsMap();
-    }
-
-    @Override
-    public List<Operation> readOperations() {
-        List<Operation> allOperations = new ArrayList<>();
-        if (this.get != null) {
-            allOperations.add(this.get);
-        }
-        if (this.put != null) {
-            allOperations.add(this.put);
-        }
-        if (this.head != null) {
-            allOperations.add(this.head);
-        }
-        if (this.post != null) {
-            allOperations.add(this.post);
-        }
-        if (this.delete != null) {
-            allOperations.add(this.delete);
-        }
-        if (this.patch != null) {
-            allOperations.add(this.patch);
-        }
-        if (this.options != null) {
-            allOperations.add(this.options);
-        }
-        if (this.trace != null) {
-            allOperations.add(this.trace);
-        }
-
-        return allOperations;
-    }
-
-    @Override
-    public Map<HttpMethod, Operation> readOperationsMap() {
         Map<HttpMethod, Operation> result = new EnumMap<>(HttpMethod.class);
 
         if (this.get != null) {
@@ -254,18 +221,54 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
     }
 
     @Override
+    public void setOperation(HttpMethod httpMethod, Operation operation) {
+        if (httpMethod == null) {
+            return;
+        }
+        switch (httpMethod) {
+            case GET:
+                this.get = operation;
+                break;
+            case PUT:
+                this.put = operation;
+                break;
+            case POST:
+                this.post = operation;
+                break;
+            case DELETE:
+                this.delete = operation;
+                break;
+            case OPTIONS:
+                this.options = operation;
+                break;
+            case HEAD:
+                this.head = operation;
+                break;
+            case PATCH:
+                this.patch = operation;
+                break;
+            case TRACE:
+                this.trace = operation;
+                break;
+        }
+    }
+
+    @Override
     public List<Server> getServers() {
-        return servers;
+        return readOnlyView(servers);
     }
 
     @Override
     public void setServers(List<Server> servers) {
-        this.servers = servers;
+        this.servers = createList(servers);
     }
 
     @Override
     public PathItem addServer(Server server) {
         if (server != null) {
+            if (servers == null) {
+                servers = createList();
+            }
             servers.add(server);
         }
         return this;
@@ -273,22 +276,27 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public void removeServer(Server server) {
-        servers.remove(server);
+        if (servers != null) {
+            servers.remove(server);
+        }
     }
 
     @Override
     public List<Parameter> getParameters() {
-        return parameters;
+        return readOnlyView(parameters);
     }
 
     @Override
     public void setParameters(List<Parameter> parameters) {
-        this.parameters = parameters;
+        this.parameters = createList(parameters);
     }
 
     @Override
     public PathItem addParameter(Parameter parameter) {
         if (parameter != null) {
+            if (parameters == null) {
+                parameters = createList();
+            }
             parameters.add(parameter);
         }
         return this;
@@ -296,7 +304,9 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public void removeParameter(Parameter parameter) {
-        parameters.remove(parameter);
+        if (parameters != null) {
+            parameters.remove(parameter);
+        }
     }
 
     @Override
