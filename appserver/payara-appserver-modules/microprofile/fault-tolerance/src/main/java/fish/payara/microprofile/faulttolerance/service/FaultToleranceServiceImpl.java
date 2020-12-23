@@ -75,7 +75,6 @@ import javax.naming.NamingException;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
@@ -137,13 +136,6 @@ public class FaultToleranceServiceImpl
             ApplicationInfo info = (ApplicationInfo) event.hook();
             deregisterApplication(info);
             FaultTolerancePolicy.clean(info.getAppClassLoader());
-        } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
-            if (asyncExecutorService != null) {
-                asyncExecutorService.shutdownNow();
-            }
-            if (delayExecutorService != null) {
-                delayExecutorService.shutdownNow();
-            }
         }
     }
 
