@@ -305,6 +305,16 @@
             <artifactId>json-smart</artifactId>
             <version>${json-smart.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>${reactor-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <version>${reactive-streams.version}</version>
+        </dependency>
     </dependencies>
         
 </project>
