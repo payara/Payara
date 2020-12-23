@@ -52,6 +52,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -90,6 +93,9 @@ import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
 import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
 import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
 import fish.payara.nucleus.microprofile.config.converters.LongConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalDoubleConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalIntConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalLongConverter;
 import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
 import fish.payara.nucleus.microprofile.config.converters.StringConverter;
 import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
@@ -440,6 +446,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.put(String.class, new StringConverter());
         result.put(Character.class, new CharacterConverter());
         result.put(Short.class, new ShortConverter());
+        result.put(OptionalInt.class, new OptionalIntConverter());
+        result.put(OptionalDouble.class, new OptionalDoubleConverter());
+        result.put(OptionalLong.class, new OptionalLongConverter());
         return result;
     }
 
