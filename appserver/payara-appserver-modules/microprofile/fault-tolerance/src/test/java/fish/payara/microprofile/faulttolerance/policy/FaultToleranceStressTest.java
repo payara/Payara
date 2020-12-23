@@ -66,8 +66,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -119,12 +117,9 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
 
     final ExecutorService executorService = Executors.newWorkStealingPool(NUMBER_OF_CALLERS / 2);
     final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
-
         @Override
-        protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
-                FaultTolerancePolicy policy) {
-            return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
-                    (c, p) -> createMethodContext(methodId, c, p)) {
+        protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {
+            return new FaultToleranceMethodContextStub(ctx, state, concurrentExecutions, waitingQueuePopulation) {
                 @Override
                 public CircuitBreakerState getState() {
                     circuitStateAccessCount.incrementAndGet();

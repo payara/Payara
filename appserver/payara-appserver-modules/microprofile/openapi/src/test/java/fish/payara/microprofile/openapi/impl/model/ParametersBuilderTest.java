@@ -93,7 +93,7 @@ public class ParametersBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void parameterHasExpectedFields() {
-        JsonNode parameter = path(getOpenAPIJson(), "paths.path1.parameters.0");
+        JsonNode parameter = path(getOpenAPIJson(), "paths.path1.parameters.[0]");
         assertNotNull(parameter);
         assertEquals("name", parameter.get("name").textValue());
         assertEquals("description", parameter.get("description").textValue());

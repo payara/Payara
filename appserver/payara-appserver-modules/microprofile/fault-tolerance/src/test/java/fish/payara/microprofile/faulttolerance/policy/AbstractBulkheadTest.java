@@ -47,6 +47,8 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextStub;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceServiceStub;
 
+import java.util.function.BiFunction;
+
 /**
  * Base class for tests focusing on the behaviour of methods annotated with the {@link Bulkhead} annotation.
  *
@@ -59,10 +61,8 @@ abstract class AbstractBulkheadTest extends AbstractRecordingTest {
         return new FaultToleranceServiceStub() {
 
             @Override
-            protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
-                    FaultTolerancePolicy policy) {
-                return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
-                        (c, p) -> createMethodContext(methodId, c, p)) {
+            protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {
+                return new FaultToleranceMethodContextStub(ctx, state, concurrentExecutions, waitingQueuePopulation) {
 
                     @Override
                     public void delay(long delayMillis) throws InterruptedException {
@@ -70,7 +70,6 @@ abstract class AbstractBulkheadTest extends AbstractRecordingTest {
                     }
                 };
             }
-
         };
     }
 

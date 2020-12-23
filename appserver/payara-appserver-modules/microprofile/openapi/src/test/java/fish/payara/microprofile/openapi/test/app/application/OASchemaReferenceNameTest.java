@@ -91,7 +91,7 @@ public class OASchemaReferenceNameTest extends OpenApiApplicationTest {
 
     @Schema(name = UserDto.SCHEMA_NAME)
     public static class UserDto {
-        private static final String SCHEMA_NAME = "User";
+        protected static final String SCHEMA_NAME = "User";
 
         @Schema
         private AddressDto addressDto;

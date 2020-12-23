@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,9 +46,14 @@ import static java.util.Collections.singletonMap;
 import static org.eclipse.microprofile.openapi.OASFactory.createServer;
 import static org.eclipse.microprofile.openapi.OASFactory.createServerVariable;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.servers.Server;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
+
+import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 
 /**
  * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.servers.*}.
@@ -70,8 +75,14 @@ public class ServersBuilderTest extends OpenApiBuilderTest {
     }
 
     @Test
+    public void serverIsInitialisedCorrectly() {
+        Server server = new ServerImpl();
+        assertNotNull("server variables are null", server.getVariables());
+    }
+
+    @Test
     public void serverHasExpectedFields() {
-        JsonNode server = path(getOpenAPIJson(), "servers.0");
+        JsonNode server = path(getOpenAPIJson(), "servers.[0]");
         assertNotNull(server);
         assertEquals("url", server.get("url").textValue());
         assertEquals("description", server.get("description").textValue());
@@ -80,7 +91,7 @@ public class ServersBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void serverVariablesHasExpectedFields() {
-        JsonNode var1 = path(getOpenAPIJson(), "servers.0.variables.var1");
+        JsonNode var1 = path(getOpenAPIJson(), "servers.[0].variables.var1");
         assertNotNull(var1);
         assertEquals("defaultValue", var1.get("default").textValue());
         assertEquals("description", var1.get("description").textValue());

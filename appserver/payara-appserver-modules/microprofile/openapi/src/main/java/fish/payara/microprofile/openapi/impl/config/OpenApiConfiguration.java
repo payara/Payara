@@ -39,8 +39,9 @@
  */
 package fish.payara.microprofile.openapi.impl.config;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,14 +49,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import static java.util.logging.Level.WARNING;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.util.stream.Collectors.toSet;
+
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.OASModelReader;
 import org.glassfish.hk2.classmodel.reflect.Type;
+
+import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 
 public class OpenApiConfiguration {
 
@@ -72,18 +75,20 @@ public class OpenApiConfiguration {
     private static final String SERVERS_KEY = "mp.openapi.servers";
     private static final String PATH_PREFIX_KEY = "mp.openapi.servers.path.";
     private static final String OPERATION_PREFIX_KEY = "mp.openapi.servers.operation.";
+    private static final String SCHEMA_DEFINITIONS_PREFIX_KEY = "mp.openapi.schema.";
 
-    private final Class<? extends OASModelReader> modelReader;
-    private final Class<? extends OASFilter> filter;
-    private final boolean scanDisable;
-    private final boolean scanLib;
+    private Class<? extends OASModelReader> modelReader;
+    private Class<? extends OASFilter> filter;
+    private boolean scanDisable;
+    private boolean scanLib;
     private List<String> scanPackages = new ArrayList<>();
     private List<String> scanClasses = new ArrayList<>();
-    private List<String> excludePackages = new ArrayList<>();
-    private List<String> excludeClasses = new ArrayList<>();
+    private List<String> scanExcludePackages = new ArrayList<>();
+    private List<String> scanExcludeClasses = new ArrayList<>();
     private List<String> servers = new ArrayList<>();
     private Map<String, Set<String>> pathServerMap = new HashMap<>();
     private Map<String, Set<String>> operationServerMap = new HashMap<>();
+    private Map<String, SchemaImpl> schemaMap = new HashMap<>();
 
     public OpenApiConfiguration(ClassLoader applicationClassLoader) {
         // Find the correct configuration instance
@@ -93,17 +98,20 @@ public class OpenApiConfiguration {
         Config config = ConfigProvider.getConfig(applicationClassLoader);
 
         // Find each variable
-        this.modelReader = findModelReaderFromConfig(config, applicationClassLoader);
-        this.filter = findFilterFromConfig(config, applicationClassLoader);
-        this.scanDisable = findScanDisableFromConfig(config);
-        this.scanLib = findScanLibFromConfig(config);
-        this.scanPackages = findScanPackagesFromConfig(config);
-        this.scanClasses = findScanClassesFromConfig(config);
-        this.excludePackages = findExcludePackages(config);
-        this.excludeClasses = findExcludeClasses(config);
-        this.servers = findServers(config);
-        this.pathServerMap = findPathServerMap(config);
-        this.operationServerMap = findOperationServerMap(config);
+        for (String propertyName : config.getPropertyNames()) {
+            parseModelReader(propertyName, config);
+            parseFilter(propertyName, config);
+            parseScanDisable(propertyName, config);
+            parseScanLib(propertyName, config);
+            parseScanPackages(propertyName, config);
+            parseScanClasses(propertyName, config);
+            parseExcludePackages(propertyName, config);
+            parseExcludeClasses(propertyName, config);
+            parseServers(propertyName, config);
+            parsePathServer(propertyName, config);
+            parseOperationServer(propertyName, config);
+            parseSchema(propertyName, config);
+        }
     }
 
     /**
@@ -152,14 +160,14 @@ public class OpenApiConfiguration {
      * @return a blacklist of packages to not scan in the application.
      */
     public List<String> getExcludePackages() {
-        return excludePackages;
+        return scanExcludePackages;
     }
 
     /**
      * @return a blacklist of classes to not scan in the application.
      */
     public List<String> getExcludeClasses() {
-        return excludeClasses;
+        return scanExcludeClasses;
     }
 
     /**
@@ -184,6 +192,88 @@ public class OpenApiConfiguration {
     }
 
     /**
+     * @return a map of schema objects
+     */
+    public Map<String, SchemaImpl> getSchemaMap() {
+        return schemaMap;
+    }
+
+    private void parseModelReader(String propertyName, Config config) {
+        if (propertyName.equals(MODEL_READER_KEY)) {
+            this.modelReader = parseClass(propertyName, config, "Model Reader", OASModelReader.class);
+        }
+    }
+
+    private void parseFilter(String propertyName, Config config) {
+        if (propertyName.equals(FILTER_KEY)) {
+            this.filter = parseClass(propertyName, config, "Filter", OASFilter.class);
+        }
+    }
+
+    private void parseScanDisable(String propertyName, Config config) {
+        if (propertyName.equals(SCAN_DISABLE_KEY)) {
+            this.scanDisable = config.getValue(propertyName, Boolean.class);
+        }
+    }
+
+    private void parseScanLib(String propertyName, Config config) {
+        if (propertyName.equals(SCAN_LIB_KEY)) {
+            this.scanLib = config.getValue(propertyName, Boolean.class);
+        }
+    }
+
+    private void parseScanPackages(String propertyName, Config config) {
+        if (propertyName.equals(SCAN_PACKAGES_KEY)) {
+            this.scanPackages = parseList(propertyName, config);
+        }
+    }
+
+    private void parseScanClasses(String propertyName, Config config) {
+        if (propertyName.equals(SCAN_CLASSES_KEY)) {
+            this.scanClasses = parseList(propertyName, config);
+        }
+    }
+
+    private void parseExcludePackages(String propertyName, Config config) {
+        if (propertyName.equals(SCAN_EXCLUDE_PACKAGES_KEY)) {
+            this.scanExcludePackages = parseList(propertyName, config);
+        }
+    }
+
+    private void parseExcludeClasses(String propertyName, Config config) {
+        if (propertyName.equals(SCAN_EXCLUDE_CLASSES_KEY)) {
+            this.scanExcludeClasses = parseList(propertyName, config);
+        }
+    }
+
+    private void parseServers(String propertyName, Config config) {
+        if (propertyName.equals(SERVERS_KEY)) {
+            this.servers = parseList(propertyName, config);
+        }
+    }
+
+    private void parsePathServer(String propertyName, Config config) {
+        if (propertyName.startsWith(PATH_PREFIX_KEY)) {
+            final String pathServer = propertyName.replaceFirst(PATH_PREFIX_KEY, "");
+            pathServerMap.put(pathServer, parseSet(propertyName, config));
+        }
+    }
+
+    private void parseOperationServer(String propertyName, Config config) {
+        if (propertyName.startsWith(OPERATION_PREFIX_KEY)) {
+            final String operationServer = propertyName.replaceFirst(OPERATION_PREFIX_KEY, "");
+            operationServerMap.put(operationServer, parseSet(propertyName, config));
+        }
+    }
+
+    private void parseSchema(String propertyName, Config config) {
+        if (propertyName.startsWith(SCHEMA_DEFINITIONS_PREFIX_KEY)) {
+            final String schemaName = propertyName.replaceFirst(SCHEMA_DEFINITIONS_PREFIX_KEY, "");
+            schemaMap.put(schemaName, config.getValue(propertyName, SchemaImpl.class));
+        }
+    }
+
+    /**
      * @param types the list of classes to filter.
      * @return a filtered list of classes, using {@link #getScanClasses()},
      *         {@link #getExcludeClasses()}, {@link #getScanPackages()} and
@@ -194,164 +284,50 @@ public class OpenApiConfiguration {
                 // If scan classes are specified, check that the class is in the list
                 .filter(type -> scanClasses.isEmpty() || scanClasses.contains(type.getName()))
                 // If exclude classes are specified, check that the class is not the list
-                .filter(type -> excludeClasses.isEmpty() || !excludeClasses.contains(type.getName()))
+                .filter(type -> scanExcludeClasses.isEmpty() || !scanExcludeClasses.contains(type.getName()))
                 // If scan packages are specified, check that the class package starts with one
                 // in the list
                 .filter(type -> scanPackages.isEmpty()
                         || scanPackages.stream().anyMatch(pkg -> type.getName().startsWith(pkg)))
                 // If exclude packages are specified, check that the class package doesn't start
                 // with any in the list
-                .filter(clazz -> excludePackages.isEmpty()
-                        || excludePackages.stream().noneMatch(pkg -> clazz.getName().startsWith(pkg)))
+                .filter(clazz -> scanExcludePackages.isEmpty()
+                        || scanExcludePackages.stream().noneMatch(pkg -> clazz.getName().startsWith(pkg)))
                 .collect(toSet());
     }
 
-    @SuppressWarnings("unchecked")
-    private Class<? extends OASModelReader> findModelReaderFromConfig(Config config, ClassLoader classLoader) {
-        try {
-            String modelReaderClassName = config.getValue(MODEL_READER_KEY, String.class);
-            Class<?> modelReaderClass = getClassFromName(modelReaderClassName, classLoader);
-            if (modelReaderClass != null && OASModelReader.class.isAssignableFrom(modelReaderClass)) {
-                return (Class<? extends OASModelReader>) modelReaderClass;
-            }
-        } catch (NoSuchElementException ex) {
-            // Ignore
-        }
-        return null;
-    }
+    // static Config API convenience methods
 
     @SuppressWarnings("unchecked")
-    private Class<? extends OASFilter> findFilterFromConfig(Config config, ClassLoader classLoader) {
+    private static <T> Class<T> parseClass(String propertyName, Config config, String className, Class<T> clazz) {
         try {
-            String filterClassName = config.getValue(FILTER_KEY, String.class);
-            Class<?> filterClass = getClassFromName(filterClassName, classLoader);
-            if (filterClass != null && OASFilter.class.isAssignableFrom(filterClass)) {
-                return (Class<? extends OASFilter>) filterClass;
-            }
+            return (Class<T>) config.getValue(propertyName, Class.class);
         } catch (NoSuchElementException ex) {
-            // Ignore
+            LOGGER.warning(className + " class not found: " + config.getValue(propertyName, String.class));
+        } catch (ClassCastException ex) {
+            LOGGER.log(Level.WARNING, className + " class was wrong type: " + config.getValue(propertyName, String.class), ex);
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Failed to read " + className + " class" + config.getValue(propertyName, String.class), ex);
         }
         return null;
     }
 
-    private static boolean findScanDisableFromConfig(Config config) {
-        try {
-            return config.getValue(SCAN_DISABLE_KEY, Boolean.class);
-        } catch (NoSuchElementException ex) {
-            // Ignore
-        }
-        return false;
+    private static List<String> parseList(String propertyName, Config config) {
+        return parseCollection(propertyName, config, new ArrayList<>());
     }
 
-    private static boolean findScanLibFromConfig(Config config) {
-        try {
-            return config.getValue(SCAN_LIB_KEY, Boolean.class);
-        } catch (NoSuchElementException ex) {
-            // Ignore
-        }
-        return false;
+    private static Set<String> parseSet(String propertyName, Config config) {
+        return parseCollection(propertyName, config, new HashSet<>());
     }
 
-    private static List<String> findScanPackagesFromConfig(Config config) {
-        List<String> packages = new ArrayList<>();
-        try {
-            packages.addAll(Arrays.asList(config.getValue(SCAN_PACKAGES_KEY, String[].class)));
-        } catch (NoSuchElementException ex) {
-            // Ignore
-        }
-        return packages;
-    }
-
-    private List<String> findScanClassesFromConfig(Config config) {
-        List<String> classes = new ArrayList<>();
-        try {
-            List<String> classNames = Arrays.asList(config.getValue(SCAN_CLASSES_KEY, String[].class));
-            for (String className : classNames) {
-                classes.add(className);
+    private static <C extends Collection<String>> C parseCollection(String propertyName, Config config, C instance) {
+        final String[] array = config.getValue(propertyName, String[].class);
+        if (array != null) {
+            for (String item : array) {
+                instance.add(item);
             }
-        } catch (NoSuchElementException ex) {
-            // Ignore
         }
-        return classes;
-    }
-
-    private static List<String> findExcludePackages(Config config) {
-        List<String> packages = new ArrayList<>();
-        try {
-            packages.addAll(Arrays.asList(config.getValue(SCAN_EXCLUDE_PACKAGES_KEY, String[].class)));
-        } catch (NoSuchElementException ex) {
-            // Ignore
-        }
-        return packages;
-    }
-
-    private List<String> findExcludeClasses(Config config) {
-        List<String> classes = new ArrayList<>();
-        try {
-            List<String> classNames = Arrays.asList(config.getValue(SCAN_EXCLUDE_CLASSES_KEY, String[].class));
-            for (String className : classNames) {
-                    classes.add(className);
-            }
-        } catch (NoSuchElementException ex) {
-            // Ignore
-        }
-        return classes;
-    }
-
-    private static List<String> findServers(Config config) {
-        List<String> serverList = new ArrayList<>();
-        try {
-            serverList.addAll(Arrays.asList(config.getValue(SERVERS_KEY, String[].class)));
-        } catch (NoSuchElementException ex) {
-            // Ignore
-        }
-        return serverList;
-    }
-
-    private static Map<String, Set<String>> findPathServerMap(Config config) {
-        Map<String, Set<String>> map = new HashMap<>();
-        try {
-            for (String propertyName : config.getPropertyNames()) {
-                if (propertyName.startsWith(PATH_PREFIX_KEY)) {
-                    map.put(propertyName.replaceFirst(PATH_PREFIX_KEY, ""),
-                            new HashSet<>(Arrays.asList(config.getValue(propertyName, String[].class))));
-                }
-            }
-        } catch (NoSuchElementException ex) {
-            // Ignore
-        }
-        return map;
-    }
-
-    private static Map<String, Set<String>> findOperationServerMap(Config config) {
-        Map<String, Set<String>> map = new HashMap<>();
-        try {
-            for (String propertyName : config.getPropertyNames()) {
-                if (propertyName.startsWith(OPERATION_PREFIX_KEY)) {
-                    map.put(propertyName.replaceFirst(OPERATION_PREFIX_KEY, ""),
-                            new HashSet<>(Arrays.asList(config.getValue(propertyName, String[].class))));
-                }
-            }
-        } catch (NoSuchElementException ex) {
-            // Ignore
-        }
-        return map;
-    }
-
-    private Class<?> getClassFromName(String className, ClassLoader classLoader) {
-        if (classLoader == null) {
-            classLoader = getClass().getClassLoader();
-        }
-        if (className == null) {
-            return null;
-        }
-
-        try {
-            return classLoader.loadClass(className);
-        } catch (ClassNotFoundException ex) {
-            LOGGER.log(WARNING, "Unable to find class.", ex);
-        }
-        return null;
+        return instance;
     }
 
 }

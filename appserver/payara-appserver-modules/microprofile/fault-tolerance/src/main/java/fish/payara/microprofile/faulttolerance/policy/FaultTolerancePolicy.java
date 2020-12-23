@@ -107,6 +107,16 @@ public final class FaultTolerancePolicy implements Serializable {
                 map -> map.entrySet().removeIf(entry -> now > entry.getValue().expiresMillis));
     }
 
+
+    /**
+     * Removes all expired policies from the cache and all policies related to this classloader
+     */
+    public static void clean(ClassLoader appClassLoader) {
+        long now = System.currentTimeMillis();
+        POLICY_BY_METHOD.entrySet().removeIf(entry -> entry.getKey().getClassLoader().equals(appClassLoader));
+        clean();
+    }
+
     public static FaultTolerancePolicy asAnnotated(Class<?> target, Method annotated) {
         return create(new StaticAnalysisContext(target, annotated),
                 FaultToleranceConfig.asAnnotated(target, annotated));
@@ -127,6 +137,7 @@ public final class FaultTolerancePolicy implements Serializable {
                 .compute(context.getMethod(), (method, policy) ->
                     policy != null && !policy.isExpired() ? policy : create(context, configSpplier.get()));
     }
+
 
     private static FaultTolerancePolicy create(InvocationContext context, FaultToleranceConfig config) {
         return new FaultTolerancePolicy(
@@ -232,6 +243,12 @@ public final class FaultTolerancePolicy implements Serializable {
 
         void endTrace() {
             context.endTrace();
+        }
+
+        @Override
+        public String toString() {
+            return "FaultToleranceInvocation[context=" + context.toString() + ", isDone=" +
+                    (asyncResult == null ? "(sync)" : asyncResult.isDone()) + "]";
         }
     }
 
@@ -404,12 +421,12 @@ public final class FaultTolerancePolicy implements Serializable {
             return asyncAttempt;
         } catch (ExecutionException ex) { // this ExecutionException is from calling get() above in case completed exceptionally
             if (!asyncAttempt.isExceptionThrown() && asynchronous.isSuccessWhenCompletedExceptionally()) {
-                invocation.timeoutIfConcludedConcurrently();
+            invocation.timeoutIfConcludedConcurrently();
                 return asyncAttempt;
             }
             rethrow(ex.getCause());
             return null; // not reachable
-        }
+                }
     }
 
     private static void rethrow(Throwable t) throws Exception {
@@ -551,18 +568,18 @@ public final class FaultTolerancePolicy implements Serializable {
         if (!isBulkheadPresent()) {
             return proceed(invocation);
         }
-        logger.log(Level.FINER, "Proceeding invocation with bulkhead semantics");
+        logger.log(Level.FINER, () -> "Proceeding invocation with bulkhead semantics in "+invocation);
         final boolean isAsync = isAsynchronous();
         final boolean exitIsOnCompletion = isAsync && bulkhead.exitIsOnCompletion;
         boolean directExit = false; // Whether or not we semantically leave the bulkhead when leaving this method
         final int runCapacity = bulkhead.value;
         final int queueCapacity = isAsync ? bulkhead.waitingTaskQueue : 0;
         AtomicInteger queuingOrRunning = invocation.context.getQueuingOrRunningPopulation();
-        final int maxAttemps = 5;
-        for (int i = 0; i < maxAttemps; i++) {
+        while (true) {
             final int currentlyIn = queuingOrRunning.get();
             if (currentlyIn >= runCapacity + queueCapacity) {
                 invocation.metrics.incrementBulkheadCallsRejectedTotal();
+                logger.log(Level.FINER, "No free work or queue space.");
                 throw new BulkheadException("No free work or queue space.");
             }
             logger.log(Level.FINER, "Attempting to enter bulkhead.");
@@ -592,11 +609,13 @@ public final class FaultTolerancePolicy implements Serializable {
                         // ok, lets run
                         Object res = proceed(invocation);
                         if (!exitIsOnCompletion) {
+                            logger.log(Level.FINER, () -> "Exiting synchronously with "+res);
                             return res;
                         }
                         directExit = false; // if we make if here exit is going to happen on completion
                         CompletionStage<?> asyncResult = ((CompletionStage<?>) res);
                         asyncResult.whenComplete((value, exception) -> {
+                            logger.log(Level.FINER, () -> "Bulkhead invocation "+invocation+ " finished " + (exception != null ? "with exception "+exception.getMessage() : "sucessfully"));
                             invocation.metrics.addBulkheadExecutionDuration(Math.max(1, System.nanoTime() - executionSince));
                             // successful or not, we are out...
                             running.remove(currentThread);
@@ -619,8 +638,6 @@ public final class FaultTolerancePolicy implements Serializable {
                 }
             }
         }
-        invocation.metrics.incrementBulkheadCallsRejectedTotal();
-        throw new BulkheadException("No free work or queue space.");
     }
 
     /**
