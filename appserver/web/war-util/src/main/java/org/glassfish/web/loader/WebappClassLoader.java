@@ -88,6 +88,7 @@ import javax.naming.directory.DirContext;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
@@ -411,10 +412,16 @@ public class WebappClassLoader
     private static Boolean isMultiReleaseJar;
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
 
-    public static ReferenceQueue<WebappClassLoader> referenceQueue = new ReferenceQueue<WebappClassLoader>();
-    public static ArrayList<WebappClassLoaderFinalizer> list = new ArrayList<WebappClassLoaderFinalizer>();
-    {
-        list.add(new WebappClassLoaderFinalizer(this, referenceQueue));
+    public static final ReferenceQueue<WebappClassLoader> referenceQueue = new ReferenceQueue<WebappClassLoader>();
+    public static final ArrayList<PhantomReference<WebappClassLoader>> list = new ArrayList<PhantomReference<WebappClassLoader>>();
+    private static final AtomicInteger INSTANCE_COUNT = new AtomicInteger();
+    
+    public static int getInstanceCount() {
+        return INSTANCE_COUNT.get();
+    }
+    
+    public static void setInstanceCount(int newValue) {
+        INSTANCE_COUNT.set(newValue);
     }
 
     static {
@@ -1887,8 +1894,11 @@ public class WebappClassLoader
 
 
     private void init() {
-
+        
         this.parent = getParent();
+        
+        list.add(new PhantomReference(this, referenceQueue));
+        INSTANCE_COUNT.set(INSTANCE_COUNT.get() + 1);
 
         /* SJSAS 6317864
         system = getSystemClassLoader();
