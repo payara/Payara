@@ -76,11 +76,21 @@ public class ConfigParser {
      */
     protected final ServiceLocator habitat;
 
+    // Whether we should log unrecognised elements while parsing
+    // Added in as a simple flag for the upgrade tool to prevent log vomit
+    private boolean logUnrecognisedElements = true;
 
     public ConfigParser(ServiceLocator habitat) {
         this.habitat = habitat;
     }
 
+    public void logUnrecognisedElements(boolean logUnrecognisedElements) {
+        this.logUnrecognisedElements = logUnrecognisedElements;
+    }
+
+    public boolean loggingUnrecognisedElements() {
+        return logUnrecognisedElements;
+    }
 
     public DomDocument parse(XMLStreamReader in) throws XMLStreamException {
         DomDocument document = new DomDocument(habitat);
@@ -162,8 +172,11 @@ public class ConfigParser {
         ConfigModel model = document.getModelByElementName(in.getLocalName());
         if(model==null) {
             String localName = in.getLocalName();
-            Logger.getLogger(ConfigParser.class.getName()).log(Level.SEVERE, "Ignoring unrecognized element {0} at {1}",
-                    new Object[]{in.getLocalName(), in.getLocation()});
+            if (logUnrecognisedElements) {
+                Logger.getLogger(ConfigParser.class.getName()).log(Level.SEVERE, "Ignoring unrecognized element {0} at {1}",
+                        new Object[]{in.getLocalName(), in.getLocation()});
+            }
+
             // flush the sub element content from the parser
             int depth=1;
             while(depth>0) {
