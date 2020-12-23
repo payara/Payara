@@ -41,6 +41,7 @@ package fish.payara.samples.classloaderdata;
 
 import java.lang.ref.Reference;
 import org.glassfish.web.loader.WebappClassLoader;
+import com.sun.enterprise.loader.ASURLClassLoader;
 
 /**
  *
@@ -48,11 +49,14 @@ import org.glassfish.web.loader.WebappClassLoader;
  */
 public class InstanceCountTracker {
     
-    private static int previousInstanceCount;
+    private static int previousWebappInstanceCount;
+    private static int previousASURLInstanceCount;
     
-    public static int getInstanceCount() {
+    // WebappClassLoader starts
+    
+    public static int getWebappInstanceCount() {
         
-        previousInstanceCount = WebappClassLoader.getInstanceCount(); // Store the previous count
+        previousWebappInstanceCount = WebappClassLoader.getInstanceCount(); // Store the previous count
         System.gc();
         int removedInstances = 0;
         Reference<?> reference;
@@ -62,12 +66,34 @@ public class InstanceCountTracker {
             reference.clear();
         }
 
-        WebappClassLoader.setInstanceCount(previousInstanceCount - removedInstances); // Update the instance count with removed instances
+        WebappClassLoader.setInstanceCount(previousWebappInstanceCount - removedInstances); // Update the instance count with removed instances
         return WebappClassLoader.getInstanceCount(); // Return the new updated instance count
     }
     
-    public static int getPreviousInstanceCount() {
-        return previousInstanceCount;
+    public static int getPreviousWebappInstanceCount() {
+        return previousWebappInstanceCount;
+    }
+    
+    // ASURLClassLoader stats
+    
+    public static int getASURLInstanceCount() {
+        
+        previousASURLInstanceCount = ASURLClassLoader.getInstanceCount(); // Store the previous count
+        System.gc();
+        int removedInstances = 0;
+        Reference<?> reference;
+        while((reference = ASURLClassLoader.referenceQueue.poll()) != null) {
+            removedInstances++;
+            
+            reference.clear();
+        }
+
+        ASURLClassLoader.setInstanceCount(previousASURLInstanceCount - removedInstances); // Update the instance count with removed instances
+        return ASURLClassLoader.getInstanceCount(); // Return the new updated instance count
+    }
+    
+    public static int getPreviousASURLInstanceCount() {
+        return previousASURLInstanceCount;
     }
     
 }

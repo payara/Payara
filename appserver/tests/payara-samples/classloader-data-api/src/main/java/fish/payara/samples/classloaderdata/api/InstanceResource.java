@@ -57,17 +57,20 @@ public class InstanceResource {
      * @return int WebappClassLoader instance count
      */
     @GET
-    @Path("update")
-    public String getClassLoaderCount() {
+    @Path("webapp")
+    public String getWebappClassLoaderCount() {
         String instanceMessage = "";
-        instanceMessage = instanceMessage.concat("Instances Remaining: " + InstanceCountTracker.getInstanceCount());
-        instanceMessage = instanceMessage.concat("\nInstances Before GC: " + InstanceCountTracker.getPreviousInstanceCount());
+        instanceMessage = instanceMessage.concat("Instances Remaining: " + InstanceCountTracker.getWebappInstanceCount());
+        instanceMessage = instanceMessage.concat("\nInstances Before GC: " + InstanceCountTracker.getPreviousWebappInstanceCount());
         return instanceMessage;
     }
     
     @GET
-    @Path("previous")
-    public int getPreviousInstanceCount() {
-        return InstanceCountTracker.getPreviousInstanceCount();
+    @Path("asurl")
+    public String getPreviousInstanceCount() {
+        String instanceMessage = "";
+        instanceMessage = instanceMessage.concat("Instances Remaining: " + InstanceCountTracker.getASURLInstanceCount());
+        instanceMessage = instanceMessage.concat("\nInstances Before GC: " + InstanceCountTracker.getPreviousASURLInstanceCount());
+        return instanceMessage;
     }
 }
