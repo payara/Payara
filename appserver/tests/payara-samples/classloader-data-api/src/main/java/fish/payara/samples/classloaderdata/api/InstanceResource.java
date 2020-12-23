@@ -58,8 +58,11 @@ public class InstanceResource {
      */
     @GET
     @Path("update")
-    public int getClassLoaderCount() {
-        return InstanceCountTracker.getInstanceCount();
+    public String getClassLoaderCount() {
+        String instanceMessage = "";
+        instanceMessage = instanceMessage.concat("Instances Remaining: " + InstanceCountTracker.getInstanceCount());
+        instanceMessage = instanceMessage.concat("\nInstances Before GC: " + InstanceCountTracker.getPreviousInstanceCount());
+        return instanceMessage;
     }
     
     @GET

@@ -51,15 +51,19 @@ public class InstanceCountTracker {
     private static int previousInstanceCount;
     
     public static int getInstanceCount() {
+        
+        previousInstanceCount = WebappClassLoader.getInstanceCount(); // Store the previous count
         System.gc();
-        int newCount = 0;
+        int removedInstances = 0;
         Reference<?> reference;
         while((reference = WebappClassLoader.referenceQueue.poll()) != null) {
-            newCount++;
+            removedInstances++;
+            
             reference.clear();
         }
-        previousInstanceCount = newCount;
-        return newCount;
+
+        WebappClassLoader.setInstanceCount(previousInstanceCount - removedInstances); // Update the instance count with removed instances
+        return WebappClassLoader.getInstanceCount(); // Return the new updated instance count
     }
     
     public static int getPreviousInstanceCount() {
