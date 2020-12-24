@@ -81,6 +81,7 @@ public class MicroprofileSecureEndpointTest {
 
     @ArquillianResource
     private URL base;
+    private String serverBase;
 
     private static String clientKeyStorePath;
 
@@ -116,7 +117,7 @@ public class MicroprofileSecureEndpointTest {
         webClient = new WebClient();
         correctCreds.addCredentials("mp", "mp");
         incorrectCreds.addCredentials("random", "random");
-        ServerOperations.createClientTrustStore(webClient, base, clientKeyStorePath);
+        serverBase = ServerOperations.createClientTrustStore(webClient, base, clientKeyStorePath).toString();
     }
 
     @After
@@ -128,7 +129,7 @@ public class MicroprofileSecureEndpointTest {
     @Test
     public void testMetricsWithCorrectCredentials() throws Exception {
         webClient.setCredentialsProvider(correctCreds);
-        Page page = webClient.getPage(base + "../metrics");
+        Page page = webClient.getPage(serverBase + "../metrics");
         assertEquals(SC_OK, page.getWebResponse().getStatusCode());
     }
 
@@ -137,7 +138,7 @@ public class MicroprofileSecureEndpointTest {
         webClient.setCredentialsProvider(incorrectCreds);
 
         try {
-            webClient.getPage(base + "../metrics");
+            webClient.getPage(serverBase + "../metrics");
             fail("/metrics could be accessed without proper security credentials");
         } catch (FailingHttpStatusCodeException e) {
             assertNotNull(e);
@@ -150,7 +151,7 @@ public class MicroprofileSecureEndpointTest {
         webClient.setCredentialsProvider(incorrectCreds);
 
         try {
-            webClient.getPage(base + "../health");
+            webClient.getPage(serverBase + "../health");
             fail("/health could be accessed without proper security credentials");
         } catch (FailingHttpStatusCodeException e) {
             assertNotNull(e);
@@ -164,7 +165,7 @@ public class MicroprofileSecureEndpointTest {
         webClient.setCredentialsProvider(incorrectCreds);
 
         try {
-            webClient.getPage(base + "../openapi");
+            webClient.getPage(serverBase + "../openapi");
             fail("/openapi could be accessed without proper security credentials");
         } catch (FailingHttpStatusCodeException e) {
             assertNotNull(e);

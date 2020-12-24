@@ -39,10 +39,8 @@
  */
 package fish.payara.microprofile.faulttolerance.state;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,15 +58,17 @@ public class CircuitBreakerState {
         OPEN, CLOSED, HALF_OPEN
     }
 
-    private final BlockingQueue<Boolean> closedResultsQueue;
-
+    private final int failureThreshold;
     private final AtomicInteger halfOpenSuccessfulResultsCounter = new AtomicInteger(0);
-
-    private final Map<CircuitState, StateTime> allStateTimes = new HashMap<>();
+    private final Map<CircuitState, StateTime> allStateTimes = new ConcurrentHashMap<>(CircuitState.values().length);
     private volatile StateTime currentStateTime;
+    private final boolean[] failureBuffer;
+    private int failureIndex = 0;
+    private long outcomeUpdates = 0L;
 
-    public CircuitBreakerState(int requestVolumeThreshold) {
-        this.closedResultsQueue = new LinkedBlockingQueue<>(requestVolumeThreshold);
+    public CircuitBreakerState(int requestVolumeThreshold, double failureRatio) {
+        this.failureBuffer = new boolean[Math.max(0, requestVolumeThreshold)];
+        this.failureThreshold = (int) Math.round(requestVolumeThreshold * failureRatio);
         for(CircuitState state : CircuitState.values()) {
             this.allStateTimes.put(state, new StateTime(state));
         }
@@ -100,17 +100,18 @@ public class CircuitBreakerState {
      * Records a success or failure result to the CircuitBreaker.
      * @param success True for a success, false for a failure
      */
-    public void recordClosedOutcome(boolean success) {
-        // If the queue is full, remove the oldest result and add
-        if (!this.closedResultsQueue.offer(success)) {
-            this.closedResultsQueue.poll();
-            this.closedResultsQueue.offer(success);
-        }
+    public synchronized void recordClosedOutcome(boolean success) {
+        failureBuffer[failureIndex] = !success;
+        failureIndex = (failureIndex + 1) % failureBuffer.length;
+        outcomeUpdates++;
     }
 
-    public boolean isClosedOutcomeSuccessOnly() {
-        for (Boolean outcome : closedResultsQueue) {
-            if (!outcome)
+    public synchronized boolean isClosedOutcomeSuccessOnly() {
+        if (failureBuffer.length == 0 || outcomeUpdates < failureBuffer.length) {
+            return false;
+        }
+        for (boolean failure : failureBuffer) {
+            if (failure)
                 return false;
         }
         return true;
@@ -119,8 +120,9 @@ public class CircuitBreakerState {
     /**
      * Clears the results queue.
      */
-    public void resetResults() {
-        this.closedResultsQueue.clear();
+    public synchronized void resetResults() {
+        failureIndex = 0;
+        outcomeUpdates = 0L;
     }
 
     /**
@@ -147,30 +149,23 @@ public class CircuitBreakerState {
 
     /**
      * Checks to see if the CircuitBreaker is over the given failure threshold.
-     * @param failureThreshold The number of failures before the circuit breaker should open
-     * @return True if the CircuitBreaker is over the failure threshold
      */
-    public boolean isOverFailureThreshold(int requestVolumeThreshold, double failureRatio) {
-        boolean over = false;
-        int failures = 0;
-        int failureThreshold = (int) Math.round(requestVolumeThreshold * failureRatio);
+    public synchronized boolean isOverFailureThreshold() {
         // Only check if the queue is full
-        if (this.closedResultsQueue.remainingCapacity() == 0) {
-            for (Boolean success : this.closedResultsQueue) {
-                if (!success) {
-                    failures++;
-
-                    if (failures == failureThreshold) {
-                        over = true;
-                        break;
-                    }
+        if (outcomeUpdates < failureBuffer.length) {
+            logger.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
+            return false;
+        }
+        int failures = 0;
+        for (boolean failure : failureBuffer) {
+            if (failure) {
+                failures++;
+                if (failures >= failureThreshold) {
+                    return true;
                 }
             }
-        } else {
-            logger.log(Level.FINE, "CircuitBreaker results queue isn't full yet.");
         }
-
-        return over;
+        return false;
     }
 
     /**

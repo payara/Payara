@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,7 +82,7 @@ public final class ObjectMapperFactory {
     public static <T extends Constructible> ObjectMapper create(JsonFactory factory) {
         ObjectMapper mapper = new ObjectMapper(factory);
         mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-        mapper.setSerializationInclusion(Include.NON_DEFAULT);
+        mapper.setSerializationInclusion(Include.NON_EMPTY);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);

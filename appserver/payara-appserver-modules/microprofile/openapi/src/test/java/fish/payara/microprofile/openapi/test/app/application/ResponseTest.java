@@ -39,19 +39,34 @@
  */
 package fish.payara.microprofile.openapi.test.app.application;
 
+import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
+import fish.payara.microprofile.openapi.test.app.application.schema.TeacherDTO;
+
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.core.Response.Status;
+
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponseSchema;
+import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
+import java.util.Map.Entry;
+
 import org.junit.Test;
 
 /**
@@ -61,6 +76,11 @@ import org.junit.Test;
 @Produces({ APPLICATION_JSON, APPLICATION_XML })
 public class ResponseTest extends OpenApiApplicationTest {
 
+    @Schema(name = "Teacher", description = "Custom Response")
+    public class ResponseSchema extends TeacherDTO {
+
+    }
+
     @GET
     @APIResponse(responseCode = "200", description = "success", 
         content = @Content(schema = @Schema(description = "hello!")))
@@ -69,22 +89,134 @@ public class ResponseTest extends OpenApiApplicationTest {
         return null;
     }
 
+    @Path("/schema")
+    @GET
+    @APIResponseSchema(value = ResponseSchema.class, responseCode = "202", responseDescription = "custom description")
+    public void apiResponseSchema() {
+    }
+
+    @Path("/schema")
+    @POST
+    @APIResponseSchema(value = ResponseSchema.class)
+    public void defaultPostVoidSchema() {
+    }
+
+    @Path("/schema")
+    @PUT
+    @APIResponseSchema(value = ResponseSchema.class)
+    public void defaultPutVoidSchema() {
+    }
+
+    @Path("/schema")
+    @HEAD
+    @APIResponseSchema(value = ResponseSchema.class)
+    public void defaultAsyncVoidSchema(final AsyncResponse async) {
+    }
+
+    @Path("/schema")
+    @DELETE
+    @APIResponseSchema(value = ResponseSchema.class)
+    public String defaultDeleteStringSchema(final AsyncResponse async) {
+        return null;
+    }
+
     @Test
     public void inheritedMediaTypeTest() {
         APIResponses responses = getDocument().getPaths().getPathItem("/test/response").getGET().getResponses();
-        // Test the default response doesn't exist
-        assertNull("The default response should be removed when not used.", responses.getDefaultValue());
 
         // Test the 200 response
-        assertNotNull("The 200 response should have been created.", responses.getAPIResponse("200"));
-        assertNotNull("The 200 response should return application/json.",
-                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_JSON));
-        assertEquals("The 200 response application/json should match the specified schema.", "hello!",
-                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_JSON).getSchema().getDescription());
-        assertNotNull("The 200 response should return application/xml.",
-                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_XML));
-        assertEquals("The 200 response application/xml should match the specified schema.", "hello!",
-                responses.getAPIResponse("200").getContent().getMediaType(APPLICATION_XML).getSchema().getDescription());
+        checkResponseCode(responses, 200, "success");
+        final APIResponseImpl response = (APIResponseImpl) responses.getAPIResponse("200");
+        checkMediaTypesExist(response, APPLICATION_JSON, APPLICATION_XML);
+        checkSchemaDescriptions(response, "hello!");
+    }
+
+    @Test
+    public void apiResponseSchemaTest() {
+        APIResponses responses = getDocument().getPaths().getPathItem("/test/response/schema").getGET().getResponses();
+
+        checkResponseCode(responses, 202, "custom description");
+        final APIResponseImpl response = (APIResponseImpl) responses.getAPIResponse("202");
+        checkMediaTypesExist(response, APPLICATION_JSON, APPLICATION_XML);
+        checkSchemaDescriptions(response, "Custom Response");
+    }
+
+    @Test
+    public void defaultPostVoidSchemaTest() {
+        APIResponses responses = getDocument().getPaths().getPathItem("/test/response/schema").getPOST().getResponses();
+
+        checkResponseCode(responses, 201);
+        final APIResponseImpl response = (APIResponseImpl) responses.getAPIResponse("201");
+        checkMediaTypesExist(response, APPLICATION_JSON, APPLICATION_XML);
+        checkSchemaDescriptions(response, "Custom Response");
+    }
+
+    @Test
+    public void defaultPutVoidSchemaTest() {
+        APIResponses responses = getDocument().getPaths().getPathItem("/test/response/schema").getPUT().getResponses();
+
+        checkResponseCode(responses, 204);
+        final APIResponseImpl response = (APIResponseImpl) responses.getAPIResponse("204");
+        checkMediaTypesExist(response, APPLICATION_JSON, APPLICATION_XML);
+        checkSchemaDescriptions(response, "Custom Response");
+    }
+
+    @Test
+    public void defaultAsyncVoidSchemaTest() {
+        APIResponses responses = getDocument().getPaths().getPathItem("/test/response/schema").getHEAD().getResponses();
+
+        checkResponseCode(responses, 200);
+        final APIResponseImpl response = (APIResponseImpl) responses.getAPIResponse("200");
+        checkMediaTypesExist(response, APPLICATION_JSON, APPLICATION_XML);
+        checkSchemaDescriptions(response, "Custom Response");
+    }
+
+    @Test
+    public void defaultDeleteStringSchemaTest() {
+        APIResponses responses = getDocument().getPaths().getPathItem("/test/response/schema").getDELETE().getResponses();
+
+        checkResponseCode(responses, 200);
+        final APIResponseImpl response = (APIResponseImpl) responses.getAPIResponse("200");
+        checkMediaTypesExist(response, APPLICATION_JSON, APPLICATION_XML);
+        checkSchemaDescriptions(response, "Custom Response");
+    }
+
+    // Static helper methods
+
+    private static void checkResponseCode(APIResponses responses, int responseCode) {
+        final String defaultDescription = Status.fromStatusCode(responseCode).getReasonPhrase();
+        checkResponseCode(responses, responseCode, defaultDescription);
+    }
+
+    private static void checkResponseCode(APIResponses responses, int responseCode, String description) {
+        final APIResponseImpl response = (APIResponseImpl) responses.getAPIResponse(Integer.toString(responseCode));
+        assertNotNull("The " + responseCode + " response should have been created.", response);
+        assertEquals("The " + responseCode + " response has the wrong description", description, response.getDescription());
+
+        // Test the default response doesn't exist
+        assertNull("The default response should be removed when not used.", responses.getDefaultValue());
+    }
+
+    private static void checkMediaTypesExist(APIResponseImpl response, String... mediaTypes) {
+        String responseCode = ((APIResponseImpl) response).getResponseCode();
+        if (responseCode == null) {
+            responseCode = APIResponses.DEFAULT;
+        }
+        for (String mediaType : mediaTypes) {
+            assertNotNull("The " + responseCode + " response should return application/json.",
+                    response.getContent().getMediaType(mediaType));
+        }
+    }
+
+    private static void checkSchemaDescriptions(APIResponseImpl response, String description) {
+        String responseCode = response.getResponseCode();
+        if (responseCode == null) {
+            responseCode = APIResponses.DEFAULT;
+        }
+        for (Entry<String, MediaType> entry : response.getContent().getMediaTypes().entrySet()) {
+            assertEquals("The " + responseCode + " response " + entry.getKey() + " should match the specified schema.",
+                description, entry.getValue().getSchema().getDescription());
+        }
     }
 
 }

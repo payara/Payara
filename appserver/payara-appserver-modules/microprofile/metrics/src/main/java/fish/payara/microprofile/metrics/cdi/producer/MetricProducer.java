@@ -107,45 +107,4 @@ public class MetricProducer {
         return TIMER.getOrRegister(ip, Timer.class, registry);
     }
 
-    @Produces
-    @Metric
-    private Counter counterMetric(InjectionPoint ip) {
-        return counter(ip);
-    }
-
-    @Produces
-    @Metric
-    private ConcurrentGauge concurrentGaugeMetric(InjectionPoint ip) {
-        return concurrentGauge(ip);
-    }
-
-    @Produces
-    @Metric
-    private <T> Gauge<T> gaugeMetric(InjectionPoint ip) {
-        return gauge(ip);
-    }
-
-    @Produces
-    @Metric
-    private Histogram histogramMetric(InjectionPoint ip) {
-        return histogram(ip);
-    }
-
-    @Produces
-    @Metric
-    private Meter meterMetric(InjectionPoint ip) {
-        return meter(ip);
-    }
-
-    @Produces
-    @Metric
-    private SimpleTimer simpleTimerMetric(InjectionPoint ip) {
-        return simpleTimer(ip);
-    }
-
-    @Produces
-    @Metric
-    private Timer timerMetric(InjectionPoint ip) {
-        return timer(ip);
-    }
 }

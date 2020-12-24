@@ -44,12 +44,14 @@ import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.examples.ExampleImpl;
 import fish.payara.microprofile.openapi.impl.model.media.ContentImpl;
 import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.ArrayList;
-import java.util.HashMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.examples.Example;
@@ -69,13 +71,12 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
     private Style style;
     private Boolean explode;
     private Schema schema;
-    private Map<String, Example> examples = new HashMap<>();
+    private Map<String, Example> examples = createMap();
     private Object example;
     private Content content = new ContentImpl();
-    private List<ContentImpl> contents = new ArrayList<>();
 
     public static Map<String, Header> createInstances(AnnotationModel annotation, ApiContext context) {
-        Map<String, Header> map = new HashMap<>();
+        Map<String, Header> map = createMap();
         List<AnnotationModel> headers = annotation.getValue("headers", List.class);
         if (headers != null) {
             for (AnnotationModel header : headers) {
@@ -111,9 +112,15 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
         if (schemaAnnotation != null) {
             from.setSchema(SchemaImpl.createInstance(schemaAnnotation, context));
         }
-        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from.getExamples());
+        extractAnnotations(annotation, context, "examples", "name", ExampleImpl::createInstance, from::addExample);
         from.setExample(annotation.getValue("example", Object.class));
-        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, from.getContents());
+
+        final List<ContentImpl> contents = createList();
+        extractAnnotations(annotation, context, "content", ContentImpl::createInstance, contents::add);
+        for (ContentImpl content : contents) {
+            content.getMediaTypes().forEach(from.content::addMediaType);
+        }
+
         return from;
     }
 
@@ -202,17 +209,20 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
     @Override
     public Map<String, Example> getExamples() {
-        return examples;
+        return readOnlyView(examples);
     }
 
     @Override
     public void setExamples(Map<String, Example> examples) {
-        this.examples = examples;
+        this.examples = createMap(examples);
     }
 
     @Override
     public Header addExample(String key, Example examplesItem) {
         if (examplesItem != null) {
+            if (this.examples == null) {
+                this.examples = createMap();
+            }
             this.examples.put(key, examplesItem);
         }
         return this;
@@ -220,7 +230,9 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
 
     @Override
     public void removeExample(String key) {
-        this.examples.remove(key);
+        if (examples != null) {
+            examples.remove(key);
+        }
     }
 
     @Override
@@ -241,14 +253,6 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
     @Override
     public void setContent(Content content) {
         this.content = content;
-    }
-
-    public List<ContentImpl> getContents() {
-        return contents;
-    }
-
-    public void setContents(List<ContentImpl> contents) {
-        this.contents = contents;
     }
 
     public static void merge(Header from, Header to,
@@ -279,17 +283,6 @@ public class HeaderImpl extends ExtensibleImpl<Header> implements Header {
                     Example example = new ExampleImpl();
                     ExampleImpl.merge(from.getExamples().get(exampleName), example, override);
                     to.addExample(exampleName, example);
-                }
-            }
-        }
-        if (from instanceof HeaderImpl) {
-            HeaderImpl fromImpl = (HeaderImpl)from;
-            if (fromImpl.getContents() != null) {
-                if (to.getContent() == null) {
-                    to.setContent(new ContentImpl());
-                }
-                for (ContentImpl content : fromImpl.getContents()) {
-                    ContentImpl.merge(content, to.getContent(), override, context);
                 }
             }
         }

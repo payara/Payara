@@ -79,8 +79,11 @@ public class QueryFormatFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext request) throws IOException {
         String format = request.getUriInfo().getQueryParameters().getFirst("format");
-        if (format != null && mappings.containsKey(format)) {
-            request.getHeaders().putSingle(ACCEPT, mappings.get(format));
+        if (format != null) {
+            format = format.toLowerCase();
+            if (mappings.containsKey(format)) {
+                request.getHeaders().putSingle(ACCEPT, mappings.get(format));
+            }
         }
     }
 

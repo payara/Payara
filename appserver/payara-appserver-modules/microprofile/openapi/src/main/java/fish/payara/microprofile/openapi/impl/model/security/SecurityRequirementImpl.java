@@ -39,8 +39,11 @@
  */
 package fish.payara.microprofile.openapi.impl.model.security;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -71,19 +74,19 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
 
     @Override
     public SecurityRequirement addScheme(String name, String item) {
-        this.put(name, item == null ? new ArrayList<>() : Arrays.asList(item));
+        this.put(name, item == null ? createList() : Arrays.asList(item));
         return this;
     }
 
     @Override
     public SecurityRequirement addScheme(String name, List<String> item) {
-        this.put(name, item == null ? new ArrayList<>() : item);
+        this.put(name, item == null ? createList() : item);
         return this;
     }
 
     @Override
     public SecurityRequirement addScheme(String name) {
-        this.put(name, new ArrayList<>());
+        this.put(name, createList());
         return this;
     }
 
@@ -94,7 +97,7 @@ public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>>
 
     @Override
     public Map<String, List<String>> getSchemes() {
-        return new SecurityRequirementImpl(this);
+        return readOnlyView(this);
     }
 
     @Override

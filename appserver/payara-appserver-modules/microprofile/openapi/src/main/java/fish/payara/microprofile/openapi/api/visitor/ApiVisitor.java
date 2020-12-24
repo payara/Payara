@@ -53,7 +53,7 @@ public interface ApiVisitor {
         void apply(AnnotationModel annotation, E element, ApiContext context);
     }
 
-    // JAX-RS annotations
+    // JAX-RS method types
 
     void visitGET(AnnotationModel get, MethodModel element, ApiContext context);
 
@@ -69,9 +69,13 @@ public interface ApiVisitor {
 
     void visitPATCH(AnnotationModel patch, MethodModel element, ApiContext context);
 
+    // JAX-RS data types
+
     void visitProduces(AnnotationModel produces, AnnotatedElement element, ApiContext context);
 
     void visitConsumes(AnnotationModel produces, AnnotatedElement element, ApiContext context);
+
+    // JAX-RS parameter types
 
     void visitQueryParam(AnnotationModel param, AnnotatedElement element, ApiContext context);
 
@@ -101,9 +105,13 @@ public interface ApiVisitor {
 
     void visitRequestBody(AnnotationModel requestBody, AnnotatedElement element, ApiContext context);
 
+    void visitRequestBodySchema(AnnotationModel requestBodySchema, AnnotatedElement element, ApiContext context);
+
     void visitAPIResponse(AnnotationModel apiResponse, AnnotatedElement element, ApiContext context);
 
     void visitAPIResponses(AnnotationModel apiResponses, AnnotatedElement element, ApiContext context);
+
+    void visitAPIResponseSchema(AnnotationModel apiResponseSchema, AnnotatedElement element, ApiContext context);
 
     void visitParameter(AnnotationModel parameter, AnnotatedElement element, ApiContext context);
 

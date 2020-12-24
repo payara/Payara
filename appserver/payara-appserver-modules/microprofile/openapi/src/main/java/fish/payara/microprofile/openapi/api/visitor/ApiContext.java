@@ -40,8 +40,12 @@
 package fish.payara.microprofile.openapi.api.visitor;
 
 import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
+
+import java.util.Map;
+
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
+import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
 import org.glassfish.hk2.classmodel.reflect.Type;
 
@@ -67,6 +71,10 @@ public interface ApiContext {
      * The created operation currently being worked on.
      */
     Operation getWorkingOperation();
+
+    void addMappedExceptionResponse(String exceptionType, APIResponse exceptionResponse);
+
+    Map<String, APIResponse> getMappedExceptionResponses();
 
     /**
      * @param type any class, not null
