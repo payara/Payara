@@ -1662,9 +1662,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         // Convert the URL to a URI for use with the deploy method
                         URI artefactURI = deploymentMapEntry.getValue().toURI();
 
-                        deployer.deploy(artefactURI, "--availabilityenabled",
-                                "true", "--contextroot",
-                                deploymentMapEntry.getKey(), "--force=true", "--loadOnly", "true");
+                        String artefactName= artefactURI.getPath().substring(artefactURI.getPath().lastIndexOf('/') + 1);
+                        // artefact name always has a valid extension
+                        String name = artefactName.substring(0, artefactName.length() - 4);
+
+                        deployer.deploy(artefactURI,
+                                "--availabilityenabled", "true",
+                                "--contextroot", deploymentMapEntry.getKey(),
+                                "--name", name,
+                                "--force=true", "--loadOnly", "true");
 
                         deploymentCount++;
                     } catch (URISyntaxException ex) {
@@ -2045,6 +2051,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private void getGAVURLs() throws GlassFishException {
         GAVConvertor gavConvertor = new GAVConvertor();
 
+        if (contextRoots == null) {
+            contextRoots = new Properties();
+        }
+
         for (String gav : GAVs) {
             try {
                 Map.Entry<String, URL> artefactMapEntry = gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
@@ -2063,7 +2073,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     contextRoot = null; // use only once
                 }
 
-                deploymentURLsMap.put(defaultContext, artefactMapEntry.getValue());
+                URL artefactURL = artefactMapEntry.getValue();
+                String artefactName = artefactURL.getPath().substring(artefactURL.getPath().lastIndexOf('/') + 1);
+
+                deploymentURLsMap.put(defaultContext, artefactURL);
+
+                contextRoots.put(artefactName, defaultContext);
             } catch (MalformedURLException ex) {
                 throw new GlassFishException(ex.getMessage());
             }
@@ -2303,8 +2318,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             creator.setDirectoryToCopy(copyDirectory);
         }
 
-        creator.setContextRoots(contextRoots);
-
         if (GAVs != null) {
             try {
                 // Convert the provided GAV Strings into target URLs
@@ -2318,6 +2331,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 LOGGER.log(Level.SEVERE, "Unable to process maven deployment units", ex);
             }
         }
+
+        creator.setContextRoots(contextRoots);
 
         // write the system properties file
         Properties props = new Properties();
