@@ -58,13 +58,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * }
  *
  * @author Cuba Stanley
- * @param <TT>
  */
-public class InstanceCounter<TT> {
-    private static class Count<TT> {
+public class InstanceCounter {
+    private static class Count {
         int instanceCount;
-        private final ReferenceQueue<TT> referenceQueue = new ReferenceQueue<>();
-        private final Set<WeakReference<TT>> references = Collections.newSetFromMap(new IdentityHashMap<>());
+        private final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
+        private final Set<WeakReference<?>> references = Collections.newSetFromMap(new IdentityHashMap<>());
 
         public Count() {
             instanceCount = 1;
@@ -75,15 +74,20 @@ public class InstanceCounter<TT> {
         }
     }
 
-    private static final Map<Class<?>, Count<?>> INSTANCE_COUNT = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Count> INSTANCE_COUNT = new ConcurrentHashMap<>();
 
-    public InstanceCounter(TT counted) {
+    /**
+     * triggers instance counting of the specified
+     *
+     * @param counted object to be counted
+     */
+    public InstanceCounter(Object counted) {
         INSTANCE_COUNT.compute(counted.getClass(), (clazz, value) -> {
-            Count<TT> count;
+            Count count;
             if (value == null) {
-                count = new Count<>();
+                count = new Count();
             } else {
-                count = castCount(value);
+                count = value;
                 ++count.instanceCount;
             }
             count.references.add(new WeakReference<>(counted, count.referenceQueue));
@@ -101,12 +105,12 @@ public class InstanceCounter<TT> {
     public static int getInstanceCount(Class<?> countedType, long timeout) {
         INSTANCE_COUNT.compute(countedType, (clazz, value) -> {
             if (value == null) {
-                return new Count<>(0);
+                return new Count(0);
             } else {
                 try {
                     value.instanceCount -= countRemovedInstances(value, timeout);
                 } catch (InterruptedException ex) {
-                    throw new IllegalStateException(ex);
+                    throw new RuntimeException(ex);
                 }
                 return value;
             }
@@ -117,23 +121,16 @@ public class InstanceCounter<TT> {
     /**
      * gets actual references to counted objects
      *
-     * @param <TT>
      * @param countedType
      * @param timeout in milliseconds
      * @return list of counted objects
      */
-    public static<TT> Set<WeakReference<TT>> getInstances(Class<TT> countedType, long timeout) {
+    public static Set<WeakReference<?>> getInstances(Class<?> countedType, long timeout) {
         getInstanceCount(countedType, timeout);   // update the count, create if necessary
-        Count<TT> count = castCount(INSTANCE_COUNT.get(countedType));
-        return count.references;
+        return INSTANCE_COUNT.get(countedType).references;
     }
 
-    @SuppressWarnings("unchecked")
-    private static<TT> Count<TT> castCount(Count<?> count) {
-        return (Count<TT>) count;
-    }
-
-    private static int countRemovedInstances(Count<?> count, long timeout) throws InterruptedException {
+    private static int countRemovedInstances(Count count, long timeout) throws InterruptedException {
         int removedInstances = 0;
         Reference<?> reference = count.referenceQueue.remove(timeout);
         while (reference != null) {

@@ -53,7 +53,7 @@ import org.junit.Test;
 public class InstanceCounterTest {
     private static class Counted {
         int field;
-        private final InstanceCounter<Counted> counter = new InstanceCounter<>(this);
+        private final InstanceCounter counter = new InstanceCounter(this);
 
         Counted(int field) {
             this.field = field;

@@ -403,7 +403,7 @@ public class WebappClassLoader
     private final Application application;
     private final Date creationTime = new Date();
     private boolean hotDeploy = false;
-    private final InstanceCounter<WebappClassLoader> instanceCounter = new InstanceCounter<>(this);
+    private final InstanceCounter instanceCounter = new InstanceCounter(this);
 
     private static Class[] CONSTRUCTOR_ARGS_TYPES;
     private static Object CONSTRUCTOR_ARGUMENTS;

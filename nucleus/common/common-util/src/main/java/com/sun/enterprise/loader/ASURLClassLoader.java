@@ -132,7 +132,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
     //holder for declared and ee permissions
     private final PermsHolder permissionsHolder;
-    private final InstanceCounter<ASURLClassLoader> instanceCounter = new InstanceCounter<>(this);
+    private final InstanceCounter instanceCounter = new InstanceCounter(this);
 
     /**
      * Constructor.
