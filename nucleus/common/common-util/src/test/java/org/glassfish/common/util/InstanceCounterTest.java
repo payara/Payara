@@ -42,6 +42,12 @@ package org.glassfish.common.util;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
@@ -87,6 +93,7 @@ public class InstanceCounterTest {
         Reference<?> ref2 = queue.remove(1);
         assertNotNull(ref2);
         ref2.clear();
+        assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, 0));
     }
 
     @Test
@@ -105,6 +112,25 @@ public class InstanceCounterTest {
         assertEquals(1, InstanceCounter.getInstanceCount(Counted.class, 1));
         counted1 = null;
         System.gc();
+        assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, 0));
+    }
+
+    @Test
+    public void instances() {
         assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, 1));
+        Counted counted1 = new Counted(1);
+        Counted counted2 = new Counted(2);
+        Set<Counted> expectedSet = Collections.newSetFromMap(new IdentityHashMap<>());
+        expectedSet.add(counted1);
+        expectedSet.add(counted2);
+        assertEquals(2, InstanceCounter.getInstances(Counted.class, 1).size());
+        assertEquals(expectedSet, InstanceCounter.getInstances(Counted.class, 1)
+                .stream().map(WeakReference::get).filter(Objects::nonNull)
+                .collect(Collectors.toSet()));
+        expectedSet = null;
+        counted1 = null;
+        counted2 = null;
+        System.gc();
+        assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, 0));
     }
 }
