@@ -88,9 +88,7 @@ import javax.naming.directory.DirContext;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
-import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -106,7 +104,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
@@ -118,6 +115,7 @@ import java.util.zip.ZipFile;
 import org.glassfish.api.deployment.GeneratedResourceEntry;
 import org.glassfish.api.deployment.ResourceEntry;
 import org.glassfish.api.deployment.ResourceClassLoader;
+import org.glassfish.common.util.InstanceCounter;
 
 /**
  * Specialized web application class loader.
@@ -405,27 +403,16 @@ public class WebappClassLoader
     private final Application application;
     private final Date creationTime = new Date();
     private boolean hotDeploy = false;
-    
+    private final InstanceCounter<WebappClassLoader> instanceCounter = new InstanceCounter<>(this);
+
     private static Class[] CONSTRUCTOR_ARGS_TYPES;
     private static Object CONSTRUCTOR_ARGUMENTS;
     private static final boolean IS_JDK_VERSION_HIGHER_THAN_8 = JDK.getMajor() > 8;
     private static Boolean isMultiReleaseJar;
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
 
-    public static final ReferenceQueue<WebappClassLoader> referenceQueue = new ReferenceQueue<WebappClassLoader>();
-    public static final ArrayList<PhantomReference<WebappClassLoader>> list = new ArrayList<PhantomReference<WebappClassLoader>>();
-    private static final AtomicInteger INSTANCE_COUNT = new AtomicInteger();
-    
-    public static int getInstanceCount() {
-        return INSTANCE_COUNT.get();
-    }
-    
-    public static void setInstanceCount(int newValue) {
-        INSTANCE_COUNT.set(newValue);
-    }
-
     static {
-        
+
         if (!IS_JDK_VERSION_HIGHER_THAN_8) {
             isMultiReleaseJar = false;
         } else {
@@ -440,7 +427,7 @@ public class WebappClassLoader
         }
 
     }
-      
+
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -1111,16 +1098,18 @@ public class WebappClassLoader
         StringBuilder sb = new StringBuilder();
         sb.append("WebappClassLoader (delegate=");
         sb.append(delegate);
-        if (repositories != null) {
-            sb.append("; repositories=");
-            for (int i = 0; i < repositories.length; i++) {
-                sb.append(repositories[i]);
-                if (i != (repositories.length-1)) {
+        if (repositoryURLs != null) {
+            sb.append("; repositoryURLs=");
+            for (int i = 0; i < repositoryURLs.length; i++) {
+                sb.append(repositoryURLs[i]);
+                if (i != (repositoryURLs.length-1)) {
                     sb.append(",");
                 }
             }
         }
         sb.append(") ");
+        sb.append("JarNames: ").append(jarNames).append("; ");
+        sb.append("canonicalLoaderDir: ").append(canonicalLoaderDir).append("; ");
         sb.append("Object: ").append(Integer.toHexString(System.identityHashCode(this)));
         sb.append(" Created: ").append(SimpleDateFormat.getDateTimeInstance().format(creationTime));
         return (sb.toString());
@@ -1894,11 +1883,8 @@ public class WebappClassLoader
 
 
     private void init() {
-        
+
         this.parent = getParent();
-        
-        list.add(new PhantomReference(this, referenceQueue));
-        INSTANCE_COUNT.set(INSTANCE_COUNT.get() + 1);
 
         /* SJSAS 6317864
         system = getSystemClassLoader();
@@ -3585,13 +3571,13 @@ public class WebappClassLoader
 
         return jarFile;
     }
-    
+
     public static <T> T newInstance(Class<T> ofClass, Class<?>[] constructorArgTypes, Object[] args) {
         try {
             Constructor<T> constructor = ofClass.getConstructor(constructorArgTypes);
             return constructor.newInstance(args);
         } catch (Exception ex) {
-            return null; 
+            return null;
         }
     }
 

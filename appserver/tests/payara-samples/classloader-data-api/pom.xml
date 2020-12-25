@@ -7,21 +7,20 @@
         <artifactId>payara-samples</artifactId>
         <version>5.2020.8-SNAPSHOT</version>
     </parent>
-    
+
     <groupId>fish.payara.samples</groupId>
     <artifactId>classloader-data-api</artifactId>
     <version>5.2020.8-SNAPSHOT</version>
-    
+
     <packaging>war</packaging>
     <name>Payara Samples - ClassLoader Data API</name>
-    <description>A REST API Application for retrieving an instance count of 
-        WebappClassLoader from an instance of Payara Server</description>
-    
+    <description>A REST API for retrieving an instance count of
+        Payara Class Loaders from an instance of Payara Server</description>
+
     <properties>
-        <jersey.version>3.0.0</jersey.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
     <dependencies>
         <!-- Payara Dependencies -->
         <dependency>
@@ -31,15 +30,21 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>8.0</version>
-            <type>jar</type>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
         </dependency>
     </dependencies>
-    
+
     <build>
         <finalName>ClassloaderDataAPI</finalName>
+        <plugins>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <attachClasses>false</attachClasses>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
-    
+
 </project>

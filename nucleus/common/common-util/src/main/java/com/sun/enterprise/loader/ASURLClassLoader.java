@@ -52,8 +52,6 @@ import org.glassfish.hk2.api.PreDestroy;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
-import java.lang.ref.PhantomReference;
-import java.lang.ref.ReferenceQueue;
 import java.net.*;
 import java.nio.file.Path;
 import java.security.*;
@@ -61,7 +59,6 @@ import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -71,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import org.glassfish.common.util.InstanceCounter;
 
 /**
  * Class loader used by the ejbs of an application or stand alone module.
@@ -134,19 +132,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
     //holder for declared and ee permissions
     private final PermsHolder permissionsHolder;
-    
-    // Instance Count Tracking
-    public static final ReferenceQueue<ASURLClassLoader> referenceQueue = new ReferenceQueue<ASURLClassLoader>();
-    public static final ArrayList<PhantomReference<ASURLClassLoader>> list = new ArrayList<PhantomReference<ASURLClassLoader>>();
-    private static final AtomicInteger INSTANCE_COUNT = new AtomicInteger();
-    
-    public static int getInstanceCount() {
-        return INSTANCE_COUNT.get();
-    }
-    
-    public static void setInstanceCount(int newValue) {
-        INSTANCE_COUNT.set(newValue);
-    }
+    private final InstanceCounter<ASURLClassLoader> instanceCounter = new InstanceCounter<>(this);
 
     /**
      * Constructor.
@@ -159,8 +145,6 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "ClassLoader: {0} is getting created.", this);
         }
-        
-        addToInstanceCounter();
     }
 
     /**
@@ -171,14 +155,8 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
     public ASURLClassLoader(ClassLoader parent) {
         super(new URL[0], parent);
         permissionsHolder = new PermsHolder();
-        addToInstanceCounter();
     }
 
-    public void addToInstanceCounter() {
-        INSTANCE_COUNT.set(INSTANCE_COUNT.get() + 1);
-        list.add(new PhantomReference(this, referenceQueue));
-    }
-    
     public boolean isDone() {
         // method need not by 'synchronized' because 'doneCalled' is 'volatile'.
         return doneCalled;

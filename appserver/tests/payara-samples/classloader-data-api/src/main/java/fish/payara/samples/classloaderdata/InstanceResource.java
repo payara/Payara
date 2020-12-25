@@ -37,40 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.classloaderdata.api;
+package fish.payara.samples.classloaderdata;
 
-import fish.payara.samples.classloaderdata.InstanceCountTracker;
+import com.sun.enterprise.loader.ASURLClassLoader;
+import java.lang.ref.WeakReference;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import org.glassfish.common.util.InstanceCounter;
+import org.glassfish.web.loader.WebappClassLoader;
 /**
  * A simple REST endpoint to return the count of
  * WebappClassLoader instances in the JVM
- * 
+ *
  * @author - Cuba Stanley
  */
 @Path("instance-count")
+@ApplicationScoped
 public class InstanceResource {
+    private Integer previousWebappInstanceCount;
+    private Integer previousASURLInstanceCount;
 
     /**
      * Method handling HTTP GET request for Instance Count
-     *
-     * @return int WebappClassLoader instance count
+     * Example: curl http://localhost:8080/ClassloaderDataAPI/api/instance-count/webapp/
+     * Example: curl http://localhost:8080/ClassloaderDataAPI/api/instance-count/asurl/500
      */
     @GET
-    @Path("webapp")
-    public String getWebappClassLoaderCount() {
-        String instanceMessage = "";
-        instanceMessage = instanceMessage.concat("Instances Remaining: " + InstanceCountTracker.getWebappInstanceCount());
-        instanceMessage = instanceMessage.concat("\nInstances Before GC: " + InstanceCountTracker.getPreviousWebappInstanceCount());
-        return instanceMessage;
+    @Path("/webapp/{timeout:.*}")
+    public String getWebappClassLoaderCount(@PathParam("timeout") Long timeout) {
+        return instanceGetter(WebappClassLoader.class, () -> previousWebappInstanceCount,
+                newValue -> previousWebappInstanceCount = newValue, timeout);
     }
-    
+
     @GET
-    @Path("asurl")
-    public String getPreviousInstanceCount() {
-        String instanceMessage = "";
-        instanceMessage = instanceMessage.concat("Instances Remaining: " + InstanceCountTracker.getASURLInstanceCount());
-        instanceMessage = instanceMessage.concat("\nInstances Before GC: " + InstanceCountTracker.getPreviousASURLInstanceCount());
-        return instanceMessage;
+    @Path("/asurl/{timeout:.*}")
+    public String getPreviousInstanceCount(@PathParam("timeout") Long timeout) {
+        return instanceGetter(ASURLClassLoader.class, () -> previousASURLInstanceCount,
+                newValue -> previousASURLInstanceCount = newValue, timeout);
+    }
+
+    private static String instanceGetter(Class<?> clazz,
+            Supplier<Integer> previousCountSupplier, Consumer<Integer> previousCountConsumer,
+            Long _timeout) {
+        long timeout = Optional.ofNullable(_timeout).orElse(1L);
+        int previous = Optional.ofNullable(previousCountSupplier.get()).orElse(InstanceCounter.getInstanceCount(clazz, timeout));
+        System.gc();
+        previousCountConsumer.accept(InstanceCounter.getInstanceCount(clazz, timeout));
+        return String.format("Instances Before GC: %d\nInstances Remaining: %d\nInstances: \n%s\n",
+                previous, previousCountSupplier.get(), InstanceCounter.getInstances(clazz, timeout).stream()
+                        .map(WeakReference::get).filter(Objects::nonNull).map(Object::toString)
+                        .collect(Collectors.joining("\n\n")));
     }
 }
