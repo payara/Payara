@@ -1662,8 +1662,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         // Convert the URL to a URI for use with the deploy method
                         URI artefactURI = deploymentMapEntry.getValue().toURI();
 
-                        String artefactName= artefactURI.getPath().substring(artefactURI.getPath().lastIndexOf('/') + 1);
-                        // artefact name always has a valid extension
+                        String artefactName = getFileName(artefactURI.getPath());
                         String name = artefactName.substring(0, artefactName.length() - 4);
 
                         deployer.deploy(artefactURI,
@@ -1683,6 +1682,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
 
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
+    }
+
+    private String getFileName(String filePath) {
+        return filePath.substring(filePath.lastIndexOf('/') + 1);
     }
 
     private boolean hasJavaArchiveExtension(String filePath) {
@@ -2074,7 +2077,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 }
 
                 URL artefactURL = artefactMapEntry.getValue();
-                String artefactName = artefactURL.getPath().substring(artefactURL.getPath().lastIndexOf('/') + 1);
+                String artefactName = getFileName(artefactURL.getPath());
 
                 deploymentURLsMap.put(defaultContext, artefactURL);
 
