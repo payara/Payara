@@ -68,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import org.glassfish.common.util.InstanceCounter;
 
 /**
  * Class loader used by the ejbs of an application or stand alone module.
@@ -131,6 +132,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
     //holder for declared and ee permissions
     private final PermsHolder permissionsHolder;
+    private final InstanceCounter instanceCounter = new InstanceCounter(this);
 
     /**
      * Constructor.
