@@ -74,7 +74,7 @@ public class InstanceCounter {
         }
     }
 
-    private static final Map<Class<?>, Count> INSTANCE_COUNT = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, Count> INSTANCE_COUNT = new ConcurrentHashMap<>();
 
     /**
      * triggers instance counting of the specified
