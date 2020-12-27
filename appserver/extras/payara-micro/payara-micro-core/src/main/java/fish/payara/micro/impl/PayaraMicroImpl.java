@@ -2054,10 +2054,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private void getGAVURLs() throws GlassFishException {
         GAVConvertor gavConvertor = new GAVConvertor();
 
-        if (contextRoots == null) {
-            contextRoots = new Properties();
-        }
-
         for (String gav : GAVs) {
             try {
                 Map.Entry<String, URL> artefactMapEntry = gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
@@ -2076,14 +2072,21 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     contextRoot = null; // use only once
                 }
 
-                URL artefactURL = artefactMapEntry.getValue();
-                String artefactName = getFileName(artefactURL.getPath());
-
-                deploymentURLsMap.put(defaultContext, artefactURL);
-
-                contextRoots.put(artefactName, defaultContext);
+                deploymentURLsMap.put(defaultContext, artefactMapEntry.getValue());
             } catch (MalformedURLException ex) {
                 throw new GlassFishException(ex.getMessage());
+            }
+        }
+
+        if (deploymentURLsMap != null) {
+            if (contextRoots == null) {
+                contextRoots = new Properties();
+            }
+
+            for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
+                String artefactName = getFileName(deploymentMapEntry.getValue().getPath());
+                String defaultContext = deploymentMapEntry.getKey();
+                contextRoots.put(artefactName, defaultContext);
             }
         }
     }
@@ -2327,7 +2330,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 getGAVURLs();
                 for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
                     URL deployment = deploymentMapEntry.getValue();
-                    String name = deploymentMapEntry.getKey();
+                    String name = getFileName(deployment.getPath());
                     creator.addDeployment(name, deployment);
                 }
             } catch (GlassFishException ex) {

@@ -73,7 +73,7 @@ public class UberJarCreator {
     private final List<File> libs = new LinkedList<>();
     private final List<File> classes = new LinkedList<>();
     private final List<File> deployments = new LinkedList<>();
-    private final Map<String, URL> deploymentURLs = new HashMap<>();
+    private final Map<String, URL> deploymentURLs = new LinkedHashMap<>();
     private List<File> copiedFiles = new LinkedList();
 
     private File deploymentDir;
@@ -281,7 +281,7 @@ public class UberJarCreator {
             // add deployment URLs
             for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLs.entrySet()) {
                 URL deployment = deploymentMapEntry.getValue();
-                String name = deployment.getPath().substring(deployment.getPath().lastIndexOf('/') + 1);
+                String name = deploymentMapEntry.getKey();
                 try (InputStream is = deployment.openStream()) {
                     JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + name);
                     jos.putNextEntry(deploymentEntry);
