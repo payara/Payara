@@ -265,6 +265,7 @@ public class ListInstancesCommand implements AdminCommand {
         Properties extraProps = new Properties();
         List instanceList = new ArrayList();
 
+        infos.sort(Comparator.comparing(InstanceInfo::getName));
         for (InstanceInfo ii : infos) {
             String name = ii.getName();
             String value = (ii.isRunning()) ? InstanceState.StateType.RUNNING.getDescription()
