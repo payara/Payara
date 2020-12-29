@@ -120,7 +120,7 @@ public class ListInstancesCommand implements AdminCommand {
     @Param(optional = true, primary = true, defaultValue = "domain")
     String whichTarget = "";
 
-    private List<InstanceInfo> infos = new LinkedList<InstanceInfo>();
+    private List<InstanceInfo> infos = new LinkedList<>();
     private List<Server> serverList;
     private ActionReport report;
     private ActionReport.MessagePart top = null;
@@ -214,32 +214,32 @@ public class ListInstancesCommand implements AdminCommand {
         return !SystemPropertyConstants.DAS_SERVER_NAME.equals(name);
     }
 
-    private void yesStatus(List<Server> serverList, int timeoutInMsec, Logger logger) {
+    private void yesStatus(final List<Server> serverList, final int timeoutInMsec, final Logger logger) {
         // Gather a list of InstanceInfo -- one per instance in domain.xml
-        RemoteInstanceCommandHelper helper = new RemoteInstanceCommandHelper(habitat);
+        final RemoteInstanceCommandHelper helper = new RemoteInstanceCommandHelper(habitat);
 
-        for (Server server : serverList) {
-            boolean clustered = server.getCluster() != null;
-            int port = helper.getAdminPort(server);
-            String host = server.getAdminHost();
+        for (final Server server : serverList) {
+            final boolean clustered = server.getCluster() != null;
+            final int port = helper.getAdminPort(server);
+            final String host = server.getAdminHost();
 
             if (standaloneonly && clustered) {
                 continue;
             }
 
-            String name = server.getName();
+            final String name = server.getName();
 
             if (name == null) {
                 continue;   // can this happen?!?
             }
             
-            StringBuilder deploymentGroup = new StringBuilder();
-            for (DeploymentGroup dg : server.getDeploymentGroup()) {
+            final StringBuilder deploymentGroup = new StringBuilder();
+            for (final DeploymentGroup dg : server.getDeploymentGroup()) {
                 deploymentGroup.append(dg.getName()).append(' ');
             }
 
-            Cluster cluster = domain.getClusterForInstance(name);
-            String clusterName = (cluster != null) ? cluster.getName() : null;
+            final Cluster cluster = domain.getClusterForInstance(name);
+            final String clusterName = (cluster != null) ? cluster.getName() : null;
             // skip DAS
             if (notDas(name)) {
                 ActionReport tReport = habitat.getService(ActionReport.class, "html");
@@ -262,24 +262,26 @@ public class ListInstancesCommand implements AdminCommand {
             return;
         }
 
-        Properties extraProps = new Properties();
-        List instanceList = new ArrayList();
 
-        for (InstanceInfo ii : infos) {
-            String name = ii.getName();
+        final Properties extraProps = new Properties();
+        final List<Map<String, Object>> instanceList = new ArrayList<>();
+
+        infos.sort(Comparator.comparing(InstanceInfo::getName));
+        for (final InstanceInfo ii : infos) {
+            final String name = ii.getName();
             String value = (ii.isRunning()) ? InstanceState.StateType.RUNNING.getDescription()
                     : InstanceState.StateType.NOT_RUNNING.getDescription();
-            InstanceState.StateType state = (ii.isRunning())
+            final InstanceState.StateType state = (ii.isRunning())
                     ? (stateService.setState(name, InstanceState.StateType.RUNNING, false))
                     : (stateService.setState(name, InstanceState.StateType.NOT_RUNNING, false));
-            List<String> failedCmds = stateService.getFailedCommands(name);
+            final List<String> failedCmds = stateService.getFailedCommands(name);
             if (state == InstanceState.StateType.RESTART_REQUIRED) {
                 if (ii.isRunning()) {
                     value = InstanceState.StateType.RESTART_REQUIRED.getDescription();
                 }
             }
 
-            HashMap<String, Object> insDetails = new HashMap<String, Object>();
+            final HashMap<String, Object> insDetails = new HashMap<>();
             insDetails.put("name", name);
             insDetails.put("status", value);
             insDetails.put("deploymentgroup", ii.getDeploymentGroups().trim());
