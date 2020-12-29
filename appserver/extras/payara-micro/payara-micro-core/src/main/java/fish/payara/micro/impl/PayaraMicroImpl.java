@@ -1541,11 +1541,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                 for (String entry : microInfEntries) {
                     File file = new File(entry);
-                    String deployContext = file.getName();
-                    if (hasJavaArchiveExtension(deployContext)) {
-                        deployContext = deployContext.substring(0, deployContext.length() - 4);
-                    }
-
+                    String deployContext = removeJavaArchiveExtension(file.getName());
                     String name = deployContext;
                     if (deployContext.equals("ROOT")) {
                         deployContext = "/";
@@ -1589,9 +1585,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                 deployContext = "/";
                             }
 
-                            if (hasJavaArchiveExtension(deployContext)) {
-                                deployContext = deployContext.substring(0, deployContext.length() - 4);
-                            }
+                            deployContext = removeJavaArchiveExtension(deployContext);
 
                             deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
                         } else if (deploymentFile.isDirectory()) {
@@ -1635,9 +1629,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                 deployContext = "/";
                             }
 
-                            if (hasJavaArchiveExtension(deployContext)) {
-                                deployContext = deployContext.substring(0, deployContext.length() - 4);
-                            }
+                            deployContext = removeJavaArchiveExtension(deployContext);
 
                             deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
                         } else {
@@ -1660,11 +1652,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     try {
                         // Convert the URL to a URI for use with the deploy method
                         URI artefactURI = deploymentMapEntry.getValue().toURI();
-
-                        String artefactName = new File(artefactURI).getName();
-                        if (hasJavaArchiveExtension(artefactName)) {
-                            artefactName = artefactName.substring(0, artefactName.length() - 4);
-                        }
+                        String artefactName = removeJavaArchiveExtension(new File(artefactURI).getName());
 
                         deployer.deploy(artefactURI,
                                 "--availabilityenabled", "true",
@@ -1685,7 +1673,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
 
-    private boolean hasJavaArchiveExtension(String filePath) {
+    private String removeJavaArchiveExtension(String fileName) {
+        if (hasJavaArchiveExtension(fileName)) {
+            return fileName.substring(0, fileName.length() - 4);
+        } else {
+            return fileName;
+        }
+    }
+
+    private static boolean hasJavaArchiveExtension(String filePath) {
+        if (filePath == null) {
+            return false;
+        }
         return filePath.endsWith(".war") || filePath.endsWith(".ear") || filePath.endsWith(".jar") || filePath.endsWith(".rar");
     }
 
