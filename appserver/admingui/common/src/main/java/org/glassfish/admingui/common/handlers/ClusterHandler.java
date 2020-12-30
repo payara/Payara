@@ -95,9 +95,9 @@ public class ClusterHandler {
         })
     public static void getClusterStatusSummary(HandlerContext handlerCtx) {
         Map<String, String> statusMap = (Map<String, String>) handlerCtx.getInputValue("statusMap");
-        int running=0;
-        int notRunning=0;
-        int requireRestart=0;
+        int running = 0;
+        int notRunning = 0;
+        int requireRestart = 0;
         try{
             for (String value : statusMap.values()) {
                 if (value.equals(InstanceState.StateType.RUNNING.getDescription())) {
