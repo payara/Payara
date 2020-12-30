@@ -95,23 +95,20 @@ public class ClusterHandler {
             @HandlerOutput(name = "disableEjb", type = Boolean.class)
         })
     public static void getClusterStatusSummary(HandlerContext handlerCtx) {
-        Map statusMap = (Map) handlerCtx.getInputValue("statusMap");
+        Map<String, String> statusMap = (Map<String, String>) handlerCtx.getInputValue("statusMap");
         int running=0;
         int notRunning=0;
         int requireRestart=0;
         int unknown = 0;
         try{
-            for (Iterator it = statusMap.values().iterator(); it.hasNext(); ) {
-                Object value = it.next();
-                if (value.toString().equals(InstanceState.StateType.RUNNING.getDescription())){
+            for (String value : statusMap.values()) {
+                if (value.equals(InstanceState.StateType.RUNNING.getDescription())) {
                     running++;
-                }else
-                if (value.toString().equals(InstanceState.StateType.NOT_RUNNING.getDescription())){
+                } else if (value.equals(InstanceState.StateType.NOT_RUNNING.getDescription())) {
                     notRunning++;
-                }else
-                if (value.toString().equals(InstanceState.StateType.RESTART_REQUIRED.getDescription())){
+                } else if (value.equals(InstanceState.StateType.RESTART_REQUIRED.getDescription())) {
                     requireRestart++;
-                }else {
+                } else {
                     unknown++;
                     GuiUtil.getLogger().severe("Unknown Status");
                 }
@@ -194,7 +191,7 @@ public class ClusterHandler {
         })
     public static void isConfigName(HandlerContext handlerCtx) {
         String configName = (String) handlerCtx.getInputValue("configName");
-        List config = TargetUtil.getConfigs();
+        List<String> config = TargetUtil.getConfigs();
         if(!config.contains(configName)){
             GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchConfig"));
             handlerCtx.setOutputValue("exists",  false);
@@ -208,13 +205,13 @@ public class ClusterHandler {
             @HandlerInput(name = "rows", type = List.class, required = true)})
     public static void saveInstanceWeight(HandlerContext handlerCtx) {
         List<Map> rows =  (List<Map>) handlerCtx.getInputValue("rows");
-        List errorInstances = new ArrayList();
-        Map response = null;
+        List<String> errorInstances = new ArrayList<>();
+        Map<String, Object> response;
 
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/servers/server/";
-        for (Map oneRow : rows) {
+        for (Map<String, Object> oneRow : rows) {
             String instanceName = (String) oneRow.get("encodedName");
-            Map attrsMap = new HashMap();
+            Map<String, Object> attrsMap = new HashMap<>();
             attrsMap.put("lbWeight", oneRow.get("lbWeight"));
             try{
                 response = RestUtil.restRequest( prefix+instanceName , attrsMap, "post" , null, false);
@@ -240,9 +237,9 @@ public class ClusterHandler {
                 @HandlerInput(name = "dgName", type = String.class, required = true) } )
     public static void removeFromDG(HandlerContext ctx) {
         String deploymentGroup = (String) ctx.getInputValue("dgName");
-        List<Map> rows = (List<Map>) ctx.getInputValue("selectedRows");
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) ctx.getInputValue("selectedRows");
         String endPoint = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/remove-instance-from-deployment-group";
-        for (Map oneRow : rows) {
+        for (Map<String, Object> oneRow : rows) {
             String instanceName = (String) oneRow.get("name");
             Map<String,Object> attrs = new HashMap<>(2);
             attrs.put("deploymentGroup", deploymentGroup);
@@ -265,11 +262,11 @@ public class ClusterHandler {
             @HandlerInput(name = "extraInfo", type = Object.class) })
     public static void deploymentGroupAction(HandlerContext handlerCtx) {
         String action = (String) handlerCtx.getInputValue("action");
-        List<Map> rows =  (List<Map>) handlerCtx.getInputValue("rows");
+        List<Map<String, Object>> rows =  (List<Map<String, Object>>) handlerCtx.getInputValue("rows");
         String  errorMsg = null;
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/";
 
-        for (Map oneRow : rows) {
+        for (Map<String, Object> oneRow : rows) {
             String dgName = (String) oneRow.get("name");
             String endpoint = prefix + dgName + "/" + action;
             String method = "post";
@@ -294,18 +291,19 @@ public class ClusterHandler {
             @HandlerInput(name = "extraInfo", type = Object.class) })
     public static void clusterAction(HandlerContext handlerCtx) {
         String action = (String) handlerCtx.getInputValue("action");
-        List<Map> rows =  (List<Map>) handlerCtx.getInputValue("rows");
+        List<Map<String, Object>> rows =  (List<Map<String, Object>>) handlerCtx.getInputValue("rows");
         String  errorMsg = null;
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/";
 
-        for (Map oneRow : rows) {
+        for (Map<String, Object> oneRow : rows) {
             String clusterName = (String) oneRow.get("name");
             String endpoint = prefix + clusterName + "/" + action;
             String method = "post";
             if (action.equals("delete-cluster")){
                 //need to delete the clustered instance first
-                Map clusterInstanceMap = (Map)handlerCtx.getInputValue("extraInfo");
-                List<String> instanceNameList = (List) clusterInstanceMap.get(clusterName);
+                Map<String, Object> clusterInstanceMap =
+                    (Map<String, Object>) handlerCtx.getInputValue("extraInfo");
+                List<String> instanceNameList = (List<String>) clusterInstanceMap.get(clusterName);
                 for(String instanceName : instanceNameList){
                     errorMsg = deleteInstance(instanceName);
                     if (errorMsg != null){
@@ -333,10 +331,10 @@ public class ClusterHandler {
             @HandlerInput(name = "action", type = String.class, required = true)})
     public static void instanceAction(HandlerContext handlerCtx) {
         String action = (String) handlerCtx.getInputValue("action");
-        List<Map> rows =  (List<Map>) handlerCtx.getInputValue("rows");
+        List<Map<String, Object>> rows =  (List<Map<String, Object>>) handlerCtx.getInputValue("rows");
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/servers/server/";
 
-        for (Map oneRow : rows) {
+        for (Map<String, Object> oneRow : rows) {
             String instanceName = (String) oneRow.get("name");
             if(action.equals("delete-instance")){
                 String errorMsg = deleteInstance(instanceName);
@@ -375,14 +373,14 @@ public class ClusterHandler {
             @HandlerInput(name = "nodeInstanceMap", type = Map.class)})
     public static void nodeAction(HandlerContext handlerCtx) {
         String action = (String) handlerCtx.getInputValue("action");
-        Map nodeInstanceMap = (Map) handlerCtx.getInputValue("nodeInstanceMap");
+        Map<String, Object> nodeInstanceMap = (Map<String, Object>) handlerCtx.getInputValue("nodeInstanceMap");
         if (nodeInstanceMap == null){
             nodeInstanceMap=new HashMap();
         }
-        List<Map> rows =  (List<Map>) handlerCtx.getInputValue("rows");
+        List<Map<String, Object>> rows =  (List<Map<String, Object>>) handlerCtx.getInputValue("rows");
         String prefix = GuiUtil.getSessionValue("REST_URL") + "/nodes/";
 
-        for (Map oneRow : rows) {
+        for (Map<String, Object> oneRow : rows) {
             String nodeName = (String) oneRow.get("name");
             final String localhostNodeName = (String) GuiUtil.getSessionValue("localhostNodeName");
             if (nodeName.equals(localhostNodeName)){
@@ -390,7 +388,7 @@ public class ClusterHandler {
                         GuiUtil.getMessage(CLUSTER_RESOURCE_NAME, "node.error.removeLocalhost" , new String[]{localhostNodeName}));
                 return;
             }
-            List instancesList = (List)nodeInstanceMap.get(nodeName);
+            List<?> instancesList = (List<?>)nodeInstanceMap.get(nodeName);
             if ( instancesList!= null && (instancesList.size()) != 0){
                 GuiUtil.prepareAlert("error",  GuiUtil.getMessage("msg.Error"),
                         GuiUtil.getMessage(CLUSTER_RESOURCE_NAME, "nodes.instanceExistError", new String[]{ nodeName, nodeInstanceMap.get(nodeName).toString()}));
@@ -409,25 +407,25 @@ public class ClusterHandler {
                 }
                 continue;
             }
-            Map payload = null;
+            Map<String, Object> payload = null;
             String type = (String) oneRow.get("type");
             String endpoint = "";
             if(action.equals("delete-node-uninstall")){
                 try{
                     if ("CONFIG".equals(type)){
                         endpoint = prefix + "delete-node-config";
-                        payload = new HashMap();
+                        payload = new HashMap<>();
                         payload.put("id", nodeName);
                     }else
                     if ("SSH".equals(type)){
                         endpoint = prefix +  "delete-node-ssh";
-                        payload = new HashMap();
+                        payload = new HashMap<>();
                         payload.put("id", nodeName);
                         payload.put("uninstall", "true");
                     }else
                     if ("DCOM".equals(type)){
                         endpoint = prefix +  "delete-node-dcom";
-                        payload = new HashMap();
+                        payload = new HashMap<>();
                         payload.put("id", nodeName);
                         payload.put("uninstall", "true");
         }
@@ -451,10 +449,10 @@ public class ClusterHandler {
             @HandlerInput(name = "instanceRow", type = List.class, required = true)})
     public static void createClusterInstances(HandlerContext handlerCtx) {
         String clusterName = (String) handlerCtx.getInputValue("clusterName");
-        List<Map> instanceRow =  (List<Map>) handlerCtx.getInputValue("instanceRow");
-        Map attrsMap = new HashMap();
+        List<Map<String, Object>> instanceRow =  (List<Map<String, Object>>) handlerCtx.getInputValue("instanceRow");
+        Map<String, Object> attrsMap = new HashMap<>();
         String endpoint = GuiUtil.getSessionValue("REST_URL") + "/create-instance";
-        for (Map oneInstance : instanceRow) {
+        for (Map<String, Object> oneInstance : instanceRow) {
             attrsMap.put("name", oneInstance.get("name"));
             attrsMap.put("cluster", clusterName);
             attrsMap.put("node", oneInstance.get("node"));
@@ -467,7 +465,7 @@ public class ClusterHandler {
                 if ( !GuiUtil.isEmpty(wt)) {
                     String encodedInstanceName = URLEncoder.encode((String)oneInstance.get("name"), "UTF-8");
                     String ep = GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + encodedInstanceName ;
-                    Map wMap = new HashMap();
+                    Map<String, Object> wMap = new HashMap<>();
                     wMap.put("lbWeight", wt);
                     RestUtil.restRequest( ep , wMap, "post" , null, false);
                 }
@@ -496,19 +494,19 @@ public class ClusterHandler {
             @HandlerOutput(name = "result", type = List.class)
         })
     public static void getDeploymentTargets(HandlerContext handlerCtx) {
-        List<String> result = new ArrayList();
+        List<String> result = new ArrayList<>();
         result.add("server");
         try{
-            List<String> clusterList = (List) handlerCtx.getInputValue("clusterList");
+            List<String> clusterList = (List<String>) handlerCtx.getInputValue("clusterList");
             if (clusterList != null){
                 for(String oneCluster : clusterList){
                     result.add(oneCluster);
                 }
             }
 
-            List<Map> instances = (List<Map>) handlerCtx.getInputValue("listInstanceProps");
+            List<Map<String, Object>> instances = (List<Map<String, Object>>) handlerCtx.getInputValue("listInstanceProps");
             if (instances != null) {
-                for (Map instance : instances) {
+                for (Map<String, Object> instance : instances) {
                     result.add((String)instance.get("name"));
                     //result.addAll(props.keySet());
                 }
@@ -541,7 +539,7 @@ public class ClusterHandler {
                     @HandlerOutput(name = "deploymentgroups", type = List.class)
             })
     public static void listDeploymentGroups(HandlerContext handlerCtx) {
-        List deploymentGroups = TargetUtil.getDeploymentGroups();
+        List<String> deploymentGroups = TargetUtil.getDeploymentGroups();
         handlerCtx.setOutputValue("deploymentgroups", deploymentGroups);
     }
 
@@ -550,7 +548,7 @@ public class ClusterHandler {
                     @HandlerOutput(name = "clusters", type = List.class)
             })
     public static void listClusters(HandlerContext handlerCtx) {
-        List clusters = TargetUtil.getClusters();
+        List<String> clusters = TargetUtil.getClusters();
         handlerCtx.setOutputValue("clusters", clusters);
     }
 
@@ -578,11 +576,11 @@ public class ClusterHandler {
         })
     public static void listInstances(HandlerContext handlerCtx) {
 
-        List instances = new ArrayList();
-        Map statusMap = new HashMap();
-        Map uptimeMap = new HashMap();
+        List<String> instances = new ArrayList<>();
+        Map<String, Object> statusMap = new HashMap<>();
+        Map<String, Object> uptimeMap = new HashMap<>();
         List<String> keys = (List<String>) handlerCtx.getInputValue("optionKeys");
-        List values = (List) handlerCtx.getInputValue("optionValues");
+        List<Object> values = (List<Object>) handlerCtx.getInputValue("optionValues");
         Map<String, Object> attrs = new HashMap<>();
         if (keys != null && values != null) {
             for (int i = 0; i < keys.size(); i++) {
@@ -591,12 +589,13 @@ public class ClusterHandler {
         }
         String endpoint = GuiUtil.getSessionValue("REST_URL")+"/list-instances";
         try{
-            Map responseMap = RestUtil.restRequest( endpoint , attrs, "GET" , handlerCtx, false);
-            Map extraPropertiesMap = (Map)((Map)responseMap.get("data")).get("extraProperties");
+            Map<String, Object> responseMap = RestUtil.restRequest( endpoint , attrs, "GET" , handlerCtx, false);
+            Map<String, Object> extraPropertiesMap =
+                (Map<String, Object>)((Map<String, Object>)responseMap.get("data")).get("extraProperties");
             if (extraPropertiesMap != null){
-                List<Map> instanceList = (List)extraPropertiesMap.get("instanceList");
+                List<Map<String, String>> instanceList = (List<Map<String, String>>)extraPropertiesMap.get("instanceList");
                 if (instanceList != null){
-                    for(Map oneInstance : instanceList){
+                    for(Map<String, String> oneInstance : instanceList){
                         instances.add(oneInstance.get("name"));
                         statusMap.put(oneInstance.get("name"), oneInstance.get("status"));
                         uptimeMap.put(oneInstance.get("name"), oneInstance.get("uptime"));
@@ -623,9 +622,9 @@ public class ClusterHandler {
 
         String instanceName = (String) handlerCtx.getInputValue("instanceName");
         try{
-            List<String> clusterList = new ArrayList(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster").keySet());
+            List<String> clusterList = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster").keySet());
             for(String oneCluster : clusterList){
-                List<String> serverRefs = new ArrayList (RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+ "/clusters/cluster/" +
+                List<String> serverRefs = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+ "/clusters/cluster/" +
                         URLEncoder.encode(oneCluster, "UTF-8") + "/server-ref").keySet());
                 if (serverRefs.contains(instanceName)){
                     handlerCtx.setOutputValue("clusterName", oneCluster);
@@ -722,10 +721,10 @@ public class ClusterHandler {
     public static void changeClusterStatus(HandlerContext handlerCtx) {
        String Enabled = (String) handlerCtx.getInputValue("Enabled");
         String clusterName = (String) handlerCtx.getInputValue("clusterName");
-        List<Map>  selectedRows = (List) handlerCtx.getInputValue("selectedRows");
+        List<Map<String, Object>>  selectedRows = (List<Map<String, Object>>) handlerCtx.getInputValue("selectedRows");
         boolean forLB = (Boolean) handlerCtx.getInputValue("forLB");
-        for(Map oneRow : selectedRows){
-            Map attrs = new HashMap();
+        for(Map<String, Object> oneRow : selectedRows){
+            Map<String, Object> attrs = new HashMap<>();
             String name = (String) oneRow.get("name");
             String endpoint = GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/" + clusterName + "/server-ref/" + name;
             if(forLB){
