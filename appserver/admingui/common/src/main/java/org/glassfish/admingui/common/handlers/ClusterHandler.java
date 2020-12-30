@@ -111,9 +111,9 @@ public class ClusterHandler {
                 }
             }
 
-            handlerCtx.setOutputValue("disableEjb", (notRunning > 0) ? false :true);  //refer to bug#6342445
-            handlerCtx.setOutputValue("disableStart", (notRunning > 0) ? false :true);
-            handlerCtx.setOutputValue("disableStop", ( (running+requireRestart) > 0) ? false :true);
+            handlerCtx.setOutputValue("disableEjb", notRunning <= 0);  //refer to bug#6342445
+            handlerCtx.setOutputValue("disableStart", notRunning <= 0);
+            handlerCtx.setOutputValue("disableStop", (running + requireRestart) <= 0);
             handlerCtx.setOutputValue( "numRunning" , (running > 0) ?
                 GuiUtil.getMessage(CLUSTER_RESOURCE_NAME, "cluster.number.instance.running", new String[]{""+running, GuiUtil.getCommonMessage("status.image.RUNNING")} ) : "");
 
