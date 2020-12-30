@@ -98,7 +98,6 @@ public class ClusterHandler {
         int running=0;
         int notRunning=0;
         int requireRestart=0;
-        int unknown = 0;
         try{
             for (String value : statusMap.values()) {
                 if (value.equals(InstanceState.StateType.RUNNING.getDescription())) {
@@ -108,7 +107,6 @@ public class ClusterHandler {
                 } else if (value.equals(InstanceState.StateType.RESTART_REQUIRED.getDescription())) {
                     requireRestart++;
                 } else {
-                    unknown++;
                     GuiUtil.getLogger().severe("Unknown Status");
                 }
             }
