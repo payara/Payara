@@ -677,7 +677,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             try {
                 // Convert the provided GAV Strings into target URLs
                 getGAVURLs();
-            } catch (GlassFishException | URISyntaxException ex) {
+            } catch (GlassFishException ex) {
                 LOGGER.log(Level.SEVERE, null, ex);
             }
         }
@@ -1497,7 +1497,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
     }
 
-    private void deployAll() throws GlassFishException, URISyntaxException {
+    private void deployAll() throws GlassFishException {
         // Deploy from within the jar first.
         int deploymentCount = 0;
         Deployer deployer = gf.getDeployer();
@@ -1652,7 +1652,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     try {
                         // Convert the URL to a URI for use with the deploy method
                         URI artefactURI = deploymentMapEntry.getValue().toURI();
-                        String artefactName = removeJavaArchiveExtension(new File(artefactURI).getName());
+                        String artefactName = removeJavaArchiveExtension(new File(artefactURI.getPath()).getName());
 
                         deployer.deploy(artefactURI,
                                 "--availabilityenabled", "true",
@@ -2047,7 +2047,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * Converts the GAVs provided to a URLs, and stores them in the
      * deploymentURLsMap.
      */
-    private void getGAVURLs() throws GlassFishException, URISyntaxException {
+    private void getGAVURLs() throws GlassFishException {
         GAVConvertor gavConvertor = new GAVConvertor();
 
         for (String gav : GAVs) {
@@ -2080,7 +2080,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
 
             for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
-                String artefactName = new File(deploymentMapEntry.getValue().toURI()).getName();
+                String artefactName = new File(deploymentMapEntry.getValue().getPath()).getName();
                 String defaultContext = deploymentMapEntry.getKey();
                 contextRoots.put(artefactName, defaultContext);
             }
@@ -2324,11 +2324,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             try {
                 // Convert the provided GAV Strings into target URLs
                 getGAVURLs();
-                for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
-                    URL deployment = deploymentMapEntry.getValue();
-                    creator.addDeployment(new File(deployment.toURI()).getName(), deployment);
+                for (URL deployment : deploymentURLsMap.values()) {
+                    creator.addDeployment(new File(deployment.getPath()).getName(), deployment);
                 }
-            } catch (GlassFishException | URISyntaxException ex) {
+            } catch (GlassFishException ex) {
                 LOGGER.log(Level.SEVERE, "Unable to process maven deployment units", ex);
             }
         }
