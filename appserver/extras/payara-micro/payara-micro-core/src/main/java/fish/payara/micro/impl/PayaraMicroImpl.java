@@ -54,7 +54,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -678,7 +677,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             try {
                 // Convert the provided GAV Strings into target URLs
                 getGAVURLs();
-            } catch (GlassFishException ex) {
+            } catch (GlassFishException | URISyntaxException ex) {
                 LOGGER.log(Level.SEVERE, null, ex);
             }
         }
@@ -1498,7 +1497,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
     }
 
-    private void deployAll() throws GlassFishException {
+    private void deployAll() throws GlassFishException, URISyntaxException {
         // Deploy from within the jar first.
         int deploymentCount = 0;
         Deployer deployer = gf.getDeployer();
@@ -1542,12 +1541,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
                 for (String entry : microInfEntries) {
                     File file = new File(entry);
-                    String deployContext = file.getName();
-                    String name = deployContext.substring(0, deployContext.length() - 4);
-                    if (hasJavaArchiveExtension(deployContext)) {
-                        deployContext = name;
-                    }
-
+                    String deployContext = removeJavaArchiveExtension(file.getName());
+                    String name = deployContext;
                     if (deployContext.equals("ROOT")) {
                         deployContext = "/";
                     }
@@ -1590,9 +1585,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                 deployContext = "/";
                             }
 
-                            if (hasJavaArchiveExtension(deployContext)) {
-                                deployContext = deployContext.substring(0, deployContext.length() - 4);
-                            }
+                            deployContext = removeJavaArchiveExtension(deployContext);
 
                             deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
                         } else if (deploymentFile.isDirectory()) {
@@ -1636,9 +1629,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                                 deployContext = "/";
                             }
 
-                            if (hasJavaArchiveExtension(deployContext)) {
-                                deployContext = deployContext.substring(0, deployContext.length() - 4);
-                            }
+                            deployContext = removeJavaArchiveExtension(deployContext);
 
                             deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
                         } else {
@@ -1661,14 +1652,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     try {
                         // Convert the URL to a URI for use with the deploy method
                         URI artefactURI = deploymentMapEntry.getValue().toURI();
-
-                        String artefactName = getFileName(artefactURI.getPath());
-                        String name = artefactName.substring(0, artefactName.length() - 4);
+                        String artefactName = removeJavaArchiveExtension(new File(artefactURI).getName());
 
                         deployer.deploy(artefactURI,
                                 "--availabilityenabled", "true",
                                 "--contextroot", deploymentMapEntry.getKey(),
-                                "--name", name,
+                                "--name", artefactName,
                                 "--force=true", "--loadOnly", "true");
 
                         deploymentCount++;
@@ -1684,11 +1673,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
 
-    private String getFileName(String filePath) {
-        return filePath.substring(filePath.lastIndexOf('/') + 1);
+    private String removeJavaArchiveExtension(String fileName) {
+        if (hasJavaArchiveExtension(fileName)) {
+            return fileName.substring(0, fileName.length() - 4);
+        } else {
+            return fileName;
+        }
     }
 
-    private boolean hasJavaArchiveExtension(String filePath) {
+    private static boolean hasJavaArchiveExtension(String filePath) {
+        if (filePath == null) {
+            return false;
+        }
         return filePath.endsWith(".war") || filePath.endsWith(".ear") || filePath.endsWith(".jar") || filePath.endsWith(".rar");
     }
 
@@ -2051,7 +2047,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
      * Converts the GAVs provided to a URLs, and stores them in the
      * deploymentURLsMap.
      */
-    private void getGAVURLs() throws GlassFishException {
+    private void getGAVURLs() throws GlassFishException, URISyntaxException {
         GAVConvertor gavConvertor = new GAVConvertor();
 
         for (String gav : GAVs) {
@@ -2084,7 +2080,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
 
             for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
-                String artefactName = getFileName(deploymentMapEntry.getValue().getPath());
+                String artefactName = new File(deploymentMapEntry.getValue().toURI()).getName();
                 String defaultContext = deploymentMapEntry.getKey();
                 contextRoots.put(artefactName, defaultContext);
             }
@@ -2218,7 +2214,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (alternateHZConfigFileStr != null && !alternateHZConfigFileStr.isEmpty()) {
             alternateHZConfigFile = new File(alternateHZConfigFileStr);
         }
-        
+
         String userLogPropertiesFileStr = getProperty("payaramicro.logPropertiesFile");
         if (userLogPropertiesFileStr  != null && !userLogPropertiesFileStr.trim().isEmpty()) {
              setLogPropertiesFile(new File(userLogPropertiesFileStr));
@@ -2330,10 +2326,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 getGAVURLs();
                 for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
                     URL deployment = deploymentMapEntry.getValue();
-                    String name = getFileName(deployment.getPath());
-                    creator.addDeployment(name, deployment);
+                    creator.addDeployment(new File(deployment.toURI()).getName(), deployment);
                 }
-            } catch (GlassFishException ex) {
+            } catch (GlassFishException | URISyntaxException ex) {
                 LOGGER.log(Level.SEVERE, "Unable to process maven deployment units", ex);
             }
         }
