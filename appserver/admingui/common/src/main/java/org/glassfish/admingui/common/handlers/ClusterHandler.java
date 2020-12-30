@@ -554,7 +554,8 @@ public class ClusterHandler {
                     @HandlerOutput(name = "configs", type = List.class)
             })
     public static void listConfigs(HandlerContext handlerCtx) {
-        List configs = TargetUtil.getConfigs();
+        List<String> configs = TargetUtil.getConfigs();
+        configs.sort(Comparator.naturalOrder());
         handlerCtx.setOutputValue("configs", configs);
     }
 
