@@ -179,7 +179,7 @@ public class ListInstancesCommand implements AdminCommand {
         StringBuilder sb = new StringBuilder();
         boolean firstServer = true;
         Properties extraProps = new Properties();
-        List instanceList = new ArrayList();
+        List<Map<String, Object>> instanceList = new ArrayList<>();
 
         for (Server server : serverList) {
             boolean clustered = server.getCluster() != null;
@@ -200,7 +200,7 @@ public class ListInstancesCommand implements AdminCommand {
 
                 sb.append(name);
                 top.addProperty(name, "");
-                HashMap<String, Object> insDetails = new HashMap<>();
+                Map<String, Object> insDetails = new HashMap<>();
                 insDetails.put("name", name);
                 instanceList.add(insDetails);
             }
@@ -263,7 +263,7 @@ public class ListInstancesCommand implements AdminCommand {
         }
 
         Properties extraProps = new Properties();
-        List instanceList = new ArrayList();
+        List<Map<String, Object>> instanceList = new ArrayList<>();
 
         infos.sort(Comparator.comparing(InstanceInfo::getName));
         for (InstanceInfo ii : infos) {
@@ -280,7 +280,7 @@ public class ListInstancesCommand implements AdminCommand {
                 }
             }
 
-            HashMap<String, Object> insDetails = new HashMap<>();
+            Map<String, Object> insDetails = new HashMap<>();
             insDetails.put("name", name);
             insDetails.put("status", value);
             insDetails.put("deploymentgroup", ii.getDeploymentGroups().trim());
