@@ -57,7 +57,12 @@ import org.glassfish.admingui.common.util.TargetUtil;
 import org.glassfish.api.admin.InstanceState;
 
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 public class ClusterHandler {
@@ -96,7 +101,7 @@ public class ClusterHandler {
         int requireRestart=0;
         int unknown = 0;
         try{
-            for (Iterator it=statusMap.values().iterator(); it.hasNext(); ) {
+            for (Iterator it = statusMap.values().iterator(); it.hasNext(); ) {
                 Object value = it.next();
                 if (value.toString().equals(InstanceState.StateType.RUNNING.getDescription())){
                     running++;
