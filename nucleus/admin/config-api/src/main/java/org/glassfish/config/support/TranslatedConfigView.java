@@ -79,6 +79,7 @@ public class TranslatedConfigView implements ConfigView {
     static final Pattern mpConfigP = Pattern.compile("([^\\$]*)\\$\\{MPCONFIG=([^\\}]*)\\}([^\\$]*)");
 
     private static final String ALIAS_TOKEN = "ALIAS";
+    private static final String DEFAULT_SEPARATOR = ":";
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
 
     private static final boolean SUBSTITUTION_DISABLED = Boolean.valueOf(System.getProperty("fish.payara.substitution.disable", "false"));
@@ -101,7 +102,7 @@ public class TranslatedConfigView implements ConfigView {
         if (value == null || SUBSTITUTION_DISABLED) {
             return value;
         }
-        return (String) getTranslatedValue(value);
+        return expandConfigValue(value);
     }
 
     /**
@@ -141,12 +142,17 @@ public class TranslatedConfigView implements ConfigView {
             Matcher m3 = mpConfigP.matcher(stringValue);
 
             while (m3.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String matchValue = m3.group(2).trim();
+                String[] envValue = splitForTranslatedDefaultValue(m3.group(2).trim());
+                String matchValue = envValue[0];
+                String defaultValue = envValue.length > 1 ? envValue[1] : null;
                 Config config = configResolver().getConfig();
                 Optional<String> newValue = config.getOptionalValue(matchValue, String.class);
                 if (newValue != null && newValue.isPresent()) {
                     stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue.get() + m3.group(3)));
                     m3.reset(stringValue);
+                } else if (defaultValue != null) {
+                    stringValue = defaultValue;
+                    break;
                 }
                 i++;
             }
@@ -158,11 +164,16 @@ public class TranslatedConfigView implements ConfigView {
             Matcher m2 = envP.matcher(stringValue);
 
             while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String matchValue = m2.group(2).trim();
+                String[] envValue = splitForTranslatedDefaultValue(m2.group(2).trim());
+                String matchValue = envValue[0];
+                String defaultValue = envValue.length > 1 ? envValue[1] : null;
                 String newValue = System.getenv(matchValue);
                 if (newValue != null) {
                     stringValue = m2.replaceFirst(Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
                     m2.reset(stringValue);
+                } else if (defaultValue != null) {
+                    stringValue = defaultValue;
+                    break;
                 }
                 i++;
             }
@@ -194,6 +205,12 @@ public class TranslatedConfigView implements ConfigView {
         }
         return value;
     }
+
+    private static String[] splitForTranslatedDefaultValue(String matchValue) {
+        if (matchValue == null) return null;
+        return matchValue.split(DEFAULT_SEPARATOR, 2);
+    }
+
 
     final ConfigView masterView;
 
@@ -261,7 +278,6 @@ public class TranslatedConfigView implements ConfigView {
      * check if a given property name matches AS alias pattern ${ALIAS=aliasname}.
      * if so, return the aliasname, otherwise return null.
      * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
-     * @param token
      * @return The aliasname or null.
      */
     public static String getAlias(String propName)
