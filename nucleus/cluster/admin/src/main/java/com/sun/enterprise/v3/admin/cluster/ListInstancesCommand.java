@@ -120,7 +120,7 @@ public class ListInstancesCommand implements AdminCommand {
     @Param(optional = true, primary = true, defaultValue = "domain")
     String whichTarget = "";
 
-    private List<InstanceInfo> infos = new LinkedList<InstanceInfo>();
+    private List<InstanceInfo> infos = new LinkedList<>();
     private List<Server> serverList;
     private ActionReport report;
     private ActionReport.MessagePart top = null;
@@ -200,7 +200,7 @@ public class ListInstancesCommand implements AdminCommand {
 
                 sb.append(name);
                 top.addProperty(name, "");
-                HashMap<String, Object> insDetails = new HashMap<String, Object>();
+                HashMap<String, Object> insDetails = new HashMap<>();
                 insDetails.put("name", name);
                 instanceList.add(insDetails);
             }
@@ -280,7 +280,7 @@ public class ListInstancesCommand implements AdminCommand {
                 }
             }
 
-            HashMap<String, Object> insDetails = new HashMap<String, Object>();
+            HashMap<String, Object> insDetails = new HashMap<>();
             insDetails.put("name", name);
             insDetails.put("status", value);
             insDetails.put("deploymentgroup", ii.getDeploymentGroups().trim());
@@ -318,7 +318,7 @@ public class ListInstancesCommand implements AdminCommand {
             return getServersForNodeOrConfig();
         }
         else if (rc.isServer()) {
-            List<Server> l = new LinkedList<Server>();
+            List<Server> l = new LinkedList<>();
             l.add((Server) rc);
             return l;
         }
@@ -382,7 +382,7 @@ public class ListInstancesCommand implements AdminCommand {
         }
 
         List<ReferenceContainer> rcs = domain.getReferenceContainersOf(config);
-        List<Server> servers = new LinkedList<Server>();
+        List<Server> servers = new LinkedList<>();
 
         for (ReferenceContainer rc : rcs) {
             if (rc.isServer()) {
