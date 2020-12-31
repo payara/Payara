@@ -176,7 +176,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private ArchiveHandler archiveHandler;
     private File expansionDir;
     private ReadableArchive archive;
-    private ActionReport report;
     private DeploymentTracing timing;
     private transient DeployCommandSupplementalInfo suppInfo;
     private static final String EJB_JAR_XML = "META-INF/ejb-jar.xml";
@@ -213,7 +212,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
         timing = new DeploymentTracing(structuredTracing);
 
-        report = context.getActionReport();
+        final ActionReport report = context.getActionReport();
         logger = context.getLogger();
 
         originalPathValue = path;
@@ -403,6 +402,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         long timeTakenToDeploy = 0;
         long deploymentTimeMillis = 0;
         Optional<ApplicationState> appState = Optional.empty();
+        final ActionReport report = context.getActionReport();
         try (SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.VALIDATE_TARGET, "registry")){
 
             if (!hotDeploy) {
