@@ -90,8 +90,15 @@ public class MetricsSniffer extends MicroProfileSniffer {
     public boolean handles(DeploymentContext context) {
         final Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
 
-        if (types.getBy(MetricRegistry.class.getName()) != null) return true;
-        if (types.getBy(Metric.class.getName()) != null) return true;
+        if (types != null) {
+            if (types.getBy(MetricRegistry.class.getName()) != null) {
+                return true;
+            }
+
+            if (types.getBy(Metric.class.getName()) != null) {
+                return true;
+            }
+        }
 
         return super.handles(context);
     }
