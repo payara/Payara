@@ -1,0 +1,64 @@
+clean-jbatch-repository(1)        asadmin Utility Subcommands       clean-jbatch-repository(1)
+
+NAME
+       clean-jbatch-repository - cleans up batch job execution records
+
+SYNOPSIS
+           clean-jbatch-repository [--help]
+           [--target target]
+           [--status={COMPLETED|ALL}]
+           [--days days]
+           [job_name]
+
+DESCRIPTION
+       The clean-jbatch-repository subcommand deletes records of job executions
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --long, -l
+           Displays detailed information about batch jobs. The default value
+           is false.
+
+       --status
+           The status of batch jobs executions to which delete the records of.
+           This value is COMPLETED by default
+
+           Possible values are as follows:
+
+           ALL
+               All job executions will be deleted, regardless of status.
+
+           COMPLETED
+               Only job executions that successfully completed will be deleted.
+
+       --days
+           The number of days previous that the end time of the job execution must be to 
+           be deleted. The default value is 0.
+
+OPERANDS
+       job_name
+           The name of the job for which to delete records of.
+
+EXAMPLES
+       Example 1, Deleting job execution records
+           This example deletes all job execution records that are over a week old for a job name batchprocess.
+
+               asadmin> clean-jbatch-repository --status=ALL --days=7 batchprocess
+               Command clean-jbatch-repository executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-batch-job-executions(1), list-batch-job-steps(1),
+       purge-jbatch-repository
+
+       asadmin(1M)
+
+Jakarta EE 8                         6 Jan 2021               clean-jbatch-repository(1)

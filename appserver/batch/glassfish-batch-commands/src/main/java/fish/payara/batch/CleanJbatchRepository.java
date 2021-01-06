@@ -72,7 +72,7 @@ import org.jvnet.hk2.annotations.Service;
 public class CleanJbatchRepository implements AdminCommand {
 
     @Param(acceptableValues = "ALL,COMPLETED", defaultValue = "completed", optional=true)
-    private String type;
+    String status;
 
     @Param(optional = true)
     int days;
@@ -100,7 +100,7 @@ public class CleanJbatchRepository implements AdminCommand {
                             + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND eid.batchstatus = ?)");
                     deleteStatement.setString(1, jobname);
                     deleteStatement.setInt(2, -days);
-                    deleteStatement.setString(3, type);
+                    deleteStatement.setString(3, status);
                     deleteStatement.execute();
 
                     deleteStatement = conn.prepareStatement("DELETE FROM stepexecutioninstancedata WHERE jobexecid IN (SELECT eid.jobexecid "
@@ -108,7 +108,7 @@ public class CleanJbatchRepository implements AdminCommand {
                             + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND eid.batchstatus = ?)");
                     deleteStatement.setString(1, jobname);
                     deleteStatement.setInt(2, -days);
-                    deleteStatement.setString(3, type);
+                    deleteStatement.setString(3, status);
                     deleteStatement.execute();
 
                     deleteStatement = conn.prepareStatement("DELETE FROM executioninstancedata WHERE jobinstanceid IN (SELECT jid.jobinstanceid "
@@ -116,7 +116,7 @@ public class CleanJbatchRepository implements AdminCommand {
                             + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND eid.batchstatus = ?)");
                     deleteStatement.setString(1, jobname);
                     deleteStatement.setInt(2, -days);
-                    deleteStatement.setString(3, type);
+                    deleteStatement.setString(3, status);
                     deleteStatement.execute();
 
                     deleteStatement = conn.prepareStatement("DELETE FROM jobstatus "
