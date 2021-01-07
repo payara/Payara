@@ -60,7 +60,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Cleans the records of jobs from the repository.
+ * Cleans the records of job executions from the repository.
  *
  * @author jonathan coustick
  * @since 5.25.0
@@ -71,7 +71,7 @@ import org.jvnet.hk2.annotations.Service;
 @ExecuteOn(value = {RuntimeType.INSTANCE})
 public class CleanJbatchRepository implements AdminCommand {
 
-    @Param(acceptableValues = "ALL,COMPLETED", defaultValue = "completed", optional=true)
+    @Param(acceptableValues = "ALL,COMPLETED", defaultValue = "COMPLETED", optional=true)
     String status;
 
     @Param(optional = true)
@@ -97,26 +97,30 @@ public class CleanJbatchRepository implements AdminCommand {
                     PreparedStatement deleteStatement = conn.prepareStatement("DELETE FROM stepstatus WHERE id IN (SELECT seid.stepexecid "
                             + "FROM jobinstancedata jid, executioninstancedata eid, stepexecutioninstancedata seid "
                             + "WHERE jid.jobinstanceid = eid.jobinstanceid AND eid.jobexecid = seid.jobexecid "
-                            + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND eid.batchstatus = ?)");
+                            + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND (eid.batchstatus = ? OR ? = 'ALL'))");
+                    
                     deleteStatement.setString(1, jobname);
                     deleteStatement.setInt(2, -days);
                     deleteStatement.setString(3, status);
+                    deleteStatement.setString(4, status);
                     deleteStatement.execute();
 
                     deleteStatement = conn.prepareStatement("DELETE FROM stepexecutioninstancedata WHERE jobexecid IN (SELECT eid.jobexecid "
                             + "FROM jobinstancedata jid, executioninstancedata eid WHERE jid.jobinstanceid = eid.jobinstanceid "
-                            + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND eid.batchstatus = ?)");
+                            + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND (eid.batchstatus = ? OR ? = 'ALL'))");
                     deleteStatement.setString(1, jobname);
                     deleteStatement.setInt(2, -days);
                     deleteStatement.setString(3, status);
+                    deleteStatement.setString(4, status);
                     deleteStatement.execute();
 
                     deleteStatement = conn.prepareStatement("DELETE FROM executioninstancedata WHERE jobinstanceid IN (SELECT jid.jobinstanceid "
                             + "FROM jobinstancedata jid, executioninstancedata eid WHERE jid.jobinstanceid = eid.jobinstanceid "
-                            + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND eid.batchstatus = ?)");
+                            + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND (eid.batchstatus = ? OR ? = 'ALL'))");
                     deleteStatement.setString(1, jobname);
                     deleteStatement.setInt(2, -days);
                     deleteStatement.setString(3, status);
+                    deleteStatement.setString(4, status);
                     deleteStatement.execute();
 
                     deleteStatement = conn.prepareStatement("DELETE FROM jobstatus "
@@ -126,8 +130,6 @@ public class CleanJbatchRepository implements AdminCommand {
                     deleteStatement = conn.prepareStatement("DELETE FROM jobinstancedata "
                             + "WHERE jobinstanceid NOT IN (SELECT DISTINCT jobinstanceid FROM executioninstancedata)");
                     deleteStatement.execute();
-                    
-                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 } catch (SQLException ex) {
                     Logger.getLogger("fish.payara.batch").log(Level.SEVERE, "Error cleaning repository", ex);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
