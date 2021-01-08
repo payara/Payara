@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2014-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2014-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,7 +79,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	private static final String CLASSNAME = PostgresPersistenceManager.class
 			.getName();
 
-	private final static Logger logger = Logger.getLogger(CLASSNAME);
+	private static final Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
 
@@ -116,9 +116,8 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 	}
 
 	@Override
-	public void init(IBatchConfig batchConfig)
-			throws BatchContainerServiceException {
-		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
+	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
+		logger.log(Level.CONFIG, "Entering CLASSNAME.init(), batchConfig ={0}", batchConfig);
 
 		this.batchConfig = batchConfig;
 
@@ -146,12 +145,11 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 		try {
 			queryStrings = getSharedQueryMap(batchConfig);
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			throw new BatchContainerServiceException(e1);
 		}
 
 
-		logger.config("JNDI name = " + jndiName);
+		logger.log(Level.CONFIG, "JNDI name = {0}", jndiName);
 
 		if (jndiName == null || jndiName.equals("")) {
 			throw new BatchContainerServiceException(
@@ -265,10 +263,8 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
 
 						try (ResultSet resultSet = statement.executeQuery(query)) {
 							int rowcount = getTableRowCount(resultSet);
-							if (rowcount == 0) {
-								if (!resultSet.next()) {
+							if (rowcount == 0 && !resultSet.next()) {
 									result = false;
-								}
 							}
 						}
 
