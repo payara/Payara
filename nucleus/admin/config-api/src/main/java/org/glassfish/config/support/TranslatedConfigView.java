@@ -207,8 +207,7 @@ public class TranslatedConfigView implements ConfigView {
     }
 
     private static String[] splitForTranslatedDefaultValue(String matchValue) {
-        if (matchValue == null) return null;
-        return matchValue.split(DEFAULT_SEPARATOR, 2);
+        return (matchValue == null) ? null : matchValue.split(DEFAULT_SEPARATOR, 2);
     }
 
 

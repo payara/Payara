@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author bnevins
+ * @author cfiguera
  */
 public class TranslatedValueTest {
 
