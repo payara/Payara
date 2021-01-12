@@ -46,7 +46,6 @@ package com.sun.enterprise.web.logger;
  * log-file when enabled
  */
 
-import com.sun.common.util.logging.GFLogRecord;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -65,12 +64,12 @@ public class FileLoggerHandler extends Handler {
     private static final int FLUSH_FREQUENCY = 1;
 
     private volatile PrintWriter printWriter;
-    private String logFile;
+    private final String logFile;
 
-    private AtomicInteger association = new AtomicInteger(0);
-    private AtomicBoolean done = new AtomicBoolean(false);
-    private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(LOG_QUEUE_SIZE);
-    private Thread pump;
+    private final AtomicInteger association = new AtomicInteger(0);
+    private final AtomicBoolean done = new AtomicBoolean(false);
+    private final BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<>(LOG_QUEUE_SIZE);
+    private final Thread pump;
 
     FileLoggerHandler(String logFile) {
         setLevel(Level.ALL);
@@ -83,6 +82,7 @@ public class FileLoggerHandler extends Handler {
     	}
 
         pump = new Thread() {
+            @Override
             public void run() {
                 try {
                     while (!done.get()) {
@@ -111,7 +111,7 @@ public class FileLoggerHandler extends Handler {
         }
 
         // write FLUSH_FREQUENCY record(s) more
-        List<LogRecord> list = new ArrayList<LogRecord>();
+        List<LogRecord> list = new ArrayList<>();
         int numOfRecords = pendingRecords.drainTo(list, FLUSH_FREQUENCY);
         for (int i = 0; i < numOfRecords; i++) {
             writeLogRecord(list.get(i));
@@ -151,17 +151,17 @@ public class FileLoggerHandler extends Handler {
         // first see if this entry should be filtered out
         // the filter should keep anything
         if ( getFilter()!=null ) {
-            if ( !getFilter().isLoggable(record) )
+            if ( !getFilter().isLoggable(record) ) {
                 return;
+            }
         }
 
-        GFLogRecord wrappedRecord = GFLogRecord.wrap(record, false);
         try {
-            pendingRecords.add(wrappedRecord);
+            pendingRecords.add(record);
         } catch(IllegalStateException e) {
             // queue is full, start waiting
             try {
-                pendingRecords.put(wrappedRecord);
+                pendingRecords.put(record);
             } catch(InterruptedException ex) {
                 // too bad, record is lost...
             }
@@ -180,7 +180,7 @@ public class FileLoggerHandler extends Handler {
 
         int size = pendingRecords.size();
         if (size > 0) {
-            List<LogRecord> records = new ArrayList<LogRecord>(size);
+            List<LogRecord> records = new ArrayList<>(size);
             pendingRecords.drainTo(records, size);
             for (LogRecord record : records) {
                 writeLogRecord(record);
