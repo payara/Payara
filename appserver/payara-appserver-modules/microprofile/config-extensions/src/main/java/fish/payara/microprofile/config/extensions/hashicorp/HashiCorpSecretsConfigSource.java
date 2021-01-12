@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -120,22 +120,20 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
             secretsURL = vaultAddress + "/v1/" + secretsEnginePath + "/" + secretsPath;
         }
 
-        final WebTarget secretsTarget = client
-                .target(secretsURL);
-
-        final Response secretsResponse = secretsTarget
-                .request()
-                .accept(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + hashiCorpVaultToken)
-                .get();
-
-        if (secretsResponse.getStatus() != 200) {
-            LOGGER.log(Level.WARNING, "Unable to get secrets from the vault using the following URL: " + secretsURL + ". "
-                    + "Make sure all the configurtaion options has been entered correctly and HashiCorp Vault Token is correct");
-            return results;
-        }
-
+        final WebTarget secretsTarget = client.target(secretsURL);
         try {
+            final Response secretsResponse = secretsTarget
+                    .request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .header("Authorization", "Bearer " + hashiCorpVaultToken)
+                    .get();
+
+            if (secretsResponse.getStatus() != 200) {
+                LOGGER.log(Level.WARNING, "Unable to get secrets from the vault using the following URL: " + secretsURL
+                        + ". Make sure all the configurtaion options has been entered correctly and HashiCorp Vault Token is correct");
+                return results;
+            }
+
             final String secretString = readSecretString((InputStream) secretsResponse.getEntity());
 
             try (final StringReader reader = new StringReader(secretString)) {
