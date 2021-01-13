@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.stream.JsonParser;
@@ -74,11 +75,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fish.payara.microprofile.config.extensions.hashicorp.model.SecretHolder;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 @Service(name = "hashicorp-secrets-config-source")
 public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSource<HashiCorpSecretsConfigSourceConfiguration> {
 
     private static final Logger LOGGER = Logger.getLogger(HashiCorpSecretsConfigSource.class.getName());
+    
+    @Inject
+    MicroprofileConfigConfiguration mpconfig;
 
     private Client client = ClientBuilder.newClient();
     protected String hashiCorpVaultToken;
@@ -166,7 +171,7 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
         properties.put(secretName, secretValue);
         return modifySecret(properties);
     }
-
+    
     private boolean modifySecret(Map<String, String> properties) {
         //Use version 2 of API by default
         String secretsURL = vaultAddress + "/v1/" + secretsEnginePath + "/data/" + secretsPath;
@@ -246,7 +251,12 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
     public String getName() {
         return "hashicorp";
     }
-
+    
+    @Override
+    public int getOrdinal() {
+        return Integer.parseInt(mpconfig.getCloudOrdinality());
+    }
+    
     private static void printMisconfigurationMessage() {
         LOGGER.warning("HashiCorp Secrets Config Source isn't configured correctly. "
                 + "Make sure that the password aliases HASHICORP_VAULT_TOKEN exist.");

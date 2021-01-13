@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,6 +71,8 @@ import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.microprofile.config.extensions.aws.client.AwsRequestBuilder;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import javax.inject.Inject;
 
 @Service(name = "aws-secrets-config-source")
 public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSSecretsConfigSourceConfiguration> {
@@ -80,6 +82,9 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
     private final ObjectMapper mapper = new ObjectMapper();
 
     private AwsRequestBuilder builder;
+    
+    @Inject
+    MicroprofileConfigConfiguration mpconfig;
 
     @Override
     public void bootstrap() {
@@ -163,6 +168,11 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
     @Override
     public String getName() {
         return "aws";
+    }
+    
+    @Override
+    public int getOrdinal() {
+        return Integer.parseInt(mpconfig.getCloudOrdinality());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
