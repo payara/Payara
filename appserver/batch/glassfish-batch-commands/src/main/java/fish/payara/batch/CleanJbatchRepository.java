@@ -44,6 +44,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.batch.runtime.BatchRuntime;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -72,7 +73,7 @@ import org.jvnet.hk2.annotations.Service;
 @ExecuteOn(value = {RuntimeType.INSTANCE})
 public class CleanJbatchRepository implements AdminCommand {
 
-    @Param(acceptableValues = "ALL,COMPLETED", defaultValue = "COMPLETED", optional=true)
+    @Param(acceptableValues = "ALL,COMPLETED", defaultValue = "COMPLETED", optional = true)
     String status;
 
     @Param(optional = true)
@@ -86,10 +87,13 @@ public class CleanJbatchRepository implements AdminCommand {
     
     @Inject
     BatchRuntimeConfiguration config;
-
+    
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
+        
+        //Initialises databases if they don't already exist, ignore result
+        BatchRuntime.getJobOperator();
         
         try {
             String dataSourceName = batchRuntimeHelper.getDataSourceLookupName();
@@ -97,7 +101,7 @@ public class CleanJbatchRepository implements AdminCommand {
             Object object = ctx.lookup(dataSourceName);
             if (object instanceof DataSource) {
                 DataSource datasource = (DataSource) object;
-                try ( Connection conn = datasource.getConnection()) {
+                try (Connection conn = datasource.getConnection()) {
                     String prefix = config.getTablePrefix();
                     String suffix = config.getTableSuffix();
                     
