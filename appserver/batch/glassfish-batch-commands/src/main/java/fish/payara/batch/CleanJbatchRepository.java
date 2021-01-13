@@ -42,6 +42,7 @@ package fish.payara.batch;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ServiceConfigurationError;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.batch.runtime.BatchRuntime;
@@ -93,7 +94,14 @@ public class CleanJbatchRepository implements AdminCommand {
         ActionReport report = context.getActionReport();
         
         //Initialises databases if they don't already exist, ignore result
-        BatchRuntime.getJobOperator();
+        try {
+            BatchRuntime.getJobOperator();
+        } catch (ServiceConfigurationError error) {
+            report.setMessage("Could not get JobOperator. Check if the Batch DataSource is configured properly and Check if the Database is up and running");
+            report.setFailureCause(error);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
         
         try {
             String dataSourceName = batchRuntimeHelper.getDataSourceLookupName();
