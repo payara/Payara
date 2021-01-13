@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -114,6 +114,9 @@ import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
 import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSourceService;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
 
 /**
  * This Service implements the Microprofile Config API and provides integration
@@ -124,7 +127,7 @@ import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigS
 @Service(name = "microprofile-config-provider")
 @ContractsProvided({ConfigProviderResolver.class, ConfigProviderResolverImpl.class})
 @RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
-public class ConfigProviderResolverImpl extends ConfigProviderResolver {
+public class ConfigProviderResolverImpl extends ConfigProviderResolver implements EventListener {
 
     private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
     private static final String METADATA_KEY = "MICROPROFILE_APP_CONFIG";
@@ -155,6 +158,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     @Inject
     private ExtensionConfigSourceService extensionService;
+    
+    @Inject
+    private Events events;
 
     /**
      * Logs constructor as finest - may be useful to watch sequence of operations.
@@ -173,6 +179,11 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         synchronized (ConfigProviderResolver.class) {
             LOG.log(Level.CONFIG, "Setting global ConfigProviderResolver instance to {0}", this);
             ConfigProviderResolver.setInstance(this);
+        }
+        
+        // Register an event listener
+        if (events != null) {
+            events.register(this);
         }
     }
 
@@ -503,6 +514,21 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             props.add(p);
         }
         return props;
+    }
+
+    @Override
+    public void event(Event<?> event) {
+        if (event.is(EventTypes.SERVER_STARTUP)) {
+            if (serverLevelConfig != null) {
+                serverLevelConfig.clearCache();
+            }
+            for (String appName : applicationRegistry.getAllApplicationNames()) {
+                PayaraConfig appConfig = applicationRegistry.get(appName).getTransientAppMetaData(METADATA_KEY, PayaraConfig.class);
+                //Server will have already populated cache in deployment before this point,
+                //cache needs clearing as config extensions have not yet been loaded and may have values
+                appConfig.clearCache();
+            }
+        }
     }
 
 }

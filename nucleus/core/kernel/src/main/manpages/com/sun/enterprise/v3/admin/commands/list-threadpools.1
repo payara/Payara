@@ -4,7 +4,7 @@ NAME
        list-threadpools - lists all the thread pools
 
 SYNOPSIS
-           list-threadpools [--help] target
+           list-threadpools [--help] [target]
 
 DESCRIPTION
        The list-threadpools subcommand lists the GlassFish Server thread
@@ -47,6 +47,16 @@ EXAMPLES
                thread-pool-1
                Command list-threadpools executed successfully.
 
+        Example 2, Listing Thread Pools on all instances
+           This example lists the names of thread pools on all instances.
+           N.B. It does not indicate which instances the thread pools are available on.
+
+               asadmin> list-threadpools
+               admin-thread-pool
+               http-thread-pool
+               thread-pool-1
+               remote-create-thread-pool
+
 EXIT STATUS
        0
            subcommand executed successfully
@@ -59,4 +69,4 @@ SEE ALSO
 
        asadmin(1M)
 
-Java EE 8                         20 Dec 2010              list-threadpools(1)
+Jakarta EE 8                         16 Dec 2020              list-threadpools(1)
