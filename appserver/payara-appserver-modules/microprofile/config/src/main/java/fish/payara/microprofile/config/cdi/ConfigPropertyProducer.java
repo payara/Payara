@@ -47,6 +47,9 @@ import java.lang.reflect.Member;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -101,13 +104,34 @@ public class ConfigPropertyProducer {
         Type type = ip.getType();
         String defaultValue = property.defaultValue();
         if (type instanceof Class) {
-            result = config.getValue(name, ConfigValueResolver.class)
+            if (type == OptionalDouble.class) {
+                result = config.getValue(property.name(), ConfigValueResolver.class)
+                    .throwOnFailedConversion()
+                    .withDefault(property.defaultValue())
+                    .as(OptionalDouble.class)
+                    .orElse(OptionalDouble.empty());
+            } else if (type == OptionalInt.class) {
+                result = config.getValue(property.name(), ConfigValueResolver.class)
+                    .throwOnFailedConversion()
+                    .withDefault(property.defaultValue())
+                    .as(OptionalInt.class)
+                    .orElse(OptionalInt.empty());
+            } else if (type == OptionalLong.class) {
+                result = config.getValue(property.name(), ConfigValueResolver.class)
+                    .throwOnFailedConversion()
+                    .withDefault(property.defaultValue())
+                    .as(OptionalLong.class)
+                    .orElse(OptionalLong.empty());
+            } else {
+                result = config.getValue(name, ConfigValueResolver.class)
                     .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)
                     .withPolicy(FAIL)
-                    .as((Class<?>)type).get();
-        } else if ( type instanceof ParameterizedType) {
+                    .as((Class<?>)type)
+                    .get();
+            }
+        } else if (type instanceof ParameterizedType) {
             ParameterizedType ptype = (ParameterizedType)type;
             Type rawType = ptype.getRawType();
             if (List.class.equals(rawType)) {
