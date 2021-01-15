@@ -96,13 +96,13 @@ public class InjectedPayaraConfig implements Config, Serializable {
     @Override
     public <T> Optional<Converter<T>> getConverter(Class<T> forType) {
         ensureDelegate();
-        return getConverter(forType);
+        return delegate.getConverter(forType);
     }
 
     @Override
     public <T> T unwrap(Class<T> type) {
         ensureDelegate();
-        return unwrap(type);
+        return delegate.unwrap(type);
     }
 
     private void ensureDelegate() {
