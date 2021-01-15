@@ -48,6 +48,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
@@ -161,5 +163,36 @@ public class ConfigProducer {
                     .as(valueType);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Produces an Supplier for the property specified by the ConfigProperty
+     * and of the type specified
+     * @param <T>
+     * @param ip
+     * @return
+     */
+    @Produces
+    @ConfigProperty
+    public <T> Supplier<T> getPropertySupplier(InjectionPoint ip) {
+        ConfigProperty property = ip.getAnnotated().getAnnotation(ConfigProperty.class);
+        Config config = ConfigProvider.getConfig();
+
+        Type type = ip.getType();
+        if (type instanceof ParameterizedType) {
+            // it is an Optional
+            // get the class of the generic parameterized Optional
+            @SuppressWarnings("unchecked")
+            Class<T> valueType = (Class<T>) ((ParameterizedType) type).getActualTypeArguments()[0];
+
+            String defaultValue = property.defaultValue();
+            return config.getValue(property.name(), ConfigValueResolver.class)
+                    .throwOnFailedConversion()
+                    .withDefault(defaultValue)
+                    .asSupplier(valueType);
+        }
+
+        // Should never be called
+        return () -> null;
     }
 }

@@ -147,6 +147,11 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     }
 
     @Override
+    public <E> Supplier<E> asSupplier(Class<E> elementType) {
+        return () -> as(elementType, null);
+    }
+
+    @Override
     public <E> Set<E> asSet(Class<E> elementType) {
         return asSet(elementType, emptySet());
     }
