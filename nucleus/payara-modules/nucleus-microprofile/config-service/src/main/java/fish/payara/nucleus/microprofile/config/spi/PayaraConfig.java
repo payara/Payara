@@ -73,11 +73,11 @@ public class PayaraConfig implements Config {
 
     private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
 
-    private static final class CacheEntry<T> {
-        final T value;
+    private static final class CacheEntry {
+        final ConfigValueImpl value;
         final long expires;
 
-        CacheEntry(T value, long expires) {
+        CacheEntry(ConfigValueImpl value, long expires) {
             this.value = value;
             this.expires = expires + currentTimeMillis();
         }
@@ -86,9 +86,9 @@ public class PayaraConfig implements Config {
     private final List<ConfigSource> sources;
     private final Map<Class<?>, Converter<?>> converters;
     private final long defaultCacheDurationSeconds;
-    private final Map<String, CacheEntry<?>> cachedValuesByProperty = new ConcurrentHashMap<>();
+    private final Map<String, CacheEntry> cachedValuesByProperty = new ConcurrentHashMap<>();
 
-    private volatile CacheEntry<Long> configuredCacheValueEntry;
+    private volatile Long configuredCacheValue = null;
     private final Object configuredCacheValueLock = new Object();
 
     public PayaraConfig(List<ConfigSource> sources, Map<Class<?>, Converter<?>> converters, long defaultCacheDurationSeconds) {
@@ -105,18 +105,18 @@ public class PayaraConfig implements Config {
             // Atomic block to modify the cached duration value
             synchronized (configuredCacheValueLock) {
                 // If the value has been found and it hasn't expired
-                if (configuredCacheValueEntry != null && configuredCacheValueEntry.expires > currentTimeMillis()) {
-                    return configuredCacheValueEntry.value;
+                if (configuredCacheValue != null && configuredCacheValue > currentTimeMillis()) {
+                    return configuredCacheValue;
                 } else {
                     // Fetch the value from config
-                    final Long value = getValueConverted(MP_CONFIG_CACHE_DURATION, Long.toString(defaultCacheDurationSeconds), converter);
-                    if (value != null) {
+                    final ConfigValue value = searchConfigSources(MP_CONFIG_CACHE_DURATION, null);
+                    if (value.getValue() != null) {
                         // If it's found, cache it
-                        configuredCacheValueEntry = new CacheEntry<Long>(value, value);
-                        return value;
+                        configuredCacheValue = convertValue(value, null, converter);
+                        return configuredCacheValue;
                     } else {
                         // Cache the default value (usually that's from the server config)
-                        configuredCacheValueEntry = new CacheEntry<Long>(defaultCacheDurationSeconds, defaultCacheDurationSeconds);
+                        configuredCacheValue = defaultCacheDurationSeconds;
                     }
                 }
             }
@@ -127,9 +127,6 @@ public class PayaraConfig implements Config {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
-        if (propertyType == ConfigValue.class) {
-            return (T) getConfigValue(propertyName);
-        }
         if (propertyType == ConfigValueResolver.class) {
             return (T) new ConfigValueResolverImpl(this, propertyName);
         }
@@ -140,28 +137,7 @@ public class PayaraConfig implements Config {
 
     @Override
     public ConfigValue getConfigValue(String propertyName) {
-        for (ConfigSource source : sources) {
-            String sourceValue = source.getValue(propertyName);
-            if (sourceValue != null) {
-                return new ConfigValueImpl(
-                    propertyName,
-                    sourceValue,
-                    source.getName(),
-                    source.getOrdinal()
-                );
-            }
-        }
-        return null;
-    }
-
-    private String getSourceValue(String propertyName) {
-        for (ConfigSource source : sources) {
-            String sourceValue = source.getValue(propertyName);
-            if (sourceValue != null) {
-                return sourceValue;
-            }
-        }
-        return null;
+        return getValue(propertyName, ConfigValue.class);
     }
 
     @Override
@@ -169,9 +145,12 @@ public class PayaraConfig implements Config {
         return Optional.ofNullable(getValueInternal(propertyName, propertyType));
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T getValueInternal(String propertyName, Class<T> propertyType) {
-        return getValue(propertyName, getCacheKey(propertyName, propertyType), null, null,
-                () -> getConverter(propertyType));
+        if (propertyType == ConfigValue.class) {
+            return (T) getConfigValue(propertyName, getCacheKey(propertyName, propertyType), null, null);
+        }
+        return getValue(propertyName, getCacheKey(propertyName, propertyType), null, null, () -> getConverter(propertyType));
     }
 
     @Override
@@ -192,37 +171,42 @@ public class PayaraConfig implements Config {
         return converters.keySet();
     }
 
-    @SuppressWarnings("unchecked")
     protected <T> T getValue(String propertyName, String cacheKey, Long ttl, String defaultValue,
             Supplier<Optional<Converter<T>>> converter) {
+
+        final ConfigValue result = getConfigValue(propertyName, cacheKey, ttl, defaultValue);
+        return convertValue(result, defaultValue, converter.get());
+    }
+
+    protected ConfigValueImpl getConfigValue(String propertyName, String cacheKey, Long ttl, String defaultValue) {
         long entryTTL = ttl != null ? ttl.longValue() : getCacheDurationSeconds();
+
         if (entryTTL <= 0) {
-            return getValueConverted(propertyName, defaultValue, converter.get());
+            return searchConfigSources(propertyName, defaultValue);
         }
+
         final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "")  + ":" + (entryTTL / 1000) + "s";
         final long now = currentTimeMillis();
-        return (T) cachedValuesByProperty.compute(entryKey, (key, entry) -> {
+        return cachedValuesByProperty.compute(entryKey, (key, entry) -> {
             if (entry != null && now < entry.expires) {
                 return entry;
             }
-            return new CacheEntry<>(getValueConverted(propertyName, defaultValue, converter.get()), entryTTL);
+            return new CacheEntry(searchConfigSources(propertyName, defaultValue), entryTTL);
         }).value;
     }
 
-    private <T> T getValueConverted(String propertyName, String defaultValue,
+    private <T> T convertValue(ConfigValue configValue, String defaultValue,
             Optional<Converter<T>> optionalConverter) {
-        final String sourceValue = getSourceValue(propertyName);
+        final String sourceValue = configValue.getValue();
 
-        // NOTE: when empty is considered missing by MP this condition needs to add "||
-        // sourceValue.isEmpty()"
-        if (sourceValue == null && defaultValue == null) {
+        if (sourceValue == null || sourceValue.isEmpty()) {
             return null;
         }
 
         if (!optionalConverter.isPresent()) {
             throw new IllegalArgumentException(String.format(
                 "Unable to find converter for property %s with value %s.",
-                propertyName,
+                configValue.getName(),
                 sourceValue
             ));
         }
@@ -272,6 +256,26 @@ public class PayaraConfig implements Config {
             return Optional.empty();
         }
         return Optional.of(new ArrayConverter<>(elementType, getConverter(elementType).get()));
+    }
+
+    private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue) {
+        for (ConfigSource source : sources) {
+            String sourceValue = source.getValue(propertyName);
+            if (sourceValue != null && !sourceValue.isEmpty()) {
+                return new ConfigValueImpl(
+                    propertyName,
+                    sourceValue,
+                    source.getName(),
+                    source.getOrdinal()
+                );
+            }
+        }
+        return new ConfigValueImpl(
+            propertyName,
+            defaultValue,
+            null,
+            0
+        );
     }
 
     static Class<?> boxedTypeOf(Class<?> type) {

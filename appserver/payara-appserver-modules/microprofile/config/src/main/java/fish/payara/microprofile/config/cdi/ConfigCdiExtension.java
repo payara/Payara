@@ -44,6 +44,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.event.Observes;
@@ -138,6 +139,7 @@ public class ConfigCdiExtension implements Extension {
             // we have the method
             if (beanAttr != null) {
                 HashSet<Type> types = new HashSet<>();
+                types.add(ConfigValue.class);
                 types.addAll(((PayaraConfig) config).getConverterTypes());
                 // add String explictly
                 types.add(String.class);

@@ -120,7 +120,7 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     @Override
     public <T> T as(Class<T> type, T defaultValue) {
         if (type == ConfigValue.class) {
-            return (T) Optional.ofNullable(config.getConfigValue(propertyName)).orElse((ConfigValue) defaultValue);
+            return (T) asConfigValue(propertyName, getCacheKey(propertyName, type), ttl, null);
         }
         return asValue(propertyName, getCacheKey(propertyName, type), ttl, defaultValue,
                 () -> Optional.of(
@@ -200,6 +200,29 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
             }
             return defaultValue;
         }
+    }
+
+    private ConfigValue asConfigValue(String propertyName, String cacheKey, Long ttl, String defaultValue) {
+        try {
+            final String resolvedDefault;
+            if (defaultValue != null && !defaultValue.isEmpty()) {
+                resolvedDefault = defaultValue;
+            } else {
+                resolvedDefault = getRawDefault();
+            }
+            ConfigValue value = config.getConfigValue(propertyName, cacheKey, ttl, resolvedDefault);
+            if (value != null) {
+                return value;
+            }
+            if (throwsOnMissingProperty) {
+                throwWhenNotExists(propertyName, null);
+            }
+        } catch (IllegalArgumentException ex) {
+            if (throwOnFailedConversion) {
+                throw ex;
+            }
+        }
+        return null;
     }
 
     private String getRawDefault() {
