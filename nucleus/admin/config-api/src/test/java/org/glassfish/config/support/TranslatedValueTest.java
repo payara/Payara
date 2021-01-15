@@ -55,13 +55,6 @@ import static org.junit.Assert.*;
  */
 public class TranslatedValueTest {
 
-    private String myEnvVar;
-
-    @Before
-    public void setUp() {
-        myEnvVar = System.getenv().entrySet().stream().findAny().get().getKey();
-    }
-
     @Test
     public void translationNotRequired() {
         System.out.println("translationNotRequired");
@@ -71,14 +64,12 @@ public class TranslatedValueTest {
     @Test
     public void envTranslationRequired() {
         System.out.println("envTranslationRequired");
-        assertEquals(System.getenv(myEnvVar), TranslatedConfigView.expandConfigValue("${ENV="+myEnvVar+"}"));
         assertEquals("${ENV=NOT_EXISTING_VARIABLE}", TranslatedConfigView.expandConfigValue("${ENV=NOT_EXISTING_VARIABLE}"));
     }
 
     @Test
     public void envTranslationRequiredWithDefault() {
         System.out.println("envTranslationRequiredWithDefault");
-        assertEquals(System.getenv(myEnvVar), TranslatedConfigView.expandConfigValue("${ENV="+myEnvVar+":defaultVariable}"));
         assertEquals("", TranslatedConfigView.expandConfigValue("${ENV=NOT_EXISTING_VARIABLE:}"));
         assertEquals("defaultVariable", TranslatedConfigView.expandConfigValue("${ENV=NOT_EXISTING_VARIABLE:defaultVariable}"));
         assertEquals("default:variable", TranslatedConfigView.expandConfigValue("${ENV=NOT_EXISTING_VARIABLE:default:variable}"));
