@@ -47,12 +47,12 @@ import static org.eclipse.microprofile.jwt.config.Names.ISSUER;
 import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.security.enterprise.identitystore.CredentialValidationResult;
@@ -152,11 +152,12 @@ public class SignedJWTIdentityStore implements IdentityStore {
         return properties.isPresent() ? Optional.ofNullable(Boolean.valueOf(properties.get().getProperty("disable.type.verification", "false"))) : Optional.empty();
     }
     
-    private Long readPublicKeyCacheTTL(Optional<Properties> properties) {
+    private Duration readPublicKeyCacheTTL(Optional<Properties> properties) {
         return properties
         		.map(props -> props.getProperty("publicKey.cache.ttl"))
         		.map(Long::valueOf)
-        		.orElseGet( () -> TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES));
+        		.map(Duration::ofMillis)
+        		.orElseGet( () -> Duration.ofMinutes(5));
     }
 
     
