@@ -156,7 +156,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
         return properties
         		.map(props -> props.getProperty("publicKey.cache.ttl"))
         		.map(Long::valueOf)
-        		.orElseGet( () -> TimeUnit.SECONDS.convert(5, TimeUnit.MINUTES));
+        		.orElseGet( () -> TimeUnit.MILLISECONDS.convert(5, TimeUnit.MINUTES));
     }
 
     

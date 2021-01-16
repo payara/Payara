@@ -83,17 +83,19 @@ class JwtPublicKeyStore {
     private static final String RSA_ALGORITHM = "RSA";
         
     private final Config config;
-    private final Supplier<Optional<String>> cache;
+    private final Supplier<Optional<String>> cacheSupplier;
     
     /**
-     * @param cacheTTL Public key cache TTL in seconds
+     * @param cacheTTL Public key cache TTL in milliseconds
      */
     public JwtPublicKeyStore(Long cacheTTL) {
         this.config = ConfigProvider.getConfig();
-        if(cacheTTL > 0)
-            cache = new PublicKeyLoadingCache(cacheTTL, this::readRawPublicKey)::get;
-        else
-            cache = this::readRawPublicKey;
+        if(cacheTTL > 0) {
+        	cacheSupplier = new PublicKeyLoadingCache(cacheTTL, this::readRawPublicKey)::get;
+        }
+        else {
+        	cacheSupplier = this::readRawPublicKey;
+        }
     }
 
     /**
@@ -103,7 +105,7 @@ class JwtPublicKeyStore {
      * @throws IllegalStateException if no public key was found
      */
     public PublicKey getPublicKey(String keyID) {
-        return cache.get()
+        return cacheSupplier.get()
             .map(key -> createPublicKey(key, keyID))
             .orElseThrow(() -> new IllegalStateException("No PublicKey found"));
     }
@@ -266,21 +268,26 @@ class JwtPublicKeyStore {
     private static class PublicKeyLoadingCache {
         
         private final long ttl;
-        private final Supplier<Optional<String>> loadingFunction;
+        private final Supplier<Optional<String>> keySupplier;
         private long lastUpdated;
         private Optional<String> publicKey;
         
         
-        public PublicKeyLoadingCache(long ttl, Supplier<Optional<String>> loadingFunction) {
+        /**
+         * 
+         * @param ttl Public key cache TTL in milliseconds
+         * @param keySupplier A supplier to load the public key.
+         */
+        public PublicKeyLoadingCache(long ttl, Supplier<Optional<String>> keySupplier) {
             this.ttl = ttl;
-            this.loadingFunction = loadingFunction;
-            this.lastUpdated = 0;
+            this.keySupplier = keySupplier;
         }
         
         public Optional<String> get() {
             long now = System.currentTimeMillis();
-            if(now - lastUpdated > ttl)
-                refresh();
+            if(now - lastUpdated > ttl) {
+            	refresh();
+            }
             
             return publicKey;
         }
@@ -288,7 +295,7 @@ class JwtPublicKeyStore {
         private synchronized void refresh() {
             long now = System.currentTimeMillis();
             if(now - lastUpdated > ttl) {
-                publicKey = loadingFunction.get();
+                publicKey = keySupplier.get();
                 lastUpdated = now;
             }
         }
