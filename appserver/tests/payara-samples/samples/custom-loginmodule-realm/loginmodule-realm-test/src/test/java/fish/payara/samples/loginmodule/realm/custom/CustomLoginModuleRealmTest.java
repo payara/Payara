@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,105 +42,99 @@ package fish.payara.samples.loginmodule.realm.custom;
 import com.gargoylesoftware.htmlunit.DefaultCredentialsProvider;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
-
 import fish.payara.samples.CliCommands;
+
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
+import fish.payara.samples.PayaraTestShrinkWrap;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static fish.payara.samples.ServerOperations.addMavenJarsToContainerLibFolder;
-import static fish.payara.samples.ServerOperations.getPayaraDomainFromServer;
-import static fish.payara.samples.ServerOperations.restartContainer;
 import static org.junit.Assert.assertTrue;
 
 @NotMicroCompatible
 @RunWith(PayaraArquillianTestRunner.class)
 public class CustomLoginModuleRealmTest {
-
     private static final String WEBAPP_SOURCE = "src/main/webapp";
-
-    private WebClient webClient;
 
     @ArquillianResource
     private URL base;
 
-    @Deployment(testable = false)
-    public static WebArchive createDeployment() {
+    @Deployment
+    public static WebArchive createDeployment() throws MalformedURLException {
+        File implJar = new File( "../loginmodule-realm-impl/target/loginmodule-realm-impl.jar");
+        assertTrue(implJar.exists());
 
-        addMavenJarsToContainerLibFolder("pom.xml", "fish.payara.samples:loginmodule-realm-impl");
-        restartContainer(getPayaraDomainFromServer());
+        WebArchive archive = PayaraTestShrinkWrap.getWebArchive()
+                .addClasses(TestServlet.class)
+                .addPackages(true, "org.apache.http.client")
+                .addAsResource(implJar)
+                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/web.xml"));
+        return archive;
+    }
 
+    @Test
+    @InSequence(1)
+    public void serverSetup() throws IOException {
+        Path serverPathToRealm = Paths.get("../tests/loginmodule-realm-impl.jar");
+        serverPathToRealm.getParent().toFile().mkdir();
+        try (InputStream strm = getClass().getClassLoader().getResourceAsStream("loginmodule-realm-impl.jar")) {
+            Files.copy(strm, serverPathToRealm, StandardCopyOption.REPLACE_EXISTING);
+        }
         List<String> cmd = new ArrayList<>();
-
         cmd.add("delete-auth-realm");
         cmd.add("custom");
         CliCommands.payaraGlassFish(cmd);
 
         cmd.clear();
-
         cmd.add("create-auth-realm");
-
         cmd.add("--login-module");
-        cmd.add(CustomLoginModule.class.getName());
-
+        cmd.add("fish.payara.samples.loginmodule.realm.custom.CustomLoginModule");
         cmd.add("--classname");
-        cmd.add(CustomRealm.class.getName());
-
+        cmd.add("fish.payara.samples.loginmodule.realm.custom.CustomRealm");
         cmd.add("--property");
-        cmd.add("jaas-context=customRealm");
-
+        cmd.add("jaas-context=customRealm:realmJarPath=" + serverPathToRealm.toAbsolutePath().normalize());
         cmd.add("custom");
-
         CliCommands.payaraGlassFish(cmd);
-
-        restartContainer(getPayaraDomainFromServer());
-
-        return ShrinkWrap.create(WebArchive.class)
-                .addClass(TestServlet.class)
-                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/web.xml"));
     }
 
-    @Before
-    public void setUp() throws InterruptedException {
-        webClient = new WebClient();
-    }
-
+    @InSequence(2)
     @Test
     @RunAsClient
-    public void testAuthenticationWithCorrectUser() throws Exception {
+    public void testAuthenticationWithCorrectUser() throws IOException {
+        try (WebClient webClient = new WebClient()) {
+            System.out.println("\n\nRequesting: " + base + "testServlet");
 
-        System.out.println("\n\nRequesting: " + base + "testServlet");
+            DefaultCredentialsProvider credentialsProvider = new DefaultCredentialsProvider();
+            credentialsProvider.addCredentials("realmUser", "realmPassword");
 
-        DefaultCredentialsProvider credentialsProvider = new DefaultCredentialsProvider();
-        credentialsProvider.addCredentials("realmUser", "realmPassword");
+            webClient.setCredentialsProvider(credentialsProvider);
+            TextPage page = webClient.getPage(base + "testServlet");
 
-        webClient.setCredentialsProvider(credentialsProvider);
-        TextPage page = webClient.getPage(base + "testServlet");
+            System.out.println(page.getContent());
 
-        System.out.println(page.getContent());
+            assertTrue("my GET", page.getContent().contains("This is a test servlet"));
 
-        assertTrue("my GET", page.getContent().contains("This is a test servlet"));
-
-        assertTrue("User doesn't have the corrrect role", page.getContent().contains("web user has role \"realmGroup\": true"));
-    }
-
-    @After
-    public void cleanUp() {
-        webClient.getCookieManager().clearCookies();
-        webClient.close();
+            assertTrue("User doesn't have the corrrect role", page.getContent().contains("web user has role \"realmGroup\": true"));
+            webClient.getCookieManager().clearCookies();
+        }
     }
 }

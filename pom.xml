@@ -100,12 +100,23 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>payara-nexus-artifacts</id>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
 
     </repositories>
 
     <properties>
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+        <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
         <maven.jar.plugin.version>3.1.1</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.0.0-M3</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
@@ -202,7 +213,7 @@
         <microprofile-metrics.version>3.0-RC4</microprofile-metrics.version>
         <microprofile-rest-client.version>1.4.1</microprofile-rest-client.version>
         <microprofile-openapi.version>2.0-RC3</microprofile-openapi.version>
-        <payara-arquillian-container.version>2.3</payara-arquillian-container.version>
+        <payara-arquillian-container.version>2.3.3</payara-arquillian-container.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.196</h2db.version>
         <websocket-api.version>1.1.2</websocket-api.version>
@@ -355,7 +366,7 @@
 
             <distributionManagement>
                 <repository>
-                    <id>payara-nexus</id>
+                    <id>payara-nexus-artifacts</id>
                     <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
                 </repository>
             </distributionManagement>

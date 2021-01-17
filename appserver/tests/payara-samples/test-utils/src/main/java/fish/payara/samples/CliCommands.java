@@ -33,19 +33,18 @@ public class CliCommands {
     }
 
     public static int payaraGlassFish(List<String> cliCommands, List<String> output) {
-
-        String gfHome = System.getProperty("glassfishRemote_gfHome");
-        if (gfHome == null) {
-            throw new IllegalStateException("glassfishRemote_gfHome not specified");
+        String productRoot = System.getProperty("com.sun.aas.productRoot");
+        if (productRoot == null) {
+            throw new IllegalStateException("com.sun.aas.productRoot not specified");
         }
 
-        Path gfHomePath = Paths.get(gfHome);
+        Path gfHomePath = Paths.get(productRoot);
         if (!gfHomePath.toFile().exists()) {
-            throw new IllegalStateException("glassfishRemote_gfHome at " + gfHome + " does not exists");
+            throw new IllegalStateException("com.sun.aas.productRoot at " + productRoot + " does not exists");
         }
 
         if (!gfHomePath.toFile().isDirectory()) {
-            throw new IllegalStateException("glassfishRemote_gfHome at " + gfHome + " is not a directory");
+            throw new IllegalStateException("com.sun.aas.productRoot at " + productRoot + " is not a directory");
         }
 
         Path asadminPath = gfHomePath.resolve(isWindows()? "bin/asadmin.bat" : "bin/asadmin");

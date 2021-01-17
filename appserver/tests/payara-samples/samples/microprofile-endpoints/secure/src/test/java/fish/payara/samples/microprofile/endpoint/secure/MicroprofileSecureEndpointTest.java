@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 
-import fish.payara.samples.CliCommands;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.ServerOperations;
@@ -58,13 +57,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static java.util.Arrays.asList;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
@@ -90,26 +86,10 @@ public class MicroprofileSecureEndpointTest {
     private final DefaultCredentialsProvider incorrectCreds = new DefaultCredentialsProvider();
 
     @Deployment(testable = false)
-    public static WebArchive createDeployment() {
+    public static WebArchive createDeployment() throws IOException {
         clientKeyStorePath = ServerOperations.createClientKeyStore();
         return create(WebArchive.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-    }
-
-    @BeforeClass
-    public static void enableSecurity() {
-        CliCommands.payaraGlassFish(asList("set-metrics-configuration", "--securityenabled", "true"));
-        CliCommands.payaraGlassFish(asList("set-microprofile-healthcheck-configuration", "--securityenabled", "true"));
-        CliCommands.payaraGlassFish(asList("set-openapi-configuration", "--securityenabled", "true"));
-        ServerOperations.restartContainer();
-    }
-
-    @AfterClass
-    public static void resetSecurity() {
-        CliCommands.payaraGlassFish(asList("set-metrics-configuration", "--securityenabled", "false"));
-        CliCommands.payaraGlassFish(asList("set-microprofile-healthcheck-configuration", "--securityenabled", "false"));
-        CliCommands.payaraGlassFish(asList("set-openapi-configuration", "--securityenabled", "false"));
-        ServerOperations.restartContainer();
     }
 
     @Before
@@ -129,7 +109,7 @@ public class MicroprofileSecureEndpointTest {
     @Test
     public void testMetricsWithCorrectCredentials() throws Exception {
         webClient.setCredentialsProvider(correctCreds);
-        Page page = webClient.getPage(serverBase + "../metrics");
+        Page page = webClient.getPage(serverBase + "../mpmetrics");
         assertEquals(SC_OK, page.getWebResponse().getStatusCode());
     }
 
@@ -138,7 +118,7 @@ public class MicroprofileSecureEndpointTest {
         webClient.setCredentialsProvider(incorrectCreds);
 
         try {
-            webClient.getPage(serverBase + "../metrics");
+            webClient.getPage(serverBase + "../mpmetrics");
             fail("/metrics could be accessed without proper security credentials");
         } catch (FailingHttpStatusCodeException e) {
             assertNotNull(e);
@@ -151,7 +131,7 @@ public class MicroprofileSecureEndpointTest {
         webClient.setCredentialsProvider(incorrectCreds);
 
         try {
-            webClient.getPage(serverBase + "../health");
+            webClient.getPage(serverBase + "../mphealth");
             fail("/health could be accessed without proper security credentials");
         } catch (FailingHttpStatusCodeException e) {
             assertNotNull(e);
