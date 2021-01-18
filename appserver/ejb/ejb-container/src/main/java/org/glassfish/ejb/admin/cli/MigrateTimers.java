@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.admin.cli;
 
@@ -196,12 +196,6 @@ public class MigrateTimers implements AdminCommand {
             return localStrings.getString("migrate.timers.fromServerNotClusteredInstance", fromServer);
         }
 
-        //verify fromServer is not running
-        if (isServerRunning(fromServer)) {
-            return localStrings.getString(
-                    "migrate.timers.migrateFromServerStillRunning", fromServer);
-        }
-        
         //if destinationServer is not set, or set to DAS, pick a running instance
         //in the same cluster as fromServer
         if(target.equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
@@ -239,12 +233,6 @@ public class MigrateTimers implements AdminCommand {
         List<DeploymentGroup> dgs = targetUtil.getDGForInstance(fromServer);
         if(dgs == null) {
             return localStrings.getString("migrate.timers.fromServerNotDG", fromServer);
-        }
-        
-        //verify fromServer is not running
-        if (isServerRunning(fromServer)) {
-            return localStrings.getString(
-                    "migrate.timers.migrateFromServerStillRunning", fromServer);
         }
         
         //if destinationServer is not set, or set to DAS, pick a running instance
