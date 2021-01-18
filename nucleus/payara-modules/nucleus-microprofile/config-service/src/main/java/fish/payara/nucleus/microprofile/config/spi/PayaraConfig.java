@@ -45,6 +45,7 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
+import org.glassfish.config.support.TranslatedConfigView;
 
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.getCacheKey;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
@@ -259,23 +260,51 @@ public class PayaraConfig implements Config {
     }
 
     private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue) {
+
+        ConfigValueImpl result = null;
+
         for (ConfigSource source : sources) {
             String sourceValue = source.getValue(propertyName);
             if (sourceValue != null && !sourceValue.isEmpty()) {
-                return new ConfigValueImpl(
+                result = new ConfigValueImpl(
                     propertyName,
                     sourceValue,
                     source.getName(),
                     source.getOrdinal()
                 );
+                break;
             }
         }
-        return new ConfigValueImpl(
-            propertyName,
-            defaultValue,
-            null,
-            0
-        );
+
+        if (result == null) {
+            result = new ConfigValueImpl(
+                propertyName,
+                defaultValue,
+                null,
+                0
+            );
+        }
+
+        resolveExpressions(result);
+        return result;
+    }
+
+    private void resolveExpressions(ConfigValueImpl result) {
+        final String rawValue = result.getRawValue();
+        if (rawValue != null) {
+            // Convert the string to resolve into the form required by TranslatedConfigView
+            final String resolutionString = rawValue.replace("${", "${MPCONFIG=");
+
+            // If the resolution did something
+            if (!resolutionString.equals(rawValue)) {
+
+                // Expand all MPCONFIG expressions
+                final String resolvedString = TranslatedConfigView.expandValue(resolutionString);
+                if (resolvedString != null && !resolvedString.equals(resolutionString)) {
+                    result.setValue(resolvedString);
+                }
+            }
+        }
     }
 
     static Class<?> boxedTypeOf(Class<?> type) {

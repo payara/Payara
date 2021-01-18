@@ -44,7 +44,7 @@ import org.eclipse.microprofile.config.ConfigValue;
 public class ConfigValueImpl implements ConfigValue {
 
     private final String name;
-    private final String value;
+    private String value;
     private final String rawValue;
     private final String sourceName;
     private final int sourceOrdinal;
@@ -65,6 +65,10 @@ public class ConfigValueImpl implements ConfigValue {
     @Override
     public String getValue() {
         return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 
     @Override
