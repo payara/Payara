@@ -201,7 +201,7 @@ public class MigrateTimers implements AdminCommand {
         if(target.equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
             List<Server> instances = fromServerCluster.getInstances();
             for(Server instance : instances) {
-                if(instance.isRunning()) {
+                if(instance.isRunning() && !instance.getName().equals(fromServer)) {
                     target = instance.getName();
                     needRedirect = true;
                 }
@@ -240,7 +240,7 @@ public class MigrateTimers implements AdminCommand {
         if(target.equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
             List<Server> instances = dgs.get(0).getInstances();
             for(Server instance : instances) {
-                if(instance.isRunning()) {
+                if(instance.isRunning() && !instance.getName().equals(fromServer)) {
                     target = instance.getName();
                     needRedirect = true;
                 }
