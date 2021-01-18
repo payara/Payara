@@ -80,8 +80,6 @@ import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.internal.api.Globals;
 
-import static fish.payara.appserver.micro.services.PayaraInstanceImpl.INTERNAL_EVENTS_NAME;
-
 /**
  * Store for EJB timers that exist across a Hazelcast cluster.
  * @author steve
