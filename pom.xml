@@ -354,12 +354,8 @@
         </profile>
 
         <profile>
+            <!-- only internal modules deployed, so tests can run without Server build built -->
             <id>deploy-internals</id>
-
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-
             <properties>
                 <deploy.skip>false</deploy.skip>
             </properties>
@@ -369,6 +365,10 @@
                     <id>payara-nexus-artifacts</id>
                     <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
                 </repository>
+                <snapshotRepository>
+                    <id>payara-nexus-snapshots</id>
+                    <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
+                </snapshotRepository>
             </distributionManagement>
         </profile>
 

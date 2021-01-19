@@ -365,8 +365,15 @@
         </plugins>
     </build>
     
-    <!-- Alternative profile: embed the sources into each dependency (for trivial source lookup in IDEs) -->
     <profiles>
+        <profile>
+            <id>deploy-internals</id>
+            <properties>
+                <deploy.skip>true</deploy.skip>
+            </properties>
+        </profile>
+
+        <!-- Alternative profile: embed the sources into each dependency (for trivial source lookup in IDEs) -->
         <profile>
             <id>embed-source</id>
             <build>

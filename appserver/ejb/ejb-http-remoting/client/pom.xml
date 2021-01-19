@@ -130,16 +130,6 @@
         </plugins>
     </build>
 
-    <profiles>
-        <!-- Don't deploy any distributions if only the internals are being deployed -->
-        <profile>
-            <id>deploy-internals</id>
-            <properties>
-                <deploy.skip>true</deploy.skip>
-            </properties>
-        </profile>
-    </profiles>
-
     <dependencies>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
