@@ -45,7 +45,6 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
-import org.glassfish.config.support.TranslatedConfigView;
 
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.getCacheKey;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
@@ -53,6 +52,7 @@ import static java.lang.System.currentTimeMillis;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -87,7 +87,9 @@ public class PayaraConfig implements Config {
     private final List<ConfigSource> sources;
     private final Map<Class<?>, Converter<?>> converters;
     private final long defaultCacheDurationSeconds;
-    private final Map<String, CacheEntry> cachedValuesByProperty = new ConcurrentHashMap<>();
+
+    private final Object cacheMapLock = new Object();
+    private final Map<String, CacheEntry> cachedValuesByProperty = new HashMap<>();
 
     private volatile Long configuredCacheValue = null;
     private final Object configuredCacheValueLock = new Object();
@@ -186,14 +188,19 @@ public class PayaraConfig implements Config {
             return searchConfigSources(propertyName, defaultValue);
         }
 
+        final String finalPropertyName = propertyName;
+        final String finalDefaultValue = defaultValue;
         final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "")  + ":" + (entryTTL / 1000) + "s";
         final long now = currentTimeMillis();
-        return cachedValuesByProperty.compute(entryKey, (key, entry) -> {
-            if (entry != null && now < entry.expires) {
-                return entry;
-            }
-            return new CacheEntry(searchConfigSources(propertyName, defaultValue), entryTTL);
-        }).value;
+
+        synchronized(cacheMapLock) {
+            return cachedValuesByProperty.compute(entryKey, (key, entry) -> {
+                if (entry != null && now < entry.expires) {
+                    return entry;
+                }
+                return new CacheEntry(searchConfigSources(finalPropertyName, finalDefaultValue), entryTTL);
+            }).value;
+        }
     }
 
     private <T> T convertValue(ConfigValue configValue, String defaultValue,
@@ -248,7 +255,9 @@ public class PayaraConfig implements Config {
     }
     
     public void clearCache() {
-        cachedValuesByProperty.clear();
+        synchronized(cacheMapLock) {
+            cachedValuesByProperty.clear();
+        }
     }
 
     private <E> Optional<Converter<Object>> createArrayConverter(Class<E> elementType) {
@@ -260,51 +269,8 @@ public class PayaraConfig implements Config {
     }
 
     private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue) {
-
-        ConfigValueImpl result = null;
-
-        for (ConfigSource source : sources) {
-            String sourceValue = source.getValue(propertyName);
-            if (sourceValue != null && !sourceValue.isEmpty()) {
-                result = new ConfigValueImpl(
-                    propertyName,
-                    sourceValue,
-                    source.getName(),
-                    source.getOrdinal()
-                );
-                break;
-            }
-        }
-
-        if (result == null) {
-            result = new ConfigValueImpl(
-                propertyName,
-                defaultValue,
-                null,
-                0
-            );
-        }
-
-        resolveExpressions(result);
-        return result;
-    }
-
-    private void resolveExpressions(ConfigValueImpl result) {
-        final String rawValue = result.getRawValue();
-        if (rawValue != null) {
-            // Convert the string to resolve into the form required by TranslatedConfigView
-            final String resolutionString = rawValue.replace("${", "${MPCONFIG=");
-
-            // If the resolution did something
-            if (!resolutionString.equals(rawValue)) {
-
-                // Expand all MPCONFIG expressions
-                final String resolvedString = TranslatedConfigView.expandValue(resolutionString);
-                if (resolvedString != null && !resolvedString.equals(resolutionString)) {
-                    result.setValue(resolvedString);
-                }
-            }
-        }
+        return new ConfigExpressionResolver(sources)
+                .resolve(propertyName, defaultValue);
     }
 
     static Class<?> boxedTypeOf(Class<?> type) {
