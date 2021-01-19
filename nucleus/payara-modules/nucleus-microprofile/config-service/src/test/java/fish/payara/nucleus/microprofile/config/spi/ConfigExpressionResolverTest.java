@@ -62,6 +62,7 @@ public class ConfigExpressionResolverTest {
         source.getProperties().put("reference.single", "${key}");
         source.getProperties().put("reference.double", "${reference.single}");
         source.getProperties().put("reference.concat", "${key}${key}");
+        source.getProperties().put("reference.recursive", "${reference.recursive}");
         source.getProperties().put("default.value", "${not.existing:result}");
         source.getProperties().put("default.value.reference", "${not.existing:${key}}");
         source.getProperties().put("default.key.reference", "${${not.existing:key}:not.found}");
@@ -119,6 +120,11 @@ public class ConfigExpressionResolverTest {
         ConfigValue result = resolver.resolve("default.key.reference");
         assertEquals("${${not.existing:key}:not.found}", result.getRawValue());
         assertEquals("value", result.getValue());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInfinitelyRecursiveReference() {
+        resolver.resolve("reference.recursive");
     }
     
 }

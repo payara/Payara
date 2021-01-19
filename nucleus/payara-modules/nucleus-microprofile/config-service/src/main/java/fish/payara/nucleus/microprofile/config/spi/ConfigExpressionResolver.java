@@ -39,14 +39,20 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 public class ConfigExpressionResolver {
 
     private final Iterable<ConfigSource> sources;
 
+    private final Set<String> resolvingExpressions;
+
     public ConfigExpressionResolver(Iterable<ConfigSource> sources) {
         this.sources = sources;
+        this.resolvingExpressions = new HashSet<>();
     }
 
     public ConfigValueImpl resolve(String propertyName) {
@@ -73,55 +79,66 @@ public class ConfigExpressionResolver {
         return new ConfigValueImpl(resolvedPropertyName, propertyDefault, resolveExpression(propertyDefault), null, 0);
     }
 
-    private String resolveExpression(String expression) {
+    private synchronized String resolveExpression(String expression) {
         if (expression == null) {
             return null;
         }
 
-        final char[] characters = expression.toCharArray();
-
+        if (resolvingExpressions.contains(expression)) {
+            throw new IllegalArgumentException("Infinitely recursive expression found within expression: " + expression);
+        }
+        
         String result = "";
-        String expressionBuilder = "";
-        String expressionDefaultBuilder = "";
 
-        boolean isExpression = false;
-        boolean isDefaultValue = false;
-        int bracketDepth = 0;
-        for (int i = 0; i < characters.length; i++) {
-            final char c = characters[i];
+        try {
+            resolvingExpressions.add(expression);
 
-            // Configure the context if expression markers are found
-            if (c == ':' && bracketDepth == 1) {
-                isDefaultValue = true;
-                continue;
-            } else if (isExpression) {
-                if (c == '{' && bracketDepth++ == 0) {
+            final char[] characters = expression.toCharArray();
+
+            String expressionBuilder = "";
+            String expressionDefaultBuilder = "";
+
+            boolean isExpression = false;
+            boolean isDefaultValue = false;
+            int bracketDepth = 0;
+            for (int i = 0; i < characters.length; i++) {
+                final char c = characters[i];
+
+                // Configure the context if expression markers are found
+                if (c == ':' && bracketDepth == 1) {
+                    isDefaultValue = true;
                     continue;
-                } else if (c == '}' && bracketDepth-- == 1) {
-                    isDefaultValue = false;
-                    isExpression = false;
+                } else if (isExpression) {
+                    if (c == '{' && bracketDepth++ == 0) {
+                        continue;
+                    } else if (c == '}' && bracketDepth-- == 1) {
+                        isDefaultValue = false;
+                        isExpression = false;
+                    }
+                } else if (c == '$' && characters[i + 1] == '{' && (i == 0 || characters[i - 1] != '\\')) {
+                    isExpression = true;
+                    continue;
                 }
-            } else if (c == '$' && characters[i + 1] == '{' && (i == 0 || characters[i - 1] != '\\')) {
-                isExpression = true;
-                continue;
-            }
 
-            // React to the given character (given the context)
-            if (isDefaultValue) {
-                expressionDefaultBuilder += c;
-            } else if (isExpression) {
-                expressionBuilder += c;
-            } else if (expressionBuilder.isEmpty()) {
-                result += c;
-            } else {
-                // If the expression has ended, resolve the expression and clear the context
-                final String resolvedExpression = resolve(expressionBuilder, expressionDefaultBuilder).getValue();
-                expressionBuilder = "";
-                expressionDefaultBuilder = "";
-                if (resolvedExpression != null) {
-                    result += resolvedExpression;
+                // React to the given character (given the context)
+                if (isDefaultValue) {
+                    expressionDefaultBuilder += c;
+                } else if (isExpression) {
+                    expressionBuilder += c;
+                } else if (expressionBuilder.isEmpty()) {
+                    result += c;
+                } else {
+                    // If the expression has ended, resolve the expression and clear the context
+                    final String resolvedExpression = resolve(expressionBuilder, expressionDefaultBuilder).getValue();
+                    expressionBuilder = "";
+                    expressionDefaultBuilder = "";
+                    if (resolvedExpression != null) {
+                        result += resolvedExpression;
+                    }
                 }
             }
+        } finally {
+            resolvingExpressions.remove(expression);
         }
 
         return result;
