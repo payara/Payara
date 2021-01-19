@@ -101,7 +101,7 @@ public class ConfigExpressionResolver {
                     isDefaultValue = false;
                     isExpression = false;
                 }
-            } else if (c == '$' && characters[i+ 1] == '{') {
+            } else if (c == '$' && characters[i + 1] == '{' && (i == 0 || characters[i - 1] != '\\')) {
                 isExpression = true;
                 continue;
             }

@@ -58,6 +58,7 @@ public class ConfigExpressionResolverTest {
     @Before
     public void configureConfigProperties() {
         source.getProperties().put("key", "value");
+        source.getProperties().put("reference.escaped", "\\${key}");
         source.getProperties().put("reference.single", "${key}");
         source.getProperties().put("reference.double", "${reference.single}");
         source.getProperties().put("reference.concat", "${key}${key}");
@@ -69,6 +70,13 @@ public class ConfigExpressionResolverTest {
     @Test
     public void testPlainValue() {
         assertEquals("value", resolver.resolve("key").getValue());
+    }
+
+    @Test
+    public void testEscapedReference() {
+        ConfigValue result = resolver.resolve("reference.escaped");
+        assertEquals("\\${key}", result.getRawValue());
+        assertEquals("\\${key}", result.getValue());
     }
 
     @Test
