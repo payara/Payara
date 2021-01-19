@@ -44,6 +44,7 @@ import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -63,6 +64,7 @@ public class ConfigExpressionResolverTest {
         source.getProperties().put("reference.double", "${reference.single}");
         source.getProperties().put("reference.concat", "${key}${key}");
         source.getProperties().put("reference.recursive", "${reference.recursive}");
+        source.getProperties().put("reference.not.found", "${not.existing}");
         source.getProperties().put("default.value", "${not.existing:result}");
         source.getProperties().put("default.value.reference", "${not.existing:${key}}");
         source.getProperties().put("default.key.reference", "${${not.existing:key}:not.found}");
@@ -99,6 +101,11 @@ public class ConfigExpressionResolverTest {
         ConfigValue result = resolver.resolve("reference.concat");
         assertEquals("${key}${key}", result.getRawValue());
         assertEquals("valuevalue", result.getValue());
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testNonExistantReference() {
+        resolver.resolve("reference.not.found");
     }
 
     @Test

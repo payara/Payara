@@ -40,6 +40,7 @@
 package fish.payara.nucleus.microprofile.config.spi;
 
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -150,6 +151,10 @@ final class ConfigExpressionResolver {
             }
         } finally {
             resolvingExpressions.remove(expression);
+        }
+
+        if (result.isEmpty()) {
+            throw new NoSuchElementException("Unable to resolve expression " + expression);
         }
 
         return result;
