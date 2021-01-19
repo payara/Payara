@@ -126,5 +126,11 @@ public class ConfigExpressionResolverTest {
     public void testInfinitelyRecursiveReference() {
         resolver.resolve("reference.recursive");
     }
+
+    @Test
+    public void testExpressionExpansionDisabled() {
+        final ConfigExpressionResolver disabledResolver = new ConfigExpressionResolver(singleton(source), false);
+        assertEquals("${key}", disabledResolver.resolve("reference.single").getValue());
+    }
     
 }

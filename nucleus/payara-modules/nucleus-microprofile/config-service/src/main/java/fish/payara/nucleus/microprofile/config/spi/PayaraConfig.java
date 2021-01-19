@@ -73,6 +73,7 @@ import java.util.function.Supplier;
 public class PayaraConfig implements Config {
 
     private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
+    private static final String MP_CONFIG_EXPANSION_ENABLED_STRING = "mp.config.property.expressions.enabled";
 
     private static final class CacheEntry {
         final ConfigValueImpl value;
@@ -269,7 +270,11 @@ public class PayaraConfig implements Config {
     }
 
     private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue) {
-        return new ConfigExpressionResolver(sources)
+
+        final boolean expansionEnabled = getOptionalValue(MP_CONFIG_EXPANSION_ENABLED_STRING, Boolean.class)
+                .orElse(true);
+
+        return new ConfigExpressionResolver(sources, expansionEnabled)
                 .resolve(propertyName, defaultValue);
     }
 

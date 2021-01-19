@@ -44,22 +44,29 @@ import java.util.Set;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
-public class ConfigExpressionResolver {
+final class ConfigExpressionResolver {
 
     private final Iterable<ConfigSource> sources;
 
+    private final boolean expansionEnabled;
+
     private final Set<String> resolvingExpressions;
 
-    public ConfigExpressionResolver(Iterable<ConfigSource> sources) {
+    protected ConfigExpressionResolver(Iterable<ConfigSource> sources) {
+        this(sources, true);
+    }
+
+    protected ConfigExpressionResolver(Iterable<ConfigSource> sources, boolean expansionEnabled) {
         this.sources = sources;
+        this.expansionEnabled = expansionEnabled;
         this.resolvingExpressions = new HashSet<>();
     }
 
-    public ConfigValueImpl resolve(String propertyName) {
+    protected ConfigValueImpl resolve(String propertyName) {
         return resolve(propertyName, null);
     }
 
-    public ConfigValueImpl resolve(String propertyName, String propertyDefault) {
+    protected ConfigValueImpl resolve(String propertyName, String propertyDefault) {
 
         String resolvedPropertyName = resolveExpression(propertyName);
 
@@ -82,6 +89,10 @@ public class ConfigExpressionResolver {
     private synchronized String resolveExpression(String expression) {
         if (expression == null) {
             return null;
+        }
+
+        if (!expansionEnabled) {
+            return expression;
         }
 
         if (resolvingExpressions.contains(expression)) {
