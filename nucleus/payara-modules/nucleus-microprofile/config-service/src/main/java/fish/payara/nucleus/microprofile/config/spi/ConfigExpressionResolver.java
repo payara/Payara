@@ -107,32 +107,47 @@ final class ConfigExpressionResolver {
 
             final char[] characters = expression.toCharArray();
 
+            // These two variables store if the current character is part of
+            // an expression that will need resolving, and the contents of that expression.
+            // This essentially acts as a buffer that can be cleared when the expression is complete,
+            // then added to the result
+            boolean isExpression = false;
             String expressionBuilder = "";
+
+            // These two variables perform a similar buffer function, but for the fallback if
+            // the above expression fails to be resolved
+            boolean isDefaultValue = false;
             String expressionDefaultBuilder = "";
 
-            boolean isExpression = false;
-            boolean isDefaultValue = false;
+            // Counts the depth of brackets, to help discern when an expression has actually ended
+            // I.e. without this variable, nested closing braces will cause the expression to close early
+            // this is the reason that RegEx can't be used
             int bracketDepth = 0;
+
             for (int i = 0; i < characters.length; i++) {
                 final char c = characters[i];
-
+                
                 // Configure the context if expression markers are found
                 if (c == ':' && bracketDepth == 1) {
+                    // Start building the default (only accept colons outside of any nested expressions)
                     isDefaultValue = true;
                     continue;
-                } else if (isExpression) {
-                    if (c == '{' && bracketDepth++ == 0) {
-                        continue;
-                    } else if (c == '}' && bracketDepth-- == 1) {
-                        isDefaultValue = false;
-                        isExpression = false;
-                    }
-                } else if (c == '$' && characters[i + 1] == '{' && (i == 0 || characters[i - 1] != '\\')) {
+                } else if (bracketDepth == 0 && isExpressionStart(characters, i)) {
+                    // Ignore starting $ symbols
+                    continue;
+                } else if (isExpressionStart(characters, i - 1) && bracketDepth++ == 0) {
+                    // Start the expression (only if the expression isn't nested)
                     isExpression = true;
+                    continue;
+                } else if (isExpression && isExpressionEnd(characters, i) && bracketDepth-- == 1) {
+                    // End the expression (only if the expression isn't nested)
+                    isDefaultValue = false;
+                    isExpression = false;
+                } else if (isCharacterEscaped(characters, i + 1) && !isCharacterEscaped(characters, i)) {
                     continue;
                 }
 
-                // React to the given character (given the context)
+                // React to the given character (given the previously calculated context)
                 if (isDefaultValue) {
                     expressionDefaultBuilder += c;
                 } else if (isExpression) {
@@ -140,10 +155,14 @@ final class ConfigExpressionResolver {
                 } else if (expressionBuilder.isEmpty()) {
                     result += c;
                 } else {
-                    // If the expression has ended, resolve the expression and clear the context
+                    // If the expression has ended, resolve the expression
                     final String resolvedExpression = resolve(expressionBuilder, expressionDefaultBuilder).getValue();
+
+                    // Clear the buffers
                     expressionBuilder = "";
                     expressionDefaultBuilder = "";
+
+                    // Append the expression to the result, to continue processing the rest
                     if (resolvedExpression != null) {
                         result += resolvedExpression;
                     }
@@ -158,6 +177,40 @@ final class ConfigExpressionResolver {
         }
 
         return result;
+    }
+
+    /**
+     * @param characters a array of characters
+     * @param index the index of the character to test
+     * @return if the character at the given index marks the '$' at the beginning of an expression
+     */
+    private static boolean isExpressionStart(final char[] characters, final int index) {
+        return index >= 0
+            && index < characters.length
+            && characters[index] == '$'
+            && characters[index + 1] == '{'
+            && !isCharacterEscaped(characters, index);
+    }
+
+    /**
+     * @param characters an array of characters
+     * @param index the index of the character to test
+     * @return if the character at the given index marks the '}' to close an expression
+     */
+    private static boolean isExpressionEnd(final char[] characters, final int index) {
+        return index >= 0
+            && index < characters.length
+            && characters[index] == '}'
+            && !isCharacterEscaped(characters, index);
+    }
+
+    /**
+     * @param characters an array of characters
+     * @param index the index of the character to test
+     * @return if the character at the given index is escaped
+     */
+    private static boolean isCharacterEscaped(final char[] characters, final int index) {
+        return !(index == 0 || characters[index - 1] != '\\');
     }
 
 }
