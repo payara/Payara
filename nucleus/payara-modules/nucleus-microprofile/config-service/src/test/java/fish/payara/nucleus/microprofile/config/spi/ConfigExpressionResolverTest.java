@@ -42,6 +42,7 @@ package fish.payara.nucleus.microprofile.config.spi;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.NoSuchElementException;
@@ -64,17 +65,20 @@ public class ConfigExpressionResolverTest {
         source.getProperties().put("reference.escaped2", "${not.existing:1{\\}3}");
         source.getProperties().put("reference.single", "${key}");
         source.getProperties().put("reference.double", "${reference.single}");
-        source.getProperties().put("reference.concat", "${key}${key}");
+        source.getProperties().put("reference.concat", "1${key}${key}2");
         source.getProperties().put("reference.recursive", "${reference.recursive}");
         source.getProperties().put("reference.not.found", "${not.existing}");
         source.getProperties().put("default.value", "${not.existing:result}");
+        source.getProperties().put("default.value.empty", "1${not.existing:}2");
         source.getProperties().put("default.value.reference", "${not.existing:${key}}");
         source.getProperties().put("default.key.reference", "${${not.existing:key}:not.found}");
     }
 
     @Test
     public void testPlainValue() {
-        assertEquals("value", resolver.resolve("key").getValue());
+        ConfigValue result = resolver.resolve("key");
+        assertEquals("value", result.getRawValue());
+        assertEquals("value", result.getValue());
     }
 
     @Test
@@ -112,8 +116,8 @@ public class ConfigExpressionResolverTest {
     @Test
     public void testConcatenatedReferences() {
         ConfigValue result = resolver.resolve("reference.concat");
-        assertEquals("${key}${key}", result.getRawValue());
-        assertEquals("valuevalue", result.getValue());
+        assertEquals("1${key}${key}2", result.getRawValue());
+        assertEquals("1valuevalue2", result.getValue());
     }
 
     @Test(expected = NoSuchElementException.class)
@@ -123,9 +127,27 @@ public class ConfigExpressionResolverTest {
 
     @Test
     public void testDefaultValue() {
+        ConfigValue result = resolver.resolve("not.existing", null);
+        assertNull(result.getRawValue());
+        assertNull(result.getValue());
+
+        result = resolver.resolve("not.existing", "value");
+        assertEquals("value", result.getRawValue());
+        assertEquals("value", result.getValue());
+    }
+
+    @Test
+    public void testDefaultRefValue() {
         ConfigValue result = resolver.resolve("default.value");
         assertEquals("${not.existing:result}", result.getRawValue());
         assertEquals("result", result.getValue());
+    }
+
+    @Test
+    public void testEmptyDefaultValue() {
+        ConfigValue result = resolver.resolve("default.value.empty");
+        assertEquals("1${not.existing:}2", result.getRawValue());
+        assertEquals("12", result.getValue());
     }
 
     @Test

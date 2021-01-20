@@ -68,6 +68,10 @@ final class ConfigExpressionResolver {
     }
 
     protected ConfigValueImpl resolve(String propertyName, String propertyDefault) {
+        return resolve(propertyName, propertyDefault, false);
+    }
+
+    private ConfigValueImpl resolve(String propertyName, String propertyDefault, boolean resolveDefault) {
 
         String resolvedPropertyName = resolveExpression(propertyName);
 
@@ -84,7 +88,8 @@ final class ConfigExpressionResolver {
             }
         }
 
-        return new ConfigValueImpl(resolvedPropertyName, propertyDefault, resolveExpression(propertyDefault), null, 0);
+        return new ConfigValueImpl(resolvedPropertyName, propertyDefault,
+                resolveDefault ? resolveExpression(propertyDefault) : propertyDefault, null, 0);
     }
 
     private synchronized String resolveExpression(String expression) {
@@ -99,7 +104,7 @@ final class ConfigExpressionResolver {
         if (resolvingExpressions.contains(expression)) {
             throw new IllegalArgumentException("Infinitely recursive expression found within expression: " + expression);
         }
-        
+
         String result = "";
 
         try {
@@ -118,6 +123,7 @@ final class ConfigExpressionResolver {
             // the above expression fails to be resolved
             boolean isDefaultValue = false;
             String expressionDefaultBuilder = "";
+            boolean defaultValueFound = false;
 
             // Counts the depth of brackets, to help discern when an expression has actually ended
             // I.e. without this variable, nested closing braces will cause the expression to close early
@@ -131,6 +137,7 @@ final class ConfigExpressionResolver {
                 if (c == ':' && bracketDepth == 1) {
                     // Start building the default (only accept colons outside of any nested expressions)
                     isDefaultValue = true;
+                    defaultValueFound = true;
                     continue;
                 } else if (bracketDepth == 0 && isExpressionStart(characters, i)) {
                     // Ignore starting $ symbols
@@ -156,7 +163,7 @@ final class ConfigExpressionResolver {
                     result += c;
                 } else {
                     // If the expression has ended, resolve the expression
-                    final String resolvedExpression = resolve(expressionBuilder, expressionDefaultBuilder).getValue();
+                    final String resolvedExpression = resolve(expressionBuilder, expressionDefaultBuilder, true).getValue();
 
                     // Clear the buffers
                     expressionBuilder = "";
@@ -166,14 +173,14 @@ final class ConfigExpressionResolver {
                     if (resolvedExpression != null) {
                         result += resolvedExpression;
                     }
+
+                    if (result.isEmpty() && !defaultValueFound) {
+                        throw new NoSuchElementException("Unable to resolve expression " + expression);
+                    }
                 }
             }
         } finally {
             resolvingExpressions.remove(expression);
-        }
-
-        if (result.isEmpty()) {
-            throw new NoSuchElementException("Unable to resolve expression " + expression);
         }
 
         return result;
