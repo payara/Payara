@@ -210,7 +210,27 @@ final class ConfigExpressionResolver {
      * @return if the character at the given index is escaped
      */
     private static boolean isCharacterEscaped(final char[] characters, final int index) {
-        return !(index == 0 || characters[index - 1] != '\\');
+        if (index == 0 || index >= characters.length) {
+            return false;
+        }
+
+        final char c = characters[index];
+        final boolean backslashFound = characters[index - 1] == '\\';
+
+        if (!backslashFound) {
+            return false;
+        }
+
+        // Only allow certain characters to be escaped. This is so that, for example, the array converter still receives
+        // the expected escape characters
+        switch (c) {
+            case '$':
+            case '{':
+            case '}':
+                return true;
+            default:
+                return false;
+        }
     }
 
 }

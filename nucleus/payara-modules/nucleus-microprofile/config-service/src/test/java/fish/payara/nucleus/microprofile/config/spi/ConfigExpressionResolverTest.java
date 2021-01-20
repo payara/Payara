@@ -59,6 +59,7 @@ public class ConfigExpressionResolverTest {
     @Before
     public void configureConfigProperties() {
         source.getProperties().put("key", "value");
+        source.getProperties().put("key.escaped", "a,b,c\\,d");
         source.getProperties().put("reference.escaped", "\\${key}");
         source.getProperties().put("reference.escaped2", "${not.existing:1{\\}3}");
         source.getProperties().put("reference.single", "${key}");
@@ -74,6 +75,13 @@ public class ConfigExpressionResolverTest {
     @Test
     public void testPlainValue() {
         assertEquals("value", resolver.resolve("key").getValue());
+    }
+
+    @Test
+    public void testEscapedValue() {
+        ConfigValue result = resolver.resolve("key.escaped");
+        assertEquals("a,b,c\\,d", result.getRawValue());
+        assertEquals("a,b,c\\,d", result.getValue());
     }
 
     @Test
