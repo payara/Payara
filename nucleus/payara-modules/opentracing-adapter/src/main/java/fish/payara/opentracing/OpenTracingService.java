@@ -137,9 +137,9 @@ public class OpenTracingService implements EventListener {
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
                 tracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
             } else if (tracer == null) {
-                // Check if we have an ORB Tracer with an active span
-                Tracer orbTracer = tracers.get("__PAYARA_CORBA_RMI");
-                if (orbTracer != null && orbTracer.activeSpan() != null) {
+                // Check if we have an ORB Tracer so that we can use its scope manager
+                Tracer orbTracer = tracers.get(PAYARA_CORBA_RMI_TRACER_NAME);
+                if (orbTracer != null) {
                     tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, orbTracer.scopeManager());
                 } else {
                     tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
