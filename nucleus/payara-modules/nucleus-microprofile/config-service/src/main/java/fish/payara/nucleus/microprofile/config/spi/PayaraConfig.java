@@ -271,8 +271,10 @@ public class PayaraConfig implements Config {
 
     private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue) {
 
-        final boolean expansionEnabled = getOptionalValue(MP_CONFIG_EXPANSION_ENABLED_STRING, Boolean.class)
-                .orElse(true);
+        final boolean expansionEnabled = !MP_CONFIG_CACHE_DURATION.equals(propertyName)
+            && !MP_CONFIG_EXPANSION_ENABLED_STRING.equals(propertyName)
+            && getOptionalValue(MP_CONFIG_EXPANSION_ENABLED_STRING, Boolean.class)
+                    .orElse(true);
 
         return new ConfigExpressionResolver(sources, expansionEnabled)
                 .resolve(propertyName, defaultValue);
