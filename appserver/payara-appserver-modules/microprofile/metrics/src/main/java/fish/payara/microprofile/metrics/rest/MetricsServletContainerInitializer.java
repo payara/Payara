@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.metrics.rest;
 
+import static fish.payara.microprofile.Constants.CREATE_INSECURE_ENDPOINT_TEST;
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import static java.util.Arrays.asList;
 import java.util.Map;
@@ -85,6 +86,10 @@ public class MetricsServletContainerInitializer implements ServletContainerIniti
             String[] roles = configuration.getRoles().split(",");
             reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
             ctx.declareRoles(roles);
+            if (Boolean.getBoolean(CREATE_INSECURE_ENDPOINT_TEST)) {
+                ServletRegistration.Dynamic insecureReg = ctx.addServlet("microprofile-metrics-resource-insecure", MetricsResource.class);
+                insecureReg.addMapping("/" + configuration.getEndpoint() + "-insecure/*");
+            }
         }
     }
 }

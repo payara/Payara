@@ -40,11 +40,12 @@
 package fish.payara.samples.clustered.singleton.expectedfail;
 
 import fish.payara.cluster.Clustered;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
 import java.util.logging.Logger;
 import javax.ejb.Singleton;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.ShouldThrowException;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -53,7 +54,8 @@ import org.junit.runner.RunWith;
 /**
  * @author lprimak
  */
-@RunWith(Arquillian.class)
+@RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public class NonSerializableDeploymentFailTest {
     private static final Logger log = Logger.getLogger(NonSerializableDeploymentFailTest.class.getName());
 

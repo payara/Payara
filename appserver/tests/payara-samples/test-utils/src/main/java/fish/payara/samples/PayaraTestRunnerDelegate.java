@@ -52,14 +52,12 @@ import org.junit.runners.model.InitializationError;
  * @author Matt Gill
  */
 public class PayaraTestRunnerDelegate extends BlockJUnit4ClassRunner {
-
-    private static final String IS_PAYARA_MICROPROFILE_PROPERTY_NAME = "isUsingMicroProfile";
     private static final String PAYARA_VERSION_PROPERTY_NAME = "payara.version";
 
     private boolean skipEntireClass;
 
     private final PayaraVersion version;
-    private final boolean isMicroProfile;
+    private final boolean isPayaraMicro;
 
     public PayaraTestRunnerDelegate(Class<?> klass) throws InitializationError {
         super(klass);
@@ -77,9 +75,9 @@ public class PayaraTestRunnerDelegate extends BlockJUnit4ClassRunner {
             }
         }
 
-        this.isMicroProfile = Boolean.valueOf(System.getProperty(IS_PAYARA_MICROPROFILE_PROPERTY_NAME));
+        this.isPayaraMicro = ServerOperations.isMicro();
         if (klass.getAnnotation(NotMicroCompatible.class) != null) {
-            skipEntireClass |= this.isMicroProfile;
+            skipEntireClass |= this.isPayaraMicro;
         }
     }
 
@@ -103,7 +101,7 @@ public class PayaraTestRunnerDelegate extends BlockJUnit4ClassRunner {
             }
 
             // If the test is not micro compatible and micro is enabled
-            if (this.isMicroProfile && testMethod.getAnnotation(NotMicroCompatible.class) != null) {
+            if (this.isPayaraMicro && testMethod.getAnnotation(NotMicroCompatible.class) != null) {
                 continue;
             }
 

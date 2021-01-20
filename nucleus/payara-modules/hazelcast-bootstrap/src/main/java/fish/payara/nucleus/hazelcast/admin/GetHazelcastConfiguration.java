@@ -81,31 +81,43 @@ import org.jvnet.hk2.annotations.Service;
 public class GetHazelcastConfiguration implements AdminCommand {
     @Inject
     private Domain domain;
-    
+
     @Inject
     private Target targetUtil;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
+    @Param(name = "checkencrypted", optional = true)
+    private boolean checkEncrypted;
 
     @Override
     public void execute(AdminCommandContext context) {
-        
+
         Config config = targetUtil.getConfig(target);
         if (config == null) {
             context.getActionReport().setMessage("No such config named: " + target);
             context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        
+
         HazelcastConfigSpecificConfiguration nodeConfiguration = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
-       
+
         HazelcastRuntimeConfiguration runtimeConfiguration = domain.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
+
+        if (checkEncrypted) {
+            if (!Boolean.parseBoolean(runtimeConfiguration.getDatagridEncryptionEnabled())) {
+                actionReport.setMessage("Data Grid Not Encrypted");
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            } else {
+                actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+            }
+            return;
+        }
         String headers[] = {"Property Name","PropertyValue","Scope"};
-        
-        ColumnFormatter columnFormatter = new ColumnFormatter(headers);        
+
+        ColumnFormatter columnFormatter = new ColumnFormatter(headers);
         columnFormatter.addRow(new Object[]{"Configuration File",runtimeConfiguration.getHazelcastConfigurationFile(),"Domain"});
         columnFormatter.addRow(new Object[]{"Interfaces",runtimeConfiguration.getInterface(),"Domain"});
         columnFormatter.addRow(new Object[]{"Auto Increment Port", runtimeConfiguration.getAutoIncrementPort(), "Domain"});
@@ -138,7 +150,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         columnFormatter.addRow(new Object[]{"Scheduled Executor Queue Capacity",nodeConfiguration.getScheduledExecutorQueueCapacity(),"Config"});
         columnFormatter.addRow(new Object[]{"Public Address",nodeConfiguration.getPublicAddress(),"Config"});
         columnFormatter.addRow(new Object[]{"Config Specific Data Grid Start Port",nodeConfiguration.getConfigSpecificDataGridStartPort(),"Config"});
-        
+
         Map<String, Object> map = new HashMap<>(26);
         Properties extraProps = new Properties();
         map.put("hazelcastConfigurationFile", runtimeConfiguration.getHazelcastConfigurationFile());
@@ -173,11 +185,11 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("kubernetesServiceName", runtimeConfiguration.getKubernetesServiceName());
         map.put("configSpecificDataGridStartPort",nodeConfiguration.getConfigSpecificDataGridStartPort());
         map.put("encryptDatagrid", runtimeConfiguration.getDatagridEncryptionEnabled());
-        
+
         extraProps.put("getHazelcastConfiguration",map);
-                
+
         actionReport.setExtraProperties(extraProps);
-        
+
         actionReport.setMessage(columnFormatter.toString());
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }

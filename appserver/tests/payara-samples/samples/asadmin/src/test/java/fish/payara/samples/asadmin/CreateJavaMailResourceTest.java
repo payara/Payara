@@ -48,14 +48,10 @@ public class CreateJavaMailResourceTest extends AsadminTest {
 
     @Test
     public void testJavaMailDeploymentGroupRef() {
-        boolean dgCreated = false;
-        boolean javaMailResourceCreated = false;
-        boolean resourceRefCreated = false;
-
         try {
+            deleteOldResources();
             CommandResult result = asadmin("create-deployment-group", "create-javamail-resource-test-dg");
             assertSuccess(result);
-            dgCreated = true;
 
             result = asadmin("create-javamail-resource",
                     "--debug=false",
@@ -72,28 +68,24 @@ public class CreateJavaMailResourceTest extends AsadminTest {
                     "--mailuser=ratatosk",
                     "mail/create-javamail-resource-test");
             assertSuccess(result);
-            javaMailResourceCreated = true;
 
             result = asadmin("create-resource-ref",
                     "--enabled=true",
                     "--target=create-javamail-resource-test-dg",
                     "mail/create-javamail-resource-test");
             assertSuccess(result);
-            resourceRefCreated = true;
         } finally {
-            if (resourceRefCreated) {
-                asadmin("delete-resource-ref",
-                        "--target=create-javamail-resource-test-dg",
-                        "mail/create-javamail-resource-test");
-            }
-
-            if (javaMailResourceCreated) {
-                asadmin("delete-javamail-resource", "mail/create-javamail-resource-test");
-            }
-
-            if (dgCreated) {
-                asadmin("delete-deployment-group", "create-javamail-resource-test-dg");
-            }
+            deleteOldResources();
         }
+    }
+
+    private void deleteOldResources() {
+        asadmin("delete-resource-ref",
+                "--target=create-javamail-resource-test-dg",
+                "mail/create-javamail-resource-test");
+        if (asadmin("list-deployment-groups").getOutput().contains("create-javamail-resource-test-dg")) {
+            asadmin("delete-deployment-group", "create-javamail-resource-test-dg");
+        }
+        asadmin("delete-javamail-resource", "--target", "domain", "mail/create-javamail-resource-test");
     }
 }

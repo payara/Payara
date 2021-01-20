@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.security.cli;
 
 import static com.sun.enterprise.security.cli.CLIUtil.chooseConfig;
@@ -86,25 +87,26 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.SecurityConfigListener;
 import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import javax.security.auth.login.Configuration;
 
 
 /**
  * CLI command to create Authentication Realm
  *
- * Usage: create-auth-realm --classname realm_class [--terse=false] 
- *        [--interactive=true] [--host localhost] [--port 4848|4849] 
- *        [--secure | -s] [--user admin_user] [--passwordfile file_name] 
- *        [--property (name=value)[:name=value]*] 
+ * Usage: create-auth-realm --classname realm_class [--terse=false]
+ *        [--interactive=true] [--host localhost] [--port 4848|4849]
+ *        [--secure | -s] [--user admin_user] [--passwordfile file_name]
+ *        [--property (name=value)[:name=value]*]
  *        [--echo=false] [--target target(Default server)] auth_realm_name
- *  
+ *
  * domain.xml element example
- * <auth-realm name="file" 
+ * <auth-realm name="file"
  *   classname="com.sun.enterprise.security.auth.realm.file.FileRealm">
  *   <property name="file" value="${com.sun.aas.instanceRoot}/config/keyfile"/>
  *   <property name="jaas-context" value="fileRealm"/>
  * </auth-realm>
  *       Or
- * <auth-realm name="certificate" 
+ * <auth-realm name="certificate"
  *   classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm">
  * </auth-realm>
  *
@@ -154,9 +156,9 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
         if (config == null) {
             return false;
         }
-        
+
         securityService = config.getSecurityService();
-        
+
         return ensureRealmIsNew(context.getActionReport());
     }
 
@@ -177,11 +179,11 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
                     AuthRealm newAuthRealm = param.createChild(AuthRealm.class);
                     populateAuthRealmElement(newAuthRealm);
                     param.getAuthRealm().add(newAuthRealm);
-                    
+
                     // In case of cluster instances, this is required to
                     // avoid issues with the listener's callback method
                     SecurityConfigListener.authRealmCreated(config, newAuthRealm);
-                    
+
                     return newAuthRealm;
                 }
             }, securityService);
@@ -195,8 +197,8 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
         } catch (TransactionFailure e) {
             report.setMessage(
                     localStrings.getLocalString(
-                            "create.auth.realm.fail", 
-                            "Creation of Authrealm {0} failed", authRealmName) + "  " + 
+                            "create.auth.realm.fail",
+                            "Creation of Authrealm {0} failed", authRealmName) + "  " +
                     e.getLocalizedMessage());
             report.setActionExitCode(FAILURE);
             report.setFailureCause(e);
@@ -248,17 +250,18 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
             report.setFailureCause(e);
             report.setActionExitCode(FAILURE);
         }
+        Configuration.getConfiguration().refresh();
     }
 
     private void populateAuthRealmElement(AuthRealm newAuthRealm) throws PropertyVetoException, TransactionFailure {
         newAuthRealm.setName(authRealmName);
         newAuthRealm.setClassname(className);
-        
+
         if (properties != null) {
             for (Object propertyName : properties.keySet()) {
                 Property newProperty = newAuthRealm.createChild(Property.class);
                 newProperty.setName((String) propertyName);
-                
+
                 newProperty.setValue(properties.getProperty((String) propertyName));
                 newAuthRealm.getProperty().add(newProperty);
             }
@@ -269,13 +272,13 @@ public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preau
         if (!isRealmNew(securityService, authRealmName)) {
             report.setMessage(localStrings.getLocalString(
                     "create.auth.realm.duplicatefound",
-                    "Authrealm named {0} exists. Cannot add duplicate AuthRealm.", 
+                    "Authrealm named {0} exists. Cannot add duplicate AuthRealm.",
                     authRealmName));
-            
+
             report.setActionExitCode(FAILURE);
             return false;
         }
-        
+
         return true;
     }
 }

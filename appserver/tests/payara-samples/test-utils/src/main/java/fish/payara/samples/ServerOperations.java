@@ -1,7 +1,45 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
 package fish.payara.samples;
 
-import static java.nio.file.Files.copy;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.logging.Level.FINEST;
 
 import java.io.File;
@@ -33,6 +71,15 @@ import org.apache.commons.logging.impl.Jdk14Logger;
 
 import static fish.payara.samples.SecurityUtils.getCertificateChainFromServer;
 import static fish.payara.samples.SecurityUtils.getHostFromCertificate;
+import static fish.payara.samples.ServerOperations.RuntimeType.CLIENT;
+import static fish.payara.samples.ServerOperations.ServerType.MICRO;
+import java.io.FileWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.URISyntaxException;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
 
 /**
@@ -42,26 +89,61 @@ import static fish.payara.samples.SecurityUtils.getHostFromCertificate;
  * @author arjan
  */
 public class ServerOperations {
-
     private static final Logger logger = Logger.getLogger(ServerOperations.class.getName());
+
     private static final String ERR_MESSAGE_UNSUPPORTED
-        = "Not supported. Probably you used wrong Maven profile to run the test.";
-    private static final String SYSTEM_PROPERTY_SERVER = "javaEEServer";
+        = "Check 'payara.containerType' system property configuration";
+    private static final String CLIENT_CERTIFICATE_FILE = "payara-test-client.crt";
+    private static final String CLIENT_CERTIFICATE_PATH = "certificates";
+
+    public enum ServerType {
+        SERVER, MICRO
+    }
+
+    public enum RuntimeType {
+        SERVER, CLIENT
+    }
+
+    private static final ServerEnvironment serverEnvironment;
+    private static final ServerType serverType;
+    private static final RuntimeType runtimeType;
+
+    static {
+        String packageName = ServerOperations.class.getClassLoader().getClass()
+                .getPackage().getName();
+        if (packageName.startsWith("org.glassfish") ||
+                packageName.startsWith("com.sun.enterprise")) {
+            runtimeType = RuntimeType.SERVER;
+        } else {
+            runtimeType = RuntimeType.CLIENT;
+        }
+
+        String serverTypeStr = System.getProperty("payara.containerType");
+        if (serverTypeStr != null) {
+            serverType = ServerType.valueOf(serverTypeStr);
+            serverEnvironment = null;
+        } else {
+            ServiceLocator svcLocator = Globals.getDefaultHabitat();
+            if (svcLocator != null) {
+                serverEnvironment = svcLocator.getService(ServerEnvironment.class);
+                if (serverEnvironment != null) {
+                    serverType = serverEnvironment.isMicro() ? MICRO : ServerType.SERVER;
+                } else {
+                    throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+
+                }
+            } else {
+                throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+            }
+        }
+    }
 
     public static boolean isMicro() {
-        return System.getenv("MICRO_JAR") != null;
+        return serverType == MICRO;
     }
 
     public static boolean isServer() {
-        return isManagedServer() || isRemoteServer();
-    }
-
-    public static boolean isManagedServer() {
-        return "payara-managed".equals(System.getProperty(SYSTEM_PROPERTY_SERVER));
-    }
-
-    public static boolean isRemoteServer() {
-        return "payara-remote".equals(System.getProperty(SYSTEM_PROPERTY_SERVER));
+        return serverType == ServerType.SERVER;
     }
 
     public static void addUserToContainerIdentityStore(String username, String groups) {
@@ -73,11 +155,7 @@ public class ServerOperations {
      * supported containers
      */
     public static void addUserToContainerIdentityStore(String authRealm, String username, String groups) {
-
-        // TODO: abstract adding container managed users to utility class
-        // TODO: consider PR for sending CLI commands to Arquillian
-
-        if (!isServer()) {
+        if (runtimeType == RuntimeType.SERVER) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
         List<String> cmd = new ArrayList<>();
@@ -103,11 +181,7 @@ public class ServerOperations {
     }
 
     public static void addUsersToContainerIdentityStore(String username, String group, String fileAuthRealmName) {
-
-        // TODO: abstract adding container managed users to utility class
-        // TODO: consider PR for sending CLI commands to Arquillian
-
-        if (!isServer()) {
+        if (runtimeType == RuntimeType.SERVER) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
         List<String> cmd = new ArrayList<>();
@@ -125,88 +199,26 @@ public class ServerOperations {
         CliCommands.payaraGlassFish(cmd);
     }
 
-    public static void addMavenJarsToContainerLibFolder(String pathToPomFile, String mavenCoordinates) {
-        if (!isServer()) {
+    public static Path getDomainPath(String relativePathInDomain) {
+        if (runtimeType != RuntimeType.SERVER) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
-        String gfHome = System.getProperty("glassfishRemote_gfHome");
-        if (gfHome == null) {
-            logger.info("glassfishRemote_gfHome not specified");
-            return;
+
+        Path instanceRoot = Paths.get(System.getProperty("com.sun.aas.instanceRoot", "none"));
+        if (!instanceRoot.toFile().exists()) {
+            throw new IllegalStateException("Cannot determine domain path");
         }
-
-        Path gfHomePath = Paths.get(gfHome);
-        if (!gfHomePath.toFile().exists()) {
-            logger.severe("glassfishRemote_gfHome at " + gfHome + " does not exists");
-            return;
-        }
-
-        if (!gfHomePath.toFile().isDirectory()) {
-            logger.severe("glassfishRemote_gfHome at " + gfHome + " is not a directory");
-            return;
-        }
-
-        String domain = System.getProperty("payara.domain.name");
-        if (domain == null) {
-            domain = getPayaraDomainFromServer();
-            logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara.domain.name to override.");
-        }
-
-        Path libsPath = gfHomePath.resolve("glassfish/lib");
-
-        if (!libsPath.toFile().exists()) {
-            logger.severe("The container lib folder at " + libsPath.toAbsolutePath() + " does not exists");
-            logger.severe("Is the domain \"" + domain + "\" correct?");
-            return;
-        }
-
-        logger.info("*** Adding jars to lib folder " + libsPath.toAbsolutePath());
-
-        File[] jars = Libraries.resolveMavenCoordinatesToFiles(pathToPomFile, mavenCoordinates);
-
-        for (File jar : jars) {
-            logger.info("*** Copying  " + jar.toPath());
-            final Path resolved = libsPath.resolve(jar.getName());
-            try {
-                copy(jar.toPath(), resolved, REPLACE_EXISTING);
-            } catch (IOException e) {
-                throw new IllegalStateException("Cannot copy "+ jar.toPath() + " to " + resolved);
-            }
-        }
+        return instanceRoot.resolve(relativePathInDomain);
     }
 
-    public static void addCertificateToContainerTrustStore(Certificate clientCertificate) {
-        if (!isServer()) {
+    static void addCertificateToContainerTrustStore(Certificate clientCertificate, KeyPair clientKeyPair) throws IOException {
+        if (runtimeType != RuntimeType.SERVER) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
-        String gfHome = System.getProperty("glassfishRemote_gfHome");
-        if (gfHome == null) {
-            logger.info("glassfishRemote_gfHome not specified");
-            return;
-        }
-
-        Path gfHomePath = Paths.get(gfHome);
-        if (!gfHomePath.toFile().exists()) {
-            logger.severe("glassfishRemote_gfHome at " + gfHome + " does not exists");
-            return;
-        }
-
-        if (!gfHomePath.toFile().isDirectory()) {
-            logger.severe("glassfishRemote_gfHome at " + gfHome + " is not a directory");
-            return;
-        }
-
-        String domain = System.getProperty("payara.domain.name", "domain1");
-        if (domain != null) {
-            domain = getPayaraDomainFromServer();
-            logger.info("Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara.domain.name to override.");
-        }
-
-        Path cacertsPath = gfHomePath.resolve("glassfish/domains/" + domain + "/config/cacerts.jks");
-
+        Path cacertsPath = getDomainPath("config/cacerts.jks");
         if (!cacertsPath.toFile().exists()) {
             logger.severe("The container trust store at " + cacertsPath.toAbsolutePath() + " does not exists");
-            logger.severe("Is the domain \"" + domain + "\" correct?");
+            logger.severe("Is the domain \"" + getDomainName() + "\" correct?");
             return;
         }
 
@@ -224,8 +236,15 @@ public class ServerOperations {
             throw new IllegalStateException(e);
         }
 
-        restartContainer(domain);
-
+        Path downloadPath = getDomainPath("docroot/" + CLIENT_CERTIFICATE_PATH);
+        downloadPath.toFile().mkdirs();
+        downloadPath = downloadPath.resolve(CLIENT_CERTIFICATE_FILE);
+        downloadPath.toFile().delete();
+        try (FileOutputStream fw = new FileOutputStream(downloadPath.toFile())) {
+            ObjectOutputStream ostrm = new ObjectOutputStream(fw);
+            ostrm.writeObject(clientCertificate);
+            ostrm.writeObject(clientKeyPair);
+        }
     }
 
     /**
@@ -234,8 +253,6 @@ public class ServerOperations {
      * <p>
      * TODO: add support for embedded. Not necessary while this suite doesn't have
      * an embedded profile
-     * <p>
-     * TODO: add support for servers with secure admin enabled
      *
      * @param url the url to transform
      * @return the transformed URL, or null if the running server isn't using an
@@ -280,7 +297,7 @@ public class ServerOperations {
      * @throws MalformedURLException if the target URL is invalid
      */
     private static URL switchPort(URL url, int port, String protocol) throws MalformedURLException {
-        if (!isServer()) {
+        if (runtimeType != CLIENT) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
         URL result = new URL(
@@ -294,28 +311,11 @@ public class ServerOperations {
         return result;
     }
 
-    public static String getPayaraDomainFromServer() {
-        logger.info("Getting Payara domain from server");
-        List<String> output = new ArrayList<>();
-        List<String> cmd = new ArrayList<>();
-
-        cmd.add("list-domains");
-
-        CliCommands.payaraGlassFish(cmd, output);
-
-        String domain = null;
-        for (String line : output) {
-            if (line.contains(" not running")) {
-                continue;
-            }
-
-            if (line.contains(" running")) {
-                domain = line.substring(0, line.lastIndexOf(" running"));
-                break;
-            }
+    private static String getPayaraDomainFromServer() {
+        if (runtimeType != RuntimeType.SERVER) {
+            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
-
-        return domain;
+        return getDomainPath("").getFileName().toString();
     }
 
     public static void addContainerSystemProperty(String key, String value) {
@@ -325,45 +325,36 @@ public class ServerOperations {
         logger.info("Adding system property");
         List<String> cmd = new ArrayList<>();
 
-        cmd.add("create-jvm-options");
-        cmd.add("-D" + key + "=\"" + value + "\"");
+        cmd.add("create-system-properties");
+        cmd.add(key + "=\"" + value + "\"");
 
         CliCommands.payaraGlassFish(cmd);
     }
 
-    public static void restartContainer() {
-        restartContainer(null);
-    }
-
-    public static void restartContainer(String domain) {
+    /**
+     * DO NOT make public or call from outside here.
+     * Tests are to be run in parallel and shall not require server restart
+     *
+     * @param domain
+     */
+    static void restartDomain() {
         // Arquillian connectors can stop/start already, but not on demand by code
 
-        if (!isServer()) {
-            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+        logger.info("Restarting domain (remote)");
+        if (RemoteDomainRestarter.restart()) {
+            return;
         }
-        logger.info("Restarting domain");
-
+        logger.info("Restarting domain (local)");
         List<String> cmd = new ArrayList<>();
 
         cmd.add("restart-domain");
 
-        String restartDomain = domain;
-        if (restartDomain == null) {
-            restartDomain = System.getProperty("payara.domain.name");
-        }
-
-        if (restartDomain == null) {
-            restartDomain = getPayaraDomainFromServer();
-        }
+        String restartDomain = getDomainName();
 
         cmd.add(restartDomain);
 
-        CliCommands.payaraGlassFish(cmd);
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (CliCommands.payaraGlassFish(cmd) != 0) {
+            throw new IllegalStateException("Unable to restart domain");
         }
     }
 
@@ -396,7 +387,6 @@ public class ServerOperations {
     }
 
     public static void setupContainerFileIdentityStore(String fileRealmName) {
-
         if (!isServer()) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
@@ -425,15 +415,22 @@ public class ServerOperations {
         Logger.getGlobal().getParent().getHandlers()[0].setLevel(FINEST);
     }
 
-    public static String createClientKeyStore(){
-
+    public static String createClientKeyStore() throws IOException {
         // Enable to get detailed logging about the SSL handshake on the client
         // For an explanation of the TLS handshake see: https://tls.ulfheim.net
         if (System.getProperty("ssl.debug") != null) {
             enableSSLDebug();
         }
 
+        String clientKeyStorePath = generateClientKeyStore(false);
+        System.setProperty("javax.net.ssl.keystore", clientKeyStorePath);
 
+        setSSLSystemProperties();
+
+        return clientKeyStorePath;
+    }
+
+    public static String generateClientKeyStore(boolean addToContainer) throws IOException {
         // ### Generate keys for the client, create a certificate, and add those to a new local key store
         // Generate a Private/Public key pair for the client
         KeyPair clientKeyPair = SecurityUtils.generateRandomRSAKeys();
@@ -441,10 +438,22 @@ public class ServerOperations {
         // Create a certificate containing the client public key and signed with the private key
         X509Certificate clientCertificate = SecurityUtils.createSelfSignedCertificate(clientKeyPair);
 
-        // Create a new local key store containing the client private key and the certificate
-        String clientKeyStorePath = SecurityUtils.createTempJKSKeyStore(clientKeyPair.getPrivate(), clientCertificate);
-        System.setProperty("javax.net.ssl.keystore", clientKeyStorePath);
+        if (addToContainer) {
+            if (runtimeType != RuntimeType.SERVER) {
+                throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+            }
 
+            // Add the client certificate that we just generated to the trust store of the server.
+            // That way the server will trust our certificate.
+            // Set the actual domain used with -Dpayara.domain.name=[domain name]
+            addCertificateToContainerTrustStore(clientCertificate, clientKeyPair);
+        }
+
+        // Create a new local key store containing the client private key and the certificate
+        return SecurityUtils.createTempJKSKeyStore(clientKeyPair.getPrivate(), clientCertificate);
+    }
+
+    private static void setSSLSystemProperties() {
         // Enable to get detailed logging about the SSL handshake on the server
         if (System.getProperty("ssl.debug") != null) {
             logger.info("Setting server SSL debug on");
@@ -453,16 +462,32 @@ public class ServerOperations {
 
         // Only test TLS v1.2 for now
         System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
+    }
 
-        // Add the client certificate that we just generated to the trust store of the server.
-        // That way the server will trust our certificate.
-        // Set the actual domain used with -Dpayara.domain.name=[domain name]
-        addCertificateToContainerTrustStore(clientCertificate);
+    public static String addClientCertificateFromServer(URL base) throws IOException {
+        if (runtimeType != CLIENT) {
+           throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+        }
 
-        return clientKeyStorePath;
+        try (InputStream istr = base.toURI().resolve("..")
+                .resolve(String.format("%s/%s", CLIENT_CERTIFICATE_PATH, CLIENT_CERTIFICATE_FILE))
+                .toURL().openStream()) {
+            ObjectInputStream ois = new ObjectInputStream(istr);
+            X509Certificate clientCertificate = (X509Certificate)ois.readObject();
+            KeyPair clientKeyPair = (KeyPair)ois.readObject();
+            String clientKeyStorePath = SecurityUtils.createTempJKSKeyStore(clientKeyPair.getPrivate(), clientCertificate);
+            System.setProperty("javax.net.ssl.keystore", clientKeyStorePath);
+            setSSLSystemProperties();
+            return clientKeyStorePath;
+        } catch (URISyntaxException | ClassNotFoundException ex) {
+            throw new IOException(ex);
+        }
     }
 
     public static URL createClientTrustStore(WebClient webClient, URL base, String clientKeyStorePath) throws FileNotFoundException, IOException {
+        if (runtimeType != CLIENT) {
+            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+        }
 
         URL baseHttps = ServerOperations.toContainerHttps(base);
         if (baseHttps == null) {
@@ -515,7 +540,10 @@ public class ServerOperations {
         return getHostFromCertificate(serverCertificateChain, toContainerHttps(url));
     }
 
-    public static URL getClientTrustStoreURL(URL baseHttps, String clientKeyStorePath) throws MalformedURLException {
+    public static URL getClientTrustStoreURL(URL baseHttps) throws MalformedURLException {
+        if (runtimeType != CLIENT) {
+            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+        }
         // ### Ask the server for its certificate and add that to a new local trust store
         // Server -> client : the trust store certificates are used to validate the certificate sent
         // by the server
@@ -551,33 +579,49 @@ public class ServerOperations {
         }
     }
 
-    public static void enableDataGridEncryption() {
-        if (!isServer()) {
+    public static boolean enableDataGridEncryption() throws IOException {
+        if (!isServer() || runtimeType != RuntimeType.SERVER) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
-        logger.info("Enabling Data Grid Encryption");
-        CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "true");
 
-        logger.info("Stopping Server");
-        String domain = getDomainName();
-        CliCommands.payaraGlassFish("stop-domain", domain);
+        if (CliCommands.payaraGlassFish("get-hazelcast-configuration", "--checkencrypted") == 0) {
+            logger.info("Data Grid Encryption Already Enabled");
+            return false;
+        }
+
+        logger.info("Enabling Data Grid Encryption");
+        boolean success = true;
+        success &= CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "true") == 0;
 
         logger.info("Generating Encryption Key");
-        CliCommands.payaraGlassFish("-W",
-                Paths.get("").toAbsolutePath() + "/src/test/resources/passwordfile.txt",
-                "generate-encryption-key", domain);
-
-        logger.info("Restarting Server");
-        CliCommands.payaraGlassFish("start-domain", domain);
+        File passwordfile = new File("datagrid-passwordfile.txt");
+        passwordfile.delete();
+        try (FileWriter fw = new FileWriter(passwordfile)) {
+            fw.append("AS_ADMIN_MASTERPASSWORD=changeit");
+        }
+        success &= CliCommands.payaraGlassFish("-W", passwordfile.getAbsolutePath(),
+                "generate-encryption-key", "--dontcheckifrunning", getDomainName()) == 0;
+        if (!success) {
+            throw new IllegalStateException("Cannot enable DataGrid Encryption");
+        }
+        return true;
     }
 
-    public static void disableDataGridEncryption() {
-        if (!isServer()) {
+    public static boolean disableDataGridEncryption() {
+        if (!isServer() || runtimeType != RuntimeType.SERVER) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
+
+        if (CliCommands.payaraGlassFish("get-hazelcast-configuration", "--checkencrypted") != 0) {
+            logger.info("Data Grid Encryption Not Enabled");
+            return false;
+        }
+
         logger.info("Disabling Data Grid Encryption");
-        CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "false");
-        restartContainer(getDomainName());
+        if (CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "false") != 0) {
+            throw new IllegalStateException("Cannot disable DataGrid Encryption");
+        }
+        return true;
     }
 
     public static String getDomainName() {
@@ -599,4 +643,3 @@ public class ServerOperations {
         return domain;
     }
 }
-

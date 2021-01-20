@@ -58,13 +58,11 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * This sample tests that an EAR application display all parts
@@ -78,7 +76,7 @@ public class HealthEndpointTest {
 
     @ArquillianResource
     private URL base;
-    
+
 
     @Deployment(testable = false)
     public static EnterpriseArchive createDeployment() {
@@ -93,20 +91,20 @@ public class HealthEndpointTest {
 
         return archive;
     }
-    
+
 
     @Test
     @RunAsClient
     public void testHealthcheckResponse() throws IOException {
 
-        String response = newClient().target(URI.create(new URL(base, "health").toExternalForm())).request(TEXT_PLAIN).get(String.class);
+        String response = newClient().target(URI.create(new URL(base, "mphealth-insecure").toExternalForm())).request(TEXT_PLAIN).get(String.class);
 
         System.out.println("-------------------------------------------------------------------------");
         System.out.println("Response: \n\n" + response);
         System.out.println("-------------------------------------------------------------------------");
 
         JsonObject healthcheck = Json.createReader(new StringReader(response)).readObject();
-        
+
         Assert.assertEquals("Wrong number of healthchecks", 2, healthcheck.getJsonArray("checks").size());
         Assert.assertEquals("Healthchecks should all be UP", "UP", healthcheck.getString("status"));
     }
