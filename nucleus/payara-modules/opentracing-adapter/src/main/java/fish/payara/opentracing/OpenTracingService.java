@@ -77,6 +77,7 @@ public class OpenTracingService implements EventListener {
 
     // The tracer instances
     private static final Map<String, Tracer> tracers = new ConcurrentHashMap<>();
+    private static final ScopeManager scopeManager = new fish.payara.opentracing.ScopeManager();
     
     // The name of the Corba RMI Tracer
     public static final String PAYARA_CORBA_RMI_TRACER_NAME = "__PAYARA_CORBA_RMI";
@@ -137,13 +138,7 @@ public class OpenTracingService implements EventListener {
             if (Boolean.getBoolean("USE_OPENTRACING_MOCK_TRACER")) {
                 tracer = new MockTracer(new ThreadLocalScopeManager(), MockTracer.Propagator.TEXT_MAP);
             } else if (tracer == null) {
-                // Check if we have an ORB Tracer so that we can use its scope manager
-                Tracer orbTracer = tracers.get(PAYARA_CORBA_RMI_TRACER_NAME);
-                if (orbTracer != null) {
-                    tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, orbTracer.scopeManager());
-                } else {
-                    tracer = new fish.payara.opentracing.tracer.Tracer(applicationName);
-                }
+                tracer = new fish.payara.opentracing.tracer.Tracer(applicationName, scopeManager);
             }
 
             // Register the tracer instance to the application
