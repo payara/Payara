@@ -391,9 +391,9 @@ public class EarDeployer implements Deployer {
     private static class EarDeployerDeploymentContextImpl extends DeploymentContextImpl {
         private final DeploymentContext context;
         private final String moduleUri;
-        private ReadableArchive subArchive;
-        private ArchiveFactory archiveFactory;
-        private Application application;
+        private final ReadableArchive subArchive;
+        private final ArchiveFactory archiveFactory;
+        private final Application application;
 
         public EarDeployerDeploymentContextImpl(
             final ActionReport subReport,
