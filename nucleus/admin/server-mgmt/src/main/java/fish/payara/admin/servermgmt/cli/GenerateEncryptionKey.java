@@ -76,6 +76,9 @@ public class GenerateEncryptionKey extends LocalDomainCommand {
     @Param(name = "domain_name", primary = true, optional = true)
     private String domainName;
 
+    @Param(name = "dontcheckifrunning", optional = true)
+    private boolean dontChedkIfDomainRunning;
+
     private static final String DATAGRID_KEY_FILE = "datagrid-key";
     private static final LocalStringsImpl SERVERMGMT_CLI_STRINGS =
             new LocalStringsImpl(ChangeMasterPasswordCommandDAS.class);
@@ -90,7 +93,9 @@ public class GenerateEncryptionKey extends LocalDomainCommand {
     protected void validate() throws CommandException {
         setDomainName(domainName);
         super.validate();
-        checkDomainIsNotRunning();
+        if (!dontChedkIfDomainRunning) {
+            checkDomainIsNotRunning();
+        }
     }
 
     @Override

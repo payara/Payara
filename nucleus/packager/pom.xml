@@ -86,6 +86,7 @@
         <temp.modules.dir>${temp.dir}/modules</temp.modules.dir>
         <findbugs.skip>true</findbugs.skip>
         <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
+        <deploy.skip>true</deploy.skip>
     </properties>
 
     <modules>
@@ -365,8 +366,8 @@
         </plugins>
     </build>
     
-    <!-- Alternative profile: embed the sources into each dependency (for trivial source lookup in IDEs) -->
     <profiles>
+        <!-- Alternative profile: embed the sources into each dependency (for trivial source lookup in IDEs) -->
         <profile>
             <id>embed-source</id>
             <build>

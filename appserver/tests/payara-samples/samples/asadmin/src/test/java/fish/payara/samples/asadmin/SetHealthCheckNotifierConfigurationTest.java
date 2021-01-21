@@ -53,7 +53,6 @@ import org.junit.Test;
  * Verifies the correctness of the {@code SetHealthCheckServiceNotifierConfiguration} command.
  */
 public class SetHealthCheckNotifierConfigurationTest extends AsadminTest {
-
     private HealthCheckServiceConfiguration config;
     private HealthCheckService service;
 
@@ -78,10 +77,10 @@ public class SetHealthCheckNotifierConfigurationTest extends AsadminTest {
     @Test
     public void notifierNamesAreAccepted() {
         final String[] names;
-        if (ServerOperations.isMicro()) {
-            names = new String[] {"log-notifier", "cdieventbus-notifier", "eventbus-notifier"};
-        } else {
+        if (ServerOperations.isServer()) {
             names = new String[] {"log-notifier", "jms-notifier", "cdieventbus-notifier", "eventbus-notifier"};
+        } else {
+            names = new String[] {"log-notifier", "cdieventbus-notifier", "eventbus-notifier"};
         }
         for (String notiferName : names) {
             CommandResult result = asadmin("set-healthcheck-configuration",

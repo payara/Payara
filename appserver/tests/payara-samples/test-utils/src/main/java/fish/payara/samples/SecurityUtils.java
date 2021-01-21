@@ -43,7 +43,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.PrivateKey;
-import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -58,6 +57,8 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.omnifaces.utils.security.Certificates;
 import static java.math.BigInteger.ONE;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -69,10 +70,6 @@ import static java.time.temporal.ChronoUnit.DAYS;
 class SecurityUtils {
     private static final Logger logger = Logger.getLogger(SecurityUtils.class.getName());
     private static final BouncyCastleProvider PROVIDER = new BouncyCastleProvider();
-
-    static {
-        Security.addProvider(PROVIDER);
-    }
 
     static X509Certificate createSelfSignedCertificate(KeyPair keys) {
         try {
@@ -114,7 +111,14 @@ class SecurityUtils {
 
 
     static KeyPair generateRandomRSAKeys() {
-        return Certificates.generateRandomRSAKeys();
+        try {
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", PROVIDER);
+            keyPairGenerator.initialize(2048);
+
+            return keyPairGenerator.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public static String createTempJKSKeyStore(PrivateKey privateKey, X509Certificate clientCertificate) {

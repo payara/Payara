@@ -42,12 +42,17 @@ package fish.payara.microprofile.openapi.impl.model.links;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.UNKNOWN_ELEMENT_NAME;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
-import java.util.HashMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+
 import org.eclipse.microprofile.openapi.models.links.Link;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
@@ -56,7 +61,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
     private String operationRef;
     private String operationId;
-    private Map<String, Object> parameters = new HashMap<>();
+    private Map<String, Object> parameters = createMap();
     private Object requestBody;
     private String description;
     private String ref;
@@ -69,7 +74,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
         List<AnnotationModel> parametersAnnotation = annotation.getValue("parameters", List.class);
         if (parametersAnnotation != null) {
             for (AnnotationModel parameterAnnotation : parametersAnnotation) {
-                from.getParameters().put(
+                from.addParameter(
                         parameterAnnotation.getValue("name", String.class),
                         parameterAnnotation.getValue("expression", String.class)
                 );
@@ -130,25 +135,30 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
 
     @Override
     public Map<String, Object> getParameters() {
-        return parameters;
+        return readOnlyView(parameters);
     }
 
     @Override
     public void setParameters(Map<String, Object> parameters) {
-        this.parameters = parameters;
+        this.parameters = createMap(parameters);
     }
 
     @Override
     public Link addParameter(String name, Object parameter) {
         if (parameter != null) {
-            this.parameters.put(name, parameter);
+            if (parameters == null) {
+                parameters = createMap();
+            }
+            parameters.put(name, parameter);
         }
         return this;
     }
 
     @Override
     public void removeParameter(String name) {
-        this.parameters.remove(name);
+        if (parameters != null) {
+            parameters.remove(name);
+        }
     }
 
     @Override
@@ -187,7 +197,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
         to.setOperationRef(mergeProperty(to.getOperationRef(), from.getOperationRef(), override));
         to.setRequestBody(mergeProperty(to.getRequestBody(), from.getRequestBody(), override));
         for (String parameterName : from.getParameters().keySet()) {
-            applyLinkParameter(parameterName, from.getParameters().get(parameterName), to.getParameters());
+            applyLinkParameter(parameterName, from.getParameters().get(parameterName), to.getParameters(), to::addParameter);
         }
     }
 
@@ -216,7 +226,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
         }
     }
 
-    private static void applyLinkParameter(String parameterName, Object parameter, Map<String, Object> linkParameters) {
+    private static void applyLinkParameter(String parameterName, Object parameter, Map<String, Object> linkParameters, BiConsumer<String, Object> addParameter) {
 
         // Get the parameter name
         if (parameterName == null || parameterName.isEmpty()) {
@@ -226,7 +236,7 @@ public class LinkImpl extends ExtensibleImpl<Link> implements Link {
         // Create the object
         Object model = linkParameters.get(parameterName);
         model = mergeProperty(model, parameter, true);
-        linkParameters.put(parameterName, model);
+        addParameter.accept(parameterName, model);
     }
 
 }

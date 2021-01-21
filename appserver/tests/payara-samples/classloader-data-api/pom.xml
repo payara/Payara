@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.samples</groupId>
+        <artifactId>payara-samples</artifactId>
+        <version>5.2020.8-SNAPSHOT</version>
+    </parent>
+
+    <groupId>fish.payara.samples</groupId>
+    <artifactId>classloader-data-api</artifactId>
+    <version>5.2020.8-SNAPSHOT</version>
+
+    <packaging>war</packaging>
+    <name>Payara Samples - ClassLoader Data API</name>
+    <description>A REST API for retrieving an instance count of
+        Payara Class Loaders from an instance of Payara Server</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- Payara Dependencies -->
+        <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>war-util</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>ClassloaderDataAPI</finalName>
+        <plugins>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <attachClasses>false</attachClasses>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

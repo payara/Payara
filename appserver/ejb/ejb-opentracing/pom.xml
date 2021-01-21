@@ -77,5 +77,11 @@ holder.
             <artifactId>opentracing-util</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- corba reference for debugging purposes only -->
+        <dependency>
+            <groupId>org.glassfish.corba</groupId>
+            <artifactId>glassfish-corba-orb</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

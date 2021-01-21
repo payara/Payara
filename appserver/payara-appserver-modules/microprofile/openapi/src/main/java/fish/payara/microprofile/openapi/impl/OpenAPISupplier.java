@@ -75,6 +75,7 @@ import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
 import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import fish.payara.microprofile.openapi.impl.processor.ApplicationProcessor;
 import fish.payara.microprofile.openapi.impl.processor.BaseProcessor;
+import fish.payara.microprofile.openapi.impl.processor.ConfigPropertyProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FileProcessor;
 import fish.payara.microprofile.openapi.impl.processor.FilterProcessor;
 import fish.payara.microprofile.openapi.impl.processor.ModelReaderProcessor;
@@ -127,6 +128,7 @@ public class OpenAPISupplier implements Supplier<OpenAPI> {
             OpenAPI doc = new OpenAPIImpl();
             try {
                 final List<URL> baseURLs = getServerURL(contextRoot);
+                doc = new ConfigPropertyProcessor().process(doc, config);
                 doc = new ModelReaderProcessor().process(doc, config);
                 doc = new FileProcessor(classLoader).process(doc, config);
                 doc = new ApplicationProcessor(

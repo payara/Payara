@@ -100,12 +100,23 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>payara-nexus-artifacts</id>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
 
     </repositories>
 
     <properties>
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+        <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
         <maven.jar.plugin.version>3.1.1</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.0.0-M3</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
@@ -138,7 +149,7 @@
         <javax.cache-api.version>1.1.1</javax.cache-api.version>
         <mail.version>1.6.4.payara-p1</mail.version>
         <jakarta.annotation-api.version>1.3.5</jakarta.annotation-api.version>
-        <hk2.version>2.6.1.payara-p4</hk2.version>
+        <hk2.version>2.6.1.payara-p5</hk2.version>
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jackson.version>2.10.2</jackson.version>
@@ -171,7 +182,7 @@
         <jakarta.security.jacc-api.version>1.6.1</jakarta.security.jacc-api.version>
         <jakarta.security.auth.message-api.version>1.1.3</jakarta.security.auth.message-api.version>
         <jms-api.version>2.0.2</jms-api.version>
-        <mq.version>5.1.1.final.payara-p6</mq.version>
+        <mq.version>5.1.1.final.payara-p6.0.1</mq.version>
         <jakarta.batch-api.version>1.0.2</jakarta.batch-api.version>
         <com.ibm.jbatch.container.version>1.0.3.payara-p3</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>1.0.3</com.ibm.jbatch.spi.version>
@@ -201,8 +212,8 @@
         <microprofile-healthcheck.version>3.0-RC5</microprofile-healthcheck.version>
         <microprofile-metrics.version>3.0-RC4</microprofile-metrics.version>
         <microprofile-rest-client.version>1.4.1</microprofile-rest-client.version>
-        <microprofile-openapi.version>1.1.2</microprofile-openapi.version>
-        <payara-arquillian-container.version>2.3</payara-arquillian-container.version>
+        <microprofile-openapi.version>2.0-RC3</microprofile-openapi.version>
+        <payara-arquillian-container.version>2.3.3</payara-arquillian-container.version>
         <opentracing.version>0.33.0</opentracing.version>
         <h2db.version>1.4.196</h2db.version>
         <websocket-api.version>1.1.2</websocket-api.version>
@@ -343,21 +354,21 @@
         </profile>
 
         <profile>
+            <!-- only internal modules deployed, so tests can run without Server build built -->
             <id>deploy-internals</id>
-
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-
             <properties>
                 <deploy.skip>false</deploy.skip>
             </properties>
 
             <distributionManagement>
                 <repository>
-                    <id>payara-nexus</id>
+                    <id>payara-nexus-artifacts</id>
                     <url>https://nexus.payara.fish/repository/payara-artifacts/</url>
                 </repository>
+                <snapshotRepository>
+                    <id>payara-nexus-snapshots</id>
+                    <url>https://nexus.payara.fish/repository/payara-snapshots/</url>
+                </snapshotRepository>
             </distributionManagement>
         </profile>
 

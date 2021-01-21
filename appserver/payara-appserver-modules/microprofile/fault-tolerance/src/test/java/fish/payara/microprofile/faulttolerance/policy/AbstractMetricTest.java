@@ -42,8 +42,6 @@ package fish.payara.microprofile.faulttolerance.policy;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import javax.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 
@@ -69,11 +67,9 @@ abstract class AbstractMetricTest extends AbstractRecordingTest {
         registry = new MetricRegistryImpl(Type.BASE);
         return new FaultToleranceServiceStub() {
             @Override
-            protected FaultToleranceMethodContext createMethodContext(String methodId, InvocationContext context,
-                    FaultTolerancePolicy policy) {
-                FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(registry, FaultToleranceUtils.getCanonicalMethodName(context));
-                return new FaultToleranceMethodContextStub(context, policy, state, concurrentExecutions, waitingQueuePopulation,
-                        (c, p) -> createMethodContext(methodId, c, p)) {
+            protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {
+                FaultToleranceMetrics metrics = new MethodFaultToleranceMetrics(registry, FaultToleranceUtils.getCanonicalMethodName(ctx.context));
+                return new FaultToleranceMethodContextStub(ctx, state, concurrentExecutions, waitingQueuePopulation) {
 
                     @Override
                     public FaultToleranceMetrics getMetrics() {

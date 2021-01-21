@@ -59,8 +59,6 @@ import java.io.FileInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -73,9 +71,15 @@ public class JsonLogFormatIT {
     @ArquillianResource
     private URL baseUrl;
 
-    @Deployment(testable = false)
+    @Deployment(testable = true)
     public static WebArchive createDeployment() {
         return PayaraTestShrinkWrap.getWebArchive()
+                .addPackages(true, "com.gargoylesoftware")
+                .addPackages(true, "org.apache.http")
+                .addPackages(true, "org.apache.commons")
+                .addPackages(true, "net.sourceforge.htmlunit.corejs")
+                .addPackages(true, "org.apache.xml.utils")
+                .addPackages(true, "org.eclipse.jetty")
                 .addClass(LogRecordMapParameterServlet.class)
                 .addClass(JsonLogFormatIT.class);
     }
@@ -156,32 +160,7 @@ public class JsonLogFormatIT {
     }
 
     private File getLogFile() {
-        // Get domain name
-        String domain = System.getProperty("payara.domain.name");
-        if (domain == null) {
-            domain = ServerOperations.getPayaraDomainFromServer();
-            Logger.getLogger(JsonLogFormatIT.class.getName()).log(Level.INFO,
-                    "Using domain \"" + domain + "\" obtained from server. If this is not correct use -Dpayara.domain.name to override.");
-        }
-
-        // Get the domain dir
-        String domainsdir = System.getProperty("payara.domain.dir");
-        if (domainsdir == null) {
-            // Try getting default from payara.home and glassfishRemote_gfHome
-            String installRoot = System.getProperty("payara.home");
-            if (installRoot == null) {
-                installRoot = System.getProperty("glassfishRemote_gfHome");
-                if (installRoot == null) {
-                    return null;
-                }
-            }
-
-            domainsdir = installRoot + File.separator + "glassfish" + File.separator + "domains";
-            Logger.getLogger(JsonLogFormatIT.class.getName()).log(Level.INFO,
-                    "Using default domains dir \"" + domainsdir + "\". If this is not correct use -Dpayara.domain.dir and -Dpayara.domain.name to override.");
-        }
-
-        File logFile = new File(domainsdir + File.separator + domain + File.separator + "logs"
+        File logFile = new File(ServerOperations.getDomainPath("logs")
                 + File.separator + "server.log");
 
         if (logFile.exists() && logFile.canRead()) {

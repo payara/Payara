@@ -43,11 +43,13 @@ import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleTreeMap;
 import fish.payara.microprofile.openapi.impl.model.OperationImpl;
 import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getHttpMethod;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.getOrCreateOperation;
-import java.util.ArrayList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.microprofile.openapi.models.Operation;
@@ -64,7 +66,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
     
     private String urlExpression;
 
-    private List<Operation> operations;
+    private List<Operation> operations = createList();
 
     public static Callback createInstance(AnnotationModel annotation, ApiContext context) {
         CallbackImpl from = new CallbackImpl();
@@ -74,10 +76,10 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
         }
         String urlExpression = annotation.getValue("callbackUrlExpression", String.class);
         if (urlExpression != null && !urlExpression.isEmpty()) {
-            List<Operation> operations = new ArrayList<>();
-            from.setOperations(operations);
-            extractAnnotations(annotation, context, "operations", OperationImpl::createInstance, from.getOperations());
             from.setUrlExpression(urlExpression);
+            List<Operation> operations = createList();
+            extractAnnotations(annotation, context, "operations", OperationImpl::createInstance, operations::add);
+            from.setOperations(operations);
         }
         return from;
     }
@@ -105,7 +107,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
 
     @Override
     public Map<String, PathItem> getPathItems() {
-        return new CallbackImpl(this);
+        return readOnlyView(this);
     }
 
     @Override
@@ -140,7 +142,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
     }
 
     public void setOperations(List<Operation> operations) {
-        this.operations = operations;
+        this.operations = createList(operations);
     }
 
     public static void merge(Callback from, Callback to,
@@ -156,7 +158,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
             CallbackImpl fromImpl = (CallbackImpl) from;
             String urlExpression = fromImpl.getUrlExpression();
             if (urlExpression != null && !urlExpression.isEmpty()) {
-                PathItem pathItem = to.getOrDefault(urlExpression, new PathItemImpl());
+                PathItem pathItem = to.getPathItems().getOrDefault(urlExpression, new PathItemImpl());
                 to.addPathItem(urlExpression, pathItem);
                 if (fromImpl.getOperations() != null) {
                     for (Operation callbackOperation : fromImpl.getOperations()) {

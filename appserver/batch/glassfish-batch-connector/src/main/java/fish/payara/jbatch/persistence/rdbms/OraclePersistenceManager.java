@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2014-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,7 +78,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	private static final String CLASSNAME = OraclePersistenceManager.class
 			.getName();
 
-	private final static Logger logger = Logger.getLogger(CLASSNAME);
+	private static final Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
 
@@ -122,9 +122,8 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	}
 
 	@Override
-	public void init(IBatchConfig batchConfig)
-			throws BatchContainerServiceException {
-		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
+	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
+		logger.log(Level.CONFIG, "Entering CLASSNAME.init(), batchConfig ={0}", batchConfig);
 
 		this.batchConfig = batchConfig;
 
@@ -159,11 +158,10 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 		try {
 			queryStrings = getSharedQueryMap(batchConfig);
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			throw new BatchContainerServiceException(e1);
 		}
 
-		logger.config("JNDI name = " + jndiName);
+		logger.log(Level.CONFIG, "JNDI name = {0}", jndiName);
 
 
 		try {
@@ -319,14 +317,11 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 			try (ResultSet rs = stmt.executeQuery(query)) {
 				int rowcount = getTableRowCount(rs);
 				// Create table if it does not exist
-				if (rowcount == 0) {
-					if (!rs.next()) {
-						logger.log(Level.INFO, tableName
-								+ " table does not exists. Trying to create it.");
+				if (rowcount == 0 && !rs.next()) {
+						logger.log(Level.INFO, "{0} table does not exists. Trying to create it.", tableName);
 						try (PreparedStatement ps = conn.prepareStatement(createTableStatement)) {
 							ps.executeUpdate();
 						}
-					}
 				}
 			}
 
@@ -540,7 +535,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager imple
 	}
 
         protected Map<String, String> getOracleObjectsMap() {
-		Map<String, String> result = new HashMap<String, String>(7);
+		Map<String, String> result = new HashMap<>(7);
 
 		result.put(JOBINSTANCEDATA_SEQ_KEY, prefix + JOBINSTANCEDATA_SEQ_KEY + suffix);
 		result.put(EXECUTIONINSTANCEDATA_SEQ_KEY, prefix + EXECUTIONINSTANCEDATA_SEQ_KEY + suffix);
