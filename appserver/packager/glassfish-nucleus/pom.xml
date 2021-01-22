@@ -139,19 +139,9 @@
            <artifactId>appserver-domain</artifactId>
            <version>${project.version}</version>
        </dependency>
-        <dependency>
-           <groupId>fish.payara.server.internal.admin</groupId>
-           <artifactId>production-domain</artifactId>
-           <version>${project.version}</version>
-       </dependency>
        <dependency>
            <groupId>fish.payara.server.internal.admin</groupId>
            <artifactId>appserver-domain-web</artifactId>
-           <version>${project.version}</version>
-       </dependency>
-       <dependency>
-           <groupId>fish.payara.server.internal.admin</groupId>
-           <artifactId>production-domain-web</artifactId>
            <version>${project.version}</version>
        </dependency>
     </dependencies>
