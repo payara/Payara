@@ -43,6 +43,7 @@ import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
 
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver.ElementPolicy.FAIL;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -60,6 +61,7 @@ import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperties;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
@@ -68,6 +70,19 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  * @author Steve Millidge (Payara Foundation)
  */
 public class ConfigPropertyProducer {
+
+    // FIXME: refactor
+    // This currently just takes a generic @ConfigProperties bean and attempts
+    // to initialise it. Field injection may be performed here as opposed
+    // to in the extension. Dealer's choice
+    @ConfigProperties
+    @Dependent
+    public static final Object getGenericObject(InjectionPoint ip)
+            throws InstantiationException, IllegalAccessException {
+        final Field field = (Field) ip.getMember();
+        final Class<?> objectClass = field.getType();
+        return objectClass.newInstance();
+    }
 
     /**
      * General producer method for injecting a property into a field annotated
