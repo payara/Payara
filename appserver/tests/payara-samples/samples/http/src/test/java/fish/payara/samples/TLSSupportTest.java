@@ -49,6 +49,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.List;
 
@@ -61,7 +62,9 @@ public class TLSSupportTest {
 
     @Before
     public void before() {
-        Assume.assumeTrue(JDK.isTls13Supported() || JDK.isOpenJSSEFlagRequired());
+        List<String> jvmOptions = ManagementFactory.getRuntimeMXBean().getInputArguments();
+        boolean openJSSEOption = jvmOptions.contains("-XX:+UseOpenJSSE");
+        Assume.assumeTrue(JDK.isTls13Supported() || openJSSEOption && JDK.isOpenJSSEFlagRequired());
     }
 
     @Test
