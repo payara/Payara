@@ -41,6 +41,8 @@
 
 package com.sun.enterprise.util;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -58,7 +60,8 @@ public final class JDK {
 
     private static final String OPENJSSE_VENDOR = "Azul";
     private static final int OPENJSSE_MINIMUM_UPDATE_VERSION = 222;
-    private static final int OPENJSSE_MAXIMUM_UPDATE_VERSION = 252;
+    private static final int OPENJSSE_MAXIMUM_UPDATE_VERSION = 260;
+    private static final List<Integer> OPENJSSE_KNOWN_NOT_TO_WORK_MINOR = Arrays.asList(252);
 
     public static boolean isTls13Supported() {
         return getMinor() >= TLS13_MINIMUM_MINOR_VERSION
@@ -71,7 +74,8 @@ public final class JDK {
         return vendor != null
             && vendor.contains(OPENJSSE_VENDOR)
             && updateVersion >= OPENJSSE_MINIMUM_UPDATE_VERSION
-            && updateVersion <= OPENJSSE_MAXIMUM_UPDATE_VERSION;
+            && updateVersion <= OPENJSSE_MAXIMUM_UPDATE_VERSION
+            && !OPENJSSE_KNOWN_NOT_TO_WORK_MINOR.contains(updateVersion);
     }
 
     /**
@@ -113,7 +117,7 @@ public final class JDK {
             // 1.2.3.4 -> [ 1, 2, 3, 4]
             // 1.2.3u4 -> [ 1, 2, 3, 4]
             // 1.2.3_4 -> [ 1, 2, 3, 4]
-            
+
             if (version.contains("-")) {
                 String[] versionSplit = version.split("-");
                 vendor = versionSplit.length > 0 ? Optional.of(versionSplit[0]) : Optional.empty();
@@ -176,7 +180,7 @@ public final class JDK {
 
             return false;
         }
-        
+
         private static boolean greaterThan(Optional<Integer> leftHandSide, Optional<Integer> rightHandSide) {
             return leftHandSide.orElse(0) > rightHandSide.orElse(0);
         }
@@ -278,7 +282,7 @@ public final class JDK {
     public static boolean isCorrectJDK(Optional<Version> minVersion, Optional<Version> maxVersion) {
         return isCorrectJDK(Optional.of(JDK_VERSION), minVersion, maxVersion);
     }
-    
+
     public static boolean isCorrectJDK(Optional<Version> reference, Optional<Version> minVersion, Optional<Version> maxVersion) {
         return isCorrectJDK(reference, Optional.empty(), minVersion, maxVersion);
     }
