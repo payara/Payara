@@ -37,44 +37,58 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples;
+package fish.payara.samples.http;
 
 import com.sun.enterprise.util.JDK;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.Arrays;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import javax.net.ssl.SSLContext;
 
-/**
- *
- * @author Alan Roth
- */
-public class TLSSupportTest {
-    private final List<String> SUPPORTED_SSL_PROTOCOLS = Arrays.asList("TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3");
+@WebServlet(value = "/hello")
+public class TestServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.getOutputStream().print("Hello World");
+        Response response = newClientBuilder().build()
+                .target("https://google.com")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.json(new Object()));
 
-    @Before
-    public void before() {
-        List<String> jvmOptions = ManagementFactory.getRuntimeMXBean().getInputArguments();
-        boolean openJSSEOption = jvmOptions.contains("-XX:+UseOpenJSSE");
-        Assume.assumeTrue(JDK.isTls13Supported() || openJSSEOption && JDK.isOpenJSSEFlagRequired());
+        resp.getOutputStream().print("\n"+response.getStatus());
     }
 
-    @Test
-    public void when_socket_ssl_protocols_returned_expect_supported_tls_versions() throws IOException {
-        SocketFactory factory = SSLSocketFactory.getDefault();
-        SSLSocket socket = (SSLSocket) factory.createSocket();
-        socket.setEnabledProtocols(SUPPORTED_SSL_PROTOCOLS.stream().toArray(String[]::new));
-        List<String> sslProtocols = Arrays.asList(socket.getSSLParameters().getProtocols());
+    static boolean hasTLS13Support() {
+        List<String> jvmOptions = ManagementFactory.getRuntimeMXBean().getInputArguments();
+        boolean openJSSEOption = jvmOptions.contains("-XX:+UseOpenJSSE");
+        return JDK.isTls13Supported() || openJSSEOption && JDK.isOpenJSSEFlagRequired();
+    }
 
-        Assert.assertEquals(SUPPORTED_SSL_PROTOCOLS, sslProtocols);
-        Assert.assertTrue(Arrays.asList(socket.getSupportedProtocols()).contains("TLSv1.3"));
+    static ClientBuilder newClientBuilder() {
+        SSLContext sslContext = null;
+        try {
+            if (!hasTLS13Support()) {
+                sslContext = SSLContext.getInstance("TLSv1.2");
+                sslContext.init(null, null, null);
+            }
+        } catch (NoSuchAlgorithmException | KeyManagementException ex) {
+            throw new IllegalStateException(ex);
+        }
+
+        ClientBuilder builder = ClientBuilder.newBuilder();
+        if (sslContext != null) {
+            builder.sslContext(sslContext);
+        }
+        return builder;
     }
 }
