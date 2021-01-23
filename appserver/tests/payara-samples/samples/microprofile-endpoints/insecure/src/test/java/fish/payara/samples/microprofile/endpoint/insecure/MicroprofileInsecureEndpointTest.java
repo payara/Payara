@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,10 +42,9 @@ package fish.payara.samples.microprofile.endpoint.insecure;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
+import fish.payara.samples.NotMicroCompatible;
 
-import fish.payara.samples.CliCommands;
 import fish.payara.samples.PayaraArquillianTestRunner;
-import fish.payara.samples.ServerOperations;
 
 import java.net.URL;
 
@@ -54,13 +53,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static java.util.Arrays.asList;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -72,6 +68,7 @@ import static org.junit.Assert.assertEquals;
  * @author Gaurav Gupta
  */
 @RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
 public class MicroprofileInsecureEndpointTest {
 
     @ArquillianResource
@@ -83,24 +80,6 @@ public class MicroprofileInsecureEndpointTest {
     public static WebArchive createDeployment() {
         return create(WebArchive.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-    }
-
-    @BeforeClass
-    public static void enableSecurity() {
-        if (ServerOperations.isServer()) {
-            CliCommands.payaraGlassFish(asList("set-metrics-configuration", "--endpoint", "mpmetrics"));
-            CliCommands.payaraGlassFish(asList("set-microprofile-healthcheck-configuration", "--endpoint", "mphealth"));
-            ServerOperations.restartContainer();
-        }
-    }
-
-    @AfterClass
-    public static void resetSecurity() {
-        if (ServerOperations.isServer()) {
-            CliCommands.payaraGlassFish(asList("set-metrics-configuration", "--endpoint", "metrics"));
-            CliCommands.payaraGlassFish(asList("set-microprofile-healthcheck-configuration", "--endpoint", "health"));
-            ServerOperations.restartContainer();
-        }
     }
 
     @Before
@@ -116,14 +95,14 @@ public class MicroprofileInsecureEndpointTest {
 
     @Test
     public void testMetrics() throws Exception {
-        Page page = webClient.getPage(base + "../mpmetrics");
+        Page page = webClient.getPage(base + "../mpmetrics-insecure");
         assertEquals(SC_OK, page.getWebResponse().getStatusCode());
     }
 
     @Test
     public void testHeatlhCheck() throws Exception {
         try {
-            Page page = webClient.getPage(base + "../mphealth");
+            Page page = webClient.getPage(base + "../mphealth-insecure");
             assertEquals(SC_OK, page.getWebResponse().getStatusCode());
         } catch (FailingHttpStatusCodeException ex) {
             assertEquals(SC_SERVICE_UNAVAILABLE, ex.getStatusCode());

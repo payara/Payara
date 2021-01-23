@@ -1456,100 +1456,109 @@ public class WebModule extends PwcWebModule implements Context {
      * Since the work directory is used when configuring the session manager
      * persistence settings, this method must be invoked prior to
      * <code>configureSessionSettings</code>.
+     *
+     * Properties are inherited from VirtualServer and may be overridden by configuration from sun-web.xml
      */
-    void configureMiscSettings(SunWebAppImpl bean, VirtualServer vs,
-                               String contextPath) {
-
-        /*
-         * Web app inherits setting of allowLinking property from vs on which
-         * it is being deployed, but may override it using allowLinking
-         * property in its sun-web.xml
-         */
-        boolean allowLinking = vs.getAllowLinking();
-
-        if ((bean != null) && (bean.sizeWebProperty() > 0)) {
-            WebProperty[] props = bean.getWebProperty();
-            for (WebProperty prop : props) {
-                String name = prop.getAttributeValue("name");
-                String value = prop.getAttributeValue("value");
-                if (name == null || value == null) {
-                    throw new IllegalArgumentException(
-                            rb.getString(LogFacade.NULL_WEB_MODULE_PROPERTY));
-                }
-                if ("singleThreadedServletPoolSize".equalsIgnoreCase(name)) {
-                    int poolSize = getSTMPoolSize();
-                    try {
-                        poolSize = Integer.parseInt(value);
-                    } catch(NumberFormatException e) {
-                        String msg = rb.getString(LogFacade.INVALID_SERVLET_POOL_SIZE);
-                        msg = MessageFormat.format(msg, value, contextPath, Integer.toString(poolSize));
-                        logger.log(Level.WARNING, msg, e);
-                    }
-                    if (poolSize > 0) {
-                        setSTMPoolSize(poolSize);
-                    }
-
-                } else if("tempdir".equalsIgnoreCase(name)) {
-                    setWorkDir(value);
-                } else if("crossContextAllowed".equalsIgnoreCase(name)) {
-                    boolean crossContext = Boolean.parseBoolean(value);
-                    setCrossContext(crossContext);
-                } else if("allowLinking".equalsIgnoreCase(name)) {
-                    allowLinking = ConfigBeansUtilities.toBoolean(value);
-                    // START S1AS8PE 4817642
-                } else if("reuseSessionID".equalsIgnoreCase(name)) {
-                    boolean reuse = ConfigBeansUtilities.toBoolean(value);
-                    setReuseSessionID(reuse);
-                    if (reuse) {
-                        String msg = rb.getString(LogFacade.SESSION_IDS_REUSED);
-                        msg = MessageFormat.format(msg, contextPath, vs.getID());
-                        logger.log(Level.WARNING, msg);
-                    }
-                    // END S1AS8PE 4817642
-                } else if("useResponseCTForHeaders".equalsIgnoreCase(name)) {
-                    if("true".equalsIgnoreCase(value)) {
-                        setResponseCTForHeaders();
-                    }
-                } else if("encodeCookies".equalsIgnoreCase(name)) {
-                    boolean flag = ConfigBeansUtilities.toBoolean(value);
-                    setEncodeCookies(flag);
-                    // START RIMOD 4642650
-                } else if("relativeRedirectAllowed".equalsIgnoreCase(name)) {
-                    boolean relativeRedirect = ConfigBeansUtilities.toBoolean(value);
-                    setAllowRelativeRedirect(relativeRedirect);
-                    // END RIMOD 4642650
-                } else if("fileEncoding".equalsIgnoreCase(name)) {
-                    setFileEncoding(value);
-                } else if("enableTldValidation".equalsIgnoreCase(name)
-                    && ConfigBeansUtilities.toBoolean(value)) {
-                    setTldValidation(true);
-                } else if("enableTldNamespaceAware".equalsIgnoreCase(name)
-                    && ConfigBeansUtilities.toBoolean(value)) {
-                    setTldNamespaceAware(true);
-                } else if("securePagesWithPragma".equalsIgnoreCase(name)) {
-                    boolean securePagesWithPragma = ConfigBeansUtilities.toBoolean(value);
-                    setSecurePagesWithPragma(securePagesWithPragma);
-                } else if("useMyFaces".equalsIgnoreCase(name)) {
-                    setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
-                } else if("useBundledJsf".equalsIgnoreCase(name)) {
-                    setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
-                } else if("default-role-mapping".equalsIgnoreCase(name)) {
-                    wmInfo.getDescriptor().setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(value));
-                } else if(name.startsWith("alternatedocroot_")) {
-                    parseAlternateDocBase(name, value);
-                } else if(name.startsWith("valve_") ||
-                        name.startsWith("listener_")) {
-                    // do nothing; these properties are dealt with
-                    // in configureCatalinaProperties()
-                } else {
-                    Object[] params = {name, value};
-                    logger.log(Level.WARNING, LogFacade.INVALID_PROPERTY,
-                        params);
-                }
-            }
+    void configureMiscSettings(final VirtualServer vs, final String contextPath) {
+        for (final Property prop : vs.getProperties()) {
+            final String name = prop.getName();
+            final String value = prop.getValue();
+            configureProperty(vs, contextPath, name, value);
         }
 
-        setAllowLinking(allowLinking);
+        // sen-web.xml preserved for backward compatibility
+        final SunWebAppImpl configBean = getIasWebAppConfigBean();
+        if (configBean != null && configBean.sizeWebProperty() > 0) {
+            for (final WebProperty webProperty : configBean.getWebProperty()) {
+                final String name = webProperty.getAttributeValue("name");
+                final String value = webProperty.getAttributeValue("value");
+                configureProperty(vs, contextPath, name, value);
+            }
+        }
+    }
+
+    private void configureProperty(
+        final VirtualServer vs,
+        final String contextPath,
+        final String name,
+        final String value
+    ) {
+        if (name == null || value == null) {
+            throw new IllegalArgumentException(
+                    rb.getString(LogFacade.NULL_WEB_MODULE_PROPERTY));
+        }
+
+        if ("singleThreadedServletPoolSize".equalsIgnoreCase(name)) {
+            int poolSize = getSTMPoolSize();
+            try {
+                poolSize = Integer.parseInt(value);
+            } catch(NumberFormatException e) {
+                String msg = rb.getString(LogFacade.INVALID_SERVLET_POOL_SIZE);
+                msg = MessageFormat.format(msg, value, contextPath, Integer.toString(poolSize));
+                logger.log(Level.WARNING, msg, e);
+            }
+
+            if (poolSize > 0) {
+                setSTMPoolSize(poolSize);
+            }
+        } else if("tempdir".equalsIgnoreCase(name)) {
+            setWorkDir(value);
+        } else if("crossContextAllowed".equalsIgnoreCase(name)) {
+            final boolean crossContext = Boolean.parseBoolean(value);
+            setCrossContext(crossContext);
+        } else if("allowLinking".equalsIgnoreCase(name)) {
+            final boolean allowLinking = ConfigBeansUtilities.toBoolean(value);
+            setAllowLinking(allowLinking);
+            // START S1AS8PE 4817642
+        } else if("reuseSessionID".equalsIgnoreCase(name)) {
+            final boolean reuse = ConfigBeansUtilities.toBoolean(value);
+            setReuseSessionID(reuse);
+            if (reuse) {
+                String msg = rb.getString(LogFacade.SESSION_IDS_REUSED);
+                msg = MessageFormat.format(msg, contextPath, vs.getID());
+                logger.log(Level.WARNING, msg);
+            }
+            // END S1AS8PE 4817642
+        } else if("useResponseCTForHeaders".equalsIgnoreCase(name)) {
+            if("true".equalsIgnoreCase(value)) {
+                setResponseCTForHeaders();
+            }
+        } else if("encodeCookies".equalsIgnoreCase(name)) {
+            final boolean flag = ConfigBeansUtilities.toBoolean(value);
+            setEncodeCookies(flag);
+            // START RIMOD 4642650
+        } else if("relativeRedirectAllowed".equalsIgnoreCase(name)) {
+            final boolean relativeRedirect = ConfigBeansUtilities.toBoolean(value);
+            setAllowRelativeRedirect(relativeRedirect);
+            // END RIMOD 4642650
+        } else if("fileEncoding".equalsIgnoreCase(name)) {
+            setFileEncoding(value);
+        } else if("enableTldValidation".equalsIgnoreCase(name)
+            && ConfigBeansUtilities.toBoolean(value)) {
+            setTldValidation(true);
+        } else if("enableTldNamespaceAware".equalsIgnoreCase(name)
+            && ConfigBeansUtilities.toBoolean(value)) {
+            setTldNamespaceAware(true);
+        } else if("securePagesWithPragma".equalsIgnoreCase(name)) {
+            final boolean securePagesWithPragma = ConfigBeansUtilities.toBoolean(value);
+            setSecurePagesWithPragma(securePagesWithPragma);
+        } else if("useMyFaces".equalsIgnoreCase(name)) {
+            setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
+        } else if("useBundledJsf".equalsIgnoreCase(name)) {
+            setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
+        } else if("default-role-mapping".equalsIgnoreCase(name)) {
+            wmInfo.getDescriptor().setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(value));
+        } else if(name.startsWith("alternatedocroot_")) {
+            parseAlternateDocBase(name, value);
+        } else if(name.startsWith("valve_") ||
+                name.startsWith("listener_")) {
+            // do nothing; these properties are dealt with
+            // in configureCatalinaProperties()
+        } else {
+            Object[] params = {name, value};
+            logger.log(Level.WARNING, LogFacade.INVALID_PROPERTY,
+                params);
+        }
     }
 
     /**

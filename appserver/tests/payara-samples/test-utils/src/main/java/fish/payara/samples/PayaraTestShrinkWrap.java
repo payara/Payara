@@ -40,6 +40,7 @@
 
 package fish.payara.samples;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
@@ -68,8 +69,9 @@ public final class PayaraTestShrinkWrap {
     private static <T extends Archive<T> & ClassContainer<T>> T getArchive(Class<T> archiveType) {
         return ShrinkWrap.create(archiveType)
                 .addClasses(PayaraArquillianTestRunner.class, PayaraTestRunnerDelegate.class, PayaraVersion.class)
-                .addClasses(SincePayara.class, NotMicroCompatible.class)
+                .addClasses(SincePayara.class, NotMicroCompatible.class, ServerOperations.class, CliCommands.class)
                 .addClasses(Unstable.class)
+                .addClasses(StringUtils.class)
             ;
     }
 }

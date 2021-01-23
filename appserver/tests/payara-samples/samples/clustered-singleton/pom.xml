@@ -56,14 +56,8 @@
 
     <name>Payara Samples - Clustered Singleton Parent</name>
 
-    <profiles>
-        <profile>
-            <id>payara-server-remote</id>
-            <!-- Only run against remote -->
-            <modules>
-                <module>clustered-singleton-ejb</module>
-                <module>clustered-singleton-test</module>
-            </modules>
-        </profile>
-    </profiles>
+    <modules>
+        <module>clustered-singleton-ejb</module>
+        <module>clustered-singleton-test</module>
+    </modules>
 </project>

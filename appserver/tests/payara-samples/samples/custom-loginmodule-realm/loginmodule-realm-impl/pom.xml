@@ -19,6 +19,12 @@
             <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <artifactId>ldapbp-repackaged</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>

@@ -63,6 +63,7 @@
 
     <properties>
         <findbugs.skip>true</findbugs.skip>
+        <deploy.skip>true</deploy.skip>
     </properties>
 
     <modules>

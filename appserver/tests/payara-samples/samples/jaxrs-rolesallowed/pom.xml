@@ -30,6 +30,11 @@
             <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.ext.microprofile</groupId>
+            <artifactId>jersey-mp-rest-client</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>fish.payara.samples</groupId>
