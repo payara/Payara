@@ -53,7 +53,6 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.jvnet.hk2.annotations.Service;
 
@@ -90,8 +89,15 @@ public class MetricsSniffer extends MicroProfileSniffer {
     public boolean handles(DeploymentContext context) {
         final Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
 
-        if (types.getBy(MetricRegistry.class.getName()) != null) return true;
-        if (types.getBy(Metric.class.getName()) != null) return true;
+        if (types != null) {
+            if (types.getBy(MetricRegistry.class.getName()) != null) {
+                return true;
+            }
+
+            if (types.getBy(Metric.class.getName()) != null) {
+                return true;
+            }
+        }
 
         return super.handles(context);
     }
