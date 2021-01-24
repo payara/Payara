@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -95,12 +95,8 @@ public class Tracer implements io.opentracing.Tracer {
      * Constructor that registers this Tracer to an application.
      *
      * @param applicationName The application to register this tracer to
+     * @param scopeManager The {@link io.opentracing.ScopeManager} to use with this Tracer
      */
-    public Tracer(String applicationName) {
-        this.applicationName = applicationName;
-        scopeManager = new fish.payara.opentracing.ScopeManager();
-    }
-
     public Tracer(String applicationName, io.opentracing.ScopeManager scopeManager) {
         this.applicationName = applicationName;
         this.scopeManager = scopeManager;

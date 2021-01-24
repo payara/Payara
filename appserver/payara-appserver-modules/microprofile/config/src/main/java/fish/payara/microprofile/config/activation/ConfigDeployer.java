@@ -69,16 +69,18 @@ public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, Config
         // This is performed here so that the ApplicationContainer executes regardless of CDI extension state
         final Types types = deploymentContext.getTransientAppMetaData(Types.class.getName(), Types.class);
 
-        final Type annotationType = types.getBy(ConfigProperty.class.getName());
-        final Type classType = types.getBy(Config.class.getName());
-        final boolean annotationFound = annotationType != null;
-        final boolean classFound = classType != null;
+        if (types != null) {
+            final Type annotationType = types.getBy(ConfigProperty.class.getName());
+            final Type classType = types.getBy(Config.class.getName());
+            final boolean annotationFound = annotationType != null;
+            final boolean classFound = classType != null;
 
-        if (annotationFound || classFound) {
-            // Register the CDI extension
-            final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
-            if (snifferExtensions != null) {
-                snifferExtensions.add(ConfigCdiExtension::new);
+            if (annotationFound || classFound) {
+                // Register the CDI extension
+                final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
+                if (snifferExtensions != null) {
+                    snifferExtensions.add(ConfigCdiExtension::new);
+                }
             }
         }
 
