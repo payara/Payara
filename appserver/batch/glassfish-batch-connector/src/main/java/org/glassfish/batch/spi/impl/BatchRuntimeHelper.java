@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation] 
+// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates] 
+
 package org.glassfish.batch.spi.impl;
 
 import com.ibm.jbatch.container.servicesmanager.ServiceTypes;
@@ -62,7 +63,6 @@ import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -124,8 +124,6 @@ public class BatchRuntimeHelper
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
-    private static final String CREATE_TABLE_DDL_NAME = "/jsr352-";
-
     public void checkAndInitializeBatchRuntime() {
         if (!initialized.get()) {
             synchronized (this) {
@@ -160,7 +158,7 @@ public class BatchRuntimeHelper
             databaseConfigurationBean.setSchema(getSchemaName());
             batchSPIManager.registerDatabaseConfigurationBean(databaseConfigurationBean);
         } catch (DatabaseAlreadyInitializedException daiEx) {
-            daiEx.printStackTrace();
+            logger.log(Level.SEVERE, null, daiEx);
         }
     }
 
@@ -257,13 +255,10 @@ public class BatchRuntimeHelper
     }
 
     private String determinePersistenceManagerClass() {
-        String result = LazyBootPersistenceManager.class.getName();
-
-        return result;
+        return LazyBootPersistenceManager.class.getName();
     }
 
-    private class GlassFishDatabaseConfigurationBean
-            extends DatabaseConfigurationBean {
+    private class GlassFishDatabaseConfigurationBean extends DatabaseConfigurationBean {
 
         @Override
         public String getJndiName() {
@@ -296,14 +291,10 @@ public class BatchRuntimeHelper
                         if (System.getSecurityManager() == null) {
                             executorService = lookupExecutorService();
                         } else {
-                            java.security.AccessController.doPrivileged(
-                                    new java.security.PrivilegedAction() {
-                                        public java.lang.Object run() {
-                                            executorService = lookupExecutorService();
-                                            return null;
-                                        }
-                                    }
-                            );
+                            java.security.AccessController.doPrivileged((java.security.PrivilegedAction) () -> {
+                                executorService = lookupExecutorService();
+                                return null;
+                            });
                         }
                     }
                 }

@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package org.glassfish.internal.api;
 
-import org.glassfish.internal.api.DelegatingClassLoader;
+import com.sun.enterprise.loader.CurrentBeforeParentClassLoader;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -77,7 +78,7 @@ public interface ClassLoaderHierarchy {
      * @see #getAPIClassLoader()
      * @return ClassLoader common to all deployed applications.
      */
-    ClassLoader getCommonClassLoader();
+    CurrentBeforeParentClassLoader getCommonClassLoader();
 
     /**
      * Returns the classpath equiavalent to what is used by classloader

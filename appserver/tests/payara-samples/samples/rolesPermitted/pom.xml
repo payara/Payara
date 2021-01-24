@@ -16,6 +16,12 @@
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>cdi-auth-roles</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <artifactId>ldapbp-repackaged</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.api</groupId>

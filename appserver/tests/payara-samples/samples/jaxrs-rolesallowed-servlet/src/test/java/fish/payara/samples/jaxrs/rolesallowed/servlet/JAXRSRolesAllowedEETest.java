@@ -62,6 +62,9 @@ public class JAXRSRolesAllowedEETest {
     @Test
     @RunAsClient
     public void testAuthenticated() throws IOException {
+        if (ServerOperations.isMicro()) {
+            return;
+        }
 
         String response =
                 newClient()

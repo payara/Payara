@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,13 +59,11 @@ import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFI
  *
  * MySQL Persistence Manager
  */
-
 public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implements MySQLJDBCConstants{
 
-	private static final String CLASSNAME = MySqlPersistenceManager.class
-			.getName();
+	private static final String CLASSNAME = MySqlPersistenceManager.class.getName();
 
-	private final static Logger logger = Logger.getLogger(CLASSNAME);
+	private static final Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
 
@@ -73,9 +71,8 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 	protected Map<String, String> createMySQLStrings;
 
 	@Override
-	public void init(IBatchConfig batchConfig)
-			throws BatchContainerServiceException {
-		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
+	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
+		logger.log(Level.CONFIG, "Entering CLASSNAME.init(), batchConfig ={0}", batchConfig);
 
 		this.batchConfig = batchConfig;
 
@@ -85,8 +82,7 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 	        suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 
 		if (jndiName == null || jndiName.equals("")) {
-			throw new BatchContainerServiceException(
-					"JNDI name is not defined.");
+			throw new BatchContainerServiceException("JNDI name is not defined.");
 		}
 		Context ctx = null;
 		try {
@@ -108,11 +104,10 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 		try {
 			queryStrings = getSharedQueryMap(batchConfig);
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			throw new BatchContainerServiceException(e1);
 		}
 
-		logger.config("JNDI name = " + jndiName);
+		logger.log(Level.CONFIG, "JNDI name = {0}", jndiName);
 
 
 
@@ -214,10 +209,8 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 								+ tableName.toLowerCase() + "\'";
 						try (ResultSet resultSet = statement.executeQuery(query)) {
 							int rowcount = getTableRowCount(resultSet);
-							if (rowcount == 0) {
-								if (!resultSet.next()) {
-									result = false;
-								}
+							if (rowcount == 0 && !resultSet.next()) {
+                                result = false;
 							}
 						}
 					}
@@ -329,6 +322,5 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implem
 
 		return createMySQLStrings;
 	}
-
 
 }

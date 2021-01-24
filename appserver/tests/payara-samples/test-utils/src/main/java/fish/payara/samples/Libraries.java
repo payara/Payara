@@ -6,7 +6,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 public class Libraries {
-    
     public static JavaArchive[] awaitability() {
         return Maven.resolver()
                 .loadPomFromFile("pom.xml")
@@ -14,13 +13,12 @@ public class Libraries {
                 .withTransitivity()
                 .as(JavaArchive.class);
     }
-    
-    public static File[] resolveMavenCoordinatesToFiles(String pathToPomFile, String mavenCoordinates) {
+
+    public static File[] resolveMavenCoordinatesToFiles(String mavenCoordinates) {
         return Maven.resolver()
                 .loadPomFromFile("pom.xml")
                 .resolve(mavenCoordinates)
                 .withoutTransitivity()
                 .as(File.class);
     }
-
 }

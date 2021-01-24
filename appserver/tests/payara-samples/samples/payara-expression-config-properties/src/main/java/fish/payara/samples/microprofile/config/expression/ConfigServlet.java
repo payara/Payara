@@ -49,6 +49,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Map;
 
 /**
  * @author Andrew Pielage <andrew.pielage@payara.fish>
@@ -65,7 +67,14 @@ public class ConfigServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException      if an I/O error occurs
      */
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            updateEnv("Dibbles", "${Dabbles}");
+            updateEnv("Bibbly", "Bibbles");
+        } catch (ReflectiveOperationException ex) {
+            throw new ServletException(ex);
+        }
         Config config = ConfigProvider.getConfig();
         System.setProperty("fish.payara.examples.config.sources", "Tiddles!");
         System.setProperty("Dabbles", "Dobbles");
@@ -79,4 +88,11 @@ public class ConfigServlet extends HttpServlet {
                 "\n" + "Environment Variable Alias and System Property Alias from File (same property): " + config.getOptionalValue("fish.payara.examples.expression.multiple", String.class).orElse(null));
     }
 
+    @SuppressWarnings({"unchecked"})
+    public static void updateEnv(String name, String val) throws ReflectiveOperationException {
+        Map<String, String> env = System.getenv();
+        Field field = env.getClass().getDeclaredField("m");
+        field.setAccessible(true);
+        ((Map<String, String>) field.get(env)).put(name, val);
+    }
 }

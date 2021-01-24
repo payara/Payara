@@ -76,7 +76,7 @@ import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPE
  * just like WEB-INF/classes is searched first before WEB-INF/lib/*.jar.
  * H2_DRIVERS are added to this class loader, because Payara ships with H2 database by default
  * and it makes them available to users by default. Earlier, they used to be available to applications via
- * launcher classloader, but now they are available via this class loader (see issue 13612 for more details on this). 
+ * launcher classloader, but now they are available via this class loader (see issue 13612 for more details on this).
  *
  * It applies a special rule while handling jars in install_root/lib.
  * In order to maintain file layout compatibility (see  issue #9526),
@@ -115,7 +115,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
     }
 
     private void createCommonClassLoader() {
-        List<File> cpElements = new ArrayList<File>();
+        List<File> cpElements = new ArrayList<>();
         File domainDir = env.getInstanceRoot();
         // I am forced to use System.getProperty, as there is no API that makes
         // the installRoot available. Sad, but true. Check dev forum on this.
@@ -157,7 +157,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
                 }
                 cp.append(f.getAbsolutePath());
             } catch (MalformedURLException e) {
-                logger.log(Level.WARNING, KernelLoggerInfo.invalidClassPathEntry, 
+                logger.log(Level.WARNING, KernelLoggerInfo.invalidClassPathEntry,
                         new Object[] {f, e});
             }
         }
@@ -167,17 +167,18 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
             // when all it would have done was to delegate up.
             commonClassLoader = new CurrentBeforeParentClassLoader(
                     urls.toArray(new URL[urls.size()]), APIClassLoader);
-            commonClassLoader.enableCurrentBeforeParent();
         } else {
             logger.logp(Level.FINE, "CommonClassLoaderManager",
                     "Skipping creation of CommonClassLoader " +
                             "as there are no libraries available",
                     "urls = {0}", new Object[]{urls});
+            commonClassLoader = new CurrentBeforeParentClassLoader(new URL[0], APIClassLoader);
         }
+        commonClassLoader.enableCurrentBeforeParent();
     }
 
-    public ClassLoader getCommonClassLoader() {
-        return commonClassLoader != null ? commonClassLoader : APIClassLoader;
+    public CurrentBeforeParentClassLoader getCommonClassLoader() {
+        return commonClassLoader;
     }
 
     public String getCommonClassPath() {

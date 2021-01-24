@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.healthcheck.servlet;
 
+import static fish.payara.microprofile.Constants.CREATE_INSECURE_ENDPOINT_TEST;
 import static java.util.Arrays.asList;
 import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import static org.glassfish.common.util.StringHelper.isEmpty;
@@ -96,6 +97,11 @@ public class HealthCheckServletContainerInitializer implements ServletContainerI
                 String[] roles = configuration.getRoles().split(",");
                 reg.setServletSecurity(new ServletSecurityElement(new HttpConstraintElement(CONFIDENTIAL, roles)));
                 ctx.declareRoles(roles);
+                if (Boolean.getBoolean(CREATE_INSECURE_ENDPOINT_TEST)) {
+                    ServletRegistration.Dynamic insecureReg = ctx
+                            .addServlet("microprofile-healthcheck-servlet-insecure", HealthCheckServlet.class);
+                    insecureReg.addMapping("/" + configuration.getEndpoint() + "-insecure/*");
+                }
             }
         }
     }
