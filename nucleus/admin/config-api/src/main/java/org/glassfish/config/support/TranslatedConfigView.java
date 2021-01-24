@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
@@ -65,9 +65,9 @@ import java.util.regex.Pattern;
 /**
  * View that translate configured attributes containing properties like ${foo.bar}
  * into system properties values.
- * 
+ *
  * Also support translation of Password Aliases
- * 
+ *
  * Also support translation of Environment Variables
  *
  * @author Jerome Dochez
@@ -109,7 +109,7 @@ public class TranslatedConfigView implements ConfigView {
      * Expand variables in string value (config usage).
      * This method should be called when expanding values from config, where substitution is necessary at all times.
      * @param value value to be expanded
-     * @return expanded value or {@code null} when value is null.     
+     * @return expanded value or {@code null} when value is null.
      */
     public static String expandConfigValue(String value) {
         return (String) getTranslatedValue(value);
@@ -201,7 +201,7 @@ public class TranslatedConfigView implements ConfigView {
             }
 
             return stringValue;
-            
+
         }
         return value;
     }
@@ -213,7 +213,7 @@ public class TranslatedConfigView implements ConfigView {
 
     final ConfigView masterView;
 
-    
+
     TranslatedConfigView(ConfigView master ) {
         this.masterView = master;
 
@@ -248,7 +248,7 @@ public class TranslatedConfigView implements ConfigView {
     public static void setHabitat(ServiceLocator h) {
          habitat = h;
     }
-    
+
     private static DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
     private static DomainScopedPasswordAliasStore domainPasswordAliasStore() {
         if (habitat != null) {
@@ -272,7 +272,7 @@ public class TranslatedConfigView implements ConfigView {
             throw new IllegalStateException("Trying to access MP Config before Service Locator started");
         }
     }
-    
+
     /**
      * check if a given property name matches AS alias pattern ${ALIAS=aliasname}.
      * if so, return the aliasname, otherwise return null.
