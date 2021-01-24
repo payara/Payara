@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
@@ -65,9 +65,9 @@ import java.util.regex.Pattern;
 /**
  * View that translate configured attributes containing properties like ${foo.bar}
  * into system properties values.
- * 
+ *
  * Also support translation of Password Aliases
- * 
+ *
  * Also support translation of Environment Variables
  *
  * @author Jerome Dochez
@@ -79,6 +79,7 @@ public class TranslatedConfigView implements ConfigView {
     static final Pattern mpConfigP = Pattern.compile("([^\\$]*)\\$\\{MPCONFIG=([^\\}]*)\\}([^\\$]*)");
 
     private static final String ALIAS_TOKEN = "ALIAS";
+    private static final String DEFAULT_SEPARATOR = ":";
     private static final int MAX_SUBSTITUTION_DEPTH = 100;
 
     private static final boolean SUBSTITUTION_DISABLED = Boolean.valueOf(System.getProperty("fish.payara.substitution.disable", "false"));
@@ -101,14 +102,14 @@ public class TranslatedConfigView implements ConfigView {
         if (value == null || SUBSTITUTION_DISABLED) {
             return value;
         }
-        return (String) getTranslatedValue(value);
+        return expandConfigValue(value);
     }
 
     /**
      * Expand variables in string value (config usage).
      * This method should be called when expanding values from config, where substitution is necessary at all times.
      * @param value value to be expanded
-     * @return expanded value or {@code null} when value is null.     
+     * @return expanded value or {@code null} when value is null.
      */
     public static String expandConfigValue(String value) {
         return (String) getTranslatedValue(value);
@@ -141,12 +142,17 @@ public class TranslatedConfigView implements ConfigView {
             Matcher m3 = mpConfigP.matcher(stringValue);
 
             while (m3.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String matchValue = m3.group(2).trim();
+                String[] envValue = splitForTranslatedDefaultValue(m3.group(2).trim());
+                String matchValue = envValue[0];
+                String defaultValue = envValue.length > 1 ? envValue[1] : null;
                 Config config = configResolver().getConfig();
                 Optional<String> newValue = config.getOptionalValue(matchValue, String.class);
                 if (newValue != null && newValue.isPresent()) {
                     stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue.get() + m3.group(3)));
                     m3.reset(stringValue);
+                } else if (defaultValue != null) {
+                    stringValue = defaultValue;
+                    break;
                 }
                 i++;
             }
@@ -158,11 +164,16 @@ public class TranslatedConfigView implements ConfigView {
             Matcher m2 = envP.matcher(stringValue);
 
             while (m2.find() && i < MAX_SUBSTITUTION_DEPTH) {
-                String matchValue = m2.group(2).trim();
+                String[] envValue = splitForTranslatedDefaultValue(m2.group(2).trim());
+                String matchValue = envValue[0];
+                String defaultValue = envValue.length > 1 ? envValue[1] : null;
                 String newValue = System.getenv(matchValue);
                 if (newValue != null) {
                     stringValue = m2.replaceFirst(Matcher.quoteReplacement(m2.group(1) + newValue + m2.group(3)));
                     m2.reset(stringValue);
+                } else if (defaultValue != null) {
+                    stringValue = defaultValue;
+                    break;
                 }
                 i++;
             }
@@ -190,14 +201,19 @@ public class TranslatedConfigView implements ConfigView {
             }
 
             return stringValue;
-            
+
         }
         return value;
     }
 
+    private static String[] splitForTranslatedDefaultValue(String matchValue) {
+        return (matchValue == null) ? null : matchValue.split(DEFAULT_SEPARATOR, 2);
+    }
+
+
     final ConfigView masterView;
 
-    
+
     TranslatedConfigView(ConfigView master ) {
         this.masterView = master;
 
@@ -232,7 +248,7 @@ public class TranslatedConfigView implements ConfigView {
     public static void setHabitat(ServiceLocator h) {
          habitat = h;
     }
-    
+
     private static DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
     private static DomainScopedPasswordAliasStore domainPasswordAliasStore() {
         if (habitat != null) {
@@ -256,12 +272,11 @@ public class TranslatedConfigView implements ConfigView {
             throw new IllegalStateException("Trying to access MP Config before Service Locator started");
         }
     }
-    
+
     /**
      * check if a given property name matches AS alias pattern ${ALIAS=aliasname}.
      * if so, return the aliasname, otherwise return null.
      * @param propName The property name to resolve. ex. ${ALIAS=aliasname}.
-     * @param token
      * @return The aliasname or null.
      */
     public static String getAlias(String propName)
