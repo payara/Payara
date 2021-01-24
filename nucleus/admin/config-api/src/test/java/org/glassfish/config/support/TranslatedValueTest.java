@@ -56,6 +56,11 @@ public class TranslatedValueTest {
         TranslatedConfigView.setHabitat(Utils.getNewHabitat());
     }
 
+    @AfterClass
+    public static void teardown() {
+        TranslatedConfigView.setHabitat(null);
+    }
+
     @Test
     public void translationNotRequired() {
         System.out.println("translationNotRequired");
