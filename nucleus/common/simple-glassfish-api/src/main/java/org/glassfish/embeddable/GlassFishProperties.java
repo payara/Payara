@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package org.glassfish.embeddable;
 
@@ -79,7 +79,7 @@ public class GlassFishProperties {
      * @throws NullPointerException if props is null
      */
     public GlassFishProperties(Properties props) {
-        Objects.requireNonNull(props);
+        Objects.requireNonNull(props, "Properties parameter cannot be null");
         gfProperties = props;
     }
 
