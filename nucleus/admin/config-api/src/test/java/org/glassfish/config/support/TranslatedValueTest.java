@@ -40,12 +40,9 @@
 
 package org.glassfish.config.support;
 
-import org.glassfish.config.support.DomainXmlPreParser.DomainXmlPreParserException;
 import org.junit.*;
 
-import javax.xml.stream.XMLInputFactory;
-import java.net.URL;
-import java.util.List;
+import org.glassfish.tests.utils.Utils;
 
 import static org.junit.Assert.*;
 
@@ -54,6 +51,10 @@ import static org.junit.Assert.*;
  * @author cfiguera
  */
 public class TranslatedValueTest {
+    @BeforeClass
+    public static void setup() {
+        TranslatedConfigView.setHabitat(Utils.getNewHabitat());
+    }
 
     @Test
     public void translationNotRequired() {
