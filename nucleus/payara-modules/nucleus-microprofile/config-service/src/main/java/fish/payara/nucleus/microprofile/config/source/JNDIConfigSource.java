@@ -100,7 +100,7 @@ public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource
 
     public boolean setValue(String propertyName, String propertyValue, String target) {
         boolean result = false;
-        HashMap attrList = new HashMap();
+        HashMap<String, String> attrList = new HashMap<>();
         attrList.put("factory-class", "org.glassfish.resources.custom.factory.PrimitivesAndStringFactory");
         attrList.put("res-type", "java.lang.String");
         attrList.put(ResourceConstants.ENABLED, Boolean.TRUE.toString());

@@ -44,6 +44,7 @@ package org.glassfish.deployment.admin;
 import com.sun.enterprise.admin.util.JarFileUtils;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.event.EventListener;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
@@ -73,20 +74,15 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.jar.JarFile;
+
 import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -376,11 +372,14 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 return;
             }
 
-            // disable the application first for non-DAS target
+            // Undeploy the application first for non-DAS targets - note that if the target is "domain" this check will
+            // pass despite the DAS potentially being a valid target
             if (env.isDas() && !DeploymentUtils.isDASTarget(target)) {
                 ActionReport subReport = report.addSubActionsReport();
-                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("disable", subReport, context.getSubject());
 
+                // Disable the application first - note that even though the DAS may come under the target of "domain"
+                // it won't be disabled by the disable command itself, but rather by an application config listener
+                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("disable", subReport, context.getSubject());
                 try {
                     final ParameterMapExtractor extractor = new ParameterMapExtractor(this);
                     final ParameterMap parameters = extractor.extract(Collections.EMPTY_LIST);
@@ -419,6 +418,16 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             generatedArtifacts.record(deploymentContext);
 
             if (info!=null) {
+                /**
+                 * Send the disable start event for the DAS. Even though the disable command itself doesn't get called
+                 * against the DAS when the target is specifically set to "server", the unload lifecycle method is still
+                 * executed (calling the ApplicationLifecycleListeners for the STOP event), so fire the alternative
+                 * event here.
+                 */
+                if (env.isDas() && (DeploymentUtils.isDASTarget(target))) {
+                    events.send(new EventListener.Event<>(Deployment.DISABLE_START, info), true);
+                }
+
                 deployment.undeploy(appName, deploymentContext);
             }
 

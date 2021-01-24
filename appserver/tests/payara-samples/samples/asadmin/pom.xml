@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>asadmin</artifactId>
@@ -70,6 +70,12 @@
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>fish.payara.server.internal.packager</groupId>
+                    <artifactId>ldapbp-repackaged</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
@@ -86,7 +92,7 @@
 
         <dependency>
             <groupId>fish.payara.samples</groupId>
-            <artifactId>test-utils</artifactId>
+            <artifactId>samples-test-utils</artifactId>
         </dependency>
     </dependencies>
 </project>

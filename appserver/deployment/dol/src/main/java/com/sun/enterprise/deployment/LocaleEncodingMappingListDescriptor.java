@@ -74,7 +74,7 @@ public class LocaleEncodingMappingListDescriptor extends Descriptor {
 
     public Set<LocaleEncodingMappingDescriptor> getLocaleEncodingMappingSet() {
 	if(list == null) {
-	    list = new HashSet<LocaleEncodingMappingDescriptor>();
+	    list = new HashSet<>();
 	}
 	return list;
     }

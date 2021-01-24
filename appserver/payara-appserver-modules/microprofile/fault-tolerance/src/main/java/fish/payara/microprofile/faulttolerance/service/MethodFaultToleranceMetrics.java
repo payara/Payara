@@ -39,38 +39,77 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
+import static java.lang.System.arraycopy;
+import static org.eclipse.microprofile.metrics.MetricUnits.NANOSECONDS;
+
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 
 import org.eclipse.microprofile.metrics.Counter;
-import org.eclipse.microprofile.metrics.Gauge;
 import org.eclipse.microprofile.metrics.Histogram;
+import org.eclipse.microprofile.metrics.Metadata;
+import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricType;
+import org.eclipse.microprofile.metrics.MetricUnits;
+import org.eclipse.microprofile.metrics.Tag;
 
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
+import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 
 /**
  * The {@link MethodFaultToleranceMetrics} is a {@link FaultToleranceMetrics} for a particular {@link Method}.
- * 
+ *
  * @author Jan Bernitt
  */
-final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
+public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
 
+    private final MetricRegistry registry;
     /**
      * This is "cached" as soon as an instance is bound using the
      * {@link #FaultToleranceMetricsFactory(MetricRegistry, String)} constructor.
      */
     private final String canonicalMethodName;
-    private final MetricRegistry registry;
-    private final Map<String, Counter> countersByKeyPattern = new ConcurrentHashMap<>();
-    private final Map<String, Histogram> histogramsByKeyPattern = new ConcurrentHashMap<>();
-    private final Map<String, Gauge<Long>> gaugesByKeyPattern = new ConcurrentHashMap<>();
+    private final AtomicBoolean registered;
+    private final Map<MetricID, Counter> countersByMetricID;
+    private final Map<MetricID, Histogram> histogramsByMetricID;
+    private FallbackUsage fallbackUsage;
+    private boolean retried;
 
-    MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
+    public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
+        this(registry, canonicalMethodName, FallbackUsage.notDefined, new AtomicBoolean(), new ConcurrentHashMap<>(),
+                new ConcurrentHashMap<>());
+    }
+
+    private MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName, FallbackUsage fallbackUsage,
+            AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, Map<MetricID, Histogram> histogramsByMetricID) {
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
+        this.fallbackUsage = fallbackUsage;
+        this.registered = registered;
+        this.countersByMetricID = countersByMetricID;
+        this.histogramsByMetricID = histogramsByMetricID;
+    }
+
+    /**
+     * The first thread calling creates the metrics all thread calling the same method work with. Other threads have to
+     * wait until these metrics actually exist. The easiest to make that happen was to make this method synchronised.
+     * The {@link #registered} is still an {@link AtomicBoolean} so that a state change affects other
+     * {@link MethodFaultToleranceMetrics} instances for the same method that were created in the meantime as well.
+     */
+    @Override
+    public synchronized FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
+        if (registered.compareAndSet(false, true)) {
+            FaultToleranceMetrics.super.boundTo(context, policy); // trigger registration if needed
+        }
+        return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
+                policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
+                registered, countersByMetricID, histogramsByMetricID);
     }
 
     /*
@@ -78,33 +117,114 @@ final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
      */
 
     @Override
-    public void incrementCounter(String keyPattern) {
-        countersByKeyPattern.computeIfAbsent(keyPattern, 
-                pattern -> registry.counter(metricName(pattern))).inc();
+    public void register(MetricType type, String metric, String[]... tagsPermutations) {
+        if (type == MetricType.COUNTER) {
+            registerPermutations(tagsPermutations, tags ->
+                countersByMetricID.computeIfAbsent(withMethodTag(metric, tags),
+                    key -> registry.counter(key)));
+        } else if (type == MetricType.HISTOGRAM) {
+            registerPermutations(tagsPermutations, tags ->
+                histogramsByMetricID.computeIfAbsent(withMethodTag(metric, tags),
+                    key -> registry.histogram(withUnit(key, NANOSECONDS), key.getTagsAsArray())));
+        } else {
+            throw new UnsupportedOperationException("Only counter and histogram are supported but got: " + type);
+        }
     }
 
     @Override
-    public void addToHistogram(String keyPattern, long duration) {
-        histogramsByKeyPattern.computeIfAbsent(keyPattern, 
-                pattern -> registry.histogram(metricName(pattern))).update(duration);
+    public void register(String metric, String unit, LongSupplier gauge, String... tag) {
+        MetricID key = withMethodTag(metric, asTag(tag));
+        if (unit == null || MetricUnits.NONE.equals(unit)) {
+            registry.gauge(key, () -> gauge.getAsLong());
+        } else {
+            registry.gauge(withUnit(key, unit), () -> gauge.getAsLong(), key.getTagsAsArray());
+        }
     }
 
-    @Override
-    public void linkGauge(String keyPattern, LongSupplier gauge) {
-        gaugesByKeyPattern.computeIfAbsent(keyPattern, pattern -> {
-            String metricName = metricName(keyPattern);
-            Gauge<Long> newGauge = gauge::getAsLong; 
-            try {
-                registry.register(metricName, newGauge);
-            } catch (IllegalArgumentException ex) {
-                // gauge already exists. Its ugly but this is the only way to make sure it does exist.
+    private static void registerPermutations(String[][] tags, Consumer<Tag[]> register) {
+        if (tags.length == 0) {
+            register.accept(NO_TAGS);
+            return;
+        }
+        if (tags.length == 1) {
+            String[] tag1 = tags[0];
+            for (int i = 1; i < tag1.length; i++) {
+                register.accept(new Tag[] { new Tag(tag1[0], tag1[i]) });
             }
-            return newGauge;
-        });
+            return;
+        }
+        if (tags.length == 2) {
+            String[] tag1 = tags[0];
+            String[] tag2 = tags[1];
+            for (int i = 1; i < tag1.length; i++) {
+                for (int j = 1; j < tag2.length; j++) {
+                    register.accept(new Tag[] { new Tag(tag1[0], tag1[i]), new Tag(tag2[0], tag2[j])});
+                }
+            }
+            return;
+        }
+        throw new UnsupportedOperationException("Only 0 to 2 tags supported but got: " + tags.length);
     }
 
-    private String metricName(String keyPattern) {
-        return String.format(keyPattern, canonicalMethodName);
+    private static Tag[] asTag(String... tag) {
+        return tag.length == 0 ? NO_TAGS : new Tag[] { new Tag(tag[0], tag[1])};
     }
 
+    @Override
+    public void incrementCounter(String metric, Tag... tags) {
+        countersByMetricID.get(withMethodTag(metric, tags)).inc();
+    }
+
+    @Override
+    public void addToHistogram(String metric, long duration, Tag... tags) {
+        histogramsByMetricID.get(withMethodTag(metric, tags)).update(duration);
+    }
+
+    private static Metadata withUnit(MetricID key, String unit) {
+        return Metadata.builder().withName(key.getName()).withUnit(unit).build();
+    }
+
+    private MetricID withMethodTag(String metric, Tag[] tags) {
+        Tag method = new Tag("method", canonicalMethodName);
+        if (tags.length == 0) {
+            return new MetricID(metric, method);
+        }
+        Tag[] newTags = new Tag[tags.length + 1];
+        newTags[0] = method;
+        arraycopy(tags, 0, newTags, 1, tags.length);
+        return new MetricID(metric, newTags);
+    }
+
+    /*
+     * @Retry, @Timeout, @CircuitBreaker, @Bulkhead and @Fallback
+     */
+
+    @Override
+    public FallbackUsage getFallbackUsage() {
+        return fallbackUsage;
+    }
+
+    /*
+     * @Fallback
+     */
+
+    @Override
+    public void incrementFallbackCallsTotal() {
+        fallbackUsage = FaultToleranceMetrics.FallbackUsage.applied;
+    }
+
+    /*
+     * @Retry
+     */
+
+    @Override
+    public void incrementRetryRetriesTotal() {
+        retried = true;
+        FaultToleranceMetrics.super.incrementRetryRetriesTotal();
+    }
+
+    @Override
+    public boolean isRetried() {
+        return retried;
+    }
 }

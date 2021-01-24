@@ -44,7 +44,6 @@ import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.runtime.ws.ReliabilityConfig;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Document;
@@ -54,7 +53,6 @@ import org.w3c.dom.Node;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * This node represents port-component in weblogic-webservices.xml

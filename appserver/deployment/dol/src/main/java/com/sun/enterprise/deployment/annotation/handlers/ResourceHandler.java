@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2020] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.deployment.annotation.handlers;
@@ -89,7 +89,7 @@ public class ResourceHandler extends AbstractResourceHandler {
 
     static {
 
-        envEntryTypes = new HashMap<Class, Class>();
+        envEntryTypes = new HashMap<>();
 
         envEntryTypes.put(String.class, String.class);
 
@@ -424,12 +424,10 @@ public class ResourceHandler extends AbstractResourceHandler {
                                     ResourceContainerContext[] rcContexts,
                                     Resource annotation) {
 
-        Collection<EnvironmentProperty> envEntries =
-            new ArrayList<EnvironmentProperty>();
+        Collection<EnvironmentProperty> envEntries = new ArrayList<>();
 
-        for (int i = 0; i < rcContexts.length; i++) {
-            EnvironmentProperty envEntry =
-                rcContexts[i].getEnvEntry(logicalName);
+        for (ResourceContainerContext rcContext : rcContexts) {
+            EnvironmentProperty envEntry = rcContext.getEnvEntry(logicalName);
             // For @Resource declarations that map to env-entries, if there
             // is no corresponding deployment descriptor entry that has a
             // value and no lookup(), it's treated as if the declaration
@@ -441,7 +439,7 @@ public class ResourceHandler extends AbstractResourceHandler {
             } else {
                 envEntry = new EnvironmentProperty();
                 envEntries.add(envEntry);
-                rcContexts[i].addEnvEntryDescriptor(envEntry);
+                rcContext.addEnvEntryDescriptor(envEntry);
             }
         }
 

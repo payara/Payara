@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,7 +73,7 @@ public class UberJarCreator {
     private final List<File> libs = new LinkedList<>();
     private final List<File> classes = new LinkedList<>();
     private final List<File> deployments = new LinkedList<>();
-    private final Map<String, URL> deploymentURLs = new HashMap<>();
+    private final Map<String, URL> deploymentURLs = new LinkedHashMap<>();
     private List<File> copiedFiles = new LinkedList();
 
     private File deploymentDir;

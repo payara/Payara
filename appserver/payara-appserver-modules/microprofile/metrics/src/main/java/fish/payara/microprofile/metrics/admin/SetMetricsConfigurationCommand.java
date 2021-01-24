@@ -43,6 +43,8 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.microprofile.SetSecureMicroprofileConfigurationCommand;
 import fish.payara.microprofile.metrics.MetricsService;
+import fish.payara.microprofile.metrics.impl.MetricsServiceImpl;
+
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
@@ -116,14 +118,14 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
 
     @Inject
     ServiceLocator habitat;
-    
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
         Subject subject = context.getSubject();
         Config targetConfig = targetUtil.getConfig(target);
         MetricsServiceConfiguration metricsConfiguration = targetConfig.getExtensionByType(MetricsServiceConfiguration.class);
-        MetricsService metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsService.class);
+        MetricsServiceImpl metricsService = Globals.getDefaultBaseServiceLocator().getService(MetricsServiceImpl.class);
 
         if (Boolean.TRUE.equals(securityEnabled)
                 || Boolean.parseBoolean(metricsConfiguration.getSecurityEnabled())) {
@@ -173,7 +175,7 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 return configProxy;
             }, metricsConfiguration);
-            
+
             if(metricsConfiguration != null && !Boolean.valueOf(metricsConfiguration.getDynamic())) {
                 actionReport.setMessage("Restart server for change to take effect");
             }

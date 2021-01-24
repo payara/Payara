@@ -39,30 +39,19 @@
  */
 package fish.payara.samples.asadmin;
 
-import fish.payara.samples.CliCommands;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.ServerOperations;
 import fish.payara.samples.SincePayara;
 
 import org.glassfish.embeddable.CommandResult;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 @SincePayara("5.193")
 @NotMicroCompatible("This asadmin command is not supported on Micro")
 public class AutoNameInstancesTest extends AsadminTest {
-
-    private static final String domainNameProperty = "payara.domain.name";
-
-    @BeforeClass
-    public static void setup() {
-        String domainName = ServerOperations.getPayaraDomainFromServer();
-        CliCommands.payaraGlassFish("create-system-properties", domainNameProperty + "=" + domainName);
-    }
-
     @Test
     public void testInstanceNameConflict() {
-        String domainName = System.getProperty(domainNameProperty);
+        String domainName = ServerOperations.getDomainName();
         String conflictInstanceName = "Scrumptious-Swordfish";
         // Create expected conflict if it doesn't already exist.
         CommandResult result = asadmin("list-instances", "-t", "--nostatus");
@@ -89,7 +78,7 @@ public class AutoNameInstancesTest extends AsadminTest {
 
     @Test
     public void testGenerateInstanceName() {
-        String domainName = System.getProperty(domainNameProperty);
+        String domainName = ServerOperations.getDomainName();
         CommandResult result = asadmin("create-instance",
                 "-a",
                 "--node", "localhost-" + domainName,

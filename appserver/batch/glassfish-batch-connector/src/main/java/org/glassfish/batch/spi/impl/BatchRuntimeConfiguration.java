@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation] 
+// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates] 
+
 package org.glassfish.batch.spi.impl;
 
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
 
 /**
  * @author Mahesh Kannan

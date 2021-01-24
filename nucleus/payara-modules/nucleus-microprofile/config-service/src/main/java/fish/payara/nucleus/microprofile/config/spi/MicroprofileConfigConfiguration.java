@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import java.util.List;
+
 import javax.validation.constraints.Min;
 
 import org.eclipse.microprofile.config.Config;
@@ -46,6 +48,8 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
 
 /**
  * The configuration that configures the semantics of the MP {@link Config} implementation.
@@ -58,10 +62,26 @@ import org.jvnet.hk2.config.Configured;
  */
 @Configured(name="microprofile-config")
 public interface MicroprofileConfigConfiguration extends ConfigExtension {
+    
+    @Attribute(defaultValue = "secrets", dataType = String.class)
+    String getSecretDir();
+    void setSecretDir(String directory);
+    
+    @Attribute(defaultValue = "90", dataType = Integer.class)
+    String getSecretDirOrdinality();
+    void setSecretDirOrdinality(String message);
 
+    @Attribute(defaultValue = "105", dataType = Integer.class)
+    String getPasswordOrdinality();
+    void setPasswordOrdinality(String message);
+    
     @Attribute(defaultValue = "110", dataType = Integer.class)
     String getDomainOrdinality();
     void setDomainOrdinality(String message);
+    
+    @Attribute(defaultValue = "115", dataType = Integer.class)
+    String getJNDIOrdinality();
+    void setJNDIOrdinality(String message);
 
     @Attribute(defaultValue = "120", dataType = Integer.class)
     String getConfigOrdinality();
@@ -83,25 +103,21 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
     String getClusterOrdinality();
     void setClusterOrdinality(String message);
     
-    @Attribute(defaultValue = "115", dataType = Integer.class)
-    String getJNDIOrdinality();
-    void setJNDIOrdinality(String message);
-    
-    @Attribute(defaultValue = "secrets", dataType = String.class)
-    String getSecretDir();
-    void setSecretDir(String directory);
-    
-    @Attribute(defaultValue = "90", dataType = Integer.class)
-    String getSecretDirOrdinality();
-    void setSecretDirOrdinality(String message);
-
-    @Attribute(defaultValue = "105", dataType = Integer.class)
-    String getPasswordOrdinality();
-    void setPasswordOrdinality(String message);
-
     @Attribute(defaultValue = "170", dataType = Integer.class)
     String getPayaraExpressionPropertiesOrdinality();
     void setPayaraExpressionPropertiesOrdinality(String message);
+
+    @Attribute(defaultValue = "180", dataType = Integer.class)
+    String getCloudOrdinality();
+    void setCloudOrdinality(String value);
+    
+    @Attribute(defaultValue = "190", dataType = Integer.class)
+    String getJdbcOrdinality();
+    void setJdbcOrdinality(String message);
+
+    @Attribute(defaultValue = "200", dataType = Integer.class)
+    String getLdapOrdinality();
+    void setLdapOrdinality(String message);
 
     /**
      * @return number of seconds any MP {@link Config} is cached. That means changes to value as provided by a
@@ -112,4 +128,23 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
     @Attribute(defaultValue = "60", dataType = Integer.class)
     String getCacheDurationSeconds();
     void setCacheDurationSeconds(String cacheDurationSeconds);
+
+    @Element("*")
+    List<ConfigSourceConfiguration> getConfigSourceConfigurationList();
+
+    @DuckTyped
+    <T extends ConfigSourceConfiguration> T getConfigSourceConfigurationByType(Class<T> type);
+
+    class Duck {
+        public static <T extends ConfigSourceConfiguration> T getConfigSourceConfigurationByType(MicroprofileConfigConfiguration config, Class<T> type) {
+            for (ConfigSourceConfiguration configSourceConfiguration : config.getConfigSourceConfigurationList()) {
+                try {
+                    return type.cast(configSourceConfiguration);
+                } catch (Exception e) {
+                    // Do nothing
+                }
+            }
+            return null;
+        }
+    }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] PAyara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -50,7 +51,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceProperty;
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -80,12 +80,11 @@ public class EntityManagerReferenceHandler
      * @param rcContexts an array of ResourceContainerContext
      * @return HandlerProcessingResult
      */
-    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
-            ResourceContainerContext[] rcContexts)
+    @Override
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
 
-        AnnotatedElementHandler aeHandler = 
-            ainfo.getProcessingContext().getHandler();
+        AnnotatedElementHandler aeHandler = ainfo.getProcessingContext().getHandler();
         if (aeHandler instanceof AppClientContext) {
             // application client does not support @PersistenceContext
             String msg = localStrings.getLocalString(
@@ -200,20 +199,14 @@ public class EntityManagerReferenceHandler
      * Return EntityManagerReferenceDescriptors with given name 
      * if exists or a new one without name being set.
      */
-    private EntityManagerReferenceDescriptor[] 
-        getEmReferenceDescriptors(String logicalName, 
-                                   ResourceContainerContext[] rcContexts) {
+    private EntityManagerReferenceDescriptor[] getEmReferenceDescriptors(String logicalName, ResourceContainerContext[] rcContexts) {
             
-        EntityManagerReferenceDescriptor emRefs[] =
-                new EntityManagerReferenceDescriptor[rcContexts.length];
+        EntityManagerReferenceDescriptor emRefs[] = new EntityManagerReferenceDescriptor[rcContexts.length];
         for (int i = 0; i < rcContexts.length; i++) {
-            EntityManagerReferenceDescriptor emRef =
-                (EntityManagerReferenceDescriptor)rcContexts[i].
-                    getEntityManagerReference(logicalName);
+            EntityManagerReferenceDescriptor emRef = rcContexts[i].getEntityManagerReference(logicalName);
             if (emRef == null) {
                 emRef = new EntityManagerReferenceDescriptor();
-                rcContexts[i].addEntityManagerReferenceDescriptor
-                    (emRef);
+                rcContexts[i].addEntityManagerReferenceDescriptor(emRef);
             }
             emRefs[i] = emRef;
         }
@@ -221,9 +214,7 @@ public class EntityManagerReferenceHandler
         return emRefs;
     }
 
-    private void processNewEmRefAnnotation
-        (EntityManagerReferenceDescriptor emRef,
-         String logicalName, PersistenceContext annotation) {
+    private void processNewEmRefAnnotation(EntityManagerReferenceDescriptor emRef, String logicalName, PersistenceContext annotation) {
         
         emRef.setName(logicalName);
         

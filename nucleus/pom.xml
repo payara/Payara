@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]" -->
+<!--"Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2020.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -117,8 +117,6 @@
         <maven.build.helper.plugin.version>3.0.0</maven.build.helper.plugin.version>
         <maven.plugin.api.version>3.6.0</maven.plugin.api.version>
 
-        <deploy.skip>true</deploy.skip>
-
         <!-- Servlet -->
         <!-- Requires JDK8u161 or above-->
         <grizzly.npn.api.version>1.9.payara-p1</grizzly.npn.api.version>
@@ -180,10 +178,6 @@
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <l10n.version>3.1-b41</l10n.version>
         <ha-api.version>3.1.12</ha-api.version>
-        <smack.version>4.1.9</smack.version>
-        <jxmpp.version>0.4.2</jxmpp.version>
-        <xpp3.version>1.1.4c_7</xpp3.version>
-        <snmp4j.version>2.5.3-payara.p1</snmp4j.version>
         <mockito.version>2.2.6</mockito.version>
 
         <!-- Build -->
@@ -195,7 +189,7 @@
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <ant.version>1.10.8</ant.version>
+        <ant.version>1.10.9</ant.version>
         <ant-launcher.version>1.10.5</ant-launcher.version>
         <metainf-services.version>1.8</metainf-services.version>
 
@@ -265,7 +259,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
-                        <useSystemClassLoader>true</useSystemClassLoader>
+                        <trimStackTrace>false</trimStackTrace>
                     </configuration>
                 </plugin>
 
@@ -574,9 +568,6 @@
 
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <useSystemClassLoader>true</useSystemClassLoader>
-                </configuration>
             </plugin>
 
             <plugin>
@@ -584,8 +575,8 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>foo</id>
-                        <phase>test</phase>
+                        <id>add-manifest</id>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
@@ -881,7 +872,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -1164,36 +1155,6 @@ Parent is ${project.parent}</echo>
             <properties>
                 <javadoc.options>-Xdoclint:none</javadoc.options>
             </properties>
-        </profile>
-
-        <profile>
-            <id>DeploySnapshot-Internal</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>payara-nexus</id>
-                    <url>https://nexus.payara.fish/content/repositories/payara-snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>payara-nexus</serverId>
-                            <nexusUrl>https://nexus.payara.fish/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>

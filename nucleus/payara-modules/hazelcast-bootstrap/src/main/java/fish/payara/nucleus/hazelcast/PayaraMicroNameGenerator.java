@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 /**
  * Class to generate random names for Payara Micro instances.
@@ -64,10 +65,10 @@ public final class PayaraMicroNameGenerator {
      * returns the UUID.
      * This method is more computationally expensive then fish.payara.api.admin.config.NameGenerator.generateName()
      * @param takenNames a list of all names of instances that already exist
-     * @param UUID The UUID of the instance
+     * @param uuid The UUID of the instance
      * @return a unique name
      */
-    public static String generateUniqueName(List<String> takenNames, String UUID) {
+    public static String generateUniqueName(List<String> takenNames, UUID uuid) {
         String name = "";
         
         // Generate a Map of all available names
@@ -95,7 +96,7 @@ public final class PayaraMicroNameGenerator {
         
         // If a unique name was not found, just set it to the instance UUID
         if (name.equals("")) {
-            name = UUID;
+            name = uuid.toString();
         }
         
         return name;

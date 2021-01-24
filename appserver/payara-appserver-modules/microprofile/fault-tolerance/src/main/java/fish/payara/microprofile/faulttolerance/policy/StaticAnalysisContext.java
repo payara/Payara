@@ -49,7 +49,7 @@ import javax.interceptor.InvocationContext;
 
 /**
  * A {@link InvocationContext} used during static analysis.
- * 
+ *
  * @author Jan Bernitt
  */
 public final class StaticAnalysisContext implements InvocationContext {
@@ -131,4 +131,8 @@ public final class StaticAnalysisContext implements InvocationContext {
         }
     }
 
+    @Override
+    public String toString() {
+        return target.getClass().getSimpleName() + "." + annotated.getName() + "@" + System.identityHashCode(target);
+    }
 }

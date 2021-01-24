@@ -45,9 +45,7 @@ import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.deploy.shared.Util;
-import org.glassfish.web.WarType;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;

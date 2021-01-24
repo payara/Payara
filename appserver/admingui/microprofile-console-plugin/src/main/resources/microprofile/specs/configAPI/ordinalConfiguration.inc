@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -64,6 +64,12 @@
                            text="#{pageSession.microprofileConfigMap['applicationOrdinality']}"/>
         </sun:property>
 
+        <sun:property id="cloudOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.cloud}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['cloudOrdinality']}"/>
+        </sun:property>
+      
         <sun:property id="clusterOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18n_microprofile.config.ordinal.configuration.cluster}">
               <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
@@ -82,6 +88,12 @@
                            text="#{pageSession.microprofileConfigMap['domainOrdinality']}"/>
         </sun:property>
     
+        <sun:property id="jdbcOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.jdbc}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['jdbcOrdinality']}"/>
+        </sun:property>
+      
         <sun:property id="jndiOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18n_microprofile.config.ordinal.configuration.jndi}"> 
               <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
@@ -111,5 +123,12 @@
               <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
                            text="#{pageSession.microprofileConfigMap['serverOrdinality']}"/>
         </sun:property>
+      
+        <sun:property id="ldapOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.ldap}">
+            <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 
+                           text="#{pageSession.microprofileConfigMap['ldapOrdinality']}"/>
+        </sun:property>
+
     </sun:propertySheetSection>
    </sun:propertySheet>

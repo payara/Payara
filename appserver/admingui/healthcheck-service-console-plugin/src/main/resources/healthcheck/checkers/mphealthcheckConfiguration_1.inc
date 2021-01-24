@@ -63,12 +63,14 @@
                 value="#{requestScope.resp.data.subReports.get(4).extraProperties.mpHealth}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.encodedConfigName}");
                 
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "addToMicroProfileHealth"});
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
         
-        setPageSessionAttribute(key="dynamic", value="true");
+        if (#{pageSession.valueMap['addToMicroProfileHealth']}=true) {
+            setPageSessionAttribute(key="addToMicroProfileHealthSelected", value="true");
+        }
     />
 </event>
 

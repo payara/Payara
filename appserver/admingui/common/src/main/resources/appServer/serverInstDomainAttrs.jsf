@@ -60,11 +60,6 @@
             setPageSessionAttribute(key="appPropertyEndpoint" value="#{sessionScope.REST_URL}/system-applications/application/__admingui/property.json")
             gf.restRequest(endpoint="#{pageSession.appPropertyEndpoint}" method="GET" result="#{requestScope.propList}");
             setPageSessionAttribute(key="appPropList" value="#{requestScope.propList.data.extraProperties.properties}");
-            
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/server-config/zendesk-support-configuration/get-zendesk-support-configuration" method="GET" result="#{requestScope.zenresp}");
-            if (#{requestScope.zenresp.data.extraProperties.zendeskSupportConfiguration['enabled']}){
-                setPageSessionAttribute(key="zendeskenabled", value="true");
-            }
         />   
     </event>
             <sun:form id="propertyForm">
@@ -80,9 +75,6 @@
                     if(!#{pageSession.loadOnStartup}){
                         //will be null if checkbox is unchecked.
                         setPageSessionAttribute(key="loadOnStartup" value="false");
-                    }
-                    if(!#{pageSession.zendeskenabled}){
-                        setPageSessionAttribute(key="zendeskenabled" value="false");
                     }
                     setAttribute(key="found" value="false");
                     if('! #{pageSession.loadOnStartup}=#{pageSession.origLoadOnStartup}'){
@@ -101,10 +93,6 @@
                         javaToJSON(obj="#{pageSession.appPropList}" json="#{requestScope.tmpJSON}");
                         gf.restRequest(endpoint="#{pageSession.appPropertyEndpoint}", method="POST", data="#{requestScope.tmpJSON}");
                     }
-                    createMap(result="#{pageSession.zenMap}")
-                    mapPut(map="#{pageSession.zenMap}" key="enabled" value="#{pageSession.zendeskenabled}");
-                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/configs/config/server-config/zendesk-support-configuration/set-zendesk-support-configuration" 
-                                attrs="#{pageSession.zenMap}");
                     prepareSuccessfulMsg();
                     gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
@@ -131,10 +119,6 @@
                     }
                 />
             </sun:checkbox>          
-        </sun:property>
-        <sun:property id="supportEnabled"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}"
-                      label="$resource{i18nc.domain.supportEnabled}"  helpText="$resource{i18nc.domain.supportEnabledHelp}">
-            <sun:checkbox  id="supportEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.zendeskenabled}" selectedValue="true"  />
         </sun:property>
             <sun:property id="dummy"  >
                 <sun:staticText id="dummy"  text=" " />

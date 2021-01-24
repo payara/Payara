@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.node;
 
 import static java.util.Collections.emptyMap;
@@ -79,7 +80,7 @@ public class PersistenceNode extends AbstractBundleNode {
     private static final String SPEC_VERSION = "2.0";
 
     private static List<String> initSystemIDs() {
-        List<String> systemIDs = new ArrayList<String>();
+        List<String> systemIDs = new ArrayList<>();
         systemIDs.add(SCHEMA_ID);
         systemIDs.add(SCHEMA_ID_1_0);
         return Collections.unmodifiableList(systemIDs);
@@ -126,10 +127,12 @@ public class PersistenceNode extends AbstractBundleNode {
         return emptyMap();
     }
 
+    @Override
     public String getDocType() {
         return null;
     }
 
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -141,14 +144,17 @@ public class PersistenceNode extends AbstractBundleNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return ROOT_ELEMENT;
     }
 
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
 
+    @Override
     public String getSpecVersion() {
         return SPEC_VERSION;
     }

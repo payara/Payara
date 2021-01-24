@@ -56,13 +56,12 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
-import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
-import org.glassfish.internal.api.Globals;
-
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.Stereotypes;
+import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
+import org.glassfish.internal.api.Globals;
 
 @Interceptor
 @FaultTolerance
@@ -77,17 +76,18 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
     @Inject
     private Instance<RequestContextController> requestContextControllerInstance;
 
+    private FaultToleranceService faultToleranceService;
+
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Exception {
         try {
-            FaultToleranceService env =
-                    Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
+            initialize();
             AtomicReference<FaultToleranceConfig> lazyConfig = new AtomicReference<>();
             Supplier<FaultToleranceConfig> configSupplier = () -> //
-                lazyConfig.updateAndGet(value -> value != null ? value : env.getConfig(context, this));
+                    lazyConfig.updateAndGet(value -> value != null ? value : faultToleranceService.getConfig(context, this));
             FaultTolerancePolicy policy = FaultTolerancePolicy.get(context, configSupplier);
             if (policy.isPresent) {
-                return policy.proceed(context, () -> env.getMethodContext(context, policy, getRequestContextController()));
+                return policy.proceed(context, () -> faultToleranceService.getMethodContext(context, policy, getRequestContextController()));
             }
         } catch (FaultToleranceDefinitionException e) {
             logger.log(Level.SEVERE, "Effective FT policy contains illegal values, fault tolerance cannot be applied,"
@@ -95,6 +95,13 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
             // fall-through to normal proceed
         }
         return context.proceed();
+    }
+
+    private void initialize() {
+        if (this.faultToleranceService != null) {
+            return;
+        }
+        this.faultToleranceService = Globals.getDefaultBaseServiceLocator().getService(FaultToleranceService.class);
     }
 
     private RequestContextController getRequestContextController() {

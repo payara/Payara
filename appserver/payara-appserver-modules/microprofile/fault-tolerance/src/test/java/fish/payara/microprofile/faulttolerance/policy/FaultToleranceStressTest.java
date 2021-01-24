@@ -39,13 +39,13 @@
  */
 package fish.payara.microprofile.faulttolerance.policy;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.oneOf;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -66,8 +66,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.faulttolerance.Asynchronous;
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
@@ -87,7 +85,7 @@ import fish.payara.microprofile.faulttolerance.test.TestUtils;
 
 /**
  * Tests that uses multiple concurrent callers for the method under test to see that "statistically" it behaves correctly.
- * 
+ *
  * @author Jan Bernitt
  */
 public class FaultToleranceStressTest implements FallbackHandler<Future<String>> {
@@ -119,20 +117,19 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
 
     final ExecutorService executorService = Executors.newWorkStealingPool(NUMBER_OF_CALLERS / 2);
     final FaultToleranceServiceStub service = new FaultToleranceServiceStub() {
-
         @Override
-        public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
-            return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation) {
+        protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {
+            return new FaultToleranceMethodContextStub(ctx, state, concurrentExecutions, waitingQueuePopulation) {
                 @Override
-                public CircuitBreakerState getState(int requestVolumeThreshold) {
+                public CircuitBreakerState getState() {
                     circuitStateAccessCount.incrementAndGet();
-                    return super.getState(requestVolumeThreshold);
+                    return super.getState();
                 }
 
                 @Override
-                public BlockingQueue<Thread> getConcurrentExecutions(int maxConcurrentThreads) {
+                public BlockingQueue<Thread> getConcurrentExecutions() {
                     concurrentExecutionsAccessCount.incrementAndGet();
-                    return super.getConcurrentExecutions(maxConcurrentThreads);
+                    return super.getConcurrentExecutions();
                 }
 
                 @Override
@@ -151,12 +148,15 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
                 }
 
                 @Override
-                public void runAsynchronous(CompletableFuture<Object> asyncResult,
+                public void runAsynchronous(AsyncFuture asyncResult,
                         Callable<Object> task) throws RejectedExecutionException {
                     Runnable completionTask = () -> {
                         if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
+                            boolean returned = false;
                             try {
-                                Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
+                                Object res = task.call();
+                                returned = true;
+                                Future<?> futureResult = AsynchronousPolicy.toFuture(res);
                                 if (!asyncResult.isCancelled()) {
                                     if (!asyncResult.isDone()) {
                                         asyncCompletedCount.incrementAndGet();
@@ -168,7 +168,8 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
                                 }
                             } catch (Exception ex) {
                                 asyncCompletedExceptionallyCount.incrementAndGet();
-                                asyncResult.completeExceptionally(ex); 
+                                asyncResult.setExceptionThrown(!returned);
+                                asyncResult.completeExceptionally(returned && ex instanceof ExecutionException ? ex.getCause() : ex);
                             }
                         }
                     };
@@ -200,33 +201,33 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
                 methodInvocationCount.get(), greaterThanOrEqualTo(totalSuccesses + minimumExpectedRetries));
         assertThat("Every 5th attempt should return with a Future complected exceptionally",
                 callerExpectedlyFailedInvocationCount.get(), greaterThan(0)); // open circuit makes this mostly unpredictable
-        assertThat("Some atempt should end up waiting", 
+        assertThat("Some atempt should end up waiting",
                 waitingQueuePopulationAccessCount.get(), greaterThan(0));
         assertThat("Most attempts should go through bulkhead execution", // due to open circuit some might never reach bulkhead
                 concurrentExecutionsAccessCount.get(), greaterThanOrEqualTo(totalExpectedCalls / 2)); // conservative assumption: half of normal case number
-        assertThat("Each attempt should use cuircuit breaker state", 
+        assertThat("Each attempt should use cuircuit breaker state",
                 circuitStateAccessCount.get(), greaterThanOrEqualTo(totalExpectedCalls));
-        assertThat("Each successful attempt should have been asyncronous", 
+        assertThat("Each successful attempt should have been asyncronous",
                 asyncCompletedCount.get(), greaterThan(totalExpectedCalls));
-        assertThat("Each failing attempt should have been asyncronous", 
+        assertThat("Each failing attempt should have been asyncronous",
                 asyncCompletedExceptionallyCount.get(), greaterThanOrEqualTo(totalFailures));
         assertEquals("Cancel should not have occured", 0, asyncCancelCount.get());
         assertThat("Most attempt throwing an exception should cause a delay", // not all since retry can be cancelled due to concurrent completion
                 delayedExecutionCount.get(), greaterThanOrEqualTo(minimumExpectedRetries / 2)); // conservative assumption: half of normal case number
         long totalDelayMillis = delayedMillis.get();
-        assertThat("Some attempts should have tried to retry with a delay", 
+        assertThat("Some attempts should have tried to retry with a delay",
                 totalDelayMillis, greaterThan(0L));
-        assertThat("Total delay should be less than the sum of maximal jitter per retry", 
+        assertThat("Total delay should be less than the sum of maximal jitter per retry",
                 totalDelayMillis, lessThan(methodInvocationCount.get() * 200L)); // 200ms being the jitter
-        assertThat("All attempts should use a non negative delay", 
+        assertThat("All attempts should use a non negative delay",
                 maxDelayMillis.get(), greaterThanOrEqualTo(0L));
-        assertThat("All attempts should use a delay not larger than the jitter", 
+        assertThat("All attempts should use a delay not larger than the jitter",
                 maxDelayMillis.get(), lessThanOrEqualTo(200L));
 
         // now check that the state makes sense
         assertEquals("No execution should ongo", 0, concurrentExecutions.get().size());
         assertEquals("No queueing should ongo", 0, waitingQueuePopulation.get());
-        assertThat("Circuit should not be open (any more)", 
+        assertThat("Circuit should not be open (any more)",
                 state.get().getCircuitState(), oneOf(CircuitState.HALF_OPEN, CircuitState.CLOSED));
     }
 
@@ -234,9 +235,9 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
      * The method under tests fails every 3rd call whereby in a window of 4 there can be 2 failed calls opening the
      * circuit. As delay is just recorded but not enforced there is only a minimal chance another caller does an attempt
      * while the circuit is open but occasionally this happens.
-     * 
+     *
      * Every 5th call returns a failed Future that should be handed to the caller as is.
-     * 
+     *
      * Every 3rd call fails causing a retry. Together with open circuits this might even cause fallback handler to be
      * used which will also fail the result as it only rethrows the error.
      */
@@ -284,7 +285,7 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
             } catch (ExecutionException ex) {
                 callerFailedInvocationCount.incrementAndGet();
                 if (ex.getCause() instanceof UncheckedIOException) {
-                    // last retry after exception(s) threw exception which comes back from fallback handler as UncheckedIOException 
+                    // last retry after exception(s) threw exception which comes back from fallback handler as UncheckedIOException
                     assertEquals("Failed", ex.getCause().getCause().getMessage());
                 } else if (ex.getCause() instanceof IOException) {
                     // failed since Future completed with an exception

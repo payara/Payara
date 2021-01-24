@@ -1,0 +1,38 @@
+purge-jbatch-repository(1)        asadmin Utility Subcommands       purge-jbatch-repository(1)
+
+NAME
+       purge-jbatch-repository - purges batch jobs
+
+SYNOPSIS
+           purge-jbatch-repository [--help]
+           [apptag]
+
+DESCRIPTION
+       The purge-jbatch-repository subcommand deletes all job executions of a given apptag
+
+OPTIONS
+OPERANDS
+       apptag
+           The apptag used to purge all records of from the database.
+
+EXAMPLES
+       Example 1, Deleting all job executions
+           This example deletes all job executions for an application named jbatchapp on the default server config.
+
+               asadmin> purge-jbatch-repository server-config:jbatchapp
+               Command purge-jbatch-repository executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       list-batch-job-executions(1), list-batch-job-steps(1),
+       clean-jbatch-repository
+
+       asadmin(1M)
+
+Jakarta EE 8                         7 Jan 2021               purge-jbatch-repository(1)

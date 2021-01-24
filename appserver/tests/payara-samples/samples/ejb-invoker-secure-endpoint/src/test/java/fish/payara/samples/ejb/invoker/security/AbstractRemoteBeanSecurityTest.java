@@ -70,6 +70,7 @@ import static fish.payara.ejb.http.client.RemoteEJBContextFactory.PROVIDER_CREDE
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.PROVIDER_PRINCIPAL;
 import static fish.payara.samples.ServerOperations.getClientTrustStoreURL;
 import static fish.payara.samples.ServerOperations.getKeyStore;
+import java.io.IOException;
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
@@ -89,20 +90,17 @@ public abstract class AbstractRemoteBeanSecurityTest {
     @ArquillianResource
     private URL base;
 
-    private static String clientKeyStorePath;
-
     @Deployment
     public static Archive<?> deployment() {
-        clientKeyStorePath = ServerOperations.createClientKeyStore();
         return ShrinkWrap.create(JavaArchive.class)
                 .addClasses(Bean.class, RemoteBean.class)
                 .addAsManifestResource(INSTANCE, "beans.xml");
     }
 
-    private Context getContextWithCredentialsSet(String username, String password) {
+    private Context getContextWithCredentialsSet(String username, String password) throws IOException {
         Hashtable<String, Object> environment = new Hashtable<>();
         environment.put(INITIAL_CONTEXT_FACTORY, RemoteEJBContextFactory.class.getName());
-        environment.put(PROVIDER_URL, EJB_INVOKER_PROVIDER_URL);
+        environment.put(PROVIDER_URL, getProviderURL());
         environment.put(PROVIDER_AUTH_TYPE, BASIC_AUTH);
         environment.put(PROVIDER_PRINCIPAL, username);
         environment.put(PROVIDER_CREDENTIALS, password);
@@ -116,7 +114,15 @@ public abstract class AbstractRemoteBeanSecurityTest {
         }
     }
 
-    private void createClientCertificateStore(Hashtable<String, Object> environment) {
+    private String getProviderURL() {
+        try {
+            return ServerOperations.baseURLForServerHost(new URL(EJB_INVOKER_PROVIDER_URL)).toString();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void createClientCertificateStore(Hashtable<String, Object> environment) throws IOException {
         try {
             URL baseHttps = ServerOperations.toContainerHttps(base);
             if (baseHttps == null) {
@@ -126,9 +132,9 @@ public abstract class AbstractRemoteBeanSecurityTest {
             String type = "jks";
             String password = "changeit";
             environment.put(JAXRS_CLIENT_TRUST_STORE,
-                    getKeyStore(getClientTrustStoreURL(baseHttps, clientKeyStorePath), password, type));
+                    getKeyStore(getClientTrustStoreURL(baseHttps), password, type));
             environment.put(JAXRS_CLIENT_KEY_STORE,
-                    getKeyStore(new File(clientKeyStorePath).toURI().toURL(), password, type));
+                    getKeyStore(new File(ServerOperations.addClientCertificateFromServer(base)).toURI().toURL(), password, type));
             environment.put(JAXRS_CLIENT_KEY_STORE_PASSOWRD,
                     password);
 
@@ -139,7 +145,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Test
     @RunAsClient
-    public void callRemoteBeanWithCorrectCredentials() throws NamingException {
+    public void callRemoteBeanWithCorrectCredentials() throws NamingException, IOException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), getPassword());
 
@@ -149,7 +155,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Test
     @RunAsClient
-    public void callRemoteBeanWithIncorrectCredentials() throws NamingException {
+    public void callRemoteBeanWithIncorrectCredentials() throws NamingException, IOException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), "InvalidPassword");
 
@@ -158,7 +164,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
             assertNotNull(beanRemote.method());
             fail("RemoteBean#method must not be accessed for invalid credential");
         } catch (NamingException ex) {
-            assertEquals("Invoker is not available at <" + EJB_INVOKER_PROVIDER_URL + ">: Unauthorized", ex.getExplanation());
+            assertEquals("Invoker is not available at <" + getProviderURL() + ">: Unauthorized", ex.getExplanation());
         }
     }
 

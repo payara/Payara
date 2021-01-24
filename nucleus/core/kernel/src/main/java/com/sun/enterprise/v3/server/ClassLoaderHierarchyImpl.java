@@ -38,10 +38,11 @@
  * holder.
  *
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
+import com.sun.enterprise.loader.CurrentBeforeParentClassLoader;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import javax.inject.Inject;
 
@@ -107,7 +108,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
     }
 
     @Override
-    public ClassLoader getCommonClassLoader() {
+    public CurrentBeforeParentClassLoader getCommonClassLoader() {
         return commonCLS.getCommonClassLoader();
     }
 
@@ -236,7 +237,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
 		name, pathFile);
 	modulesRegistry.addRepository(repo);
 	try {
-	    repo.initialize(); 
+	    repo.initialize();
 	} catch (IOException ex) {
 	    logger.log(Level.SEVERE,
 		"Problem initializing additional repository!", ex);

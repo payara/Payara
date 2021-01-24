@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,21 @@
  */
 package fish.payara.nucleus.microprofile.config.admin;
 
-import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
-import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
-import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
-import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import java.util.Collection;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
+import com.sun.enterprise.util.SystemPropertyConstants;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.APPLICATION;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLOUD;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLUSTER;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CONFIG;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.DOMAIN;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.JNDI;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.MODULE;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SERVER;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -59,6 +64,17 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
+import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
+import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSourceService;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 /**
  * asAdmin command to the set the value of a config property
@@ -79,7 +95,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 })
 public class DeleteConfigProperty implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster, jndi", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,cloud", defaultValue = DOMAIN)
     String source;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME) // if no target is specified it will be the DAS
@@ -94,16 +110,19 @@ public class DeleteConfigProperty implements AdminCommand {
     @Param(optional = true)
     String moduleName;
 
+    @Inject
+    private ExtensionConfigSourceService extensionService;
+
     @Override
     public void execute(AdminCommandContext context) {
         try {
             switch (source) {
-                case "domain": {
+                case DOMAIN: {
                     DomainConfigSource csource = new DomainConfigSource();
                     csource.deleteValue(propertyName);
                     break;
                 }
-                case "config": {
+                case CONFIG: {
                     if (sourceName == null) {
                         context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the configuration if config is the source");
                     } else {
@@ -114,7 +133,7 @@ public class DeleteConfigProperty implements AdminCommand {
                     }
                     break;
                 }
-                case "server": {
+                case SERVER: {
                     if (sourceName == null) {
                         context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the server if server is the source");
                     } else {
@@ -125,7 +144,7 @@ public class DeleteConfigProperty implements AdminCommand {
                     }
                     break;
                 }
-                case "application": {
+                case APPLICATION: {
                     if (sourceName == null) {
                         context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName is a required parameter and the name of the application if application is the source");
                     } else {
@@ -136,7 +155,7 @@ public class DeleteConfigProperty implements AdminCommand {
                     }
                     break;
                 }
-                case "module": {
+                case MODULE: {
                     if (sourceName == null || moduleName == null) {
                         context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getName()), "sourceName and moduleName are required parameters if module is the source. The sourceName should be the name of the application where the module is deployed.");
                     } else {
@@ -147,18 +166,26 @@ public class DeleteConfigProperty implements AdminCommand {
                     }
                     break;
                 }
-                case "cluster": {
+                case CLUSTER: {
                     ClusterConfigSource csource = new ClusterConfigSource();
                     csource.deleteValue(propertyName);
                     break;
                 }
 
-                case "jndi": {
+                case JNDI: {
                     JNDIConfigSource jsource = new JNDIConfigSource();
                     jsource.deleteValue(propertyName, target);
                     break;
                 }
 
+                case CLOUD: {
+                    Collection<ExtensionConfigSource> extensionSources = extensionService.getExtensionSources();
+                    for (ExtensionConfigSource extension : extensionSources) {
+                        if (extension.getName().equals(sourceName)) {
+                            extension.deleteValue(propertyName);
+                        }
+                    }
+                }
             }
         } catch (TransactionFailure txFailure) {
             context.getActionReport().failure(Logger.getLogger(SetConfigProperty.class.getCanonicalName()), "Failed to set config property", txFailure);

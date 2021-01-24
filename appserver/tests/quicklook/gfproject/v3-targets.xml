@@ -95,7 +95,7 @@
 
 <target name="create-jdbc-connection-pool" depends="setOSConditions,asenv-unix,asenv-windows">
     <exec executable="${ASADMIN}" outputproperty="message">
-	<arg line="create-jdbc-connection-pool --port 4848 --datasourceclassname=org.h2.jdbcx.JdbcDataSource --property URL=jdbc\:h2\:tcp\:\/\/localhost\:9092/~/test|sa\; TestJdbcPool"/>
+	<arg line="create-jdbc-connection-pool --port 4848 --datasourceclassname=org.h2.jdbcx.JdbcDataSource --property URL=jdbc\:h2\:tcp\:\/\/localhost\:9092/${glassfish.home}/databases/quicklook-test\; TestJdbcPool"/>
     </exec>
     <echo message="${message}"/>
 </target>

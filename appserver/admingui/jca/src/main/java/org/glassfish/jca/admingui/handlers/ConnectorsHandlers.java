@@ -37,18 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
-/*
- * ConnectorHandlers.java
- *
- * Created on Sept 1, 2006, 8:32 AM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-/**
- *
- */
 package org.glassfish.jca.admingui.handlers;
 
 import com.sun.jsftemplating.annotation.Handler;
@@ -63,9 +53,15 @@ import java.util.HashMap;
 
 
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.admingui.common.util.GuiUtil;
+import org.glassfish.admingui.common.util.RestUtil;
 
-
+/**
+ * Handlers for the admingui for connector connection pools and adaptors
+ * @since Sept 1 2006
+ */
 public class ConnectorsHandlers {
 
     /** Creates a new instance of ConnectorsHandler */
@@ -227,6 +223,34 @@ public class ConnectorsHandlers {
             }
         }
         handlerCtx.setOutputValue("convertedList", convertedList);
+    }
+    
+    /**
+     * Gets a list of all thread pools in all instances of Payara in the domain.
+     * @param handlerCtx 
+     */
+    @Handler(id = "py.allThreadPools",
+        input = {
+            @HandlerInput(name = "endpoint", type = String.class)},
+        output = {
+            @HandlerOutput(name = "result", type = java.util.List.class)
+    })
+    public static void getAllThreadPools(HandlerContext handlerCtx) {
+        String endpoint = (String) handlerCtx.getInputValue("endpoint");
+        Map<String, Object> attrs = new HashMap<>();
+        try {
+            Map<String, Object> response = RestUtil.restRequest(endpoint, attrs, "GET", handlerCtx, true);
+            Map data = (Map) response.get("data");
+            List poolChildren = (List) data.get("children");
+            List<String> poolNames = new ArrayList<>(poolChildren.size());
+            for (Object threadPoolObject : poolChildren) {
+                Map threadPool = (Map) threadPoolObject;
+                poolNames.add((String) threadPool.get("message"));
+            }
+            handlerCtx.setOutputValue("result", poolNames);
+        } catch (Exception ex) {
+            GuiUtil.handleException(handlerCtx, ex);
+        }
     }
 
 

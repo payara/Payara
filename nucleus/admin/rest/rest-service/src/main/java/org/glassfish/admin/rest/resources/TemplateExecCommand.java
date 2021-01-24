@@ -163,6 +163,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
         results.setCommandDisplayName(commandDisplayName);
 
         if (exitCode == ActionReport.ExitCode.FAILURE) {
+            results.setIsError(true);
             results.setErrorMessage(actionReport.getCombinedMessage());
         }
         return Response.status(status).entity(results).build();

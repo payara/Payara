@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.glassfish.web.WarType;
+import org.glassfish.web.sniffer.WarType;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;

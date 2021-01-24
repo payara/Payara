@@ -98,6 +98,16 @@ public class RequestTraceSpanContext implements Serializable, io.opentracing.Spa
         this.traceId = traceId;
     }
 
+    @Override
+    public String toTraceId() {
+        return traceId.toString();
+    }
+
+    @Override
+    public String toSpanId() {
+        return spanId.toString();
+    }
+
     public void addBaggageItem(String name, String value) {
         if (value != null) {
             // Escape any quotes

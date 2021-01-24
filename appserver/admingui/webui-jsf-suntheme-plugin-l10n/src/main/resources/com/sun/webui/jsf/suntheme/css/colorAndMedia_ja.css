@@ -1429,10 +1429,6 @@ select[multiple="multiple"] {
     color: rgba(255,255,255,0.5);
 }
 
-#zendeskFrame html {
-    background: red;
-}
-
 /* MicroProfile Config Tabs */
 div[id*=microprofileConfigTabs] .Tab1Div_sun4 {
       background:#335462;	

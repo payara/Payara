@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -71,40 +70,57 @@ import java.util.function.Supplier;
  */
 public class PayaraConfig implements Config {
 
-    private static final class CacheEntry {
-        final Object value;
+    private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
+
+    private static final class CacheEntry<T> {
+        final T value;
         final long expires;
 
-        CacheEntry(Object value, long expires) {
+        CacheEntry(T value, long expires) {
             this.value = value;
-            this.expires = expires;
+            this.expires = expires + currentTimeMillis();
         }
     }
 
-    /**
-     * Duration a {@link CacheEntry} is valid, when it becomes invalid the entry is updated with value from
-     * {@link ConfigSource} on next request.
-     */
-    private static final int DEFAULT_TTL = 60;
-
     private final List<ConfigSource> sources;
     private final Map<Class<?>, Converter<?>> converters;
-    private final long ttl;
-    private final Map<String, CacheEntry> cachedValuesByProperty = new ConcurrentHashMap<>();
+    private final long defaultCacheDurationSeconds;
+    private final Map<String, CacheEntry<?>> cachedValuesByProperty = new ConcurrentHashMap<>();
 
-    public PayaraConfig(List<ConfigSource> configSources, Map<Class<?>,Converter<?>> converters) {
-        this(configSources, converters, TimeUnit.SECONDS.toMillis(DEFAULT_TTL));
-    }
+    private volatile CacheEntry<Long> configuredCacheValueEntry;
+    private final Object configuredCacheValueLock = new Object();
 
-    public PayaraConfig(List<ConfigSource> sources, Map<Class<?>,Converter<?>> converters, long ttl) {
+    public PayaraConfig(List<ConfigSource> sources, Map<Class<?>, Converter<?>> converters, long defaultCacheDurationSeconds) {
         this.sources = sources;
         this.converters = new ConcurrentHashMap<>(converters);
-        this.ttl = ttl;
+        this.defaultCacheDurationSeconds = defaultCacheDurationSeconds;
         Collections.sort(sources, new ConfigSourceComparator());
     }
 
-    long getTTL() {
-        return ttl;
+    @SuppressWarnings("unchecked")
+    public long getCacheDurationSeconds() {
+        final Converter<Long> converter = (Converter<Long>) converters.get(Long.class);
+        if (converter != null) {
+            // Atomic block to modify the cached duration value
+            synchronized (configuredCacheValueLock) {
+                // If the value has been found and it hasn't expired
+                if (configuredCacheValueEntry != null && configuredCacheValueEntry.expires > currentTimeMillis()) {
+                    return configuredCacheValueEntry.value;
+                } else {
+                    // Fetch the value from config
+                    final Long value = getValueConverted(MP_CONFIG_CACHE_DURATION, Long.toString(defaultCacheDurationSeconds), converter);
+                    if (value != null) {
+                        // If it's found, cache it
+                        configuredCacheValueEntry = new CacheEntry<Long>(value, value);
+                        return value;
+                    } else {
+                        // Cache the default value (usually that's from the server config)
+                        configuredCacheValueEntry = new CacheEntry<Long>(defaultCacheDurationSeconds, defaultCacheDurationSeconds);
+                    }
+                }
+            }
+        }
+        return defaultCacheDurationSeconds;
     }
 
     @SuppressWarnings("unchecked")
@@ -124,7 +140,7 @@ public class PayaraConfig implements Config {
     }
 
     private <T> T getValueInternal(String propertyName, Class<T> propertyType) {
-        return getValue(propertyName, getCacheKey(propertyName, propertyType), ttl, null,
+        return getValue(propertyName, getCacheKey(propertyName, propertyType), null, null,
                 () -> getConverter(propertyType));
     }
 
@@ -148,7 +164,7 @@ public class PayaraConfig implements Config {
 
     @SuppressWarnings("unchecked")
     public <T> T getValue(String propertyName, String cacheKey, Long ttl, String defaultValue, Supplier<? extends Converter<T>> converter) {
-        long entryTTL = ttl == null ? this.ttl : ttl.longValue();
+        long entryTTL = ttl != null ? ttl.longValue() : getCacheDurationSeconds();
         if (entryTTL <= 0) {
             return getValueConverted(propertyName, defaultValue, converter.get());
         }
@@ -158,7 +174,7 @@ public class PayaraConfig implements Config {
             if (entry != null && now < entry.expires) {
                 return entry;
             }
-            return new CacheEntry(getValueConverted(propertyName, defaultValue, converter.get()), now + entryTTL);
+            return new CacheEntry<>(getValueConverted(propertyName, defaultValue, converter.get()), entryTTL);
         }).value;
     }
 
@@ -207,6 +223,10 @@ public class PayaraConfig implements Config {
         }
 
         throw new IllegalArgumentException("Unable to convert value to type " + type.getTypeName());
+    }
+    
+    public void clearCache() {
+        cachedValuesByProperty.clear();
     }
 
     private <E> Converter<Object> createArrayConverter(Class<E> elementType) {

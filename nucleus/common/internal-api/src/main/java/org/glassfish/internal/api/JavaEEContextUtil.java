@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,68 +47,28 @@ import org.jvnet.hk2.annotations.Contract;
  * @author lprimak
  */
 @Contract
-public interface JavaEEContextUtil {
+public interface JavaEEContextUtil extends ContextProducer {
+    @Override Instance empty();
+    @Override Instance currentInvocation() throws IllegalStateException;
+
     /**
-     * pushes Java EE invocation context onto the invocation stack
-     * use try-with-resources to pop the context
      *
-     * @return the new context that was created
-     */
-    Context pushContext();
-
-    /**
-     * pushes invocation context onto the stack
-     * Also creates Request scope
-     * use try-with-resources to pop the context
+     * @param componentId component id for this instance, non-null
      *
-     * @return new context that was created
+     * @return new instance based on componentId
      */
-    Context pushRequestContext();
+    Instance fromComponentId(String componentId) throws IllegalArgumentException;
 
-    /**
-     * set context class loader by internal state of this instance
-     * @return context so class loader can be reset
-     */
-    Context setApplicationClassLoader();
+    interface Instance extends ContextProducer.Instance {
+        @Override Context pushContext();
+        @Override Context pushRequestContext();
+        @Override Context setApplicationClassLoader();
+    }
 
-    /**
-     * Sets the state of this instance from current invocation context
-     */
-    void setInstanceContext();
-
-    /**
-     * sets component ID for this instance and re-generates the invocation based on it
-     *
-     * @param componentId
-     * @return self for fluent API
-     */
-    JavaEEContextUtil setInstanceComponentId(String componentId);
-
-    /**
-     * @return Class Loader that's associated with current invocation
-     *         or null if there is no current invocation
-     */
-
-    ClassLoader getInvocationClassLoader();
-    /**
-     * @return component ID for the current invocation (not this instance), or null
-     */
-    String getInvocationComponentId();
-
-    /**
-     * @return component ID for the current instance, or null
-     */
-    String getInstanceComponentId();
-
-    /**
-     * Set a valid component invocation that's empty,
-     * i.e. doesn't belong to any module
-     */
-    void setEmptyInvocation();
-
-    interface Context extends Closeable {};
-    interface Closeable extends AutoCloseable {
+    interface Context extends ContextProducer.Context {
         @Override
-        public void close();
+        default boolean isValid() {
+            return true;
+        }
     }
 }

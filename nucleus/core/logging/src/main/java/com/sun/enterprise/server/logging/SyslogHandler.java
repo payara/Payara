@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -51,6 +51,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 
 import com.sun.common.util.logging.BooleanLatch;
+import com.sun.common.util.logging.GFLogRecord;
 
 import javax.inject.Singleton;
 
@@ -93,7 +94,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         }
 
         //set up the connection
-        setupConnection();       
+        setupConnection();
         initializePump();
     }
 
@@ -115,7 +116,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         };
         pump.start();
     }
-    
+
     private void setupConnection(){
         try {
             sysLogger = new Syslog("localhost");  //for now only write to this host
@@ -124,7 +125,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
             return;
         }
     }
-    
+
     public void preDestroy() {
         if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
             LogFacade.LOGGING_LOGGER.fine("SysLog Logger handler killed");
@@ -179,16 +180,18 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     /**
      * Publishes the logrecord storing it in our queue
      */
+    @Override
     public void publish( LogRecord record ) {
         if (pump == null)
             return;
-            
+
+        GFLogRecord wrappedRecord = GFLogRecord.wrap(record, false);
         try {
-            pendingRecords.add(record);
+            pendingRecords.add(wrappedRecord);
         } catch(IllegalStateException e) {
             // queue is full, start waiting.
             try {
-                pendingRecords.put(record);
+                pendingRecords.put(wrappedRecord);
             } catch (InterruptedException e1) {
                 // to bad, record is lost...
             }
@@ -200,7 +203,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     }
 
     public void flush() {
-        
+
     }
 
     public void setSystemLogging(boolean systemLogging) {

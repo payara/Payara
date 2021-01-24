@@ -39,20 +39,24 @@
  */
 package fish.payara.microprofile.openapi.impl.model.media;
 
-import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
-import java.util.HashMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import java.util.Map;
+
 import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.eclipse.microprofile.openapi.models.media.Encoding;
 import org.eclipse.microprofile.openapi.models.media.MediaType;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 
+import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
+
 public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaType {
 
     private Schema schema;
-    private Map<String, Example> examples = new HashMap<>();
     private Object example;
-    private Map<String, Encoding> encoding = new HashMap<>();
+    protected Map<String, Example> examples = createMap();
+    protected Map<String, Encoding> encoding = createMap();
 
     @Override
     public Schema getSchema() {
@@ -66,17 +70,20 @@ public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaTyp
 
     @Override
     public Map<String, Example> getExamples() {
-        return examples;
+        return readOnlyView(examples);
     }
 
     @Override
     public void setExamples(Map<String, Example> examples) {
-        this.examples = examples;
+        this.examples = createMap(examples);
     }
 
     @Override
     public MediaType addExample(String key, Example example) {
         if (example != null) {
+            if (this.examples == null) {
+                this.examples = createMap();
+            }
             this.examples.put(key, example);
         }
         return this;
@@ -84,7 +91,9 @@ public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaTyp
 
     @Override
     public void removeExample(String key) {
-        this.examples.remove(key);
+        if (this.examples != null) {
+            this.examples.remove(key);
+        }
     }
 
     @Override
@@ -99,17 +108,20 @@ public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaTyp
 
     @Override
     public Map<String, Encoding> getEncoding() {
-        return encoding;
+        return readOnlyView(encoding);
     }
 
     @Override
     public void setEncoding(Map<String, Encoding> encoding) {
-        this.encoding = encoding;
+        this.encoding = createMap(encoding);
     }
 
     @Override
     public MediaType addEncoding(String key, Encoding encodingItem) {
         if (encodingItem != null) {
+            if (this.encoding == null) {
+                this.encoding = createMap();
+            }
             this.encoding.put(key, encodingItem);
         }
         return this;
@@ -117,7 +129,9 @@ public class MediaTypeImpl extends ExtensibleImpl<MediaType> implements MediaTyp
 
     @Override
     public void removeEncoding(String key) {
-        this.encoding.remove(key);
+        if (this.encoding != null) {
+            this.encoding.remove(key);
+        }
     }
 
 }

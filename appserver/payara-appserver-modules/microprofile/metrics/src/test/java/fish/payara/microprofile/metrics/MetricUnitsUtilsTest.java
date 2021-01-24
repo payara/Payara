@@ -215,7 +215,7 @@ public class MetricUnitsUtilsTest {
     public void metadataWithoutUnitDoesNotScaleValues() {
         Number value = 42.2d;
         assertSame(value, scaleToBaseUnit(value, Metadata.builder().withName("somename").build()));
-        assertSame(value, scaleToBaseUnit(value, Metadata.builder().withName("somename").withOptionalUnit(null).build()));
+        assertSame(value, scaleToBaseUnit(value, Metadata.builder().withName("somename").withUnit(MetricUnits.NONE).build()));
     }
 
     private static void assertScalesToSeconds(Number expectedSeconds, Number actualValue, String actualUnit) {
