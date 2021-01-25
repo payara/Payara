@@ -61,7 +61,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static java.util.Collections.unmodifiableMap;
@@ -186,8 +185,6 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
                 logger.finer("MPCONFIG DirConfigSource: detected change: "+fileName.toString()+" : "+kind.toString());
         
                 try {
-                    BasicFileAttributes atts = Files.readAttributes(path, BasicFileAttributes.class);
-                    
                     // new directory to be watched and traversed
                     if (kind == ENTRY_CREATE && isAptDir(path)) {
                         logger.finer("MPCONFIG DirConfigSource: registering new paths.");
@@ -197,6 +194,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
                     // or new symlink found (symlinks are create only!) (also, aptness of file is checked inside update routine)
                     if ( kind == ENTRY_MODIFY || (kind == ENTRY_CREATE && Files.isSymbolicLink(path)) ) {
                         logger.finer("MPCONFIG DirConfigSource: processing new or updated file \""+path.toString()+"\".");
+                        BasicFileAttributes atts = Files.readAttributes(path, BasicFileAttributes.class);
                         upsertPropertyFromPath(path, atts);
                     }
                     if (Files.notExists(path) && ! watchedFileKeys.containsValue(path) && kind == ENTRY_DELETE) {
@@ -307,7 +305,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
             // Conflict handling:
             // When this property is not already present, check how to solve the conflict.
             // This property file will be skipped if the file we already have is deeper in the file tree...
-            if (isLongerMatchForPath(property, path)) {
+            if (isLongestMatchForPath(property, path)) {
                 properties.put(property, readPropertyFromPath(path, mainAtts, this.directory));
                 return true;
             }
@@ -330,11 +328,12 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     
     /**
      * Check if the path given is a more specific path to a value for the given property
+     * Same path counts as more specific, too, to allow updates to the same file.
      * @param property
      * @param path
      * @return true if more specific, false if not
      */
-    final boolean isLongerMatchForPath(String property, Path path) {
+    final boolean isLongestMatchForPath(String property, Path path) {
         // Make path relative to config directory
         // NOTE: we will never have a path containing "..", as our tree walkers are always inside this "root".
         Path relativePath = directory.relativize(path);
@@ -343,6 +342,10 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         if (! properties.containsKey(property))
             return true;
         DirProperty old = properties.get(property);
+        
+        // Old and new path are the same -> "more" specific (update case)
+        if ( old.path.equals(path) )
+            return true;
         
         // Check if this element has a higher path depth (longest match)
         // Example: "foo.bar/test/one.txt" (depth 2) wins over "foo.bar.test.one.txt" (depth 0)
