@@ -39,7 +39,6 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 import java.io.File;
@@ -62,10 +61,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static java.util.Collections.unmodifiableMap;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toMap;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
@@ -84,11 +86,15 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         final Path path;
         final int pathDepth;
         
-        DirProperty(String propertyValue, FileTime lastModifiedTime, Path path, Path rootPath) {
+        DirProperty(String propertyValue, FileTime lastModifiedTime, Path path, int pathDepth) {
             this.propertyValue = propertyValue;
             this.lastModifiedTime = lastModifiedTime;
             this.path = path;
-            this.pathDepth = rootPath.relativize(path).getNameCount();
+            this.pathDepth = pathDepth;
+        }
+    
+        DirProperty(String propertyValue, FileTime lastModifiedTime, Path path, Path rootPath) {
+            this(propertyValue, lastModifiedTime, path, rootPath.relativize(path).getNameCount());
         }
     
         @Override
@@ -121,70 +127,92 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
                 throw new IOException("Given directory '"+topmostDir+"' is no directory or cannot be read.");
             }
         }
-        
-        void registerAll(Path dir) throws IOException {
-            // register file watchers recursively (they don't attach to subdirs...)
+    
+        /**
+         * Register file watchers recursively (as they don't attach themselfs to sub directories...)
+         * and initialize values from files present and suitable.
+         * @param dir Topmost directory to start recursive traversal from
+         * @throws IOException
+         */
+        final void registerAll(Path dir) throws IOException {
             Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException
                 {
-                    register(dir);
+                    // only register subdirectories if the directory itself is suitable.
+                    if ( isAptDir(dir) ) {
+                        register(dir);
+                        return FileVisitResult.CONTINUE;
+                    }
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+    
+                // Read and ingest all files and dirs present
+                @Override
+                public FileVisitResult visitFile(Path path, BasicFileAttributes mainAtts) throws IOException {
+                    // file will be checked before upserting.
+                    upsertPropertyFromPath(path, mainAtts);
                     return FileVisitResult.CONTINUE;
                 }
             });
         }
         
-        void register(Path dir) throws IOException {
+        final void register(Path dir) throws IOException {
             WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
             watchedFileKeys.putIfAbsent(key, dir);
+            logger.finer("MPCONFIG DirConfigSource: registered \""+dir+"\" as key \""+key+"\".");
         }
         
         @Override
-        public void run() {
-            while (true) {
-                // wait infinitely until we receive an event (or the executor is shutting down)
-                WatchKey key;
+        public final void run() {
+            // wait infinitely until we receive an event (or the executor is shutting down)
+            WatchKey key;
+            try {
+                key = watcher.take();
+            } catch (InterruptedException ex) {
+                logger.info("MPCONFIG DirConfigSource: shutting down watcher thread.");
+                return;
+            }
+            
+            Path workDir = watchedFileKeys.get(key);
+            for (WatchEvent<?> event : key.pollEvents()) {
+                WatchEvent.Kind<?> kind = event.kind();
+        
+                @SuppressWarnings("unchecked")
+                WatchEvent<Path> ev = (WatchEvent<Path>) event;
+                Path fileName = ev.context();
+                Path path = workDir.resolve(fileName);
+
+                logger.finer("MPCONFIG DirConfigSource: detected change: "+fileName.toString()+" : "+kind.toString());
+        
                 try {
-                    key = watcher.take();
-                } catch (InterruptedException ex) {
-                    return;
-                }
-                
-                Path workDir = watchedFileKeys.get(key);
-                for (WatchEvent<?> event : key.pollEvents()) {
-                    WatchEvent.Kind<?> kind = event.kind();
-            
-                    @SuppressWarnings("unchecked")
-                    WatchEvent<Path> ev = (WatchEvent<Path>) event;
-                    Path fileName = ev.context();
-                    Path path = workDir.resolve(fileName);
-            
-                    try {
-                        // new directory to be watched and traversed
-                        if (kind == ENTRY_CREATE && Files.isDirectory(path) && !Files.isHidden(path) && Files.isReadable(path)) {
-                            registerAll(path);
-                            initializePropertiesFromPath(path);
-                        }
-                        // new or updated file found
-                        if (Files.isRegularFile(path) && (kind == ENTRY_CREATE || kind == ENTRY_MODIFY)) {
-                            updatePropertyFromPath(path, Files.readAttributes(path, BasicFileAttributes.class));
-                        }
-                        if (Files.isRegularFile(path) && (kind == ENTRY_DELETE)) {
-                            removePropertyFromPath(path);
-                        }
-                    } catch (IOException e) {
-                        logger.log(Level.SEVERE, "Could not process event '"+kind+"' on '"+path+"'", e);
-                    }
-                }
-    
-                // Reset key (obligatory) and remove from set if directory no longer accessible
-                boolean valid = key.reset();
-                if (!valid) {
-                    watchedFileKeys.remove(key);
+                    BasicFileAttributes atts = Files.readAttributes(path, BasicFileAttributes.class);
                     
-                    // all directories became inaccessible, even topmostDir!
-                    if (watchedFileKeys.isEmpty()) break;
+                    // new directory to be watched and traversed
+                    if (kind == ENTRY_CREATE && isAptDir(path)) {
+                        logger.finer("MPCONFIG DirConfigSource: registering new paths.");
+                        registerAll(path);
+                    }
+                    // new or updated file found (new = create + modify on content save)
+                    // or new symlink found (symlinks are create only!) (also, aptness of file is checked inside update routine)
+                    if ( kind == ENTRY_MODIFY || (kind == ENTRY_CREATE && Files.isSymbolicLink(path)) ) {
+                        logger.finer("MPCONFIG DirConfigSource: processing new or updated file \""+path.toString()+"\".");
+                        upsertPropertyFromPath(path, atts);
+                    }
+                    if (Files.notExists(path) && ! watchedFileKeys.containsValue(path) && kind == ENTRY_DELETE) {
+                        logger.finer("MPCONFIG DirConfigSource: removing deleted file \""+path.toString()+"\".");
+                        removePropertyFromPath(path);
+                    }
+                } catch (IOException e) {
+                    logger.log(WARNING, "MPCONFIG DirConfigSource: could not process event '"+kind+"' on '"+path+"'", e);
                 }
+            }
+
+            // Reset key (obligatory) and remove from set if directory no longer accessible
+            boolean valid = key.reset();
+            if (!valid) {
+                logger.finer("MPCONFIG DirConfigSource: removing watcher for key \""+key+"\".");
+                watchedFileKeys.remove(key);
             }
         }
     }
@@ -198,11 +226,9 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
             // get the directory from the app server config
             this.directory = findDir();
             // create the watcher for the directory
-            configService.getExecutor().submit(new DirPropertyWatcher(this.directory));
-            // initial loading
-            initializePropertiesFromPath(this.directory);
+            configService.getExecutor().scheduleWithFixedDelay(createWatcher(this.directory), 0, 1, SECONDS);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error during setup of MicroProfile Config Directory Source", e);
+            logger.log(SEVERE, "MPCONFIG DirConfigSource: error during setup.", e);
         }
     }
 
@@ -211,6 +237,11 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         super(true);
         this.directory = directory;
     }
+    
+    // Used for testing only
+    DirPropertyWatcher createWatcher(Path topmostDirectory) throws IOException {
+        return new DirPropertyWatcher(topmostDirectory);
+    }
 
     @Override
     public Map<String, String> getProperties() {
@@ -218,7 +249,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
                                     .collect(toMap(Map.Entry::getKey, e -> e.getValue().propertyValue)));
     }
     
-    // Test use only
+    // Used for testing only
     void setProperties(Map<String, DirProperty> properties) {
         this.properties.clear();
         this.properties.putAll(properties);
@@ -260,82 +291,41 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         throw new IOException("Given MPCONFIG directory '"+path+"' is no directory or cannot be read.");
     }
     
-    void initializePropertiesFromPath(Path topmostDir) throws IOException {
-        if (Files.exists(topmostDir) && Files.isDirectory(topmostDir) && Files.isReadable(topmostDir)) {
-            // initialize properties on first run
-            Files.walkFileTree(topmostDir, new SimpleFileVisitor<Path>() {
-                // Ignore hidden directories
-                @Override
-                public FileVisitResult preVisitDirectory(java.nio.file.Path dir, BasicFileAttributes attrs) throws IOException {
-                    return dir.toFile().isHidden() ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
-                }
-    
-                // Read and ingest all files and dirs present
-                @Override
-                public FileVisitResult visitFile(Path path, BasicFileAttributes mainAtts) throws IOException {
-                    updatePropertyFromPath(path, mainAtts);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } else {
-            throw new IOException("Given directory '"+topmostDir+"' is no directory or cannot be read.");
-        }
-    }
-    
-    void updatePropertyFromPath(Path path, BasicFileAttributes mainAtts) throws IOException {
-        // do not read hidden files, as K8s Secret filenames are symlinks to hidden files with data.
-        // also ignore files > 512KB, as they are most likely no text config files...
-        if (Files.isRegularFile(path) && ! Files.isHidden(path) && Files.isReadable(path) && mainAtts.size() < 512*1024) {
+    /**
+     * Upserting a property from a file. Checking for suitability of the file, too.
+     * @param path Path to the file
+     * @param mainAtts The attributes of the file (like mod time etc)
+     * @return true if file was suitable, false if not.
+     * @throws IOException In case anything goes bonkers.
+     */
+    final boolean upsertPropertyFromPath(Path path, BasicFileAttributes mainAtts) throws IOException {
+        // check for a suitable file first, return aptness.
+        if ( isAptFile(path, mainAtts) ) {
             // retrieve the property name from the file path
-            String property = parsePropertyNameFromPath(path);
+            String property = parsePropertyNameFromPath(path, this.directory);
             
             // Conflict handling:
-            // When this property is already present, check how to solve the conflict.
+            // When this property is not already present, check how to solve the conflict.
             // This property file will be skipped if the file we already have is deeper in the file tree...
-            if (! isLongerMatchForPath(property, path)) {
-                return;
+            if (isLongerMatchForPath(property, path)) {
+                properties.put(property, readPropertyFromPath(path, mainAtts, this.directory));
+                return true;
             }
-            
-            properties.put(property, readPropertyFromPath(path, mainAtts));
         }
+        return false;
     }
     
-    void removePropertyFromPath(Path path) {
-        String property = parsePropertyNameFromPath(path);
-    
+    final void removePropertyFromPath(Path path) {
+        String property = parsePropertyNameFromPath(path, this.directory);
         // not present? go away silently.
         if (! properties.containsKey(property)) return;
-    
+        
         // only delete from the map if the file that has been deleted is the same as the one stored in the map
         // -> deleting a file less specific but matching a property should not remove from the map
         // -> deleting a file more specific than in map shouldn't occur (it had to slip through longest match check then).
         if (path.equals(properties.get(property).path)) {
             properties.remove(property);
         }
-        
-    }
-    
-    String parsePropertyNameFromPath(Path path) {
-        // 1. get relative path based on the config dir ("/config"),
-        String property = "";
-        if (! path.getParent().equals(directory))
-            property += directory.relativize(path.getParent()).toString() + File.separatorChar;
-        // 2. ignore all file suffixes after last dot
-        property += removeFileExtension(path.getFileName().toString());
-        // 3. replace all path seps with a ".",
-        property = property.replace(File.separatorChar, '.');
-        // so "/config/foo/bar/test/one.txt" becomes "foo/bar/test/one.txt" becomes "foo.bar.test.one" property name
-        return property;
-    }
-    
-    String removeFileExtension(String filename) {
-        if (filename == null || ! filename.contains("."))
-            return filename;
-        int lastIndex = filename.lastIndexOf('.');
-        // dot does not belong to file, but parent dir
-        if (filename.lastIndexOf(File.separatorChar) > lastIndex)
-            return filename;
-        return filename.substring(0, lastIndex);
     }
     
     /**
@@ -344,7 +334,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
      * @param path
      * @return true if more specific, false if not
      */
-    boolean isLongerMatchForPath(String property, Path path) {
+    final boolean isLongerMatchForPath(String property, Path path) {
         // Make path relative to config directory
         // NOTE: we will never have a path containing "..", as our tree walkers are always inside this "root".
         Path relativePath = directory.relativize(path);
@@ -372,16 +362,84 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         return depth;
     }
     
-    DirProperty readPropertyFromPath(Path path, BasicFileAttributes mainAtts) throws IOException {
+    /**
+     * Check path to be a directory, readable by us, but ignore if starting with a "."
+     * (as done for K8s secrets mounts).
+     * @param path
+     * @return true if suitable, false if not.
+     * @throws IOException when path cannot be resolved, maybe because of a broken symlink.
+     */
+    public final static boolean isAptDir(Path path) throws IOException {
+        return path != null && Files.exists(path) &&
+            Files.isDirectory(path) && Files.isReadable(path) &&
+            !path.getFileName().toString().startsWith(".");
+    }
+    
+    /**
+     * Check if the file exists (follows symlinks), is a regular file (following symlinks), is readable (following symlinks),
+     * the filename does not start with a "." (not following the symlink!) and the file is less than 512 KB.
+     * @param path
+     * @return true if suitable file, false if not.
+     * @throws IOException when path cannot be accessed or resolved etc.
+     */
+    public final static boolean isAptFile(Path path, BasicFileAttributes atts) throws IOException {
+        return path != null && Files.exists(path) &&
+            Files.isRegularFile(path) && Files.isReadable(path) &&
+            !path.getFileName().toString().startsWith(".") &&
+            atts.size() < 512*1024;
+    }
+    
+    /**
+     * Parsing the relative path into a configuration property name.
+     * Using dots to mark scopes based on directories plus keeping dots used in the files name.
+     * @param path The path to the property file
+     * @return The property name
+     */
+    public final static String parsePropertyNameFromPath(Path path, Path rootDir) {
+        // 1. get relative path based on the config dir ("/config"),
+        String property = "";
+        if (! path.getParent().equals(rootDir))
+            property += rootDir.relativize(path.getParent()).toString() + File.separatorChar;
+        // 2. ignore all file suffixes after last dot
+        property += removeFileExtension(path.getFileName().toString());
+        // 3. replace all path seps with a ".",
+        property = property.replace(File.separatorChar, '.');
+        // so "/config/foo/bar/test/one.txt" becomes "foo/bar/test/one.txt" becomes "foo.bar.test.one" property name
+        return property;
+    }
+    
+    /**
+     * Litte helper to remove the file extension (not present in Java std functionality)
+     * @param filename A filename containing a dot, marking the start of the file extension
+     * @return Filename without a suffix (if present)
+     */
+    public final static String removeFileExtension(String filename) {
+        if (filename == null || ! filename.contains("."))
+            return filename;
+        int lastIndex = filename.lastIndexOf('.');
+        // dot does not belong to file, but parent dir or
+        // extension is longer than 3 chars (all clear text formats would have 3 chars max)
+        if (filename.lastIndexOf(File.separatorChar) > lastIndex || lastIndex < filename.length() - 4)
+            return filename;
+        return filename.substring(0, lastIndex);
+    }
+    
+    /**
+     * Actually read the data from the file, assuming UTF-8 formatted content, creating properties from it.
+     * @param path The file to read
+     * @param mainAtts The files basic attributes like mod time, ...
+     * @return The configuration property this path represents
+     * @throws IOException When reading fails.
+     */
+    static final DirProperty readPropertyFromPath(Path path, BasicFileAttributes mainAtts, Path rootPath) throws IOException {
         if (Files.exists(path) && Files.isRegularFile(path) && Files.isReadable(path)) {
             return new DirProperty(
                 new String(Files.readAllBytes(path), StandardCharsets.UTF_8),
                 mainAtts.lastModifiedTime(),
                 path.toAbsolutePath(),
-                this.directory
+                rootPath
             );
         }
         throw new IOException("Cannot read property from '"+path.toString()+"'.");
     }
-
 }
