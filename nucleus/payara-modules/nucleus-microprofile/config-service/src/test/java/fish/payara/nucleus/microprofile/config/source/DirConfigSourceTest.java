@@ -120,12 +120,12 @@ public class DirConfigSourceTest {
         }
         
         Path file100k = subpath("aptdir/100k-file");
-        BasicFileAttributes atts100k = writeRandFile(file100k, 100);
+        BasicFileAttributes atts100k = writeRandFile(file100k, 100*1024);
         assertEquals(TRUE, DirConfigSource.isAptFile(file100k, atts100k));
         
         Path file600k = subpath("aptdir/600k-file");
-        BasicFileAttributes atts600k = writeRandFile(file600k, 600);
-        assertEquals(TRUE, DirConfigSource.isAptFile(file600k, atts600k));
+        BasicFileAttributes atts600k = writeRandFile(file600k, 600*1024);
+        assertEquals(FALSE, DirConfigSource.isAptFile(file600k, atts600k));
     }
     
     @Test
