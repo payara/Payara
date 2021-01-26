@@ -52,7 +52,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
  * Config Source that reads properties from files from a directory
@@ -60,7 +59,7 @@ import org.eclipse.microprofile.config.spi.ConfigSource;
  * @since 4.1.181
  * @author steve
  */
-public class SecretsDirConfigSource extends PayaraConfigSource implements ConfigSource {
+public class SecretsDirConfigSource extends PayaraConfigSource {
 
     private Path secretsDir;
     private ConcurrentHashMap<String, String> properties;

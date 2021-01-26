@@ -41,6 +41,7 @@ package fish.payara.nucleus.microprofile.config.source.extension.proxy;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSource;
 
@@ -64,6 +65,11 @@ public class ConfigSourceProxy implements ExtensionConfigSource {
             return delegate.getProperties();
         }
         return new HashMap<>();
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
     }
 
     @Override

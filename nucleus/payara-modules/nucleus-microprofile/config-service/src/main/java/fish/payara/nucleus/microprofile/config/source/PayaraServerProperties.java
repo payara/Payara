@@ -42,7 +42,6 @@ package fish.payara.nucleus.microprofile.config.source;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.internal.api.Globals;
@@ -54,7 +53,7 @@ import org.glassfish.internal.api.ServerContext;
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class PayaraServerProperties extends PayaraConfigSource implements ConfigSource {
+public class PayaraServerProperties extends PayaraConfigSource {
 
     private HashMap<String, String> properties;
 
