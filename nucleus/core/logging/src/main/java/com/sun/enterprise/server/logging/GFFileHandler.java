@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -75,13 +75,13 @@ import org.glassfish.api.logging.Task;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import static java.security.AccessController.doPrivileged;
+import org.glassfish.internal.api.Globals;
 
 /**
  * GFFileHandler publishes formatted log Messages to a FILE.
@@ -114,9 +114,6 @@ public class GFFileHandler extends StreamHandler implements
 
     @Inject @Optional
     private Agent agent;
-
-    @Inject
-    private ServiceLocator habitat;
 
     // This is a OutputStream to keep track of number of bytes
     // written out to the stream
@@ -495,7 +492,7 @@ public class GFFileHandler extends StreamHandler implements
     }
 
     Formatter findFormatterService(String formatterName) {
-        List<Formatter> formatterServices = habitat.getAllServices(Formatter.class);
+        List<Formatter> formatterServices = Globals.getDefaultHabitat().getAllServices(Formatter.class);
         for (Formatter formatter : formatterServices) {
             if (formatter.getClass().getName().equals(formatterName)) {
                 return formatter;

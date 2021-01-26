@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors;
 
@@ -63,6 +63,7 @@ import com.sun.enterprise.resource.pool.monitor.PoolMonitoringLevelListener;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.jaspic.callback.ContainerCallbackHandler;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 import org.glassfish.admin.monitor.MonitoringBootstrap;
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -106,6 +107,8 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -886,7 +889,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         }
         if(isServer() || isEmbedded()){
             poolMonitoringLevelListener = poolMonitoringLevelListenerProvider.get();
-            
+
             // Force initialization of the ResourceManager
             getResourceManager();
         }
@@ -968,7 +971,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
             throws ConnectorRuntimeException {
         ccPoolAdmService.createConnectorConnectionPool(ccp, connectionDefinitionName, rarName, props, securityMaps);
     }
-    
+
     private synchronized org.glassfish.resourcebase.resources.listener.ResourceManager getResourceManager() {
         if (resourceManager == null) {
             try {
@@ -978,7 +981,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
                 return null;
             }
         }
-        
+
         return resourceManager;
     }
 
@@ -1027,7 +1030,14 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public Timer getTimer() {
-        return ConnectorTimerProxy.getProxy();
+        ClassLoader appClassLoader = Utility.getClassLoader();
+        // prevent app class loader leaking into timer
+        Utility.setContextClassLoader(null);
+        try {
+            return AccessController.doPrivileged((PrivilegedAction<Timer>) ConnectorTimerProxy::getProxy);
+        } finally {
+            Utility.setContextClassLoader(appClassLoader);
+        }
     }
 
     /**

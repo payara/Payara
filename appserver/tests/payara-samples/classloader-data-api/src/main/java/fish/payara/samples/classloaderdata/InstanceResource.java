@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,18 @@
  */
 package fish.payara.samples.classloaderdata;
 
-import com.sun.enterprise.loader.ASURLClassLoader;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import org.glassfish.common.util.InstanceCounter;
+import org.glassfish.javaee.full.deployment.EarClassLoader;
+import org.glassfish.javaee.full.deployment.EarLibClassLoader;
 import org.glassfish.web.loader.WebappClassLoader;
 /**
  * A simple REST endpoint to return the count of
@@ -61,37 +61,41 @@ import org.glassfish.web.loader.WebappClassLoader;
 @Path("instance-count")
 @ApplicationScoped
 public class InstanceResource {
-    private Integer previousWebappInstanceCount;
-    private Integer previousASURLInstanceCount;
+    private final AtomicInteger previousWebappInstanceCount = new AtomicInteger(-1);
+    private final AtomicInteger previousEarInstanceCount = new AtomicInteger(-1);
+    private final AtomicInteger previousEarLibInstanceCount = new AtomicInteger(-1);
 
     /**
      * Method handling HTTP GET request for Instance Count
      * Example: curl http://localhost:8080/ClassloaderDataAPI/api/instance-count/webapp/
-     * Example: curl http://localhost:8080/ClassloaderDataAPI/api/instance-count/asurl/500
+     * Example: curl http://localhost:8080/ClassloaderDataAPI/api/instance-count/ear/
+     * Example: curl http://localhost:8080/ClassloaderDataAPI/api/instance-count/earlib/500
      */
     @GET
     @Path("/webapp/{timeout:.*}")
     public String getWebappClassLoaderCount(@PathParam("timeout") Long timeout) {
-        return instanceGetter(WebappClassLoader.class, () -> previousWebappInstanceCount,
-                newValue -> previousWebappInstanceCount = newValue, timeout);
+        return instanceGetter(WebappClassLoader.class, previousWebappInstanceCount, timeout);
     }
 
     @GET
-    @Path("/asurl/{timeout:.*}")
-    public String getPreviousInstanceCount(@PathParam("timeout") Long timeout) {
-        return instanceGetter(ASURLClassLoader.class, () -> previousASURLInstanceCount,
-                newValue -> previousASURLInstanceCount = newValue, timeout);
+    @Path("/ear/{timeout:.*}")
+    public String getEarClassLoaderCount(@PathParam("timeout") Long timeout) {
+        return instanceGetter(EarClassLoader.class, previousEarInstanceCount, timeout);
     }
 
-    private static String instanceGetter(Class<?> clazz,
-            Supplier<Integer> previousCountSupplier, Consumer<Integer> previousCountConsumer,
-            Long _timeout) {
+    @GET
+    @Path("/earlib/{timeout:.*}")
+    public String getEarLibClassLoaderCount(@PathParam("timeout") Long timeout) {
+        return instanceGetter(EarLibClassLoader.class, previousEarLibInstanceCount, timeout);
+    }
+
+    private static String instanceGetter(Class<?> clazz, AtomicInteger previousValue, Long _timeout) {
         long timeout = Optional.ofNullable(_timeout).orElse(1L);
-        int previous = Optional.ofNullable(previousCountSupplier.get()).orElse(InstanceCounter.getInstanceCount(clazz, timeout));
+        int previous = previousValue.updateAndGet(prev -> prev < 0 ? InstanceCounter.getInstanceCount(clazz, timeout) : prev);
         System.gc();
-        previousCountConsumer.accept(InstanceCounter.getInstanceCount(clazz, timeout));
+        previousValue.set(InstanceCounter.getInstanceCount(clazz, timeout));
         return String.format("Instances Before GC: %d\nInstances Remaining: %d\nInstances: \n%s\n",
-                previous, previousCountSupplier.get(), InstanceCounter.getInstances(clazz, timeout).stream()
+                previous, previousValue.get(), InstanceCounter.getInstances(clazz, timeout).stream()
                         .map(WeakReference::get).filter(Objects::nonNull).map(Object::toString)
                         .collect(Collectors.joining("\n\n")));
     }
