@@ -37,11 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
+import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +54,6 @@ import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.AuthenticationMechanism;
 import javax.resource.spi.BootstrapContext;
 import javax.resource.spi.Connector;
-import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
 
@@ -159,10 +162,16 @@ public class ResourceAdapterImpl implements javax.resource.spi.ResourceAdapter {
                 if(_logger.isLoggable(Level.FINEST)) {
                     _logger.finest("Creating the timer");
                 }
+                ClassLoader appClassLoader = Utility.getClassLoader();
+                // do not propagate application class loader to the timer thread
+                // may cause memory leaks
+                Utility.setContextClassLoader(null);
                 try {
-                    timer = bootstrapContext.createTimer();
-                } catch (UnavailableException ex) {
-                    _logger.log(Level.SEVERE, "jdbc-ra.timer_creation_exception", ex.getMessage());
+                    timer = AccessController.doPrivileged((PrivilegedExceptionAction<Timer>) bootstrapContext::createTimer);
+                } catch (PrivilegedActionException ex) {
+                    _logger.log(Level.SEVERE, "jdbc-ra.timer_creation_exception", ex.getCause().getMessage());
+                } finally {
+                    Utility.setContextClassLoader(appClassLoader);
                 }
             }
         }

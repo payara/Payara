@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.loader;
 
@@ -405,27 +405,35 @@ public class WebappClassLoader
     private boolean hotDeploy = false;
     private final InstanceCounter instanceCounter = new InstanceCounter(this);
 
-    private static Class[] CONSTRUCTOR_ARGS_TYPES;
-    private static Object CONSTRUCTOR_ARGUMENTS;
+    private static final Class<?>[] CONSTRUCTOR_ARGS_TYPES;
+    private static final Object CONSTRUCTOR_ARGUMENTS;
     private static final boolean IS_JDK_VERSION_HIGHER_THAN_8 = JDK.getMajor() > 8;
-    private static Boolean isMultiReleaseJar;
+    private static final Boolean isMultiReleaseJar;
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
 
     static {
+        Class<?>[] constructorArgsTypes;
+        Object constructorArguments;
 
         if (!IS_JDK_VERSION_HIGHER_THAN_8) {
             isMultiReleaseJar = false;
+            constructorArgsTypes = null;
+            constructorArguments = null;
         } else {
-            isMultiReleaseJar = true;
+            boolean isException = false;
             try {
                 final Class<?> runtimeVersionClass = Class.forName("java.lang.Runtime$Version");
-                CONSTRUCTOR_ARGS_TYPES = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
-                CONSTRUCTOR_ARGUMENTS = Runtime.class.getDeclaredMethod("version").invoke(null);
+                constructorArgsTypes = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
+                constructorArguments = Runtime.class.getDeclaredMethod("version").invoke(null);
             } catch (Exception e) {
-                isMultiReleaseJar = false;
+                isException = true;
+                constructorArgsTypes = null;
+                constructorArguments = null;
             }
+            isMultiReleaseJar = !isException;
         }
-
+        CONSTRUCTOR_ARGS_TYPES = constructorArgsTypes;
+        CONSTRUCTOR_ARGUMENTS = constructorArguments;
     }
 
     // ----------------------------------------------------------- Constructors
@@ -1295,7 +1303,7 @@ public class WebappClassLoader
             logger.log(Level.FINER, "    findResources({0})", name);
         }
 
-        List<URL> result = new ArrayList<URL>();
+        List<URL> result = new ArrayList<>();
 
         if (repositories != null) {
             synchronized (jarFilesLock) {
@@ -1850,7 +1858,7 @@ public class WebappClassLoader
 
         try {
 
-            ArrayList<URL> urls = new ArrayList<URL>();
+            ArrayList<URL> urls = new ArrayList<>();
             for (int i = 0; i < length; i++) {
                 if (i < filesLength) {
                     urls.add(i, getURL(files[i]));
@@ -1871,9 +1879,8 @@ public class WebappClassLoader
 
     }
 
-    @SuppressWarnings("unchecked")
     private URL[] removeDuplicate(ArrayList<URL> urls) {
-        HashSet h = new HashSet(urls);
+        Set<URL> h = new HashSet<>(urls);
         urls.clear();
         urls.addAll(h);
         return urls.toArray(new URL[urls.size()]);

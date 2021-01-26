@@ -54,7 +54,7 @@ import java.util.concurrent.ConcurrentMap;
  * Example: Put the following line into the class you want counted:
  * <p>
  * {@code
- *     private final InstanceCounter<MyClass> instanceCounter = new InstanceCounter<>(this);
+ *     private final InstanceCounter instanceCounter = new InstanceCounter<>(this);
  * }
  *
  * @author Cuba Stanley
