@@ -203,7 +203,7 @@ public class ConfigCdiExtension implements Extension {
             // FIXME: may need refactoring.
             // This currently registers the producer method as being valid
             // for each discovered injected @ConfigProperties type
-            if (producerBeanAttributes != null) {
+            if (producerBeanAttributes != null && !types.isEmpty()) {
                 Bean<?> bean = bm.createBean(new TypesBeanAttributes<Object>(producerBeanAttributes){
                     @Override
                     public Set<Type> getTypes() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,7 +57,10 @@ public class OptionalDoubleConverter implements Converter<OptionalDouble> {
 
     @Override
     public OptionalDouble convert(String value) throws IllegalArgumentException, NullPointerException {
-        if (value == null || value.isEmpty()) {
+        if (value == null) {
+            throw new NullPointerException("Cannot convert null value");
+        }
+        if (value.isEmpty()) {
             return OptionalDouble.empty();
         }
         return OptionalDouble.of(typeConverter.convert(value));

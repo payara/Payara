@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,22 +39,29 @@
  */
 package fish.payara.nucleus.microprofile.config.converters;
 
+import javax.annotation.Priority;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
 /**
  *
- * @author steve
+ * @author jonathan coustick
+ * @since 5.2020.8
  */
-public class StringConverter implements Converter<String>{
+@Priority(1)
+public class ByteConverter implements Converter<Byte>{
 
     @Override
-    public String convert(String value) {
+    public Byte convert(String value) throws IllegalArgumentException, NullPointerException {
         if (value == null) {
             throw new NullPointerException("Cannot convert null value");
         }
         if (value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
-        return value;
+        try {
+            return Byte.valueOf(value);
+        }catch (NumberFormatException nfe) {
+            throw new IllegalArgumentException(nfe);
+        }
     }
     
 }

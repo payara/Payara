@@ -86,6 +86,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
+import fish.payara.nucleus.microprofile.config.converters.ByteConverter;
 import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
 import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
 import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
@@ -448,6 +449,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
     Map<Class<?>,Converter<?>> getDefaultConverters() {
         Map<Class<?>,Converter<?>> result = new HashMap<>();
         result.put(Boolean.class, new BooleanConverter());
+        result.put(Byte.class, new ByteConverter());
         result.put(Integer.class, new IntegerConverter());
         result.put(Long.class, new LongConverter());
         result.put(Float.class, new FloatConverter());
