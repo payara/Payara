@@ -56,7 +56,11 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -206,7 +210,6 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     }
     
     private static final Logger logger = Logger.getLogger(DirConfigSource.class.getName());
-    static final String[] ignoredExtensions = {".xml", ".yaml", ".yml", ".json", ".properties"};
     private Path directory;
     private final ConcurrentHashMap<String, DirProperty> properties = new ConcurrentHashMap<>();
     
@@ -401,7 +404,6 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         return path != null && Files.exists(path) &&
             Files.isRegularFile(path) && Files.isReadable(path) &&
             !path.getFileName().toString().startsWith(".") &&
-            Arrays.stream(ignoredExtensions).noneMatch(ext -> path.getFileName().toString().endsWith(ext)) &&
             atts.size() < 512*1024;
     }
     
