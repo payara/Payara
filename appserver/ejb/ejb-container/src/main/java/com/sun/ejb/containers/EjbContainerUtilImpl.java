@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -95,6 +95,8 @@ import java.util.logging.Logger;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -115,13 +117,13 @@ public class EjbContainerUtilImpl
     private static Logger _logger = LogDomains.getLogger(EjbContainerUtilImpl.class, LogDomains.EJB_LOGGER);
 
     private ThreadPoolExecutor defaultThreadPoolExecutor;
-    
+
     @Inject
     private ServiceLocator services;
 
     @Inject
     private ServerContext serverContext;
-    
+
     @Inject
     JavaEEIOUtils javaEEIOUtils;
 
@@ -198,14 +200,15 @@ public class EjbContainerUtilImpl
         }
 
         defaultThreadPoolExecutor = createThreadPoolExecutor(DEFAULT_THREAD_POOL_NAME);
-        
+
         //avoid starting JDK timer in application class loader.  The life of _timer
         //field is longer than deployed apps, and any reference to app class loader
-        //in JDK timer thread will cause class loader leak.  Issue 17468 
+        //in JDK timer thread will cause class loader leak.  Issue 17468
         ClassLoader originalClassLoader = null;
         try {
             originalClassLoader = Utility.setContextClassLoader(ejbImplClassLoader);
-            _timer = new Timer("EJB Container Timer", true);
+            _timer = AccessController.doPrivileged((PrivilegedAction<Timer>) () ->
+                    new Timer("EJB Container Timer", true));
         } finally {
             if (originalClassLoader != null) {
                 Utility.setContextClassLoader(originalClassLoader);
@@ -239,16 +242,16 @@ public class EjbContainerUtilImpl
     }
 
     public static boolean isInitialized() {
-        return (_me != null);        
+        return (_me != null);
     }
 
     public static EjbContainerUtil getInstance() {
         if (_me == null) {
-            // This situation shouldn't happen. Print the error message 
+            // This situation shouldn't happen. Print the error message
             // and the stack trace to know how did we get here.
 
             // Create the instance first to access the logger.
-            _logger.log(Level.WARNING, 
+            _logger.log(Level.WARNING,
                     "Internal error: EJBContainerUtilImpl is null, creating ...",
                     new Throwable());
             _me = Globals.getDefaultHabitat().getService(
@@ -368,10 +371,10 @@ public class EjbContainerUtilImpl
             txData = new TxData();
             tx.setContainerData(txData);
         }
-        
+
         return txData;
     }
-    
+
     @Override
     public  ContainerSynchronization getContainerSync(Transaction jtx)
         throws RollbackException, SystemException
@@ -426,7 +429,7 @@ public class EjbContainerUtilImpl
     public Object getActiveTxCache(Transaction jtx) {
     	JavaEETransaction tx = (JavaEETransaction) jtx;
         TxData txData = getTxData(tx);
-        
+
         return txData.activeTxCache;
     }
 
@@ -434,10 +437,10 @@ public class EjbContainerUtilImpl
     public void setActiveTxCache(Transaction jtx, Object cache) {
     	JavaEETransaction tx = (JavaEETransaction) jtx;
         TxData txData = getTxData(tx);
-        
+
         txData.activeTxCache = cache;
     }
-    
+
     @Override
     public Agent getCallFlowAgent() {
         return callFlowAgent;
@@ -477,7 +480,7 @@ public class EjbContainerUtilImpl
         Vector beans;
         Object activeTxCache;
     }
-    
+
     @Override
     public EjbTimerService getEjbTimerService(String target) {
         EjbTimerService ejbt = null;
@@ -562,27 +565,27 @@ public class EjbContainerUtilImpl
                 ? new LinkedBlockingQueue<Runnable>(queueCapacity)
                 : new SynchronousQueue(true);
 
-        // PAYARA-405 validates attributes of the thread pool to ensure no problems      
+        // PAYARA-405 validates attributes of the thread pool to ensure no problems
         if (corePoolSize < 0) {
             _logger.log(Level.WARNING, "Core Pool Size configured to be less than 0. Resetting to 0");
             corePoolSize = 0;
         }
-        
+
         if (maxPoolSize < 1) {
             _logger.log(Level.WARNING, "Max Pool Size configured to be less than 1. Resetting to 1");
             maxPoolSize = 1;
         }
-                
+
         if (corePoolSize > maxPoolSize) {
             _logger.log(Level.WARNING, "Core Pool Size configured to be greater than maxPoolSize. Resetting to maxPoolSize {0}", maxPoolSize);
             corePoolSize = maxPoolSize;
         }
-        
+
         if (keepAliveSeconds < 0) {
             _logger.log(Level.WARNING, "Keep Alive Seconds configured to be less than 0. Resetting to 0");
-            keepAliveSeconds = 0;            
+            keepAliveSeconds = 0;
         }
-        
+
         result = new EjbThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveSeconds, workQueue, poolName);
 
         if(allowCoreThreadTimeout) {
@@ -598,12 +601,12 @@ public class EjbContainerUtilImpl
         }
         return result;
     }
-    
+
     @Override
     public ThreadPoolExecutor getThreadPoolExecutor(String poolName) {
         if(poolName == null) {
             return defaultThreadPoolExecutor;
-        } 
+        }
         return null;
 //        TODO retrieve the named ThreadPoolExecutor
     }
