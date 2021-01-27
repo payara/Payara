@@ -41,7 +41,6 @@
 package fish.payara.logging.jul;
 
 import fish.payara.logging.jul.LoggingConfigurationHelper.LoggingPropertyErrorHandler;
-import fish.payara.logging.jul.formatter.JSONLogFormatter;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
 import fish.payara.logging.jul.internal.PayaraLoggingTracer;
@@ -68,7 +67,8 @@ public class JulConfigurationFactory {
     private static final String RECORD_BEGIN_MARKER = "[#|";
     private static final String RECORD_END_MARKER = "|#]";
     private static final String RECORD_FIELD_SEPARATOR = "|";
-    private static final DateTimeFormatter RECORD_DATE_FORMAT = ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ").withDecimalStyle(DecimalStyle.STANDARD.withDecimalSeparator('0'));
+    private static final DateTimeFormatter RECORD_DATE_FORMAT = ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+        .withDecimalStyle(DecimalStyle.STANDARD.withDecimalSeparator('0'));
 
     private final LoggingPropertyErrorHandler errorHandler;
 
@@ -107,26 +107,39 @@ public class JulConfigurationFactory {
         configuration.setRotationTimeLimitValue(helper.getNonNegativeInteger("rotationTimelimitInMinutes", 0));
         configuration.setMaxHistoryFiles(helper.getNonNegativeInteger("maxHistoryFiles", 10));
 
-        configuration.setFormatterConfiguration(createFormatterConfiguration(helper));
+        final Formatter formatter = helper.getFormatter("formatter", UniformLogFormatter.class.getName());
+        configureFormatter(formatter, helper);
+        configuration.setFormatterConfiguration(formatter);
         return configuration;
     }
 
 
-    private static Formatter createFormatterConfiguration(final LoggingConfigurationHelper helper) {
-        final Formatter formatter = helper.getFormatter("formatter", UniformLogFormatter.class.getName());
-        PayaraLoggingTracer.trace(PayaraLogHandler.class, () -> "configureFormatter(helper); formatter=" + formatter);
+    /**
+     * Configures the formatter. Formatter can be already configured by his direct defaults. This
+     * method respects formatter's configuration property names used in the context of the handler.
+     * <p>
+     * Null values in handler's properties don't change the formatter's settings.
+     *
+     * @param formatter formatter to be configured.
+     * @param helper helper created for the handler using the formatter.
+     * @return true if formatter matched list of known formatters and was configured.
+     */
+    public boolean configureFormatter(final Formatter formatter, final LoggingConfigurationHelper helper) {
+        PayaraLoggingTracer.trace(PayaraLogHandler.class,
+            () -> "configureFormatter(formatter=" + formatter + ", helper)");
         if (formatter instanceof UniformLogFormatter) {
             configureUniformLogFormatter((UniformLogFormatter) formatter, helper);
-        } else if (formatter instanceof ODLLogFormatter) {
-            configureODLFormatter((ODLLogFormatter) formatter, helper);
-        } else if (formatter instanceof JSONLogFormatter) {
-            configureJSONFormatter((JSONLogFormatter) formatter, helper);
+            return true;
         }
-        return formatter;
+        if (formatter instanceof ODLLogFormatter) {
+            configureODLFormatter((ODLLogFormatter) formatter, helper);
+            return true;
+        }
+        return false;
     }
 
 
-    private static void configureUniformLogFormatter(final UniformLogFormatter formatter,
+    private void configureUniformLogFormatter(final UniformLogFormatter formatter,
         final LoggingConfigurationHelper helper) {
         formatter.noAnsi();
         formatter.setDateTimeFormatter(helper.getDateTimeFormatter("logFormatDateFormat", RECORD_DATE_FORMAT));
@@ -138,17 +151,11 @@ public class JulConfigurationFactory {
     }
 
 
-    private static void configureODLFormatter(final ODLLogFormatter formatter,
+    private void configureODLFormatter(final ODLLogFormatter formatter,
         final LoggingConfigurationHelper helper) {
         formatter.noAnsi();
         formatter.setDateTimeFormatter(helper.getDateTimeFormatter("logFormatDateFormat", RECORD_DATE_FORMAT));
         formatter.setExcludeFields(helper.getString("excludeFields", null));
         formatter.setMultiLineMode(helper.getBoolean("multiLineMode", Boolean.FALSE));
-    }
-
-
-    private static void configureJSONFormatter(final JSONLogFormatter formatter,
-        final LoggingConfigurationHelper helper) {
-        formatter.setExcludeFields(helper.getString("excludeFields", null));
     }
 }

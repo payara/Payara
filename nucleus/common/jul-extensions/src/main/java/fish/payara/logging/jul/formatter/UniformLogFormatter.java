@@ -88,6 +88,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
     private static final boolean LOG_SOURCE_IN_KEY_VALUE;
     private static final boolean RECORD_NUMBER_IN_KEY_VALUE;
     static {
+        // FIXME: move to some common place, not this copy-paste!!!
         String logSource = System.getProperty("com.sun.aas.logging.keyvalue.logsource");
         LOG_SOURCE_IN_KEY_VALUE = "true".equals(logSource);
         String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");

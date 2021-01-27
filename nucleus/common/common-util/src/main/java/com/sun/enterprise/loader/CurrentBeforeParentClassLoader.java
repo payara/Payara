@@ -44,16 +44,28 @@ import com.sun.enterprise.util.CULoggerInfo;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
+import java.util.Arrays;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * As the name suggests, loads classes via current class loader ahead of parent class loader
- * by default, classes are loaded from the parent ClassLoader first, thus this class is 
+ * by default, classes are loaded from the parent ClassLoader first, thus this class is
  * needed to allow overriding App Server's Modules / JAR files by placing them
  * into &lt;domain_dir&gt;/lib or EAR lib directory
  * @author lprimak
  */
 public class CurrentBeforeParentClassLoader extends URLClassLoader {
+
+    public static final String PARENT_CLASSLOADER_DELEGATE_PROPERTY = "fish.payara.classloading.delegate";
+
+    private static final Logger logger = CULoggerInfo.getLogger();
+
+    private final ClassLoader system = getClass().getClassLoader();
+    private final ClassLoader _parent = getParent();
+    private final ClassLoader parent = _parent == null ? system : _parent;
+    private boolean currentBeforeParentEnabled;
+
     public CurrentBeforeParentClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
     }
@@ -65,21 +77,26 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     public CurrentBeforeParentClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
         super(urls, parent, factory);
     }
-    
-    
+
+
+    public boolean isCurrentBeforeParentEnabled() {
+        return this.currentBeforeParentEnabled;
+    }
+
+
     /**
      * Local-first class loading, instead of parent-first as the ClassLoader.loadClass() does
-     * 
+     *
      * @param name
      * @param resolve
      * @return Loaded class
-     * @throws ClassNotFoundException 
+     * @throws ClassNotFoundException
      */
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         boolean isWhitelisted = isWhitelistEnabled() && isWhiteListed(name);
-        if((!currentBeforeParentEnabled && (isWhitelistEnabled()? isWhitelisted : true)) || isAlwaysDelegate(name))
-        {
+        if ((!isCurrentBeforeParentEnabled() && (isWhitelistEnabled() ? isWhitelisted : true))
+            || isAlwaysDelegate(name)) {
             return super.loadClass(name, resolve);
         }
         synchronized (getClassLoadingLock(name)) {
@@ -91,14 +108,13 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
             try {
                 c = findClass(name);
                 logger.finest(String.format("Found Locally: %s - %s", name, c.getName()));
-            }
-            catch(ClassNotFoundException e) {
-                if(!isWhitelistEnabled() || isWhitelisted) {
+            } catch (ClassNotFoundException e) {
+                if (!isWhitelistEnabled() || isWhitelisted) {
                     logger.finest(String.format("Not Found Locally - Looking in Parent: %s", name));
                     return parent.loadClass(name);
-                }
-                else {
-                    throw new ClassNotFoundException(String.format("Whitelist enabled, but class [%s] is not whitelisted", name), e);
+                } else {
+                    throw new ClassNotFoundException(
+                        String.format("Whitelist enabled, but class [%s] is not whitelisted", name), e);
                 }
             }
             if (resolve) {
@@ -126,8 +142,8 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     protected boolean isWhitelistEnabled() {
         return false;
     }
-    
-    
+
+
     /**
      * enable current-first behavior
      * conditional upon PARENT_CLASSLOADER_DELEGATE_PROPERTY system property being turned on
@@ -138,7 +154,7 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
             currentBeforeParentEnabled = true;
         }
     }
-    
+
     /**
      * enable current-first behavior unconditionally, regardless of system property
      * used by application configuration parser, so if application developer uses the config xml element,
@@ -154,7 +170,7 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     public final void disableCurrentBeforeParent() {
         currentBeforeParentEnabled = false;
     }
-    
+
     private boolean isAlwaysDelegate(String name) {
         return name.startsWith("sun") || name.startsWith("javax");
     }
@@ -163,12 +179,10 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     public void addURL(URL url){
         super.addURL(url);
     }
-    
-    protected boolean currentBeforeParentEnabled = false;
-    
-    private final ClassLoader system = getClass().getClassLoader();
-    private final ClassLoader _parent = getParent();
-    private final ClassLoader parent = _parent != null? _parent : system;
-    private static final Logger logger = CULoggerInfo.getLogger();
-    public static final String PARENT_CLASSLOADER_DELEGATE_PROPERTY = "fish.payara.classloading.delegate";
+
+
+    @Override
+    public String toString() {
+        return super.toString() + ": " + Arrays.stream(getURLs()).collect(Collectors.toList());
+    }
 }

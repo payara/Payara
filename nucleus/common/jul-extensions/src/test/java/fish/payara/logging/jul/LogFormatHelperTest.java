@@ -39,20 +39,21 @@
  */
 package fish.payara.logging.jul;
 
-import org.junit.Assert;
+import fish.payara.logging.jul.formatter.ODLLogFormatter;
+import fish.payara.logging.jul.formatter.UniformLogFormatter;
+
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test to ensure that the LogForatHelper correctly works out the log type
  * @author jonathan coustick
  */
-public class LogFormatTest {
+public class LogFormatHelperTest {
 
-    private static final String JSON_RECORD = "{\"Timestamp\":\"2020-04-20T21:53:40.248+0100\",\"Level\":\"INFO\","
-            + "\"Version\":\"Payara 5.202\",\"LoggerName\":\"javax.enterprise.logging\",\"ThreadID\":\"22\",\"ThreadName\":"
-            + "\"RunLevelControllerThread-1587416020198\",\"TimeMillis\":\"1587416020248\",\"LevelValue\":\"800\","
-            + "\"MessageID\":\"NCLS-LOGGING-00009\",\"LogMessage\":\"Running Payara Version: Payara Server  5.202"
-            + " #badassfish (build ${build.number})\"}";
     private static final String ODL_RECORD = "[2020-04-20T22:05:43.203+0100] [Payara 5.202] [INFO] [NCLS-LOGGING-00009] "
             + "[javax.enterprise.logging] [tid: _ThreadID=21 _ThreadName=RunLevelControllerThread-1587416743113] "
             + "[timeMillis: 1587416743203] [levelValue: 800] [[";
@@ -60,25 +61,30 @@ public class LogFormatTest {
             + "_ThreadName=RunLevelControllerThread-1587416555246;_TimeMillis=1587416555314;_LevelValue=800;"
             + "_MessageID=NCLS-LOGGING-00009;|";
 
+    private static final String RANDOM_RECORD = "liuasudhfuk fhuashfu hiufh fueqrhfuqrehf qufhr uihuih uih jj";
+
+    private final LogFormatHelper helper = new LogFormatHelper();
+
 
     @Test
-    public void JSONFormatTest() {
-        Assert.assertTrue(LogFormatHelper.isJSONFormatLogHeader(JSON_RECORD));
-        Assert.assertFalse(LogFormatHelper.isODLFormatLogHeader(JSON_RECORD));
-        Assert.assertFalse(LogFormatHelper.isUniformFormatLogHeader(JSON_RECORD));
+    public void odl() {
+        assertTrue(helper.isODLFormatLogHeader(ODL_RECORD));
+        assertFalse(helper.isUniformFormatLogHeader(ODL_RECORD));
+        assertEquals(ODLLogFormatter.class.getName(), helper.detectFormatter(ODL_RECORD));
     }
 
     @Test
-    public void ODLFormatTest() {
-        Assert.assertFalse(LogFormatHelper.isJSONFormatLogHeader(ODL_RECORD));
-        Assert.assertTrue(LogFormatHelper.isODLFormatLogHeader(ODL_RECORD));
-        Assert.assertFalse(LogFormatHelper.isUniformFormatLogHeader(ODL_RECORD));
+    public void uniform() {
+        assertFalse(helper.isODLFormatLogHeader(ULF_RECORD));
+        assertTrue(helper.isUniformFormatLogHeader(ULF_RECORD));
+        assertEquals(UniformLogFormatter.class.getName(), helper.detectFormatter(ULF_RECORD));
     }
 
+
     @Test
-    public void UniformFormatTest() {
-        Assert.assertFalse(LogFormatHelper.isJSONFormatLogHeader(ULF_RECORD));
-        Assert.assertFalse(LogFormatHelper.isODLFormatLogHeader(ULF_RECORD));
-        Assert.assertTrue(LogFormatHelper.isUniformFormatLogHeader(ULF_RECORD));
+    public void unknown() {
+        assertFalse(helper.isODLFormatLogHeader(RANDOM_RECORD));
+        assertFalse(helper.isUniformFormatLogHeader(RANDOM_RECORD));
+        assertEquals(LogFormatHelper.UNKNOWN_FORMAT, helper.detectFormatter(RANDOM_RECORD));
     }
 }

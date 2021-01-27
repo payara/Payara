@@ -56,11 +56,9 @@ import fish.payara.logging.jul.rotation.LogRotationTimerTask;
 import fish.payara.logging.jul.rotation.PeriodicalLogRotationTimerTask;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -93,7 +91,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     private static final String LOGGER_NAME_STDERR = "javax.enterprise.logging.stderr";
     private static final Logger STDOUT_LOGGER = Logger.getLogger(LOGGER_NAME_STDOUT);
     private static final Logger STDERR_LOGGER = Logger.getLogger(LOGGER_NAME_STDERR);
-
+    private static final Logger LOG = Logger.getLogger(PayaraLogHandler.class.getName());
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
 
     private static final String LOG_ROTATE_DATE_FORMAT = "yyyy-MM-dd'T'HH-mm-ss";
@@ -202,7 +200,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
             broadcast.setProductId(this.configuration.getProductId());
             broadcast.setLogEventBroadcaster(this);
         }
-        final String detectedFormatterName = detectFormatter(configuration.getLogFile());
+        final String detectedFormatterName = new LogFormatHelper().detectFormatter(configuration.getLogFile());
         if (detectedFormatterName != null && !formatter.getClass().getName().equals(detectedFormatterName)) {
             rotate(this);
         }
@@ -390,7 +388,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     private static void rotate(final PayaraLogHandler handler) {
         PayaraLoggingTracer.trace(PayaraLogHandler.class, () -> "rotate(handler=" + handler + "");
 
-        handler.log(Level.CONFIG, "Executing log rotation action ...");
+        handler.log(Level.INFO, "Executing log rotation action for file: {0} ...", handler.configuration.getLogFile());
         final PrivilegedAction<Void> action = () -> {
             synchronized (handler.rotationLock) {
                 // schedule next execution, it has no effect on current execution.
@@ -406,7 +404,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
                         creatingDeletedLogFile.createNewFile();
                         return null;
                     }
-                    handler.log(Level.INFO, "Rotating log file: " + handler.configuration.getLogFile());
+                    handler.log(Level.INFO, "Rotating log file: {0}", handler.configuration.getLogFile());
                     final File oldFile = handler.configuration.getLogFile();
                     final String renamedFileName = handler.configuration.getLogFile() + "_"
                         + DateTimeFormatter.ofPattern(LOG_ROTATE_DATE_FORMAT).format(LocalDateTime.now());
@@ -544,7 +542,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
 
     /**
-     * Checks if the file is not null, it is does not need property evaluation, if it is absolute
+     * Checks if the file is not null, if it does not need property evaluation, if it is absolute
      * path and if it is not a directory, then it can be used for logging.
      *
      * @param file
@@ -555,35 +553,6 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
             return null;
         }
         return file;
-    }
-
-
-    private static String detectFormatter(final File configuredLogFile) {
-        // if it is not readable, better throw an io exception than returning null.
-        // if the file does not exist, null is the right answer.
-        if (configuredLogFile == null || !configuredLogFile.exists()) {
-            return null;
-        }
-        final String strLine;
-        try (BufferedReader br = new BufferedReader(new FileReader(configuredLogFile))) {
-            strLine = br.readLine();
-        } catch (Exception e) {
-            new ErrorManager().error(e.getMessage(), e, ErrorManager.GENERIC_FAILURE);
-            return null;
-        }
-        if (strLine == null || strLine.isEmpty()) {
-            return null;
-        }
-        if (LogFormatHelper.isUniformFormatLogHeader(strLine)) {
-            return "fish.payara.logging.jul.formatter.UniformLogFormatter";
-        }
-        if (LogFormatHelper.isODLFormatLogHeader(strLine)) {
-            return "fish.payara.logging.jul.formatter.ODLLogFormatter";
-        }
-        if (LogFormatHelper.isJSONFormatLogHeader(strLine)) {
-            return "fish.payara.logging.jul.formatter.JSONLogFormatter";
-        }
-        return "unknown";
     }
 
 
@@ -622,16 +591,11 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
      * Safe logging usable before it is configured.
      */
     private void log(final Level level, final String messageKey, final Object... messageParameters) {
-        final LogRecord logRecord = createLogRecord(level, messageKey);
-        logRecord.setParameters(messageParameters);
-        publish(logRecord);
-    }
-
-    private LogRecord createLogRecord(final Level level, final String message) {
-        final LogRecord logRecord = new LogRecord(level, message);
+        final LogRecord logRecord = new LogRecord(level, messageKey);
         logRecord.setThreadID((int) Thread.currentThread().getId());
         logRecord.setLoggerName(getClass().getName());
-        return logRecord;
+        logRecord.setParameters(messageParameters);
+        LOG.log(logRecord);
     }
 
 

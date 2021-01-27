@@ -52,10 +52,8 @@ import org.glassfish.common.util.InstanceCounter;
 
 /**
  * Classloader that is responsible to load the ear libraries (lib/*.jar etc)
- *
  */
-public class EarLibClassLoader extends ASURLClassLoader
-{
+public class EarLibClassLoader extends ASURLClassLoader {
     private final InstanceCounter instanceCounter = new InstanceCounter(this);
 
     public EarLibClassLoader(URL[] urls, ClassLoader classLoader) {
@@ -64,6 +62,11 @@ public class EarLibClassLoader extends ASURLClassLoader
         for (URL url : urls) {
             super.addURL(url);
         }
+    }
+
+    @Override
+    protected String getClassLoaderName() {
+        return "EarLibClassLoader";
     }
 
     /**
@@ -82,7 +85,7 @@ public class EarLibClassLoader extends ASURLClassLoader
 
         Enumeration<URL> combined = Collections.emptyEnumeration();
 
-        Enumeration<URL> combinedResources = currentBeforeParentEnabled?
+        Enumeration<URL> combinedResources = isCurrentBeforeParentEnabled() ?
                         combineEnumerations(localResources, parentResources):
                         combineEnumerations(parentResources, localResources);
         return combinedResources;
@@ -97,10 +100,5 @@ public class EarLibClassLoader extends ASURLClassLoader
             combinedList.add(second.nextElement());
         }
         return Collections.enumeration(combinedList);
-    }
-
-    @Override
-    protected String getClassLoaderName() {
-        return "EarLibClassLoader";
     }
 }

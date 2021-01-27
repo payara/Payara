@@ -244,8 +244,10 @@ public class PayaraLogManager extends LogManager {
         if (logger instanceof PayaraLogger) {
             return (PayaraLogger) logger;
         }
-        // first request calls addLogger, which caches the logger, but returns unwrapped logger.
-        // second request is from the cache OR is special logger like global.
+        // First request to Logger.getLogger calls LogManager.demandLogger which calls
+        // addLogger, which caches the logger and can be overriden, but returns unwrapped
+        // logger.
+        // Second request is from the cache OR is a special logger like the global logger.
         return ensurePayaraLoggerOrWrap(super.getLogger(name));
     }
 
@@ -356,11 +358,6 @@ public class PayaraLogManager extends LogManager {
         return originalStdErr;
     }
 
-    @FunctionalInterface
-    public interface Action {
-        void run();
-    }
-
 
     public void reconfigure(final PayaraLogManagerConfiguration cfg) {
         reconfigure(cfg, null, null);
@@ -369,14 +366,18 @@ public class PayaraLogManager extends LogManager {
 
     public synchronized void reconfigure(final PayaraLogManagerConfiguration cfg, final Action reconfigureAction,
         final Action flushAction) {
-        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "reconfigure(cfg, action, action); Configuration:\n" + cfg);
+        PayaraLoggingTracer.trace(PayaraLogManager.class,
+            () -> "reconfigure(cfg, action, action); Configuration:\n" + cfg);
+        if (cfg.isTracingEnabled()) {
+            // if enabled, start immediately
+            PayaraLoggingTracer.setTracing(cfg.isTracingEnabled());
+        }
         setLoggingStatus(PayaraLoggingStatus.CONFIGURING);
         this.cfg = cfg;
-        // it is immediately used to configure new objects in LogManager class
+        // it is used to configure new objects in LogManager class
         final Thread currentThread = Thread.currentThread();
         final ClassLoader originalCL = currentThread.getContextClassLoader();
         try {
-            currentThread.setContextClassLoader(getLoggingBootClassloader());
             PayaraLoggingTracer.trace(PayaraLogManager.class, "Reconfiguring logger levels...");
             final Enumeration<String> existingLoggerNames = getLoggerNames();
             while (existingLoggerNames.hasMoreElements()) {
@@ -398,7 +399,12 @@ public class PayaraLogManager extends LogManager {
             PayaraLoggingTracer.trace(PayaraLogManager.class, "Updated logger levels successfully.");
 
             if (reconfigureAction != null) {
-                reconfigureAction.run();
+                try {
+                    currentThread.setContextClassLoader(reconfigureAction.getClassLoader());
+                    reconfigureAction.run();
+                } finally {
+                    currentThread.setContextClassLoader(originalCL);
+                }
             }
 
             final Predicate<Handler> isReady = h -> !PayaraLogHandler.class.isInstance(h)
@@ -407,7 +413,12 @@ public class PayaraLogManager extends LogManager {
             if (handlers.isEmpty() || handlers.stream().allMatch(isReady)) {
                 setLoggingStatus(PayaraLoggingStatus.FLUSHING_BUFFERS);
                 if (flushAction != null) {
-                    flushAction.run();
+                    try {
+                        currentThread.setContextClassLoader(flushAction.getClassLoader());
+                        flushAction.run();
+                    } finally {
+                        currentThread.setContextClassLoader(originalCL);
+                    }
                 }
                 final StartupQueue queue = StartupQueue.getInstance();
                 queue.toStream().forEach(o -> o.getLogger().checkAndLog(o.getRecord()));
@@ -415,15 +426,11 @@ public class PayaraLogManager extends LogManager {
                 setLoggingStatus(PayaraLoggingStatus.FULL_SERVICE);
             }
         } finally {
-            currentThread.setContextClassLoader(originalCL);
+            // regardless of the result, set tracing.
             PayaraLoggingTracer.setTracing(cfg.isTracingEnabled());
         }
     }
 
-
-    public ClassLoader getLoggingBootClassloader() {
-        return PayaraLogManager.class.getClassLoader();
-    }
 
     public void closeAllExternallyManagedLogHandlers() {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "closeAllExternallyManagedLogHandlers()");
@@ -440,6 +447,7 @@ public class PayaraLogManager extends LogManager {
         handlersToClose.forEach(Handler::close);
     }
 
+
     private static PayaraLogger replaceWithPayaraLogger(final Logger logger) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "replaceWithPayaraLogger(" + logger.getName() + ")");
         if (logger instanceof PayaraLogger) {
@@ -449,7 +457,16 @@ public class PayaraLogManager extends LogManager {
     }
 
 
-    // FIXME: delete!
+    /**
+     * This is a fialsafe method to wrapp any logger which would miss standard mechanisms.
+     * Invocation of this method would mean that something changed in JDK implementation
+     * and this module must be updated.
+     * <p>
+     * Prints error to STDERR if
+     *
+     * @param logger
+     * @return {@link PayaraLogger} or {@link PayaraLoggerWrapper}
+     */
     private PayaraLogger ensurePayaraLoggerOrWrap(final Logger logger) {
         if (logger instanceof PayaraLogger) {
             return (PayaraLogger) logger;
@@ -511,7 +528,7 @@ public class PayaraLogManager extends LogManager {
         }
         for (final Handler handler : currentHandlers) {
             if (requestedHandlers.stream().noneMatch(name -> name.equals(handler.getClass().getName()))) {
-                // FIXME: does not respect handlerServices, will remove them, but they are in separate property and cofigured by different Action
+                // FIXME: does not respect handlerServices, will remove them, but they are in separate property and configured by different Action
                 rootLogger.removeHandler(handler);
                 handler.close();
             }
@@ -603,6 +620,28 @@ public class PayaraLogManager extends LogManager {
                 return null;
             }
             return toProperties(input);
+        }
+    }
+
+
+    /**
+     * Action to be performed when client calls
+     * {@link PayaraLogManager#reconfigure(PayaraLogManagerConfiguration, Action, Action)}
+     */
+    @FunctionalInterface
+    public interface Action {
+
+        /**
+         * Custom action to be performed when executing the reconfiguration.
+         */
+        void run();
+
+
+        /**
+         * @return thread context classloader; can be overriden.
+         */
+        default ClassLoader getClassLoader() {
+            return Thread.currentThread().getContextClassLoader();
         }
     }
 }

@@ -61,6 +61,9 @@ import java.util.logging.LogManager;
  */
 public class LoggingConfigurationHelper {
 
+    /**
+     * Logs an error via the {@link PayaraLoggingTracer}
+     */
     public static final LoggingPropertyErrorHandler PRINT_TO_STDERR = (k, v, e) -> {
         PayaraLoggingTracer.error(LoggingConfigurationHelper.class, "Invalid value for the key: " + k + ": " + v, e);
     };
@@ -75,13 +78,27 @@ public class LoggingConfigurationHelper {
 
 
     private static final Function<String, ?> STR_TO_CLASS = v -> {
-        try {
-            final ClassLoader logManagerCL = LogManager.getLogManager().getClass().getClassLoader();
-            if (logManagerCL == null) {
-                return Thread.currentThread().getContextClassLoader().loadClass(v).newInstance();
+        if (v == null) {
+            return null;
+        }
+        final ClassLoader logManagerCL = LogManager.getLogManager().getClass().getClassLoader();
+        if (logManagerCL != null) {
+            try {
+                return logManagerCL.loadClass(v).newInstance();
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
+                | NoClassDefFoundError e) {
+                // still ok, maybe the class is not visible for boot classloader,
+                // but it still might be visible for the thread classloader.
+                PayaraLoggingTracer.trace(LoggingConfigurationHelper.class,
+                    () -> "Could not find the class by the log manager's classloader, we will try classloader"
+                        + " of the thread. Exception: " + e.toString());
             }
-            return logManagerCL.loadClass(v).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        }
+        try {
+            return Thread.currentThread().getContextClassLoader().loadClass(v).newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoClassDefFoundError e) {
+            PayaraLoggingTracer.error(LoggingConfigurationHelper.class,
+                "Classloader: " + Thread.currentThread().getContextClassLoader(), e);
             throw new IllegalStateException("Formatter instantiation failed!", e);
         }
     };
@@ -167,9 +184,6 @@ public class LoggingConfigurationHelper {
         return parseOrSupply(key, () -> STR_TO_FORMATTER.apply(defaultFormatterClass), STR_TO_FORMATTER);
     }
 
-    public Handler getHandler(final String key, final String defaultFormatterClass) {
-        return parseOrSupply(key, () -> STR_TO_HANDLER.apply(defaultFormatterClass), STR_TO_HANDLER);
-    }
 
     public Charset getCharset(final String key, final Charset defaultValue) {
         return parse(key, defaultValue, Charset::forName);

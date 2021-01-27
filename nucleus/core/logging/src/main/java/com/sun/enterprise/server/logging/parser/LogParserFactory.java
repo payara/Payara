@@ -41,8 +41,6 @@
 
 package com.sun.enterprise.server.logging.parser;
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
 import fish.payara.logging.jul.LogFormatHelper;
 
 import java.io.BufferedReader;
@@ -51,14 +49,12 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 public class LogParserFactory {
 
-    private static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(LogParserFactory.class);
-
+    private static final Logger LOG = Logger.getLogger(LogParserFactory.class.getName());
     static final String NEWLINE = System.getProperty("line.separator");
 
     private enum LogFormat {
@@ -67,69 +63,53 @@ public class LogParserFactory {
         UNKNOWN_LOG_FORMAT
     }
 
-    private static final String ODL_LINE_HEADER_REGEX =
-        "\\[(\\d){4}\\-(\\d){2}\\-(\\d){2}T(\\d){2}\\:(\\d){2}\\:(\\d){2}\\.(\\d){3}[\\+|\\-](\\d){4}\\].*";
-    private static final boolean DEBUG = false;
-    
-    private static class SingletonHolder {
-        private static final LogParserFactory SINGLETON = new LogParserFactory();
-    }
-    
+    private static final LogParserFactory SINGLETON = new LogParserFactory();
+    private final LogFormatHelper logFormatHelper;
+
     public static LogParserFactory getInstance() {
-        return SingletonHolder.SINGLETON;
+        return SINGLETON;
     }
 
-    private Pattern odlDateFormatPattern = null;
-    
+
     private LogParserFactory() {
-        odlDateFormatPattern  = Pattern.compile(ODL_LINE_HEADER_REGEX);
+        logFormatHelper = new LogFormatHelper();
     }
-    
-    public LogParser createLogParser(File logFile) throws LogParserException, IOException {
-        BufferedReader reader=null;
-        try {
-            if (LogFormatHelper.isCompressedFile(logFile.getName())) {
-                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(logFile))));
-            } else {
-                reader = new BufferedReader(new FileReader(logFile));
-            }
-            String line = reader.readLine();
-            LogFormat format = detectLogFormat(line);
-            if (DEBUG) {
-                System.out.println("Log format=" + format.name() + " for line:" + line);
-            }
-            switch(format) {
+
+    public LogParser createLogParser(final File logFile) throws LogParserException, IOException {
+        final String firstLine;
+        try (BufferedReader reader = createReader(logFile)) {
+            firstLine = reader.readLine();
+        }
+        final LogFormat format = detectLogFormat(firstLine);
+        LOG.fine(() -> "Detected log format=" + format + " for line: " + firstLine);
+        switch (format) {
             case UNIFORM_LOG_FORMAT:
                 return new UniformLogParser(logFile.getName());
             case ODL_LOG_FORMAT:
                 return new ODLLogParser(logFile.getName());
             default:
                 return new RawLogParser(logFile.getName());
-            }
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
-        }        
+        }
     }
-    
-    Pattern getODLDateFormatPattern() {
-        return odlDateFormatPattern;    
+
+
+    private BufferedReader createReader(File logFile) throws IOException {
+        if (logFormatHelper.isCompressedFile(logFile.getName())) {
+            return new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(logFile))));
+        }
+        return new BufferedReader(new FileReader(logFile));
     }
-    
-    private LogFormat detectLogFormat(String line) {
+
+
+    private LogFormat detectLogFormat(final String line) {
         if (line != null) {
-            Matcher m = odlDateFormatPattern.matcher(line);
-            if (m.matches()) {
-                if (DEBUG) {
-                    System.out.println("Matched ODL pattern for line:" + line);
-                }
+            if (logFormatHelper.isODLFormatLogHeader(line)) {
                 return LogFormat.ODL_LOG_FORMAT;
-            } else if (LogFormatHelper.isUniformFormatLogHeader(line)) {
+            } else if (logFormatHelper.isUniformFormatLogHeader(line)) {
                 return LogFormat.UNIFORM_LOG_FORMAT;
-            }             
-        } 
+            }
+        }
         return LogFormat.UNKNOWN_LOG_FORMAT;
-    }                
-    
+    }
+
 }

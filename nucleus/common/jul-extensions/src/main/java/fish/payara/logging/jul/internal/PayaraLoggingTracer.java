@@ -141,9 +141,9 @@ public final class PayaraLoggingTracer {
      * @param message
      * @param e
      */
-    public static synchronized void error(final Class<?> source, final String message, final Exception e) {
+    public static synchronized void error(final Class<?> source, final String message, final Throwable t) {
         ERR.println(source.getCanonicalName() + ": " + message);
-        e.printStackTrace(ERR);
+        t.printStackTrace(ERR);
         ERR.flush();
     }
 }

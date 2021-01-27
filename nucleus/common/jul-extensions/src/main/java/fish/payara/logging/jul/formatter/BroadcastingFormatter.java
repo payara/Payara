@@ -116,7 +116,7 @@ public abstract class BroadcastingFormatter extends Formatter implements LogEven
          * @param formattedRecord nullable
          * @param logEvent nullable
          */
-        protected BroadcastingFormatterOutput(final String formattedRecord, final LogEvent logEvent) {
+        public BroadcastingFormatterOutput(final String formattedRecord, final LogEvent logEvent) {
             this.formattedRecord = formattedRecord;
             this.logEvent = logEvent;
         }

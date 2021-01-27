@@ -118,7 +118,7 @@ Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights re
         <sun:property id="PayaraNotificationLogfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FilePayaraNotificationLogFormatHelp}">
             <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter']}"
                           labels={ "ULF","ODL","JSON"}
-                          values={"fish.payara.logging.jul.formatter.UniformLogFormatter", "fish.payara.logging.jul.formatter.ODLLogFormatter", "fish.payara.logging.jul.formatter.JSONLogFormatter"} />
+                          values={"fish.payara.logging.jul.formatter.UniformLogFormatter", "fish.payara.logging.jul.formatter.ODLLogFormatter", "com.sun.enterprise.server.logging.jul.JSONLogFormatter"} />
         </sun:property>
 
         <sun:property id="PayaraNotificationFileRotationLimitProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileRotationLimit}" helpText="$resource{i18nc.log.FileRotationLimitHelp}">

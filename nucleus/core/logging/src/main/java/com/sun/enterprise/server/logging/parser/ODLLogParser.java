@@ -60,13 +60,12 @@ final class ODLLogParser implements LogParser {
 
     private static final int ODL_FIXED_FIELD_COUNT = 5;
 
-    private static final String ODL_FIELD_REGEX = "(\\[[^\\[\\]]*?\\])+?";
+    private static final Pattern ODL_LINE_HEADER_PATTERN = Pattern
+        .compile("\\[(\\d){4}\\-(\\d){2}\\-(\\d){2}T(\\d){2}\\:(\\d){2}\\:(\\d){2}\\.(\\d){3}[\\+|\\-](\\d){4}\\].*");
+    private static final Pattern ODL_FIELD_PATTERN = Pattern.compile("(\\[[^\\[\\]]*?\\])+?");
 
-    private static final class ODLFieldPatternHolder {
-        static final Pattern ODL_FIELD_PATTERN = Pattern.compile(ODL_FIELD_REGEX);
-    }
 
-    private static final Map<String, String> ODL_STANDARD_FIELDS = new HashMap<String, String>(){
+    private static final Map<String, String> ODL_STANDARD_FIELDS = new HashMap<String, String>() {
 
         private static final long serialVersionUID = -6870456038890663569L;
 
@@ -77,23 +76,20 @@ final class ODLLogParser implements LogParser {
         }
     };
 
-    private String streamName;
+    private final String streamName;
 
     public ODLLogParser(String name) {
         streamName = name;
     }
 
     @Override
-    public void parseLog(BufferedReader reader, LogParserListener listener)
-            throws LogParserException
-    {
-
+    public void parseLog(BufferedReader reader, LogParserListener listener) throws LogParserException {
         try {
             String line = null;
             StringBuilder buffer = new StringBuilder();
             long position = 0L;
             while ((line = reader.readLine()) != null) {
-                Matcher m = LogParserFactory.getInstance().getODLDateFormatPattern().matcher(line);
+                Matcher m = ODL_LINE_HEADER_PATTERN.matcher(line);
                 if (m.matches()) {
                     // Construct a parsed log record from the prior content
                     String logRecord = buffer.toString();
@@ -132,7 +128,7 @@ final class ODLLogParser implements LogParser {
             String logRecord)
     {
         parsedLogRecord.setFormattedLogRecord(logRecord);
-        Matcher matcher = ODLFieldPatternHolder.ODL_FIELD_PATTERN.matcher(logRecord);
+        Matcher matcher = ODL_FIELD_PATTERN.matcher(logRecord);
         int start=0;
         int end=0;
         int fieldIndex=0;
@@ -173,8 +169,7 @@ final class ODLLogParser implements LogParser {
         return true;
     }
 
-    private void populateLogRecordSuppAttrs(String text,
-            ParsedLogRecord parsedLogRecord) {
+    private void populateLogRecordSuppAttrs(String text, ParsedLogRecord parsedLogRecord) {
         int index = text.indexOf(':');
         if (index > 0) {
             String key = text.substring(0, index);
@@ -192,9 +187,7 @@ final class ODLLogParser implements LogParser {
         }
     }
 
-    private void populateLogRecordFields(int index, String fieldData,
-            ParsedLogRecord parsedLogRecord)
-    {
+    private void populateLogRecordFields(int index, String fieldData, ParsedLogRecord parsedLogRecord) {
         switch(index) {
         case 1:
             parsedLogRecord.setFieldValue(ParsedLogRecord.DATE_TIME, fieldData);

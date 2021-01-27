@@ -49,13 +49,14 @@ import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
+import com.sun.enterprise.server.logging.jul.ExtendedJulConfigurationFactory;
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 
 import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
-import fish.payara.logging.jul.JulConfigurationFactory;
+import fish.payara.logging.jul.LoggingConfigurationHelper;
 import fish.payara.logging.jul.PayaraLogHandler;
 import fish.payara.logging.jul.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.PayaraLogManager;
@@ -115,6 +116,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import static com.sun.enterprise.util.PropertyPlaceholderHelper.ENV_REGEX;
 import static fish.payara.logging.jul.JulConfigurationFactory.MINIMUM_ROTATION_LIMIT_VALUE;
+import static fish.payara.logging.jul.LoggingConfigurationHelper.PRINT_TO_STDERR;
 import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
 
 /**
@@ -416,7 +418,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
     private void createOrUpdatePayaraLogHandler(final FormatterDelegate agentDelegate) {
         final PayaraLogManager manager = PayaraLogManager.getLogManager();
         final PayaraLogHandler payaraLogHandler = manager.getPayaraLogHandler();
-        final JulConfigurationFactory factory = new JulConfigurationFactory();
+        final ExtendedJulConfigurationFactory factory = new ExtendedJulConfigurationFactory();
         final PayaraLogHandlerConfiguration payaraLogHandlerCfg = factory
             .createPayaraLogHandlerConfiguration(PayaraLogHandler.class, "server.log");
         payaraLogHandlerCfg.setFormatterDelegate(agentDelegate);
@@ -593,28 +595,19 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         }
 
         for (final Handler handler : otherHandlers) {
-            final String handlerClassName = handler.getClass().getName();
-            final String formatterClassName = configuration.getProperty(handlerClassName + ".formatter");
-            final Formatter formatter = getCustomFormatter(formatterClassName);
+            final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(handler.getClass(),
+                PRINT_TO_STDERR);
+            final Formatter formatter = helper.getFormatter("formatter", null);
             if (formatter != null) {
+                // if null, default is specified by the handler implementation.
+                final ExtendedJulConfigurationFactory factory = new ExtendedJulConfigurationFactory();
+                factory.configureFormatter(formatter, helper);
                 handler.setFormatter(formatter);
             }
         }
         return foundAndRequested;
     }
 
-    private Formatter getCustomFormatter(String formatterClassName) {
-        if (formatterClassName == null) {
-            return null;
-        }
-        try {
-            Class<?> customFormatterClass = PayaraLogManager.getLogManager().getLoggingBootClassloader()
-                .loadClass(formatterClassName);
-            return (Formatter) customFormatterClass.newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            throw new IllegalArgumentException("Could not create custom formatter class.", e);
-        }
-    }
 
     private void generateAttributeChangeEvent(String key, String oldValue, String newValue) {
         PropertyChangeEvent event = new PropertyChangeEvent(this, key, oldValue, newValue);
@@ -635,101 +628,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
                 manager.getOriginalStdErr().println("null logging properties!");
                 return;
             }
-            Action reconfig = () -> {
-                final FormatterDelegate agentDelegate = agent == null ? null : new AgentFormatterDelegate(agent);
-                createOrUpdatePayaraLogHandler(agentDelegate);
-                final List<Handler> handlerServicesToSet = getHandlerServices(cfg);
-                for (Handler handlerService : handlerServicesToSet) {
-                    addHandler(handlerService);
-                }
-
-                // add the filter if there is one
-                final String filterClassName = cfg.getProperty(LoggingPropertyNames.logFilter);
-                final Logger rootLogger = getRootLogger();
-                if (filterClassName == null) {
-                    rootLogger.setFilter(null);
-                } else {
-                    final Filter filter = serviceLocator.getService(Filter.class, filterClassName);
-                    if (rootLogger != null && rootLogger.getFilter() == null) {
-                        rootLogger.setFilter(filter);
-                    }
-                }
-                if (agentDelegate != null) {
-                    final Enumeration<String> loggerNames = manager.getLoggerNames();
-                    LOG.config(() -> "Configuring formatters of handlers of existing non-root loggers ... \n" + loggerNames);
-                    while (loggerNames.hasMoreElements()) {
-                        String loggerName = loggerNames.nextElement();
-                        Logger logger = manager.getLogger(loggerName);
-                        if (logger == null || logger.getName().isEmpty()) {
-                            // skip root logger (managed by createOrUpdatePayaraLogHandler)
-                            continue;
-                        }
-                        for (Handler handler : logger.getHandlers()) {
-                            Formatter formatter = handler.getFormatter();
-                            if (formatter != null && formatter instanceof AnsiColorFormatter) {
-                                ((AnsiColorFormatter) formatter).setDelegate(agentDelegate);
-                            }
-                        }
-                    }
-                }
-
-                final Map<String, Level> loggerLevels = new HashMap<>();
-                final Map<String, Level> handlerLevels = new HashMap<>();
-                final Handler[] rootHandlers = getRootHandlers();
-//            final PayaraLogHandler payaraLogHandler = findHandler(rootHandlers, PayaraLogHandler.class);
-//            final PayaraNotificationFileHandler pnFileHandler = findHandler(getNotifierHandlers(),
-    //                PayaraNotificationFileHandler.class);
-                LOG.config(() -> "Actual root handlers=" + Arrays.toString(rootHandlers));
-//            final AtomicBoolean reconfigurePayaraLogHandlerFormatter = new AtomicBoolean();
-//            final AtomicBoolean reconfigurePnFormatter = new AtomicBoolean();
-
-                // FIXME: does not respect deleted items, they will remain set
-                for (Entry<Object, Object> entry : cfg.getProperties().entrySet()) {
-                    final String key = (String) entry.getKey();
-                    final String value = (String) entry.getValue();
-                    if (checkLevels(key, value, handlerLevels, loggerLevels)) {
-                        continue;
-                    }
-//                if (checkHandlers(key, value)) {
-//                    continue;
-//                }
-//                if (checkConsoleHandler(key, value, loggingProperties)) {
-//                    continue;
-//                }
-//                if (checkFileHandler(key, value)) {
-//                    continue;
-//                }
-//                if (checkSysLogHandler(key, value, rootHandlers)) {
-//                    continue;
-//                }
-//                if (checkPayaraLogHandler(key, value, payaraLogHandler, reconfigurePayaraLogHandlerFormatter)) {
-//                    continue;
-//                }
-//                if (checkPayaraNotificationHandler(key, value, pnFileHandler, reconfigurePnFormatter)) {
-//                    continue;
-//                }
-            } // for
-//
-//            if (reconfigurePayaraLogHandlerFormatter.get() && payaraLogHandler != null) {
-//                payaraLogHandler.reconfigure(null);configureLogFormatter(configuration.getGfhFormatterClass());
-//            }
-//            if (reconfigurePnFormatter.get() && pnFileHandler != null) {
-//                 FIXME: finish it.
-//                pnFileHandler.configureLogFormatter(configuration.getPnFormatterClass());
-//            }
-                for (Handler handler : rootHandlers) {
-                    handler.setLevel(handlerLevels.getOrDefault(handler.getClass().getName(), Level.INFO));
-                }
-
-                final ArrayBlockingQueue<LogRecord> catchEarlyMessage = EarlyLogHandler.earlyMessages;
-                while (!catchEarlyMessage.isEmpty()) {
-                    LogRecord logRecord = catchEarlyMessage.poll();
-                    if (logRecord != null) {
-                        LOG.log(logRecord);
-                    }
-                }
-            };
-
+            final ReconfigurationAction reconfig = new ReconfigurationAction(manager, cfg);
             manager.reconfigure(cfg, reconfig, null);
 
         } catch (Exception e) {
@@ -1061,6 +960,120 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         sb.append('.');
         sb.append(versionInfo.getUpdateVersion());
         return sb.toString();
+    }
+
+    private final class ReconfigurationAction implements Action {
+
+        private final PayaraLogManager manager;
+        private final PayaraLogManagerConfiguration cfg;
+
+        private ReconfigurationAction(final PayaraLogManager manager, final PayaraLogManagerConfiguration cfg) {
+            this.manager = manager;
+            this.cfg = cfg;
+        }
+
+
+        @Override
+        public ClassLoader getClassLoader() {
+            return LogManagerService.class.getClassLoader();
+        }
+
+
+        @Override
+        public void run() {
+            final FormatterDelegate agentDelegate = agent == null ? null : new AgentFormatterDelegate(agent);
+            createOrUpdatePayaraLogHandler(agentDelegate);
+            final List<Handler> handlerServicesToSet = getHandlerServices(cfg);
+            for (Handler handlerService : handlerServicesToSet) {
+                addHandler(handlerService);
+            }
+
+            // add the filter if there is one
+            final String filterClassName = cfg.getProperty(LoggingPropertyNames.logFilter);
+            final Logger rootLogger = getRootLogger();
+            if (filterClassName == null) {
+                rootLogger.setFilter(null);
+            } else {
+                final Filter filter = serviceLocator.getService(Filter.class, filterClassName);
+                if (rootLogger != null && rootLogger.getFilter() == null) {
+                    rootLogger.setFilter(filter);
+                }
+            }
+            if (agentDelegate != null) {
+                final Enumeration<String> loggerNames = manager.getLoggerNames();
+                LOG.config(() -> "Configuring formatters of handlers of existing non-root loggers ... \n" + loggerNames);
+                while (loggerNames.hasMoreElements()) {
+                    String loggerName = loggerNames.nextElement();
+                    Logger logger = manager.getLogger(loggerName);
+                    if (logger == null || logger.getName().isEmpty()) {
+                        // skip root logger (managed by createOrUpdatePayaraLogHandler)
+                        continue;
+                    }
+                    for (Handler handler : logger.getHandlers()) {
+                        Formatter formatter = handler.getFormatter();
+                        if (formatter != null && formatter instanceof AnsiColorFormatter) {
+                            ((AnsiColorFormatter) formatter).setDelegate(agentDelegate);
+                        }
+                    }
+                }
+            }
+
+            final Map<String, Level> loggerLevels = new HashMap<>();
+            final Map<String, Level> handlerLevels = new HashMap<>();
+            final Handler[] rootHandlers = getRootHandlers();
+//            final PayaraLogHandler payaraLogHandler = findHandler(rootHandlers, PayaraLogHandler.class);
+//            final PayaraNotificationFileHandler pnFileHandler = findHandler(getNotifierHandlers(),
+   //                PayaraNotificationFileHandler.class);
+            LOG.config(() -> "Actual root handlers=" + Arrays.toString(rootHandlers));
+//            final AtomicBoolean reconfigurePayaraLogHandlerFormatter = new AtomicBoolean();
+//            final AtomicBoolean reconfigurePnFormatter = new AtomicBoolean();
+
+            // FIXME: does not respect deleted items, they will remain set
+            for (Entry<Object, Object> entry : cfg.getProperties().entrySet()) {
+                final String key = (String) entry.getKey();
+                final String value = (String) entry.getValue();
+                if (checkLevels(key, value, handlerLevels, loggerLevels)) {
+                    continue;
+                }
+//                if (checkHandlers(key, value)) {
+//                    continue;
+//                }
+//                if (checkConsoleHandler(key, value, loggingProperties)) {
+//                    continue;
+//                }
+//                if (checkFileHandler(key, value)) {
+//                    continue;
+//                }
+//                if (checkSysLogHandler(key, value, rootHandlers)) {
+//                    continue;
+//                }
+//                if (checkPayaraLogHandler(key, value, payaraLogHandler, reconfigurePayaraLogHandlerFormatter)) {
+//                    continue;
+//                }
+//                if (checkPayaraNotificationHandler(key, value, pnFileHandler, reconfigurePnFormatter)) {
+//                    continue;
+//                }
+        } // for
+//
+//            if (reconfigurePayaraLogHandlerFormatter.get() && payaraLogHandler != null) {
+//                payaraLogHandler.reconfigure(null);configureLogFormatter(configuration.getGfhFormatterClass());
+//            }
+//            if (reconfigurePnFormatter.get() && pnFileHandler != null) {
+//                 FIXME: finish it.
+//                pnFileHandler.configureLogFormatter(configuration.getPnFormatterClass());
+//            }
+            for (Handler handler : rootHandlers) {
+                handler.setLevel(handlerLevels.getOrDefault(handler.getClass().getName(), Level.INFO));
+            }
+
+            final ArrayBlockingQueue<LogRecord> catchEarlyMessage = EarlyLogHandler.earlyMessages;
+            while (!catchEarlyMessage.isEmpty()) {
+                LogRecord logRecord = catchEarlyMessage.poll();
+                if (logRecord != null) {
+                    LOG.log(logRecord);
+                }
+            }
+        }
     }
 
     private static final class LoggingCfgFileChangeListener implements FileMonitoring.FileChangeListener {

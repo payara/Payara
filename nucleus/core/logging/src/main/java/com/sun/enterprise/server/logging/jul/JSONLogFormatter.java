@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.logging.jul.formatter;
+package com.sun.enterprise.server.logging.jul;
 
 import fish.payara.logging.jul.event.LogEventImpl;
+import fish.payara.logging.jul.formatter.BroadcastingFormatter;
 import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.internal.EnhancedLogRecord;
 import fish.payara.logging.jul.internal.ExcludeFieldsSupport;
 
-import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DecimalStyle;
 import java.util.Map;
 import java.util.logging.ErrorManager;
 import java.util.logging.Level;
@@ -115,7 +116,7 @@ public class JSONLogFormatter extends BroadcastingFormatter {
     private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
 
     public JSONLogFormatter() {
-        super();
+        this.recordDateFormat = ISO_OFFSET_DATE_TIME.withDecimalStyle(DecimalStyle.STANDARD.withZeroDigit('0'));
         this.messageResolver = new MessageResolver();
 
         LogManager logManager = LogManager.getLogManager();
@@ -158,8 +159,7 @@ public class JSONLogFormatter extends BroadcastingFormatter {
             LogEventImpl logEvent = new LogEventImpl();
             JsonObjectBuilder eventObject = Json.createObjectBuilder();
 
-            final Instant time = Instant.ofEpochMilli(record.getMillis());
-            String timestampValue = recordDateFormat.format(time);
+            String timestampValue = recordDateFormat.format(record.getTime());
             logEvent.setTimestamp(timestampValue);
             eventObject.add(TIMESTAMP_KEY, timestampValue);
 
@@ -237,9 +237,6 @@ public class JSONLogFormatter extends BroadcastingFormatter {
                 }
             }
 
-            /*
-             * Add the record number to the entry.
-             */
             if (RECORD_NUMBER_IN_KEY_VALUE) {
                 recordNumber++;
                 logEvent.getSupplementalAttributes().put(RECORD_NUMBER, recordNumber);

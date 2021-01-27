@@ -237,7 +237,7 @@ public class LogFile implements java.io.Serializable {
     private Optional<BufferedReader> getLogFileReader(long fromFilePosition) {
         InputStream file = null;
         try {
-            if (LogFormatHelper.isCompressedFile(getLogFileName())) {
+            if (new LogFormatHelper().isCompressedFile(getLogFileName())) {
                 file = new GZIPInputStream(new FileInputStream(getLogFileName()));
             } else {
                 file = new FileInputStream(getLogFileName());

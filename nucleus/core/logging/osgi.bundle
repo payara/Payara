@@ -41,7 +41,10 @@
 # logviewer.backend is used by REST implementation. We should be able to remove that when we move
 # REST logging code to this module.
 # logging and diagnostics are used by amx!
--exportcontents: com.sun.enterprise.server.logging.logviewer.backend, com.sun.enterprise.server.logging.diagnostics, com.sun.enterprise.server.logging
+-exportcontents: \
+          com.sun.enterprise.server.logging.logviewer.backend, \
+          com.sun.enterprise.server.logging.diagnostics, \
+          com.sun.enterprise.server.logging
 
 DynamicImport-Package: \
           org.glassfish.cluster.ssh.launcher, \
@@ -50,6 +53,9 @@ DynamicImport-Package: \
           com.sun.enterprise.util.cluster.windows.io, \
           com.sun.enterprise.util.cluster.windows.process, \
           org.glassfish.cluster.ssh.util, \
+          javax.json, \
           !fish.payara.logging.jul.*
 
-Import-Package: fish.payara.logging.jul.*; resolution:=optional, *
+Import-Package: \
+          fish.payara.logging.jul.*; resolution:=optional, \
+          *

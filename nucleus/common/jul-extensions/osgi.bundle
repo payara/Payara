@@ -45,6 +45,3 @@ Bundle-SymbolicName: ${project.groupId}.${project.artifactId}
           fish.payara.logging.jul, \
           fish.payara.logging.jul.event, \
           fish.payara.logging.jul.formatter
-
-DynamicImport-Package: \
-          javax.json

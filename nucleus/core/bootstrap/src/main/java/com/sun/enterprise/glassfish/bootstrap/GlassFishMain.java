@@ -261,7 +261,7 @@ public class GlassFishMain {
          * @param line
          * @throws GlassFishException
          */
-        private void runCommand(CommandRunner cmdRunner, String line) throws GlassFishException, IOException {
+        private void runCommand(CommandRunner cmdRunner, String line) throws GlassFishException {
 
             line = cleanCommand(line);
             if(line == null) {

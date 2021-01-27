@@ -98,9 +98,12 @@
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- required only when using JSONLogFormatter -->
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <!-- Used only for LogFilterForInstance -->
         <dependency>

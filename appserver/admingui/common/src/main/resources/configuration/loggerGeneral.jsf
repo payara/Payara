@@ -132,7 +132,7 @@
            <sun:property id="consoleFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.ConsoleLogFormat}" helpText="$resource{i18nc.log.ConsoleLogFormatHelp}">
                 <sun:dropDown id="consoleFormat" selected="#{pageSession.logAttributes['java.util.logging.ConsoleHandler.formatter']}"
                     labels={ "ULF","ODL","JSON"}
-                    values={"fish.payara.logging.jul.formatter.UniformLogFormatter", "fish.payara.logging.jul.formatter.ODLLogFormatter", "fish.payara.logging.jul.formatter.JSONLogFormatter"} />
+                    values={"fish.payara.logging.jul.formatter.UniformLogFormatter", "fish.payara.logging.jul.formatter.ODLLogFormatter", "com.sun.enterprise.server.logging.jul.JSONLogFormatter"} />
           </sun:property>
 
         <sun:property id="logStandardStreamsProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogStandardStreams}" helpText="$resource{i18nc.log.LogStandardStreamsHelp}">
@@ -142,7 +142,7 @@
         <sun:property id="logfileFormat"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.FileLogFormat}" helpText="$resource{i18nc.log.FileLogFormatHelp}">
           <sun:dropDown id="logfileFormat" selected="#{pageSession.logAttributes['fish.payara.logging.jul.PayaraLogHandler.formatter']}"
                 labels={ "ULF","ODL","JSON"}
-                values={"fish.payara.logging.jul.formatter.UniformLogFormatter", "fish.payara.logging.jul.formatter.ODLLogFormatter", "fish.payara.logging.jul.formatter.JSONLogFormatter"} />
+                values={"fish.payara.logging.jul.formatter.UniformLogFormatter", "fish.payara.logging.jul.formatter.ODLLogFormatter", "com.sun.enterprise.server.logging.jul.JSONLogFormatter"} />
         </sun:property>
 
         <sun:property id="excludeFields"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.excludeFields}" helpText="$resource{i18nc.log.excludeFieldsHelp}">
