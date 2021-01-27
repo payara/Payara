@@ -84,33 +84,26 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         final String propertyValue;
         final FileTime lastModifiedTime;
         final Path path;
-        final int pathDepth;
         
-        DirProperty(String propertyValue, FileTime lastModifiedTime, Path path, int pathDepth) {
+        DirProperty(String propertyValue, FileTime lastModifiedTime, Path path) {
             this.propertyValue = propertyValue;
             this.lastModifiedTime = lastModifiedTime;
             this.path = path;
-            this.pathDepth = pathDepth;
         }
-    
-        DirProperty(String propertyValue, FileTime lastModifiedTime, Path path, Path rootPath) {
-            this(propertyValue, lastModifiedTime, path, rootPath.relativize(path).getNameCount());
-        }
-    
+        
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             DirProperty that = (DirProperty) o;
-            return pathDepth == that.pathDepth &&
-                propertyValue.equals(that.propertyValue) &&
+            return propertyValue.equals(that.propertyValue) &&
                 lastModifiedTime.equals(that.lastModifiedTime) &&
                 path.equals(that.path);
         }
     
         @Override
         public int hashCode() {
-            return Objects.hash(propertyValue, lastModifiedTime, path, pathDepth);
+            return Objects.hash(propertyValue, lastModifiedTime, path);
         }
     }
     
@@ -332,42 +325,59 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     }
     
     /**
-     * Check if the path given is a more specific path to a value for the given property
-     * Same path counts as more specific, too, to allow updates to the same file.
+     * Check if a new path to a given property is a more specific match for it.
+     * If both old and new paths are the same, it's still treated as more specific, allowing for updates.
      * @param property
-     * @param path
-     * @return true if more specific, false if not
+     * @param newPath
+     * @return true if new path more specific or equal to old path of property, false if not.
      */
-    final boolean isLongestMatchForPath(String property, Path path) {
-        // Make path relative to config directory
-        // NOTE: we will never have a path containing "..", as our tree walkers are always inside this "root".
-        Path relativePath = directory.relativize(path);
-        
+    final boolean isLongestMatchForPath(String property, Path newPath) {
+        if (newPath == null || property == null || property.isEmpty())
+            return false;
         // No property -> path is new and more specific
         if (! properties.containsKey(property))
             return true;
         DirProperty old = properties.get(property);
-        
+        return isLongestMatchForPath(this.directory, old.path, newPath);
+    }
+    
+    /**
+     * Check if the new path given is a more specific path to a property file for a given old path
+     * Same path is more specific, too, to allow updates to the same file.
+     * @param rootDir
+     * @param oldPath
+     * @param newPath
+     * @return true if more specific, false if not
+     */
+    static final boolean isLongestMatchForPath(Path rootDir, Path oldPath, Path newPath) {
         // Old and new path are the same -> "more" specific (update case)
-        if ( old.path.equals(path) )
+        if (oldPath.equals(newPath))
             return true;
+        
+        // Make pathes relative to config directory and count the "levels" (path depth)
+        // NOTE: we will never have a path containing "..", as our tree walkers are always inside this "root".
+        int oldPathDepth = rootDir.relativize(oldPath).getNameCount();
+        int newPathDepth = rootDir.relativize(newPath).getNameCount();
         
         // Check if this element has a higher path depth (longest match)
         // Example: "foo.bar/test/one.txt" (depth 2) wins over "foo.bar.test.one.txt" (depth 0)
-        boolean depth = old.pathDepth < relativePath.getNameCount();
+        if (oldPathDepth < newPathDepth)
+            return true;
         
         // In case that both pathes have the same depth, we need to check on the position of dots.
         // Example: /config/foo.bar/test/one.txt is less specific than /config/foo/bar.test/one.txt
-        if (old.pathDepth == relativePath.getNameCount()) {
-            String oldPath = old.path.toString();
-            String newPath = path.toAbsolutePath().toString();
+        if (oldPathDepth == newPathDepth) {
+            String oldPathS = oldPath.toString();
+            String newPathS = newPath.toAbsolutePath().toString();
             int offset = 0;
             while (offset > -1) {
-                if (newPath.indexOf(".", offset) > oldPath.indexOf(".", offset)) return true;
-                offset = oldPath.indexOf(".", offset + 1);
+                if (newPathS.indexOf(".", offset) > oldPathS.indexOf(".", offset)) return true;
+                offset = oldPathS.indexOf(".", offset + 1);
             }
         }
-        return depth;
+        
+        // All other cases: no, it's not more specific.
+        return false;
     }
     
     /**
@@ -444,8 +454,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
             return new DirProperty(
                 new String(Files.readAllBytes(path), StandardCharsets.UTF_8),
                 mainAtts.lastModifiedTime(),
-                path.toAbsolutePath(),
-                rootPath
+                path.toAbsolutePath()
             );
         }
         throw new IOException("Cannot read property from '"+path.toString()+"'.");
