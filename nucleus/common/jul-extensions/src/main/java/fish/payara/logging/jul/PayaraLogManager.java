@@ -88,6 +88,7 @@ public class PayaraLogManager extends LogManager {
     public static final String ROOT_LOGGER_NAME = "";
 
     private static volatile PayaraLoggingStatus status = PayaraLoggingStatus.UNINITIALIZED;
+    private static PayaraLogManager payaraLogManager;
     private static final AtomicBoolean protectBeforeReset = new AtomicBoolean(true);
 
     // Cannot be static, log manager is initialized very early
@@ -121,35 +122,41 @@ public class PayaraLogManager extends LogManager {
     }
 
 
+    /**
+     * @return true if {@link PayaraLogManager} is configured as the JVM log manager.
+     */
     public static boolean isPayaraLogManager() {
-        return isPayaraLogManager(LogManager.getLogManager());
+        if (payaraLogManager == null) {
+            return getLogManager() != null;
+        }
+        return payaraLogManager != null;
     }
 
 
     public static PayaraLogManager getLogManager() {
-        final LogManager logManager = LogManager.getLogManager();
-        if (isPayaraLogManager(logManager)) {
-            return (PayaraLogManager) logManager;
+        if (payaraLogManager != null) {
+            return payaraLogManager;
         }
-        PayaraLoggingTracer.error(PayaraLogManager.class, "PayaraLogManager not available, using " + logManager);
-        PayaraLoggingTracer.error(PayaraLogManager.class, "Classloader used:" //
-            + "\n here:  " + PayaraLogManager.class.getClassLoader() //
-            + "\n there: " + logManager.getClass().getClassLoader());
-        return null;
-    }
-
-
-    private static boolean isPayaraLogManager(final LogManager logManager) {
-        return logManager instanceof PayaraLogManager;
+        synchronized (PayaraLogManager.class) {
+            final LogManager logManager = LogManager.getLogManager();
+            if (logManager instanceof PayaraLogManager) {
+                payaraLogManager = (PayaraLogManager) logManager;
+                return payaraLogManager;
+            }
+            PayaraLoggingTracer.error(PayaraLogManager.class, "PayaraLogManager not available, using " + logManager);
+            PayaraLoggingTracer.error(PayaraLogManager.class, "Classloader used:" //
+                + "\n here:  " + PayaraLogManager.class.getClassLoader() //
+                + "\n there: " + logManager.getClass().getClassLoader());
+            return null;
+        }
     }
 
 
     /**
-     * Don't call this constructor directly. Use {@link LogManager#getLogManager()} instead.
+     * @deprecated call this constructor directly. Use {@link LogManager#getLogManager()} instead.
      * See {@link LogManager} javadoc for more.
-     * <p>
-     * This constructor does not do any configuration.
      */
+    @Deprecated
     public PayaraLogManager() {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "new PayaraLogManager()");
         this.originalStdOut = System.out;
@@ -179,7 +186,10 @@ public class PayaraLogManager extends LogManager {
         return this.cfg == null ? null : this.cfg.getProperty(name);
     }
 
-
+    /**
+     * {@inheritDoc}
+     * @return false to force caller to refind the new logger, true to inform him that we did not add it.
+     */
     @Override
     public boolean addLogger(final Logger logger) {
         Objects.requireNonNull(logger, "logger is null");

@@ -110,9 +110,11 @@ public class MessageResolver {
 
 
     private boolean isAlreadyResolved(final EnhancedLogRecord record) {
+        // can be set only in resolve method
         if (record.getMessageKey() != null) {
             return true;
         }
+        // resolve method sets all of them to null
         return record.getResourceBundle() == null && record.getResourceBundleName() == null
             && record.getParameters() == null;
     }
