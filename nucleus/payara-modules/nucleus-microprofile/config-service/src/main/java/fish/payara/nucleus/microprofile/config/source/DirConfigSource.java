@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 import java.io.File;
@@ -231,8 +232,9 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     }
 
     // Used for testing only with explicit dependency injection
-    DirConfigSource(Path directory) {
-        super(true);
+    // Used for testing only with explicit dependency injection
+    DirConfigSource(Path directory, ConfigProviderResolverImpl configService) {
+        super(configService);
         this.directory = directory;
     }
     
@@ -274,7 +276,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         return "Directory";
     }
 
-    private Path findDir() throws IOException {
+    Path findDir() throws IOException {
         String path = configService.getMPConfig().getSecretDir();
         List<Path> candidates = new ArrayList<>();
         

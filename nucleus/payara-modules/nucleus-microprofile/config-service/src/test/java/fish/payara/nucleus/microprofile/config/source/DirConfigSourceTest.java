@@ -39,6 +39,8 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -65,18 +67,21 @@ import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 public class DirConfigSourceTest {
 
     private static Path testDirectory;
     private static DirConfigSource source;
     private static ScheduledExecutorService exec = Executors.newScheduledThreadPool(3);
+    private static ConfigProviderResolverImpl configService;
     
     @BeforeClass
     public static void setUp() throws IOException {
         testDirectory = Files.createTempDirectory("microprofile-config-test-");
+        configService = mock(ConfigProviderResolverImpl.class);
         // create & load
-        source = new DirConfigSource(testDirectory);
+        source = new DirConfigSource(testDirectory, configService);
     }
 
     @AfterClass
@@ -87,6 +92,33 @@ public class DirConfigSourceTest {
             .sorted(Comparator.reverseOrder())
             .map(Path::toFile)
             .forEach(File::delete);
+    }
+    
+    @Test
+    public void testFindDir_AbsolutePath() throws IOException {
+        // given
+        MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
+        when(configService.getMPConfig()).thenReturn(config);
+        when(config.getSecretDir()).thenReturn(testDirectory.toString());
+        // when
+        Path sut = source.findDir();
+        // then
+        assertEquals(testDirectory, sut);
+    }
+    
+    @Test
+    public void testFindDir_RelativePath() throws IOException {
+        // given
+        System.setProperty("com.sun.aas.instanceRoot", testDirectory.toString());
+        MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
+        when(configService.getMPConfig()).thenReturn(config);
+        when(config.getSecretDir()).thenReturn(".");
+        
+        // when
+        Path sut = source.findDir();
+        
+        // then
+        assertEquals(testDirectory, sut);
     }
     
     @Test
