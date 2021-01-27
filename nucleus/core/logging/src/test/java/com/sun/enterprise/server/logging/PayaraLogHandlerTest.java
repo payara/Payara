@@ -39,8 +39,6 @@
  */
 package com.sun.enterprise.server.logging;
 
-import com.sun.enterprise.server.logging.test.GlobalStatus;
-
 import fish.payara.logging.jul.PayaraLogHandler;
 import fish.payara.logging.jul.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.PayaraLogManager;
@@ -55,6 +53,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author patrik
@@ -62,21 +61,23 @@ import static org.junit.Assert.assertSame;
 public class PayaraLogHandlerTest {
 
     private static PayaraLogManager logManager;
-    private static PayaraLogHandler gfFileHandler;
+    private static PayaraLogHandler logHandler;
 
     private PayaraLogHandlerConfiguration cfg;
 
     @BeforeClass
     public static void initialize() {
-        GlobalStatus.initialize();
+        assertTrue("Only PayaraLogManager supported in this test.", PayaraLogManager.isPayaraLogManager());
         logManager = PayaraLogManager.getLogManager();
-        gfFileHandler = new PayaraLogHandler();
+        logHandler = new PayaraLogHandler();
     }
 
 
     @AfterClass
     public static void preDestroy() throws Exception {
-        gfFileHandler.close();
+        if (logHandler != null) {
+            logHandler.close();
+        }
     }
 
 
@@ -98,7 +99,7 @@ public class PayaraLogHandlerTest {
     @Test
     public void enablelogStandardStreams() throws Exception {
         cfg.setLogStandardStreams(true);
-        gfFileHandler.reconfigure(cfg);
+        logHandler.reconfigure(cfg);
         assertNotSame("System.out should be redirected", System.out, logManager.getOriginalStdOut());
         assertNotSame("System.err should be redirected", System.err, logManager.getOriginalStdErr());
     }
@@ -107,7 +108,7 @@ public class PayaraLogHandlerTest {
     @Test
     public void disabledlogStandardStreams() throws Exception {
         cfg.setLogStandardStreams(false);
-        gfFileHandler.reconfigure(cfg);
+        logHandler.reconfigure(cfg);
         assertSame("System.out should not be redirected", System.out, logManager.getOriginalStdOut());
         assertSame("System.err should not be redirected", System.err, logManager.getOriginalStdErr());
     }

@@ -107,7 +107,6 @@
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>payara-jul-extensions</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>

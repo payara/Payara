@@ -49,8 +49,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sun.enterprise.server.logging.test.GlobalStatus;
-
+import fish.payara.logging.jul.PayaraLogManager;
+import fish.payara.logging.jul.PayaraLoggingStatus;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
 
@@ -61,16 +61,12 @@ import java.io.IOException;
 import java.util.logging.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author sanshriv
- *
  */
 public class LoggingAnnotationsTest {
-
-    static {
-        GlobalStatus.initialize();
-    }
 
     private static final String CANNOT_READ_TEST_CONFIGURATION_FILE_MSG = "Cannot read test configuration file ";
 
@@ -99,41 +95,41 @@ public class LoggingAnnotationsTest {
             action="Take appropriate action based on the exception message.")
     public static final String ERROR_READING_TEST_CONF_FILE_ID = "TEST-LOGGING-00001";
 
-    private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME, RB_NAME);
 
     private static final String LINE_SEP = System.getProperty("line.separator");
 
     @LogMessageInfo(message = "FINE Level test message", level="FINE")
     private static final String FINE_TEST_MESSAGE_ID = "TEST-LOGGING-00002";
 
+    private static Logger LOGGER;
     private static FileHandler uniformFormatHandler;
-
     private static FileHandler odlFormatHandler;
-
     private static ConsoleHandler consoleHandler;
 
     @BeforeClass
     public static void initializeLoggingAnnotationsTest() throws Exception {
+        assertTrue("Only PayaraLogManager supported in this test.", PayaraLogManager.isPayaraLogManager());
+        assertEquals("PayaraLogManager status", PayaraLoggingStatus.FULL_SERVICE,
+            PayaraLogManager.getLogManager().getLoggingStatus());
+        LOGGER = Logger.getLogger(LOGGER_NAME, RB_NAME);
         File basePath = new File(BASE_PATH);
         basePath.mkdirs();
 
-        // Add a file handler with UniformLogFormatter
         uniformFormatHandler = new FileHandler(ULF_LOG);
         uniformFormatHandler.setLevel(Level.FINE);
         uniformFormatHandler.setFormatter(new UniformLogFormatter());
 
-        // Add a file handler with ODLLogFormatter
         odlFormatHandler = new FileHandler(ODL_LOG);
         odlFormatHandler.setLevel(Level.FINE);
         odlFormatHandler.setFormatter(new ODLLogFormatter());
 
         consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
         consoleHandler.setFormatter(new UniformLogFormatter());
 
         LOGGER.addHandler(uniformFormatHandler);
         LOGGER.addHandler(odlFormatHandler);
-        Boolean enableConsoleHandler = Boolean.getBoolean(LoggingAnnotationsTest.class.getName() + ".enableConsoleHandler");
-        if (enableConsoleHandler) {
+        if (Boolean.getBoolean(LoggingAnnotationsTest.class.getName() + ".enableConsoleHandler")) {
             LOGGER.addHandler(consoleHandler);
         }
         LOGGER.setUseParentHandlers(false);
@@ -142,6 +138,7 @@ public class LoggingAnnotationsTest {
 
     @Test
     public void testLogMessageWithExceptionArgument() throws IOException {
+        System.err.println("AAAAAAAAAAAAAAAAAAA");
         LogHelper.log(LOGGER, Level.SEVERE, ERROR_READING_TEST_CONF_FILE_ID,
                 new Exception(TEST_EXCEPTION_MESSAGE), TEST_CONF_FILE);
         String[] expectedContents = new String[] {
@@ -155,6 +152,7 @@ public class LoggingAnnotationsTest {
 
     @Test
     public void testFineLevelMessageWithSourceInfo() throws IOException {
+        System.err.println("BBBBBBBBBBBBBBBBBB");
         LOGGER.fine(FINE_TEST_MESSAGE_ID);
         String testMessage = "FINE Level test message";
         String[] ulfContents = new String[] {testMessage,
@@ -170,6 +168,7 @@ public class LoggingAnnotationsTest {
 
     @Test
     public void testFineLevelMessageWithoutSourceInfo() throws IOException {
+        System.err.println("ccccccccccccccccccccccccc");
         String msg = "Hello FINE World";
         LogRecord rec = new LogRecord(Level.FINE, msg);
         rec.setLoggerName(LOGGER_NAME);
@@ -187,6 +186,7 @@ public class LoggingAnnotationsTest {
 
     @Test
     public void testGetFormattedMessage() throws IOException {
+        System.err.println("ddddddddddddddddddd");
         String formattedMsg = LogHelper.getFormattedMessage(
                 LOGGER, ERROR_READING_TEST_CONF_FILE_ID, TEST_CONF_FILE);
         assertEquals(CANNOT_READ_TEST_CONFIGURATION_FILE_MSG + TEST_CONF_FILE,
@@ -219,15 +219,16 @@ public class LoggingAnnotationsTest {
 
     @AfterClass
     public static void cleanupLoggingAnnotationsTest() throws Exception {
+        if (LOGGER == null) {
+            return;
+        }
         LOGGER.removeHandler(consoleHandler);
-        LOGGER.removeHandler(uniformFormatHandler);
-        LOGGER.removeHandler(odlFormatHandler);
-
-        // Flush and Close the handlers
         consoleHandler.flush();
-        uniformFormatHandler.flush();
+
+        LOGGER.removeHandler(uniformFormatHandler);
         uniformFormatHandler.close();
-        odlFormatHandler.flush();
+
+        LOGGER.removeHandler(odlFormatHandler);
         odlFormatHandler.close();
     }
 

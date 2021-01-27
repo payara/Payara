@@ -47,7 +47,6 @@ import fish.payara.logging.jul.formatter.UniformLogFormatter;
 import fish.payara.logging.jul.internal.PayaraLoggingTracer;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DecimalStyle;
 import java.util.logging.ErrorManager;
@@ -93,7 +92,7 @@ public class JulConfigurationFactory {
         configuration.setLevel(helper.getLevel("level", Level.ALL));
         configuration.setEncoding(helper.getCharset("encoding", StandardCharsets.UTF_8));
         configuration.setLogToFile(helper.getBoolean("logtoFile", true));
-        configuration.setLogFile(helper.getFile("file", Paths.get("${com.sun.aas.instanceRoot}", "logs", defaultLogFileName).toFile()));
+        configuration.setLogFile(helper.getFile("file", null));
         configuration.setLogStandardStreams(helper.getBoolean("logStandardStreams", Boolean.FALSE));
 
         configuration.setFlushFrequency(helper.getNonNegativeInteger("flushFrequency", 1));

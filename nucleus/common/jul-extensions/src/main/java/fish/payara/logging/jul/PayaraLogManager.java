@@ -69,6 +69,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static fish.payara.logging.jul.LoggingConfigurationHelper.PRINT_TO_STDERR;
+import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
 import static java.util.logging.Logger.GLOBAL_LOGGER_NAME;
 
 
@@ -86,44 +87,36 @@ public class PayaraLogManager extends LogManager {
     /** Empty string - standard root logger name */
     public static final String ROOT_LOGGER_NAME = "";
 
-    private static volatile boolean isAfterInitialization;
-
+    private static volatile PayaraLoggingStatus status = PayaraLoggingStatus.UNINITIALIZED;
     private static final AtomicBoolean protectBeforeReset = new AtomicBoolean(true);
 
     // Cannot be static, log manager is initialized very early
     private final PrintStream originalStdOut;
     private final PrintStream originalStdErr;
 
-    private volatile PayaraLoggingStatus status = PayaraLoggingStatus.UNCONFIGURED;
     private volatile PayaraLogger systemRootLogger;
     private volatile PayaraLogger userRootLogger;
     private volatile PayaraLogger globalLogger;
 
     private PayaraLogManagerConfiguration cfg;
 
-    private static boolean isAfterInitialization() {
-        return isAfterInitialization;
-    }
-
 
     static synchronized boolean initialize(final Properties configuration) throws SecurityException, IOException {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "initialize(configuration)");
-        if (isAfterInitialization) {
+        if (status.ordinal() > PayaraLoggingStatus.UNINITIALIZED.ordinal()) {
             PayaraLoggingTracer.error(PayaraLogManager.class,
                 "Initialization of the logging system failed - it was already executed");
             return false;
         }
-        try {
-            // We must respect that LogManager.getLogManager()
-            // - creates final root and global loggers,
-            // - calls also addLogger.
-            // - calls setLevel if the level was not set in addLogger.
-            final PayaraLogManager logManager = getLogManager();
-            logManager.doFirstInitialization(configuration);
-            return true;
-        } finally {
-            isAfterInitialization = true;
-        }
+        // We must respect that LogManager.getLogManager()
+        // - creates final root and global loggers,
+        // - calls also addLogger.
+        // - calls setLevel if the level was not set in addLogger.
+        // Therefore status is now moved directly to UNCONFIGURED
+        status = PayaraLoggingStatus.UNCONFIGURED;
+        final PayaraLogManager logManager = getLogManager();
+        logManager.doFirstInitialization(configuration == null ? provideProperties() : configuration);
+        return true;
     }
 
 
@@ -153,22 +146,27 @@ public class PayaraLogManager extends LogManager {
     /**
      * Don't call this constructor directly. Use {@link LogManager#getLogManager()} instead.
      * See {@link LogManager} javadoc for more.
+     * <p>
+     * This constructor does not do any configuration.
      */
     public PayaraLogManager() {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "new PayaraLogManager()");
         this.originalStdOut = System.out;
         this.originalStdErr = System.err;
-        this.cfg = new PayaraLogManagerConfiguration(new Properties());
     }
 
 
-    private void doFirstInitialization(final Properties configuration) throws SecurityException, IOException {
+    private void doFirstInitialization(final Properties configuration) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "Initializing logManager: " + this);
         try {
             protectBeforeReset.set(false);
+            setLoggingStatus(PayaraLoggingStatus.UNCONFIGURED);
             this.cfg = new PayaraLogManagerConfiguration(configuration);
             initializeRootLoggers();
             reconfigure(this.cfg);
+        } catch (final Exception e) {
+            PayaraLoggingTracer.error(PayaraLogManager.class, "Initialization of " + this + " failed!", e);
+            throw e;
         } finally {
             protectBeforeReset.set(true);
         }
@@ -177,7 +175,7 @@ public class PayaraLogManager extends LogManager {
 
     @Override
     public String getProperty(final String name) {
-        return this.cfg.getProperty(name);
+        return this.cfg == null ? null : this.cfg.getProperty(name);
     }
 
 
@@ -186,22 +184,31 @@ public class PayaraLogManager extends LogManager {
         Objects.requireNonNull(logger, "logger is null");
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "addLogger(logger.name=" + logger.getName() + ")");
 
-        if (!isAfterInitialization) {
-            // initialization of system loggers in LogManager.ensureLogManagerInitialized
-            // ignores output of addLogger. That's why we use wrappers.
-            if (ROOT_LOGGER_NAME.equals(logger.getName())) {
-                PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "System root logger catched: " + logger + ")");
-                this.systemRootLogger = new PayaraLoggerWrapper(logger);
-                // do not add system logger to user context. Create own root instead.
-                // reason: LogManager.ensureLogManagerInitialized ignores result of addLogger,
-                // so there is no way to override it. So leave it alone.
-                this.userRootLogger = new PayaraLogger(ROOT_LOGGER_NAME);
-                return super.addLogger(userRootLogger);
-            }
-            if (GLOBAL_LOGGER_NAME.equals(logger.getName())) {
-                PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "System global logger catched: " + logger + ")");
-                this.globalLogger = new PayaraLoggerWrapper(Logger.getGlobal());
-                return super.addLogger(globalLogger);
+        if (getLoggingStatus().ordinal() < PayaraLoggingStatus.CONFIGURING.ordinal()) {
+            try {
+                // initialization of system loggers in LogManager.ensureLogManagerInitialized
+                // ignores output of addLogger. That's why we use wrappers.
+                if (ROOT_LOGGER_NAME.equals(logger.getName())) {
+                    PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "System root logger catched: " + logger + ")");
+                    this.systemRootLogger = new PayaraLoggerWrapper(logger);
+                    // do not add system logger to user context. Create own root instead.
+                    // reason: LogManager.ensureLogManagerInitialized ignores result of addLogger,
+                    // so there is no way to override it. So leave it alone.
+                    this.userRootLogger = new PayaraLogger(ROOT_LOGGER_NAME);
+                    return super.addLogger(userRootLogger);
+                }
+                if (GLOBAL_LOGGER_NAME.equals(logger.getName())) {
+                    PayaraLoggingTracer.trace(PayaraLogManager.class,
+                        () -> "System global logger catched: " + logger + ")");
+                    this.globalLogger = new PayaraLoggerWrapper(Logger.getGlobal());
+                    return super.addLogger(globalLogger);
+                }
+            } finally {
+                // if we go directly through constructor without initialize(cfg)
+                if (this.systemRootLogger != null && this.globalLogger != null
+                    && getLoggingStatus() == PayaraLoggingStatus.UNINITIALIZED) {
+                    doFirstInitialization(provideProperties());
+                }
             }
         }
 
@@ -276,10 +283,6 @@ public class PayaraLogManager extends LogManager {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "readConfiguration(input) done.");
     }
 
-    public void reconfigure(final PayaraLogManagerConfiguration cfg) {
-        reconfigure(cfg, null, null);
-    }
-
 
     public synchronized void resetAndReadConfiguration(final InputStream input) throws SecurityException, IOException {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "resetAndReadConfiguration(ins=" + input + ")");
@@ -307,7 +310,7 @@ public class PayaraLogManager extends LogManager {
 
     private void setLoggingStatus(final PayaraLoggingStatus status) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "setLoggingStatus(status=" + status + ")");
-        this.status = status;
+        PayaraLogManager.status = status;
     }
 
 
@@ -358,6 +361,11 @@ public class PayaraLogManager extends LogManager {
     }
 
 
+    public void reconfigure(final PayaraLogManagerConfiguration cfg) {
+        reconfigure(cfg, null, null);
+    }
+
+
     public synchronized void reconfigure(final PayaraLogManagerConfiguration cfg, final Action reconfigureAction,
         final Action flushAction) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "reconfigure(cfg, action, action); Configuration:\n" + cfg);
@@ -394,7 +402,8 @@ public class PayaraLogManager extends LogManager {
 
             final Predicate<Handler> isReady = h -> !PayaraLogHandler.class.isInstance(h)
                 || PayaraLogHandler.class.cast(h).isReady();
-            if (Arrays.stream(getRootLogger().getHandlers()).allMatch(isReady)) {
+            final List<Handler> handlers = getAllHandlers();
+            if (handlers.isEmpty() || handlers.stream().allMatch(isReady)) {
                 setLoggingStatus(PayaraLoggingStatus.FLUSHING_BUFFERS);
                 if (flushAction != null) {
                     flushAction.run();
@@ -412,7 +421,7 @@ public class PayaraLogManager extends LogManager {
 
 
     public ClassLoader getLoggingBootClassloader() {
-        return PayaraLogManagerInitializer.class.getClassLoader();
+        return PayaraLogManager.class.getClassLoader();
     }
 
     public void closeAllExternallyManagedLogHandlers() {
@@ -474,7 +483,6 @@ public class PayaraLogManager extends LogManager {
         final Level rootLoggerLevel = getLevel(KEY_USR_ROOT_LOGGER_LEVEL, Level.INFO);
         configureRootLogger(userRootLogger, rootLoggerLevel, requestedHandlers, handlersToAdd);
         setUserRootLoggerMissingParents(userRootLogger);
-
         // TODO: probably check for system root loggers as parents and move them to user?
     }
 
@@ -515,7 +523,7 @@ public class PayaraLogManager extends LogManager {
 
 
     private Level getLevel(final String property, final Level defaultLevel) {
-        final String levelProperty = this.cfg.getProperty(property);
+        final String levelProperty = getProperty(property);
         if (levelProperty == null || levelProperty.isEmpty()) {
             return defaultLevel;
         }
@@ -537,6 +545,63 @@ public class PayaraLogManager extends LogManager {
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             PayaraLoggingTracer.error(PayaraLogManager.class, "Could not create " + clazz, e);
             return null;
+        }
+    }
+
+
+    private static Properties provideProperties() {
+        try {
+            final Properties propertiesFromJvmOption = toProperties(System.getProperty(JVM_OPT_LOGGING_CFG_FILE));
+            if (propertiesFromJvmOption != null) {
+                return propertiesFromJvmOption;
+            }
+            final Properties propertiesFromClasspath = loadFromClasspath();
+            if (propertiesFromClasspath != null) {
+                return propertiesFromClasspath;
+            }
+            throw new IllegalStateException(
+                "Could not find any logging.properties configuration file neither from JVM option ("
+                    + JVM_OPT_LOGGING_CFG_FILE + ") nor from classpath.");
+        } catch (final IOException e) {
+            throw new IllegalStateException("Could not load logging configuration file.", e);
+        }
+    }
+
+
+    private static Properties toProperties(final String absolutePath) throws IOException {
+        if (absolutePath == null) {
+            return null;
+        }
+        final File file = new File(absolutePath);
+        return toProperties(file);
+    }
+
+
+    private static Properties toProperties(final File file) throws IOException {
+        if (!file.canRead()) {
+            return null;
+        }
+        try (InputStream input = new FileInputStream(file)) {
+            return toProperties(input);
+        }
+    }
+
+
+    private static Properties toProperties(final InputStream input) throws IOException {
+        final Properties properties = new Properties();
+        properties.load(input);
+        return properties;
+    }
+
+
+    private static Properties loadFromClasspath() throws IOException {
+        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "loadFromClasspath(); classloader: " + classLoader);
+        try (InputStream input = classLoader.getResourceAsStream("logging.properties")) {
+            if (input == null) {
+                return null;
+            }
+            return toProperties(input);
         }
     }
 }

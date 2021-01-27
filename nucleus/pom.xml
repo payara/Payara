@@ -210,6 +210,7 @@
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
         <jacoco.plugin.version>0.8.0</jacoco.plugin.version>
 
+        <test.logManager>java.util.logging.LogManager</test.logManager>
     </properties>
 
     <modules>
@@ -271,6 +272,9 @@
                            <exclude>**/*ITest.java</exclude>
                            <exclude>**/*IT.java</exclude>
                         </excludes>
+                        <systemProperties>
+                            <java.util.logging.manager>${test.logManager}</java.util.logging.manager>
+                        </systemProperties>
                     </configuration>
                 </plugin>
                 <plugin>

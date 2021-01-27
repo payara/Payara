@@ -56,6 +56,10 @@
     <name>Nucleus Logging Classes</name>
     <description>Glassfish logging classes</description>
 
+    <properties>
+        <test.logManager>fish.payara.logging.jul.PayaraLogManager</test.logManager>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
@@ -123,6 +127,15 @@
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <fish.payara.logging.jul.tracingEnabled>true</fish.payara.logging.jul.tracingEnabled>
+                    </systemProperties>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>

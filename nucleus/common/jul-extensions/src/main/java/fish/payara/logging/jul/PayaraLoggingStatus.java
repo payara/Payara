@@ -41,6 +41,7 @@
 package fish.payara.logging.jul;
 
 public enum PayaraLoggingStatus {
+    UNINITIALIZED,
     UNCONFIGURED,
     CONFIGURING,
     FLUSHING_BUFFERS,

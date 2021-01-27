@@ -42,23 +42,16 @@ package fish.payara.logging.jul;
 
 import fish.payara.logging.jul.internal.PayaraLoggingTracer;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
+
+import static fish.payara.logging.jul.PayaraLoggingConstants.CLASS_LOG_MANAGER;
+import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_MANAGER;
 
 /**
  * @author David Matejcek
  */
 public class PayaraLogManagerInitializer {
-
-    public static final String JVM_OPT_LOGGING_MANAGER = "java.util.logging.manager";
-    public static final String JVM_OPT_LOGGING_CONFIGURATOR = "java.util.logging.config.class";
-    public static final String JVM_OPT_LOGGING_CFG_FILE = "java.util.logging.config.file";
-
-    private static final String CLASS_LOG_MANAGER = "fish.payara.logging.jul.PayaraLogManager";
-    private static final String CLASS_LOG_CONFIGURATOR = "fish.payara.logging.jul.PayaraLogManagerConfigurator";
 
     public static synchronized boolean tryToSetAsDefault() {
         return tryToSetAsDefault(null);
@@ -86,64 +79,11 @@ public class PayaraLogManagerInitializer {
             final Class<?> logManagerClass = newClassLoader.loadClass(CLASS_LOG_MANAGER);
             PayaraLoggingTracer.trace(PayaraLogManagerInitializer.class, () -> "Using log manager " + logManagerClass);
 
-            return PayaraLogManager.initialize(configuration == null ? getProperties() : configuration);
+            return PayaraLogManager.initialize(configuration);
         } catch (IOException | ClassNotFoundException e) {
             throw new IllegalStateException("Could not initialize logging system.", e);
         } finally {
             currentThread.setContextClassLoader(old);
-        }
-    }
-
-
-    private static Properties getProperties() throws IOException {
-        final Properties propertiesFromJvmOption = toProperties(System.getProperty(JVM_OPT_LOGGING_CFG_FILE));
-        if (propertiesFromJvmOption != null) {
-            return propertiesFromJvmOption;
-        }
-        final Properties propertiesFromClasspath = loadFromClasspath();
-        if (propertiesFromClasspath != null) {
-            return propertiesFromClasspath;
-        }
-        throw new IllegalStateException(
-            "Could not find any logging.properties configuration file neither from JVM option ("
-                + JVM_OPT_LOGGING_CFG_FILE + ") nor from classpath.");
-    }
-
-
-    private static Properties toProperties(final String absolutePath) throws IOException {
-        if (absolutePath == null) {
-            return null;
-        }
-        final File file = new File(absolutePath);
-        return toProperties(file);
-    }
-
-
-    private static Properties toProperties(final File file) throws IOException {
-        if (!file.canRead()) {
-            return null;
-        }
-        try (InputStream input = new FileInputStream(file)) {
-            return toProperties(input);
-        }
-    }
-
-
-    private static Properties toProperties(final InputStream input) throws IOException {
-        final Properties properties = new Properties();
-        properties.load(input);
-        return properties;
-    }
-
-
-    private static Properties loadFromClasspath() throws IOException {
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        PayaraLoggingTracer.trace(PayaraLogManagerInitializer.class, () -> "loadFromClasspath(); classloader: " + classLoader);
-        try (InputStream input = classLoader.getResourceAsStream("logging.properties")) {
-            if (input == null) {
-                return null;
-            }
-            return toProperties(input);
         }
     }
 }

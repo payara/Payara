@@ -104,7 +104,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import static com.sun.enterprise.util.PropertyPlaceholderHelper.ENV_REGEX;
 import static fish.payara.logging.jul.JulConfigurationFactory.MINIMUM_ROTATION_LIMIT_VALUE;
-import static fish.payara.logging.jul.PayaraLogManagerInitializer.JVM_OPT_LOGGING_CFG_FILE;
+import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
 
 /**
  * Reinitialise the log manager using our logging.properties file.

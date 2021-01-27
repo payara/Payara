@@ -41,8 +41,6 @@
 
 package com.sun.enterprise.server.logging;
 
-import com.sun.enterprise.server.logging.test.GlobalStatus;
-
 import fish.payara.logging.jul.PayaraLogHandler;
 import fish.payara.logging.jul.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.event.LogEvent;
@@ -77,7 +75,6 @@ public class LogEventListenerTest {
 
     @BeforeClass
     public static void initializeLoggingAnnotationsTest() throws Exception {
-        GlobalStatus.initialize();
         logger = Logger.getLogger(LOGGER_NAME);
         final File tempDir = Files.createTempDirectory("LogEventListenerTest_").toFile();
         final File logFile = new File(tempDir, "test-events.log");
