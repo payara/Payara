@@ -71,7 +71,8 @@ import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DirConfigSourceTest {
 
@@ -178,17 +179,6 @@ public class DirConfigSourceTest {
         examples.put(subpath( "foo.bar.test", "ex"), "foo.bar.test.ex");
         examples.put(subpath( "foo", "bar.test", "ex"), "foo.bar.test.ex");
         examples.put(subpath( "foo.bar", "test", "ex"), "foo.bar.test.ex");
-        
-        // we ignore the last file extension if not more than 3 chars.
-        // this might lead to unexpected behaviour for a user.
-        // best advice: do not use dots in filename, only in directory names.
-        examples.put(subpath( "foo", "bar", "test", "ex.txt"), "foo.bar.test.ex");
-        examples.put(subpath( "foo", "bar", "test", "ex.tar.gz"), "foo.bar.test.ex.tar");
-        examples.put(subpath( "foo", "bar", "test", "ex.helo"), "foo.bar.test.ex.helo");
-        examples.put(subpath( "foo.bar", "test.ex"), "foo.bar.test");
-        examples.put(subpath( "foo", "bar.test.ex"), "foo.bar.test");
-        examples.put(subpath( "foo.bar.test.ex"), "foo.bar.test");
-        examples.put(subpath( "foo", "bar", "test.ex"), "foo.bar.test");
         
         // when & then
         for (Map.Entry<Path, String> ex : examples.entrySet()) {

@@ -418,28 +418,12 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         String property = "";
         if (! path.getParent().equals(rootDir))
             property += rootDir.relativize(path.getParent()).toString() + File.separatorChar;
-        // 2. ignore all file suffixes after last dot
-        property += removeFileExtension(path.getFileName().toString());
+        // 2. add the file name (might be used for mangling in the future)
+        property += path.getFileName();
         // 3. replace all path seps with a ".",
         property = property.replace(File.separatorChar, '.');
         // so "/config/foo/bar/test/one.txt" becomes "foo/bar/test/one.txt" becomes "foo.bar.test.one" property name
         return property;
-    }
-    
-    /**
-     * Litte helper to remove the file extension (not present in Java std functionality)
-     * @param filename A filename containing a dot, marking the start of the file extension
-     * @return Filename without a suffix (if present)
-     */
-    public final static String removeFileExtension(String filename) {
-        if (filename == null || ! filename.contains("."))
-            return filename;
-        int lastIndex = filename.lastIndexOf('.');
-        // dot does not belong to file, but parent dir or
-        // extension is longer than 3 chars (all clear text formats would have 3 chars max)
-        if (filename.lastIndexOf(File.separatorChar) > lastIndex || lastIndex < filename.length() - 4)
-            return filename;
-        return filename.substring(0, lastIndex);
     }
     
     /**
