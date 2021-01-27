@@ -71,7 +71,8 @@ import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DirConfigSourceTest {
 
@@ -149,13 +150,12 @@ public class DirConfigSourceTest {
     
     @Test
     public void testIsAptFile() throws IOException {
-        
         Map<Path, Boolean> examples = new HashMap<>();
         examples.put(subpath( "aptdir", "aptfile"), TRUE);
         examples.put(subpath( "aptdir", ".unaptfile"), FALSE);
-        
-        assertEquals(FALSE, DirConfigSource.isAptFile(null, null));
-        assertEquals(FALSE, DirConfigSource.isAptFile(subpath( "aptdir", "aptnotexisting"), null));
+    
+        assertFalse(DirConfigSource.isAptFile(null, null));
+        assertFalse(DirConfigSource.isAptFile(subpath( "aptdir", "aptnotexisting"), null));
         for (Map.Entry<Path, Boolean> ex : examples.entrySet()) {
             BasicFileAttributes atts = writeFile(ex.getKey(), "test");
             assertEquals(ex.getValue(), DirConfigSource.isAptFile(ex.getKey(), atts));
@@ -163,11 +163,17 @@ public class DirConfigSourceTest {
         
         Path file100k = subpath("aptdir", "100k-file");
         BasicFileAttributes atts100k = writeRandFile(file100k, 100*1024);
-        assertEquals(TRUE, DirConfigSource.isAptFile(file100k, atts100k));
+        assertTrue(DirConfigSource.isAptFile(file100k, atts100k));
         
         Path file600k = subpath("aptdir", "600k-file");
         BasicFileAttributes atts600k = writeRandFile(file600k, 600*1024);
-        assertEquals(FALSE, DirConfigSource.isAptFile(file600k, atts600k));
+        assertFalse(DirConfigSource.isAptFile(file600k, atts600k));
+    
+        for (String ext : DirConfigSource.ignoredExtensions) {
+            Path file = subpath("aptdir", "ignorefile"+ext);
+            BasicFileAttributes attsFile = writeFile(file, "test");
+            assertFalse(DirConfigSource.isAptFile(file, attsFile));
+        }
     }
     
     @Test
