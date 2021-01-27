@@ -39,6 +39,8 @@
  */
 package fish.payara.logging.jul.internal;
 
+import fish.payara.logging.jul.PayaraLogger;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -85,8 +87,7 @@ public class EnhancedLogRecord extends LogRecord {
         super(record.getLevel(), null);
         this.threadName = Thread.currentThread().getName();
         this.record = record;
-        // this is to force invocation of record.inferCaller()
-        record.getSourceClassName();
+        detectClassAndMethod(record);
     }
 
 
@@ -286,5 +287,35 @@ public class EnhancedLogRecord extends LogRecord {
     @Override
     public String toString() {
         return getMessage();
+    }
+
+
+    protected void detectClassAndMethod(final LogRecord rec) {
+        final StackTraceElement[] stack = new Throwable().getStackTrace();
+        boolean found = false;
+        for (StackTraceElement element : stack) {
+            final String className = element.getClassName();
+            if (!found) {
+                found = isLoggerImplFrame(className);
+                continue;
+            }
+            if (!isLoggerImplFrame(className)) {
+                rec.setSourceClassName(className);
+                rec.setSourceMethodName(element.getMethodName());
+                return;
+            }
+        }
+    }
+
+
+    protected boolean isLoggerImplFrame(final String sourceClassName) {
+        // TODO: make it configurable from logging.properties
+        return sourceClassName.equals(PayaraLogger.class.getName())
+            // see LogDomains in Payara sources
+            || sourceClassName.equals("com.sun.logging.LogDomainsLogger")
+            // remaining classes are in parent in JDK8
+            || sourceClassName.equals("java.util.logging.Logger")
+            || sourceClassName.startsWith("java.util.logging.LoggingProxyImpl")
+            || sourceClassName.startsWith("sun.util.logging.");
     }
 }
