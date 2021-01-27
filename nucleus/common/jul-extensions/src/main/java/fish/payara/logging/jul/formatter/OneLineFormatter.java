@@ -81,7 +81,7 @@ public class OneLineFormatter extends Formatter {
 
     protected int getIntPropertyValue(final String localKey, final int defaultValue) {
         final String value = getPropertyValue(localKey);
-        return value == null ? defaultValue : Integer.parseInt(localKey);
+        return value == null ? defaultValue : Integer.parseInt(value);
     }
 
     protected String getPropertyValue(final String localKey) {
