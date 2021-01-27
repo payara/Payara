@@ -55,7 +55,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -276,17 +276,20 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
 
     private Path findDir() throws IOException {
         String path = configService.getMPConfig().getSecretDir();
-        List<Path> candidates = Arrays.asList(
-                                    Paths.get(path),
-                                    // let's try it relative to server environment root
-                                    Paths.get(System.getProperty("com.sun.aas.instanceRoot"), path)
-                                );
+        List<Path> candidates = new ArrayList<>();
+        
+        // adding all pathes where to look for the directory...
+        candidates.add(Paths.get(path));
+        // let's try it relative to server environment root
+        if ( ! Paths.get(path).isAbsolute())
+            candidates.add(Paths.get(System.getProperty("com.sun.aas.instanceRoot"), path).normalize());
+        
         for (Path candidate : candidates) {
-            if (Files.exists(candidate) || Files.isDirectory(candidate) || Files.isReadable(candidate)) {
+            if (isAptDir(candidate)) {
                 return candidate;
             }
         }
-        throw new IOException("Given MPCONFIG directory '"+path+"' is no directory or cannot be read.");
+        throw new IOException("Given MPCONFIG directory '"+path+"' is no directory, cannot be read or has a leading dot.");
     }
     
     /**
