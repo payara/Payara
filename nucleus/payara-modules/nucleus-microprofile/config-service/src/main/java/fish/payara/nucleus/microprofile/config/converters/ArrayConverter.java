@@ -78,8 +78,7 @@ public final class ArrayConverter<T> implements Converter<Object> {
         Object array = Array.newInstance(elementType, sourceValues.length);
         int j = 0;
         IllegalArgumentException lastConversionException = null;
-        for (int i = 0; i < sourceValues.length; i++) {
-            String sourceValue = sourceValues[i];
+        for (String sourceValue : sourceValues) {
             if (sourceValue != null && !sourceValue.isEmpty()) {
                 try {
                     T elementValue = elementConverter.convert(sourceValue);

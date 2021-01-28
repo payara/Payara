@@ -49,12 +49,15 @@ import org.eclipse.microprofile.config.spi.Converter;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.getCacheKey;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
 import static java.lang.System.currentTimeMillis;
+import java.lang.reflect.Array;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -135,6 +138,11 @@ public class PayaraConfig implements Config {
             return (T) new ConfigValueResolverImpl(this, propertyName);
         }
         T value = getValueInternal(propertyName, propertyType);
+        if (value != null && propertyType.isArray()) {
+            if (Array.getLength(value) == 0) {
+                throw new NoSuchElementException("No value for key of" + propertyName);
+            }
+        }
         throwWhenNotExists(propertyName, value);
         return value;
     }
@@ -146,7 +154,23 @@ public class PayaraConfig implements Config {
 
     @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        return Optional.ofNullable(getValueInternal(propertyName, propertyType));
+        T internalValue = getValueInternal(propertyName, propertyType);
+        if (internalValue != null && propertyType.isArray()) {
+            if (Array.getLength(internalValue) == 0) {
+                return Optional.empty();
+            }
+        }
+        return Optional.ofNullable(internalValue);
+    }
+
+    @Override
+    public <T> Optional<List<T>> getOptionalValues(String propertyName, Class<T> propertyType) {
+        Optional<List<T>> valuesList =  Config.super.getOptionalValues(propertyName, propertyType);
+        if (valuesList.get().isEmpty()) {
+            return Optional.empty();
+        } else {
+            return valuesList;
+        }
     }
 
     @SuppressWarnings("unchecked")
