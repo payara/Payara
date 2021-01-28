@@ -67,4 +67,12 @@ public class PayaraConfigSource {
         configService = null;
     }
     
+    /**
+     * Should only be used for test purposes
+     * @param configService Usually a mocked implementation
+     */
+    PayaraConfigSource(ConfigProviderResolverImpl configService) {
+        this.domainConfiguration = null;
+        this.configService = configService;
+    }
 }
