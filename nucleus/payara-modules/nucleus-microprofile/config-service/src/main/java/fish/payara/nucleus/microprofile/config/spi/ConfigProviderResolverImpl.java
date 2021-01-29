@@ -287,7 +287,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
-                result = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
+                PayaraConfig appresult = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
+                addProfileSource(appresult, appInfo.getAppClassLoader());
+                result = appresult;
                 appInfo.addTransientAppMetaData(METADATA_KEY, result);
             }
         }
@@ -516,6 +518,23 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
             props.add(p);
         }
         return props;
+    }
+    
+    private static void addProfileSource(PayaraConfig config, ClassLoader appClassLoader) {
+        String profile = config.getProfile();
+        if (profile == null) {
+            return;
+        }
+        ArrayList<Properties> appConfigProperties = new ArrayList<>();
+        try {
+            appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "META-INF/microprofile-config-" + profile + ".properties"));
+            appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "../../META-INF/microprofile-config-" + profile + ".properties"));
+            for (Properties props : appConfigProperties) {
+                config.addConfigSource(new PropertiesConfigSource(props));
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

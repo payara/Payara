@@ -52,15 +52,26 @@ final class ConfigExpressionResolver {
     private final boolean expansionEnabled;
 
     private final Set<String> resolvingExpressions;
-
+    
+    private final String profile;
+    
     protected ConfigExpressionResolver(Iterable<ConfigSource> sources) {
-        this(sources, true);
+        this(sources, true, null);
     }
 
+    protected ConfigExpressionResolver(Iterable<ConfigSource> sources, String profile) {
+        this(sources, true, profile);
+    }
+    
     protected ConfigExpressionResolver(Iterable<ConfigSource> sources, boolean expansionEnabled) {
+        this(sources, expansionEnabled, null);
+    }
+
+    protected ConfigExpressionResolver(Iterable<ConfigSource> sources, boolean expansionEnabled, String profile) {
         this.sources = sources;
         this.expansionEnabled = expansionEnabled;
         this.resolvingExpressions = new HashSet<>();
+        this.profile = profile;
     }
 
     protected ConfigValueImpl resolve(String propertyName) {
@@ -73,13 +84,28 @@ final class ConfigExpressionResolver {
 
     private ConfigValueImpl resolve(String propertyName, String propertyDefault, boolean resolveDefault) {
 
-        String resolvedPropertyName = resolveExpression(propertyName);
+        String profiledPropertyName = resolveExpression((profile == null ? "" : "%" + profile + ".") + propertyName);
 
+        ConfigValueImpl result = getValue(profiledPropertyName);
+
+        if (result == null) {
+            String resolvedPropertyName = resolveExpression(propertyName);
+            result = getValue(resolvedPropertyName);
+        }
+
+        if (result == null) {
+            result = new ConfigValueImpl(profiledPropertyName, propertyDefault,
+                    resolveDefault ? resolveExpression(propertyDefault) : propertyDefault, null, 0);
+        }
+        return result;
+    }
+    
+    private ConfigValueImpl getValue(String propertyName) {
         for (ConfigSource source : sources) {
-            final String result = source.getValue(resolvedPropertyName);
+            final String result = source.getValue(propertyName);
             if (result != null && !result.isEmpty()) {
                 return new ConfigValueImpl(
-                    resolvedPropertyName,
+                    propertyName,
                     result,
                     resolveExpression(result),
                     source.getName(),
@@ -87,9 +113,7 @@ final class ConfigExpressionResolver {
                 );
             }
         }
-
-        return new ConfigValueImpl(resolvedPropertyName, propertyDefault,
-                resolveDefault ? resolveExpression(propertyDefault) : propertyDefault, null, 0);
+        return null;
     }
 
     private synchronized String resolveExpression(String expression) {

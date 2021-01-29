@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.microprofile.config.spi;
 
+import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigTestUtils.createSource;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
@@ -46,6 +47,7 @@ import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -55,7 +57,7 @@ import org.junit.Test;
 public class ConfigExpressionResolverTest {
     
     private final ConfigSource source = createSource("S1", 100, new HashMap<>());
-    private final ConfigExpressionResolver resolver = new ConfigExpressionResolver(singleton(source));
+    private final ConfigExpressionResolver resolver = new ConfigExpressionResolver(singleton(source), "test");
 
     @Before
     public void configureConfigProperties() {
@@ -72,6 +74,8 @@ public class ConfigExpressionResolverTest {
         source.getProperties().put("default.value.empty", "1${not.existing:}2");
         source.getProperties().put("default.value.reference", "${not.existing:${key}}");
         source.getProperties().put("default.key.reference", "${${not.existing:key}:not.found}");
+        source.getProperties().put("%test.fish.payara.badger", "mushroom");
+        source.getProperties().put("fish.payara.badger", "badger");
     }
 
     @Test
@@ -173,6 +177,19 @@ public class ConfigExpressionResolverTest {
     public void testExpressionExpansionDisabled() {
         final ConfigExpressionResolver disabledResolver = new ConfigExpressionResolver(singleton(source), false);
         assertEquals("${key}", disabledResolver.resolve("reference.single").getValue());
+    }
+    
+    @Test
+    public void testProfiles() {
+        Properties props = new Properties();
+        props.put("%test.fish.payara.badger", "mushroom");
+        props.put("fish.payara.badger", "mushroom");
+        PropertiesConfigSource config = new PropertiesConfigSource(props);
+        
+        ConfigValue result = resolver.resolve("fish.payara.badger");
+        assertEquals("mushroom", result.getValue());
+        assertEquals("mushroom", result.getRawValue());
+        
     }
     
 }

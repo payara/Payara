@@ -97,12 +97,16 @@ public class PayaraConfig implements Config {
 
     private volatile Long configuredCacheValue = null;
     private final Object configuredCacheValueLock = new Object();
+    
+    private String profile;
 
     public PayaraConfig(List<ConfigSource> sources, Map<Class<?>, Converter<?>> converters, long defaultCacheDurationSeconds) {
         this.sources = sources;
         this.converters = new ConcurrentHashMap<>(converters);
         this.defaultCacheDurationSeconds = defaultCacheDurationSeconds;
         Collections.sort(sources, new ConfigSourceComparator());
+        
+        profile = getConfigValue("mp.config.profile").getValue();
     }
 
     @SuppressWarnings("unchecked")
@@ -207,8 +211,8 @@ public class PayaraConfig implements Config {
     }
 
     protected ConfigValueImpl getConfigValue(String propertyName, String cacheKey, Long ttl, String defaultValue) {
-        long entryTTL = ttl != null ? ttl.longValue() : getCacheDurationSeconds();
-
+        long entryTTL = ttl != null ? ttl : getCacheDurationSeconds();
+        
         if (entryTTL <= 0) {
             return searchConfigSources(propertyName, defaultValue);
         }
@@ -300,7 +304,7 @@ public class PayaraConfig implements Config {
             && getOptionalValue(MP_CONFIG_EXPANSION_ENABLED_STRING, Boolean.class)
                     .orElse(true);
 
-        return new ConfigExpressionResolver(sources, expansionEnabled)
+        return new ConfigExpressionResolver(sources, expansionEnabled, profile)
                 .resolve(propertyName, defaultValue);
     }
 
@@ -344,4 +348,23 @@ public class PayaraConfig implements Config {
         }
         throw new IllegalArgumentException("Unable to cast config source to type " + type);
     }
+    
+    /**
+     * The Mp Config profile in use.
+     * @return may be null
+     */
+    public String getProfile() {
+        return profile;
+    }
+    
+    /**
+     * Add another config source.
+     * Package-private, used by ConfigProviderResolver to add profile-specific
+     * config sources.
+     * @param added new config source to add.
+     */
+    void addConfigSource(ConfigSource added) {
+        sources.add(added);
+    }
+    
 }
