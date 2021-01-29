@@ -56,14 +56,19 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toMap;
@@ -290,9 +295,9 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         
         // Log that the configured directory is not resolving.
         Level lvl = SEVERE;
-        // Reduce log level to info if default setting, as the admin might simply not use this functionality.
+        // Reduce log level to fine if default setting, as the admin might simply not use this functionality.
         if(path.equals(DEFAULT_DIR))
-            lvl = INFO;
+            lvl = FINE;
         logger.log(lvl, "Given MPCONFIG directory '" + path + "' is no directory, cannot be read or has a leading dot.");
         return Optional.empty();
     }
