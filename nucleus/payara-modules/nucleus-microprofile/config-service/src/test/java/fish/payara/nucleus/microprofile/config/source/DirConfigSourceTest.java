@@ -55,13 +55,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -106,15 +100,39 @@ public class DirConfigSourceTest {
     }
     
     @Test
+    public void testFindDir_NullPath() throws IOException {
+        // given
+        MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
+        when(configService.getMPConfig()).thenReturn(config);
+        when(config.getSecretDir()).thenReturn(null);
+        // when
+        Optional<Path> sut = source.findDir();
+        // then
+        assertFalse(sut.isPresent());
+    }
+    
+    @Test
+    public void testFindDir_NotExistingPath() throws IOException {
+        // given
+        MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
+        when(configService.getMPConfig()).thenReturn(config);
+        when(config.getSecretDir()).thenReturn(DirConfigSource.DEFAULT_DIR);
+        // when
+        Optional<Path> sut = source.findDir();
+        // then
+        assertFalse(sut.isPresent());
+    }
+    
+    @Test
     public void testFindDir_AbsolutePath() throws IOException {
         // given
         MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
         when(configService.getMPConfig()).thenReturn(config);
         when(config.getSecretDir()).thenReturn(testDirectory.toString());
         // when
-        Path sut = source.findDir();
+        Optional<Path> sut = source.findDir();
         // then
-        assertEquals(testDirectory, sut);
+        assertEquals(testDirectory, sut.get());
     }
     
     @Test
@@ -126,10 +144,10 @@ public class DirConfigSourceTest {
         when(config.getSecretDir()).thenReturn(".");
         
         // when
-        Path sut = source.findDir();
+        Optional<Path> sut = source.findDir();
         
         // then
-        assertEquals(testDirectory, sut);
+        assertEquals(testDirectory, sut.get());
     }
     
     @Test
