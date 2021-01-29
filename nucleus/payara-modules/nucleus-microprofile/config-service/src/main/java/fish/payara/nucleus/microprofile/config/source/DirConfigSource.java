@@ -60,12 +60,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toMap;
@@ -210,15 +213,19 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     }
     
     private static final Logger logger = Logger.getLogger(DirConfigSource.class.getName());
+    public static final String DEFAULT_DIR = "secrets";
     private Path directory;
     private final ConcurrentHashMap<String, DirProperty> properties = new ConcurrentHashMap<>();
     
     public DirConfigSource() {
         try {
             // get the directory from the app server config
-            this.directory = findDir();
-            // create the watcher for the directory
-            configService.getExecutor().scheduleWithFixedDelay(createWatcher(this.directory), 0, 1, SECONDS);
+            Optional<Path> dir = findDir();
+            if (dir.isPresent()) {
+                this.directory = dir.get();
+                // create the watcher for the directory
+                configService.getExecutor().scheduleWithFixedDelay(createWatcher(this.directory), 0, 1, SECONDS);
+            }
         } catch (IOException e) {
             logger.log(SEVERE, "MPCONFIG DirConfigSource: error during setup.", e);
         }
@@ -231,7 +238,6 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         this.directory = directory;
     }
     
-    // Used for testing only
     DirPropertyWatcher createWatcher(Path topmostDirectory) throws IOException {
         return new DirPropertyWatcher(topmostDirectory);
     }
@@ -269,22 +275,31 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         return "Directory";
     }
 
-    Path findDir() throws IOException {
+    Optional<Path> findDir() throws IOException {
         String path = configService.getMPConfig().getSecretDir();
-        List<Path> candidates = new ArrayList<>();
+        if (path == null)
+            return Optional.empty();
         
         // adding all pathes where to look for the directory...
+        List<Path> candidates = new ArrayList<>();
         candidates.add(Paths.get(path));
-        // let's try it relative to server environment root
+        // let's try it relative to server environment root (<PAYARA-HOME>/glassfish/domains/<DOMAIN>/)
         if ( ! Paths.get(path).isAbsolute())
             candidates.add(Paths.get(System.getProperty("com.sun.aas.instanceRoot"), path).normalize());
         
         for (Path candidate : candidates) {
             if (isAptDir(candidate)) {
-                return candidate;
+                return Optional.of(candidate);
             }
         }
-        throw new IOException("Given MPCONFIG directory '"+path+"' is no directory, cannot be read or has a leading dot.");
+        
+        // Log that the configured directory is not resolving.
+        Level lvl = SEVERE;
+        // Reduce log level to fine if default setting, as the admin might simply not use this functionality.
+        if(path.equals(DEFAULT_DIR))
+            lvl = FINE;
+        logger.log(lvl, "Given MPCONFIG directory '" + path + "' is no directory, cannot be read or has a leading dot.");
+        return Optional.empty();
     }
     
     /**
