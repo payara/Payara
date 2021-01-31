@@ -159,7 +159,6 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
     public ResourceHandle createResource()
             throws PoolingException {
         ClassLoader appClassLoader = Utility.getClassLoader();
-        Utility.setContextClassLoader(null);
         try {
             ManagedConnection mc =
                     mcf.createManagedConnection(subject, reqInfo);
