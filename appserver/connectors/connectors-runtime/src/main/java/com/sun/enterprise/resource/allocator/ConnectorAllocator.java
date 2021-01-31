@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.resource.allocator;
 
@@ -55,6 +56,7 @@ import com.sun.enterprise.resource.ResourceSpec;
 import com.sun.enterprise.resource.ClientSecurityInfo;
 
 import com.sun.appserv.connectors.internal.api.PoolingException;
+import com.sun.enterprise.util.Utility;
 
 
 /**
@@ -156,6 +158,8 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
 
     public ResourceHandle createResource()
             throws PoolingException {
+        ClassLoader appClassLoader = Utility.getClassLoader();
+        Utility.setContextClassLoader(null);
         try {
             ManagedConnection mc =
                     mcf.createManagedConnection(subject, reqInfo);
@@ -172,13 +176,15 @@ public class ConnectorAllocator extends AbstractConnectorAllocator {
             if(_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE,"Resource Exception while creating resource",ex);
             }
-            
+
             if (ex.getLinkedException() != null) {
                 _logger.log(Level.WARNING,
                         "poolmgr.create_resource_linked_error", ex
                                 .getLinkedException().toString());
             }
             throw new PoolingException(ex);
+        } finally {
+            Utility.setContextClassLoader(appClassLoader);
         }
     }
 

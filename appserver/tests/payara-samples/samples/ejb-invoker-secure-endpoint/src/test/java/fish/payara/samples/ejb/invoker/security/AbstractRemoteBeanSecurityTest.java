@@ -71,6 +71,7 @@ import static fish.payara.ejb.http.client.RemoteEJBContextFactory.PROVIDER_PRINC
 import static fish.payara.samples.ServerOperations.getClientTrustStoreURL;
 import static fish.payara.samples.ServerOperations.getKeyStore;
 import java.io.IOException;
+import java.net.URI;
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
@@ -89,6 +90,9 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @ArquillianResource
     private URL base;
+
+    @ArquillianResource
+    private URI uri;
 
     @Deployment
     public static Archive<?> deployment() {
@@ -149,7 +153,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), getPassword());
 
-        RemoteBean beanRemote = (RemoteBean) ejbRemoteContext.lookup("java:global/test/Bean");
+        RemoteBean beanRemote = (RemoteBean) ejbRemoteContext.lookup(String.format("java:global%sBean", uri.getPath()));
         assertNotNull(beanRemote.method());
     }
 
@@ -160,7 +164,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), "InvalidPassword");
 
         try {
-            RemoteBean beanRemote = (RemoteBean) ejbRemoteContext.lookup("java:global/test/Bean");
+            RemoteBean beanRemote = (RemoteBean) ejbRemoteContext.lookup(String.format("java:global%sBean", uri.getPath()));
             assertNotNull(beanRemote.method());
             fail("RemoteBean#method must not be accessed for invalid credential");
         } catch (NamingException ex) {
