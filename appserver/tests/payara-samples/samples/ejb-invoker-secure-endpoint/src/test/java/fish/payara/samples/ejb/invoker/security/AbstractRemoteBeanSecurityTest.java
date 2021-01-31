@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -57,7 +57,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_KEY_STORE;
@@ -76,6 +75,7 @@ import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.jboss.shrinkwrap.api.asset.EmptyAsset.INSTANCE;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -96,7 +96,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Deployment
     public static Archive<?> deployment() {
-        return ShrinkWrap.create(JavaArchive.class)
+        return ShrinkWrap.create(WebArchive.class)
                 .addClasses(Bean.class, RemoteBean.class)
                 .addAsManifestResource(INSTANCE, "beans.xml");
     }
