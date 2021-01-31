@@ -46,6 +46,7 @@ import fish.payara.security.openid.domain.AccessTokenImpl;
 import fish.payara.security.openid.domain.IdentityTokenImpl;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdContextImpl;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import static java.util.Objects.isNull;
@@ -58,6 +59,8 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import javax.enterprise.inject.Typed;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.security.enterprise.identitystore.CredentialValidationResult;
 import javax.security.enterprise.identitystore.IdentityStore;
 import net.minidev.json.JSONArray;
@@ -108,8 +111,44 @@ public class OpenIdIdentityStore implements IdentityStore {
                 accessToken.setClaims(accesTokenClaims);
             }
             context.setAccessToken(accessToken);
-            JsonObject userInfo = userInfoController.getUserInfo(configuration, accessToken);
-            context.setClaims(userInfo);
+            
+            // check if resource parameter is set to prohibit the call to userinfo endpoint
+            // with adfs the uiserinfo endpoind must have resource set to urn:microsoft:userinfo and then always
+            // returb only sub claim. So if resource is set we get claims  from identity and access token and
+            // return it here as JsonObject and prohibit the call to userinfo endpoint
+            String resource = credential.getConfiguration().getResource();
+            JsonObject userInfo = null;
+            if (resource != null && ! resource.isEmpty()) {
+                // convert AccesTokenClaims Map to map<String, String> and build json object
+                Map<String, String> convertedTokenMap = new HashMap<>();
+                accesTokenClaims.entrySet().stream()
+                        .forEach(claim -> {
+                            if (claim.getValue() instanceof String) {
+                                convertedTokenMap.put(claim.getKey(), (String) claim.getValue());
+                            }
+                        });
+                
+                // convert AccesTokenClaims Map to map<String, String> and build json object
+                Map<String, Object> identityTokenClaims = credential.getIdentityToken().getClaims();
+                identityTokenClaims.entrySet().stream()
+                        .forEach(claim -> {
+                            if (claim.getValue() instanceof String) {
+                                convertedTokenMap.put(claim.getKey(), (String) claim.getValue());
+                            }
+                        });
+                
+                // create json object to return
+                JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+                convertedTokenMap.entrySet().forEach(entry -> jsonBuilder.add(entry.getKey(), entry.getValue()));
+                JsonObject tokenJsonObject = jsonBuilder.build();
+                
+                context.setClaims(tokenJsonObject);
+            } else {
+                // if resource is not set call userinfo to get compatiblity to openid provider respecting
+                // the standards
+                userInfo = userInfoController.getUserInfo(configuration, accessToken);
+                context.setClaims(userInfo);
+            }   
         }
 
         context.setCallerName(getCallerName(configuration));

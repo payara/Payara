@@ -70,6 +70,7 @@ import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_TOKEN_ENDPOINT;
 import static fish.payara.security.annotations.OpenIdProviderMetadata.OPENID_MP_USERINFO_ENDPOINT;
 import static fish.payara.security.openid.OpenIdUtil.getConfiguredValue;
+import fish.payara.security.openid.api.OpenIdConstant;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_CODE_FLOW_TYPES;
 import static fish.payara.security.openid.api.OpenIdConstant.AUTHORIZATION_ENDPOINT;
 import static fish.payara.security.openid.api.OpenIdConstant.END_SESSION_ENDPOINT;
@@ -207,6 +208,16 @@ public class ConfigurationController {
             extraParameters.put(key, value);
         }
 
+        // check if resource extra parameter is set
+        String resource = "";
+        if (extraParameters.containsKey(OpenIdConstant.RESOURCE)) {
+            // get resource parameter from extra parameter
+            resource = extraParameters.get(OpenIdConstant.RESOURCE);
+            
+            // remove resource from extra parameter
+            extraParameters.remove(OpenIdConstant.RESOURCE);
+        }
+        
         boolean nonce = getConfiguredValue(Boolean.class, definition.useNonce(), provider, OPENID_MP_USE_NONCE);
         boolean session = getConfiguredValue(Boolean.class, definition.useSession(), provider, OPENID_MP_USE_SESSION);
 
@@ -269,7 +280,15 @@ public class ConfigurationController {
                 .setJwksReadTimeout(jwksReadTimeout)
                 .setTokenAutoRefresh(tokenAutoRefresh)
                 .setTokenMinValidity(tokenMinValidity);
-
+        
+        // if resource isn't empty we have adfs mode and add resource to configuration
+        if (! resource.isEmpty()) {
+            configuration.setResource(resource);
+        } else {
+            // if empty set blank string to indicate we have standard openid implementation
+            configuration.setResource("");
+        }
+        
         validateConfiguration(configuration);
 
         return configuration;

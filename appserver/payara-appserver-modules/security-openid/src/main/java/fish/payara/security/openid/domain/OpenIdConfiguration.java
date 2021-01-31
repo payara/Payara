@@ -55,6 +55,7 @@ public class OpenIdConfiguration {
     private String redirectURI;
     private String scopes;
     private String responseType;
+    private String resource;
     private String responseMode;
     private Map<String, String> extraParameters;
     private String prompt;
@@ -123,6 +124,15 @@ public class OpenIdConfiguration {
 
     public OpenIdConfiguration setResponseType(String responseType) {
         this.responseType = responseType;
+        return this;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public OpenIdConfiguration setResource(String resource) {
+        this.resource = resource;
         return this;
     }
 
@@ -261,6 +271,7 @@ public class OpenIdConfiguration {
                 + ", redirectURI=" + redirectURI
                 + ", scopes=" + scopes
                 + ", responseType=" + responseType
+                + ", resource=" + resource
                 + ", responseMode=" + responseMode
                 + ", extraParameters=" + extraParameters
                 + ", prompt=" + prompt

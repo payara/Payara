@@ -74,6 +74,7 @@ import static fish.payara.security.openid.api.OpenIdConstant.CODE;
 import static fish.payara.security.openid.api.OpenIdConstant.GRANT_TYPE;
 import static fish.payara.security.openid.api.OpenIdConstant.REDIRECT_URI;
 import static fish.payara.security.openid.api.OpenIdConstant.REFRESH_TOKEN;
+import static fish.payara.security.openid.api.OpenIdConstant.RESOURCE;
 import fish.payara.security.openid.api.RefreshToken;
 import fish.payara.security.openid.domain.AccessTokenImpl;
 import fish.payara.security.openid.domain.IdentityTokenImpl;
@@ -138,6 +139,12 @@ public class TokenController {
                 .param(GRANT_TYPE, AUTHORIZATION_CODE)
                 .param(CODE, authorizationCode)
                 .param(REDIRECT_URI, configuration.buildRedirectURI(request));
+        
+        // check if resource parameter is set
+        if (! configuration.getResource().isEmpty()) {
+            // if resource is set add this to the token request
+            form.param(RESOURCE, configuration.getResource());
+        }
 
         //  ID Token and Access Token Request
         Client client = ClientBuilder.newClient();

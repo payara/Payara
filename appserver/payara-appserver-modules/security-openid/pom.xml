@@ -163,6 +163,16 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                                    fish.payara.security.openid.azure,
+                                    fish.payara.security.openid.controller,
+                                    fish.payara.security.openid.domain,
+                                    fish.payara.security.openid.google,fish.payara.security.openid,fish.payara.security.openid.adfs,fish.payara.security.openid.azure,fish.payara.security.openid.controller,fish.payara.security.openid.domain,fish.payara.security.openid.google</Export-Package>
+                        <Private-Package>fish.payara.security.openid.*</Private-Package>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
         

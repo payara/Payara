@@ -48,6 +48,7 @@ import static fish.payara.security.openid.api.OpenIdConstant.RESPONSE_MODE;
 import static fish.payara.security.openid.api.OpenIdConstant.RESPONSE_TYPE;
 import static fish.payara.security.openid.api.OpenIdConstant.SCOPE;
 import static fish.payara.security.openid.api.OpenIdConstant.STATE;
+import static fish.payara.security.openid.api.OpenIdConstant.RESOURCE;
 import fish.payara.security.openid.api.OpenIdState;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import fish.payara.security.openid.domain.OpenIdNonce;
@@ -127,6 +128,12 @@ public class AuthenticationController {
         if (!isEmpty(configuration.getResponseMode())) {
             authRequest.queryParam(RESPONSE_MODE, configuration.getResponseMode());
         }
+        
+        // add resource parameter if not empty
+        if (!isEmpty(configuration.getResource())) {
+            authRequest.queryParam(RESOURCE, configuration.getResource());
+        }
+        
         if (!isEmpty(configuration.getDisplay())) {
             authRequest.queryParam(DISPLAY, configuration.getDisplay());
         }
