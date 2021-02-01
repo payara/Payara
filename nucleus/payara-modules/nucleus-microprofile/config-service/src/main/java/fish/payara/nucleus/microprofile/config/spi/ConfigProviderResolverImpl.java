@@ -66,6 +66,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -111,7 +112,7 @@ import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
 import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
-import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DirConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
 import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSourceService;
@@ -142,6 +143,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
 
     @Inject
     private ServerContext context;
+    
+    // Some sources might want to execute background tasks in a controlled fashion
+    @Inject
+    private PayaraExecutorService executorService;
 
     // Gives access to deployed applications
     @Inject
@@ -306,6 +311,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
         return new PayaraConfigBuilder(this);
     }
 
+    public PayaraExecutorService getExecutor() {
+        return this.executorService;
+    }
+    
     Config getNamedConfig(String applicationName) {
         Config result = null;
         ApplicationInfo info = applicationRegistry.get(applicationName);
@@ -331,7 +340,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
         sources.add(new SystemPropertyConfigSource());
         sources.add(new JNDIConfigSource());
         sources.add(new PayaraServerProperties());
-        sources.add(new SecretsDirConfigSource());
+        sources.add(new DirConfigSource());
         sources.add(new PasswordAliasConfigSource());
         sources.add(new JDBCConfigSource());
         if (appName != null) {

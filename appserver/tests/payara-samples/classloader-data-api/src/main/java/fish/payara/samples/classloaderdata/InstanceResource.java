@@ -42,8 +42,16 @@ package fish.payara.samples.classloaderdata;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 import java.util.stream.Collectors;
+import javax.el.BeanELResolver;
+import javax.el.ELContext;
+import javax.el.ELResolver;
+import javax.el.FunctionMapper;
+import javax.el.PropertyNotFoundException;
+import javax.el.VariableMapper;
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -90,13 +98,50 @@ public class InstanceResource {
     }
 
     private static String instanceGetter(Class<?> clazz, AtomicInteger previousValue, Long _timeout) {
-        long timeout = Optional.ofNullable(_timeout).orElse(1L);
+        long timeout = Optional.ofNullable(_timeout).orElse(4L) / 2L;
         int previous = previousValue.updateAndGet(prev -> prev < 0 ? InstanceCounter.getInstanceCount(clazz, timeout) : prev);
+        forceSoftReferenceCleanup();
+        System.gc();
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(timeout));
+        forceELResolverCleanup();
         System.gc();
         previousValue.set(InstanceCounter.getInstanceCount(clazz, timeout));
         return String.format("Instances Before GC: %d\nInstances Remaining: %d\nInstances: \n%s\n",
                 previous, previousValue.get(), InstanceCounter.getInstances(clazz, timeout).stream()
                         .map(WeakReference::get).filter(Objects::nonNull).map(Object::toString)
                         .collect(Collectors.joining("\n\n")));
+    }
+
+    private static void forceSoftReferenceCleanup() {
+        try {
+            Object[] ignored = new Object[(int) Runtime.getRuntime().maxMemory()];
+        } catch (OutOfMemoryError e) {
+            // Ignore
+        }
+    }
+
+    private static void forceELResolverCleanup() {
+        BeanELResolver resolver = new BeanELResolver();
+        try {
+            // has a sideffect of cleaning up the soft references from the map
+            resolver.getType(new ELContext() {
+                @Override
+                public ELResolver getELResolver() {
+                    return resolver;
+                }
+
+                @Override
+                public FunctionMapper getFunctionMapper() {
+                    throw new UnsupportedOperationException("Not supported");
+                }
+
+                @Override
+                public VariableMapper getVariableMapper() {
+                    throw new UnsupportedOperationException("Not supported");
+                }
+            }, new Object(), new Object());
+        } catch (PropertyNotFoundException ex) {
+            // do nothing
+        }
     }
 }

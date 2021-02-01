@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,6 +87,7 @@ import fish.payara.microprofile.config.extensions.gcp.model.Secret;
 import fish.payara.microprofile.config.extensions.gcp.model.SecretHolder;
 import fish.payara.microprofile.config.extensions.gcp.model.SecretsResponse;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import fish.payara.security.oauth2.OAuth2Client;
 
 @Service(name = "gcp-secrets-config-source")
@@ -107,6 +108,9 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
 
     @Inject
     private ServerEnvironment env;
+    
+    @Inject
+    MicroprofileConfigConfiguration mpconfig;
 
     @Override
     public void bootstrap() {
@@ -329,6 +333,11 @@ public class GCPSecretsConfigSource extends ConfiguredExtensionConfigSource<GCPS
     @Override
     public String getName() {
         return "gcp";
+    }
+    
+    @Override
+    public int getOrdinal() {
+        return Integer.parseInt(mpconfig.getCloudOrdinality());
     }
 
     // Helpers

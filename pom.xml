@@ -137,13 +137,13 @@
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
         <servlet-api.version>4.0.2</servlet-api.version>
-        <grizzly.version>2.4.4.payara-p4</grizzly.version>
+        <grizzly.version>2.4.4.payara-p5</grizzly.version>
         <jax-rs-api.impl.version>2.1.6</jax-rs-api.impl.version>
         <jersey.version>2.30.payara-p4</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.1.5.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.1.5.Final</hibernate.validator-cdi.version>
-        <jakarta.el.version>3.0.3.payara-p2</jakarta.el.version>
+        <jakarta.el.version>3.0.3.payara-p3</jakarta.el.version>
         <jakarta.el-api.version>3.0.3</jakarta.el-api.version>
         <jaxb-api.version>2.3.2</jaxb-api.version>
         <javax.cache-api.version>1.1.1</javax.cache-api.version>
@@ -165,7 +165,7 @@
         <jstl-impl.version>1.2.5</jstl-impl.version>
         <jakarta.faces-api.version>2.3.2</jakarta.faces-api.version>
         <mojarra.version>2.3.14.payara-p2</mojarra.version>
-        <tyrus.version>1.17</tyrus.version>
+        <tyrus.version>1.17.payara-p1</tyrus.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <json.bind-api.version>1.0.2</json.bind-api.version>
         <yasson.version>1.0.6</yasson.version>

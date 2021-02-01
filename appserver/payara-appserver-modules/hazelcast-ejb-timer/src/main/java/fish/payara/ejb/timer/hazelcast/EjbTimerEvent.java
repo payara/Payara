@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,52 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.source;
+package fish.payara.ejb.timer.hazelcast;
 
-import java.util.Set;
-
-import com.sun.enterprise.config.serverbeans.Domain;
-
-import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.glassfish.internal.api.Globals;
-
-import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
+import fish.payara.micro.data.InstanceDescriptor;
+import java.io.Serializable;
 
 /**
- *
- * @author Steve Millidge (Payara Foundation)
+ * Class and enum for sending EJB timer events across the Hazelcast Datagrid.
  */
-public abstract class PayaraConfigSource implements ConfigSource {
-    
-    public final static String PROPERTY_PREFIX = "payara.microprofile.";
-    protected final Domain domainConfiguration;
-    protected final ConfigProviderResolverImpl configService;
-    
-    public PayaraConfigSource() {
-        domainConfiguration = Globals.getDefaultHabitat().getService(Domain.class);
-        configService = Globals.getDefaultHabitat().getService(ConfigProviderResolverImpl.class);
-    }
-    
+public class EjbTimerEvent implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    public static final String EJB_TIMER_EVENTS_TOPIC = "payara.server.internal.ejb.timer.event";
+
+    private final Event eventType;
+    private final InstanceDescriptor id;
+
     /**
-     * Should only be used for test purposes
-     * @param test 
+     *
+     * @param eventType The type of EJB Timer event
+     * @param id The InstanceDescriptor pertaining to the EJB Timer event
      */
-    PayaraConfigSource(boolean test) {
-        domainConfiguration = null;
-        configService = null;
+    public EjbTimerEvent(Event eventType, InstanceDescriptor id) {
+        this.eventType = eventType;
+        this.id = id;
     }
 
-    @Override
-    public Set<String> getPropertyNames() {
-        return getProperties().keySet();
+    public Event getEventType() {
+        return eventType;
     }
-    
-    /**
-     * Should only be used for test purposes
-     * @param configService Usually a mocked implementation
-     */
-    PayaraConfigSource(ConfigProviderResolverImpl configService) {
-        this.domainConfiguration = null;
-        this.configService = configService;
+
+    public InstanceDescriptor getId() {
+        return id;
+    }
+
+    public enum Event {
+
+        MIGRATED
     }
 }
