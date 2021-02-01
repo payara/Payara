@@ -365,6 +365,7 @@ public class PayaraConfig implements Config {
      */
     void addConfigSource(ConfigSource added) {
         sources.add(added);
+        Collections.sort(sources, new ConfigSourceComparator());
     }
     
 }

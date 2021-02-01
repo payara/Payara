@@ -539,8 +539,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
             appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "META-INF/microprofile-config-" + profile + ".properties"));
             appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "../../META-INF/microprofile-config-" + profile + ".properties"));
             for (Properties props : appConfigProperties) {
-                props.putIfAbsent("config_ordinal", 101);
+                props.putIfAbsent("config_ordinal", "101");
                 PropertiesConfigSource configSource = new PropertiesConfigSource(props);
+                config.addConfigSource(configSource);
             }
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
