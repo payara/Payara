@@ -182,7 +182,11 @@ public class PayaraConfig implements Config {
         if (propertyType == ConfigValue.class) {
             return (T) getConfigValue(propertyName, getCacheKey(propertyName, propertyType), null, null);
         }
-        return getValue(propertyName, getCacheKey(propertyName, propertyType), null, null, () -> getConverter(propertyType));
+        Optional<Converter<T>> converter = getConverter(propertyType);
+        if (!converter.isPresent()) {
+            throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getName());
+        }
+        return getValue(propertyName, getCacheKey(propertyName, propertyType), null, null, () -> converter);
     }
 
     @Override
@@ -280,7 +284,7 @@ public class PayaraConfig implements Config {
             return automaticConverter;
         }
 
-        throw new IllegalArgumentException("Unable to convert value to type " + type.getTypeName());
+        return Optional.empty();
     }
     
     public void clearCache() {

@@ -123,7 +123,7 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
             return (T) asConfigValue(propertyName, getCacheKey(propertyName, type), ttl, null);
         }
         return asValue(propertyName, getCacheKey(propertyName, type), ttl, defaultValue,
-                () -> Optional.of(
+                () -> Optional.ofNullable(
                         type.isArray()
                         ? (Converter<T>) getArrayConverter(type.getComponentType(), false)
                         : getConverter(type)

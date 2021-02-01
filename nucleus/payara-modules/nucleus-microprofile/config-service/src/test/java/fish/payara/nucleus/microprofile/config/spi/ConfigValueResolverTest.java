@@ -514,7 +514,7 @@ public class ConfigValueResolverTest {
 
     @Test
     public void asFunctionThrowsConversionFailureDueToMissingConverter() {
-        assertThrowsFailedConversion("Unable to convert value to type java.util.function.Function",
+        assertThrowsFailedConversion("Unable to find converter for property long1 with value 42.",
                 () -> resolve("long1").throwOnFailedConversion().as(Function.class));
     }
 

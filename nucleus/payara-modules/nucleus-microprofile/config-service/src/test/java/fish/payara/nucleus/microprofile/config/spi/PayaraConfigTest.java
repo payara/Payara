@@ -46,6 +46,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Array;
@@ -151,13 +152,13 @@ public class PayaraConfigTest {
     }
 
     @Test
-    public void undefinedPropertyThrowsExcetion() {
+    public void undefinedPropertyThrowsException() {
         assertException(NoSuchElementException.class, "Unable to find property with name undefined",
                 () -> config.getValue("undefined", String.class));
     }
 
     @Test
-    public void unknownConversionThrowsExcetion() {
+    public void unknownConversionReturnsThrowsException() {
         assertException(IllegalArgumentException.class, "Unable to convert value to type java.lang.CharSequence",
                 () -> config.getValue("key1", CharSequence.class));
     }
