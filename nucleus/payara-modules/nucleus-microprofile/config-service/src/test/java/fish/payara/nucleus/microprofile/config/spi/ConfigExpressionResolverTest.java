@@ -181,15 +181,9 @@ public class ConfigExpressionResolverTest {
     
     @Test
     public void testProfiles() {
-        Properties props = new Properties();
-        props.put("%test.fish.payara.badger", "mushroom");
-        props.put("fish.payara.badger", "mushroom");
-        PropertiesConfigSource config = new PropertiesConfigSource(props);
-        
         ConfigValue result = resolver.resolve("fish.payara.badger");
         assertEquals("mushroom", result.getValue());
         assertEquals("mushroom", result.getRawValue());
-        
     }
     
 }
