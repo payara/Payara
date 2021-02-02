@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,55 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.source;
+package fish.payara.nucleus.microprofile.config.converters;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.eclipse.microprofile.config.spi.ConfigSource;
+import javax.annotation.Priority;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.config.spi.Converter;
 
 /**
  *
- * @author Steve Millidge (Payara Foundation)
+ * @author jonathan coustick
+ * @since 5.2020.8
  */
-public class PropertiesConfigSource implements ConfigSource {
-    
-    private final Properties props;
+@Priority(1)
+public class ByteConverter implements Converter<Byte>{
 
-    public PropertiesConfigSource(Properties props) {
-        this.props = props;
-    }
-    
     @Override
-    public Map<String, String> getProperties() {
-        HashMap<String,String> result = new HashMap<>(props.size());
-        for (Object key : props.keySet()) {
-            result.put((String) key, props.getProperty((String) key));
+    public Byte convert(String value) throws IllegalArgumentException, NullPointerException {
+        if (value == null) {
+            throw new NullPointerException("Cannot convert null value");
         }
-        return result;
-    }
-
-    @Override
-    public Set<String> getPropertyNames() {
-        return getProperties().keySet();
-    }
-
-    @Override
-    public int getOrdinal() {
-        String ordinalVal = props.getProperty("config_ordinal", "100");
-        return Integer.parseInt(ordinalVal);
-    }
-
-    @Override
-    public String getValue(String propertyName) {
-        return props.getProperty(propertyName);
-    }
-
-    @Override
-    public String getName() {
-        return "Properties";
+        if (value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
+        try {
+            return Byte.valueOf(value);
+        }catch (NumberFormatException nfe) {
+            throw new IllegalArgumentException(nfe);
+        }
     }
     
 }

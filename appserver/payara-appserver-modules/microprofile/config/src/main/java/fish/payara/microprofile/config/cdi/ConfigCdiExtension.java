@@ -41,32 +41,42 @@ package fish.payara.microprofile.config.cdi;
 
 import fish.payara.nucleus.microprofile.config.spi.PayaraConfig;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.ConfigValue;
+import org.eclipse.microprofile.config.inject.ConfigProperties;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.*;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Provider;
 
 /**
- * CDI extension that implements the Microprofile Config API ConfigProperty injection
+ * CDI extension that implements the Microprofile Config API ConfigProperty
+ * injection
+ * 
  * @author Steve Millidge <Payara Services Limited>
  */
 public class ConfigCdiExtension implements Extension {
-    
+
     public void validateInjectionPoint(@Observes ProcessInjectionPoint<?, ?> pip) {
-        
-        // we need to validate the injection point for the ConfigProperty to meet the 3 TCK tests
+
+        // we need to validate the injection point for the ConfigProperty to meet the 3
+        // TCK tests
         // (1) Deployment should fail if there is no converter for a class
         // (2) Deployment should fail if there is no value for an injected primitive
-        // (3) Deployment should fail if a primitive conversion will fail from the property value
-        
+        // (3) Deployment should fail if a primitive conversion will fail from the
+        // property value
+
         // ok check this is a config property injection point
         ConfigProperty property = pip.getInjectionPoint().getAnnotated().getAnnotation(ConfigProperty.class);
         if (property != null) {
@@ -75,13 +85,13 @@ public class ConfigCdiExtension implements Extension {
                 Type t = pip.getInjectionPoint().getType();
                 if (Class.class.isInstance(pip.getInjectionPoint().getType())) {
                     ConfigPropertyProducer.getGenericProperty(pip.getInjectionPoint());
-                } else if (t instanceof ParameterizedType ){
+                } else if (t instanceof ParameterizedType) {
                     Class rawClazz = (Class) ((ParameterizedType) t).getRawType();
                     if (rawClazz != Provider.class && rawClazz != Optional.class) {
                         ConfigPropertyProducer.getGenericProperty(pip.getInjectionPoint());
                     }
-                } 
-            }catch (Throwable de ) {
+                }
+            } catch (Throwable de) {
                 Class failingClass = null;
                 Bean bean = pip.getInjectionPoint().getBean();
                 if (bean == null) {
@@ -89,8 +99,57 @@ public class ConfigCdiExtension implements Extension {
                 } else {
                     failingClass = pip.getInjectionPoint().getBean().getBeanClass();
                 }
-                pip.addDefinitionError(new DeploymentException("Deployment Failure for ConfigProperty " + property.name() + " in class " + failingClass.getCanonicalName() + " Reason " + de.getMessage(),de));
+                pip.addDefinitionError(
+                        new DeploymentException("Deployment Failure for ConfigProperty " + property.name()
+                                + " in class " + failingClass.getCanonicalName() + " Reason " + de.getMessage(), de));
             }
+        }
+    }
+
+    // FIXME: this method is currently here to intercept injection of @ConfigProperties
+    // injected targets. I'm thinking that this might be a good target for injecting the fields.
+    public <T> void processConfigPropertiesInjection(
+            @Observes ProcessInjectionTarget<T> event) {
+        final InjectionTarget<T> it = event.getInjectionTarget();
+
+        final Map<Field, Object> configuredValues = new HashMap<Field, Object>();
+
+        final AnnotatedType<T> at = event.getAnnotatedType();
+
+        if (at.isAnnotationPresent(ConfigProperties.class)) {
+            event.setInjectionTarget(new InjectionTarget<T>() {
+
+                @Override
+                public T produce(CreationalContext<T> ctx) {
+                    return it.produce(ctx);
+                }
+    
+                @Override
+                public void dispose(T instance) {
+                    it.dispose(instance);
+                }
+    
+                @Override
+                public Set<InjectionPoint> getInjectionPoints() {
+                    return it.getInjectionPoints();
+                }
+    
+                @Override
+                public void inject(T instance, CreationalContext<T> ctx) {
+                    it.inject(instance, ctx);
+                }
+    
+                @Override
+                public void postConstruct(T instance) {
+                    it.postConstruct(instance);
+                }
+    
+                @Override
+                public void preDestroy(T instance) {
+                    it.preDestroy(instance);
+                }
+                
+            });
         }
     }
 
@@ -102,6 +161,17 @@ public class ConfigCdiExtension implements Extension {
     public void createConfigProducer(@Observes BeforeBeanDiscovery event, BeanManager bm) {
         AnnotatedType<ConfigProducer> at = bm.createAnnotatedType(ConfigProducer.class);
         event.addAnnotatedType(at, ConfigProducer.class.getName());
+    }
+
+    // FIXME: this is only here as a proof of concept. It needs refactoring
+    private Set<Type> types = new HashSet<>();
+
+    // FIXME: needs refactoring.
+    // Currently, this fetches the type of every injected @ConfigProperties object
+    public <T> void storeConfigPropertiesType(@Observes @WithAnnotations(ConfigProperties.class) ProcessAnnotatedType<T> event) {
+        event.getAnnotatedType().getFields().stream()
+                .filter(field -> field.isAnnotationPresent(ConfigProperties.class))
+                .forEach(field -> types.add(field.getBaseType()));
     }
 
     /**
@@ -117,7 +187,33 @@ public class ConfigCdiExtension implements Extension {
         // Retrieve the config for the application
         Config config = ConfigProvider.getConfig();
         if (config instanceof PayaraConfig) {
-            
+
+            AnnotatedType<ConfigPropertyProducer> producerType = bm.createAnnotatedType(ConfigPropertyProducer.class);
+            BeanAttributes<?> producerBeanAttributes = null;
+            AnnotatedMethod<? super ConfigPropertyProducer> producerMethod = null;
+            for (AnnotatedMethod m : producerType.getMethods()) {
+                if (m.getJavaMember().getName().equals("getGenericObject")) {
+                    // create a bean attributes based on this method
+                    producerBeanAttributes = bm.createBeanAttributes(m);
+                    producerMethod = m;
+                    break;
+                }
+            }
+
+            // FIXME: may need refactoring.
+            // This currently registers the producer method as being valid
+            // for each discovered injected @ConfigProperties type
+            if (producerBeanAttributes != null && !types.isEmpty()) {
+                Bean<?> bean = bm.createBean(new TypesBeanAttributes<Object>(producerBeanAttributes){
+                    @Override
+                    public Set<Type> getTypes() {
+                        return types;
+                    }
+                }, ConfigPropertyProducer.class,
+                        bm.getProducerFactory(producerMethod, null));
+                event.addBean(bean);
+            }
+
             // create a synthetic bean based on the ConfigPropertyProducer which 
             // has a method we can use to create the correct objects based on 
             // the InjectionPoint
@@ -138,6 +234,7 @@ public class ConfigCdiExtension implements Extension {
             // we have the method
             if (beanAttr != null) {
                 HashSet<Type> types = new HashSet<>();
+                types.add(ConfigValue.class);
                 types.addAll(((PayaraConfig) config).getConverterTypes());
                 // add String explictly
                 types.add(String.class);

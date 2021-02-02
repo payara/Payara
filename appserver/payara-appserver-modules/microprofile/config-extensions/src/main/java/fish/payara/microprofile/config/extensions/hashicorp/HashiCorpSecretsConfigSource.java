@@ -49,6 +49,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -152,6 +153,11 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
     }
 
     @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
+    }
+
+    @Override
     public String getValue(String propertyName) {
         if (hashiCorpVaultToken == null) {
             printMisconfigurationMessage();
@@ -185,7 +191,7 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
 
         Object payload;
         if (apiVersion == 1) {
-            Map<String, Object> secrets = (Map) properties;
+            Map<String, Object> secrets = new HashMap<>(properties);
             payload = Json.createObjectBuilder(secrets).build().toString();
         } else {
             payload = new SecretHolder(properties);

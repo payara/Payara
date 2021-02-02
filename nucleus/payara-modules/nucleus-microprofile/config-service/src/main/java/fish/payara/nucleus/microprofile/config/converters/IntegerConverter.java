@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,10 @@ public class IntegerConverter implements Converter<Integer> {
 
     @Override
     public Integer convert(String value) {
-        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
+        if (value == null) {
+            throw new NullPointerException("Cannot convert null value");
+        }
+        if (value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         try {
             return Integer.parseInt(value);
         }catch (NumberFormatException nfe) {

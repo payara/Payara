@@ -40,15 +40,20 @@
 package fish.payara.microprofile.config.cdi;
 
 import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver;
-import fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver.ElementPolicy;
 
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolver.ElementPolicy.FAIL;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Set;
+import java.util.function.Supplier;
+
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.DeploymentException;
@@ -56,6 +61,7 @@ import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperties;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
@@ -64,6 +70,19 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  * @author Steve Millidge (Payara Foundation)
  */
 public class ConfigPropertyProducer {
+
+    // FIXME: refactor
+    // This currently just takes a generic @ConfigProperties bean and attempts
+    // to initialise it. Field injection may be performed here as opposed
+    // to in the extension. Dealer's choice
+    @ConfigProperties
+    @Dependent
+    public static final Object getGenericObject(InjectionPoint ip)
+            throws InstantiationException, IllegalAccessException {
+        final Field field = (Field) ip.getMember();
+        final Class<?> objectClass = field.getType();
+        return objectClass.newInstance();
+    }
 
     /**
      * General producer method for injecting a property into a field annotated
@@ -100,13 +119,34 @@ public class ConfigPropertyProducer {
         Type type = ip.getType();
         String defaultValue = property.defaultValue();
         if (type instanceof Class) {
-            result = config.getValue(name, ConfigValueResolver.class)
+            if (type == OptionalDouble.class) {
+                result = config.getValue(property.name(), ConfigValueResolver.class)
+                    .throwOnFailedConversion()
+                    .withDefault(property.defaultValue())
+                    .as(OptionalDouble.class)
+                    .orElse(OptionalDouble.empty());
+            } else if (type == OptionalInt.class) {
+                result = config.getValue(property.name(), ConfigValueResolver.class)
+                    .throwOnFailedConversion()
+                    .withDefault(property.defaultValue())
+                    .as(OptionalInt.class)
+                    .orElse(OptionalInt.empty());
+            } else if (type == OptionalLong.class) {
+                result = config.getValue(property.name(), ConfigValueResolver.class)
+                    .throwOnFailedConversion()
+                    .withDefault(property.defaultValue())
+                    .as(OptionalLong.class)
+                    .orElse(OptionalLong.empty());
+            } else {
+                result = config.getValue(name, ConfigValueResolver.class)
                     .throwOnMissingProperty(defaultValue == null)
                     .throwOnFailedConversion()
                     .withDefault(defaultValue)
                     .withPolicy(FAIL)
-                    .as((Class<?>)type).get();
-        } else if ( type instanceof ParameterizedType) {
+                    .as((Class<?>)type)
+                    .get();
+            }
+        } else if (type instanceof ParameterizedType) {
             ParameterizedType ptype = (ParameterizedType)type;
             Type rawType = ptype.getRawType();
             if (List.class.equals(rawType)) {
@@ -123,6 +163,13 @@ public class ConfigPropertyProducer {
                     .withDefault(defaultValue)
                     .withPolicy(FAIL)
                     .asSet(getElementTypeFrom(ptype));
+            } else if (Supplier.class.equals(rawType)) {
+                result = config.getValue(name, ConfigValueResolver.class)
+                    .throwOnMissingProperty(defaultValue == null)
+                    .throwOnFailedConversion()
+                    .withDefault(defaultValue)
+                    .withPolicy(FAIL)
+                    .asSupplier(getElementTypeFrom(ptype));
             } else {
                 result = config.getValue(name, (Class<?>) rawType);
             }

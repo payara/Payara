@@ -261,6 +261,10 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
 
     @Override
     public int getOrdinal() {
+        String storedOrdinal = getValue("config_ordinal");
+        if (storedOrdinal != null) {
+            return Integer.parseInt(storedOrdinal);
+        }
         return Integer.parseInt(configService.getMPConfig().getSecretDirOrdinality());
     }
 

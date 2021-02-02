@@ -43,6 +43,7 @@ import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtens
 import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
@@ -76,7 +77,12 @@ public class LDAPConfigSource extends ConfiguredExtensionConfigSource<LDAPConfig
         }
         return ldapConfigSourceHelper.getAllConfigValues();
     }
-    
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
+    }
+
     @Override
     public String getValue(String propertyName) {
         if (ldapConfigSourceHelper == null) {

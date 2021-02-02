@@ -42,14 +42,18 @@ package fish.payara.nucleus.microprofile.config.spi;
 import java.io.Serializable;
 import java.util.Optional;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.Converter;
 
 /**
  *
  * @author Steve Millidge <Payara Services Limited>
  */
 public class InjectedPayaraConfig implements Config, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private transient Config delegate;
     private String appName;
@@ -58,6 +62,7 @@ public class InjectedPayaraConfig implements Config, Serializable {
         this.delegate = delegate;
         this.appName = appName;
     }
+
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
         ensureDelegate();
@@ -80,6 +85,24 @@ public class InjectedPayaraConfig implements Config, Serializable {
     public Iterable<ConfigSource> getConfigSources() {
         ensureDelegate();
         return delegate.getConfigSources();
+    }
+
+    @Override
+    public ConfigValue getConfigValue(String propertyName) {
+        ensureDelegate();
+        return delegate.getConfigValue(propertyName);
+    }
+
+    @Override
+    public <T> Optional<Converter<T>> getConverter(Class<T> forType) {
+        ensureDelegate();
+        return delegate.getConverter(forType);
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> type) {
+        ensureDelegate();
+        return delegate.unwrap(type);
     }
 
     private void ensureDelegate() {

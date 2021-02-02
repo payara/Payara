@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,55 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.source;
+package fish.payara.nucleus.microprofile.config.spi;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import org.eclipse.microprofile.config.ConfigValue;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
+public class ConfigValueImpl implements ConfigValue {
 
-/**
- *
- * @author Steve Millidge (Payara Foundation)
- */
-public class PropertiesConfigSource implements ConfigSource {
-    
-    private final Properties props;
+    private final String name;
+    private final String value;
+    private final String rawValue;
+    private final String sourceName;
+    private final int sourceOrdinal;
 
-    public PropertiesConfigSource(Properties props) {
-        this.props = props;
-    }
-    
-    @Override
-    public Map<String, String> getProperties() {
-        HashMap<String,String> result = new HashMap<>(props.size());
-        for (Object key : props.keySet()) {
-            result.put((String) key, props.getProperty((String) key));
-        }
-        return result;
-    }
-
-    @Override
-    public Set<String> getPropertyNames() {
-        return getProperties().keySet();
-    }
-
-    @Override
-    public int getOrdinal() {
-        String ordinalVal = props.getProperty("config_ordinal", "100");
-        return Integer.parseInt(ordinalVal);
-    }
-
-    @Override
-    public String getValue(String propertyName) {
-        return props.getProperty(propertyName);
+    protected ConfigValueImpl(String name, String rawValue, String value, String sourceName, int sourceOrdinal) {
+        this.name = name;
+        this.rawValue = rawValue;
+        this.value = value;
+        this.sourceName = sourceName;
+        this.sourceOrdinal = sourceOrdinal;
     }
 
     @Override
     public String getName() {
-        return "Properties";
+        return name;
     }
-    
+
+    @Override
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String getRawValue() {
+        return rawValue;
+    }
+
+    @Override
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    @Override
+    public int getSourceOrdinal() {
+        return sourceOrdinal;
+    }
+
 }

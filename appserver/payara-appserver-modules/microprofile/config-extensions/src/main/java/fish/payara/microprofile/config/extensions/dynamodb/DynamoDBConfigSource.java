@@ -66,8 +66,6 @@ import javax.ws.rs.core.Response;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.jvnet.hk2.annotations.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fish.payara.microprofile.config.extensions.aws.client.AwsRequestBuilder;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
@@ -76,7 +74,6 @@ import javax.inject.Inject;
 @Service(name = "dynamodb-config-source")
 public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<DynamoDBConfigSourceConfiguration> {
 
-    private final ObjectMapper mapper = new ObjectMapper();
     public static final Set<String> SUPPORTED_DATA_TYPES = new HashSet<>(Arrays.asList("S", "N", "B", "BOOL", "NULL"));
     private static final Logger LOGGER = Logger.getLogger(DynamoDBConfigSource.class.getName());
     private AwsRequestBuilder builder;
@@ -132,6 +129,11 @@ public class DynamoDBConfigSource extends ConfiguredExtensionConfigSource<Dynamo
             }
         }
         return new HashMap<>();
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
     }
 
     @Override
