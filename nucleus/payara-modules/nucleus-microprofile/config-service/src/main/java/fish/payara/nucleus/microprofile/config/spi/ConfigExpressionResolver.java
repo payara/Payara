@@ -44,6 +44,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.glassfish.config.support.TranslatedConfigView;
 
 final class ConfigExpressionResolver {
 
@@ -84,6 +85,17 @@ final class ConfigExpressionResolver {
 
     private ConfigValueImpl resolve(String propertyName, String propertyDefault, boolean resolveDefault) {
 
+        String translated = TranslatedConfigView.expandConfigValue(propertyName);
+        if (!translated.equals(propertyName)) {
+            return new ConfigValueImpl(
+                    propertyName,
+                    translated,
+                    resolveExpression(translated),
+                    "TranslatedConfigView",
+                    0
+                );
+        }
+        
         String profiledPropertyName = resolveExpression((profile == null ? "" : "%" + profile + ".") + propertyName);
 
         ConfigValueImpl result = getValue(profiledPropertyName);
