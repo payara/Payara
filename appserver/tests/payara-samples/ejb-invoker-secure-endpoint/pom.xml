@@ -4,7 +4,7 @@
 
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples-profiled-tests</artifactId>
+        <artifactId>payara-samples</artifactId>
         <version>5.2020.8-SNAPSHOT</version>
     </parent>
 
@@ -21,12 +21,20 @@
         <dependency>
             <groupId>fish.payara.samples</groupId>
             <artifactId>samples-test-utils</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>jakarta.ejb</groupId>
             <artifactId>jakarta.ejb-api</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>asadmin</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
         </dependency>
     </dependencies>
 </project>

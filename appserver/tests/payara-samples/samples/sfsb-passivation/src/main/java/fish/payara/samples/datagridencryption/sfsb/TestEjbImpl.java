@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,8 @@ package fish.payara.samples.datagridencryption.sfsb;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
@@ -52,6 +54,7 @@ import javax.ejb.Stateful;
  */
 @Stateful
 public class TestEjbImpl implements TestEjb, Serializable {
+    private static final Logger LOGGER = Logger.getLogger(TestEjbImpl.class.getName());
 
     List<String> items;
 
@@ -61,7 +64,7 @@ public class TestEjbImpl implements TestEjb, Serializable {
 
     @PostConstruct
     public void postConstruct () {
-        System.out.println("##### New EJB #####");
+        LOGGER.fine("##### New EJB #####");
     }
 
     @Override
@@ -76,27 +79,20 @@ public class TestEjbImpl implements TestEjb, Serializable {
 
     @Override
     public String getItems() {
-        String allItems = "";
-        if (!items.isEmpty()) {
-            for (String item : items) {
-                allItems += item + ",";
-            }
-            allItems = allItems.substring(0, allItems.length() - 1);
-        }
-        return allItems;
+        return items.stream().collect(Collectors.joining(","));
     }
 
     @PrePassivate
-    private void prePassivate() {
-        System.out.println("##### Passivating... #####");
-        System.out.println(getItems());
-        System.out.println("##### Finished Passivating... #####");
+    void prePassivate() {
+        LOGGER.fine("##### Passivating... #####");
+        LOGGER.fine(getItems());
+        LOGGER.fine("##### Finished Passivating... #####");
     }
 
     @PostActivate
-    private void postActivate() {
-        System.out.println("##### Reactivating... #####");
-        System.out.println(getItems());
-        System.out.println("##### Finished Reactivating... #####");
+    void postActivate() {
+        LOGGER.fine("##### Reactivating... #####");
+        LOGGER.fine(getItems());
+        LOGGER.fine("##### Finished Reactivating... #####");
     }
 }

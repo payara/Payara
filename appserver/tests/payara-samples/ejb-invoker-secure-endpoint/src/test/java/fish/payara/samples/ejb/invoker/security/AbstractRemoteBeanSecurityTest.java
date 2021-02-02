@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -57,7 +57,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_KEY_STORE;
@@ -71,10 +70,12 @@ import static fish.payara.ejb.http.client.RemoteEJBContextFactory.PROVIDER_PRINC
 import static fish.payara.samples.ServerOperations.getClientTrustStoreURL;
 import static fish.payara.samples.ServerOperations.getKeyStore;
 import java.io.IOException;
+import java.net.URI;
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.jboss.shrinkwrap.api.asset.EmptyAsset.INSTANCE;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -90,9 +91,12 @@ public abstract class AbstractRemoteBeanSecurityTest {
     @ArquillianResource
     private URL base;
 
+    @ArquillianResource
+    private URI uri;
+
     @Deployment
     public static Archive<?> deployment() {
-        return ShrinkWrap.create(JavaArchive.class)
+        return ShrinkWrap.create(WebArchive.class)
                 .addClasses(Bean.class, RemoteBean.class)
                 .addAsManifestResource(INSTANCE, "beans.xml");
     }
@@ -149,7 +153,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), getPassword());
 
-        RemoteBean beanRemote = (RemoteBean) ejbRemoteContext.lookup("java:global/test/Bean");
+        RemoteBean beanRemote = (RemoteBean) ejbRemoteContext.lookup(String.format("java:global%sBean", uri.getPath()));
         assertNotNull(beanRemote.method());
     }
 
@@ -160,7 +164,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), "InvalidPassword");
 
         try {
-            RemoteBean beanRemote = (RemoteBean) ejbRemoteContext.lookup("java:global/test/Bean");
+            RemoteBean beanRemote = (RemoteBean) ejbRemoteContext.lookup(String.format("java:global%sBean", uri.getPath()));
             assertNotNull(beanRemote.method());
             fail("RemoteBean#method must not be accessed for invalid credential");
         } catch (NamingException ex) {

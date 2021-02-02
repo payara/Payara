@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources;
 
@@ -483,7 +483,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
                 }
 
                 String keyvalue = c.attribute(keyAttributeName.toLowerCase(Locale.US));
-                if (keyvalue.equals(childID)) {
+                if (keyvalue != null && keyvalue.equals(childID)) {
                     setEntity((ConfigBean) c);
                 }
             }

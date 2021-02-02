@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import java.io.Serializable;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Andrew Pielage <andrew.pielage@payara.fish>
@@ -54,6 +56,8 @@ import java.util.Random;
 @ApplicationScoped
 @Path("/TestEjb")
 public class TestEjbEndpoints implements Serializable {
+    private static final Logger LOGGER = Logger.getLogger(TestEjbEndpoints.class.getName());
+    private static final long serialVersionUID = 1L;
 
     @Inject
     TestEjb testEjb;
@@ -101,7 +105,7 @@ public class TestEjbEndpoints implements Serializable {
 
             return "Finished: check logs...";
         } catch (NamingException ne) {
-            System.out.println(ne);
+            LOGGER.log(Level.SEVERE, "lookup", ne);
             return "Ruh Roh!";
         }
     }

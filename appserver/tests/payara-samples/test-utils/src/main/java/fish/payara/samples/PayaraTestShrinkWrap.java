@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
@@ -60,10 +59,6 @@ public final class PayaraTestShrinkWrap {
 
     public static WebArchive getWebArchive() {
         return getArchive(WebArchive.class);
-    }
-
-    public static JavaArchive getJavaArchive() {
-        return getArchive(JavaArchive.class);
     }
 
     private static <T extends Archive<T> & ClassContainer<T>> T getArchive(Class<T> archiveType) {
