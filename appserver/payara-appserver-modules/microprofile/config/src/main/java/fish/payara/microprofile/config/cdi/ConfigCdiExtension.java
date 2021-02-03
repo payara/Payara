@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,6 +68,8 @@ import javax.inject.Provider;
  */
 public class ConfigCdiExtension implements Extension {
 
+    private Set<Type> configPropertiesBeanTypes = new HashSet<>();
+
     public void validateInjectionPoint(@Observes ProcessInjectionPoint<?, ?> pip) {
 
         // we need to validate the injection point for the ConfigProperty to meet the 3
@@ -106,53 +108,6 @@ public class ConfigCdiExtension implements Extension {
         }
     }
 
-    // FIXME: this method is currently here to intercept injection of @ConfigProperties
-    // injected targets. I'm thinking that this might be a good target for injecting the fields.
-    public <T> void processConfigPropertiesInjection(
-            @Observes ProcessInjectionTarget<T> event) {
-        final InjectionTarget<T> it = event.getInjectionTarget();
-
-        final Map<Field, Object> configuredValues = new HashMap<Field, Object>();
-
-        final AnnotatedType<T> at = event.getAnnotatedType();
-
-        if (at.isAnnotationPresent(ConfigProperties.class)) {
-            event.setInjectionTarget(new InjectionTarget<T>() {
-
-                @Override
-                public T produce(CreationalContext<T> ctx) {
-                    return it.produce(ctx);
-                }
-    
-                @Override
-                public void dispose(T instance) {
-                    it.dispose(instance);
-                }
-    
-                @Override
-                public Set<InjectionPoint> getInjectionPoints() {
-                    return it.getInjectionPoints();
-                }
-    
-                @Override
-                public void inject(T instance, CreationalContext<T> ctx) {
-                    it.inject(instance, ctx);
-                }
-    
-                @Override
-                public void postConstruct(T instance) {
-                    it.postConstruct(instance);
-                }
-    
-                @Override
-                public void preDestroy(T instance) {
-                    it.preDestroy(instance);
-                }
-                
-            });
-        }
-    }
-
     /**
      * Register the ConfigProducer bean that has producer methods for Config and Optional
      * @param event
@@ -163,15 +118,20 @@ public class ConfigCdiExtension implements Extension {
         event.addAnnotatedType(at, ConfigProducer.class.getName());
     }
 
-    // FIXME: this is only here as a proof of concept. It needs refactoring
-    private Set<Type> types = new HashSet<>();
-
-    // FIXME: needs refactoring.
-    // Currently, this fetches the type of every injected @ConfigProperties object
     public <T> void storeConfigPropertiesType(@Observes @WithAnnotations(ConfigProperties.class) ProcessAnnotatedType<T> event) {
-        event.getAnnotatedType().getFields().stream()
-                .filter(field -> field.isAnnotationPresent(ConfigProperties.class))
-                .forEach(field -> types.add(field.getBaseType()));
+        
+        final AnnotatedType<?> type = event.getAnnotatedType();
+
+        if (type.getJavaClass().isAnnotationPresent(ConfigProperties.class)) {
+            event.veto();
+            return;
+        }
+        for (AnnotatedField<?> field : type.getFields()) {
+            final Class<?> memberClass = field.getJavaMember().getType();
+            if (memberClass.isAnnotationPresent(ConfigProperties.class)) {
+                configPropertiesBeanTypes.add(memberClass);
+            }
+        }
     }
 
     /**
@@ -188,51 +148,50 @@ public class ConfigCdiExtension implements Extension {
         Config config = ConfigProvider.getConfig();
         if (config instanceof PayaraConfig) {
 
-            AnnotatedType<ConfigPropertyProducer> producerType = bm.createAnnotatedType(ConfigPropertyProducer.class);
-            BeanAttributes<?> producerBeanAttributes = null;
-            AnnotatedMethod<? super ConfigPropertyProducer> producerMethod = null;
-            for (AnnotatedMethod m : producerType.getMethods()) {
-                if (m.getJavaMember().getName().equals("getGenericObject")) {
-                    // create a bean attributes based on this method
-                    producerBeanAttributes = bm.createBeanAttributes(m);
-                    producerMethod = m;
-                    break;
-                }
-            }
-
-            // FIXME: may need refactoring.
-            // This currently registers the producer method as being valid
-            // for each discovered injected @ConfigProperties type
-            if (producerBeanAttributes != null && !types.isEmpty()) {
-                Bean<?> bean = bm.createBean(new TypesBeanAttributes<Object>(producerBeanAttributes){
-                    @Override
-                    public Set<Type> getTypes() {
-                        return types;
-                    }
-                }, ConfigPropertyProducer.class,
-                        bm.getProducerFactory(producerMethod, null));
-                event.addBean(bean);
-            }
+            final AnnotatedType<ConfigPropertyProducer> propertyProducerType = bm.createAnnotatedType(ConfigPropertyProducer.class);
+            final AnnotatedType<ConfigPropertiesProducer> objectProducerType = bm.createAnnotatedType(ConfigPropertiesProducer.class);
 
             // create a synthetic bean based on the ConfigPropertyProducer which 
             // has a method we can use to create the correct objects based on 
             // the InjectionPoint
-            AnnotatedType<ConfigPropertyProducer> atype = bm.createAnnotatedType(ConfigPropertyProducer.class);
-            BeanAttributes<?> beanAttr = null;
+            BeanAttributes<?> propertyBeanAttributes = null;
+            BeanAttributes<?> objectBeanAttributes = null;
             
             // first find the producer method
-            AnnotatedMethod<? super ConfigPropertyProducer> method = null;
-            for (AnnotatedMethod m : atype.getMethods()) {
-                if (m.getJavaMember().getName().equals("getGenericProperty")) {
+            AnnotatedMethod<? super ConfigPropertyProducer> propertyProducerMethod = null;
+            AnnotatedMethod<? super ConfigPropertiesProducer> objectProducerMethod = null;
+
+            for (AnnotatedMethod m : propertyProducerType.getMethods()) {
+                final String methodName = m.getJavaMember().getName();
+                if (methodName.equals("getGenericProperty")) {
                     // create a bean attributes based on this method
-                    beanAttr = bm.createBeanAttributes(m);
-                    method = m;
+                    propertyBeanAttributes = bm.createBeanAttributes(m);
+                    propertyProducerMethod = m;
                     break;
                 }
             }
+            for (AnnotatedMethod m : objectProducerType.getMethods()) {
+                final String methodName = m.getJavaMember().getName();
+                if (methodName.equals("getGenericObject")) {
+                    objectBeanAttributes = bm.createBeanAttributes(m);
+                    objectProducerMethod = m;
+                    break;
+                }
+            }
+
+            if (objectProducerMethod != null & !configPropertiesBeanTypes.isEmpty()) {
+                Bean<?> bean = bm.createBean(new TypesBeanAttributes<Object>(objectBeanAttributes){
+                    @Override
+                    public Set<Type> getTypes() {
+                        return configPropertiesBeanTypes;
+                    }
+                }, ConfigPropertiesProducer.class,
+                        bm.getProducerFactory(objectProducerMethod, null));
+                event.addBean(bean);
+            }
             
-            // we have the method
-            if (beanAttr != null) {
+            // if we have the producer method
+            if (propertyProducerMethod != null) {
                 HashSet<Type> types = new HashSet<>();
                 types.add(ConfigValue.class);
                 types.addAll(((PayaraConfig) config).getConverterTypes());
@@ -243,7 +202,7 @@ public class ConfigCdiExtension implements Extension {
                 // create a bean with a Producer method using the bean factory and with custom bean attributes
                 // also override the set of types depending on the type of the converter
                 for (final Type converterType : types) {
-                    Bean<?> bean = bm.createBean(new TypesBeanAttributes<Object>(beanAttr) {
+                    Bean<?> bean = bm.createBean(new TypesBeanAttributes<Object>(propertyBeanAttributes) {
                         
                         // overrides the bean types to return the types registered for a Converter
                         @Override
@@ -280,7 +239,7 @@ public class ConfigCdiExtension implements Extension {
                             
                             return result;
                         }
-                    }, ConfigPropertyProducer.class, bm.getProducerFactory(method, null));
+                    }, ConfigPropertyProducer.class, bm.getProducerFactory(propertyProducerMethod, null));
                     event.addBean(bean);
                 }
             }
