@@ -2,11 +2,14 @@ package fish.payara.microprofile.config.cdi;
 
 import static org.eclipse.microprofile.config.inject.ConfigProperties.UNCONFIGURED_PREFIX;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
@@ -21,9 +24,9 @@ public class ConfigPropertiesProducer {
     private static final Logger LOGGER = Logger.getLogger(ConfigPropertiesProducer.class.getName());
 
     @ConfigProperties
-    public static final Object getGenericObject(InjectionPoint ip, BeanManager bm)
+    public static final Object getGenericObject(InjectionPoint injectionPoint, BeanManager bm)
             throws InstantiationException, IllegalAccessException {
-        Type type = ip.getType();
+        Type type = injectionPoint.getType();
         if (!(type instanceof Class)) {
             throw new IllegalArgumentException("Unable to process injection point with @ConfigProperties of type " + type);
         }
@@ -35,7 +38,7 @@ public class ConfigPropertiesProducer {
         final AnnotatedType<?> annotatedType = bm.createAnnotatedType((Class) type);
 
         // Find the @ConfigProperties annotations, and calculate the property prefix
-        final ConfigProperties injectionAnnotation = ip.getAnnotated().getAnnotation(ConfigProperties.class);
+        final ConfigProperties injectionAnnotation = getQualifier(injectionPoint);
         final ConfigProperties classAnnotation = annotatedType.getAnnotation(ConfigProperties.class);
         final String prefix = parsePrefixes(injectionAnnotation, classAnnotation);
 
@@ -67,6 +70,25 @@ public class ConfigPropertiesProducer {
         }
 
         return object;
+    }
+
+    private static ConfigProperties getQualifier(InjectionPoint injectionPoint) {
+
+        // If it's an @Inject point
+        final Annotated annotated = injectionPoint.getAnnotated();
+        if (annotated != null) {
+            return annotated.getAnnotation(ConfigProperties.class);
+        }
+
+        // If it's a programmatic lookup
+        final Set<Annotation> qualifiers = injectionPoint.getQualifiers();
+        for (Annotation qualifier : qualifiers) {
+            if (qualifier instanceof ConfigProperties) {
+                return (ConfigProperties) qualifier;
+            }
+        }
+
+        return null;
     }
 
     private static String parsePrefixes(ConfigProperties injectionAnnotation, ConfigProperties classAnnotation) {
