@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@ public class RegisterLoginModuleTest extends AsadminTest {
 
     @Test
     public void successfulRegistrationUpdatesLoginConf() throws IOException {
+        asadmin("delete-auth-realm", "test1");
         CommandResult result = asadmin("create-auth-realm",
                 "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
                 "--login-module", "com.sun.enterprise.security.auth.login.FileLoginModule",
@@ -64,29 +65,30 @@ public class RegisterLoginModuleTest extends AsadminTest {
         assertSuccess(result);
         String contents = loginConf();
         assertContains("test1 {", contents);
-        
+
         result = asadmin("delete-auth-realm", "test1");
         System.out.println(result.getOutput());
         assertSuccess(result);
-       
+
         //Removes JAAS context test1 from the login.conf file on the domain
         //It's expected that this will be the last entry in the login.conf file
         //and so we just grab everything up to this final entry as the new file
         //contents
         String newFileContents = contents.substring(0, contents.indexOf("test1"));
         System.out.print(newFileContents);
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(System.getProperty("java.security.auth.login.config")))) {        
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(System.getProperty("java.security.auth.login.config")))) {
             writer.write(newFileContents);
         } catch(IOException e) {
             System.out.print(e.getMessage());
             e.printStackTrace();
-        }     
-        
+        }
+
         assertFalse(loginConf().contains("test1 {"));
     }
 
     @Test
     public void existingJaasContextGivesWarning()  {
+        asadmin("delete-auth-realm", "test2");
         CommandResult result = asadmin("create-auth-realm",
                 "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
                 "--login-module", "com.sun.enterprise.security.auth.login.FileLoginModule",
@@ -94,7 +96,7 @@ public class RegisterLoginModuleTest extends AsadminTest {
         System.out.println(result.getOutput());
         assertEquals(CommandResult.ExitStatus.WARNING, result.getExitStatus());
         assertContains("fileRealm is already configured", result.getOutput());
-        
+
         result = asadmin("delete-auth-realm", "test2");
         System.out.println(result.getOutput());
         assertSuccess(result);
@@ -102,6 +104,7 @@ public class RegisterLoginModuleTest extends AsadminTest {
 
     @Test
     public void undefinedJaasContextGivesWarning() {
+        asadmin("delete-auth-realm", "test3");
         CommandResult result = asadmin("create-auth-realm",
                 "--classname", "com.sun.enterprise.security.auth.realm.certificate.CertificateRealm",
                 "--login-module", "com.sun.enterprise.security.auth.login.FileLoginModule",
@@ -109,7 +112,7 @@ public class RegisterLoginModuleTest extends AsadminTest {
         System.out.println(result.getOutput());
         assertEquals(CommandResult.ExitStatus.WARNING, result.getExitStatus());
         assertContains("No JAAS context is defined", result.getOutput());
-        
+
         result = asadmin("delete-auth-realm", "test3");
         System.out.println(result.getOutput());
         assertSuccess(result);

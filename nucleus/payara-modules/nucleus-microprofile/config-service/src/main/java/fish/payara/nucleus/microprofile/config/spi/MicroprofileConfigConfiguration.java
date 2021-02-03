@@ -43,6 +43,7 @@ import java.util.List;
 
 import javax.validation.constraints.Min;
 
+import fish.payara.nucleus.microprofile.config.source.DirConfigSource;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.api.admin.config.ConfigExtension;
@@ -63,7 +64,7 @@ import org.jvnet.hk2.config.Element;
 @Configured(name="microprofile-config")
 public interface MicroprofileConfigConfiguration extends ConfigExtension {
     
-    @Attribute(defaultValue = "secrets", dataType = String.class)
+    @Attribute(defaultValue = DirConfigSource.DEFAULT_DIR, dataType = String.class)
     String getSecretDir();
     void setSecretDir(String directory);
     

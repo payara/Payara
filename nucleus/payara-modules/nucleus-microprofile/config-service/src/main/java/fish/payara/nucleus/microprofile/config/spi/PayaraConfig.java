@@ -42,17 +42,22 @@ package fish.payara.nucleus.microprofile.config.spi;
 import fish.payara.nucleus.microprofile.config.converters.ArrayConverter;
 import fish.payara.nucleus.microprofile.config.converters.AutomaticConverter;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
 
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.getCacheKey;
 import static fish.payara.nucleus.microprofile.config.spi.ConfigValueResolverImpl.throwWhenNotExists;
 import static java.lang.System.currentTimeMillis;
+import java.lang.reflect.Array;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,12 +76,13 @@ import java.util.function.Supplier;
 public class PayaraConfig implements Config {
 
     private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
+    private static final String MP_CONFIG_EXPANSION_ENABLED_STRING = "mp.config.property.expressions.enabled";
 
-    private static final class CacheEntry<T> {
-        final T value;
+    private static final class CacheEntry {
+        final ConfigValueImpl value;
         final long expires;
 
-        CacheEntry(T value, long expires) {
+        CacheEntry(ConfigValueImpl value, long expires) {
             this.value = value;
             this.expires = expires + currentTimeMillis();
         }
@@ -85,37 +91,43 @@ public class PayaraConfig implements Config {
     private final List<ConfigSource> sources;
     private final Map<Class<?>, Converter<?>> converters;
     private final long defaultCacheDurationSeconds;
-    private final Map<String, CacheEntry<?>> cachedValuesByProperty = new ConcurrentHashMap<>();
 
-    private volatile CacheEntry<Long> configuredCacheValueEntry;
+    private final Object cacheMapLock = new Object();
+    private final Map<String, CacheEntry> cachedValuesByProperty = new HashMap<>();
+
+    private volatile Long configuredCacheValue = null;
     private final Object configuredCacheValueLock = new Object();
+    
+    private String profile;
 
     public PayaraConfig(List<ConfigSource> sources, Map<Class<?>, Converter<?>> converters, long defaultCacheDurationSeconds) {
         this.sources = sources;
         this.converters = new ConcurrentHashMap<>(converters);
         this.defaultCacheDurationSeconds = defaultCacheDurationSeconds;
         Collections.sort(sources, new ConfigSourceComparator());
+        
+        profile = getConfigValue("mp.config.profile").getValue();
     }
 
     @SuppressWarnings("unchecked")
     public long getCacheDurationSeconds() {
-        final Converter<Long> converter = (Converter<Long>) converters.get(Long.class);
-        if (converter != null) {
+        final Optional<Converter<Long>> converter = Optional.ofNullable((Converter<Long>) converters.get(Long.class));
+        if (converter.isPresent()) {
             // Atomic block to modify the cached duration value
             synchronized (configuredCacheValueLock) {
                 // If the value has been found and it hasn't expired
-                if (configuredCacheValueEntry != null && configuredCacheValueEntry.expires > currentTimeMillis()) {
-                    return configuredCacheValueEntry.value;
+                if (configuredCacheValue != null && configuredCacheValue > currentTimeMillis()) {
+                    return configuredCacheValue;
                 } else {
                     // Fetch the value from config
-                    final Long value = getValueConverted(MP_CONFIG_CACHE_DURATION, Long.toString(defaultCacheDurationSeconds), converter);
-                    if (value != null) {
+                    final ConfigValue value = searchConfigSources(MP_CONFIG_CACHE_DURATION, null);
+                    if (value.getValue() != null) {
                         // If it's found, cache it
-                        configuredCacheValueEntry = new CacheEntry<Long>(value, value);
-                        return value;
+                        configuredCacheValue = convertValue(value, null, converter);
+                        return configuredCacheValue;
                     } else {
                         // Cache the default value (usually that's from the server config)
-                        configuredCacheValueEntry = new CacheEntry<Long>(defaultCacheDurationSeconds, defaultCacheDurationSeconds);
+                        configuredCacheValue = defaultCacheDurationSeconds;
                     }
                 }
             }
@@ -130,18 +142,51 @@ public class PayaraConfig implements Config {
             return (T) new ConfigValueResolverImpl(this, propertyName);
         }
         T value = getValueInternal(propertyName, propertyType);
+        if (value != null && propertyType.isArray()) {
+            if (Array.getLength(value) == 0) {
+                throw new NoSuchElementException("No value for key of" + propertyName);
+            }
+        }
         throwWhenNotExists(propertyName, value);
         return value;
     }
 
     @Override
-    public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
-        return Optional.ofNullable(getValueInternal(propertyName, propertyType));
+    public ConfigValue getConfigValue(String propertyName) {
+        return getValue(propertyName, ConfigValue.class);
     }
 
+    @Override
+    public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
+        T internalValue = getValueInternal(propertyName, propertyType);
+        if (internalValue != null && propertyType.isArray()) {
+            if (Array.getLength(internalValue) == 0) {
+                return Optional.empty();
+            }
+        }
+        return Optional.ofNullable(internalValue);
+    }
+
+    @Override
+    public <T> Optional<List<T>> getOptionalValues(String propertyName, Class<T> propertyType) {
+        Optional<List<T>> valuesList =  Config.super.getOptionalValues(propertyName, propertyType);
+        if (valuesList.get().isEmpty()) {
+            return Optional.empty();
+        } else {
+            return valuesList;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     private <T> T getValueInternal(String propertyName, Class<T> propertyType) {
-        return getValue(propertyName, getCacheKey(propertyName, propertyType), null, null,
-                () -> getConverter(propertyType));
+        if (propertyType == ConfigValue.class) {
+            return (T) getConfigValue(propertyName, getCacheKey(propertyName, propertyType), null, null);
+        }
+        Optional<Converter<T>> converter = getConverter(propertyType);
+        if (!converter.isPresent()) {
+            throw new IllegalArgumentException("Unable to convert value to type " + propertyType.getName());
+        }
+        return getValue(propertyName, getCacheKey(propertyName, propertyType), null, null, () -> converter);
     }
 
     @Override
@@ -162,75 +207,109 @@ public class PayaraConfig implements Config {
         return converters.keySet();
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getValue(String propertyName, String cacheKey, Long ttl, String defaultValue, Supplier<? extends Converter<T>> converter) {
-        long entryTTL = ttl != null ? ttl.longValue() : getCacheDurationSeconds();
-        if (entryTTL <= 0) {
-            return getValueConverted(propertyName, defaultValue, converter.get());
-        }
-        final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "")  + ":" + (entryTTL / 1000) + "s";
-        final long now = currentTimeMillis();
-        return (T) cachedValuesByProperty.compute(entryKey, (key, entry) -> {
-            if (entry != null && now < entry.expires) {
-                return entry;
-            }
-            return new CacheEntry<>(getValueConverted(propertyName, defaultValue, converter.get()), entryTTL);
-        }).value;
+    protected <T> T getValue(String propertyName, String cacheKey, Long ttl, String defaultValue,
+            Supplier<Optional<Converter<T>>> converter) {
+
+        final ConfigValue result = getConfigValue(propertyName, cacheKey, ttl, defaultValue);
+        return convertValue(result, defaultValue, converter.get());
     }
 
-    private <T> T getValueConverted(String propertyName, String defaultValue, Converter<T> converter) {
-        String sourceValue = getSourceValue(propertyName);
-        // NOTE: when empty is considered missing by MP this condition needs to add "|| sourceValue.isEmpty()"
-        if (sourceValue == null) {
-            return defaultValue == null ? null : converter.convert(defaultValue);
+    protected ConfigValueImpl getConfigValue(String propertyName, String cacheKey, Long ttl, String defaultValue) {
+        long entryTTL = ttl != null ? ttl : getCacheDurationSeconds();
+        
+        if (entryTTL <= 0) {
+            return searchConfigSources(propertyName, defaultValue);
         }
+
+        final String finalPropertyName = propertyName;
+        final String finalDefaultValue = defaultValue;
+        final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "")  + ":" + (entryTTL / 1000) + "s";
+        final long now = currentTimeMillis();
+
+        synchronized(cacheMapLock) {
+            return cachedValuesByProperty.compute(entryKey, (key, entry) -> {
+                if (entry != null && now < entry.expires) {
+                    return entry;
+                }
+                return new CacheEntry(searchConfigSources(finalPropertyName, finalDefaultValue), entryTTL);
+            }).value;
+        }
+    }
+
+    private <T> T convertValue(ConfigValue configValue, String defaultValue,
+            Optional<Converter<T>> optionalConverter) {
+        final String sourceValue = configValue.getValue();
+
+        if (sourceValue == null || sourceValue.isEmpty()) {
+            return null;
+        }
+
+        if (!optionalConverter.isPresent()) {
+            throw new IllegalArgumentException(String.format(
+                "Unable to find converter for property %s with value %s.",
+                configValue.getName(),
+                sourceValue
+            ));
+        }
+
+        final Converter<T> converter = optionalConverter.get();
+
         try {
-            return converter.convert(sourceValue);
+            if (sourceValue != null) {
+                return converter.convert(sourceValue);
+            }
         } catch (IllegalArgumentException ex) {
             if (defaultValue == null) {
                 throw ex;
             }
-            return converter.convert(defaultValue);
         }
+        return converter.convert(defaultValue);
     }
 
-    private String getSourceValue(String propertyName) {
-        for (ConfigSource source : sources) {
-            String sourceValue = source.getValue(propertyName);
-            if (sourceValue != null) {
-                return sourceValue;
-            }
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> Converter<T> getConverter(Class<T> propertyType) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public <T> Optional<Converter<T>> getConverter(Class<T> propertyType) {
         if (propertyType.isArray()) {
-            return (Converter<T>) createArrayConverter(propertyType.getComponentType());
+            return (Optional) createArrayConverter(propertyType.getComponentType());
         }
         Class<T> type = (Class<T>) boxedTypeOf(propertyType);
-        Converter<?> converter = converters.get(type);
+        Converter<T> converter = (Converter<T>) converters.get(type);
         if (converter != null) {
-            return (Converter<T>) converter;
+            return Optional.of(converter);
         }
 
         // see if a common sense converter can be created
         Optional<Converter<T>> automaticConverter = AutomaticConverter.forType(type);
         if (automaticConverter.isPresent()) {
             converters.put(type, automaticConverter.get());
-            return automaticConverter.get();
+            return automaticConverter;
         }
 
-        throw new IllegalArgumentException("Unable to convert value to type " + type.getTypeName());
+        return Optional.empty();
     }
     
     public void clearCache() {
-        cachedValuesByProperty.clear();
+        synchronized(cacheMapLock) {
+            cachedValuesByProperty.clear();
+        }
     }
 
-    private <E> Converter<Object> createArrayConverter(Class<E> elementType) {
-        return new ArrayConverter<>(elementType, getConverter(elementType));
+    private <E> Optional<Converter<Object>> createArrayConverter(Class<E> elementType) {
+        final Optional<Converter<E>> elementConverter = getConverter(elementType);
+        if (!elementConverter.isPresent()) {
+            return Optional.empty();
+        }
+        return Optional.of(new ArrayConverter<>(elementType, getConverter(elementType).get()));
+    }
+
+    private ConfigValueImpl searchConfigSources(String propertyName, String defaultValue) {
+
+        final boolean expansionEnabled = !MP_CONFIG_CACHE_DURATION.equals(propertyName)
+            && !MP_CONFIG_EXPANSION_ENABLED_STRING.equals(propertyName)
+            && getOptionalValue(MP_CONFIG_EXPANSION_ENABLED_STRING, Boolean.class)
+                    .orElse(true);
+
+        return new ConfigExpressionResolver(sources, expansionEnabled, profile)
+                .resolve(propertyName, defaultValue);
     }
 
     static Class<?> boxedTypeOf(Class<?> type) {
@@ -264,4 +343,33 @@ public class PayaraConfig implements Config {
         // That's really strange config variable you got there
         return Void.class;
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T unwrap(Class<T> type) {
+        if (type == PayaraConfig.class) {
+            return (T) this;
+        }
+        throw new IllegalArgumentException("Unable to cast config source to type " + type);
+    }
+    
+    /**
+     * The Mp Config profile in use.
+     * @return may be null
+     */
+    public String getProfile() {
+        return profile;
+    }
+    
+    /**
+     * Add another config source.
+     * Package-private, used by ConfigProviderResolver to add profile-specific
+     * config sources.
+     * @param added new config source to add.
+     */
+    void addConfigSource(ConfigSource added) {
+        sources.add(added);
+        Collections.sort(sources, new ConfigSourceComparator());
+    }
+    
 }

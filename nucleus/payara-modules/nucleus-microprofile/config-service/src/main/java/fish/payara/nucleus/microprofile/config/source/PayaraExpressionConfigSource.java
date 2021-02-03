@@ -40,7 +40,6 @@
 
 package fish.payara.nucleus.microprofile.config.source;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.config.support.TranslatedConfigView;
 
 import java.util.Map;
@@ -53,7 +52,7 @@ import java.util.stream.Collectors;
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-public class PayaraExpressionConfigSource extends PayaraConfigSource implements ConfigSource {
+public class PayaraExpressionConfigSource extends PayaraConfigSource {
 
     private final Properties properties;
 

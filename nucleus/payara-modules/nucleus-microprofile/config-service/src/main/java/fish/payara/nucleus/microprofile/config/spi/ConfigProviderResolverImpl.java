@@ -52,6 +52,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -84,6 +87,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
+import fish.payara.nucleus.microprofile.config.converters.ByteConverter;
 import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
 import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
 import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
@@ -91,6 +95,9 @@ import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
 import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
 import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
 import fish.payara.nucleus.microprofile.config.converters.LongConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalDoubleConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalIntConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalLongConverter;
 import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
 import fish.payara.nucleus.microprofile.config.converters.StringConverter;
 import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
@@ -285,7 +292,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
-                result = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
+                PayaraConfig appresult = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
+                addProfileSource(appresult, appInfo.getAppClassLoader());
+                result = appresult;
                 appInfo.addTransientAppMetaData(METADATA_KEY, result);
             }
         }
@@ -451,6 +460,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
     Map<Class<?>,Converter<?>> getDefaultConverters() {
         Map<Class<?>,Converter<?>> result = new HashMap<>();
         result.put(Boolean.class, new BooleanConverter());
+        result.put(Byte.class, new ByteConverter());
         result.put(Integer.class, new IntegerConverter());
         result.put(Long.class, new LongConverter());
         result.put(Float.class, new FloatConverter());
@@ -460,6 +470,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
         result.put(String.class, new StringConverter());
         result.put(Character.class, new CharacterConverter());
         result.put(Short.class, new ShortConverter());
+        result.put(OptionalInt.class, new OptionalIntConverter());
+        result.put(OptionalDouble.class, new OptionalDoubleConverter());
+        result.put(OptionalLong.class, new OptionalLongConverter());
         return result;
     }
 
@@ -514,6 +527,25 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
             props.add(p);
         }
         return props;
+    }
+    
+    private static void addProfileSource(PayaraConfig config, ClassLoader appClassLoader) {
+        String profile = config.getProfile();
+        if (profile == null) {
+            return;
+        }
+        ArrayList<Properties> appConfigProperties = new ArrayList<>();
+        try {
+            appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "META-INF/microprofile-config-" + profile + ".properties"));
+            appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "../../META-INF/microprofile-config-" + profile + ".properties"));
+            for (Properties props : appConfigProperties) {
+                props.putIfAbsent("config_ordinal", "101");
+                PropertiesConfigSource configSource = new PropertiesConfigSource(props);
+                config.addConfigSource(configSource);
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.rest.resources.custom;
 
@@ -102,7 +101,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     private static final String DEFAULT_VALUE = "defaultValue";
     private static final String DESCRIPTION = "description";
 
-    
+
     @Context
     protected ServiceLocator injector;
 
@@ -253,7 +252,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
      * Saves the passed map of system properties. Any entry with a null or empty
      * value will be deleted with the delete-system-property command, and the rest
      * will then be created with create-system-properties.
-     * 
+     *
      * @param data a map of properties to create or delete
      * @return the result of the command
      */
@@ -265,7 +264,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
      * Saves the passed map of system properties. Any entry with a null or empty
      * value will be deleted with the delete-system-property command, and the rest
      * will then be created with create-system-properties.
-     * 
+     *
      * @param parent the name of the parent object of the target
      * @param data   a map of properties to create or delete
      * @return the result of the command
@@ -298,7 +297,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     /**
      * Create some system properties using the create-system-properties asadmin
      * command.
-     * 
+     *
      * @param parent the name of the parent object of the target
      * @param data   a map of properties to create
      * @return the result of the command
@@ -325,7 +324,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     /**
      * Delete some system properties using the delete-system-property asadmin
      * command and aggregating the results.
-     * 
+     *
      * @param parent    the name of the parent object of the target
      * @param propNames the names of the properties to delete
      * @return the result of the commands
@@ -365,7 +364,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
     /**
      * Delete a system property using the delete-system-property asadmin command.
-     * 
+     *
      * @param parent   the name of the parent object of the target
      * @param propName the name of the property to delete
      * @return the result of the command
@@ -388,13 +387,16 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
     /**
      * Delete any properties not contained in the passed collection.
-     * 
+     *
      * @param newProps the properties to not delete
      * @return null if successful or a Response which contains the error message
      */
     private Response deleteRemovedProperties(Collection<String> newProps) {
         List<String> existingList = new ArrayList<>();
         Dom parent = getEntity();
+        if (parent == null) {
+            return null;
+        }
         List<Dom> existingProps;
         synchronized (parent) {
             existingProps = parent.nodeElements(TAG_SYSTEM_PROPERTY);

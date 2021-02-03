@@ -23,6 +23,7 @@ import org.eclipse.microprofile.config.spi.Converter;
 import static java.util.Collections.emptyList;
 
 import java.util.*;
+import org.eclipse.microprofile.config.ConfigValue;
 
 /**
  * {@link Config} implementation using a Map for unit test usages. Use {@link TestConfig#addConfigValue(String, String)} to specify some configuration parameters.
@@ -124,6 +125,59 @@ public class TestConfig implements Config {
         return emptyList();
     }
 
+    @Override
+    public <T> T unwrap(Class<T> type) {
+        throw new UnsupportedOperationException("Unwrap not supported by test config.");
+    }
+
+    @Override
+    public <T> Optional<Converter<T>> getConverter(Class<T> type) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ConfigValue getConfigValue(String string) {
+        return new TestConfigValue(string, getValue(PROFILE, String.class));
+    }
+    
+    class TestConfigValue implements ConfigValue {
+        
+        String name;
+        String value;
+
+        public TestConfigValue(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String getRawValue() {
+            return value;
+        }
+
+        @Override
+        public String getSourceName() {
+            return "test";
+        }
+
+        @Override
+        public int getSourceOrdinal() {
+            return 100;
+        }
+        
+    }
+    
+    
     private static UnsupportedOperationException convertersNotSupported() {
         return new UnsupportedOperationException("Converters are not supported by the test config");
     }

@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,10 @@ import javax.annotation.Priority;
 public class CharacterConverter implements Converter<Character> {
     @Override
     public Character convert(String value) {
-        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE) || value.length() == 0) return null;
+        if (value == null) {
+            throw new NullPointerException("Cannot convert null value");
+        }
+        if (value.equals(ConfigProperty.UNCONFIGURED_VALUE) || value.length() == 0) return null;
         if (value.length() == 1) {
             return value.charAt(0);
         } else {

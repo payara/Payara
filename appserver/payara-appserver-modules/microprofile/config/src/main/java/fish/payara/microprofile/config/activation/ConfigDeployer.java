@@ -45,6 +45,7 @@ import java.util.function.Supplier;
 import javax.enterprise.inject.spi.Extension;
 
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperties;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;
@@ -69,13 +70,17 @@ public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, Config
         // This is performed here so that the ApplicationContainer executes regardless of CDI extension state
         final Types types = deploymentContext.getTransientAppMetaData(Types.class.getName(), Types.class);
 
+
         if (types != null) {
+            // The annotations that denote a Config API enabled application
             final Type annotationType = types.getBy(ConfigProperty.class.getName());
+            final Type annotation2Type = types.getBy(ConfigProperties.class.getName());
             final Type classType = types.getBy(Config.class.getName());
             final boolean annotationFound = annotationType != null;
+            final boolean annotation2Found = annotation2Type != null;
             final boolean classFound = classType != null;
 
-            if (annotationFound || classFound) {
+            if (annotationFound || annotation2Found || classFound) {
                 // Register the CDI extension
                 final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
                 if (snifferExtensions != null) {

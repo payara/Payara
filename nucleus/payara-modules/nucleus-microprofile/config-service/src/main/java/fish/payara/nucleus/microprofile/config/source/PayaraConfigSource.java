@@ -39,15 +39,20 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import java.util.Set;
+
 import com.sun.enterprise.config.serverbeans.Domain;
-import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
+
+import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
+
+import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
 
 /**
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class PayaraConfigSource {
+public abstract class PayaraConfigSource implements ConfigSource {
     
     public final static String PROPERTY_PREFIX = "payara.microprofile.";
     protected final Domain domainConfiguration;
@@ -65,6 +70,11 @@ public class PayaraConfigSource {
     PayaraConfigSource(boolean test) {
         domainConfiguration = null;
         configService = null;
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
     }
     
     /**

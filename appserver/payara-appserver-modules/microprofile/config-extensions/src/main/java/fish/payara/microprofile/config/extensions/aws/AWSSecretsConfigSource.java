@@ -49,6 +49,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -139,6 +140,11 @@ public class AWSSecretsConfigSource extends ConfiguredExtensionConfigSource<AWSS
             }
         }
         return new HashMap<>();
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
     }
 
     @Override

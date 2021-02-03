@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017-2020] Payara Foundation and/or affiliates
+    Portions Copyright [2017-2021] Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -137,9 +137,9 @@
         <!-- BOM-referenced versions -->
         <jakartaee.api.version>8.0.0</jakartaee.api.version>
         <servlet-api.version>4.0.2</servlet-api.version>
-        <grizzly.version>2.4.4.payara-p4</grizzly.version>
+        <grizzly.version>2.4.4.payara-p5</grizzly.version>
         <jax-rs-api.impl.version>2.1.6</jax-rs-api.impl.version>
-        <jersey.version>2.30.payara-p3</jersey.version>
+        <jersey.version>2.30.payara-p4</jersey.version>
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.1.5.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.1.5.Final</hibernate.validator-cdi.version>
