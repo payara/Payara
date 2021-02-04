@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,19 +53,12 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
-
-import fish.payara.samples.rest.management.extension.TemporaryInstance;
 
 /**
  * Test the system property endpoint of the REST management interface
  */
 public class SystemPropertyTest extends RestManagementTest {
-
-    @ArquillianResource
-    private TemporaryInstance instance;
-
     /**
      * Tests that when a POST request is made to the endpoint the system properties
      * posted are added.
@@ -145,7 +138,7 @@ public class SystemPropertyTest extends RestManagementTest {
     }
 
     private String systemPropertiesEndpoint() {
-        return format("servers/server/%s/system-properties", instance.getName());
+        return format("servers/server/%s/system-properties", INSTANCE_NAME);
     }
 
     private static void verifySystemProperty(String propertyName, Map<String, ? extends Object> localMap, Map<String, ? extends Object> systemProperties) {
