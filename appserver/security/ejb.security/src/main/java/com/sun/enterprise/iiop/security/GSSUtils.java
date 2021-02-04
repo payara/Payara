@@ -1,7 +1,6 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2021 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +36,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.iiop.security;
 
@@ -45,15 +44,11 @@ import com.sun.corba.ee.org.omg.CSI.GSS_NT_Export_Name_OID;
 import com.sun.corba.ee.org.omg.CSI.GSS_NT_Scoped_Username_OID;
 import com.sun.corba.ee.org.omg.GSSUP.GSSUPMechOID;
 import com.sun.logging.LogDomains;
-import sun.security.util.DerInputStream;
-import sun.security.util.DerOutputStream;
-import sun.security.util.ObjectIdentifier;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.Oid;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
-
-;
 
 /**
  * @author Sekhar Vajjhala (Almost complete rewrite of an old version)
@@ -62,29 +57,29 @@ import java.util.logging.Level;
 public class GSSUtils {
     private static final java.util.logging.Logger _logger = LogDomains.getLogger(GSSUtils.class, LogDomains.CORBA_LOGGER, false);
 
-    public static final ObjectIdentifier GSSUP_MECH_OID;
+    public static final Oid GSSUP_MECH_OID;
 
-    public static final ObjectIdentifier GSS_NT_EXPORT_NAME_OID;
+    public static final Oid GSS_NT_EXPORT_NAME_OID;
 
     /*
      * GSS_NT_SCOPED_USERNAME_OID is currently not used by this class. It is defined here for the sake
      * of completeness.
      */
-    public static final ObjectIdentifier GSS_NT_SCOPED_USERNAME_OID;
+    public static final Oid GSS_NT_SCOPED_USERNAME_OID;
 
     private static byte[] mech;
 
     static {
 
         int i; // index
-        ObjectIdentifier x = null;
+        Oid x = null;
 
         /* Construct an ObjectIdentifer by extracting each OID */
 
         try {
             i = GSSUPMechOID.value.indexOf(':');
-            x = new ObjectIdentifier(GSSUPMechOID.value.substring(i + 1));
-        } catch (IOException e) {
+            x = new Oid(GSSUPMechOID.value.substring(i + 1));
+        } catch (GSSException e) {
             x = null;
             _logger.log(Level.SEVERE, "Cannot construct the ObjectIdentifier for " + GSSUPMechOID.value, e);
         }
@@ -92,8 +87,8 @@ public class GSSUtils {
 
         try {
             i = GSS_NT_Export_Name_OID.value.indexOf(':');
-            x = new ObjectIdentifier(GSS_NT_Export_Name_OID.value.substring(i + 1));
-        } catch (IOException e) {
+            x = new Oid(GSS_NT_Export_Name_OID.value.substring(i + 1));
+        } catch (GSSException e) {
             x = null;
             _logger.log(Level.SEVERE, "Cannot construct the ObjectIdentifier for " + GSS_NT_Export_Name_OID.value, e);
         }
@@ -101,8 +96,8 @@ public class GSSUtils {
 
         try {
             i = GSS_NT_Scoped_Username_OID.value.indexOf(':');
-            x = new ObjectIdentifier(GSS_NT_Scoped_Username_OID.value.substring(i + 1));
-        } catch (IOException e) {
+            x = new Oid(GSS_NT_Scoped_Username_OID.value.substring(i + 1));
+        } catch (GSSException e) {
             x = null;
             _logger.log(Level.SEVERE, "Cannot construct the ObjectIdentifier for " + GSS_NT_Scoped_Username_OID.value, e);
         }
@@ -114,13 +109,13 @@ public class GSSUtils {
                 _logger.log(Level.FINE, "GSS_NT_EXPORT_NAME_OID: " + dumpHex(getDER(GSS_NT_EXPORT_NAME_OID)));
                 _logger.log(Level.FINE, "GSS_NT_SCOPED_USERNAME_OID: " + dumpHex(getDER(GSS_NT_SCOPED_USERNAME_OID)));
             }
-        } catch (IOException e) {
+        } catch (GSSException e) {
             _logger.log(Level.SEVERE, "getDER failed", e);
         }
 
         try {
             mech = GSSUtils.getDER(GSSUtils.GSSUP_MECH_OID);
-        } catch (IOException io) {
+        } catch (GSSException io) {
             mech = null;
         }
     }
@@ -148,13 +143,13 @@ public class GSSUtils {
      * Import the exported name from the mechanism independent exported name.
      */
 
-    public static byte[] importName(ObjectIdentifier oid, byte[] externalName) throws IOException {
+    public static byte[] importName(Oid oid, byte[] externalName) throws GSSException {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Attempting to import mechanism independent name");
             _logger.log(Level.FINE, dumpHex(externalName));
         }
 
-        IOException e = new IOException("Invalid Name");
+        GSSException e = new GSSException(GSSException.BAD_NAME);
 
         if (externalName[0] != 0x04)
             throw e;
@@ -175,7 +170,7 @@ public class GSSUtils {
 
         byte[] deroid = new byte[mechoidlen];
         System.arraycopy(externalName, 4, deroid, 0, mechoidlen);
-        ObjectIdentifier oid1 = getOID(deroid);
+        Oid oid1 = getOID(deroid);
         if (!oid1.equals((Object) oid))
             throw e;
 
@@ -201,13 +196,13 @@ public class GSSUtils {
 
     /* verify if exportedName is of object ObjectIdentifier. */
 
-    public static boolean verifyMechOID(ObjectIdentifier oid, byte[] externalName) throws IOException {
+    public static boolean verifyMechOID(Oid oid, byte[] externalName) throws GSSException {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Attempting to verify mechanism independent name");
             _logger.log(Level.FINE, dumpHex(externalName));
         }
 
-        IOException e = new IOException("Invalid Name");
+        GSSException e = new GSSException(GSSException.BAD_NAME);
 
         if (externalName[0] != 0x04)
             throw e;
@@ -229,7 +224,7 @@ public class GSSUtils {
 
         byte[] deroid = new byte[mechoidlen];
         System.arraycopy(externalName, 4, deroid, 0, mechoidlen);
-        ObjectIdentifier oid1 = getOID(deroid);
+        Oid oid1 = getOID(deroid);
         return oid1.equals((Object) oid);
     }
 
@@ -239,8 +234,7 @@ public class GSSUtils {
      * name is reproduced here from [RFC2743] : Format: Bytes 2 0x04 0x01 2 mech OID length (len) len
      * mech OID's DER value 4 exported name len name len exported name
      */
-
-    public static byte[] createExportedName(ObjectIdentifier oid, byte[] extName) throws IOException {
+    public static byte[] createExportedName(Oid oid, byte[] extName) throws GSSException {
         byte[] oidDER = getDER(oid);
         int tokensize = 2 + 2 + oidDER.length + 4 + extName.length;
 
@@ -276,17 +270,17 @@ public class GSSUtils {
      * as specified byte the DER representation for an ObjectIdentifier.
      */
 
-    public static byte[] getDER(ObjectIdentifier id) throws IOException {
+    public static byte[] getDER(Oid id) throws GSSException {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Returning OID in DER format");
             _logger.log(Level.FINE, "    OID = " + id.toString());
         }
-        DerOutputStream dos = new DerOutputStream();
-        dos.putOID(id);
-        byte[] oid = dos.toByteArray();
+        
+        byte[] oid = id.getDER();
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "    DER OID: " + dumpHex(oid));
         }
+        
         return oid;
     }
 
@@ -296,14 +290,8 @@ public class GSSUtils {
      * specified byte the DER representation for an ObjectIdentifier.
      */
 
-    public static ObjectIdentifier getOID(byte[] derOID) throws IOException {
-        DerInputStream dis = new DerInputStream(derOID);
-        ObjectIdentifier oid = dis.getOID();
-
-        /*
-         * Note: getOID() method call generates an IOException if derOID contains any malformed data
-         */
-        return oid;
+    public static Oid getOID(byte[] derOID) throws GSSException {
+        return new Oid(derOID);
     }
 
     /*
@@ -315,7 +303,7 @@ public class GSSUtils {
      * format defined by the mechanism itself outside of RFC 2743.
      */
 
-    public static byte[] createMechIndToken(ObjectIdentifier mechoid, byte mechtok[]) throws IOException {
+    public static byte[] createMechIndToken(Oid mechoid, byte mechtok[]) throws GSSException {
         byte[] deroid = getDER(mechoid);
 
         byte[] token = new byte[1 // for 0x60
@@ -338,6 +326,7 @@ public class GSSUtils {
             _logger.log(Level.FINE, "Mechanism independent token created: ");
             _logger.log(Level.FINE, dumpHex(token));
         }
+        
         return token;
     }
 
@@ -346,8 +335,7 @@ public class GSSUtils {
      * independent token is specified in section 3.1, [RFC 2743].
      */
 
-    public static byte[] getMechToken(ObjectIdentifier oid, byte[] token) {
-
+    public static byte[] getMechToken(Oid oid, byte[] token) {
         byte[] mechtoken = null;
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Received mechanism independent token: ");
@@ -363,7 +351,7 @@ public class GSSUtils {
                 _logger.log(Level.FINE, "Mechanism specific token : ");
                 _logger.log(Level.FINE, dumpHex(mechtoken));
             }
-        } catch (IOException e) {
+        } catch (GSSException e) {
             _logger.log(Level.SEVERE, "Cannot verify token header", e);
         }
         return mechtoken;
@@ -376,14 +364,13 @@ public class GSSUtils {
      * token is returned. If the header is mal formed, then an exception is thrown.
      */
 
-    private static int verifyTokenHeader(ObjectIdentifier oid, byte[] token) throws IOException {
+    private static int verifyTokenHeader(Oid oid, byte[] token) throws GSSException {
         int index = 0;
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "Attempting to verify tokenheader in the mechanism independent token.");
-        }
+        _logger.log(Level.FINE, "Attempting to verify tokenheader in the mechanism independent token.");
+        
         // verify header
         if (token[index++] != 0x60)
-            throw new IOException("Defective Token");
+            throw new GSSException(GSSException.DEFECTIVE_TOKEN);
 
         int toklen = readDERLength(token, index); // derOID length + token length
 
@@ -396,13 +383,13 @@ public class GSSUtils {
         }
 
         if (token[index] != 0x06)
-            throw new IOException("Defective Token");
+            throw new GSSException(GSSException.DEFECTIVE_TOKEN);
 
         byte[] buf = new byte[token.length - index];
 
         System.arraycopy(token, index, buf, 0, token.length - index);
 
-        ObjectIdentifier mechoid = getOID(buf);
+        Oid mechoid = getOID(buf);
 
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Comparing mech OID in token with the expected mech OID");
@@ -414,7 +401,7 @@ public class GSSUtils {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "mech OID in token does not match expected mech OID");
             }
-            throw new IOException("Defective token");
+            throw new GSSException(GSSException.DEFECTIVE_TOKEN);
         }
         int mechoidlen = getDER(oid).length;
 

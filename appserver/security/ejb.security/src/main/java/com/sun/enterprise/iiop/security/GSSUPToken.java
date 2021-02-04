@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2021 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
 /**
@@ -52,11 +52,11 @@ import com.sun.corba.ee.org.omg.GSSUP.InitialContextTokenHelper;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
+import org.ietf.jgss.GSSException;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
 import org.omg.IOP.Codec;
 
-import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 
@@ -329,7 +329,7 @@ public class GSSUPToken {
             if (target_name != null && target_name.length != 0) {
                 targetNameRealm = new String(GSSUtils.importName(GSSUtils.GSSUP_MECH_OID, target_name));
             }
-        } catch (IOException ex) {
+        } catch (GSSException ex) {
             _logger.log(Level.FINE, null, ex);
         }
         if (targetNameRealm != null && !DEFAULT_REALM_NAME.equals(targetNameRealm)) {
@@ -346,7 +346,7 @@ public class GSSUPToken {
      *
      * @return byte[] the byte array representation of the GSSToken
      */
-    byte[] getGSSToken() throws IOException {
+    byte[] getGSSToken() throws GSSException {
         if (_logger.isLoggable(Level.FINER)) {
             _logger.log(Level.FINER, "IIOP:GSSUP mech token : " + GSSUtils.dumpHex(cdr_encoded_token));
         }
