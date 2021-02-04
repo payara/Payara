@@ -41,7 +41,6 @@
 
 package com.sun.enterprise.v3.admin.cluster;
 
-import com.sun.enterprise.admin.util.InstanceStateService;
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 import static org.glassfish.api.ActionReport.ExitCode.WARNING;
@@ -75,7 +74,6 @@ import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.cluster.InstanceInfo;
 
 /**
  * Remote AdminCommand to delete an instance.  This command is run only on DAS.
@@ -88,8 +86,8 @@ import com.sun.enterprise.util.cluster.InstanceInfo;
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Server.class,
-        opType=RestEndpoint.OpType.DELETE,
-        path="delete-instance",
+        opType=RestEndpoint.OpType.DELETE, 
+        path="delete-instance", 
         description="Delete Instance",
         params={
             @RestParam(name="id", value="$parent")
@@ -98,7 +96,7 @@ import com.sun.enterprise.util.cluster.InstanceInfo;
 public class DeleteInstanceCommand implements AdminCommand {
 
     private static final String NL = System.lineSeparator();
-
+    
     @Param(name = "instance_name", primary = true)
     private String instanceName;
 
@@ -113,9 +111,6 @@ public class DeleteInstanceCommand implements AdminCommand {
 
     @Inject
     private Servers servers;
-
-    @Inject
-    InstanceStateService stateService;
 
     @Inject
     private Nodes nodes;
@@ -143,21 +138,19 @@ public class DeleteInstanceCommand implements AdminCommand {
             logger.warning(msg);
             report.setActionExitCode(FAILURE);
             report.setMessage(msg);
-
+            
             return;
         }
-
+        
         instanceHost = instance.getAdminHost();
 
         // make sure instance is not running.
-        InstanceInfo instanceInfo = new InstanceInfo(serviceLocator, instance, -1, null, null,
-                noderef, logger, -1, report, stateService);
-        if (instanceInfo.isRunning()) {
+        if (instance.isRunning()) {
             msg = Strings.get("instance.shutdown", instanceName);
             logger.warning(msg);
             report.setActionExitCode(FAILURE);
             report.setMessage(msg);
-
+            
             return;
         }
 
@@ -269,7 +262,7 @@ public class DeleteInstanceCommand implements AdminCommand {
         if (!terse) {
             msg = StringUtils.cat(NL, output.toString().trim(), msg);
         }
-
+        
         report.setMessage(msg);
     }
 
