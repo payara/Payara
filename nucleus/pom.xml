@@ -1165,7 +1165,7 @@ Parent is ${project.parent}</echo>
 
             <distributionManagement>
                 <snapshotRepository>
-                    <id>ossrh</id>
+                    <id>payara-maven-central</id>
                     <url>https://oss.sonatype.org/content/repositories/snapshots</url>
                 </snapshotRepository>
             </distributionManagement>
@@ -1178,7 +1178,7 @@ Parent is ${project.parent}</echo>
                         <version>1.6.8</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <serverId>ossrh</serverId>
+                            <serverId>payara-maven-central</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
