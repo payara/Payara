@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.resource.pool;
 
@@ -67,6 +67,13 @@ import javax.resource.ResourceException;
 import javax.resource.spi.RetryableUnavailableException;
 import javax.transaction.Transaction;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -85,6 +92,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
             StringManager.getManager(ConnectionPool.class);
     protected final static Logger _logger = LogDomains.getLogger(ConnectionPool.class,LogDomains.RSR_LOGGER);
 
+    private ExecutorService execService = Executors.newCachedThreadPool();
 
     //pool life-cycle config properties
     protected int maxPoolSize;          // Max size of the pool
@@ -383,7 +391,32 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                 //already obtained in the current transaction.
                 if (!blocked || (resourcesSet != null && resourcesSet.size() > 0)) {
                     try {
-                        result = internalGetResource(spec, alloc, txn);
+                        if (maxWaitTime > 0) {
+                            elapsedWaitTime = System.currentTimeMillis() - startTime;
+                            if (elapsedWaitTime < maxWaitTime) {
+                                remainingWaitTime = maxWaitTime - elapsedWaitTime;
+                            }
+                            Future<ResourceHandle> futureResult = null;
+                            try {
+                                futureResult = execService.submit(() -> internalGetResource(spec, alloc, txn));
+                                result = futureResult.get(remainingWaitTime, TimeUnit.MILLISECONDS);
+                            } catch (TimeoutException ex) {
+                                if (futureResult != null) {
+                                    futureResult.cancel(true);
+                                }
+                                poolManagerWaitTimeExpired();
+                            } catch (ExecutionException ex) {
+                                if(ex.getCause() instanceof PoolingException){
+                                    throw (PoolingException)ex.getCause();
+                                } else {
+                                    throw new PoolingException(ex);
+                                }
+                            } catch (InterruptedException ex) {
+                                poolManagerTaskInterrupted(ex);
+                            }
+                        } else {
+                            result = internalGetResource(spec, alloc, txn);
+                        }
                     } finally {
                         gateway.acquiredResource();
                     }
@@ -396,9 +429,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                     elapsedWaitTime = System.currentTimeMillis() - startTime;
                     poolLifeCycleListener.connectionRequestServed(elapsedWaitTime);
                     if (_logger.isLoggable( Level.FINE) ) {
-                        _logger.log(Level.FINE, "Resource Pool: elapsed time " +
-                                "(ms) to get connection for [" + spec + "] : " +
-                                elapsedWaitTime);
+                        _logger.log(Level.FINE, "Resource Pool: elapsed time (ms) to get connection for [{0}] : {1}", new Object[]{spec, elapsedWaitTime});
                     }
                 }
                 //got one - seems we are not doing validation or matching
@@ -412,16 +443,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                         // time has not expired, determine remaining wait time.
                         remainingWaitTime = maxWaitTime - elapsedWaitTime;
                     } else {
-                        if (!blocked) {
-                            // wait time has expired
-                            if (poolLifeCycleListener != null) {
-                                poolLifeCycleListener.connectionTimedOut();
-                            }
-                            String msg = localStrings.getStringWithDefault(
-                                    "poolmgr.no.available.resource",
-                                    "No available resource. Wait-time expired.");
-                            throw new PoolingException(msg);
-                        }
+                        poolManagerWaitTimeExpired();
                     }
                 }
 
@@ -438,20 +460,14 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                             waitMonitor.wait(remainingWaitTime);
 
                         } catch (InterruptedException ex) {
-                           if (Globals.getDefaultHabitat().getService(ServerEnvironment.class, new Annotation[0]).getStatus() == ServerEnvironment.Status.stopping) {
-                               String msg = localStrings.getStringWithDefault("poolmgr.interrupted.shutdown", "Server is shutting down, cannot get connection");
-                               throw new PoolingException(msg);
-                           } else {
-                               String msg = localStrings.getStringWithDefault("poolmgr.interrupted.notshutdown", "Resource Pool: Interrupted retrieving connection");
-                               throw new PoolingException(msg, ex);
-                           }          
+                           poolManagerTaskInterrupted(ex);        
                         }
 
                         //try to remove in case that the monitor has timed
                         // out.  We dont expect the queue to grow to great numbers
                         // so the overhead for removing inexistant objects is low.
                         if (_logger.isLoggable(Level.FINE)) {
-                            _logger.log(Level.FINE, "removing wait monitor from queue: " + waitMonitor);
+                            _logger.log(Level.FINE, "removing wait monitor from queue: {0}", waitMonitor);
                         }
                         if (waitQueue.removeFromQueue(waitMonitor)) {
                             if (poolLifeCycleListener != null) {
@@ -467,25 +483,18 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                         try {
                             if(reconfigWaitTime > 0){
                                 if(_logger.isLoggable(Level.FINEST)) {
-                                    _logger.finest("[DRC] getting into reconfig wait queue for time ["+reconfigWaitTime+"]");
+                                    _logger.log(Level.FINEST, "[DRC] getting into reconfig wait queue for time [{0}]", reconfigWaitTime);
                                 }
                                 reconfigWaitMonitor.wait(reconfigWaitTime);
                             }
                         } catch (InterruptedException ex) {
-                           if (Globals.getDefaultHabitat().getService(ServerEnvironment.class, new Annotation[0]).getStatus() == ServerEnvironment.Status.stopping) {
-                               String msg = localStrings.getStringWithDefault("poolmgr.interrupted.shutdown", "Server is shutting down, cannot get connection");
-                               throw new PoolingException(msg);
-                           } else {
-                               String msg = localStrings.getStringWithDefault("poolmgr.interrupted.notshutdown", "Resource Pool: Interrupted retrieving connection");
-                               throw new PoolingException(msg, ex);
-                           }
+                           poolManagerTaskInterrupted(ex);
                         }
                         //try to remove in case that the monitor has timed
                         // out.  We don't expect the queue to grow to great numbers
                         // so the overhead for removing inexistent objects is low.
                         if(_logger.isLoggable(Level.FINEST)) {
-                            _logger.log(Level.FINEST, "[DRC] removing wait monitor from reconfig-wait-queue: " +
-                                reconfigWaitMonitor);
+                            _logger.log(Level.FINEST, "[DRC] removing wait monitor from reconfig-wait-queue: {0}", reconfigWaitMonitor);
                         }
 
                         reconfigWaitQueue.removeFromQueue(reconfigWaitMonitor);
@@ -504,6 +513,29 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
 
         alloc.fillInResourceObjects(result);
         return result;
+    }
+
+    private void poolManagerWaitTimeExpired() throws PoolingException {
+        if (!blocked) {
+            // wait time has expired
+            if (poolLifeCycleListener != null) {
+                poolLifeCycleListener.connectionTimedOut();
+            }
+            String msg = localStrings.getStringWithDefault(
+                    "poolmgr.no.available.resource",
+                    "No available resource. Wait-time expired.");
+            throw new PoolingException(msg);
+        }
+    }
+    
+    private void poolManagerTaskInterrupted(Exception ex) throws PoolingException {
+        if (Globals.getDefaultHabitat().getService(ServerEnvironment.class, new Annotation[0]).getStatus() == ServerEnvironment.Status.stopping) {
+            String msg = localStrings.getStringWithDefault("poolmgr.interrupted.shutdown", "Server is shutting down, cannot get connection");
+            throw new PoolingException(msg);
+        } else {
+            String msg = localStrings.getStringWithDefault("poolmgr.interrupted.notshutdown", "Resource Pool: Interrupted retrieving connection");
+            throw new PoolingException(msg, ex);
+        }
     }
 
     /**
@@ -938,7 +970,7 @@ public class ConnectionPool implements ResourcePool, ConnectionLeakListener,
                 try {
                     Thread.sleep(conCreationRetryInterval_);
                 } catch (InterruptedException ie) {
-                    //ignore this exception
+                    throw new PoolingException(ie);
                 }
             }
         }
