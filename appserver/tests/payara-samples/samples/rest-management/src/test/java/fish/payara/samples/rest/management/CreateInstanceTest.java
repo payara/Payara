@@ -75,7 +75,7 @@ public class CreateInstanceTest {
             output.clear();
             CliCommands.payaraGlassFish(Arrays.asList("list-nodes"), output);
             String node = output.stream().map(this::firstWord).findFirst().get();
-            CliCommands.payaraGlassFish("create-instance", "--node", node, "samples-restmgmt-inst", "--terse");
+            CliCommands.payaraGlassFish("create-instance", "--node", node, INSTANCE_NAME, "--terse");
         }
     }
 
