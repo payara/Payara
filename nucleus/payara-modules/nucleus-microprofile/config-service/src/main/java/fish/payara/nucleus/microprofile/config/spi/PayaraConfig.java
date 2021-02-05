@@ -76,6 +76,7 @@ public class PayaraConfig implements Config {
 
     private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
     private static final String MP_CONFIG_EXPANSION_ENABLED_STRING = "mp.config.property.expressions.enabled";
+    private static final String MP_CONFIG_PROFILE_NAME_STRING = "mp.config.profile";
 
     private static final class CacheEntry {
         final ConfigValueImpl value;
@@ -91,21 +92,20 @@ public class PayaraConfig implements Config {
     private final Map<Class<?>, Converter<?>> converters;
     private final long defaultCacheDurationSeconds;
 
-    private final Object cacheMapLock = new Object();
-    private final Map<String, CacheEntry> cachedValuesByProperty = new HashMap<>();
+    private final Map<String, CacheEntry> cachedValuesByProperty = new ConcurrentHashMap<>();
 
     private volatile Long configuredCacheValue = null;
     private final Object configuredCacheValueLock = new Object();
     
-    private String profile;
+    private final String profile;
 
     public PayaraConfig(List<ConfigSource> sources, Map<Class<?>, Converter<?>> converters, long defaultCacheDurationSeconds) {
         this.sources = sources;
         this.converters = new ConcurrentHashMap<>(converters);
         this.defaultCacheDurationSeconds = defaultCacheDurationSeconds;
         Collections.sort(sources, new ConfigSourceComparator());
-        
-        profile = getConfigValue("mp.config.profile").getValue();
+
+        profile = getConfigValue(MP_CONFIG_PROFILE_NAME_STRING).getValue();
     }
 
     @SuppressWarnings("unchecked")
@@ -225,14 +225,12 @@ public class PayaraConfig implements Config {
         final String entryKey = cacheKey + (defaultValue != null ? ":" + defaultValue : "")  + ":" + (entryTTL / 1000) + "s";
         final long now = currentTimeMillis();
 
-        synchronized(cacheMapLock) {
-            return cachedValuesByProperty.compute(entryKey, (key, entry) -> {
-                if (entry != null && now < entry.expires) {
-                    return entry;
-                }
-                return new CacheEntry(searchConfigSources(finalPropertyName, finalDefaultValue), entryTTL);
-            }).value;
-        }
+        return cachedValuesByProperty.compute(entryKey, (key, entry) -> {
+            if (entry != null && now < entry.expires) {
+                return entry;
+            }
+            return new CacheEntry(searchConfigSources(finalPropertyName, finalDefaultValue), entryTTL);
+        }).value;
     }
 
     private <T> T convertValue(ConfigValue configValue, String defaultValue,
@@ -287,9 +285,7 @@ public class PayaraConfig implements Config {
     }
     
     public void clearCache() {
-        synchronized(cacheMapLock) {
-            cachedValuesByProperty.clear();
-        }
+        cachedValuesByProperty.clear();
     }
 
     private <E> Optional<Converter<Object>> createArrayConverter(Class<E> elementType) {
