@@ -46,7 +46,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Array;
@@ -55,6 +55,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigValue;
@@ -103,6 +107,29 @@ public class PayaraConfigTest {
         assertEquals("value1", value.getValue());
         assertEquals("S1", value.getSourceName());
         assertEquals(100, value.getSourceOrdinal());
+    }
+
+    /**
+     * Introduced by QACI-625. Not reproducible on all machines, but this aims to catch
+     * issues caused by high concurrency in the cache map
+     */
+    @Test
+    public void concurrentConfigValueTest() throws InterruptedException {
+        ExecutorService exec = Executors.newFixedThreadPool(1000);
+        AtomicReference<Throwable> failure = new AtomicReference<>(null);
+        for (int i = 0; i < 100000; i++) {
+            exec.submit(() -> {
+                try {
+                    config.getConfigValue("mp.config.profile").getValue();
+                } catch (Throwable t) {
+                    failure.set(t);
+                    throw (RuntimeException) t;
+                }
+            });
+        }
+        exec.shutdown();
+        exec.awaitTermination(60, TimeUnit.SECONDS);
+        assertNull("stress test failed", failure.get());
     }
 
     @Test
