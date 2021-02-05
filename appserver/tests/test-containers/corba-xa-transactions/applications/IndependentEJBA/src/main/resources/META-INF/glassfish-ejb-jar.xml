@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glassfish-ejb-jar PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 EJB 3.1//EN" "http://glassfish.org/dtds/glassfish-ejb-jar_3_1-1.dtd">
+<glassfish-ejb-jar>
+    <enterprise-beans>
+        <ejb>
+            <ejb-name>PackageProcesserService</ejb-name>
+            <ejb-ref>
+                <ejb-ref-name>ejb/CrossPackageWrapper</ejb-ref-name>
+                <jndi-name>corbaname:iiop:${MPCONFIG=fish.payara.test.containers.app.xatxcorba.packagewrapper.remote.host}:${MPCONFIG=fish.payara.test.containers.app.xatxcorba.packagewrapper.remote.port}#java:global/ServiceAssemblyB/ServiceApplicationB/PackageWrapperService!fish.payara.test.containers.app.xatxcorba.interfaces.CrossPackageWrapper</jndi-name>
+            </ejb-ref>
+            <ejb-ref>
+                <ejb-ref-name>ejb/CrossPackageMarker</ejb-ref-name>
+                <jndi-name>corbaname:iiop:${MPCONFIG=fish.payara.test.containers.app.xatxcorba.packagewrapper.remote.host}:${MPCONFIG=fish.payara.test.containers.app.xatxcorba.packagewrapper.remote.port}#java:global/ServiceAssemblyB/ServiceApplicationB/PackageMarkerService!fish.payara.test.containers.app.xatxcorba.interfaces.CrossPackageMarker</jndi-name>
+            </ejb-ref>
+        </ejb>
+    </enterprise-beans>
+</glassfish-ejb-jar>

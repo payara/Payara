@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.server.internal.tests</groupId>
+        <artifactId>test-containers</artifactId>
+        <version>5.2021.2-SNAPSHOT</version>
+    </parent>
+    <groupId>fish.payara.server.internal.tests.corba-xa-transactions</groupId>
+    <artifactId>corba-xa-transactions-root</artifactId>
+    <name>XA TX over CORBA - ROOT POM</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>applications</module>
+        <module>tests</module>
+    </modules>
+</project>

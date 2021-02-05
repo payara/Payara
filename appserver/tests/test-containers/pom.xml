@@ -1,0 +1,285 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.server.internal.tests</groupId>
+        <artifactId>payara-tests</artifactId>
+        <version>5.2021.2-SNAPSHOT</version>
+    </parent>
+    <artifactId>test-containers</artifactId>
+    <name>Payara Test Containers Modules</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>docker-containers-for-tests</module>
+        <module>tools</module>
+        <module>tools-arquillian</module>
+        <module>manual</module>
+        <module>cloud</module>
+        <module>corba-xa-transactions</module>
+<!--         <module>mysql</module> -->
+<!--         <module>jmh</module> -->
+<!--         <module>primefaces</module> -->
+    </modules>
+
+    <properties>
+        <docker.images.timeoutInSeconds>900</docker.images.timeoutInSeconds>
+
+        <docker.payara.cfg.logging.newImplementation>false</docker.payara.cfg.logging.newImplementation>
+        <docker.payara.directory.shared>${project.build.directory}/shared</docker.payara.directory.shared>
+        <docker.payara.domainName>test</docker.payara.domainName>
+
+        <docker.payara.version>${project.version}</docker.payara.version>
+        <docker.payara.tag>${docker.payara.version}</docker.payara.tag>
+        <docker.payara.image.base>payara/payara4tests:${docker.payara.tag}</docker.payara.image.base>
+        <docker.payara.image.forceNew>true</docker.payara.image.forceNew>
+
+        <docker.payara.jvm.xms>256m</docker.payara.jvm.xms>
+        <docker.payara.jvm.xmx>1g</docker.payara.jvm.xmx>
+        <docker.payara.jvm.xss>228k</docker.payara.jvm.xss>
+        <docker.payara.memory.totalInGB>2</docker.payara.memory.totalInGB>
+        <docker.payara.host>payara-test-docker</docker.payara.host>
+        <docker.payara.payaraDirectoryName>payara</docker.payara.payaraDirectoryName>
+
+        <docker.mysql.image.forceNew>false</docker.mysql.image.forceNew>
+        <docker.mysql.image.base>mysql:8.0.22</docker.mysql.image.base>
+        <docker.mysql.host>tc-mysql</docker.mysql.host>
+        <docker.mysql.memory.totalInGB>1</docker.mysql.memory.totalInGB>
+        <docker.mysql.port>3306</docker.mysql.port>
+        <docker.mysql.user>mysql</docker.mysql.user>
+        <docker.mysql.password>mysqlpassword</docker.mysql.password>
+
+        <maven.test.jvmoptions.memory.sizes>-Xss512k -Xms256m -Xmx1g -XX:MaxDirectMemorySize=512m</maven.test.jvmoptions.memory.sizes>
+        <maven.test.jvmoptions.memory.gc>-verbose:gc -XX:+UseG1GC -XX:+UseStringDeduplication</maven.test.jvmoptions.memory.gc>
+        <maven.test.jvmoptions.display>-Djava.awt.headless=true</maven.test.jvmoptions.display>
+        <maven.test.jvmoptions.locale>-Duser.language=en -Duser.region=US</maven.test.jvmoptions.locale>
+        <maven.test.jvmoptions.custom></maven.test.jvmoptions.custom>
+        <maven.test.jvmoptions>
+          ${maven.test.jvmoptions.memory.sizes}
+          ${maven.test.jvmoptions.memory.gc}
+          ${maven.test.jvmoptions.display}
+          ${maven.test.jvmoptions.locale}
+          ${maven.test.jvmoptions.custom}
+        </maven.test.jvmoptions>
+        <failsafe.argLine>${maven.test.jvmoptions}</failsafe.argLine>
+        <surefire.argLine>${maven.test.jvmoptions}</surefire.argLine>
+
+        <slf4j.version>1.7.30</slf4j.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>fish.payara.extras</groupId>
+                <artifactId>server-full-docker-image</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.extras</groupId>
+                <artifactId>micro-docker-image</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>fish.payara.server.internal.deployment</groupId>
+                <artifactId>deployment-client</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-bom</artifactId>
+                <version>3.1.4</version>
+                <type>pom</type>
+                <scope>import</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <type>pom</type>
+                <version>1.7.0.Alpha5</version>
+                <scope>import</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jul-to-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.17</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.sourceforge.htmlunit</groupId>
+                <artifactId>htmlunit</artifactId>
+                <version>2.45.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>5.7.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>5.7.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <!-- depends on JUnit4, which cannot be excluded -->
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>1.15.1</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>javax.annotation-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hamcrest</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>1.15.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>mysql</artifactId>
+                <version>1.15.1</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>8.0.23</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.dbunit</groupId>
+                <artifactId>dbunit</artifactId>
+                <version>2.7.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.database-rider</groupId>
+                <artifactId>rider-junit5</artifactId>
+                <version>1.22.0</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-commons</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld.se</groupId>
+                <artifactId>weld-se-core</artifactId>
+                <version>3.1.5.Final</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.enterprise</groupId>
+                        <artifactId>cdi-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.11</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.8.0</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <excludes>
+                            <exclude>**/*ITest.java</exclude>
+                            <exclude>**/*PTest.java</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <configuration>
+                        <argLine>${failsafe.argLine}</argLine>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>payara4</id>
+            <!-- This profile if important for experimenting with Payara4 in this branch -->
+            <properties>
+                <docker.payara.cfg.logging.newImplementation>false</docker.payara.cfg.logging.newImplementation>
+                <docker.payara.domainName>test</docker.payara.domainName>
+            </properties>
+        </profile>
+    </profiles>
+
+    <!--
+     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Ddocker.payara.tag=5.2021.2-SNAPSHOT-JDK11 -Ddocker.java.repository=adoptopenjdk/openjdk11 -Ddocker.java.tag=jdk-11.0.6_10-debian-slim
+     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=5.2021.2-SNAPSHOT-JDK11
+
+     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Dpayara.version=4.1.2.191.14-SNAPSHOT -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ddocker.payara.rootDirectoryName=payara41 -Ddocker.payara.domainName=payaradomain -Ddocker.payara.serverLogHandler.class=com.sun.enterprise.server.logging.GFFileHandler
+     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ppayara4
+     -->
+</project>

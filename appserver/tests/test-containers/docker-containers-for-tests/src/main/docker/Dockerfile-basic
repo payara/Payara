@@ -1,0 +1,17 @@
+FROM @docker.basic.image@
+
+USER root
+
+RUN true \
+    && set -x \
+    && apt-get update \
+    && apt-get install -y netcat net-tools inetutils-ping wget gnupg lsb-release curl locales psmisc unzip zip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen \
+    && true
+
+USER payara
+WORKDIR ${HOME_DIR}
+
+ENTRYPOINT []

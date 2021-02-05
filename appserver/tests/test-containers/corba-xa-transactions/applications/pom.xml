@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.server.internal.tests.corba-xa-transactions</groupId>
+        <artifactId>corba-xa-transactions-root</artifactId>
+        <version>5.2021.2-SNAPSHOT</version>
+    </parent>
+    <groupId>fish.payara.server.internal.tests.corba-xa-transactions-app</groupId>
+    <artifactId>test-containers-corba-xa-transactions-app</artifactId>
+    <name>XA TX over CORBA - APP POM</name>
+    <packaging>pom</packaging>
+    <modules>
+        <module>ServiceApplicationA</module>
+        <module>ServiceAssemblyA</module>
+        <module>ServiceAssemblyB</module>
+        <module>ServiceAssemblyC</module>
+        <module>ServiceApplicationB</module>
+        <module>ServiceApplicationC</module>
+        <module>ComplexCrossEJBCommon</module>
+        <module>IndependentEJBA</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-ejb-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <configuration>
+                        <ejbVersion>3.2</ejbVersion>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>3.2.3</version>
+                    <configuration>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-ear-plugin</artifactId>
+                    <version>3.0.2</version>
+                    <configuration>
+                        <version>8</version>
+                        <defaultLibBundleDir>lib</defaultLibBundleDir>
+                        <applicationName>${project.artifactId}</applicationName>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

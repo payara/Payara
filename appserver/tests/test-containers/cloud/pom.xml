@@ -1,0 +1,230 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.server.internal.tests</groupId>
+        <artifactId>test-containers</artifactId>
+        <version>5.2021.2-SNAPSHOT</version>
+    </parent>
+    <artifactId>test-containers-tests-cloud</artifactId>
+    <name>Payara Test Containers Tests for Cloud Basics</name>
+    <description>Tests for Data Grids, Clusters and Nodes</description>
+    <packaging>jar</packaging>
+
+    <properties>
+        <docker.host>host.testcontainers.internal</docker.host>
+        <docker.port>2376</docker.port>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.server.internal.tests</groupId>
+            <artifactId>test-containers-tools</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.core</groupId>
+            <artifactId>logging</artifactId>
+            <!-- use the version compatible with tests, not with the tested server! -->
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.extras</groupId>
+            <artifactId>server-full-docker-image</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.extras</groupId>
+            <artifactId>micro-docker-image</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-impl-maven-archive</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.deployment</groupId>
+            <artifactId>deployment-client</artifactId>
+        </dependency>
+
+<!--         <dependency> -->
+<!--             <groupId>org.jboss.arquillian.graphene</groupId> -->
+<!--             <artifactId>graphene-webdriver</artifactId> -->
+<!--             <version>2.3.2</version> -->
+<!--             <type>pom</type> -->
+<!--             <scope>test</scope> -->
+<!--             <exclusions> -->
+<!--                 <exclusion> -->
+<!--                     <groupId>org.hamcrest</groupId> -->
+<!--                     <artifactId>*</artifactId> -->
+<!--                 </exclusion> -->
+<!--             </exclusions> -->
+<!--         </dependency> -->
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+        </dependency>
+
+        <dependency>
+            <!-- depends on JUnit4, which cannot be excluded -->
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dbunit</groupId>
+            <artifactId>dbunit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.database-rider</groupId>
+            <artifactId>rider-junit5</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- If we skip this dependency, jersey-client throws java.lang.IllegalStateException: InjectionManagerFactory not found. -->
+        <!-- With that we must have META-INF/beans.xml in src/test/resources -->
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-cdi2-se</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld.se</groupId>
+            <artifactId>weld-se-core</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <includes>
+                    <include>test.properties</include>
+                </includes>
+                <filtering>true</filtering>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <includes>
+                    <include>log4j.properties</include>
+                    <include>server-side/**</include>
+                    <include>META-INF/**</include>
+                    <include>*.xml</include>
+                    <include>*.json</include>
+                    <include>*.sql</include>
+                </includes>
+                <filtering>false</filtering>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!--
+     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Ddocker.payara.tag=5.2021.2-SNAPSHOT-JDK11 -Ddocker.java.repository=adoptopenjdk/openjdk11 -Ddocker.java.tag=jdk-11.0.6_10-debian-slim
+     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=5.2021.2-SNAPSHOT-JDK11
+
+     mvn clean install -PBuildExtras,BuildDockerImages -pl :docker-images -amd -Dpayara.version=4.1.2.191.14-SNAPSHOT -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ddocker.payara.rootDirectoryName=payara41 -Ddocker.payara.domainName=payaradomain -Ddocker.payara.serverLogHandler.class=com.sun.enterprise.server.logging.GFFileHandler
+     mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.image.forceNew -Ddocker.payara.tag=4.1.2.191.14-SNAPSHOT -Ppayara4
+     -->
+</project>

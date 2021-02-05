@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.server.internal.tests</groupId>
+        <artifactId>test-containers</artifactId>
+        <version>5.2021.2-SNAPSHOT</version>
+    </parent>
+    <artifactId>docker-containers-for-tests</artifactId>
+    <packaging>pom</packaging>
+    <name>Payara Test Containers - Base Container for Tests</name>
+    <description>Does not contain Payara, but contains tools used in tests</description>
+
+    <properties>
+        <docker.hostname>localhost</docker.hostname>
+        <docker.basic.repository>payara/basic</docker.basic.repository>
+        <docker.basic.tag>${project.version}</docker.basic.tag>
+        <docker.basic.image>${docker.basic.repository}:${docker.basic.tag}</docker.basic.image>
+        <docker.basic4tests.repository>payara/basic4tests</docker.basic4tests.repository>
+        <docker.basic4tests.tag>${docker.basic.tag}</docker.basic4tests.tag>
+        <docker.basic4tests.image>${docker.basic4tests.repository}:${docker.basic4tests.tag}</docker.basic4tests.image>
+        <docker.payara4tests.repository>payara/payara4tests</docker.payara4tests.repository>
+        <docker.payara4tests.tag>${docker.payara.tag}</docker.payara4tests.tag>
+
+        <docker.payara.rootDirectoryName>payara5</docker.payara.rootDirectoryName>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.extras</groupId>
+            <artifactId>basic-docker-image</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.distributions</groupId>
+            <artifactId>payara</artifactId>
+            <!-- Don't remove, allows to override the dependency! -->
+            <version>${docker.payara.version}</version>
+            <type>zip</type>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>build-docker-image</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>${docker.basic4tests.repository}</name>
+                            <build>
+                                <!-- On Windows with default setting ${*}, $PATH would get filtered as well -->
+                                <filter>@</filter>
+                                <tags>
+                                    <tag>${docker.basic4tests.tag}</tag>
+                                </tags>
+                                <cleanup>try</cleanup>
+                                <noCache>false</noCache>
+                                <dockerFile>Dockerfile-basic</dockerFile>
+                            </build>
+                        </image>
+                        <image>
+                            <name>${docker.payara4tests.repository}</name>
+                            <build>
+                                <filter>@</filter>
+                                <tags>
+                                    <tag>${docker.payara4tests.tag}</tag>
+                                </tags>
+                                <cleanup>try</cleanup>
+                                <noCache>true</noCache>
+                                <dockerFile>Dockerfile-server</dockerFile>
+                                <assembly>
+                                    <mode>tar</mode>
+                                    <descriptor>assembly-server.xml</descriptor>
+                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                </assembly>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
