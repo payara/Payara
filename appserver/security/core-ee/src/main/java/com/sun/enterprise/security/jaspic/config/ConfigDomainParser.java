@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2021 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jaspic.config;
 
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
@@ -53,6 +53,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jakarta.security.auth.message.MessagePolicy;
 
@@ -67,15 +69,14 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
 import com.sun.logging.LogDomains;
 
-import sun.security.util.PropertyExpander;
-import sun.security.util.PropertyExpander.ExpandException;
-
 /**
  * Parser for message-security-config in domain.xml
  */
 public class ConfigDomainParser implements ConfigParser {
 
     private static final Logger _logger = LogDomains.getLogger(ConfigDomainParser.class, SECURITY_LOGGER);
+
+    private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{\\{(.*?)}}|\\$\\{(.*?)}");
 
     // configuration info
     private Map<String, GFServerConfigProvider.InterceptEntry> configMap = new HashMap<>();
@@ -95,30 +96,22 @@ public class ConfigDomainParser implements ConfigParser {
     }
 
     private void processServerConfig(SecurityService service, Map<String, GFServerConfigProvider.InterceptEntry> newConfig) throws IOException {
-
         List<MessageSecurityConfig> configList = service.getMessageSecurityConfig();
 
         if (configList != null) {
-
             Iterator<MessageSecurityConfig> cit = configList.iterator();
 
             while (cit.hasNext()) {
-
                 MessageSecurityConfig next = cit.next();
 
                 // single message-security-config for each auth-layer
                 // auth-layer is synonymous with intercept
-
                 String intercept = parseInterceptEntry(next, newConfig);
 
                 List<ProviderConfig> provList = next.getProviderConfig();
-
                 if (provList != null) {
-
                     Iterator<ProviderConfig> pit = provList.iterator();
-
                     while (pit.hasNext()) {
-
                         ProviderConfig provider = pit.next();
                         parseIDEntry(provider, newConfig, intercept);
                     }
@@ -136,7 +129,6 @@ public class ConfigDomainParser implements ConfigParser {
     }
 
     private String parseInterceptEntry(MessageSecurityConfig msgConfig, Map<String, GFServerConfigProvider.InterceptEntry> newConfig) throws IOException {
-
         String intercept = null;
         String defaultServerID = null;
         String defaultClientID = null;
@@ -146,8 +138,8 @@ public class ConfigDomainParser implements ConfigParser {
         defaultClientID = msgConfig.getDefaultClientProvider();
 
         if (_logger.isLoggable(FINE)) {
-            _logger.fine("Intercept Entry: " + "\n    intercept: " + intercept + "\n    defaultServerID: " + defaultServerID
-                    + "\n    defaultClientID:  " + defaultClientID);
+            _logger.fine("Intercept Entry: " + "\n    intercept: " + intercept + "\n    defaultServerID: "
+                    + defaultServerID + "\n    defaultClientID:  " + defaultClientID);
         }
 
         if (defaultServerID != null || defaultClientID != null) {
@@ -171,8 +163,8 @@ public class ConfigDomainParser implements ConfigParser {
         String id = pConfig.getProviderId();
         String type = pConfig.getProviderType();
         String moduleClass = pConfig.getClassName();
-        MessagePolicy requestPolicy = parsePolicy((RequestPolicy) pConfig.getRequestPolicy());
-        MessagePolicy responsePolicy = parsePolicy((ResponsePolicy) pConfig.getResponsePolicy());
+        MessagePolicy requestPolicy = parsePolicy(pConfig.getRequestPolicy());
+        MessagePolicy responsePolicy = parsePolicy(pConfig.getResponsePolicy());
 
         // get the module options
 
@@ -181,18 +173,14 @@ public class ConfigDomainParser implements ConfigParser {
         List<Property> pList = pConfig.getProperty();
 
         if (pList != null) {
-
             Iterator<Property> pit = pList.iterator();
-
             while (pit.hasNext()) {
-
                 Property property = pit.next();
 
                 try {
-                    options.put(property.getName(), PropertyExpander.expand(property.getValue(), false));
-                } catch (ExpandException ee) {
-                    // log warning and give the provider a chance to
-                    // interpret value itself.
+                    options.put(property.getName(), expand(property.getValue()));
+                } catch (IllegalStateException ise) {
+                    // log warning and give the provider a chance to interpret value itself.
                     if (_logger.isLoggable(Level.FINE)) {
                         _logger.log(Level.FINE, "jaspic.unexpandedproperty");
                     }
@@ -224,6 +212,30 @@ public class ConfigDomainParser implements ConfigParser {
         intEntry.idMap.put(id, idEntry);
     }
 
+    private String expand(String rawProperty) {
+        Matcher propertyMatcher = PROPERTY_PATTERN.matcher(rawProperty);
+        StringBuilder propertyBuilder = new StringBuilder();
+        while (propertyMatcher.find()) {
+            // Check if the ignore pattern matched
+            if (propertyMatcher.group(1) != null) {
+                // Ignore ${{...}} matched, so just append everything
+                propertyMatcher.appendReplacement(propertyBuilder, Matcher.quoteReplacement(propertyMatcher.group()));
+            } else {
+
+                String replacement = System.getProperty(propertyMatcher.group(2));
+                if (replacement == null) {
+                    throw new IllegalStateException("No system property for " + propertyMatcher.group(2));
+                }
+
+                // The replacement pattern matched
+                propertyMatcher.appendReplacement(propertyBuilder, Matcher.quoteReplacement(replacement));
+            }
+        }
+        propertyMatcher.appendTail(propertyBuilder);
+
+        return propertyBuilder.toString();
+    }
+
     private MessagePolicy parsePolicy(RequestPolicy policy) {
 
         if (policy == null) {
@@ -245,4 +257,5 @@ public class ConfigDomainParser implements ConfigParser {
         String authRecipient = policy.getAuthRecipient();
         return AuthMessagePolicy.getMessagePolicy(authSource, authRecipient);
     }
+    
 }
