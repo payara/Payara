@@ -121,22 +121,12 @@ public class OpenIdIdentityStore implements IdentityStore {
             if (resource != null && ! resource.isEmpty()) {
                 // convert AccesTokenClaims Map to map<String, String> and build json object
                 Map<String, String> convertedTokenMap = new HashMap<>();
-                accesTokenClaims.entrySet().stream()
-                        .forEach(claim -> {
-                            if (claim.getValue() instanceof String) {
-                                convertedTokenMap.put(claim.getKey(), (String) claim.getValue());
-                            }
-                        });
+                this.addAllToStringMap(accesTokenClaims, convertedTokenMap);
                 
-                // convert AccesTokenClaims Map to map<String, String> and build json object
+                // convert IdentityTokenClaims Map to map<String, String> and build json object
                 Map<String, Object> identityTokenClaims = credential.getIdentityToken().getClaims();
-                identityTokenClaims.entrySet().stream()
-                        .forEach(claim -> {
-                            if (claim.getValue() instanceof String) {
-                                convertedTokenMap.put(claim.getKey(), (String) claim.getValue());
-                            }
-                        });
-                
+                this.addAllToStringMap(identityTokenClaims, convertedTokenMap);
+                                
                 // create json object to return
                 JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
                 convertedTokenMap.entrySet().forEach(entry -> jsonBuilder.add(entry.getKey(), entry.getValue()));
@@ -160,6 +150,22 @@ public class OpenIdIdentityStore implements IdentityStore {
         );
     }
 
+    /**
+     * Add all Map entry to a map and convert Map<String, Object> to Map<String, String>
+     * @param sourceMap
+     * Map<String, Object> sourceMap with values to convert and add to target map
+     * @param targetMap 
+     * Map<String, String> targetMap target map for values from sourceMap
+     */
+    private void addAllToStringMap(Map<String, Object> sourceMap, Map<String, String> targetMap) {
+        sourceMap.entrySet().stream()
+                .forEach(claim -> {
+                    if (claim.getValue() instanceof String) {
+                        targetMap.put(claim.getKey(), (String) claim.getValue());
+                    }
+                });
+    }
+    
     private String getCallerName(OpenIdConfiguration configuration) {
         String callerNameClaim = configuration.getClaimsConfiguration().getCallerNameClaim();
         String callerName = context.getClaimsJson().getString(callerNameClaim, null);
