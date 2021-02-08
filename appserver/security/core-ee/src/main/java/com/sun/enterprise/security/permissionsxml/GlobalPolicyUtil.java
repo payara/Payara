@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2021 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,8 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.security.permissionsxml;
 
 import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.PolicyType.EEGranted;
@@ -48,10 +50,14 @@ import static java.util.logging.Level.FINE;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.CodeSource;
+import java.security.NoSuchAlgorithmException;
 import java.security.Permission;
 import java.security.PermissionCollection;
+import java.security.Policy;
+import java.security.URIParameter;
 import java.security.cert.Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -65,8 +71,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import com.sun.logging.LogDomains;
 import java.util.Arrays;
 import java.util.List;
-
-import sun.security.provider.PolicyFile;
 
 /**
  *
@@ -253,7 +257,7 @@ public class GlobalPolicyUtil {
 
         } catch (FileNotFoundException e) {
             // ignore: the permissions files not exist
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException | URISyntaxException e) {
             logger.warning(e.getMessage());
             throw new RuntimeException(e);
         }
@@ -269,7 +273,8 @@ public class GlobalPolicyUtil {
         return new File(policyPath).getParent();
     }
 
-    private static void loadServerPolicy(PolicyType policyType) throws IOException {
+    private static void loadServerPolicy(PolicyType policyType) throws IOException, NoSuchAlgorithmException,
+            URISyntaxException {
         if (policyType == null) {
             return;
         }
@@ -312,7 +317,8 @@ public class GlobalPolicyUtil {
         if (logger.isLoggable(FINE)) {
             logger.fine("Loading policy from " + policyFileURL);
         }
-        PolicyFile pf = new PolicyFile(policyFileURL);
+
+        Policy pf = Policy.getInstance("JavaPolicy", new URIParameter(policyFileURL.toURI()));
 
         // EJB
         
