@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,7 +55,6 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import fish.payara.internal.notification.NotifierManager;
@@ -111,13 +110,42 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
 
         C c = notificationServiceConfiguration.getNotifierConfigurationByType(notifierConfigurationClass);
 
+        // Getting via HK2 Duck Typing only works if the default config tags are present in the domain.xml, which they
+        // won't be if they aren't present in the default domain template (which in this case they're not). The default
+        // config tags get generated for an instance's config when the instance is started, but this cannot be relied
+        // on for two reasons: the "default-config" config is never started; and non-DAS instances will only generate
+        // the tags for their local config (it doesn't get synced back to the DAS).
+        if (c == null) {
+            try {
+                // Create a transaction around the notifier config we want to add the element to, grab it's list
+                // of notifiers, and add a new child element to it
+                ConfigSupport.apply(notificationServiceConfigurationProxy -> {
+                     notificationServiceConfigurationProxy.getNotifierConfigurationList().add(
+                             notificationServiceConfigurationProxy.createChild(notifierConfigurationClass));
+                     return notificationServiceConfigurationProxy;
+                }, notificationServiceConfiguration);
+            } catch (TransactionFailure ex) {
+                actionReport.setMessage(ex.getCause().getMessage());
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+
+            // Attempt to grab the new child element config as the config we want to configure
+            c = notificationServiceConfiguration.getNotifierConfigurationByType(notifierConfigurationClass);
+
+            // If we still can't find the config, exit out - something has gone wrong
+            if (c == null) {
+                actionReport.setMessage("Could not locate notifier config");
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+        }
+
         try {
-            ConfigSupport.apply(new SingleConfigCode<C>() {
-                public Object run(C cProxy) throws PropertyVetoException, TransactionFailure {
-                    applyValues(cProxy);
-                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                    return cProxy;
-                }
+            ConfigSupport.apply(cProxy -> {
+                applyValues(cProxy);
+                actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                return cProxy;
             }, c);
 
             // If the service is being changed dynamically
