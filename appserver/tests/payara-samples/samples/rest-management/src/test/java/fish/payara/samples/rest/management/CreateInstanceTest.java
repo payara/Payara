@@ -70,11 +70,11 @@ public class CreateInstanceTest {
     public void createInstance() {
         List<String> output = new ArrayList<>();
         CliCommands.payaraGlassFish(Arrays.asList("list-instances"), output);
-        List<String> instances = output.stream().map(this::firstWord).collect(Collectors.toList());
+        List<String> instances = output.stream().map(CreateInstanceTest::firstWord).collect(Collectors.toList());
         if (!instances.contains(INSTANCE_NAME)) {
             output.clear();
             CliCommands.payaraGlassFish(Arrays.asList("list-nodes"), output);
-            String node = output.stream().map(this::firstWord).findFirst().get();
+            String node = output.stream().map(CreateInstanceTest::firstWord).findFirst().get();
             CliCommands.payaraGlassFish("create-instance", "--node", node, INSTANCE_NAME, "--terse");
         }
     }
