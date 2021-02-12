@@ -79,15 +79,10 @@ public class CreateInstanceTest {
         }
     }
 
-    String firstWord(String line) {
+    static String firstWord(String line) {
         if (line == null) {
             return line;
         }
-        String[] words = line.split(" ");
-        if (words.length > 0) {
-            return words[0];
-        } else {
-            return line;
-        }
+        return line.split(" ")[0];
     }
 }
