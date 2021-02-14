@@ -1522,7 +1522,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         contextRootAvailable = false;
                     }
                 }
-            } else if (deploymentOption.getKey() == RUNTIME_OPTION.deploydir || deploymentOption.getKey() == RUNTIME_OPTION.deploymentdir) {
+            } else if ((deploymentOption.getKey() == RUNTIME_OPTION.deploydir || deploymentOption.getKey() == RUNTIME_OPTION.deploymentdir) && deploymentRoot != null) {
                 // Get all files in the directory, and sort them by file type
                 File[] deploymentEntries = deploymentRoot.listFiles();
                 Arrays.sort(deploymentEntries, new DeploymentComparator());
@@ -1535,6 +1535,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         }
                     }
                 }
+                deploymentRoot = null;
             } else if (deploymentOption.getKey() == RUNTIME_OPTION.deployfromgav) {
                 Map.Entry<String, URI> gavEntry = getGAVURI(deploymentOption.getValue());
                 URI artifactURI = gavEntry.getValue();
