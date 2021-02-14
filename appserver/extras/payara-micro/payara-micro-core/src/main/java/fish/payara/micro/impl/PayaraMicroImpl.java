@@ -1617,7 +1617,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     deploymentParams.add("--loadOnly=true");
                     deploymentParams.add("--name=" + deploymentName);
 
-                    if (supportsContextRoot(deployment)) {
+                    if (deployment.getName().endsWith(".war")) {
                         String deploymentContext;
                         if ("ROOT".equals(deploymentName)) {
                             deploymentContext = "/";
@@ -1629,7 +1629,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         if ("ROOT".equals(deploymentContext)) {
                             deploymentContext = "/";
                         }
-                        deploymentParams.add("--contextroot" + deploymentContext);
+                        deploymentParams.add("--contextroot=" + deploymentContext);
                     }
 
                     deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), deploymentParams.toArray(new String[0]));
