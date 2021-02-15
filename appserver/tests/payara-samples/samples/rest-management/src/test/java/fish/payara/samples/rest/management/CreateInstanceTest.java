@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,16 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.rest.management.extension;
 
-import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
+package fish.payara.samples.rest.management;
 
-public class TemporaryInstanceExtension implements LoadableExtension {
+import fish.payara.samples.CliCommands;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
+import fish.payara.samples.PayaraTestShrinkWrap;
+import static fish.payara.samples.rest.management.RestManagementTest.INSTANCE_NAME;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-    @Override
-    public void register(ExtensionBuilder builder) {
-        builder.service(ResourceProvider.class, TemporaryInstanceProvider.class)
-                .observer(TemporaryInstanceProvider.class);
+/**
+ *
+ * @author lprimak
+ */
+@RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
+public class CreateInstanceTest {
+    @Deployment
+    public static WebArchive deploy() {
+        return PayaraTestShrinkWrap.getWebArchive();
+    }
+
+    @Test
+    public void createInstance() {
+        List<String> output = new ArrayList<>();
+        CliCommands.payaraGlassFish(Arrays.asList("list-instances"), output);
+        List<String> instances = output.stream().map(CreateInstanceTest::firstWord).collect(Collectors.toList());
+        if (!instances.contains(INSTANCE_NAME)) {
+            output.clear();
+            CliCommands.payaraGlassFish(Arrays.asList("list-nodes"), output);
+            String node = output.stream().map(CreateInstanceTest::firstWord).findFirst().get();
+            CliCommands.payaraGlassFish("create-instance", "--node", node, INSTANCE_NAME, "--terse");
+        }
+    }
+
+    static String firstWord(String line) {
+        if (line == null) {
+            return line;
+        }
+        return line.split(" ")[0];
     }
 }
