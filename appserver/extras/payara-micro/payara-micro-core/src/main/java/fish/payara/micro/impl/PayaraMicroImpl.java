@@ -577,14 +577,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (!deploymentRoot.isDirectory() || !deploymentRoot.canRead()) {
             throw new IllegalArgumentException(deploymentRoot.getPath() + " is a not valid deployment dir");
         }
-        if (deploymentOptions == null) {
-            deploymentOptions = new LinkedList<>();
-        }
-        if (this.deploymentRoot != null) {
-            LOGGER.warning("Multiple deploy dirs only the last one will apply");
+        if (this.deploymentRoot == null) {
+            if (deploymentOptions == null) {
+                deploymentOptions = new LinkedList<>();
+            }
+            deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploydir, null));
+        } else {
+            LOGGER.warning("Multiple deploy dirs only last one will be apply");
         }
         this.deploymentRoot = deploymentRoot;
-        deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploydir, null));
         return this;
     }
 
@@ -1201,14 +1202,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     break;
                 case deploymentdir:
                 case deploydir:
-                    if (deploymentRoot != null) {
+                    if (deploymentRoot == null) {
+                        if (deploymentOptions == null) {
+                            deploymentOptions = new LinkedList<>();
+                        }
+                        deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(option, null));
+                    } else {
                         LOGGER.warning("Multiple --deploydir arguments only the last one will apply");
                     }
                     deploymentRoot = new File(value);
-                    if (deploymentOptions == null) {
-                        deploymentOptions = new LinkedList<>();
-                    }
-                    deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(option, null));
                     break;
                 case rootdir:
                     rootDir = new File(value);
@@ -1522,7 +1524,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         contextRootAvailable = false;
                     }
                 }
-            } else if ((deploymentOption.getKey() == RUNTIME_OPTION.deploydir || deploymentOption.getKey() == RUNTIME_OPTION.deploymentdir) && deploymentRoot != null) {
+            } else if (deploymentOption.getKey() == RUNTIME_OPTION.deploydir || deploymentOption.getKey() == RUNTIME_OPTION.deploymentdir) {
                 // Get all files in the directory, and sort them by file type
                 File[] deploymentEntries = deploymentRoot.listFiles();
                 Arrays.sort(deploymentEntries, new DeploymentComparator());
@@ -1535,7 +1537,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         }
                     }
                 }
-                deploymentRoot = null;
             } else if (deploymentOption.getKey() == RUNTIME_OPTION.deployfromgav) {
                 Map.Entry<String, URI> gavEntry = getGAVURI(deploymentOption.getValue());
                 URI artifactURI = gavEntry.getValue();
@@ -1666,7 +1667,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                             deploymentContext = contextRoots.getProperty(fileName);
                         } else if (contextRoot != null) {
                             deploymentContext = contextRoot;
-                            contextRoot = null;
+                            contextRoot = null; // use only once
                         } else if (deployment.isDirectory()) {
                             deploymentContext = fileName;
                         }

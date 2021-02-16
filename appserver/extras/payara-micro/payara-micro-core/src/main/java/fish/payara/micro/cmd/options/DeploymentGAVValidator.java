@@ -44,7 +44,7 @@ public class DeploymentGAVValidator extends Validator {
     @Override
     boolean validate(String optionValue) throws ValidationException {
         if (optionValue.split("[,:]").length != 3) {
-            throw new ValidationException(optionValue + " is a not valid Maven coordinates");
+            throw new ValidationException(optionValue + " is a not valid maven coordinates");
         }
         return true;
     }
