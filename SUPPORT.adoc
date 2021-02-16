@@ -1,5 +1,5 @@
 [[policy]]
-= General Community Policies
+= Community Support Policy
 
 One of the key goals of the http://www.payara.org[Payara Foundation] is to interact with our community userbase and understand their needs and how are they engaging with the Payara Platform Community Edition in general. To this effect, it is important to outline the guidelines that compose our policy on how to properly handle user requests.
 
@@ -97,7 +97,7 @@ IMPORTANT: Keep in mind that an issue that has been escalated after being select
 
 To keep track of the current top-voted issues we recommend to use https://vote.biglybt.com/payara/Payara/Status:%20Voting[this website], which allows any user to quickly vote for their issues as well.
 
-Keep in mind that issues can't remain endlessly waiting for their turn to be picked up. Our intention is to our resources efficiently to implement any requests that are of the interest of our community in general and for this reason, they must be veto-ed through voting first. If after an issue spends `N` months in open voting without clearing the bar of selection, we'll proceed to close the issue. `N` will be:
+Keep in mind that issues can't remain endlessly waiting for their turn to be picked up. Our intention is to use our resources efficiently to implement any requests that are of the interest of our community in general and for this reason, they must be veto-ed through voting first. If after an issue spends `N` months in open voting without clearing the bar of selection, we'll proceed to close the issue. `N` will be:
 
 * **3 months** for bug reports
 * **6 months** for enhancement requests
