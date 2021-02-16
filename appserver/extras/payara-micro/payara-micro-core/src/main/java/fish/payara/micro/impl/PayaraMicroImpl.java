@@ -1504,13 +1504,15 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         boolean contextRootAvailable = contextRoot != null;
         for (Map.Entry<RUNTIME_OPTION, String> deploymentOption : deploymentOptions) {
-            if (deploymentOption.getKey() == RUNTIME_OPTION.deploy) {
-                String fileName = deploymentOption.getValue();
+            RUNTIME_OPTION option = deploymentOption.getKey();
+            String value = deploymentOption.getValue();
+            if (option == RUNTIME_OPTION.deploy) {
+                String fileName = value;
 
                 String deploymentContext = null;
                 if (fileName.contains(File.pathSeparator)) {
-                    deploymentContext = fileName.substring(fileName.indexOf(File.pathSeparator) + 1);
                     fileName = fileName.substring(0, fileName.indexOf(File.pathSeparator));
+                    deploymentContext = value.substring(value.indexOf(File.pathSeparator) + 1);
                 }
 
                 File deployment = new File(fileName);
@@ -1524,7 +1526,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         contextRootAvailable = false;
                     }
                 }
-            } else if (deploymentOption.getKey() == RUNTIME_OPTION.deploydir || deploymentOption.getKey() == RUNTIME_OPTION.deploymentdir) {
+            } else if (option == RUNTIME_OPTION.deploydir || option == RUNTIME_OPTION.deploymentdir) {
                 // Get all files in the directory, and sort them by file type
                 File[] deploymentEntries = deploymentRoot.listFiles();
                 Arrays.sort(deploymentEntries, new DeploymentComparator());
@@ -1537,8 +1539,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         }
                     }
                 }
-            } else if (deploymentOption.getKey() == RUNTIME_OPTION.deployfromgav) {
-                Map.Entry<String, URI> gavEntry = getGAVURI(deploymentOption.getValue());
+            } else if (option == RUNTIME_OPTION.deployfromgav) {
+                Map.Entry<String, URI> gavEntry = getGAVURI(value);
                 URI artifactURI = gavEntry.getValue();
 
                 String artifactName = new File(artifactURI.getPath()).getName();
