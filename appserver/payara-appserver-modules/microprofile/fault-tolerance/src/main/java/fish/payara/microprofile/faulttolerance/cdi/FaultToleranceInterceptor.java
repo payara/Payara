@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2022 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,21 +39,10 @@
  */
 package fish.payara.microprofile.faulttolerance.cdi;
 
-import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jakarta.annotation.Priority;
 import jakarta.enterprise.context.control.RequestContextController;
 import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Inject;
-import jakarta.interceptor.AroundInvoke;
-import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
@@ -63,9 +52,15 @@ import fish.payara.microprofile.faulttolerance.service.Stereotypes;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.glassfish.internal.api.Globals;
 
-@Interceptor
-@FaultTolerance
-@Priority(Interceptor.Priority.PLATFORM_AFTER + 15)
+import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class FaultToleranceInterceptor implements Stereotypes, Serializable {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceInterceptor.class.getName());
@@ -78,8 +73,11 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
 
     private FaultToleranceService faultToleranceService;
 
-    @AroundInvoke
+    protected static final String PAYARA_FAULT_TOLERANCE_INTERCEPTOR_EXECUTED =
+            "fish.payara.microprofile.faulttolerance.executed";
+
     public Object intercept(InvocationContext context) throws Exception {
+        context.getContextData().put(PAYARA_FAULT_TOLERANCE_INTERCEPTOR_EXECUTED, Boolean.TRUE);
         try {
             initialize();
             AtomicReference<FaultToleranceConfig> lazyConfig = new AtomicReference<>();
@@ -116,6 +114,17 @@ public class FaultToleranceInterceptor implements Stereotypes, Serializable {
     @Override
     public Set<Annotation> getStereotypeDefinition(Class<? extends Annotation> stereotype) {
         return beanManager.getStereotypeDefinition(stereotype);
+    }
+
+    protected boolean shouldIntercept(InvocationContext invocationContext) throws Exception {
+        Map<String, Object> contextData = invocationContext.getContextData();
+
+        if (contextData.get(PAYARA_FAULT_TOLERANCE_INTERCEPTOR_EXECUTED) != null &&
+                (Boolean) contextData.get(PAYARA_FAULT_TOLERANCE_INTERCEPTOR_EXECUTED)) {
+            return false;
+        }
+
+        return true;
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,10 +43,6 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.FaultToleranceUtils;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Optional;
-
 import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.Annotated;
@@ -67,6 +63,9 @@ import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Optional;
 
 /**
  * CDI Extension that does the setup for FT interceptor handling.
@@ -76,16 +75,22 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
  */
 public class FaultToleranceExtension implements Extension {
 
+    private static final String INTERCEPTOR_PRIORITY_PROPERTY = "mp.fault.tolerance.interceptor.priority";
+
     /**
      * The {@link FaultTolerance} "instance" we use to dynamically mark methods at runtime that should be
      * handled by the {@link FaultToleranceInterceptor} that handles all of the FT annotations.
      */
     private static final Annotation MARKER = () -> FaultTolerance.class;
 
-    private static final String INTERCEPTOR_PRIORITY_PROPERTY = "mp.fault.tolerance.interceptor.priority";
-
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FaultToleranceInterceptor.class), "MP-FT");
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(AsynchronousInterceptor.class), "MP-FT-Asynchronous");
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(BulkheadInterceptor.class), "MP-FT-Bulkhead");
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(CircuitBreakerInterceptor.class), "MP-FT-CircuitBreaker");
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(RetryInterceptor.class), "MP-FT-Retry");
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(TimeoutInterceptor.class), "MP-FT-Timeout");
+//        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FallbackInterceptor.class), "MP-FT-Fallback");
+//        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(FaultToleranceInterceptor.class), "MP-FT");
     }
 
     /**
@@ -96,6 +101,16 @@ public class FaultToleranceExtension implements Extension {
      */
     <T> void processAnnotatedType(@Observes @WithAnnotations({ Asynchronous.class, Bulkhead.class, CircuitBreaker.class,
         Fallback.class, Retry.class, Timeout.class }) ProcessAnnotatedType<T> processAnnotatedType) throws Exception {
+        // Ignore our own interceptor classes
+        Class<T> annotatedClass = processAnnotatedType.getAnnotatedType().getJavaClass();
+        if (annotatedClass.equals(AsynchronousInterceptor.class)
+                || annotatedClass.equals(BulkheadInterceptor.class)
+                || annotatedClass.equals(CircuitBreakerInterceptor.class)
+                || annotatedClass.equals(RetryInterceptor.class)
+                || annotatedClass.equals(TimeoutInterceptor.class)) {
+            return;
+        }
+
         Class<? extends Annotation>[] alternativeAsynchronousAnnotations = getAlternativeAsynchronousAnnotations();
         AnnotatedType<T> type = processAnnotatedType.getAnnotatedType();
         boolean markAllMethods = FaultToleranceUtils.isAnnotatedWithFaultToleranceAnnotations(type)
@@ -106,7 +121,7 @@ public class FaultToleranceExtension implements Extension {
             if (markAllMethods || FaultToleranceUtils.isAnnotatedWithFaultToleranceAnnotations(method)
                     || isAnyAnnotationPresent(method, alternativeAsynchronousAnnotations)) {
                 FaultTolerancePolicy.asAnnotated(targetClass, method.getJavaMember());
-                methodConfigurator.add(MARKER);
+//                methodConfigurator.add(MARKER);
             }
         }
     }
