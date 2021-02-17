@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,9 +39,6 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
@@ -63,51 +60,4 @@ public interface FaultToleranceServiceConfiguration extends ConfigExtension {
     public String getManagedScheduledExecutorService();
     public void setManagedScheduledExecutorService(String managedScheduledExecutorServiceName);
 
-    /**
-     * @deprecated Managed thread pools are used since 5.2020.8 (again)
-     * @return The maximum number of threads used to run asynchronous methods concurrently. This is the upper limit. The
-     *         executor will vary the actual pool size depending on demand up to this upper limit. If no demand exist
-     *         the actual pool size is zero.
-     */
-    @Deprecated
-    @Attribute(defaultValue = "2000", dataType = Integer.class)
-    @Min(value = 20)
-    String getAsyncMaxPoolSize();
-    void setAsyncMaxPoolSize(String asyncMaxPoolSize);
-
-    /**
-     * @deprecated Managed thread pools are used since 5.2020.8 (again)
-     * @return The maximum number of threads used to schedule delayed execution and detect timeouts processing FT
-     *         semantics. This should be understood as upper limit. The implementation might choose to keep up to this
-     *         number of threads alive or vary the actual pool size according to demands.
-     */
-    @Deprecated
-    @Attribute(defaultValue = "20", dataType = Integer.class)
-    @Min(value = 1)
-    String getDelayMaxPoolSize();
-    void setDelayMaxPoolSize(String delayMaxPoolSize);
-
-    /**
-     * @deprecated Managed thread pools are used since 5.2020.8 (again)
-     * @return The number of seconds an idle worker in the async pool has to be out of work before it is disposed and
-     *         the pool scales down in size. Changes to this setting are dynamically applied and do not need a restart.
-     */
-    @Deprecated
-    @Attribute(defaultValue = "60", dataType = Integer.class)
-    @Min(value = 20)
-    @Max(value = 60 * 60)
-    String getAsyncPoolKeepAliveInSeconds();
-    void setAsyncPoolKeepAliveInSeconds(String asyncPoolKeepAliveInSeconds);
-
-    /**
-     * @deprecated cleaning of FT state has been removed in 5.2020.8
-     * @return The interval duration in minutes for the background job that cleans expired FT state. Changes do need a
-     *         restart of the server.
-     */
-    @Attribute(defaultValue = "1", dataType = Integer.class)
-    @Min(value = 1)
-    @Max(value = 60 * 24)
-    @Deprecated
-    String getCleanupIntervalInMinutes();
-    void setCleanupIntervalInMinutes(String cleanupIntervalInMinutes);
 }
