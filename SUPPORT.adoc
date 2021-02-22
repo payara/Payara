@@ -1,14 +1,14 @@
 [[policy]]
 = Community Support Policy
 
-One of the key goals of the http://www.payara.org[Payara Foundation] is to interact with our community userbase and understand their needs and how are they engaging with the Payara Platform Community Edition in general. To this effect, it is important to outline the guidelines that compose our policy and how we handle user requests.
+One of the key goals of Payara is to interact with our community userbase and understand their needs and how are they engaging with the Payara Platform Community Edition in general. To this effect, it is important to outline the guidelines that compose the Payara GitHub policy and how we handle user requests for bug fixes and enhancements.
 
 [[questions]]
 == Questions and General Advice
 
-For questions regarding any of the platform, including configuration, visit the http://www.payara.org/forum[Payara Forum] and create a topic to discuss your inquiries in detail. This includes advice on:
+For questions regarding about using the platform, visit the http://www.payara.org/forum[Payara Forum] and create a topic to discuss your inquiries in detail. This includes advice on:
 
-* Configuration of any Payara Platform products
+* Configuration of any Payara Platform distributions
 * Integration of the Payara Platform with other technologies
 * Software Architecture and Best Practices
 * etc.
@@ -16,60 +16,60 @@ For questions regarding any of the platform, including configuration, visit the 
 [[user-requests]]
 == User Requests
 
-Users can request assistance by raising an issue in the project's issue tracker and follow the template to make sure that the report is comprehensive. User requests can be one of the following:
+Users can request assistance by raising an issue in the project’s issue tracker and follow the template to make sure that the report is comprehensive. There are two types of user requests:
 
-Bug Reports:: A defect or bug is present in one or multiple distributions of the Platform and a fix is required to solve the problem.
-Enhancements:: There's missing functionality in one of the multiple distributions of the Platform and you'd like us to implement a suggested improvement to cover for it.
+Bug Reports:: A defect or bug is present in one or multiple distributions of the Payara Platform. 
+Enhancements:: Propose additional functionality and improvements to one or multiple distributions of the Payara Platform.
 
-Once we receive your request, one of our engineers will review it in detail to escalate the issue to our Platform Development team if all conditions are met (see below). In this case, you can expect that your requested fix or enhancement will be implemented as part of a future Platform release.
+Engineers review user requests in detail and escalate issues to the Payara Platform Development team if all conditions are met (see below). If your request is escalated to the development team you can expect that your requested fix or enhancement will be implemented as part of a future Payara Platform release. 
 
-IMPORTANT: We give no guarantees of when an escalated issue is to be implemented and shipped in a future release.
+IMPORTANT: We do not provide guarantees of when an escalated issue is to be implemented and shipped in a future release.
 
 [[bug-reports]]
 === Bug Reports
 
-In case you want to report a bug or defect, follow these guidelines:
+Follow these guidelines to report a bug or defect:
 
-* Make sure that your report includes a http://sscce.org/[Short, Self Contained and Correct Example] scenario that we can use to verify the validity of your claim. If we can't reproduce the error using the information you provide, we'll not proceed to escalate your request.
+* Ensure that your report includes a http://sscce.org/[Short, Self Contained and Correct Example] scenario that we can use to verify the validity of your claim. If we can't reproduce the error using the information you provide, we'll not proceed to escalate your request.
 * Make sure that your reproducer has been tested using the **current release**. If you encountered the bug on a previous version, you'll have to make the effort to test it with the latest release and confirm that the bug is present before we proceed to review the report.
 * **Be involved as much as possible** in the issue's conversation. If required, our engineers will inquire more details to properly escalate your case and if you do not provide them in time, we'll proceed to close the issue and dismiss your request.
 
-IMPORTANT: We reserve the right to NOT to escalate a bug report if we consider that the effort required to implement its fix is not aligned with the current goals of our Platform Development Team. We expect that our users understand such decisions if given the case.
+IMPORTANT: We reserve the right to choose NOT to escalate a bug report if we consider that the effort required to implement its fix is not aligned with the current goals of our Platform Development Team. We expect that our users understand such decisions if given the case.
 
 [[enhancements]]
 === Enhancements
 
-In case you want to request an enhancement, follow these guidelines:
+Enhancement requests go through a community voting process before they are escalated to the Payara Development Team. Follow these guidelines to request an enhancement:  
 
 * Verify that your suggested enhancement is not already part of a bigger feature that is part of the Open Roadmap for the Payara Platform (see below for more information). If this happens, we'll proceed to close the issue and dismiss your request.
-* Make sure that you give a careful and detailed explanation of the reasons you consider that your suggested enhancement will be useful to the general community userbase of the Payara Platform.
-* Consider implemeting the enhancement by submitting a pull request to the repository with your contribution. In some cases, we may suggest this option to you after reviewing your request. 
-* After reviewing your request, we'll proceed to submit the enhancement to an open vote, meaning that other users can and should engage on the issue and vote whether they consider your request should be implemented in a future release.
+* Provide a detailed explanation of the reasons you consider your suggested enhancement will be useful to the general community userbase of the Payara Platform.
+* Consider a community contribution to the Payara Platform and implement the enhancement yourself by submitting a pull request to the repository with your contribution. In some cases, we may suggest this option to you after reviewing your request.
+* After reviewing your request, we’ll proceed to submit the enhancement to an open vote, meaning that other users can and should engage on the issue and vote whether they want to see the enhancement request implemented in a future release. 
 
 NOTE: The **Open Roadmap** is comprised of all issues labelled with the `Type:Roadmap` tag and are used to publicly advertise future features and enhancements to the Payara Platform that are in consideration of being implemented.
 
 [[contributing]]
 ==== Community Contributions
 
-Before submitting any issue to the voting process, we may suggest to the requester to implement the issue themselves if they are confident enough. As the Payara Platform Community Edition is an Open source project, any user is in the capacity to contribute code to the platform, which might be a better solution for their requirements instead. Read the general contribution guidelines in our https://docs.payara.fish/community[official documentation].
+Before submitting an enhancement issue to the voting process, we may suggest the requester implement the issue themselves if they are confident enough. As the Payara Platform Community Edition is an open source project, anyone can contribute code to the platform, which might be a better solution. Read the general contribution guidelines in our https://docs.payara.fish/community[official documentation].
 
-NOTE: We can't guarantee complete assistance if any users wish to contribute by themselves and handle their request, so keep this in mind if you want to embark on this effort beforehand.
+NOTE: We don’t guarantee assistance from the Payara Platform Development team on enhancement issues you choose to implement on your own.
 
 [[voting]]
-==== Voting Process
+==== Enhancement Issue Voting Process
 
-Once an enhancement has been submitted to an open vote, we'll leave the issue open so that other members of the community can express their support for your request. The voting process is quite simple:
+Members of the community can vote on enhancement requests that have been moved into the voting process. The voting process is quite simple:
 
-* To vote on an issue just give a thumbs-up 👍 to the issue's first message. Any user with a GitHub account can do this.
-* Any community user can also express their disapproval of any issue being implemented by giving a thumbs-down 👎 to the issue's first message.
+* To vote on an issue just give a thumbs-up 👍 to the enhancement issue's first message. Any user with a GitHub account can do this.
+* Any community user can also express their disapproval of any issue being implemented by giving a thumbs-down 👎 to the enhancement issue's first message.
 * It is suggested that users also participate in the conversation by sharing their thoughts on approving/disapproving the suggested improvements.
 * The vote tally will be the difference between positive and negative votes.
 * At the end of every month, we'll **select the top voted issue** and escalate it to our Platform Development team to be implemented in a future release.
 * Only issues with **2 or more positive votes** will be considered for selection.
 * In case of a tie, the issue **that was raised first will be selected first**.
-* All other issues which are not select will retain their votes and will have another chance the following month.
-* If **6 months later** an issue hasn't met the selection criteria, we'll proceed to close it and dismiss the user's request.
+* All other issues which are not selected will retain their votes and will have another chance to receive more votes the following month.
+* If an enhancement issue hasn’t met the criteria to enter development **6 months after the issue was first requested**, the issue will be closed and we will dismiss the user’s request. 
 
-WARNING: We understand that you may reopen the issue in the case that you want to give it another chance of being selected, but we kindly ask you not to do so. Raise a new issue and properly explain in detail to the general community why the issue should be considered for selection. This way the issue will start again with `0` votes with a fair chance to be selected if the community is interested in it.
+WARNING: We understand it is possible to reopen the issue if you want to give it another chance of being selected, but we kindly ask you not to do so. Raise a new issue and properly explain in detail to the general community why the issue should be considered for selection. This way the issue starts again with 0 votes and has a fair chance for selection if the community is interested in it.
 
-To keep track of the current top-voted issues we suggest to use https://vote.biglybt.com/payara/Payara/Status:%20Voting[this website], which list the current top voted issues first and allows quick voting actions.
+To keep track of the current top-voted issues we suggest you use https://vote.biglybt.com/payara/Payara/Status:%20Voting[this website], which lists the current top voted issues first and allows quick voting actions.
