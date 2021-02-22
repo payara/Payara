@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Payara Community Forum
+    url: http://www.payara.org/forum
+    about: Please ask and answer questions about the Payara Platform here.
+  - name: Security Reports Mail Address
+    url: mailto:security@payara.fish
+    about: Please report security vulnerabilities by sending an email to this address.

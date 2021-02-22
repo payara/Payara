@@ -2,7 +2,7 @@
 name: Bug Report
 about: Report a bug or defect in the Payara Platform
 title: 'Bug Report:  '
-labels: ''
+labels: 'Type: Bug'
 assignees: ''
 
 ---
