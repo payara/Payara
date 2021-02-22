@@ -4,7 +4,7 @@ def pom
 def DOMAIN_NAME
 def payaraBuildNumber
 pipeline {
-    agent any
+    agent PR-Test-Agent
     options {
         disableConcurrentBuilds()
     }
