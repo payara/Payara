@@ -46,7 +46,7 @@ Enhancement requests go through a community voting process before they are escal
 * Consider a community contribution to the Payara Platform and implement the enhancement yourself by submitting a pull request to the repository with your contribution. In some cases, we may suggest this option to you after reviewing your request.
 * After reviewing your request, we’ll proceed to submit the enhancement to an open vote, meaning that other users can and should engage on the issue and vote whether they want to see the enhancement request implemented in a future release.
 
-NOTE: The https://github.com/orgs/payara/projects/1[Open Roadmap] is comprised of all issues labelled with the `Type:Roadmap` tag and are used to publicly advertise future features and enhancements to the Payara Platform that are in consideration of being implemented. Read more about the movivation of this roadmap in this https://blog.payara.fish/payara-open-roadmap[blog post].
+NOTE: The https://github.com/orgs/payara/projects/1[Open Roadmap] is comprised of all issues labelled with the `Type:Roadmap` tag and are used to publicly advertise future features and enhancements to the Payara Platform that are in consideration of being implemented. You can read more details about the roadmap in this https://blog.payara.fish/payara-open-roadmap[blog post].
 
 [[contributing]]
 ==== Community Contributions
