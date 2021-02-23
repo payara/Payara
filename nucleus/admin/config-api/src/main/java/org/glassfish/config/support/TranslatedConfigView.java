@@ -147,12 +147,12 @@ public class TranslatedConfigView implements ConfigView {
                 String matchValue = envValue[0];
                 String defaultValue = envValue.length > 1 ? envValue[1] : null;
                 Config config = configResolver().getConfig();
-                ConfigValue cValue = config.getConfigValue(matchValue);
-                String newValue = cValue.getValue();
+                ConfigValue configValue = config.getConfigValue(matchValue);
+                String newValue = configValue.getValue();
                 if (newValue != null && ! newValue.isEmpty()) {
                     stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue + m3.group(3)));
                     m3.reset(stringValue);
-                    Logger.getAnonymousLogger().fine("Found property '"+matchValue+"' in source '"+cValue.getSourceName()+"' with ordinal '"+cValue.getSourceOrdinal()+"'");
+                    Logger.getAnonymousLogger().fine("Found property '"+matchValue+"' in source '"+configValue.getSourceName()+"' with ordinal '"+configValue.getSourceOrdinal()+"'");
                 } else if (defaultValue != null) {
                     stringValue = defaultValue;
                     break;
