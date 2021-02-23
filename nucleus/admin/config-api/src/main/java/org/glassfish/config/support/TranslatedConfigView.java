@@ -149,7 +149,7 @@ public class TranslatedConfigView implements ConfigView {
                 Config config = configResolver().getConfig();
                 ConfigValue configValue = config.getConfigValue(matchValue);
                 String newValue = configValue.getValue();
-                if (newValue != null && ! newValue.isEmpty()) {
+                if (newValue != null && !newValue.isEmpty()) {
                     stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue + m3.group(3)));
                     m3.reset(stringValue);
                     Logger.getAnonymousLogger().fine("Found property '"+matchValue+"' in source '"+configValue.getSourceName()+"' with ordinal '"+configValue.getSourceOrdinal()+"'");
@@ -157,7 +157,7 @@ public class TranslatedConfigView implements ConfigView {
                     stringValue = defaultValue;
                     break;
                 } else {
-                    Logger.getAnonymousLogger().warning("MicroProfile Config: property '"+matchValue+"': no value found, no default given.");
+                    Logger.getAnonymousLogger().warning("MicroProfile Config: property '" + matchValue + "': no value found, no default given.");
                 }
                 i++;
             }
