@@ -131,7 +131,7 @@ public class RuntimeOptions {
                 }
             } else if (arg.endsWith(".war") || arg.endsWith(".rar") || arg.endsWith(".jar")) {
                 // we have a "raw" deployment
-                new FileValidator(true, true, false).validate(arg);
+                RUNTIME_OPTION.deploy.validate(arg);
                 options.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploy, arg));
             } else {
                 invalidArgs.add(arg);

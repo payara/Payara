@@ -574,13 +574,14 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl setDeploymentDir(File deploymentRoot) {
         //if (runtime != null) {
         checkNotRunning();
-        if (!deploymentRoot.isDirectory() || !deploymentRoot.canRead()) {
-            throw new IllegalArgumentException(deploymentRoot.getPath() + " is a not valid deployment dir");
-        }
+
+        validateRuntimeOption(RUNTIME_OPTION.deploydir, deploymentRoot.getPath());
+
         if (this.deploymentRoot == null) {
             if (deploymentOptions == null) {
                 deploymentOptions = new LinkedList<>();
             }
+            // Map entry value are unused because we use deploymentRoot property
             deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploydir, null));
         } else {
             LOGGER.warning("Multiple deploy dirs only last one will be apply");
@@ -646,8 +647,14 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl addDeployment(String pathToWar) {
         //if (runtime != null) {
         checkNotRunning();
-        File file = new File(pathToWar);
-        return addDeploymentFile(file);
+
+        validateRuntimeOption(RUNTIME_OPTION.deploy, pathToWar);
+
+        if (deploymentOptions == null) {
+            deploymentOptions = new LinkedList<>();
+        }
+        deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploy, pathToWar));
+        return this;
     }
 
     /**
@@ -662,15 +669,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl addDeploymentFile(File file) {
         //if (runtime != null) {
         checkNotRunning();
-        if ((file.isFile() && !hasJavaArchiveExtension(file.getName()))
-            || (file.isDirectory() && !new File(file.getPath(), "WEB-INF").exists())) {
-            throw new IllegalArgumentException(file.getPath() + " is a not valid deployment");
-        }
-        if (deploymentOptions == null) {
-            deploymentOptions = new LinkedList<>();
-        }
-        deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploy, file.getPath()));
-        return this;
+        return addDeployment(file.getPath());
     }
 
     /**
@@ -684,14 +683,23 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl addDeployFromGAV(String GAV) {
         //if (runtime != null) {
         checkNotRunning();
-        if (GAV.split("[,:]").length != 3) {
-            throw new IllegalArgumentException(GAV + " is a not valid maven coordinates");
-        }
+
+        validateRuntimeOption(RUNTIME_OPTION.deployfromgav, GAV);
+
         if (deploymentOptions == null) {
             deploymentOptions = new LinkedList<>();
         }
         deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deployfromgav, GAV));
         return this;
+    }
+
+    private void validateRuntimeOption(RUNTIME_OPTION option, String optionValue) {
+        try {
+            option.validate(optionValue);
+        } catch (ValidationException ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage());
+            System.exit(-1);
+        }
     }
 
     /**

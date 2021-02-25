@@ -72,7 +72,7 @@ public class DeploymentFileValidator extends Validator {
         }
 
         if (deployment.isFile() && !(filePath.endsWith(".rar") || filePath.endsWith(".jar") || filePath.endsWith(".war"))) {
-            throw new ValidationException(filePath + " is a not valid type of deployment file");
+            throw new ValidationException(filePath + " is a not valid type of deployment archive");
         }
 
         if (deployment.isDirectory() && !new File(filePath, "WEB-INF").exists()) {

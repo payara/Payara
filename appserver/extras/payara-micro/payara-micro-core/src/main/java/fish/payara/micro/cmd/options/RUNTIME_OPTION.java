@@ -132,7 +132,7 @@ public enum RUNTIME_OPTION {
         this.optional = optionalValue;
     }
 
-    boolean validate(String optionValue) throws ValidationException {
+    public boolean validate(String optionValue) throws ValidationException {
         return validator.validate(optionValue);
     }
 
