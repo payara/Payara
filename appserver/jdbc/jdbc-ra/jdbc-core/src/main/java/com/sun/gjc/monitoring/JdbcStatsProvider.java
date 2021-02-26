@@ -209,15 +209,17 @@ public class JdbcStatsProvider {
 
     @ManagedAttribute(id="frequsedsqlqueries")
     public ListStatistic getfreqUsedSqlQueries() {
-        List<SQLTrace> sqlTraces = freqSqlTraceCache.getTopQueries();
-        freqUsedSqlQueries = new ListStatisticImpl("frequsedsqlqueries", "List", "Most frequently used sql queries");
-        
-        for (SQLTrace trace : sqlTraces){
-            CountStatisticImpl stat = new CountStatisticImpl(trace.getQueryName(), "Count", "");
-            stat.setCount(trace.getNumExecutions());
-            freqUsedSqlQueries.add(stat);
+        if (freqSqlTraceCache != null) {
+            List<SQLTrace> sqlTraces = freqSqlTraceCache.getTopQueries();
+            freqUsedSqlQueries = new ListStatisticImpl("frequsedsqlqueries", "List", "Most frequently used sql queries");
+
+            for (SQLTrace trace : sqlTraces) {
+                CountStatisticImpl stat = new CountStatisticImpl(trace.getQueryName(), "Count", "");
+                stat.setCount(trace.getNumExecutions());
+                freqUsedSqlQueries.add(stat);
+            }
         }
-        
+
         return freqUsedSqlQueries;
     }
     
@@ -226,12 +228,15 @@ public class JdbcStatsProvider {
         //Make sure no data from previous execution is kept
         slowSqlQueries.reset();
         slowSqlQueries.clear();
-        //Get slow queries and process them
-        List<SlowSqlTrace> slowTraces = slowSqlTraceCache.getSlowestSqlQueries();
-        for (SlowSqlTrace trace: slowTraces){
-            CountStatisticImpl stat = new CountStatisticImpl(trace.getQueryName(), StatisticImpl.UNIT_MILLISECOND, "Longest execution time");
-            stat.setCount(trace.getSlowestExecutionTime());
-            slowSqlQueries.add(stat);
+        
+        if (slowSqlTraceCache != null) {
+            //Get slow queries and process them
+            List<SlowSqlTrace> slowTraces = slowSqlTraceCache.getSlowestSqlQueries();
+            for (SlowSqlTrace trace : slowTraces) {
+                CountStatisticImpl stat = new CountStatisticImpl(trace.getQueryName(), StatisticImpl.UNIT_MILLISECOND, "Longest execution time");
+                stat.setCount(trace.getSlowestExecutionTime());
+                slowSqlQueries.add(stat);
+            }
         }
         
         return slowSqlQueries;
