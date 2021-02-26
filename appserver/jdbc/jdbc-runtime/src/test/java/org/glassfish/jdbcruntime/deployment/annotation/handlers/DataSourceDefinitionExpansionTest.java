@@ -44,51 +44,117 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import javax.annotation.sql.DataSourceDefinition;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Test for DataSourceDefinition processing in DataSourceDefinitionHandler
+ * Test for variable expansion in DataSourceDefinition processing in DataSourceDefinitionHandler
  * @author jonathan coustick
  */
-public class DataSourceDefinitionTest {
- 
+public class DataSourceDefinitionExpansionTest {
     /**
      * Test to ensure that if the URL has been set, it will override the default serverName of localhost
      * and cause that to be set to null.
      */
     @Test
-    public void testServerAndURL() {
+    public void testServerAndURL() throws Exception {
+        String url = "url";
+        String serverName = "server name";
+        String className = "class name";
+        String name = "name";
+        String description = "description";
+        String user = "user";
+        String password = "password";
+        String databaseName = "database name";
+        String property1 = "property 1";
+        String property2 = "property 2";
+
+        Map<String,String> env = new HashMap<>();
+        env.put("DB_URL", url);
+        env.put("DB_SERVER_NAME", serverName);
+        env.put("DB_CLASS_NAME", className);
+        env.put("DB_NAME", name);
+        env.put("DB_DESCRIPTION", description);
+        env.put("DB_USER", user);
+        env.put("DB_PASSWORD", password);
+        env.put("DB_DATABASE_NAME", databaseName);
+        env.put("DB_PROPERTY1", property1);
+        env.put("DB_PROPERTY2", property2);
+        EnvironmentUtil.setEnv(env);
         DataSourceDefinitionHandler handler = new DataSourceDefinitionHandler();
         
         //Check url overrides serverName and sets it to null
         DataSourceDefinition definition = new DataSourceDefinitionImpl() {
             @Override
             public String url() {
-                return "http://database:5432/demo";
+                return "${ENV=DB_URL}";
             }
 
             @Override
             public String serverName() {
-                return "localhost";
+                return "${ENV=DB_SERVER_NAME}";
             }
-            
+
+            @Override
+            public String className() {
+                return "${ENV=DB_DRIVER}";
+            }
+
+            @Override
+            public String name() {
+                return "${ENV=DB_NAME}";
+            }
+
+            @Override
+            public String description() {
+                return "${ENV=DB_DESCRIPTION}";
+            }
+
+            @Override
+            public String user() {
+                return "${ENV=DB_USER}";
+            }
+
+            @Override
+            public String password() {
+                return "${ENV=DB_PASSWORD}";
+            }
+
+            @Override
+            public String databaseName() {
+                return "${ENV=DB_DATABASE}";
+            }
+
+            @Override
+            public String[] properties() {
+                return new String[] {"property1=${DB_PROPERTY1}","property1=${DB_PROPERTY2}"};
+            }
         };
         DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(definition);
-        Assert.assertNull(descriptor.getServerName());
-        
-        
-        //Check if url is not set then serverName is left as-is
+        Assert.assertEquals(url,descriptor.getUrl());
+        Assert.assertNull(descriptor.getServerName()); // because url is set
+        Assert.assertEquals(className,descriptor.getClassName());
+        Assert.assertEquals(name,descriptor.getName());
+        Assert.assertEquals(description,descriptor.getDescription());
+        Assert.assertEquals(user,descriptor.getUser());
+        Assert.assertEquals(password,descriptor.getPassword());
+        Assert.assertEquals(databaseName,descriptor.getDatabaseName());
+        Assert.assertEquals(property1,descriptor.getProperty("DB_PROPERTY1"));
+        Assert.assertEquals(property2,descriptor.getProperty("DB_PROPERTY2"));
+
         definition = new DataSourceDefinitionImpl() {
             @Override
             public String url() {
                 return null;
             }
-
             @Override
             public String serverName() {
-                return "localhost";
+                return "${ENV=DB_SERVER_NAME}";
             }
         };
+
         descriptor = handler.createDescriptor(definition);
-        Assert.assertEquals("localhost", descriptor.getServerName());
+        Assert.assertEquals(serverName,descriptor.getServerName());
+
     }
 }

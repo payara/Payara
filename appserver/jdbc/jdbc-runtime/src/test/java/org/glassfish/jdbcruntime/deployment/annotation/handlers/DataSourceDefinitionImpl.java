@@ -39,56 +39,92 @@
  */
 package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
-import org.junit.Assert;
-import org.junit.Test;
-
 import javax.annotation.sql.DataSourceDefinition;
+import java.lang.annotation.Annotation;
 
-/**
- * Test for DataSourceDefinition processing in DataSourceDefinitionHandler
- * @author jonathan coustick
- */
-public class DataSourceDefinitionTest {
- 
-    /**
-     * Test to ensure that if the URL has been set, it will override the default serverName of localhost
-     * and cause that to be set to null.
-     */
-    @Test
-    public void testServerAndURL() {
-        DataSourceDefinitionHandler handler = new DataSourceDefinitionHandler();
-        
-        //Check url overrides serverName and sets it to null
-        DataSourceDefinition definition = new DataSourceDefinitionImpl() {
-            @Override
-            public String url() {
-                return "http://database:5432/demo";
-            }
+abstract class DataSourceDefinitionImpl implements DataSourceDefinition {
+    @Override
+    public String name() {
+        return null;
+    }
 
-            @Override
-            public String serverName() {
-                return "localhost";
-            }
-            
-        };
-        DataSourceDefinitionDescriptor descriptor = handler.createDescriptor(definition);
-        Assert.assertNull(descriptor.getServerName());
-        
-        
-        //Check if url is not set then serverName is left as-is
-        definition = new DataSourceDefinitionImpl() {
-            @Override
-            public String url() {
-                return null;
-            }
+    @Override
+    public String className() {
+        return null;
+    }
 
-            @Override
-            public String serverName() {
-                return "localhost";
-            }
-        };
-        descriptor = handler.createDescriptor(definition);
-        Assert.assertEquals("localhost", descriptor.getServerName());
+    @Override
+    public String description() {
+        return null;
+    }
+
+    @Override
+    public String user() {
+        return null;
+    }
+
+    @Override
+    public String password() {
+        return null;
+    }
+
+    @Override
+    public String databaseName() {
+        return null;
+    }
+
+    @Override
+    public int portNumber() {
+        return -1;
+    }
+
+    @Override
+    public int isolationLevel() {
+        return -1;
+    }
+
+    @Override
+    public boolean transactional() {
+        return false;
+    }
+
+    @Override
+    public int initialPoolSize() {
+        return -1;
+    }
+
+    @Override
+    public int maxPoolSize() {
+        return -1;
+    }
+
+    @Override
+    public int minPoolSize() {
+        return -1;
+    }
+
+    @Override
+    public int maxIdleTime() {
+        return -1;
+    }
+
+    @Override
+    public int maxStatements() {
+        return -1;
+    }
+
+    @Override
+    public String[] properties() {
+        return null;
+    }
+
+    @Override
+    public int loginTimeout() {
+        return -1;
+    }
+
+    @Override
+    public Class<? extends Annotation> annotationType() {
+        return DataSourceDefinition.class;
     }
 }
