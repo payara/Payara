@@ -253,7 +253,7 @@ public class DynamicReloader implements Runnable {
         boolean hotDeploy = Boolean.parseBoolean(reloadFile.get(DeployCommandParameters.ParameterNames.HOT_DEPLOY));
         if (hotDeploy) {
             deployParam.set(DeployCommandParameters.ParameterNames.HOT_DEPLOY, "true");
-            boolean metadataChanged = Boolean.TRUE.toString().equals(reloadFile.getProperty(DeployCommandParameters.ParameterNames.METADATA_CHANGED));
+            boolean metadataChanged = Boolean.parseBoolean(reloadFile.getProperty(DeployCommandParameters.ParameterNames.METADATA_CHANGED));
             if (metadataChanged) {
                 deployParam.set(DeployCommandParameters.ParameterNames.METADATA_CHANGED, "true");
             }
