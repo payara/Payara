@@ -112,7 +112,8 @@ public enum RUNTIME_OPTION {
     shutdowngrace(true, new IntegerValidator(1, Integer.MAX_VALUE)),
     hzinitialjoinwait(true, new IntegerValidator(0,100000)),
     contextroot(true),
-    warmup(false);
+    warmup(false),
+    hotdeploy(false);
 
     RUNTIME_OPTION(boolean hasValue) {
         this(hasValue, new Validator());

@@ -101,6 +101,7 @@ import fish.payara.micro.cmd.options.RuntimeOptions;
 import fish.payara.micro.cmd.options.ValidationException;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.nucleus.executorservice.PayaraFileWatcher;
+import java.util.ArrayList;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -199,6 +200,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String publicAddress = "";
     private int initialJoinWait = 1;
     private boolean warmup;
+    private Boolean hotDeploy;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -1272,6 +1274,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     case warmup:
                         warmup = true;
                         break;
+                    case hotdeploy:
+                        hotDeploy = Boolean.parseBoolean(value);
+                        break;
                     case disablephonehome:
                         disablePhoneHome = true;
                         break;
@@ -1576,25 +1581,31 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         //unset so only used once
                         contextRoot = null;
                     }
-
+                    List<String> args = new ArrayList<>();
+                    args.add("--availabilityenabled=true");
+                    args.add("--force=true");
+                    args.add("--loadOnly");
+                    args.add("true");
+                    if (hotDeploy) {
+                        args.add("--hotDeploy=true");
+                    }
                     if (deploymentFile.getName().startsWith("ROOT.")) {
-                        deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
+                        args.add("--contextroot=/");
+                        deployer.deploy(deploymentFile, args.toArray(new String[0]));
                     } else {
                         if (deployContext != null) {
                             if (deployContext.equals("ROOT")) {
                                 deployContext = "/";
                             }
-
                             deployContext = removeJavaArchiveExtension(deployContext);
-
-                            deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
+                            args.add("--contextroot");
+                            args.add(deployContext);
                         } else if (deploymentFile.isDirectory()) {
-                            deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deploymentFile.getName());
-                        } else {
-                            deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
+                            args.add("--contextroot");
+                            args.add(deploymentFile.getName());
                         }
+                        deployer.deploy(deploymentFile, args.toArray(new String[0]));
                     }
-
                     deploymentCount++;
                 } else {
                     LOGGER.log(Level.WARNING, "{0} is not a valid deployment", deploymentFile.getAbsolutePath());
@@ -1621,8 +1632,17 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         contextRoot = null;
                     }
 
+                    List<String> args = new ArrayList<>();
+                    args.add("--availabilityenabled=true");
+                    args.add("--force=true");
+                    args.add("--loadOnly");
+                    args.add("true");
+                    if (hotDeploy) {
+                        args.add("--hotDeploy=true");
+                    }
                     if (entry.getName().startsWith("ROOT.")) {
-                        deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
+                        args.add("--contextroot=/");
+                        deployer.deploy(entry, args.toArray(new String[0]));
                     } else {
                         if (deployContext != null) {
                             if (deployContext.equals("ROOT")) {
@@ -1630,11 +1650,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                             }
 
                             deployContext = removeJavaArchiveExtension(deployContext);
-
-                            deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
-                        } else {
-                            deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
+                            args.add("--contextroot");
+                            args.add(deployContext);
                         }
+                        deployer.deploy(entry, args.toArray(new String[0]));
                     }
 
                     deploymentCount++;

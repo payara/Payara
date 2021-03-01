@@ -172,9 +172,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
                 0L,
                 pollIntervalInSeconds, 
                 TimeUnit.SECONDS);
-        logger.fine("[Reloader] Started, monitoring every " +
-                    pollIntervalInSeconds + " seconds"
-                    );
+        logger.log(Level.FINE, "[Reloader] Started, monitoring every {0} seconds", pollIntervalInSeconds);
     }
 
     private void stop() {
