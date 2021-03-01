@@ -326,8 +326,8 @@ public class DynamicReloader implements Runnable {
         
         private Properties readReloadFile() {
             Properties prop = new Properties();
-            try {
-                prop.load(new FileInputStream(reloadFile));
+            try (InputStream istream = new FileInputStream(reloadFile) {
+                prop.load(istream);
             } catch (Exception ex) {
                 // skip
             }
