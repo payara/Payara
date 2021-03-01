@@ -1,5 +1,5 @@
 [[policy]]
-= Community Support Policy
+= Community GitHub Policy
 
 One of the key goals of Payara is to interact with our community of users and understand their needs and how are they engaging with the Payara Platform Community Edition in general. To this effect, it is important to outline the guidelines that compose the Payara GitHub policy and how we handle user requests for bug fixes and enhancements.
 
