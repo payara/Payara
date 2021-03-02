@@ -115,6 +115,7 @@ public class ApplicationState {
     private static final String WEB_INF = "WEB-INF";
     private static final String META_INF = "META-INF";
     private static final String CLASS_EXT = ".class";
+    private static final String JAVA_EXT = ".java";
     private static final String WEB_INF_CLASSES = "WEB-INF/classes";
 
     public ApplicationState(String name, File path, ExtendedDeploymentContext deploymentContext) {
@@ -398,6 +399,18 @@ public class ApplicationState {
                     .substring(startIndex, endIndex)
                     .replace('\\', '.')
                     .replace('/', '.');
+        } else if (sourcePath.endsWith(JAVA_EXT)) {
+            int startIndex = 0;
+            int endIndex = sourcePath.length() - JAVA_EXT.length();
+            final String SRC_ROOT = "src.main.java";
+            sourcePath = sourcePath
+                    .replace('\\', '.')
+                    .replace('/', '.');
+            if (sourcePath.contains(SRC_ROOT)) {
+                startIndex = sourcePath.indexOf(SRC_ROOT) + SRC_ROOT.length() + 1;
+            }
+            className = sourcePath
+                    .substring(startIndex, endIndex);
         }
         return className;
     }
@@ -418,7 +431,8 @@ public class ApplicationState {
         Set<Class> classes = new HashSet<>();
         if (engineInfos != null) {
             for (EngineInfo engineInfo : engineInfos) {
-                if (engineInfo.getDeployer() != null) {
+                if (engineInfo.getDeployer() != null
+                        && engineInfo.getDeployer().getMetaData() != null) {
                     classes.addAll(Arrays.asList(engineInfo.getDeployer().getMetaData().requires()));
                 }
             }

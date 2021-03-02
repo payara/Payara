@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.jwtauth.jwt;
 
+import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
@@ -67,22 +68,26 @@ import static org.eclipse.microprofile.jwt.Claims.*;
 public class JwtTokenParser {
     
     private final static String DEFAULT_NAMESPACE = "https://payara.fish/mp-jwt/";
-    
-    private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti, groups);
+
+    // Groups no longer required since 2.0
+    private final List<Claims> requiredClaims = asList(iss, sub, exp, iat, jti);
     
     private final boolean enableNamespacedClaims;
+    private final boolean disableTypeVerification;
     private final Optional<String> customNamespace;
+
     
     private String rawToken;
     private SignedJWT signedJWT;
     
-    public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace) {
+    public JwtTokenParser(Optional<Boolean> enableNamespacedClaims, Optional<String> customNamespace, Optional<Boolean> disableTypeVerification) {
         this.enableNamespacedClaims = enableNamespacedClaims.orElse(false);
+        this.disableTypeVerification = disableTypeVerification.orElse(false);
         this.customNamespace = customNamespace;
     }
 
     public JwtTokenParser() {
-        this(Optional.empty(), Optional.empty());
+        this(Optional.empty(), Optional.empty(), Optional.empty());
     }
     
     public void parse(String bearerToken) throws Exception {
@@ -178,11 +183,19 @@ public class JwtTokenParser {
         return true;
     }
 
+    /**
+     * Will confirm the token has not expired if the current time and issue time
+     * were both before the expiry time
+     * 
+     * @param presentedClaims the claims from the JWT
+     * @return if the JWT has expired
+     */
     private boolean checkNotExpired(Map<String, JsonValue> presentedClaims) {
-        int currentTime = (int) (System.currentTimeMillis() / 1000);
-        int expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).intValue();
+        final long currentTime = System.currentTimeMillis() / 1000;
+        final long expiredTime = ((JsonNumber) presentedClaims.get(exp.name())).longValue();
+        final long issueTime = ((JsonNumber) presentedClaims.get(iat.name())).longValue();
 
-        return currentTime < expiredTime;
+        return currentTime < expiredTime && issueTime < expiredTime;
     }
 
     private boolean checkIssuer(Map<String, JsonValue> presentedClaims, String acceptedIssuer) {
@@ -197,7 +210,10 @@ public class JwtTokenParser {
     }
 
     private boolean checkIsJWT(JWSHeader header) {
-        return header.getType().toString().equals("JWT");
+        return disableTypeVerification || Optional.ofNullable(header.getType())
+                                                    .map(JOSEObjectType::toString)
+                                                    .orElse("")
+                                                    .equals("JWT");
     }
 
     private String getCallerPrincipalName(Map<String, JsonValue> rawClaims) {

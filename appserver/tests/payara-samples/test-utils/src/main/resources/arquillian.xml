@@ -4,20 +4,22 @@
     http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
     <defaultProtocol type="Servlet 3.0"/>
-    
-     <container qualifier="payara">
+
+     <container qualifier="payara" default="true">
         <configuration>
             <property name="domain">${payara.domain.name}</property>
+            <property name="debug">${payara.debug}</property>
+            <property name="adminHost">${payara.adminHost}</property>
         </configuration>
      </container>
-     
+
      <container qualifier="liberty-ci-managed">
         <configuration>
             <property name="deployType">xml</property>
             <property name="wlpHome">${arquillian.liberty.wlpHome}</property>
         </configuration>
     </container>
-    
+
      <container qualifier="liberty-ci-managed-debug">
         <configuration>
             <property name="deployType">xml</property>

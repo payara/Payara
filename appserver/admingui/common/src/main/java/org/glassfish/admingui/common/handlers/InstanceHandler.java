@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 
 /*
  * InstanceHandler.java
@@ -160,7 +160,7 @@ public class InstanceHandler {
             //place for user to fix the jvm options.
             String deleteProfileEndpoint = (String) handlerCtx.getInputValue("deleteProfileEndpoint");
             if (!GuiUtil.isEmpty(deleteProfileEndpoint)){
-                Map attrMap = new HashMap();
+                Map<String, Object> attrMap = new HashMap<>();
                 attrMap.put(TARGET, (String) handlerCtx.getInputValue(TARGET));
                 RestUtil.restRequest(deleteProfileEndpoint, attrMap, "DELETE", handlerCtx, false, false);
             }
@@ -168,7 +168,7 @@ public class InstanceHandler {
             //If the origList is not empty,  we want to restore it. Since POST remove all options first and then add it back. As a
             //result, all previous existing option is gone.
             List<Map<String, Object>> origList = (List<Map<String, Object>>) handlerCtx.getInputValue("origList");
-            Map<String, Object> payload1 = new HashMap<String, Object>();
+            Map<String, Object> payload1 = new HashMap<>();
             if (endpoint.contains(PROFILER)) {
                 payload1.put(PROFILER, "true");
             }
@@ -186,13 +186,13 @@ public class InstanceHandler {
             String jvmOptionUnescaped = new JvmOption((String) oneRow.get(JVM_OPTION),
                     (String) oneRow.get(MIN_VERSION), (String) oneRow.get(MAX_VERSION)).toString();
             String jvmOptionEscape = UtilHandlers.escapePropertyValue(jvmOptionUnescaped);         //refer to GLASSFISH-19069
-            ArrayList kv = getKeyValuePair(jvmOptionEscape);
-            payload.put((String)kv.get(0), kv.get(1));
+            ArrayList<String> kv = getKeyValuePair(jvmOptionEscape);
+            payload.put(kv.get(0), kv.get(1));
         }
     }
 
-    public static ArrayList getKeyValuePair(String str) {
-        ArrayList list = new ArrayList(2);
+    public static ArrayList<String> getKeyValuePair(String str) {
+        ArrayList<String> list = new ArrayList<>(2);
         int index = str.indexOf('=');
         String key = "";
         String value = "";

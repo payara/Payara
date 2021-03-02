@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -75,13 +75,13 @@ import org.glassfish.api.logging.Task;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import static java.security.AccessController.doPrivileged;
+import org.glassfish.internal.api.Globals;
 
 /**
  * GFFileHandler publishes formatted log Messages to a FILE.
@@ -115,9 +115,6 @@ public class GFFileHandler extends StreamHandler implements
     @Inject @Optional
     private Agent agent;
 
-    @Inject
-    private ServiceLocator habitat;
-
     // This is a OutputStream to keep track of number of bytes
     // written out to the stream
     private MeteredStream meter;
@@ -140,7 +137,7 @@ public class GFFileHandler extends StreamHandler implements
     private String fileHandlerFormatter = "";
     private String currentFileHandlerFormatter = "";
     private boolean logStandardStreams;
-    
+
     private PrintStream oStdOutBackup = System.out;
     private PrintStream oStdErrBackup = System.err;
     private LoggingOutputStream stdoutOutputStream=null;
@@ -170,7 +167,7 @@ public class GFFileHandler extends StreamHandler implements
     public static final int MINIMUM_ROTATION_LIMIT_VALUE = 500*1000;
 
     private BooleanLatch done = new BooleanLatch();
-    
+
     private boolean dayBasedFileRotation = false;
 
     private List<LogEventListener> logEventListeners = new ArrayList<>();
@@ -303,7 +300,7 @@ public class GFFileHandler extends StreamHandler implements
         if (propertyValue != null) {
             compressionOnRotation = Boolean.parseBoolean(propertyValue);
         }
-   
+
         propertyValue = manager.getProperty(className + ".logStandardStreams");
         if (propertyValue != null) {
             logStandardStreams = Boolean.parseBoolean(propertyValue);
@@ -495,7 +492,7 @@ public class GFFileHandler extends StreamHandler implements
     }
 
     Formatter findFormatterService(String formatterName) {
-        List<Formatter> formatterServices = habitat.getAllServices(Formatter.class);
+        List<Formatter> formatterServices = Globals.getDefaultHabitat().getAllServices(Formatter.class);
         for (Formatter formatter : formatterServices) {
             if (formatter.getClass().getName().equals(formatterName)) {
                 return formatter;
@@ -602,7 +599,7 @@ public class GFFileHandler extends StreamHandler implements
         if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
             LogFacade.LOGGING_LOGGER.fine("Logger handler killed");
         }
-        
+
         System.setOut(oStdOutBackup);
         System.setErr(oStdErrBackup);
 
@@ -994,29 +991,16 @@ public class GFFileHandler extends StreamHandler implements
         // ***
         // PAYARA-406 Check if the LogRecord passed in is already a GFLogRecord,
         // and just cast the passed record if it is
-        GFLogRecord recordWrapper;
-        if (record.getClass().getSimpleName().equals("GFLogRecord")) {
-            recordWrapper = (GFLogRecord) record;
-
-            // Check there is actually a set thread name
-            if (recordWrapper.getThreadName() == null) {
-                recordWrapper.setThreadName(Thread.currentThread().getName());
-            }
-        }
-        else {
-            recordWrapper = new GFLogRecord(record);
-            // set the thread id to be the current thread that is logging the message
-            recordWrapper.setThreadName(Thread.currentThread().getName());
-        }
+        GFLogRecord wrappedRecord = GFLogRecord.wrap(record, true);
 
         if (logToFile) {
             try {
-                pendingRecords.add(recordWrapper);
+                pendingRecords.add(wrappedRecord);
             } catch (IllegalStateException e) {
                 // queue is full, start waiting.
                 new ErrorManager().error("GFFileHandler: Queue full. Waiting to submit.", e, ErrorManager.GENERIC_FAILURE);
                 try {
-                    pendingRecords.put(recordWrapper);
+                    pendingRecords.put(wrappedRecord);
                 } catch (InterruptedException e1) {
                     // too bad, record is lost...
                     new ErrorManager().error("GFFileHandler: Waiting was interrupted. Log record lost.", e1, ErrorManager.GENERIC_FAILURE);
@@ -1080,22 +1064,22 @@ public class GFFileHandler extends StreamHandler implements
 
         return status;
     }
-    
+
     private void logStandardStreams() {
         // redirect stderr and stdout, a better way to do this
         //http://blogs.sun.com/nickstephen/entry/java_redirecting_system_out_and
-  
+
         Logger _ologger = LogFacade.STDOUT_LOGGER;
         stdoutOutputStream = new LoggingOutputStream(_ologger, Level.INFO);
         LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
         System.setOut(pout);
-    
+
         Logger _elogger = LogFacade.STDERR_LOGGER;
         stderrOutputStream = new LoggingOutputStream(_elogger, Level.SEVERE);
         LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
         System.setErr(perr);
     }
-    
+
     public synchronized void setLogFile(String fileName) {
         String logFileName = TranslatedConfigView.expandConfigValue(fileName);
         File logFile = new File(logFileName);

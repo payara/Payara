@@ -1,5 +1,8 @@
 package fish.payara.microprofile.openapi.impl.model;
 
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -8,7 +11,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import static fish.payara.microprofile.openapi.impl.model.ExtensibleImpl.extensionName;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -20,7 +22,7 @@ public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends Tree
         implements Extensible<T> {
 
     @JsonIgnore
-    protected Map<String, Object> extensions = new LinkedHashMap<>();
+    protected Map<String, Object> extensions = createMap();
 
     protected ExtensibleTreeMap() {
         super();
@@ -32,7 +34,7 @@ public abstract class ExtensibleTreeMap<V, T extends Extensible<T>> extends Tree
 
     @Override
     public final Map<String, Object> getExtensions() {
-        return extensions;
+        return readOnlyView(extensions);
     }
 
     @Override

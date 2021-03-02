@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,19 +56,12 @@ import javax.json.JsonString;
 import javax.ws.rs.core.Response;
 
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
-
-import fish.payara.samples.rest.management.extension.TemporaryInstance;
 
 /**
  * Test the JVM option endpoint of the REST management interface
  */
 public class JvmOptionsTest extends RestManagementTest {
-
-    @ArquillianResource
-    private TemporaryInstance instance;
-
     /**
      * Tests that when a POST request is made to the endpoint the JVM options posted
      * are added. See CUSTCOM-234.
@@ -125,7 +118,7 @@ public class JvmOptionsTest extends RestManagementTest {
     }
 
     private String jvmOptionsEndpoint() {
-        return format("configs/config/%s-config/java-config/jvm-options", instance.getName());
+        return format("configs/config/%s-config/java-config/jvm-options", INSTANCE_NAME);
     }
 
     private static void verifyJvmOption(String propertyName, Map<String, Object> localMap, List<String> jvmOptions) {

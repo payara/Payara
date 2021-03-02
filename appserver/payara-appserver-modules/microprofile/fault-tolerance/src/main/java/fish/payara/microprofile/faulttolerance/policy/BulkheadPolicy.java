@@ -57,14 +57,14 @@ public final class BulkheadPolicy extends Policy {
 
     public final int value;
     public final int waitingTaskQueue;
-    public final boolean exitOnCompletion;
+    public final boolean exitIsOnCompletion;
 
     public BulkheadPolicy(Method annotatedMethod, int value, int waitingTaskQueue) {
         checkAtLeast(1, annotatedMethod, Bulkhead.class, "value", value);
         checkAtLeast(0, annotatedMethod, Bulkhead.class, "waitingTaskQueue", waitingTaskQueue);
         this.value = value;
         this.waitingTaskQueue = waitingTaskQueue;
-        this.exitOnCompletion = annotatedMethod.getReturnType() == CompletionStage.class;
+        this.exitIsOnCompletion = annotatedMethod.getReturnType() == CompletionStage.class;
     }
 
     public static BulkheadPolicy create(InvocationContext context, FaultToleranceConfig config) {

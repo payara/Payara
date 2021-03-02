@@ -40,23 +40,33 @@
 package fish.payara.microprofile.openapi.impl.model.media;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
-import fish.payara.microprofile.openapi.impl.visitor.AnnotationInfo;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
+import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.applyReference;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeImmutableList;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import static java.util.logging.Level.WARNING;
+
 import java.util.logging.Logger;
+
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -64,15 +74,17 @@ import org.eclipse.microprofile.openapi.models.media.XML;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.ClassModel;
 import org.glassfish.hk2.classmodel.reflect.EnumModel;
-import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
 import org.glassfish.hk2.classmodel.reflect.Type;
 
+// Never serialise the 'name' property, but allow deserialization
+@JsonIgnoreProperties(value = "name", allowSetters = true)
 public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private static final Logger LOGGER = Logger.getLogger(SchemaImpl.class.getName());
 
     private Object defaultValue;
 
+    private String name;
     private String title;
     private BigDecimal multipleOf;
     private BigDecimal maximum;
@@ -87,9 +99,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Boolean uniqueItems;
     private Integer maxProperties;
     private Integer minProperties;
-    private List<String> required = new ArrayList<>();
+    private List<String> required = createList();
     private SchemaType type;
-    private Map<String, Schema> properties = new HashMap<>();
+    private Map<String, Schema> properties = createMap();
     private String description;
     private String format;
     private String ref;
@@ -100,22 +112,53 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private ExternalDocumentation externalDocs;
     private Boolean deprecated;
     private XML xml;
-    private List<Object> enumeration = new ArrayList<>();
+    private List<Object> enumeration = createList();
     private Discriminator discriminator;
 
     private Schema not;
-    private List<Schema> anyOf = new ArrayList<>();
-    private List<Schema> allOf = new ArrayList<>();
-    private List<Schema> oneOf = new ArrayList<>();
+    private List<Schema> anyOf = createList();
+    private List<Schema> allOf = createList();
+    private List<Schema> oneOf = createList();
 
     private Object additionalProperties;
     private Schema items;
     @JsonIgnore
     private String implementation;
+    @JsonIgnore
+    private boolean isRequired;
 
-    public static Schema createInstance(AnnotationModel annotation, ApiContext context) {
+    public static SchemaImpl valueOf(String content) throws JsonMappingException, JsonProcessingException {
+        return ObjectMapperFactory
+                .createJson()
+                .readValue(content, SchemaImpl.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static SchemaImpl createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
+
+        if (annotation == null) {
+            return from;
+        }
+
+        String ref = annotation.getValue("ref", String.class);
+        if (ref != null && !ref.isEmpty()) {
+            from.setRef(ref);
+            return from;
+        }
+        
+        EnumModel typeEnum = annotation.getValue("type", EnumModel.class);
+        if (typeEnum != null) {
+            from.setType(SchemaType.valueOf(typeEnum.getValue()));
+        }
+
+        final String implementationClass = annotation.getValue("implementation", String.class);
+        if (implementationClass != null) {
+            setImplementation(from, implementationClass, true, context);
+        }
+
         from.setDefaultValue(annotation.getValue("defaultValue", Object.class));
+        from.setName(annotation.getValue("name", String.class));
         from.setTitle(annotation.getValue("title", String.class));
         Double multipleOf = annotation.getValue("multipleOf", Double.class);
         if (multipleOf != null) {
@@ -140,16 +183,22 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setMaxProperties(annotation.getValue("maxProperties", Integer.class));
         from.setMinProperties(annotation.getValue("minProperties", Integer.class));
         from.setRequired(annotation.getValue("requiredProperties", List.class));
-        EnumModel typeEnum = annotation.getValue("type", EnumModel.class);
-        if (typeEnum != null) {
-            from.setType(SchemaType.valueOf(typeEnum.getValue()));
+
+        final Boolean isRequired = annotation.getValue("required", Boolean.class);
+        if (isRequired != null) {
+            from.isRequired = isRequired;
         }
+
+        extractAnnotations(annotation, context, "properties", "name", SchemaImpl::createInstance, from::addProperty);
+        for (Entry<String, Schema> property : from.getProperties().entrySet()) {
+            final SchemaImpl propertySchema = (SchemaImpl) property.getValue();
+            if (propertySchema.isRequired) {
+                from.addRequired(property.getKey());
+            }
+        }
+
         from.setDescription(annotation.getValue("description", String.class));
         from.setFormat(annotation.getValue("format", String.class));
-        String ref = annotation.getValue("ref", String.class);
-        if (ref != null && !ref.isEmpty()) {
-            from.setRef(ref);
-        }
         from.setNullable(annotation.getValue("nullable", Boolean.class));
         from.setReadOnly(annotation.getValue("readOnly", Boolean.class));
         from.setWriteOnly(annotation.getValue("writeOnly", Boolean.class));
@@ -182,32 +231,22 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
         List<String> anyOf = annotation.getValue("anyOf", List.class);
         if (anyOf != null) {
-            if (from.getAnyOf() == null) {
-                from.setAnyOf(new ArrayList<>());
-            }
-            from.getAnyOf().addAll(from.getSchemaInstances(anyOf, context));
+            mergeImmutableList(from.getAnyOf(), from.getSchemaInstances(anyOf, context), from::setAnyOf);
         }
         List<String> allOf = annotation.getValue("allOf", List.class);
         if (allOf != null) {
-            if (from.getAllOf() == null) {
-                from.setAllOf(new ArrayList<>());
-            }
-            from.getAllOf().addAll(from.getSchemaInstances(allOf, context));
+            mergeImmutableList(from.getAllOf(), from.getSchemaInstances(allOf, context), from::setAllOf);
         }
         List<String> oneOf = annotation.getValue("oneOf", List.class);
         if (oneOf != null) {
-            if (from.getOneOf() == null) {
-                from.setOneOf(new ArrayList<>());
-            }
-            from.getOneOf().addAll(from.getSchemaInstances(oneOf, context));
+            mergeImmutableList(from.getOneOf(), from.getSchemaInstances(oneOf, context), from::setOneOf);
         }
 
-        from.setImplementation(annotation.getValue("implementation", String.class));
         return from;
     }
 
     private List<Schema> getSchemaInstances(List<String> fromList, ApiContext context) {
-        List<Schema> to = new ArrayList<>();
+        List<Schema> to = createList();
         if (fromList != null) {
             for (String from : fromList) {
                 Schema schema = getSchemaInstance(from, context);
@@ -270,17 +309,20 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<Object> getEnumeration() {
-        return enumeration;
+        return readOnlyView(enumeration);
     }
 
     @Override
     public void setEnumeration(List<Object> enumeration) {
-        this.enumeration = enumeration;
+        this.enumeration = createList(enumeration);
     }
 
     @Override
     public Schema addEnumeration(Object enumerationItem) {
         if (enumerationItem != null) {
+            if (this.enumeration == null) {
+                this.enumeration = createList();
+            }
             this.enumeration.add(enumerationItem);
         }
         return this;
@@ -288,7 +330,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void removeEnumeration(Object enumeration) {
-        this.enumeration.remove(enumeration);
+        if (this.enumeration != null) {
+            this.enumeration.remove(enumeration);
+        }
     }
 
     @Override
@@ -423,24 +467,41 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<String> getRequired() {
-        return required;
+        return readOnlyView(required);
     }
 
     @Override
     public void setRequired(List<String> required) {
-        this.required = required;
+        this.required = createList(required);
     }
 
     @Override
     public Schema addRequired(String requiredItem) {
-        this.required.add(requiredItem);
-        Collections.sort(required);
+        if (requiredItem != null) {
+            if (required == null) {
+                required = createList();
+            }
+            if (!required.contains(requiredItem)) {
+                required.add(requiredItem);
+            }
+            Collections.sort(required);
+        }
         return this;
+    }
+
+    public boolean isRequired() {
+        return isRequired;
+    }
+
+    public void setRequired(boolean isRequired) {
+        this.isRequired = isRequired;
     }
 
     @Override
     public void removeRequired(String required) {
-        this.required.remove(required);
+        if (this.required != null) {
+            this.required.remove(required);
+        }
     }
 
     @Override
@@ -465,17 +526,20 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Map<String, Schema> getProperties() {
-        return properties;
+        return readOnlyView(properties);
     }
 
     @Override
     public void setProperties(Map<String, Schema> properties) {
-        this.properties = properties;
+        this.properties = createMap(properties);
     }
 
     @Override
     public Schema addProperty(String key, Schema propertiesItem) {
         if (propertiesItem != null) {
+            if (this.properties == null) {
+                this.properties = createMap();
+            }
             this.properties.put(key, propertiesItem);
         }
         return this;
@@ -483,18 +547,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public void removeProperty(String key) {
-        this.properties.remove(key);
-    }
-
-    @JsonProperty
-    @Override
-    public Object getAdditionalProperties() {
-        return additionalProperties;
-    }
-
-    @Override
-    public void setAdditionalProperties(Schema additionalProperties) {
-        this.additionalProperties = additionalProperties;
+        if (this.properties != null) {
+            this.properties.remove(key);
+        }
     }
 
     @JsonIgnore
@@ -640,70 +695,86 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public List<Schema> getAllOf() {
-        return allOf;
+        return readOnlyView(allOf);
     }
 
     @Override
     public void setAllOf(List<Schema> allOf) {
-        this.allOf = allOf;
+        this.allOf = createList(allOf);
     }
 
     @Override
     public Schema addAllOf(Schema allOf) {
-        this.allOf.add(allOf);
+        if (allOf != null) {
+            if (this.allOf == null) {
+                this.allOf = createList();
+            }
+            this.allOf.add(allOf);
+        }
         return this;
     }
 
     @Override
     public void removeAllOf(Schema allOf) {
-        this.allOf.remove(allOf);
+        if (this.allOf != null) {
+            this.allOf.remove(allOf);
+        }
     }
 
     @Override
     public List<Schema> getAnyOf() {
-        return this.anyOf;
+        return readOnlyView(anyOf);
     }
 
     @Override
     public void setAnyOf(List<Schema> anyOf) {
-        this.anyOf = anyOf;
+        this.anyOf = createList(anyOf);
     }
 
     @Override
     public Schema addAnyOf(Schema anyOf) {
-        this.anyOf.add(anyOf);
+        if (anyOf != null) {
+            if (this.anyOf == null) {
+                this.anyOf = createList();
+            }
+            this.anyOf.add(anyOf);
+        }
         return this;
     }
 
     @Override
     public void removeAnyOf(Schema anyOf) {
-        this.anyOf.remove(anyOf);
+        if (this.anyOf != null) {
+            this.anyOf.remove(anyOf);
+        }
     }
 
     @Override
     public List<Schema> getOneOf() {
-        return this.oneOf;
+        return readOnlyView(oneOf);
     }
 
     @Override
     public void setOneOf(List<Schema> oneOf) {
-        this.oneOf = oneOf;
+        this.oneOf = createList(oneOf);
     }
 
     @Override
     public Schema addOneOf(Schema oneOf) {
-        this.oneOf.add(oneOf);
+        if (oneOf != null) {
+            if (this.oneOf == null) {
+                this.oneOf = createList();
+            }
+            this.oneOf.add(oneOf);
+        }
         return this;
     }
 
     @Override
     public void removeOneOf(Schema oneOf) {
-        this.oneOf.remove(oneOf);
-    }
-
-    @Override
-    public void setAdditionalProperties(Boolean additionalProperties) {
-        this.additionalProperties = additionalProperties;
+        if (this.oneOf != null) {
+            this.oneOf.remove(oneOf);
+        }
     }
 
     public String getImplementation() {
@@ -712,6 +783,14 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     public void setImplementation(String implementation) {
         this.implementation = implementation;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public static void merge(Schema from, Schema to,
@@ -723,6 +802,15 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         if (from.getRef() != null && !from.getRef().isEmpty()) {
             applyReference(to, from.getRef());
             return;
+        }
+        if (from.getType() != null) {
+            to.setType(mergeProperty(to.getType(), from.getType(), override));
+        }
+        if (from instanceof SchemaImpl && to instanceof SchemaImpl) {
+            final String fromImplementation = ((SchemaImpl) from).getImplementation();
+            if (fromImplementation != null) {
+                setImplementation((SchemaImpl) to, fromImplementation, override, context);
+            }
         }
         to.setDefaultValue(mergeProperty(to.getDefaultValue(), from.getDefaultValue(), override));
         to.setTitle(mergeProperty(to.getTitle(), from.getTitle(), override));
@@ -748,7 +836,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         to.setMinProperties(mergeProperty(to.getMinProperties(), from.getMinProperties(), override));
         if (from.getRequired() != null && !from.getRequired().isEmpty()) {
             if (to.getRequired() == null) {
-                to.setRequired(new ArrayList<>());
+                to.setRequired(createList());
             }
             for (String value : from.getRequired()) {
                 if (!to.getRequired().contains(value)) {
@@ -756,16 +844,19 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 }
             }
         }
-        if (from.getType() != null) {
-            to.setType(mergeProperty(to.getType(), from.getType(), override));
-        }
         if (from.getProperties() != null && !from.getProperties().isEmpty()) {
             if (to.getProperties() == null) {
-                to.setProperties(new HashMap<>());
+                to.setProperties(createMap());
             }
-            for (String key : from.getProperties().keySet()) {
-                if (!to.getProperties().containsKey(key)) {
-                    to.addProperty(key, from.getProperties().get(key));
+            final Map<String, Schema> toProperties = to.getProperties();
+            for (Entry<String, Schema> fromEntry : from.getProperties().entrySet()) {
+                final String name = fromEntry.getKey();
+                final Schema fromSchema = fromEntry.getValue();
+                if (!toProperties.containsKey(name)) {
+                    to.addProperty(name, fromSchema);
+                } else {
+                    final Schema toSchema = toProperties.get(name);
+                    SchemaImpl.merge(fromSchema, toSchema, override, context);
                 }
             }
         }
@@ -784,7 +875,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
         if (from.getEnumeration() != null && from.getEnumeration().size() > 0) {
             if (to.getEnumeration() == null) {
-                to.setEnumeration(new ArrayList<>());
+                to.setEnumeration(createList());
             }
             for (Object value : from.getEnumeration()) {
                 if (!to.getEnumeration().contains(value)) {
@@ -807,65 +898,55 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         if (from.getNot() != null) {
             to.setNot(from.getNot());
         }
-        if (from.getAllOf() != null) {
-            if (to.getAllOf() == null) {
-                to.setAllOf(new ArrayList<>());
+        mergeImmutableList(from.getAnyOf(), to.getAnyOf(), to::setAnyOf);
+        mergeImmutableList(from.getAllOf(), to.getAllOf(), to::setAllOf);
+        mergeImmutableList(from.getOneOf(), to.getOneOf(), to::setOneOf);
+    }
+
+    private static void setImplementation(SchemaImpl schema, String implementationClass, boolean override, ApiContext context) {
+        if (context.getApi().getComponents().getSchemas() != null) {
+            if (schema instanceof SchemaImpl) {
+                schema.setImplementation(mergeProperty(((SchemaImpl)schema).getImplementation(), implementationClass, override));
             }
-            to.getAllOf().addAll(from.getAllOf());
-        }
-        if (from.getAnyOf() != null) {
-            if (to.getAnyOf() == null) {
-                to.setAnyOf(new ArrayList<>());
-            }
-            to.getAnyOf().addAll(from.getAnyOf());
-        }
-        if (from.getOneOf() != null) {
-            if (to.getOneOf() == null) {
-                to.setOneOf(new ArrayList<>());
-            }
-            to.getOneOf().addAll(from.getOneOf());
-        }
-        if (from instanceof SchemaImpl
-                && ((SchemaImpl) from).getImplementation() != null
-                && context != null
-                && context.getApi().getComponents().getSchemas() != null) {
-            String implementationClass = ((SchemaImpl) from).getImplementation();
-            
-            if (to instanceof SchemaImpl) {
-                ((SchemaImpl) to).setImplementation(mergeProperty(((SchemaImpl)to).getImplementation(), ((SchemaImpl) from).getImplementation(), override));
+
+            if (implementationClass.endsWith("[]")) {
+                implementationClass = implementationClass.substring(0, implementationClass.length() - 2);
+                final SchemaImpl itemSchema = new SchemaImpl();
+                schema.setItems(itemSchema);
+                schema.setType(SchemaType.ARRAY);
+                schema = itemSchema;
             }
             
             if (!implementationClass.equals("java.lang.Void")) {
                 Type type = context.getType(implementationClass);
-                String schemaName = null;
-                if (type instanceof ExtensibleType) {
-                    ExtensibleType implementationType = (ExtensibleType) type;
-                    AnnotationInfo annotationInfo = context.getAnnotationInfo(implementationType);
-                    AnnotationModel annotation = annotationInfo.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
-                    // Get the schema name
-                    if (annotation != null) {
-                        schemaName = annotation.getValue("name", String.class);
-                    }
-                }
-                if (schemaName == null || schemaName.isEmpty()) {
+                String schemaName;
+                if (type != null) {
+                    schemaName = ModelUtils.getSchemaName(context, type);
+                } else {
                     schemaName = ModelUtils.getSimpleName(implementationClass);
                 }
                 // Get the schema reference, and copy it's values over to the new schema model
                 Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
                 if (copyFrom == null) {
+                    // If the class hasn't been parsed
                     SchemaType schemaType = ModelUtils.getSchemaType(implementationClass, context);
                     copyFrom = new SchemaImpl().type(schemaType);
                 }
-                if (to.getType() == SchemaType.ARRAY) {
-                    to.setItems(new SchemaImpl());
-                    ModelUtils.merge(copyFrom, to.getItems(), true);
+                if (schema.getType() == SchemaType.ARRAY) {
+                    schema.setItems(new SchemaImpl());
+                    ModelUtils.merge(copyFrom, schema.getItems(), true);
                 } else {
-                    ModelUtils.merge(copyFrom, to, true);
+                    ModelUtils.merge(copyFrom, schema, true);
                 }
-                to.setRef(null);
+                schema.setRef(null);
             }
         }
+    }
 
+    public static SchemaImpl fromImplementation(String implementationClass, ApiContext context) {
+        final SchemaImpl schema = new SchemaImpl();
+        setImplementation(schema, implementationClass, true, context);
+        return schema;
     }
 
 }

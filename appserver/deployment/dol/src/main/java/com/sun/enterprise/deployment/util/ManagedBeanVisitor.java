@@ -42,12 +42,9 @@ package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
 
-import java.util.Iterator;
-
 public interface ManagedBeanVisitor extends ComponentVisitor {
     
-    public void accept(ManagedBeanDescriptor managedBean);
-    
+    public void accept(ManagedBeanDescriptor managedBean);  
 
 }
 

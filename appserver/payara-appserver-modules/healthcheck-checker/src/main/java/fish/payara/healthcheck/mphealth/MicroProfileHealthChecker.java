@@ -59,8 +59,8 @@ import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import fish.payara.appserver.micro.services.PayaraInstanceImpl;
 import fish.payara.micro.ClusterCommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.microprofile.healthcheck.config.MicroprofileHealthCheckConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
-import fish.payara.microprofile.healthcheck.config.MetricsHealthCheckConfiguration;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -74,6 +74,7 @@ import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.net.URL;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -221,7 +222,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
      */
     private Map<String, Future<Integer>> pingAllInstances(long timeoutMillis) {
         Map<String, Future<Integer>> tasks = new ConcurrentHashMap<>();
-        Map<String, Future<ClusterCommandResult>> configs = payaraMicro.executeClusteredASAdmin(GET_MP_CONFIG_STRING);
+        Map<UUID, Future<ClusterCommandResult>> configs = payaraMicro.executeClusteredASAdmin(GET_MP_CONFIG_STRING);
 
         for (Server server : domain.getServers().getServer()) {
 
@@ -229,10 +230,10 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
             String instanceName = server.getName();
             tasks.put(instanceName, payaraExecutorService.submit(() -> {
                 // get the remote server's MP HealthCheck config
-                MetricsHealthCheckConfiguration metricsConfig = server.getConfig()
-                        .getExtensionByType(MetricsHealthCheckConfiguration.class);
-                if (metricsConfig != null && Boolean.valueOf(metricsConfig.getEnabled())) {
-                    return pingHealthEndpoint(buildURI(server, metricsConfig.getEndpoint()));
+                MicroprofileHealthCheckConfiguration healthCheckConfig = server.getConfig()
+                        .getExtensionByType(MicroprofileHealthCheckConfiguration.class);
+                if (healthCheckConfig != null && Boolean.valueOf(healthCheckConfig.getEnabled())) {
+                    return pingHealthEndpoint(buildURI(server, healthCheckConfig.getEndpoint()));
                 }
                 return -1;
             }));
@@ -261,7 +262,7 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
     @Override
     public HealthCheckTimeoutExecutionOptions constructOptions(MicroProfileHealthCheckerConfiguration c) {
         return new HealthCheckTimeoutExecutionOptions(Boolean.valueOf(c.getEnabled()), Long.parseLong(c.getTime()),
-                asTimeUnit(c.getUnit()), Long.parseLong(c.getTimeout()));
+                asTimeUnit(c.getUnit()), Boolean.valueOf(c.getAddToMicroProfileHealth()), Long.parseLong(c.getTimeout()));
     }
 
     @Override

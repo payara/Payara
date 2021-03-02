@@ -64,27 +64,27 @@ public class CacheManagerProxy implements CacheManager {
         Cache<K, V> cache;
         JavaEEContextUtil ctxUtil = serverContext.getDefaultServices().getService(JavaEEContextUtil.class);
         if(ctxUtil != null && config instanceof CompleteConfiguration) {
-            CompleteConfiguration<K, V> cfg = new CompleteConfigurationProxy<>((CompleteConfiguration<K, V>)config, ctxUtil);
+            CompleteConfiguration<K, V> cfg = new CompleteConfigurationProxy<>((CompleteConfiguration<K, V>)config, ctxUtil.currentInvocation());
             cache = delegate.createCache(string, cfg);
         } else {
             cache = delegate.createCache(string, config);
         }
 
-        return ctxUtil != null? new CacheProxy<>(cache, ctxUtil) : cache;
+        return ctxUtil != null? new CacheProxy<>(cache, ctxUtil.currentInvocation()) : cache;
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
         JavaEEContextUtil ctxUtil = serverContext.getDefaultServices().getService(JavaEEContextUtil.class);
         Cache<K, V> cache = delegate.getCache(cacheName);
-        return cache != null? new CacheProxy<>(cache, ctxUtil) : null;
+        return cache != null? new CacheProxy<>(cache, ctxUtil.currentInvocation()) : null;
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
         JavaEEContextUtil ctxUtil = serverContext.getDefaultServices().getService(JavaEEContextUtil.class);
         Cache<K, V> cache = delegate.getCache(cacheName, keyType, valueType);
-        return cache != null? new CacheProxy<>(cache, ctxUtil) : null;
+        return cache != null? new CacheProxy<>(cache, ctxUtil.currentInvocation()) : null;
     }
 
 

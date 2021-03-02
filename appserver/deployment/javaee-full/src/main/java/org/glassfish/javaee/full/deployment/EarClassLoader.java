@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.full.deployment;
 
@@ -47,6 +47,7 @@ import java.util.*;
 
 import com.sun.enterprise.loader.ASURLClassLoader;
 import java.util.logging.Logger;
+import org.glassfish.common.util.InstanceCounter;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.hk2.api.PreDestroy;
 
@@ -62,6 +63,7 @@ public class EarClassLoader extends ASURLClassLoader
     boolean isPreDestroyCalled = false;
     private static final Logger log = Logger.getLogger(EarClassLoader.class.getName());
     private final Application application;
+    private final InstanceCounter instanceCounter = new InstanceCounter(this);
 
     public EarClassLoader(ClassLoader classLoader, Application application) {
         super(classLoader);
@@ -90,13 +92,13 @@ public class EarClassLoader extends ASURLClassLoader
         try {
             for (ClassLoaderHolder clh : moduleClassLoaders) {
                 // destroy all the module classloaders
-                if ( !(clh.loader instanceof EarLibClassLoader) &&  
-                     !(clh.loader instanceof EarClassLoader) && 
+                if ( !(clh.loader instanceof EarLibClassLoader) &&
+                     !(clh.loader instanceof EarClassLoader) &&
                      !isRARCL(clh.loader)) {
                     try {
                         PreDestroy.class.cast(clh.loader).preDestroy();
                     } catch (Exception e) {
-                        // ignore, the class loader does not need to be 
+                        // ignore, the class loader does not need to be
                         // explicitly stopped.
                     }
                 }
@@ -111,7 +113,7 @@ public class EarClassLoader extends ASURLClassLoader
                 try {
                     PreDestroy.class.cast(cf).preDestroy();
                 } catch (Exception e) {
-                    // ignore, the class loader does not need to be 
+                    // ignore, the class loader does not need to be
                     // explicitly stopped.
                 }
             }

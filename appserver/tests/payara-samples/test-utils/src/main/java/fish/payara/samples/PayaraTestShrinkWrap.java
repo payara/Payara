@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -40,10 +40,10 @@
 
 package fish.payara.samples;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
@@ -61,15 +61,12 @@ public final class PayaraTestShrinkWrap {
         return getArchive(WebArchive.class);
     }
 
-    public static JavaArchive getJavaArchive() {
-        return getArchive(JavaArchive.class);
-    }
-
     private static <T extends Archive<T> & ClassContainer<T>> T getArchive(Class<T> archiveType) {
         return ShrinkWrap.create(archiveType)
                 .addClasses(PayaraArquillianTestRunner.class, PayaraTestRunnerDelegate.class, PayaraVersion.class)
-                .addClasses(SincePayara.class, NotMicroCompatible.class)
+                .addClasses(SincePayara.class, NotMicroCompatible.class, ServerOperations.class, CliCommands.class)
                 .addClasses(Unstable.class)
+                .addClasses(StringUtils.class)
             ;
     }
 }

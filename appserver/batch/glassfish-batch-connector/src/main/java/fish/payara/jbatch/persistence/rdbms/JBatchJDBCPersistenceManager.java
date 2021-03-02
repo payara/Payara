@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package fish.payara.jbatch.persistence.rdbms;
 
-import com.ibm.jbatch.container.context.impl.MetricImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.exception.PersistenceException;
@@ -106,10 +105,9 @@ import static org.glassfish.internal.api.Globals.getDefaultHabitat;
 public class JBatchJDBCPersistenceManager implements
         IPersistenceManagerService, JDBCQueryConstants, OracleJDBCConstants {
 
-    private static final String CLASSNAME = JBatchJDBCPersistenceManager.class
-            .getName();
+    private static final String CLASSNAME = JBatchJDBCPersistenceManager.class.getName();
 
-    private final static Logger logger = Logger.getLogger(CLASSNAME);
+    private static final Logger logger = Logger.getLogger(CLASSNAME);
 
     private IBatchConfig batchConfig = null;
 
@@ -128,6 +126,9 @@ public class JBatchJDBCPersistenceManager implements
     protected Map<String, String> createH2Strings;
 
     protected RequestTracingService requestTracing;
+    
+    private static final String JAVA_EE_MODE = "Java EE mode, getting connection from data source";
+    private static final String NULL_TAGGED = "<null>";
 
     /*
 	 * (non-Javadoc)
@@ -139,7 +140,7 @@ public class JBatchJDBCPersistenceManager implements
     @Override
     public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
 
-        logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
+        logger.log(Level.CONFIG, "Entering CLASSNAME.init(), batchConfig ={0}", batchConfig);
 
         this.batchConfig = batchConfig;
 
@@ -148,7 +149,7 @@ public class JBatchJDBCPersistenceManager implements
         prefix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_PREFIX_PROPERTY, "");
         suffix = batchConfig.getConfigProperties().getProperty(PAYARA_TABLE_SUFFIX_PROPERTY, "");
 
-        logger.config("JNDI name = " + jndiName);
+        logger.log(Level.CONFIG, "JNDI name = {0}", jndiName);
 
         if (jndiName == null || jndiName.equals("")) {
             throw new BatchContainerServiceException("JNDI name is not defined.");
@@ -204,11 +205,11 @@ public class JBatchJDBCPersistenceManager implements
      */
     @Override
     public CheckpointData getCheckpointData(CheckpointDataKey key) {
-        logger.entering(CLASSNAME, "getCheckpointData", key == null ? "<null>" : key);
+        logger.entering(CLASSNAME, "getCheckpointData", key == null ? NULL_TAGGED : key);
 
         CheckpointData checkpointData = key == null ? null : queryCheckpointData(key.getCommaSeparatedKey());
 
-        logger.exiting(CLASSNAME, "getCheckpointData", checkpointData == null ? "<null>" : checkpointData);
+        logger.exiting(CLASSNAME, "getCheckpointData", checkpointData == null ? NULL_TAGGED : checkpointData);
         return checkpointData;
     }
 
@@ -263,7 +264,7 @@ public class JBatchJDBCPersistenceManager implements
     public String setDefaultSchema() throws SQLException {
         logger.finest("Entering setDefaultSchema");
 
-        logger.finest("Java EE mode, getting connection from data source");
+        logger.finest(JAVA_EE_MODE);
         try (Connection connection = dataSource.getConnection()) {
 
             DatabaseMetaData dbmd = connection.getMetaData();
@@ -369,7 +370,7 @@ public class JBatchJDBCPersistenceManager implements
 
         try (Connection connection = getConnection()) {
             if (!checkIfTableExists(dataSource, tableName, schema)) {
-                logger.log(INFO, tableName + " table does not exists. Trying to create it.");
+                logger.log(INFO, "{0} table does not exists. Trying to create it.", tableName);
                 try (PreparedStatement statement = connection.prepareStatement(createTableStatement)) {
                     statement.executeUpdate();
                 }
@@ -465,15 +466,15 @@ public class JBatchJDBCPersistenceManager implements
      * @throws SQLException
      */
     protected Connection getConnection() throws SQLException {
-        logger.finest("Entering: " + CLASSNAME + ".getConnection");
+        logger.log(Level.FINEST, "Entering: {0}.getConnection", CLASSNAME);
 
-        logger.finest("Java EE mode, getting connection from data source");
+        logger.finest(JAVA_EE_MODE);
         Connection connection = dataSource.getConnection();
-        logger.finest("autocommit=" + connection.getAutoCommit());
+        logger.log(Level.FINEST, "autocommit={0}", connection.getAutoCommit());
 
         setSchemaOnConnection(connection);
 
-        logger.finest("Exiting: " + CLASSNAME + ".getConnection() with connection =" + connection);
+        logger.log(Level.FINEST, "Exiting: {0}.getConnection() with connection ={1}", new Object[]{CLASSNAME, connection});
         return connection;
     }
 
@@ -486,7 +487,7 @@ public class JBatchJDBCPersistenceManager implements
         logger.finest("Entering getConnectionToDefaultSchema");
         Connection connection = null;
 
-        logger.finest("Java EE mode, getting connection from data source");
+        logger.finest(JAVA_EE_MODE);
         try {
             connection = dataSource.getConnection();
 
@@ -494,9 +495,9 @@ public class JBatchJDBCPersistenceManager implements
             logException("FAILED GETTING DATABASE CONNECTION", e);
             throw new PersistenceException(e);
         }
-        logger.finest("autocommit=" + connection.getAutoCommit());
+        logger.log(Level.FINEST, "autocommit={0}", connection.getAutoCommit());
 
-        logger.finest("Exiting from getConnectionToDefaultSchema, conn= " + connection);
+        logger.log(Level.FINEST, "Exiting from getConnectionToDefaultSchema, conn= {0}", connection);
         return connection;
     }
 
@@ -504,7 +505,7 @@ public class JBatchJDBCPersistenceManager implements
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
 
-        logger.log(SEVERE, msg + "; Exception stack trace: " + sw);
+        logger.log(SEVERE, "{0}; Exception stack trace: {1}", new Object[]{msg, sw});
     }
 
     /**
@@ -569,7 +570,7 @@ public class JBatchJDBCPersistenceManager implements
 
         try (Connection connection = getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(queryStrings.get(INSERT_CHECKPOINTDATA))) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();;
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try (ObjectOutputStream oout = new ObjectOutputStream(baos)) {
                     oout.writeObject(value);
 
@@ -631,8 +632,8 @@ public class JBatchJDBCPersistenceManager implements
             PreparedStatement statement) {
 
         logger.logp(Level.FINEST, CLASSNAME, "cleanupConnection", "Entering",
-                new Object[]{conn, rs == null ? "<null>" : rs,
-                    statement == null ? "<null>" : statement});
+                new Object[]{conn, rs == null ? NULL_TAGGED : rs,
+                    statement == null ? NULL_TAGGED : statement});
 
         if (statement != null) {
             try {
@@ -858,16 +859,17 @@ public class JBatchJDBCPersistenceManager implements
             throw new PersistenceException(e);
         }
 
-        if (timestampType.equals(TimestampType.CREATE)) {
-            return createTimestamp;
-        } else if (timestampType.equals(TimestampType.END)) {
-            return endTimestamp;
-        } else if (timestampType.equals(TimestampType.LAST_UPDATED)) {
-            return updateTimestamp;
-        } else if (timestampType.equals(TimestampType.STARTED)) {
-            return startTimestamp;
-        } else {
-            throw new IllegalArgumentException("Unexpected enum value.");
+        switch (timestampType) {
+            case CREATE:
+                return createTimestamp;
+            case END:
+                return endTimestamp;
+            case LAST_UPDATED:
+                return updateTimestamp;
+            case STARTED:
+                return startTimestamp;
+            default:
+                throw new IllegalArgumentException("Unexpected enum value.");
         }
     }
 
@@ -968,8 +970,8 @@ public class JBatchJDBCPersistenceManager implements
 
     }
 
-    public Map<String, StepExecution> getMostRecentStepExecutionsForJobInstance(
-            long instanceId) {
+    @Override
+    public Map<String, StepExecution> getMostRecentStepExecutionsForJobInstance(long instanceId) {
 
         Map<String, StepExecution> data = new HashMap<>();
 
@@ -1091,9 +1093,8 @@ public class JBatchJDBCPersistenceManager implements
                     stepEx.setEndTime(endTS);
                     stepEx.setPersistentUserData(persistentData);
 
-                    logger.fine("BatchStatus: " + batchstatus + " | StepName: "
-                            + stepname + " | JobExecID: " + jobexecid
-                            + " | StepExecID: " + stepexecid);
+                    logger.log(Level.FINE, "BatchStatus: {0} | StepName: {1} | JobExecID: {2} | StepExecID: {3}",
+                            new Object[]{batchstatus, stepname, jobexecid, stepexecid});
 
                     data.add(stepEx);
                 }
@@ -1158,8 +1159,7 @@ public class JBatchJDBCPersistenceManager implements
                     stepEx.setEndTime(endTS);
                     stepEx.setPersistentUserData(persistentData);
 
-                    logger.fine("stepExecution BatchStatus: " + batchstatus
-                            + " StepName: " + stepname);
+                    logger.log(Level.FINE, "stepExecution BatchStatus: {0} StepName: {1}", new Object[]{batchstatus, stepname});
                 }
             }
         } catch (SQLException | IOException | ClassNotFoundException e) {
@@ -1202,6 +1202,7 @@ public class JBatchJDBCPersistenceManager implements
         }
     }
 
+    @Override
     public void markJobStarted(long key, Timestamp startTS) {
 
         try (Connection conn = getConnection();
@@ -1374,8 +1375,8 @@ public class JBatchJDBCPersistenceManager implements
         return retVal;
     }
 
-    public long getJobInstanceIdByExecutionId(long executionId)
-            throws NoSuchJobExecutionException {
+    @Override
+    public long getJobInstanceIdByExecutionId(long executionId) throws NoSuchJobExecutionException {
         long instanceId = 0;
 
         try (Connection conn = getConnection();
@@ -1585,8 +1586,7 @@ public class JBatchJDBCPersistenceManager implements
         String exitStatus = stepContext.getExitStatus();
         String stepName = stepContext.getStepName();
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("batchStatus: " + batchStatus + " | stepName: "
-                    + stepName);
+            logger.log(Level.FINE, "batchStatus: {0} | stepName: {1}", new Object[]{batchStatus, stepName});
         }
         long readCount = 0;
         long writeCount = 0;
@@ -1600,30 +1600,34 @@ public class JBatchJDBCPersistenceManager implements
         Timestamp endTime = stepContext.getEndTimeTS();
 
         Metric[] metrics = stepContext.getMetrics();
-        for (int i = 0; i < metrics.length; i++) {
-            if (metrics[i].getType().equals(MetricImpl.MetricType.READ_COUNT)) {
-                readCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.WRITE_COUNT)) {
-                writeCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.PROCESS_SKIP_COUNT)) {
-                processSkipCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.COMMIT_COUNT)) {
-                commitCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.ROLLBACK_COUNT)) {
-                rollbackCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.READ_SKIP_COUNT)) {
-                readSkipCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.FILTER_COUNT)) {
-                filterCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.WRITE_SKIP_COUNT)) {
-                writeSkipCount = metrics[i].getValue();
+        for (Metric metric : metrics) {
+            switch (metric.getType()) {
+                case READ_COUNT:
+                    readCount = metric.getValue();
+                    break;
+                case WRITE_COUNT:
+                    writeCount = metric.getValue();
+                    break;
+                case PROCESS_SKIP_COUNT:
+                    processSkipCount = metric.getValue();
+                    break;
+                case COMMIT_COUNT:
+                    commitCount = metric.getValue();
+                    break;
+                case ROLLBACK_COUNT:
+                    rollbackCount = metric.getValue();
+                    break;
+                case READ_SKIP_COUNT:
+                    readSkipCount = metric.getValue();
+                    break;
+                case FILTER_COUNT:
+                    filterCount = metric.getValue();
+                    break;
+                case WRITE_SKIP_COUNT:
+                    writeSkipCount = metric.getValue();
+                    break;
+                default:
+                    break;
             }
         }
         Serializable persistentData = stepContext.getPersistentUserData();
@@ -1645,12 +1649,12 @@ public class JBatchJDBCPersistenceManager implements
 
         logger.entering(CLASSNAME, "createStepExecution", new Object[]{
             rootJobExecId, batchStatus,
-            exitStatus == null ? "<null>" : exitStatus, stepName,
+            exitStatus == null ? NULL_TAGGED : exitStatus, stepName,
             readCount, writeCount, commitCount, rollbackCount,
             readSkipCount, processSkipCount, filterCount, writeSkipCount,
-            startTime == null ? "<null>" : startTime,
-            endTime == null ? "<null>" : endTime,
-            persistentData == null ? "<null>" : persistentData});
+            startTime == null ? NULL_TAGGED : startTime,
+            endTime == null ? NULL_TAGGED : endTime,
+            persistentData == null ? NULL_TAGGED : persistentData});
 
         StepExecutionImpl stepExecution = null;
         String query = queryStrings.get(CREATE_STEP_EXECUTION);
@@ -1713,30 +1717,34 @@ public class JBatchJDBCPersistenceManager implements
         long filterCount = 0;
         long writeSkipCount = 0;
 
-        for (int i = 0; i < metrics.length; i++) {
-            if (metrics[i].getType().equals(MetricImpl.MetricType.READ_COUNT)) {
-                readCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.WRITE_COUNT)) {
-                writeCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.PROCESS_SKIP_COUNT)) {
-                processSkipCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.COMMIT_COUNT)) {
-                commitCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.ROLLBACK_COUNT)) {
-                rollbackCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.READ_SKIP_COUNT)) {
-                readSkipCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.FILTER_COUNT)) {
-                filterCount = metrics[i].getValue();
-            } else if (metrics[i].getType().equals(
-                    MetricImpl.MetricType.WRITE_SKIP_COUNT)) {
-                writeSkipCount = metrics[i].getValue();
+        for (Metric metric : metrics) {
+            switch (metric.getType()) {
+                case READ_COUNT:
+                    readCount = metric.getValue();
+                    break;
+                case WRITE_COUNT:
+                    writeCount = metric.getValue();
+                    break;
+                case PROCESS_SKIP_COUNT:
+                    processSkipCount = metric.getValue();
+                    break;
+                case COMMIT_COUNT:
+                    commitCount = metric.getValue();
+                    break;
+                case ROLLBACK_COUNT:
+                    rollbackCount = metric.getValue();
+                    break;
+                case READ_SKIP_COUNT:
+                    readSkipCount = metric.getValue();
+                    break;
+                case FILTER_COUNT:
+                    filterCount = metric.getValue();
+                    break;
+                case WRITE_SKIP_COUNT:
+                    writeSkipCount = metric.getValue();
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -1825,9 +1833,7 @@ public class JBatchJDBCPersistenceManager implements
         String exitStatus = stepContext.getExitStatus();
         String stepName = stepContext.getStepName();
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("batchStatus: " + batchStatus + " | stepName: "
-                    + stepName + " | stepExecID: "
-                    + stepContext.getStepExecutionId());
+            logger.log(Level.FINE, "batchStatus: {0} | stepName: {1} | stepExecID: {2}", new Object[]{batchStatus, stepName, stepContext.getStepExecutionId()});
         }
 
         Timestamp startTime = stepContext.getStartTimeTS();
@@ -1836,17 +1842,16 @@ public class JBatchJDBCPersistenceManager implements
         Serializable persistentData = stepContext.getPersistentUserData();
 
         if (logger.isLoggable(Level.FINER)) {
-            logger.log(
-                    Level.FINER,
+            logger.log(Level.FINER,
                     "About to update StepExecution with: ",
                     new Object[]{stepExecutionId, batchStatus,
-                        exitStatus == null ? "<null>" : exitStatus,
+                        exitStatus == null ? NULL_TAGGED : exitStatus,
                         stepName, readCount, writeCount, commitCount,
                         rollbackCount, readSkipCount, processSkipCount,
                         filterCount, writeSkipCount,
-                        startTime == null ? "<null>" : startTime,
-                        endTime == null ? "<null>" : endTime,
-                        persistentData == null ? "<null>" : persistentData});
+                        startTime == null ? NULL_TAGGED : startTime,
+                        endTime == null ? NULL_TAGGED : endTime,
+                        persistentData == null ? NULL_TAGGED : persistentData});
         }
 
         String query = queryStrings.get(UPDATE_STEP_EXECUTION_WITH_METRICS);
@@ -1939,7 +1944,7 @@ public class JBatchJDBCPersistenceManager implements
         logger.entering(CLASSNAME, "updateJobStatus", new Object[]{
             instanceId, jobStatus});
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Updating Job Status to: " + jobStatus.getBatchStatus());
+            logger.log(Level.FINE, "Updating Job Status to: {0}", jobStatus.getBatchStatus());
         }
         try (Connection conn = getConnection();
                 PreparedStatement statement = conn.prepareStatement(queryStrings
@@ -2004,7 +2009,7 @@ public class JBatchJDBCPersistenceManager implements
             throw new PersistenceException(e);
         }
         logger.exiting(CLASSNAME, "getStepStatus",
-                stepStatus == null ? "<null>" : stepStatus);
+                stepStatus == null ? NULL_TAGGED : stepStatus);
         return stepStatus;
     }
 
@@ -2021,8 +2026,7 @@ public class JBatchJDBCPersistenceManager implements
             stepExecutionId, stepStatus});
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Updating StepStatus to: "
-                    + stepStatus.getBatchStatus());
+            logger.log(Level.FINE, "Updating StepStatus to: {0}", stepStatus.getBatchStatus());
         }
         try (Connection conn = getConnection();
                 PreparedStatement statement = conn.prepareStatement(queryStrings
@@ -2086,7 +2090,6 @@ public class JBatchJDBCPersistenceManager implements
 
     @Override
     public void shutdown() throws BatchContainerServiceException {
-        // TODO Auto-generated method stub
 
     }
 

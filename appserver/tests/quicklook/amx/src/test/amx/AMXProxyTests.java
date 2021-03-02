@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
 
 package amxtest;
 
 import org.testng.annotations.*;
-import org.testng.Assert;
 
 import javax.management.ObjectName;
 
@@ -50,9 +50,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.List;
-import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import org.glassfish.admin.amx.core.*;
 import org.glassfish.admin.amx.base.*;
@@ -66,7 +64,7 @@ import org.glassfish.admin.amx.logging.Logging;
 import org.glassfish.admin.amx.annotation.*;
 
 
-/** 
+/**
     These tests are designed to exercise the AMXProxyHandler code.
  */
 //@Test(groups={"amx"}, description="AMXProxy tests", sequential=false, threadPoolSize=5)
@@ -83,33 +81,33 @@ public final class AMXProxyTests extends AMXTestBase
     public AMXProxyTests()
     {
     }
-    
+
     private String attrName( final Method m )
     {
         if ( ! JMXUtil.isIsOrGetter(m) ) return null;
-        
+
         return JMXUtil.getAttributeName(m);
     }
-    
-    
+
+
     private <T extends AMXProxy> void testProxyInterface(final AMXProxy amx, Class<T> clazz)
     {
         final List<String> problems = _testProxyInterface(amx, clazz);
         assert problems.size() == 0 : CollectionUtil.toString( problems, "\n" );
     }
-    
-    
+
+
     private <T extends AMXProxy> List<String> _testProxyInterface(final AMXProxy amxIn, Class<T> clazz)
     {
         assert amxIn != null : "_testProxyInterface(): null proxy for class " + clazz.getName();
-        
+
         final List<String> problems = new ArrayList<String>();
-        
+
         final T amx = amxIn.as(clazz);
-        
+
         final String nameProp = amx.nameProp();
         assert Util.getNameProp(amx.objectName()) == nameProp;
-        
+
         assert amx.parentPath() != null;
         assert amx.type() != null;
         assert amx.valid();
@@ -121,12 +119,12 @@ public final class AMXProxyTests extends AMXTestBase
         final ObjectName objectName = amx.objectName();
         assert objectName != null;
         assert amx.extra() != null;
-        
+
         final Extra extra = amx.extra();
         //assert extra.mbeanServerConnection() == getMBeanServerConnection();
         assert extra.proxyFactory() == getProxyFactory();
         assert extra.java().length() >= 100;
-        
+
         assert extra.mbeanInfo() != null;
         assert extra.interfaceName() != null;
         assert extra.genericInterface() != null;
@@ -139,8 +137,8 @@ public final class AMXProxyTests extends AMXTestBase
         {
             assert extra.singleton();
         }
-            
-        
+
+
         final Method[] methods = clazz.getMethods();
         final Set<String> attrNamesFromMethods = new HashSet<String>();
         for( final Method m : methods )
@@ -154,11 +152,11 @@ public final class AMXProxyTests extends AMXTestBase
                     println( "Warning: Attribute " + attrName +
                         " exists in " + objectName + ", but has superfluous @ChildGetter annotation" );
                 }
-                
+
                 try
                 {
                     final Object result = m.invoke( amx, (Object[])null);
-                    
+
                     attrNamesFromMethods.add( attrName(m) );
                 }
                 catch( final Exception e )
@@ -186,7 +184,7 @@ public final class AMXProxyTests extends AMXTestBase
     {
         final DomainRoot dr = getDomainRootProxy();
         testProxyInterface( dr, DomainRoot.class );
-        
+
         // sanity check:  see that the various attributes are reachable through its proxy
         assert dr.getAMXReady();
         assert dr.getDebugPort() != null;
@@ -270,7 +268,7 @@ public final class AMXProxyTests extends AMXTestBase
     public void testForBogusAnnotations()
     {
         final List<Class<? extends AMXProxy>> interfaces = getInterfaces().all();
-        
+
         for( final Class<? extends AMXProxy>  intf : interfaces )
         {
             final Method[] methods = intf.getMethods();
@@ -281,7 +279,7 @@ public final class AMXProxyTests extends AMXTestBase
                 final ManagedOperation mo = m.getAnnotation(ManagedOperation.class);
                 final String desc = intf.getName() + "." + m.getName() + "()";
                 final int numArgs = m.getParameterTypes().length;
-                
+
                 assert ma == null || mo == null :
                     "Can't have both @ManagedAttribute and @ManagedOperation: " + desc;
 
@@ -289,11 +287,11 @@ public final class AMXProxyTests extends AMXTestBase
                 {
                     assert numArgs == 0 :
                         "@ChildGetter cannot be applied to method with arguments: " + desc;
-                        
+
                     assert ma == null && mo == null :
                         "@ManagedAttribute/@ManagedOperation not applicable with @ChildGetter: " + desc;
                 }
-                
+
                 if ( mo != null )
                 {
                     // operations that mimic getters are bad. We can't prevent all such things
@@ -306,7 +304,7 @@ public final class AMXProxyTests extends AMXTestBase
             }
         }
     }
-    
+
     /** test all MBeans generically */
     @Test(/* GLASSFISH-21214 */enabled=false)
     public void testAllGenerically()
@@ -335,7 +333,7 @@ public final class AMXProxyTests extends AMXTestBase
             assert false : "" + problems;
         }
     }
-    
+
     @Test
     public void testJ2EEDomain() throws ClassNotFoundException
     {
@@ -344,7 +342,7 @@ public final class AMXProxyTests extends AMXTestBase
             testProxyInterface( getDomainRootProxy().getJ2EEDomain(), getJ2EEDomainClass() );
         }
     }
-    
+
 }
 
 

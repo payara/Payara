@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+//Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
 package org.glassfish.admin.rest.generator;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -348,6 +348,9 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
                 break;
             case "MonitoredAttributeBagResource":
                 childClass = "fish/payara/admin/rest/resources/MonitoredAttributeBagResource";
+                break;
+            case "MonitoredMetricAttributeBagResource":
+                childClass = "fish/payara/admin/rest/resources/MonitoredMetricAttributeBagResource";
                 break;
             default:
                 childClass = generatedPath + childResourceClassName;

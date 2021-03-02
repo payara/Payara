@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.server;
 
@@ -243,7 +243,10 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         while (iter.hasNext()) {
           Application app = (Application)iter.next();
           ApplicationRef appRef = server.getApplicationRef(app.getName());
-          appDeployments.addAll(processApplication(app, appRef));
+          if (appRef != null) {
+            // Does the application need to be run on this instance?
+            appDeployments.addAll(processApplication(app, appRef));
+          }
         }
 
         // does the user want us to run a particular application

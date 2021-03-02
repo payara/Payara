@@ -55,6 +55,8 @@ import java.lang.reflect.Method;
 
 import javax.interceptor.InvocationContext;
 
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.annotation.SimplyTimed;
 import org.junit.Test;
@@ -73,7 +75,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 public class SimplyTimedInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
-    private final MetricRegistryImpl registry = new MetricRegistryImpl();
+    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
 
     @Test
     @SimplyTimed
@@ -88,7 +90,7 @@ public class SimplyTimedInterceptorTest {
     }
 
     @Test
-    @SimplyTimed(reusable = true)
+    @SimplyTimed()
     public void simpleTimerReusable() throws Exception {
         assertTimed(0);
     }
@@ -136,7 +138,7 @@ public class SimplyTimedInterceptorTest {
     }
 
     @Test
-    @SimplyTimed(absolute = true, name= "name", tags = {"a=b", "b=c"}, reusable = true)
+    @SimplyTimed(absolute = true, name= "name", tags = {"a=b", "b=c"})
     public void simpleTimerWithAbsoluteNameAndTagsReusable() throws Exception {
         assertTimed(0);
         assertTimed(3); // this tries to register the timer again, but it gets reused so we start at 2

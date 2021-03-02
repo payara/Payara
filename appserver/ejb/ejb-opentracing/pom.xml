@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2021.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>ejb-opentracing</artifactId>
@@ -75,6 +75,12 @@ holder.
         <dependency>
             <groupId>io.opentracing</groupId>
             <artifactId>opentracing-util</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- corba reference for debugging purposes only -->
+        <dependency>
+            <groupId>org.glassfish.corba</groupId>
+            <artifactId>glassfish-corba-orb</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

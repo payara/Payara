@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2021.2-SNAPSHOT</version>
     </parent>
     <artifactId>payara-ml</artifactId>
     <name>Payara Multi-Language Distribution</name>
@@ -68,12 +68,6 @@
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>create-production-domain</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
                     <execution>
                         <id>create-glassfish-domain</id>
                         <goals>

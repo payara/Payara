@@ -52,7 +52,10 @@ public class FloatConverter implements Converter<Float> {
 
     @Override
     public Float convert(String value) {
-        if (value == null || value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
+        if (value == null) {
+            throw new NullPointerException("Cannot convert null value");
+        }
+        if (value.equals(ConfigProperty.UNCONFIGURED_VALUE)) return null;
         try {
             return Float.parseFloat(value);
         }catch (NumberFormatException nfe) {

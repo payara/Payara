@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -219,13 +219,11 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 			try(ResultSet rs = ps.executeQuery()) {
 				int rowcount = getTableRowCount(rs);
 				// Create table if it does not exist
-				if (rowcount == 0) {
-					if (!rs.next()) {
+				if (rowcount == 0 && !rs.next()) {
 						LOGGER.log(Level.INFO, "{0} table does not exists. Trying to create it.", tableName);
 						try(PreparedStatement psCt = conn.prepareStatement(createTableStatement)) {
 							psCt.executeUpdate();
 						}
-					}
 				}
 			}
 
@@ -261,10 +259,8 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
 						try(ResultSet resultSet = preparedStatement.executeQuery()) {
 							int rowcount = getTableRowCount(resultSet);
 
-							if (rowcount == 0) {
-								if (!resultSet.next()) {
+							if (rowcount == 0 && !resultSet.next()) {
 									result = false;
-								}
 							}
 						}
 
@@ -284,7 +280,7 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
                     schemaPrefix = schema + ".";
                 }
 
-		Map<String, String> result = new HashMap<String, String>(6);
+		Map<String, String> result = new HashMap<>(6);
 		result.put(JOB_INSTANCE_TABLE_KEY, schemaPrefix + prefix
                                 + "JOBINSTANCEDATA" + suffix);
 		result.put(EXECUTION_INSTANCE_TABLE_KEY, schemaPrefix + prefix
@@ -305,17 +301,18 @@ public class SQLServerPersistenceManager extends JBatchJDBCPersistenceManager im
             // SQL Server does not support setting default schema for session
         }
         
-        protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
+    @Override
+    protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
             queryStrings = super.getSharedQueryMap(batchConfig);
             
             queryStrings.put(Q_SET_SCHEMA, "SET SCHEMA ?");
             return queryStrings;
-        }
+    }
 
-        /**
-	 * Method invoked to insert the MySql create table strings into a hashmap
-         * @return SQLServerCreateStrings
-	 **/
+    /**
+     * Method invoked to insert the MySql create table strings into a hashmap
+     * @return SQLServerCreateStrings
+     **/
 	private Map<String, String> setCreateSQLServerStringsMap () {
 
 		SQLServerCreateStrings = new HashMap<>();

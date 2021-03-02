@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.deployment.node.runtime.application.wls;
 
 import static com.sun.enterprise.deployment.xml.TagNames.SCHEMA_LOCATION_TAG;
@@ -50,7 +51,6 @@ import static com.sun.enterprise.deployment.xml.TagNames.XMLNS_XSI;
 import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -124,6 +124,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG);
     }
@@ -131,6 +132,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /**
      * @return the DOCTYPE that should be written to the XML file
      */
+    @Override
     public String getDocType() {
         return null;
     }
@@ -138,6 +140,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -145,6 +148,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -152,6 +156,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     /**
      * @return the application instance to associate with this XMLNode
      */
+    @Override
     public Application getDescriptor() {
         return descriptor;
     }
@@ -161,6 +166,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof EnvironmentProperty) {
             descriptor.addApplicationParam((ApplicationParam) newDescriptor);
@@ -177,6 +183,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
      * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, Application application) {
         Element root = appendChildNS(parent, getXMLRootTag().getQName(), WLS_APPLICATION_NAMESPACE);
         root.setAttributeNS(XMLNS, XMLNS_XSI, W3C_XML_SCHEMA_INSTANCE);

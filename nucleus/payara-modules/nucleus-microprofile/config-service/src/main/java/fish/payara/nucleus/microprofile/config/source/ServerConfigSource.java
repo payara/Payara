@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -55,7 +54,7 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class ServerConfigSource extends PayaraConfigSource implements ConfigSource {
+public class ServerConfigSource extends PayaraConfigSource {
 
     private final String configurationName;
 
@@ -80,6 +79,10 @@ public class ServerConfigSource extends PayaraConfigSource implements ConfigSour
 
     @Override
     public int getOrdinal() {
+        String storedOrdinal = getValue("config_ordinal");
+        if (storedOrdinal != null) {
+            return Integer.parseInt(storedOrdinal);
+        }
         return Integer.parseInt(configService.getMPConfig().getServerOrdinality());
     }
 

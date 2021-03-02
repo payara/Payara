@@ -43,7 +43,7 @@
 package org.glassfish.web.deployment.io.runtime;
 
 import static com.sun.enterprise.deployment.io.DescriptorConstants.PAYARA_WEB_JAR_ENTRY;
-import static org.glassfish.web.WarType.ARCHIVE_TYPE;
+import static org.glassfish.web.sniffer.WarType.ARCHIVE_TYPE;
 
 import java.util.List;
 import java.util.Map;

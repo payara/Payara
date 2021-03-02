@@ -37,20 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.annotation.introspection.AnnotationScanner;
-import com.sun.enterprise.deployment.annotation.introspection.ClassFile;
-import com.sun.enterprise.deployment.annotation.introspection.ConstantPoolInfo;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Enumeration;
 import java.util.jar.JarFile;
 import java.util.jar.JarEntry;

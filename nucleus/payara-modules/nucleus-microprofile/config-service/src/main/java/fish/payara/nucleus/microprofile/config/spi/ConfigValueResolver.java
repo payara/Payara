@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.eclipse.microprofile.config.Config;
 
@@ -285,6 +286,19 @@ public interface ConfigValueResolver {
      *         exceptions has been requested using {@link #throwOnMissingProperty()}
      **/
     <E> List<E> asList(Class<E> elementType);
+
+    /**
+     * Resolves the property as {@link Supplier}.
+     * Raw value will be fetched anew each time the supplier is called.
+     *
+     * @param elementType type of the element, not {@code null}
+     * @return a supplier that resolves the converted property value. Will not be null
+     * @throws java.lang.IllegalArgumentException if the property cannot be converted to the specified type and throwing
+     *         exceptions has been requested using {@link #throwOnFailedConversion()}
+     * @throws java.util.NoSuchElementException if the property isn't present in the configuration and throwing
+     *         exceptions has been requested using {@link #throwOnMissingProperty()}
+     **/
+    <E> Supplier<E> asSupplier(Class<E> elementType);
 
     /**
      * Resolves the property as {@link List}.

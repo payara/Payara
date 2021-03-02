@@ -53,6 +53,8 @@ import java.lang.reflect.Method;
 import javax.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.metrics.Counter;
+import org.eclipse.microprofile.metrics.MetricRegistry;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.junit.Test;
 
@@ -70,7 +72,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 public class CountedInterceptorTest {
 
     private final InvocationContext context = mock(InvocationContext.class);
-    private final MetricRegistryImpl registry = new MetricRegistryImpl();
+    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION);
 
     @Test
     @Counted
@@ -85,7 +87,7 @@ public class CountedInterceptorTest {
     }
 
     @Test
-    @Counted(reusable = true)
+    @Counted()
     public void counterReusable() throws Exception {
         assertCounterIncrements();
     }
@@ -133,7 +135,7 @@ public class CountedInterceptorTest {
     }
 
     @Test
-    @Counted(absolute = true, name= "name", tags = {"a=b", "b=c"}, reusable = true)
+    @Counted(absolute = true, name= "name", tags = {"a=b", "b=c"})
     public void counterWithAbsoluteNameAndTagsReusable() throws Exception {
         assertCounterIncrements(0);
         assertCounterIncrements(2); // this tries to register the counter again, but it gets reused so we start at 2

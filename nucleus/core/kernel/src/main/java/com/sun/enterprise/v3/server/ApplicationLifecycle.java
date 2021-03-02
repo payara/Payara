@@ -1118,7 +1118,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         DeploymentContext context,
         ProgressTracker tracker) throws Exception {
 
-        ActionReport report = context.getActionReport();
         List<EngineRef> addedEngines = new ArrayList<>();
 
         StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
@@ -1139,6 +1138,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
                 tracker.add(Deployer.class, deployer);
             } catch(Exception e) {
+                final ActionReport report = context.getActionReport();
                 report.failure(logger, "Exception while invoking " + deployer.getClass() + " prepare method", e);
                 throw e;
             }

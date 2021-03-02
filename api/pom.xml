@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2021.2-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.api</groupId>
@@ -60,15 +60,6 @@
     <properties>
         <deploy.skip>false</deploy.skip>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>deploy-internals</id>
-            <properties>
-                <deploy.skip>true</deploy.skip>
-	    </properties>
-        </profile>
-    </profiles>
 
     <build>
         <plugins>

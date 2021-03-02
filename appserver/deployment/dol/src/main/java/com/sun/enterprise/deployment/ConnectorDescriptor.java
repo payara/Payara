@@ -133,10 +133,10 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         //FIXME.  need to remove the following
 	this.messageListeners = new OrderedSet();
 
-    this.connectorAnnotations = new OrderedSet<AnnotationInfo>();
-    this.configPropertyAnnotations = new HashMap<String, Set<AnnotationInfo>>();
-    this.configPropertyProcessedClasses = new HashSet<String>();
-    this.defaultResourceNames = new OrderedSet<String>();
+    this.connectorAnnotations = new OrderedSet<>();
+    this.configPropertyAnnotations = new HashMap<>();
+    this.configPropertyProcessedClasses = new HashSet<>();
+    this.defaultResourceNames = new OrderedSet<>();
     }
 
 
@@ -712,7 +712,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
     public List<AdminObject> getAdminObjectsByType(String type)
     {
-        List<AdminObject> adminObjects = new ArrayList<AdminObject>();
+        List<AdminObject> adminObjects = new ArrayList<>();
         Iterator i = getAdminObjects().iterator();
         while (i.hasNext())
         {
@@ -725,7 +725,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
     public List<AdminObject> getAdminObjectsByClass(String adminObjectClass)
     {
-        List<AdminObject> adminObjects = new ArrayList<AdminObject>();
+        List<AdminObject> adminObjects = new ArrayList<>();
         Iterator i = getAdminObjects().iterator();
         while (i.hasNext())
         {
@@ -1011,7 +1011,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     public void addConfigPropertyAnnotation(String className, AnnotationInfo info){
         Set<AnnotationInfo> configProperties = configPropertyAnnotations.get(className);
         if(configProperties == null){
-            configProperties = new HashSet<AnnotationInfo>();
+            configProperties = new HashSet<>();
             configPropertyAnnotations.put(className, configProperties);
         }
         configProperties.add(info);

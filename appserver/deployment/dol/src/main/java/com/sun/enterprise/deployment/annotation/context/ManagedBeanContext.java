@@ -48,7 +48,6 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
 
-import java.util.*;
 
 /**
  * This provides a context for a ManagedBean

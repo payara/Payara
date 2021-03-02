@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,138 +39,40 @@
  */
 package fish.payara.admin.rest.resources;
 
-import org.glassfish.admin.rest.resources.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import java.util.*;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import org.glassfish.admin.rest.utils.Util;
-import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.results.OptionsResult;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.glassfish.api.ActionReport;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.TransactionFailure;
 
-/**
- * Resource for managing monitored attributes. Supports GET, POST, PUT and
- * DELETE commands.
- */
-public class MonitoredAttributeBagResource extends AbstractResource {
+public class MonitoredAttributeBagResource extends AbstractAttributeBagResource {
 
     public static final LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(MonitoredAttributeBagResource.class);
 
-    /**
-     * A list of the monitored attributes in the service.
-     */
-    protected List<Dom> entity;
-
-    /**
-     * The service containing the monitored attributes.
-     */
-    protected Dom parent;
-
-    /**
-     * The name of the element the monitored attributes are stored under.
-     */
-    protected String tagName;
-
-    /**
-     * Gets the monitored-attributes.
-     *
-     * @return a list of the monitored-attributes after the transaction.
-     */
-    @GET
-    @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public ActionReportResult get() {
-
-        RestActionReporter ar = new RestActionReporter();
-        ar.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        ar.setActionDescription("monitored-attribute");
-
-        List monitoredAttributes = getMonitoredAttributes();
-
-        Properties extraProperties = new Properties();
-        extraProperties.put("monitoredAttributes", monitoredAttributes);
-        ar.setExtraProperties(extraProperties);
-
-        return new ActionReportResult(tagName, ar, new OptionsResult(Util.getResourceName(uriInfo)));
+    @Override
+    public String getDescriptionName() {
+        return "monitored-attribute";
     }
 
-    /**
-     * Creates new monitored-attributes. This method deletes all of the existing
-     * monitored-attributes.
-     *
-     * @param attributes the list of monitored-attributes to be created.
-     * @return a list of the monitored-attributes after the transaction.
-     */
-    @PUT
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public ActionReportResult put(List<Map<String, String>> attributes) {
-
-        RestActionReporter ar = new RestActionReporter();
-        ar.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        ar.setActionDescription("monitored-attribute");
-
-        try {
-            setMonitoredAttributes(attributes);
-
-            List monitoredAttributes = getMonitoredAttributes();
-
-            Properties extraProperties = new Properties();
-            extraProperties.put("monitoredAttributes", monitoredAttributes);
-            ar.setExtraProperties(extraProperties);
-        } catch (TransactionFailure ex) {
-            ar.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            ar.setMessage(ex.getMessage());
-        }
-
-        return new ActionReportResult(tagName, ar, new OptionsResult(Util.getResourceName(uriInfo)));
+    @Override
+    public String getPropertiesName() {
+        return "monitoredAttributes";
     }
 
-    /**
-     * Creates new monitored-attributes. Existing monitored-attributes will be
-     * ignored, and others will be created.
-     *
-     * @param attributes the list of monitored-attributes to be created.
-     * @return a list of the monitored-attributes after the transaction.
-     */
-    @POST
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public ActionReportResult post(List<Map<String, String>> attributes) {
-        List<Map<String, String>> currentData = getMonitoredAttributes();
-        attributes.addAll(currentData);
-        return put(attributes);
+    @Override
+    public String getnodeElementName() {
+        return "monitored-attributes";
     }
 
-    /**
-     * Deletes all monitored-attributes.
-     *
-     * @return a list of the monitored-attributes after the transaction.
-     */
-    @DELETE
-    @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public ActionReportResult delete() {
-        List<Map<String, String>> emptyList = new ArrayList<>();
-        return put(emptyList);
-    }
-
-    /**
-     * Gets all of the monitored attributes in the entity.
-     *
-     * @return a list of the monitored attributes
-     */
-    public List<Map<String, String>> getMonitoredAttributes() {
+    @Override
+    public List<Map<String, String>> getAllAttributes() {
         List<Map<String, String>> attributes = new ArrayList<>();
 
         for (Dom child : entity) {
@@ -182,53 +84,13 @@ public class MonitoredAttributeBagResource extends AbstractResource {
             if (description != null) {
                 entry.put("description", description);
             }
-
             attributes.add(entry);
         }
         return attributes;
     }
 
-    /**
-     * Sets the monitored attribute list to the specified list.
-     *
-     * @param attributes the intended list of attributes.
-     * @throws TransactionFailure if an error occurs in removing or adding
-     * attributes.
-     */
-    public void setMonitoredAttributes(List<Map<String, String>> attributes) throws TransactionFailure {
-        TranslatedConfigView.doSubstitution.set(false);
-        List<Map<String, String>> existingAttributes = getMonitoredAttributes();
-
-        // Get a list of attributes that need adding
-        List<Map<String, String>> attributesToAdd = new ArrayList<>(attributes);
-        // Start with the list of specified attributes, and remove any that are also in the existing list
-        Iterator<Map<String, String>> iterator = attributesToAdd.iterator();
-        while (iterator.hasNext()) {
-            Map<String, String> attributeToAdd = iterator.next();
-            for (Map<String, String> existingAttribute : existingAttributes) {
-                if (attributesAreEqual(existingAttribute, attributeToAdd)) {
-                    iterator.remove();
-                }
-            }
-        }
-
-        // Get a list of attributes that need deleting
-        List<Map<String, String>> attributesToDelete = new ArrayList<>(existingAttributes);
-        // Start with the list of existing attributes, and remove any that aren't also in the specified list
-        iterator = attributesToDelete.iterator();
-        while (iterator.hasNext()) {
-            Map<String, String> attributeToDelete = iterator.next();
-            boolean specified = false;
-            for (Map<String, String> specifiedAttribute : attributes) {
-                if (attributesAreEqual(specifiedAttribute, attributeToDelete)) {
-                    specified = true;
-                }
-            }
-            if (specified) {
-                iterator.remove();
-            }
-        }
-
+    @Override
+    public void excuteSetCommand(List<Map<String, String>> attributesToAdd, List<Map<String, String>> attributesToDelete) throws TransactionFailure {
         try {
             // Add all required attributes
             for (Map<String, String> attribute : attributesToAdd) {
@@ -251,30 +113,11 @@ public class MonitoredAttributeBagResource extends AbstractResource {
         } finally {
             TranslatedConfigView.doSubstitution.set(true);
         }
-        synchronized (parent) {
-            entity = parent.nodeElements("monitored-attributes");
-        }
     }
 
-    private boolean attributesAreEqual(Map<String, String> attribute1, Map<String, String> attribute2) {
+    @Override
+    public boolean attributesAreEqual(Map<String, String> attribute1, Map<String, String> attribute2) {
         return attribute1.get("attributeName").equals(attribute2.get("attributeName"))
                 && attribute1.get("objectName").equals(attribute2.get("objectName"));
-    }
-
-    /**
-     * Sets the parent and the tag name of the resource. The Dom entity will be
-     * derived from this information.
-     *
-     * @param parent
-     * @param tagName
-     */
-    public void setParentAndTagName(Dom parent, String tagName) {
-        this.parent = parent;
-        this.tagName = tagName;
-        if (parent != null) {
-            synchronized (parent) {
-                entity = parent.nodeElements("monitored-attributes");
-            }
-        }
     }
 }

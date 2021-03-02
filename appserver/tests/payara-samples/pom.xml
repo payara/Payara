@@ -2,7 +2,7 @@
 <!--
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>5.2020.5-SNAPSHOT</version>
+        <version>5.2021.2-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -59,12 +59,12 @@
         <java.min.version>1.8</java.min.version>
         <maven.min.version>3.5</maven.min.version>
 
-        <arquillian.payara.micro.version>2.3</arquillian.payara.micro.version>
-        <arquillian.payara.remote.version>2.3</arquillian.payara.remote.version>
         <payara.version>${project.version}</payara.version>
-        <payara.domain.name>domain1</payara.domain.name>
-
-        <micro.isActive>false</micro.isActive>
+        <payara.debug>false</payara.debug>
+        <!-- remote host for payara to connect to -->
+        <payara.adminHost>localhost</payara.adminHost>
+        <!-- either SERVER or MICRO -->
+        <payara.containerType>SERVER</payara.containerType>
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
@@ -72,16 +72,198 @@
 
     <modules>
         <module>test-utils</module>
+        <module>test-domain-setup</module>
+        <!--
+        can only be serially executed - they change configuration
+        that other modules depend on
+        -->
+        <module>asadmin</module>
+        <module>ejb-invoker-secure-endpoint</module>
+        <!-- Can be executed in parallel -->
         <module>samples</module>
     </modules>
 
     <profiles>
+        <!-- Profiles for the application servers against which the samples are run -->
+        <profile>
+            <!--
+            This profile will install a Payara server and start up the server per sample.
+            The Payara version that's used can be set via the payara.version property.
+            This is the default profile and does not have to be specified explicitly.
+            -->
+            <id>payara-server-managed</id>
+
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <payara.domain.name>domain1</payara.domain.name>
+                <payara.directory.name>payara5</payara.directory.name>
+            </properties>
+
+            <dependencies>
+
+                <!-- Rely on the distribution to make sure it builds after the distributions -->
+                <dependency>
+                    <groupId>fish.payara.distributions</groupId>
+                    <artifactId>payara</artifactId>
+                    <type>zip</type>
+                    <optional>true</optional>
+                </dependency>
+
+                <!-- The actual Arquillian connector -->
+                <dependency>
+                    <groupId>fish.payara.arquillian</groupId>
+                    <artifactId>arquillian-payara-server-managed</artifactId>
+                    <scope>test</scope>
+                    <optional>true</optional>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>delete-server</id>
+                                <inherited>false</inherited>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <phase>clean</phase>
+                                <configuration>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${session.executionRootDirectory}/target</directory>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack</id>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${session.executionRootDirectory}/target</outputDirectory>
+                                    <markersDirectory>${session.executionRootDirectory}/target/dependency-maven-plugin-markers</markersDirectory>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>fish.payara.distributions</groupId>
+                                            <artifactId>payara</artifactId>
+                                            <version>${payara.version}</version>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${session.executionRootDirectory}/target</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
         <profile>
             <id>payara-micro-managed</id>
+            <!--
+            This profile will install a Payara Micro and start up the server per sample.
+            The Payara version that's used can be set via the payara.version property.
+            -->
+            <properties>
+                <payara.containerType>MICRO</payara.containerType>
+            </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>fish.payara.arquillian</groupId>
+                    <artifactId>arquillian-payara-micro-managed</artifactId>
+                    <scope>test</scope>
+                    <optional>true</optional>
+                </dependency>
+            </dependencies>
+
             <modules>
-                <module>samples-programmatic</module>
+                <module>micro-programmatic</module>
+            </modules>
+
+            <build>
+                <plugins>
+                    <!-- Download Payara Micro and copy to target directory -->
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>fish.payara.extras</groupId>
+                                            <artifactId>payara-micro</artifactId>
+                                            <version>${payara.version}</version>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${session.executionRootDirectory}/target/</outputDirectory>
+                                            <destFileName>payara-micro-${payara.version}.jar</destFileName>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>payara-server-remote</id>
+            <!--
+            This profile requires you to start up a Payara server outside of the build.
+            Each sample will then reuse this instance to run the tests.
+            -->
+            <dependencies>
+                <dependency>
+                    <groupId>fish.payara.arquillian</groupId>
+                    <artifactId>arquillian-payara-server-remote</artifactId>
+                    <scope>test</scope>
+                    <optional>true</optional>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>payara-micro-remote</id>
+            <!--
+            Connects to already-running micro and runs the tests
+            -->
+            <properties>
+                <payara.containerType>MICRO</payara.containerType>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>fish.payara.arquillian</groupId>
+                    <artifactId>payara-micro-remote</artifactId>
+                    <scope>test</scope>
+                    <optional>true</optional>
+                </dependency>
+            </dependencies>
+
+            <modules>
+                <module>micro-programmatic</module>
             </modules>
         </profile>
+
         <profile>
             <id>unstable</id>
             <properties>
@@ -119,7 +301,8 @@
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
-                <version>1.6.0.Final</version>
+                <!-- >= 1.7.0 supports parallel testing -->
+                <version>1.7.0.Alpha6</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -236,39 +419,87 @@
     </dependencyManagement>
 
     <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>true</filtering>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
+
+            <!-- disable GlassFish plugins for tests -
+            not necessary, don't support parallel builds and slow down testing -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <rules>
-                        <requireMavenVersion>
-                            <message>At least Maven in version ${maven.min.version} is required.</message>
-                            <version>${maven.min.version}</version>
-                        </requireMavenVersion>
-                        <requireJavaVersion>
-                            <message>At least a JDK in version ${java.min.version} is required.</message>
-                            <version>${java.min.version}</version>
-                        </requireJavaVersion>
-                    </rules>
-                </configuration>
+                <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
+                        <id>add-manifest</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>echo</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- override nucleus.pom builtin settings, make it the default -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>false</addClasspath>
+                            <classpathLayoutType>simple</classpathLayoutType>
+                        </manifest>
+                        <manifestFile>${null}</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <payara.adminHost>${payara.adminHost}</payara.adminHost>
+                        <payara.containerType>${payara.containerType}</payara.containerType>
+                        <!-- affects managed only -->
+                        <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+                        <payara.domain.name>${payara.domain.name}</payara.domain.name>
+                        <!-- affects micro only -->
+                        <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
+                        <payara.clusterEnabled>true</payara.clusterEnabled>
+                        <payara.debug>${payara.debug}</payara.debug>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <payara.adminHost>${payara.adminHost}</payara.adminHost>
+                        <payara.containerType>${payara.containerType}</payara.containerType>
+                        <!-- affects managed only -->
+                        <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+                        <payara.domain.name>${payara.domain.name}</payara.domain.name>
+                        <!-- affects micro only -->
+                        <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
+                        <payara.clusterEnabled>true</payara.clusterEnabled>
+                        <payara.debug>${payara.debug}</payara.debug>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
 
@@ -282,44 +513,38 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <systemPropertyVariables>
-                            <isUsingMicroProfile>${micro.isActive}</isUsingMicroProfile>
-                        </systemPropertyVariables>
-                        <trimStackTrace>false</trimStackTrace>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.0.0-M3</version>
-                    <configuration>
-                        <!-- don't run tests in parallel -->
-                        <forkCount>1</forkCount>
-                        <reuseForks>true</reuseForks>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0-M2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>3.2.3</version>
-                    <configuration>
-                        <attachClasses>true</attachClasses>
-                        <failOnMissingWebXml>false</failOnMissingWebXml>
-                    </configuration>
+                    <version>3.0.0-M5</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.30</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- needed for maven-war-plugin to work properly -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
     <reporting>
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.0.0-M3</version>
                 <configuration>
                     <aggregate>true</aggregate>
                     <linkXRef>true</linkXRef>

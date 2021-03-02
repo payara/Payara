@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Permission;
 import java.security.PermissionCollection;
@@ -77,7 +77,6 @@ public class PermissionsDescriptor extends RootDeploymentDescriptor {
 
     @Override
     public String getDefaultSpecVersion() {
-        
         return "7";
     }
 
@@ -131,15 +130,7 @@ public class PermissionsDescriptor extends RootDeploymentDescriptor {
                     declaredPerms = new Permissions();
                 this.declaredPerms.add(pm);
             }
-        } catch (ClassNotFoundException e) {
-            throw new SecurityException(e);
-        } catch (NoSuchMethodException e) {
-            throw new SecurityException(e);
-        } catch (InstantiationException e) {
-            throw new SecurityException(e);
-        } catch (IllegalAccessException e) {
-            throw new SecurityException(e);
-        } catch (InvocationTargetException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new SecurityException(e);
         }
     }

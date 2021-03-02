@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.config.spi.Converter;
 
@@ -118,10 +119,15 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T as(Class<T> type, T defaultValue) {
+        if (type == ConfigValue.class) {
+            return (T) asConfigValue(propertyName, getCacheKey(propertyName, type), ttl, null);
+        }
         return asValue(propertyName, getCacheKey(propertyName, type), ttl, defaultValue,
-                () -> type.isArray()
-                    ? (Converter<T>) getArrayConverter(type.getComponentType(), false)
-                    : getConverter(type));
+                () -> Optional.ofNullable(
+                        type.isArray()
+                        ? (Converter<T>) getArrayConverter(type.getComponentType(), false)
+                        : getConverter(type)
+                    ));
     }
 
     @Override
@@ -137,7 +143,12 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     @Override
     public <E> List<E> asList(Class<E> elementType, List<E> defaultValue) {
         return asValue(propertyName, getCacheKey(propertyName, List.class, elementType), ttl, defaultValue,
-                () -> createListConverter(getArrayConverter(elementType, true)));
+                () -> Optional.of(createListConverter(getArrayConverter(elementType, true))));
+    }
+
+    @Override
+    public <E> Supplier<E> asSupplier(Class<E> elementType) {
+        return () -> as(elementType, null);
     }
 
     @Override
@@ -148,13 +159,13 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     @Override
     public <E> Set<E> asSet(Class<E> elementType, Set<E> defaultValue) {
         return asValue(propertyName, getCacheKey(propertyName, Set.class, elementType), ttl, defaultValue,
-                () -> createSetConverter(getArrayConverter(elementType, true)));
+                () -> Optional.of(createSetConverter(getArrayConverter(elementType, true))));
     }
 
     @Override
     public <T> T asConvertedBy(Function<String, T> converter, T defaultValue) {
         String sourceValue = asValue(propertyName, getCacheKey(propertyName, String.class), ttl, null,
-                () -> value -> value);
+                () -> Optional.of(value -> value));
         if (sourceValue == null) {
             if (throwsOnMissingProperty) {
                 throwWhenNotExists(propertyName, null);
@@ -178,7 +189,7 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
         }
     }
 
-    private <T> T asValue(String propertyName, String cacheKey, Long ttl, T defaultValue, Supplier<? extends Converter<T>> converter) {
+    private <T> T asValue(String propertyName, String cacheKey, Long ttl, T defaultValue, Supplier<Optional<Converter<T>>> converter) {
         try {
             T value = config.getValue(propertyName, cacheKey, ttl, getRawDefault(), converter);
             if (value != null) {
@@ -196,13 +207,39 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
         }
     }
 
+    private ConfigValue asConfigValue(String propertyName, String cacheKey, Long ttl, String defaultValue) {
+        try {
+            final String resolvedDefault;
+            if (defaultValue != null && !defaultValue.isEmpty()) {
+                resolvedDefault = defaultValue;
+            } else {
+                resolvedDefault = getRawDefault();
+            }
+            ConfigValue value = config.getConfigValue(propertyName, cacheKey, ttl, resolvedDefault);
+            if (value != null) {
+                return value;
+            }
+            if (throwsOnMissingProperty) {
+                throwWhenNotExists(propertyName, null);
+            }
+        } catch (IllegalArgumentException ex) {
+            if (throwOnFailedConversion) {
+                throw ex;
+            }
+        }
+        return null;
+    }
+
     private String getRawDefault() {
         return throwsOnMissingProperty ? null : rawDefault;
     }
 
     private <T> Converter<T> getConverter(Class<T> type) {
-        Converter<T> converter = config.getConverter(type);
-        return trim ? new TrimConverter<>(converter) : converter;
+        Optional<Converter<T>> converter = config.getConverter(type);
+        if (!converter.isPresent()) {
+            return null;
+        }
+        return trim ? new TrimConverter<>(converter.get()) : converter.get();
     }
 
     @SuppressWarnings("unchecked")
@@ -238,6 +275,8 @@ final class ConfigValueResolverImpl implements ConfigValueResolver {
     }
 
     private static final class TrimConverter<T> implements Converter<T> {
+
+        private static final long serialVersionUID = 1L;
 
         private final Converter<T> wrapped;
 

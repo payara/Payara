@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,9 +39,10 @@
  */
 package fish.payara.nucleus.eventbus;
 
-import com.hazelcast.core.Message;
-import com.hazelcast.core.MessageListener;
+import com.hazelcast.topic.Message;
+import com.hazelcast.topic.MessageListener;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -51,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TopicListener implements MessageListener {
     
     private final String topicName;
-    private String registrationID;
+    private UUID registrationID;
     private final Set<MessageReceiver> receivers;
 
     public TopicListener(String topicName) {
@@ -63,11 +64,11 @@ public class TopicListener implements MessageListener {
         return topicName;
     }
 
-    public String getRegistrationID() {
+    public UUID getRegistrationID() {
         return registrationID;
     }
 
-    public void setRegistrationID(String registrationID) {
+    public void setRegistrationID(UUID registrationID) {
         this.registrationID = registrationID;
     }
 
@@ -91,7 +92,4 @@ public class TopicListener implements MessageListener {
         receivers.remove(mr);
         return receivers.size();
     }
-    
-    
-    
 }

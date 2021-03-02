@@ -74,7 +74,11 @@ public class OpenApiValidator {
     }
 
     public static void validate(JsonNode document) {
-        validate(NodeType.OpenAPI, document);
+        try {
+            validate(NodeType.OpenAPI, document);
+        } catch (AssertionError ex) {
+            throw new AssertionError("Invalid OpenAPI Document: " + describe(document), ex);
+        }
     }
 
     public static void validate(NodeType expected, JsonNode actual) {

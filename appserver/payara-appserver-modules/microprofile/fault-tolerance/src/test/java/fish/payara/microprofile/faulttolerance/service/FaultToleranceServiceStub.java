@@ -42,8 +42,11 @@ package fish.payara.microprofile.faulttolerance.service;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 
 import javax.enterprise.context.control.RequestContextController;
 import javax.interceptor.InvocationContext;
@@ -52,25 +55,43 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
 import fish.payara.microprofile.faulttolerance.FaultToleranceService;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
-import fish.payara.microprofile.faulttolerance.service.Stereotypes;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 
 /**
  * A stub of {@link FaultToleranceService} that can be used in tests as a basis.
- * 
+ *
  * Most methods need to be overridden with test behaviour.
- * 
+ *
  * The {@link #runAsynchronous(CompletableFuture, InvocationContext, Callable)} does run the task synchronous for
  * deterministic tests behaviour.
- * 
+ *
  * @author Jan Bernitt
  *
  */
 public class FaultToleranceServiceStub implements FaultToleranceService {
 
+    private final ConcurrentMap<MethodKey, FaultToleranceMethodContext> contextByMethodId = new ConcurrentHashMap<>();
+
     protected final AtomicReference<CircuitBreakerState> state = new AtomicReference<>();
     protected final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = new AtomicReference<>();
     protected final AtomicInteger waitingQueuePopulation = new AtomicInteger();
+
+    protected class StubContext {
+        public final InvocationContext context;
+        public final FaultTolerancePolicy policy;
+        private final MethodKey methodKey;
+        public final Object key;
+        public BiFunction<InvocationContext, FaultTolerancePolicy, FaultToleranceMethodContext> binder;
+
+        protected StubContext(MethodKey key, InvocationContext context, FaultTolerancePolicy policy) {
+            this.methodKey = key;
+            this.key = key;
+            this.context = context;
+            this.policy = policy;
+            this.binder = (i, p) -> createMethodContext(methodKey, i, p);
+        }
+
+    }
 
     @Override
     public FaultToleranceConfig getConfig(InvocationContext context, Stereotypes stereotypes) {
@@ -78,9 +99,25 @@ public class FaultToleranceServiceStub implements FaultToleranceService {
     }
 
     @Override
-    public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
+    public final FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy) {
+        return getMethodContext(context, policy, null);
+    }
+
+    @Override
+    public final FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
             RequestContextController requestContextController) {
-        return new FaultToleranceMethodContextStub(context, state, concurrentExecutions, waitingQueuePopulation);
+        return contextByMethodId.computeIfAbsent(new MethodKey(context),
+                key -> createMethodContext(key, context, policy)).boundTo(context, policy);
+    }
+
+    @SuppressWarnings("unused")
+    protected final FaultToleranceMethodContext createMethodContext(MethodKey key, InvocationContext context,
+                                                              FaultTolerancePolicy policy) {
+        return stubMethodContext(new StubContext(key, context, policy));
+    }
+
+    protected FaultToleranceMethodContext stubMethodContext(StubContext ctx) {
+        return new FaultToleranceMethodContextStub(ctx, state, concurrentExecutions, waitingQueuePopulation);
     }
 
     public AtomicReference<CircuitBreakerState> getStateReference() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -62,9 +65,8 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
-import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
-import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
+
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -85,13 +87,20 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
+import fish.payara.nucleus.microprofile.config.converters.ByteConverter;
+import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
 import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
 import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
 import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
 import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
 import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
 import fish.payara.nucleus.microprofile.config.converters.LongConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalDoubleConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalIntConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalLongConverter;
+import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
 import fish.payara.nucleus.microprofile.config.converters.StringConverter;
+import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
@@ -100,11 +109,16 @@ import fish.payara.nucleus.microprofile.config.source.EnvironmentConfigSource;
 import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
+import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
 import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
-import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DirConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
+import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSourceService;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
 
 /**
  * This Service implements the Microprofile Config API and provides integration
@@ -115,9 +129,7 @@ import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource
 @Service(name = "microprofile-config-provider")
 @ContractsProvided({ConfigProviderResolver.class, ConfigProviderResolverImpl.class})
 @RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
-public class ConfigProviderResolverImpl extends ConfigProviderResolver {
-
-    private static final String MP_CONFIG_CACHE_DURATION = "mp.config.cache.duration";
+public class ConfigProviderResolverImpl extends ConfigProviderResolver implements EventListener {
 
     private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
     private static final String METADATA_KEY = "MICROPROFILE_APP_CONFIG";
@@ -131,6 +143,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
 
     @Inject
     private ServerContext context;
+    
+    // Some sources might want to execute background tasks in a controlled fashion
+    @Inject
+    private PayaraExecutorService executorService;
 
     // Gives access to deployed applications
     @Inject
@@ -144,7 +160,13 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     private MicroprofileConfigConfiguration configuration;
 
     // a config used at the server level when there is no application associated with the thread
-    private Config serverLevelConfig;
+    private PayaraConfig serverLevelConfig;
+
+    @Inject
+    private ExtensionConfigSourceService extensionService;
+    
+    @Inject
+    private Events events;
 
     /**
      * Logs constructor as finest - may be useful to watch sequence of operations.
@@ -164,6 +186,11 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             LOG.log(Level.CONFIG, "Setting global ConfigProviderResolver instance to {0}", this);
             ConfigProviderResolver.setInstance(this);
         }
+        
+        // Register an event listener
+        if (events != null) {
+            events.register(this);
+        }
     }
 
     public MicroprofileConfigConfiguration getMPConfig() {
@@ -174,13 +201,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return configuration;
     }
 
-    int getCacheDurationSeconds() {
+    long getCacheDurationSeconds() {
         if (serverLevelConfig != null) {
-            java.util.Optional<Integer> cacheDuration = serverLevelConfig.getOptionalValue(MP_CONFIG_CACHE_DURATION,
-                    Integer.class);
-            if (cacheDuration.isPresent()) {
-                return cacheDuration.get();
-            }
+            return serverLevelConfig.getCacheDurationSeconds();
         }
         return Integer.parseInt(getMPConfig().getCacheDurationSeconds());
     }
@@ -252,6 +275,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources());
+                sources.addAll(extensionService.getExtensionSources());
                 converters.putAll(getDefaultConverters());
                 serverLevelConfig = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
                 result = serverLevelConfig;
@@ -264,10 +288,13 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
                 LinkedList<ConfigSource> sources = new LinkedList<>();
                 Map<Class<?>, Converter<?>> converters = new HashMap<>();
                 sources.addAll(getDefaultSources(appInfo));
+                sources.addAll(extensionService.getExtensionSources());
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
-                result = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
+                PayaraConfig appresult = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
+                addProfileSource(appresult, appInfo.getAppClassLoader());
+                result = appresult;
                 appInfo.addTransientAppMetaData(METADATA_KEY, result);
             }
         }
@@ -284,6 +311,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         return new PayaraConfigBuilder(this);
     }
 
+    public PayaraExecutorService getExecutor() {
+        return this.executorService;
+    }
+    
     Config getNamedConfig(String applicationName) {
         Config result = null;
         ApplicationInfo info = applicationRegistry.get(applicationName);
@@ -309,8 +340,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         sources.add(new SystemPropertyConfigSource());
         sources.add(new JNDIConfigSource());
         sources.add(new PayaraServerProperties());
-        sources.add(new SecretsDirConfigSource());
+        sources.add(new DirConfigSource());
         sources.add(new PasswordAliasConfigSource());
+        sources.add(new JDBCConfigSource());
         if (appName != null) {
             sources.add(new ApplicationConfigSource(appName));
             sources.add(new ModuleConfigSource(appName, moduleName));
@@ -428,6 +460,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
     Map<Class<?>,Converter<?>> getDefaultConverters() {
         Map<Class<?>,Converter<?>> result = new HashMap<>();
         result.put(Boolean.class, new BooleanConverter());
+        result.put(Byte.class, new ByteConverter());
         result.put(Integer.class, new IntegerConverter());
         result.put(Long.class, new LongConverter());
         result.put(Float.class, new FloatConverter());
@@ -437,6 +470,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
         result.put(String.class, new StringConverter());
         result.put(Character.class, new CharacterConverter());
         result.put(Short.class, new ShortConverter());
+        result.put(OptionalInt.class, new OptionalIntConverter());
+        result.put(OptionalDouble.class, new OptionalDoubleConverter());
+        result.put(OptionalLong.class, new OptionalLongConverter());
         return result;
     }
 
@@ -491,6 +527,40 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver {
             props.add(p);
         }
         return props;
+    }
+    
+    private static void addProfileSource(PayaraConfig config, ClassLoader appClassLoader) {
+        String profile = config.getProfile();
+        if (profile == null) {
+            return;
+        }
+        ArrayList<Properties> appConfigProperties = new ArrayList<>();
+        try {
+            appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "META-INF/microprofile-config-" + profile + ".properties"));
+            appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "../../META-INF/microprofile-config-" + profile + ".properties"));
+            for (Properties props : appConfigProperties) {
+                props.putIfAbsent("config_ordinal", "101");
+                PropertiesConfigSource configSource = new PropertiesConfigSource(props);
+                config.addConfigSource(configSource);
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void event(Event<?> event) {
+        if (event.is(EventTypes.SERVER_STARTUP)) {
+            if (serverLevelConfig != null) {
+                serverLevelConfig.clearCache();
+            }
+            for (String appName : applicationRegistry.getAllApplicationNames()) {
+                PayaraConfig appConfig = applicationRegistry.get(appName).getTransientAppMetaData(METADATA_KEY, PayaraConfig.class);
+                //Server will have already populated cache in deployment before this point,
+                //cache needs clearing as config extensions have not yet been loaded and may have values
+                appConfig.clearCache();
+            }
+        }
     }
 
 }

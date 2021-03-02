@@ -78,7 +78,7 @@ public class WarPersistenceArchivist extends PersistenceArchivist {
                     "readPersistenceDeploymentDescriptors", "archive = {0}",
                     warArchive.getURI());
         }
-        Map<String, ReadableArchive> probablePersitenceArchives =  new HashMap<String, ReadableArchive>();
+        Map<String, ReadableArchive> probablePersitenceArchives =  new HashMap<>();
         try {
             SubArchivePURootScanner warLibScanner = new SubArchivePURootScanner() {
                 @Override

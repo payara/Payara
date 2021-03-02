@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright [2020] Payara Foundation and/or affiliates -->
 
 <!-- jca/resourceAdapterConfigAttr.inc -->
 <!-- used by resourceAdapterConfigNew.jsf and resourceAdapterConfigEdit.jsf -->
@@ -102,7 +103,7 @@
             //<sun:textField id="threadpoolsid" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.resourceAdapterConfig.ThreadPoolId']}" text="#{pageSession.valueMap['threadPoolIds']}" />
             <sun:dropDown id="threadpoolsid" selected="#{pageSession.valueMap['threadPoolIds']}" labels="#{pageSession.threadPoolList}" >
                 <!beforeCreate
-                    gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/server-config/thread-pools/thread-pool"
+                    py.allThreadPools(endpoint="#{sessionScope.REST_URL}/configs/config/server-config/thread-pools/list-threadpools"
                         result="#{requestScope.tmpList}");
                     addEmptyFirstElement(in="#{requestScope.tmpList}" out="#{pageSession.threadPoolList}")
                 />

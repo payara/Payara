@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2020] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -50,7 +51,6 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
@@ -64,6 +64,7 @@ public class PostConstructHandler extends AbstractResourceHandler {
     public PostConstructHandler() {
     }
     
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {

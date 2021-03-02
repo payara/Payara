@@ -41,14 +41,14 @@
 package org.glassfish.web.deployment.io.runtime;
 
 import static com.sun.enterprise.deployment.io.DescriptorConstants.GF_WEB_JAR_ENTRY;
-import static org.glassfish.web.WarType.ARCHIVE_TYPE;
+import static org.glassfish.web.sniffer.WarType.ARCHIVE_TYPE;
 
 import java.util.List;
 import java.util.Map;
 
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.web.WarType;
+import org.glassfish.web.sniffer.WarType;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.node.runtime.gf.GFWebBundleRuntimeNode;
 import org.jvnet.hk2.annotations.Service;

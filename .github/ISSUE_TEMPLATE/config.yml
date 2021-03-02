@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Payara Community Forum
+    url: http://www.payara.org/forum
+    about: Please ask and answer questions about the Payara Platform here.

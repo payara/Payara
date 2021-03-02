@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.internal.api.Globals;
 
@@ -60,10 +59,9 @@ import org.glassfish.internal.api.Globals;
  *
  * @author steve
  */
-public class PasswordAliasConfigSource extends PayaraConfigSource implements ConfigSource {
+public class PasswordAliasConfigSource extends PayaraConfigSource {
 
     private final DomainScopedPasswordAliasStore store;
-    private static final String ALIAS_TOKEN = "ALIAS";
     
     public PasswordAliasConfigSource() {
         store = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
@@ -101,7 +99,7 @@ public class PasswordAliasConfigSource extends PayaraConfigSource implements Con
             value = new String(store.get(name));
         } else {
             // Check if the property being asked for is in the format ${ALIAS=xxx} and get the password associated with the alias if so
-            if (TranslatedConfigView.getAlias(name, ALIAS_TOKEN) != null) {
+            if (TranslatedConfigView.getAlias(name) != null) {
                 try {
                     value = TranslatedConfigView.getRealPasswordFromAlias(name);
                 } catch (IllegalArgumentException iae) {

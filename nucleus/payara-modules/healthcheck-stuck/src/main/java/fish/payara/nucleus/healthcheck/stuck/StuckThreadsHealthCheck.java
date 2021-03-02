@@ -51,7 +51,6 @@ import fish.payara.nucleus.healthcheck.HealthCheckStuckThreadExecutionOptions;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.configuration.StuckThreadsChecker;
 
-import java.lang.Thread.State;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -134,8 +133,10 @@ public class StuckThreadsHealthCheck extends
         if (options == null || !options.isEnabled()) {
             return;
         }
+        long thresholdInMillis = getThresholdInMillis();
         collector.watch("ns:health StuckThreadDuration", "Stuck Threads", "ms")
-            .red(getThresholdInMillis(), -30000L, false, null, null, false);
+            .red(thresholdInMillis, -30000L, false, null, null, false)
+            .green(-thresholdInMillis, 1, false, null, null, false);
     }
 
     private static String composeStateText(ThreadInfo info) {
@@ -148,7 +149,7 @@ public class StuckThreadsHealthCheck extends
 
     private static String composeActionText(Thread.State state) {
         switch(state) {
-        case BLOCKED: 
+        case BLOCKED:
             return "Blocked on ";
         case WAITING:
         case TIMED_WAITING:
@@ -183,7 +184,7 @@ public class StuckThreadsHealthCheck extends
     @Override
     public HealthCheckStuckThreadExecutionOptions constructOptions(StuckThreadsChecker checker) {
         return new HealthCheckStuckThreadExecutionOptions(Boolean.valueOf(checker.getEnabled()),
-                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()),
+                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), Boolean.valueOf(checker.getAddToMicroProfileHealth()),
                 Long.parseLong(checker.getThreshold()), asTimeUnit(checker.getThresholdTimeUnit()));
     }
 

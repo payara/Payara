@@ -46,6 +46,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Array;
@@ -54,8 +55,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,6 +97,39 @@ public class PayaraConfigTest {
     @Test
     public void booleanArrayConversion() {
         assertArrayEquals(new boolean[] { true, false, true }, config.getValue("bool2", boolean[].class));
+    }
+
+    @Test
+    public void configValueTest() {
+        ConfigValue value = config.getValue("key1", ConfigValue.class);
+        assertEquals("key1", value.getName());
+        assertEquals("value1", value.getRawValue());
+        assertEquals("value1", value.getValue());
+        assertEquals("S1", value.getSourceName());
+        assertEquals(100, value.getSourceOrdinal());
+    }
+
+    /**
+     * Introduced by QACI-625. Not reproducible on all machines, but this aims to catch
+     * issues caused by high concurrency in the cache map
+     */
+    @Test
+    public void concurrentConfigValueTest() throws InterruptedException {
+        ExecutorService exec = Executors.newFixedThreadPool(1000);
+        AtomicReference<Throwable> failure = new AtomicReference<>(null);
+        for (int i = 0; i < 100000; i++) {
+            exec.submit(() -> {
+                try {
+                    config.getConfigValue("mp.config.profile").getValue();
+                } catch (Throwable t) {
+                    failure.set(t);
+                    throw (RuntimeException) t;
+                }
+            });
+        }
+        exec.shutdown();
+        exec.awaitTermination(60, TimeUnit.SECONDS);
+        assertNull("stress test failed", failure.get());
     }
 
     @Test
@@ -140,13 +179,13 @@ public class PayaraConfigTest {
     }
 
     @Test
-    public void undefinedPropertyThrowsExcetion() {
+    public void undefinedPropertyThrowsException() {
         assertException(NoSuchElementException.class, "Unable to find property with name undefined",
                 () -> config.getValue("undefined", String.class));
     }
 
     @Test
-    public void unknownConversionThrowsExcetion() {
+    public void unknownConversionReturnsThrowsException() {
         assertException(IllegalArgumentException.class, "Unable to convert value to type java.lang.CharSequence",
                 () -> config.getValue("key1", CharSequence.class));
     }
@@ -231,8 +270,9 @@ public class PayaraConfigTest {
     }
 
     @Test
-    public void defaultTTLisOneMinute() {
-        assertEquals(60 * 1000L, new PayaraConfig(emptyList(), emptyMap()).getTTL());
+    public void ttlParameterIsRespected() {
+        final long ttl = 60 * 1000L;
+        assertEquals(ttl, new PayaraConfig(emptyList(), emptyMap(), ttl).getCacheDurationSeconds());
     }
 
     private <T> void assertCachedValue(ConfigSource source, String key, Class<T> propertyType, T expectedValue1,

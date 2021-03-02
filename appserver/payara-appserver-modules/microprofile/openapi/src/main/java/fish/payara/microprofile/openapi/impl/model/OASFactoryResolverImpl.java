@@ -58,12 +58,10 @@ import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponsesImpl;
 import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowImpl;
 import fish.payara.microprofile.openapi.impl.model.security.OAuthFlowsImpl;
-import fish.payara.microprofile.openapi.impl.model.security.ScopesImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecuritySchemeImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerVariableImpl;
-import fish.payara.microprofile.openapi.impl.model.servers.ServerVariablesImpl;
 import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import static java.util.Collections.unmodifiableMap;
 import java.util.HashMap;
@@ -94,12 +92,10 @@ import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlow;
 import org.eclipse.microprofile.openapi.models.security.OAuthFlows;
-import org.eclipse.microprofile.openapi.models.security.Scopes;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
-import org.eclipse.microprofile.openapi.models.servers.ServerVariables;
 import org.eclipse.microprofile.openapi.models.tags.Tag;
 import org.eclipse.microprofile.openapi.spi.OASFactoryResolver;
 
@@ -136,12 +132,10 @@ public class OASFactoryResolverImpl extends OASFactoryResolver {
         map.put(APIResponses.class, APIResponsesImpl.class);
         map.put(OAuthFlow.class, OAuthFlowImpl.class);
         map.put(OAuthFlows.class, OAuthFlowsImpl.class);
-        map.put(Scopes.class, ScopesImpl.class);
         map.put(SecurityRequirement.class, SecurityRequirementImpl.class);
         map.put(SecurityScheme.class, SecuritySchemeImpl.class);
         map.put(Server.class, ServerImpl.class);
         map.put(ServerVariable.class, ServerVariableImpl.class);
-        map.put(ServerVariables.class, ServerVariablesImpl.class);
         map.put(Tag.class, TagImpl.class);
         MODEL_MAP = unmodifiableMap(map);
     }

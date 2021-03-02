@@ -71,8 +71,6 @@ public class UseCookiesTest {
     @ArquillianResource
     private URL base;
 
-    private static String clientKeyStorePath;
-
     @Deployment(name = "openid-server")
     public static WebArchive createServerDeployment() {
         return OpenIdTestUtil.createServerDeployment();
@@ -80,7 +78,6 @@ public class UseCookiesTest {
 
     @Deployment(name = "openid-client")
     public static WebArchive createClientDeployment() {
-        clientKeyStorePath = ServerOperations.createClientKeyStore();
         StringAsset mpConfig = new StringAsset(OPENID_MP_USE_SESSION + "=" + Boolean.FALSE.toString());
         return OpenIdTestUtil
                 .createClientDeployment()
@@ -91,8 +88,8 @@ public class UseCookiesTest {
     @RunAsClient
     public void testOpenIdConnect() throws IOException {
         WebClient webClient = new WebClient();
-        URL baseHttps = ServerOperations.createClientTrustStore(webClient, base, clientKeyStorePath);
+        URL baseHttps = ServerOperations.createClientTrustStore(webClient, base,
+                ServerOperations.addClientCertificateFromServer(base));
         OpenIdTestUtil.testOpenIdConnect(webClient, baseHttps);
     }
-
 }

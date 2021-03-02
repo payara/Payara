@@ -42,6 +42,7 @@ package fish.payara.requesttracing.jaxrs.client;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
+import fish.payara.opentracing.ScopeManager;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -143,11 +144,13 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                 }
 
                 // Start the span and mark it as active
-                Span activeSpan = spanBuilder.startActive(true).span();
+                Span span = spanBuilder.start();
+                Scope scope = tracer.activateSpan(span);
+                requestContext.setProperty(Scope.class.getName(), scope);
 
                 // Inject the active span context for propagation
                 tracer.inject(
-                        activeSpan.context(),
+                        span.context(),
                         Format.Builtin.HTTP_HEADERS,
                         new MultivaluedMapToTextMap(requestContext.getHeaders()));
             }
@@ -162,18 +165,18 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
         // If request tracing is enabled, and there's a trace actually in progress, add info about method
         if (requestTracing != null && requestTracing.isRequestTracingEnabled() && shouldTrace(requestContext)) {
             // Get the active span from the application's tracer instance
-            try (Scope activeScope = payaraTracingServices.getActiveTracer().scopeManager().active()) {
-                if (activeScope == null) {
-                    // This should really only occur when enabling request tracing due to the nature of the
-                    // service not being enabled when making the request to enable it, and then
-                    // obviously being enabled on the return. Any other entrance into here is likely a bug
-                    // caused by a tracing context not being propagated.
-                    Logger.getLogger(JaxrsClientRequestTracingFilter.class.getName()).log(Level.FINE,
-                            "activeScope in  opentracing request tracing filter was null for {0}", responseContext);
-                    return;
-                }
+            Span activeSpan = payaraTracingServices.getActiveTracer().scopeManager().activeSpan();
+            if (activeSpan == null) {
+                // This should really only occur when enabling request tracing due to the nature of the
+                // service not being enabled when making the request to enable it, and then
+                // obviously being enabled on the return. Any other entrance into here is likely a bug
+                // caused by a tracing context not being propagated.
+                Logger.getLogger(JaxrsClientRequestTracingFilter.class.getName()).log(Level.FINE,
+                        "activeScope in opentracing request tracing filter was null for {0}", responseContext);
+                return;
+            }
 
-                Span activeSpan = activeScope.span();
+            try {
                 // Get the response status and add it to the active span
                 StatusType statusInfo = responseContext.getStatusInfo();
                 activeSpan.setTag(Tags.HTTP_STATUS.getKey(), statusInfo.getStatusCode());
@@ -183,6 +186,14 @@ public class JaxrsClientRequestTracingFilter implements ClientRequestFilter, Cli
                     activeSpan.setTag(Tags.ERROR.getKey(), true);
                     activeSpan.log(Collections.singletonMap("event", "error"));
                     activeSpan.log(Collections.singletonMap("error.object", statusInfo.getFamily()));
+                }
+            } finally {
+                activeSpan.finish();
+                Object scopeObj = requestContext.getProperty(Scope.class.getName());
+                if (scopeObj != null && scopeObj instanceof Scope) {
+                    try (Scope scope = (Scope) scopeObj) {
+                        requestContext.removeProperty(Scope.class.getName());
+                    }
                 }
             }
         }

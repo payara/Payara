@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2017] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,8 @@
  */
 package fish.payara.nucleus.exec;
 
+import com.hazelcast.cluster.Member;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.Member;
 import com.hazelcast.scheduledexecutor.IScheduledExecutorService;
 import com.hazelcast.scheduledexecutor.IScheduledFuture;
 import fish.payara.nucleus.events.HazelcastEvents;
@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -123,8 +124,8 @@ public class ClusterExecutionService implements EventListener {
      * @param callable The Callable to run
      * @return A map of Futures keyed by Member UUID
      */
-    public <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable) {
-        HashMap<String, Future<T>> result = new HashMap<>(2);
+    public <T extends Serializable> Map<UUID, Future<T>> runCallable(Collection<UUID> memberUUIDS, Callable<T> callable) {
+        HashMap<UUID, Future<T>> result = new HashMap<>(2);
         if (hzCore.isEnabled()) {
 
             Set<Member> membersToSubmit = selectMembers(memberUUIDS);
@@ -143,8 +144,8 @@ public class ClusterExecutionService implements EventListener {
      * @param callable The Callable to run
      * @return A Map of Future results keyed by member UUID
      */
-    public <T extends Serializable> Map<String, Future<T>> runCallableAllMembers(Callable<T> callable) {
-        HashMap<String, Future<T>> result = new HashMap<>(2);
+    public <T extends Serializable> Map<UUID, Future<T>> runCallableAllMembers(Callable<T> callable) {
+        HashMap<UUID, Future<T>> result = new HashMap<>(2);
         if (hzCore.isEnabled()) {
             // work out which members correspond to cluster UUIDS.
             HazelcastInstance instance = hzCore.getInstance();
@@ -205,8 +206,8 @@ public class ClusterExecutionService implements EventListener {
      * @param unit The time unit of the delay
      * @return A Future containing the result
      */
-    public <V extends Serializable> Map<String, ScheduledTaskFuture<V>> schedule(Collection<String> memberUUIDs, Callable<V> callable, long delay, TimeUnit unit) {
-        HashMap<String, ScheduledTaskFuture<V>> result = new HashMap<>(2);
+    public <V extends Serializable> Map<UUID, ScheduledTaskFuture<V>> schedule(Collection<UUID> memberUUIDs, Callable<V> callable, long delay, TimeUnit unit) {
+        HashMap<UUID, ScheduledTaskFuture<V>> result = new HashMap<>(2);
 
         if (hzCore.isEnabled()) {
             Collection<Member> toSubmitTo = selectMembers(memberUUIDs);
@@ -268,14 +269,14 @@ public class ClusterExecutionService implements EventListener {
      * @param unit The time unit of the delay
      * @return A Future containing the result
      */
-    public Map<String, ScheduledTaskFuture<?>> scheduleAtFixedRate(Collection<String> memberUUIDs, Runnable runnable, long delay, long period, TimeUnit unit) {
-        HashMap<String, ScheduledTaskFuture<?>> result = new HashMap<>(2);
+    public Map<UUID, ScheduledTaskFuture<?>> scheduleAtFixedRate(Collection<UUID> memberUUIDs, Runnable runnable, long delay, long period, TimeUnit unit) {
+        HashMap<UUID, ScheduledTaskFuture<?>> result = new HashMap<>(2);
 
         if (hzCore.isEnabled()) {
             Collection<Member> toSubmitTo = selectMembers(memberUUIDs);
             IScheduledExecutorService scheduledExecutorService = hzCore.getInstance().getScheduledExecutorService(HazelcastCore.SCHEDULED_CLUSTER_EXECUTOR_SERVICE_NAME);
-            Map<Member, IScheduledFuture<?>> schedule = scheduledExecutorService.scheduleOnMembersAtFixedRate(runnable, toSubmitTo, delay, period, unit);
-            for (Entry<Member, IScheduledFuture<?>> entry : schedule.entrySet()) {
+            Map<Member, IScheduledFuture<Object>> schedule = scheduledExecutorService.<Object>scheduleOnMembersAtFixedRate(runnable, toSubmitTo, delay, period, unit);
+            for (Entry<Member, IScheduledFuture<Object>> entry : schedule.entrySet()) {
                 Member member = entry.getKey();
                 result.put(member.getUuid(), new ScheduledTaskFuture<>(entry.getValue()));
             }
@@ -304,7 +305,7 @@ public class ClusterExecutionService implements EventListener {
         return toSubmitTo;
     }
     
-    private Set<Member> selectMembers(Collection<String> memberUUIDS) {
+    private Set<Member> selectMembers(Collection<UUID> memberUUIDS) {
         // work out which members correspond to cluster UUIDS.
         HazelcastInstance instance = hzCore.getInstance();
         Set<Member> members = instance.getCluster().getMembers();
@@ -316,6 +317,4 @@ public class ClusterExecutionService implements EventListener {
         }
         return membersToSubmit;
     }
-    
-    
 }

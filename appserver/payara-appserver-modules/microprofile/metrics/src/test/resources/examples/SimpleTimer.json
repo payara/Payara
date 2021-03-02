@@ -2,6 +2,8 @@
 {
     "simple_responseTime": {
         "count": 1,
-        "elapsedTime": 12300000000
+        "elapsedTime": 12300000000,
+        "maxTimeDuration": 3231000000,
+        "minTimeDuration": 25600000
     }
 }
