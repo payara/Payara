@@ -538,7 +538,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (schema != null) {
             SchemaImpl.merge(schema, newSchema, true, context);
         }
-        if (schema == null || schema.getEnumeration().isEmpty()) {
+        if (schema == null || schema.getEnumeration() == null || schema.getEnumeration().isEmpty()) {
             //if the schema annotation does not specify enums, then all enum fields will be added
             for (FieldModel enumField : enumType.getStaticFields()) {
                 final String enumValue = enumField.getName();
