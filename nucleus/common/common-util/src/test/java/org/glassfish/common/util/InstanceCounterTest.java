@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,9 @@ import org.junit.Test;
  * @author lprimak
  */
 public class InstanceCounterTest {
+    private static final long TIMEOUT_FOR_GC = 100;
+    private static final long TIMEOUT_FOR_NO_GC = 1;
+
     private static class Counted {
         int field;
         private final InstanceCounter counter = new InstanceCounter(this);
@@ -80,7 +83,7 @@ public class InstanceCounterTest {
 
         s = null;
         System.gc();
-        assertNotNull(queue.remove(1));
+        assertNotNull(queue.remove(TIMEOUT_FOR_GC));
     }
 
     @Test
@@ -90,7 +93,7 @@ public class InstanceCounterTest {
         PhantomReference<Counted> ref1 = new PhantomReference<>(counted1, queue);
         counted1 = null;
         System.gc();
-        Reference<?> ref2 = queue.remove(1);
+        Reference<?> ref2 = queue.remove(TIMEOUT_FOR_GC);
         assertNotNull(ref2);
         ref2.clear();
         assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, 0));
@@ -98,18 +101,18 @@ public class InstanceCounterTest {
 
     @Test
     public void counter() {
-        assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, 1));
+        assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, TIMEOUT_FOR_NO_GC));
         Counted counted1 = new Counted(1);
-        assertEquals(1, InstanceCounter.getInstanceCount(Counted.class, 1));
+        assertEquals(1, InstanceCounter.getInstanceCount(Counted.class, TIMEOUT_FOR_NO_GC));
         System.gc();
-        assertEquals(1, InstanceCounter.getInstanceCount(Counted.class, 1));
+        assertEquals(1, InstanceCounter.getInstanceCount(Counted.class, TIMEOUT_FOR_NO_GC));
         Counted counted2 = new Counted(2);
-        assertEquals(2, InstanceCounter.getInstanceCount(Counted.class, 1));
+        assertEquals(2, InstanceCounter.getInstanceCount(Counted.class, TIMEOUT_FOR_NO_GC));
         System.gc();
-        assertEquals(2, InstanceCounter.getInstanceCount(Counted.class, 1));
+        assertEquals(2, InstanceCounter.getInstanceCount(Counted.class, TIMEOUT_FOR_NO_GC));
         counted2 = null;
         System.gc();
-        assertEquals(1, InstanceCounter.getInstanceCount(Counted.class, 1));
+        assertEquals(1, InstanceCounter.getInstanceCount(Counted.class, TIMEOUT_FOR_GC));
         counted1 = null;
         System.gc();
         assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, 0));
@@ -117,14 +120,14 @@ public class InstanceCounterTest {
 
     @Test
     public void instances() {
-        assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, 1));
+        assertEquals(0, InstanceCounter.getInstanceCount(Counted.class, TIMEOUT_FOR_NO_GC));
         Counted counted1 = new Counted(1);
         Counted counted2 = new Counted(2);
         Set<Counted> expectedSet = Collections.newSetFromMap(new IdentityHashMap<>());
         expectedSet.add(counted1);
         expectedSet.add(counted2);
-        assertEquals(2, InstanceCounter.getInstances(Counted.class, 1).size());
-        assertEquals(expectedSet, InstanceCounter.getInstances(Counted.class, 1)
+        assertEquals(2, InstanceCounter.getInstances(Counted.class, TIMEOUT_FOR_NO_GC).size());
+        assertEquals(expectedSet, InstanceCounter.getInstances(Counted.class, TIMEOUT_FOR_NO_GC)
                 .stream().map(WeakReference::get).filter(Objects::nonNull)
                 .collect(Collectors.toSet()));
         expectedSet = null;
