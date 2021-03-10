@@ -42,7 +42,6 @@ package fish.payara.logging.jul;
 
 import fish.payara.logging.jul.internal.PayaraLoggingTracer;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import static fish.payara.logging.jul.PayaraLoggingConstants.CLASS_LOG_MANAGER;
@@ -81,7 +80,7 @@ public class PayaraLogManagerInitializer {
                 () -> "Will initialize log manager " + logManagerClass);
 
             return PayaraLogManager.initialize(configuration);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Could not initialize logging system.", e);
         } finally {
             currentThread.setContextClassLoader(old);

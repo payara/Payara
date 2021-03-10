@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -48,6 +48,8 @@ public class PayaraLoggingConstants {
 
     public static final String JVM_OPT_LOGGING_MANAGER = "java.util.logging.manager";
     public static final String JVM_OPT_LOGGING_CFG_FILE = "java.util.logging.config.file";
+    public static final String JVM_OPT_LOGGING_CFG_USE_DEFAULTS = "java.util.logging.config.useDefaults";
+    public static final String JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL = "java.util.logging.config.defaultLevel";
     public static final String CLASS_LOG_MANAGER = "fish.payara.logging.jul.PayaraLogManager";
 
 }

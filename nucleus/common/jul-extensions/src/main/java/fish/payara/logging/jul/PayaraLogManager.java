@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package fish.payara.logging.jul;
 
+import fish.payara.logging.jul.handler.SimpleLogHandler;
 import fish.payara.logging.jul.internal.PayaraLoggingTracer;
 import fish.payara.logging.jul.internal.StartupQueue;
 
@@ -69,7 +70,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static fish.payara.logging.jul.LoggingConfigurationHelper.PRINT_TO_STDERR;
+import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL;
 import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
+import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_USE_DEFAULTS;
 import static java.util.logging.Logger.GLOBAL_LOGGER_NAME;
 
 
@@ -102,7 +105,7 @@ public class PayaraLogManager extends LogManager {
     private PayaraLogManagerConfiguration cfg;
 
 
-    static synchronized boolean initialize(final Properties configuration) throws SecurityException, IOException {
+    static synchronized boolean initialize(final Properties configuration) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "initialize(configuration)");
         if (status.ordinal() > PayaraLoggingStatus.UNINITIALIZED.ordinal()) {
             PayaraLoggingTracer.error(PayaraLogManager.class,
@@ -587,12 +590,27 @@ public class PayaraLogManager extends LogManager {
             if (propertiesFromClasspath != null) {
                 return propertiesFromClasspath;
             }
+            if (Boolean.getBoolean(JVM_OPT_LOGGING_CFG_USE_DEFAULTS)) {
+                return createDefaultProperties();
+            }
             throw new IllegalStateException(
                 "Could not find any logging.properties configuration file neither from JVM option ("
-                    + JVM_OPT_LOGGING_CFG_FILE + ") nor from classpath.");
+                    + JVM_OPT_LOGGING_CFG_FILE + ") nor from classpath and even " + JVM_OPT_LOGGING_CFG_USE_DEFAULTS
+                    + " wasn't set to true.");
         } catch (final IOException e) {
             throw new IllegalStateException("Could not load logging configuration file.", e);
         }
+    }
+
+
+    private static Properties createDefaultProperties() {
+        final Properties cfg = new Properties();
+        final String level = System.getProperty(JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL, Level.INFO.getName());
+        cfg.setProperty(KEY_SYS_ROOT_LOGGER_LEVEL, level);
+        cfg.setProperty(KEY_USR_ROOT_LOGGER_LEVEL, level);
+        cfg.setProperty(KEY_ROOT_HANDLERS, SimpleLogHandler.class.getCanonicalName());
+        cfg.setProperty(SimpleLogHandler.class.getCanonicalName() + ".level", level);
+        return cfg;
     }
 
 

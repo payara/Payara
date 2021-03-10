@@ -275,6 +275,7 @@
                         </excludes>
                         <systemProperties>
                             <java.util.logging.manager>${test.logManager}</java.util.logging.manager>
+                            <java.util.logging.config.useDefaults>true</java.util.logging.config.useDefaults>
                         </systemProperties>
                     </configuration>
                 </plugin>
