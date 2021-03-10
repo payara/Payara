@@ -68,13 +68,26 @@ public class EnhancedLogRecord extends LogRecord {
 
 
     /**
-     * Creates new record.
+     * Creates new record. Source class and method will be autodetected.
      *
      * @param level
      * @param message
      */
     public EnhancedLogRecord(final Level level, final String message) {
-        this(new LogRecord(level, message));
+        this(new LogRecord(level, message), true);
+    }
+
+
+    /**
+     * Creates new record. Source class and method will be autodetected now or set after this
+     * constructor ends.
+     *
+     * @param level
+     * @param message
+     * @param autodetectSource
+     */
+    public EnhancedLogRecord(final Level level, final String message, final boolean autodetectSource) {
+        this(new LogRecord(level, message), autodetectSource);
     }
 
 
@@ -82,12 +95,15 @@ public class EnhancedLogRecord extends LogRecord {
      * Wraps the log record.
      *
      * @param record
+     * @param autodetectSource
      */
-    public EnhancedLogRecord(final LogRecord record) {
+    public EnhancedLogRecord(final LogRecord record, final boolean autodetectSource) {
         super(record.getLevel(), null);
         this.threadName = Thread.currentThread().getName();
         this.record = record;
-        detectClassAndMethod(record);
+        if (autodetectSource) {
+            detectClassAndMethod(record);
+        }
     }
 
 
@@ -290,7 +306,7 @@ public class EnhancedLogRecord extends LogRecord {
     }
 
 
-    protected void detectClassAndMethod(final LogRecord rec) {
+    protected boolean detectClassAndMethod(final LogRecord wrappedRecord) {
         final StackTraceElement[] stack = new Throwable().getStackTrace();
         boolean found = false;
         for (StackTraceElement element : stack) {
@@ -300,16 +316,18 @@ public class EnhancedLogRecord extends LogRecord {
                 continue;
             }
             if (!isLoggerImplFrame(className)) {
-                rec.setSourceClassName(className);
-                rec.setSourceMethodName(element.getMethodName());
-                return;
+                wrappedRecord.setSourceClassName(className);
+                wrappedRecord.setSourceMethodName(element.getMethodName());
+                return true;
             }
         }
+        // don't try it again.
+        return true;
     }
 
 
     protected boolean isLoggerImplFrame(final String sourceClassName) {
-        // TODO: make it configurable from logging.properties
+        // TODO: make it configurable from logging.properties, allow to use custom loggers
         return sourceClassName.equals(PayaraLogger.class.getName())
             // see LogDomains in Payara sources
             || sourceClassName.equals("com.sun.logging.LogDomainsLogger")

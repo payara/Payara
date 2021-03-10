@@ -105,7 +105,7 @@ public class MessageResolver {
         if (EnhancedLogRecord.class.isInstance(record)) {
             return (EnhancedLogRecord) record;
         }
-        return new EnhancedLogRecord(record);
+        return new EnhancedLogRecord(record, false);
     }
 
 
