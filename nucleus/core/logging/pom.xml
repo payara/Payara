@@ -58,6 +58,7 @@
 
     <properties>
         <test.logManager>fish.payara.logging.jul.PayaraLogManager</test.logManager>
+<!--         <test.logManager>java.util.logging.LogManager</test.logManager> -->
     </properties>
 
     <dependencies>
