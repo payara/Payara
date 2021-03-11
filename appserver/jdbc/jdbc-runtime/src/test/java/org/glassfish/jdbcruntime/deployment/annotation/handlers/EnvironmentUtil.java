@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,48 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.micro.cmd.options;
+package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
-import java.io.File;
-import java.text.MessageFormat;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.Map;
 
-/**
- *
- * @author Steve Millidge
- */
-public class DeploymentFileValidator extends Validator {
-
-    @Override
-    boolean validate(String optionValue) throws ValidationException {
-        String filePath = optionValue;
-
-        // first look for a pathSeparator to indicate a context root
-        long separatorCount = filePath.chars().filter(ch -> ch == File.pathSeparatorChar).count();
-
-        if (separatorCount > 1) {
-            throw new ValidationException(filePath + " has an invalid context root");
-        } else if (separatorCount == 1) {
-            filePath = filePath.substring(0, optionValue.indexOf(File.pathSeparator));
+class EnvironmentUtil {
+    static void setEnv(Map<String, String> newenv) throws Exception {
+        try {
+            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
+            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
+            theEnvironmentField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
+            env.putAll(newenv);
+            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
+            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, String> cienv = (Map<String, String>)     theCaseInsensitiveEnvironmentField.get(null);
+            cienv.putAll(newenv);
+        } catch (NoSuchFieldException e) {
+            Class[] classes = Collections.class.getDeclaredClasses();
+            Map<String, String> env = System.getenv();
+            for(Class cl : classes) {
+                if("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+                    Field field = cl.getDeclaredField("m");
+                    field.setAccessible(true);
+                    Object obj = field.get(env);
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> map = (Map<String, String>) obj;
+                    map.clear();
+                    map.putAll(newenv);
+                }
+            }
         }
-
-        File deployment = new File(filePath);
-
-        if (!deployment.exists()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("fileDoesNotExist"), filePath));
-        }
-
-        if (!deployment.canRead()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("fileNotReadable"), filePath));
-        }
-
-        if (deployment.isFile() && !(filePath.endsWith(".rar") || filePath.endsWith(".jar") || filePath.endsWith(".war"))) {
-            throw new ValidationException(filePath + " is a not valid type of deployment archive");
-        }
-
-        if (deployment.isDirectory() && !new File(filePath, "WEB-INF").exists()) {
-            throw new ValidationException(filePath + " is a not valid exploded web archive");
-        }
-
-        return true;
     }
 }

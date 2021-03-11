@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,17 @@
 package fish.payara.micro.cmd.options;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Class to specify the runtime options for Payara Micro
@@ -49,7 +59,7 @@ import java.util.*;
  */
 public class RuntimeOptions {
 
-    private Map<RUNTIME_OPTION, List<String>> options;
+    private final List<Map.Entry<RUNTIME_OPTION, String>> options;
     static ResourceBundle commandoptions = ResourceBundle.getBundle("commandoptions");
     static ResourceBundle commandlogstrings = ResourceBundle.getBundle("commandlogstrings");
 
@@ -67,24 +77,24 @@ public class RuntimeOptions {
             output.add(entry);
         }
         
-        //alphabetise
-        Collections.sort(output, String.CASE_INSENSITIVE_ORDER);
+        // alphabetise
+        output.sort(String.CASE_INSENSITIVE_ORDER);
         for (String s : output){
             System.err.println(s);
         }
     }
     
-    public Set<RUNTIME_OPTION> getOptions() {
-        return options.keySet();
+    public List<Map.Entry<RUNTIME_OPTION, String>> getOptions() {
+        return Collections.unmodifiableList(options);
     }
     
     public List<String> getOption(RUNTIME_OPTION option) {
-        return options.get(option);
+        return options.stream().filter(entry -> entry.getKey() == option).map(Map.Entry::getValue).collect(Collectors.toList());
     }
     
-    public RuntimeOptions(String args[]) throws ValidationException {
+    public RuntimeOptions(String[] args) throws ValidationException {
         // parse the arguments into a match 
-        options = new HashMap<>();
+        options = new LinkedList<>();
         Set<String> invalidArgs = new HashSet<>();
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -111,29 +121,19 @@ public class RuntimeOptions {
                              }
                         }
                     }
-                    List<String> values = options.get(option);
-                    if (values == null) {
-                        values = new LinkedList<>();
-                        options.put(option, values);
-                    }
-                    values.add(value);
+                    options.add(new AbstractMap.SimpleImmutableEntry<>(option, value));
                 } catch (IllegalArgumentException iae) {
-                    throw new ValidationException(MessageFormat.format(commandlogstrings.getString("notValidArgument"),arg));
+                    throw new ValidationException(MessageFormat.format(commandlogstrings.getString("notValidArgument"), arg));
                 } catch (IndexOutOfBoundsException ex) {
-                    throw new ValidationException(MessageFormat.format(commandlogstrings.getString("expectedArgument"),arg));
+                    throw new ValidationException(MessageFormat.format(commandlogstrings.getString("expectedArgument"), arg));
                 } catch (ValidationException ve) {
-                    throw new ValidationException(arg + " " + ve.getMessage(),ve);
+                    throw new ValidationException(arg + " " + ve.getMessage(), ve);
                 }
-            } else if (arg.endsWith(".war") || arg.endsWith(".ear") || arg.endsWith(".rar") || arg.endsWith(".jar")) {
+            } else if (arg.endsWith(".war") || arg.endsWith(".rar") || arg.endsWith(".jar")) {
                 // we have a "raw" deployment
-                List<String> values = options.get(RUNTIME_OPTION.deploy);
-                if (values == null) {
-                    values = new LinkedList<>();
-                    options.put(RUNTIME_OPTION.deploy, values);
-                }
-                values.add(arg);
-            }
-            else {
+                RUNTIME_OPTION.deploy.validate(arg);
+                options.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploy, arg));
+            } else {
                 invalidArgs.add(arg);
             }
         }
@@ -143,7 +143,6 @@ public class RuntimeOptions {
     }
     
     private static int findLongestOption() {
-
         int longest = 0;
 
         for (RUNTIME_OPTION option : RUNTIME_OPTION.values()) {
@@ -155,15 +154,14 @@ public class RuntimeOptions {
     }
 
     private static String rightPad(String toPad, int paddedLength) {
-
         // return input if anything doesn't make sense
-        if (null == toPad || toPad.length() >= paddedLength || paddedLength < 1) {
+        if (null == toPad || toPad.length() >= paddedLength) {
             return toPad;
         }
+        StringBuilder sb = new StringBuilder(toPad);
         for (int i = toPad.length(); i < paddedLength; i++) {
-            toPad += " ";
+            sb.append(" ");
         }
-        return toPad;
+        return sb.toString();
     }
-
 }

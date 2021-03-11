@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -738,7 +738,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @param instance the servlet instance
      */
-    public void setServlet(Servlet instance) {
+    public synchronized void setServlet(Servlet instance) {
         if (instance == null) {
             throw new NullPointerException("Null servlet instance");
         }
@@ -1824,6 +1824,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     public synchronized void unload() throws ServletException {
 
         // Nothing to do if we have never loaded the instance
+        Servlet instance = this.instance;
         if (!singleThreadModel && instance == null) {
             return;
         }
@@ -1871,7 +1872,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             instanceSupport.fireInstanceEvent(AFTER_DESTROY_EVENT, instance);
         } catch (Throwable t) {
             instanceSupport.fireInstanceEvent(AFTER_DESTROY_EVENT, instance, t);
-            instance = null;
+            this.instance = null;
             instancePool = null;
             nInstances = 0;
             if (notifyContainerListeners) {
@@ -1885,7 +1886,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         }
 
         // Deregister the destroyed instance
-        instance = null;
+        this.instance = null;
 
         if (singleThreadModel && (instancePool != null)) {
             try {
