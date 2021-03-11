@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,34 @@
  */
 package fish.payara.micro.impl;
 
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.glassfish.bootstrap.Constants;
+import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
+import com.sun.enterprise.server.logging.ODLLogFormatter;
+import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
+import fish.payara.boot.runtime.BootCommand;
+import fish.payara.boot.runtime.BootCommands;
+import fish.payara.deployment.util.GAVConvertor;
+import fish.payara.micro.BootstrapException;
+import fish.payara.micro.PayaraMicroRuntime;
+import fish.payara.micro.boot.AdminCommandRunner;
+import fish.payara.micro.boot.PayaraMicroBoot;
 import fish.payara.micro.boot.PayaraMicroLauncher;
+import fish.payara.micro.boot.loader.OpenURLClassLoader;
+import fish.payara.micro.cmd.options.RUNTIME_OPTION;
+import fish.payara.micro.cmd.options.RuntimeOptions;
+import fish.payara.micro.cmd.options.ValidationException;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.nucleus.executorservice.PayaraFileWatcher;
+import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.embeddable.Deployer;
+import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFish.Status;
+import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishProperties;
+import org.glassfish.embeddable.GlassFishRuntime;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,6 +81,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -73,35 +102,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.glassfish.bootstrap.Constants;
-import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
-import com.sun.enterprise.server.logging.ODLLogFormatter;
-
-import org.glassfish.embeddable.BootstrapProperties;
-import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.embeddable.Deployer;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFish.Status;
-import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.GlassFishProperties;
-import org.glassfish.embeddable.GlassFishRuntime;
-
-import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
-import fish.payara.boot.runtime.BootCommand;
-import fish.payara.boot.runtime.BootCommands;
-import fish.payara.deployment.util.GAVConvertor;
-import fish.payara.micro.BootstrapException;
-import fish.payara.micro.PayaraMicroRuntime;
-import fish.payara.micro.boot.AdminCommandRunner;
-import fish.payara.micro.boot.PayaraMicroBoot;
-import fish.payara.micro.boot.loader.OpenURLClassLoader;
-import fish.payara.micro.cmd.options.RUNTIME_OPTION;
-import fish.payara.micro.cmd.options.RuntimeOptions;
-import fish.payara.micro.cmd.options.ValidationException;
-import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.nucleus.executorservice.PayaraFileWatcher;
-
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
  * applications to create a full JavaEE runtime environment and deploy war
@@ -113,11 +113,12 @@ import fish.payara.nucleus.executorservice.PayaraFileWatcher;
  */
 public class PayaraMicroImpl implements PayaraMicroBoot {
 
+    private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
+
     private static final String BOOT_PROPS_FILE = "/MICRO-INF/payara-boot.properties";
     private static final String USER_PROPS_FILE = "MICRO-INF/deploy/payaramicro.properties";
     private static final String CONTEXT_PROPS_FILE = "MICRO-INF/deploy/contexts.properties";
 
-    private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
     private static PayaraMicroImpl instance;
 
     private String hzMulticastGroup;
@@ -135,7 +136,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private File deploymentRoot;
     private File alternateDomainXML;
     private File alternateHZConfigFile;
-    private List<File> deployments;
+    private List<Map.Entry<RUNTIME_OPTION, String>> deploymentOptions;
+    private Map<String, URI> deployments;
     private Properties contextRoots;
     private List<File> libraries;
     private GlassFish gf;
@@ -157,12 +159,10 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String applicationDomainXml;
     private boolean enableHealthCheck = false;
     private boolean disablePhoneHome = false;
-    private List<String> GAVs;
     private File uberJar;
     private boolean outputLauncher;
     private File copyDirectory;
     private Properties userSystemProperties;
-    private Map<String, URL> deploymentURLsMap;
     private List<String> repositoryURLs;
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
     private final short defaultHttpPort = 8080;
@@ -574,6 +574,18 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl setDeploymentDir(File deploymentRoot) {
         //if (runtime != null) {
         checkNotRunning();
+
+        validateRuntimeOption(RUNTIME_OPTION.deploydir, deploymentRoot.getPath());
+
+        if (this.deploymentRoot == null) {
+            if (deploymentOptions == null) {
+                deploymentOptions = new LinkedList<>();
+            }
+            // Map entry value are unused because we use deploymentRoot property
+            deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploydir, null));
+        } else {
+            LOGGER.warning("Multiple deploy dirs only last one will be apply");
+        }
         this.deploymentRoot = deploymentRoot;
         return this;
     }
@@ -635,8 +647,14 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl addDeployment(String pathToWar) {
         //if (runtime != null) {
         checkNotRunning();
-        File file = new File(pathToWar);
-        return addDeploymentFile(file);
+
+        validateRuntimeOption(RUNTIME_OPTION.deploy, pathToWar);
+
+        if (deploymentOptions == null) {
+            deploymentOptions = new LinkedList<>();
+        }
+        deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deploy, pathToWar));
+        return this;
     }
 
     /**
@@ -651,11 +669,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl addDeploymentFile(File file) {
         //if (runtime != null) {
         checkNotRunning();
-        if (deployments == null) {
-            deployments = new LinkedList<>();
-        }
-        deployments.add(file);
-        return this;
+        return addDeployment(file.getPath());
     }
 
     /**
@@ -669,19 +683,23 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     public PayaraMicroImpl addDeployFromGAV(String GAV) {
         //if (runtime != null) {
         checkNotRunning();
-        if (GAVs == null) {
-            GAVs = new LinkedList<>();
+
+        validateRuntimeOption(RUNTIME_OPTION.deployfromgav, GAV);
+
+        if (deploymentOptions == null) {
+            deploymentOptions = new LinkedList<>();
         }
-        GAVs.add(GAV);
-        if (GAVs != null) {
-            try {
-                // Convert the provided GAV Strings into target URLs
-                getGAVURLs();
-            } catch (GlassFishException ex) {
-                LOGGER.log(Level.SEVERE, null, ex);
-            }
-        }
+        deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(RUNTIME_OPTION.deployfromgav, GAV));
         return this;
+    }
+
+    private void validateRuntimeOption(RUNTIME_OPTION option, String optionValue) {
+        try {
+            option.validate(optionValue);
+        } catch (ValidationException ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage());
+            System.exit(-1);
+        }
     }
 
     /**
@@ -1102,7 +1120,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     @Override
     public void shutdown() throws BootstrapException {
         if (!isRunning()) {
-
             throw new IllegalStateException("Payara Micro is not running");
         }
         runtime.shutdown();
@@ -1120,7 +1137,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void scanArgs(String[] args) {
-
         RuntimeOptions options = null;
         try {
             options = new RuntimeOptions(args);
@@ -1132,283 +1148,271 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         processUserProperties(options);
         setArgumentsFromSystemProperties();
 
-        for (RUNTIME_OPTION option : options.getOptions()) {
-            List<String> values = options.getOption(option);
-            for (String value : values) {
-                switch (option) {
-                    case port: {
-                        httpPort = Integer.parseInt(value);
-                        break;
-                    }
-                    case sslport: {
-                        sslPort = Integer.parseInt(value);
-                        break;
-                    }
-                    case sslcert: {
-                        sslCert = value;
-                        break;
-                    }
-                    case version: {
-                        printVersion();
-                        System.exit(1);
-                        break;
-                    }
-                    case maxhttpthreads: {
-                        maxHttpThreads = Integer.parseInt(value);
-                        break;
-                    }
-                    case minhttpthreads: {
-                        minHttpThreads = Integer.parseInt(value);
-                        break;
-                    }
-                    case mcaddress:
-                        hzMulticastGroup = value;
-                        break;
-                    case clustername:
-                        hzClusterName = value;
-                        break;
-                    case clusterpassword:
-                        hzClusterPassword = value;
-                        break;
-                    case hostaware: {
-                        hostAware = true;
-                        break;
-                    }
-                    case nohostaware: {
-                        hostAware = false;
-                        break;
-                    }
-                    case mcport: {
-                        hzPort = Integer.parseInt(value);
-                        break;
-                    }
-                    case startport:
-                        hzStartPort = Integer.parseInt(value);
-                        break;
-                    case name:
-                        instanceName = value;
-                        break;
-                    case instancegroup:
-                    case group:
-                        instanceGroup = value;
-                        break;
-                    case deploymentdir:
-                    case deploydir:
-                        deploymentRoot = new File(value);
-                        break;
-                    case rootdir:
-                        rootDir = new File(value);
-                        break;
-                    case addlibs:
-                    case addjars:
-                        List<File> files = UberJarCreator.parseFileList(value, File.pathSeparator);
-                        if (!files.isEmpty()) {
-                            if (libraries == null) {
-                                libraries = new LinkedList<>();
-                            }
-                            libraries.addAll(files);
+        for (Map.Entry<RUNTIME_OPTION, String> optionEntry : options.getOptions()) {
+            RUNTIME_OPTION option = optionEntry.getKey();
+            String value = optionEntry.getValue();
+            switch (option) {
+                case port: {
+                    httpPort = Integer.parseInt(value);
+                    break;
+                }
+                case sslport: {
+                    sslPort = Integer.parseInt(value);
+                    break;
+                }
+                case sslcert: {
+                    sslCert = value;
+                    break;
+                }
+                case version: {
+                    printVersion();
+                    System.exit(1);
+                    break;
+                }
+                case maxhttpthreads: {
+                    maxHttpThreads = Integer.parseInt(value);
+                    break;
+                }
+                case minhttpthreads: {
+                    minHttpThreads = Integer.parseInt(value);
+                    break;
+                }
+                case mcaddress:
+                    hzMulticastGroup = value;
+                    break;
+                case clustername:
+                    hzClusterName = value;
+                    break;
+                case clusterpassword:
+                    hzClusterPassword = value;
+                    break;
+                case hostaware: {
+                    hostAware = true;
+                    break;
+                }
+                case nohostaware: {
+                    hostAware = false;
+                    break;
+                }
+                case mcport: {
+                    hzPort = Integer.parseInt(value);
+                    break;
+                }
+                case startport:
+                    hzStartPort = Integer.parseInt(value);
+                    break;
+                case name:
+                    instanceName = value;
+                    break;
+                case instancegroup:
+                case group:
+                    instanceGroup = value;
+                    break;
+                case deploymentdir:
+                case deploydir:
+                    if (deploymentRoot == null) {
+                        if (deploymentOptions == null) {
+                            deploymentOptions = new LinkedList<>();
                         }
-                        break;
-                    case deploy:
-                        // check for context root definition
-                        if (deployments == null) {
-                            deployments = new LinkedList<>();
-                            contextRoots = new Properties();
+                        deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(option, null));
+                    } else {
+                        LOGGER.warning("Multiple --deploydir arguments only the last one will apply");
+                    }
+                    deploymentRoot = new File(value);
+                    break;
+                case rootdir:
+                    rootDir = new File(value);
+                    break;
+                case addlibs:
+                case addjars:
+                    List<File> files = UberJarCreator.parseFileList(value, File.pathSeparator);
+                    if (!files.isEmpty()) {
+                        if (libraries == null) {
+                            libraries = new LinkedList<>();
                         }
-                        String fileName = value;
-                        String deployContext = null;
-                        if (value != null && value.contains(File.pathSeparator)) {
-                            fileName = value.substring(0, value.indexOf(File.pathSeparatorChar));
-                            deployContext = value.substring(value.indexOf(File.pathSeparatorChar) + 1);
-                        }
-                        File deployment = new File(fileName);
-                        deployments.add(deployment);
-                        if (deployContext != null) {
-                            contextRoots.put(deployment.getName(), deployContext);
-                        }
-                        break;
-                    case domainconfig:
-                        alternateDomainXML = new File(value);
-                        break;
-                    case nocluster:
-                        noCluster = true;
-                        break;
-                    case lite:
-                        liteMember = true;
-                        break;
-                    case hzconfigfile:
-                        alternateHZConfigFile = new File(value);
-                        break;
-                    case autobindhttp:
-                        autoBindHttp = true;
-                        break;
-                    case autobindssl:
-                        autoBindSsl = true;
-                        break;
-                    case autobindrange:
-                        autoBindRange = Integer.parseInt(value);
-                        break;
-                    case enablehealthcheck:
-                        enableHealthCheck = Boolean.parseBoolean(value);
-                        break;
-                    case deployfromgav:
-                        if (GAVs == null) {
-                            GAVs = new LinkedList<>();
-                        }
-                        GAVs.add(value);
-                        break;
-                    case additionalrepository:
-                        repositoryURLs.add(value);
-                        break;
-                    case outputuberjar:
-                        uberJar = new File(value);
-                        break;
-                    case copytouberjar:
-                        copyDirectory = new File(value);
-                        break;
-                    case outputlauncher:
-                        outputLauncher = true;
-                        break;
-                    case warmup:
-                        warmup = true;
-                        break;
-                    case disablephonehome:
-                        disablePhoneHome = true;
-                        break;
-                    case enablerequesttracing:
-                        enableRequestTracing = true;
+                        libraries.addAll(files);
+                    }
+                    break;
+                case deploy:
+                case deployfromgav:
+                    if (deploymentOptions == null) {
+                        deploymentOptions = new LinkedList<>();
+                    }
+                    deploymentOptions.add(new AbstractMap.SimpleImmutableEntry<>(option, value));
+                    break;
+                case domainconfig:
+                    alternateDomainXML = new File(value);
+                    break;
+                case nocluster:
+                    noCluster = true;
+                    break;
+                case lite:
+                    liteMember = true;
+                    break;
+                case hzconfigfile:
+                    alternateHZConfigFile = new File(value);
+                    break;
+                case autobindhttp:
+                    autoBindHttp = true;
+                    break;
+                case autobindssl:
+                    autoBindSsl = true;
+                    break;
+                case autobindrange:
+                    autoBindRange = Integer.parseInt(value);
+                    break;
+                case enablehealthcheck:
+                    enableHealthCheck = Boolean.parseBoolean(value);
+                    break;
+                case additionalrepository:
+                    repositoryURLs.add(value);
+                    break;
+                case outputuberjar:
+                    uberJar = new File(value);
+                    break;
+                case copytouberjar:
+                    copyDirectory = new File(value);
+                    break;
+                case outputlauncher:
+                    outputLauncher = true;
+                    break;
+                case warmup:
+                    warmup = true;
+                    break;
+                case disablephonehome:
+                    disablePhoneHome = true;
+                    break;
+                case enablerequesttracing:
+                    enableRequestTracing = true;
 
-                        // Check if a value has actually been given
-                        // Split strings from numbers
-                        if (value != null) {
-                            String[] requestTracing = value.split("(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)");
-                            // If valid, there should be no more than 2 entries
-                            if (requestTracing.length <= 2) {
-                                // If the first entry is a number
-                                if (requestTracing[0].matches("\\d+")) {
-                                    requestTracingThresholdValue = parseArgument(requestTracing[0],
-                                            "request tracing threshold value", Long::parseLong);
-                                    // If there is a second entry, and it's a String
-                                    if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
-                                        requestTracingThresholdUnit = parseTimeUnit(requestTracing[1],
-                                                "request tracing threshold unit").name();
-                                    }
-                                } // If the first entry is a String
-                                else if (requestTracing[0].matches("\\D+")) {
-                                    requestTracingThresholdUnit = parseTimeUnit(requestTracing[0],
+                    // Check if a value has actually been given
+                    // Split strings from numbers
+                    if (value != null) {
+                        String[] requestTracing = value.split("(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)");
+                        // If valid, there should be no more than 2 entries
+                        if (requestTracing.length <= 2) {
+                            // If the first entry is a number
+                            if (requestTracing[0].matches("\\d+")) {
+                                requestTracingThresholdValue = parseArgument(requestTracing[0],
+                                        "request tracing threshold value", Long::parseLong);
+                                // If there is a second entry, and it's a String
+                                if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
+                                    requestTracingThresholdUnit = parseTimeUnit(requestTracing[1],
                                             "request tracing threshold unit").name();
                                 }
-                            } else {
-                                throw new IllegalArgumentException();
+                            } // If the first entry is a String
+                            else if (requestTracing[0].matches("\\D+")) {
+                                requestTracingThresholdUnit = parseTimeUnit(requestTracing[0],
+                                        "request tracing threshold unit").name();
                             }
+                        } else {
+                            throw new IllegalArgumentException();
                         }
-                        break;
-                    case requesttracingthresholdunit:
-                        requestTracingThresholdUnit = parseTimeUnit(value, "value for --requestTracingThresholdUnit").name();
-                        break;
-                    case requesttracingthresholdvalue:
-                        requestTracingThresholdValue = parseArgument(value, "value for --requestTracingThresholdValue",
-                                Long::parseLong);
-                        break;
-                    case enablerequesttracingadaptivesampling:
-                        enableRequestTracingAdaptiveSampling = true;
-                        break;
-                    case requesttracingadaptivesamplingtargetcount:
-                        enableRequestTracingAdaptiveSampling = true;
-                        requestTracingAdaptiveSamplingTargetCount = parseArgument(value,
-                                "value for --requestTracingAdaptiveSamplingTargetCount", Integer::parseInt);
-                        break;
-                    case requesttracingadaptivesamplingtimevalue:
-                        enableRequestTracingAdaptiveSampling = true;
-                        requestTracingAdaptiveSamplingTimeValue = parseArgument(value,
-                                "value for --requestTracingAdaptiveSamplingTimeValue", Integer::parseInt);
-                        break;
-                    case requesttracingadaptivesamplingtimeunit:
-                        enableRequestTracingAdaptiveSampling = true;
-                        requestTracingAdaptiveSamplingTimeUnit = parseTimeUnit(value,
-                                "value for --requestTracingAdaptiveSamplingTimeUnit").name();
-                        break;
-                    case help:
-                        RuntimeOptions.printHelp();
-                        System.exit(1);
-                        break;
-                    case logtofile:
-                        setUserLogFile(value);
-                        break;
-                    case accesslog:
-                        File file = new File(value);
-                        setAccessLogDir(file.getAbsolutePath());
-                        break;
-                    case accesslogformat:
-                        setAccessLogFormat(value);
-                        break;
-                    case logproperties:
-                        setLogPropertiesFile(new File(value));
-                        break;
-                    case enabledynamiclogging:
-                        enableDynamicLogging = true;
-                        break;
-                    case logo:
-                        generateLogo = true;
-                        break;
-                    case postbootcommandfile:
-                        postBootFileName = value;
-                        break;
-                    case prebootcommandfile:
-                        preBootFileName = value;
-                        break;
-                    case postdeploycommandfile:
-                        postDeployFileName = value;
-                        break;
-                    case clustermode:
-                        clustermode = value;
-                        break;
-                    case interfaces:
-                        interfaces = value;
-                        break;
-                    case secretsdir:
-                        secretsDir = value;
-                        break;
-                    case showservletmappings:
-                        showServletMappings = true;
-                        break;
-                    case enablesni:
-                        sniEnabled = true;
-                        break;
-                    case hzpublicaddress:
-                        publicAddress = value;
-                        break;
-                    case shutdowngrace:
-                        System.setProperty(GlassFishImpl.PAYARA_SHUTDOWNGRACE_PROPERTY, value);
-                        break;
-                    case hzinitialjoinwait:
-                        initialJoinWait = Integer.parseInt(value);
-                        break;
-                    case contextroot:
-
-                        if (contextRoot != null) {
-                            LOGGER.warning("Multiple --contextroot arguments only the last one will apply");
-                        }
-                        contextRoot = value;
-                        if (contextRoot.equals("ROOT")) {
-                            contextRoot = "/";
-                        }
-                        break;
-                    case accessloginterval:
-                        accessLogInterval = Integer.parseInt(value);
-                        break;
-                    case accesslogsuffix:
-                        accessLogSuffix = value;
-                        break;
-                    case accesslogprefix:
-                        accessLogPrefix = value;
-                        break;
-                    default:
-                        break;
-                }
+                    }
+                    break;
+                case requesttracingthresholdunit:
+                    requestTracingThresholdUnit = parseTimeUnit(value, "value for --requestTracingThresholdUnit").name();
+                    break;
+                case requesttracingthresholdvalue:
+                    requestTracingThresholdValue = parseArgument(value, "value for --requestTracingThresholdValue",
+                            Long::parseLong);
+                    break;
+                case enablerequesttracingadaptivesampling:
+                    enableRequestTracingAdaptiveSampling = true;
+                    break;
+                case requesttracingadaptivesamplingtargetcount:
+                    enableRequestTracingAdaptiveSampling = true;
+                    requestTracingAdaptiveSamplingTargetCount = parseArgument(value,
+                            "value for --requestTracingAdaptiveSamplingTargetCount", Integer::parseInt);
+                    break;
+                case requesttracingadaptivesamplingtimevalue:
+                    enableRequestTracingAdaptiveSampling = true;
+                    requestTracingAdaptiveSamplingTimeValue = parseArgument(value,
+                            "value for --requestTracingAdaptiveSamplingTimeValue", Integer::parseInt);
+                    break;
+                case requesttracingadaptivesamplingtimeunit:
+                    enableRequestTracingAdaptiveSampling = true;
+                    requestTracingAdaptiveSamplingTimeUnit = parseTimeUnit(value,
+                            "value for --requestTracingAdaptiveSamplingTimeUnit").name();
+                    break;
+                case help:
+                    RuntimeOptions.printHelp();
+                    System.exit(1);
+                    break;
+                case logtofile:
+                    setUserLogFile(value);
+                    break;
+                case accesslog:
+                    File file = new File(value);
+                    setAccessLogDir(file.getAbsolutePath());
+                    break;
+                case accesslogformat:
+                    setAccessLogFormat(value);
+                    break;
+                case logproperties:
+                    setLogPropertiesFile(new File(value));
+                    break;
+                case enabledynamiclogging:
+                    enableDynamicLogging = true;
+                    break;
+                case logo:
+                    generateLogo = true;
+                    break;
+                case postbootcommandfile:
+                    postBootFileName = value;
+                    break;
+                case prebootcommandfile:
+                    preBootFileName = value;
+                    break;
+                case postdeploycommandfile:
+                    postDeployFileName = value;
+                    break;
+                case clustermode:
+                    clustermode = value;
+                    break;
+                case interfaces:
+                    interfaces = value;
+                    break;
+                case secretsdir:
+                    secretsDir = value;
+                    break;
+                case showservletmappings:
+                    showServletMappings = true;
+                    break;
+                case enablesni:
+                    sniEnabled = true;
+                    break;
+                case hzpublicaddress:
+                    publicAddress = value;
+                    break;
+                case shutdowngrace:
+                    System.setProperty(GlassFishImpl.PAYARA_SHUTDOWNGRACE_PROPERTY, value);
+                    break;
+                case hzinitialjoinwait:
+                    initialJoinWait = Integer.parseInt(value);
+                    break;
+                case contextroot:
+                    if (contextRoot != null) {
+                        LOGGER.warning("Multiple --contextroot arguments only the last one will apply");
+                    }
+                    contextRoot = value;
+                    if (contextRoot.equals("ROOT")) {
+                        contextRoot = "/";
+                    }
+                    break;
+                case accessloginterval:
+                    accessLogInterval = Integer.parseInt(value);
+                    break;
+                case accesslogsuffix:
+                    accessLogSuffix = value;
+                    break;
+                case accesslogprefix:
+                    accessLogPrefix = value;
+                    break;
+                default:
+                    break;
             }
         }
-
     }
 
     private void configureRequestTracingService() {
@@ -1497,6 +1501,83 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
     }
 
+    private void processDeploymentOptions() throws GlassFishException {
+        if (deploymentOptions == null) {
+            return;
+        }
+
+        if (deployments == null) {
+            deployments = new LinkedHashMap<>();
+        }
+
+        boolean contextRootAvailable = contextRoot != null;
+        for (Map.Entry<RUNTIME_OPTION, String> deploymentOption : deploymentOptions) {
+            RUNTIME_OPTION option = deploymentOption.getKey();
+            String value = deploymentOption.getValue();
+            if (option == RUNTIME_OPTION.deploy) {
+                String fileName = value;
+
+                String deploymentContext = null;
+                if (fileName.contains(File.pathSeparator)) {
+                    fileName = fileName.substring(0, fileName.indexOf(File.pathSeparator));
+                    deploymentContext = value.substring(value.indexOf(File.pathSeparator) + 1);
+                }
+
+                File deployment = new File(fileName);
+
+                deployments.put(deployment.getName(), deployment.toURI());
+
+                if (supportsContextRoot(deployment)) {
+                    if (deploymentContext != null) {
+                        addDeploymentContext(deployment.getName(), deploymentContext);
+                    } else {
+                        contextRootAvailable = false;
+                    }
+                }
+            } else if (option == RUNTIME_OPTION.deploydir || option == RUNTIME_OPTION.deploymentdir) {
+                // Get all files in the directory, and sort them by file type
+                File[] deploymentEntries = deploymentRoot.listFiles();
+                Arrays.sort(deploymentEntries, new DeploymentComparator());
+
+                for (File deploymentEntry : deploymentEntries) {
+                    if (deploymentEntry.isFile() && deploymentEntry.canRead() && hasJavaArchiveExtension(deploymentEntry.getName())) {
+                        deployments.put(deploymentEntry.getName(), deploymentEntry.toURI());
+                        if (supportsContextRoot(deploymentEntry)) {
+                            contextRootAvailable = false;
+                        }
+                    }
+                }
+            } else if (option == RUNTIME_OPTION.deployfromgav) {
+                Map.Entry<String, URI> gavEntry = getGAVURI(value);
+                URI artifactURI = gavEntry.getValue();
+
+                String artifactName = new File(artifactURI.getPath()).getName();
+
+                deployments.put(artifactName, artifactURI);
+
+                if (artifactName.endsWith(".war")) {
+                    String deploymentContext = gavEntry.getKey();
+                    if (contextRootAvailable) {
+                        deploymentContext = contextRoot;
+                        contextRoot = null; // use only once
+                        contextRootAvailable = false;
+                    }
+                    addDeploymentContext(artifactName, deploymentContext);
+                }
+            }
+        }
+    }
+
+    private void addDeploymentContext(String fileName, String deploymentContext) {
+        if (contextRoots == null) {
+            contextRoots = new Properties();
+        }
+        if ("ROOT".equals(deploymentContext)) {
+            deploymentContext = "/";
+        }
+        contextRoots.put(fileName, deploymentContext);
+    }
+
     private void deployAll() throws GlassFishException {
         // Deploy from within the jar first.
         int deploymentCount = 0;
@@ -1505,7 +1586,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         // load context roots from uber jar
         try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(CONTEXT_PROPS_FILE)) {
             if (is != null) {
-
                 Properties props = new Properties();
                 props.load(is);
 
@@ -1515,7 +1595,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     }
                     contextRoots.setProperty((String) entry.getKey(), (String) entry.getValue());
                 }
-
             }
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "", ex);
@@ -1540,136 +1619,93 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 }
 
                 for (String entry : microInfEntries) {
-                    File file = new File(entry);
-                    String deployContext = removeJavaArchiveExtension(file.getName());
-                    String name = deployContext;
-                    if (deployContext.equals("ROOT")) {
-                        deployContext = "/";
+                    File deployment = new File(entry);
+                    String deploymentName = removeJavaArchiveExtension(deployment.getName());
+
+                    List<String> deploymentParams = new ArrayList<>();
+                    deploymentParams.add("--availabilityenabled=true");
+                    deploymentParams.add("--force=true");
+                    deploymentParams.add("--loadOnly=true");
+                    deploymentParams.add("--name=" + deploymentName);
+
+                    if (deployment.getName().endsWith(".war")) {
+                        String deploymentContext;
+                        if ("ROOT".equals(deploymentName)) {
+                            deploymentContext = "/";
+                        } else if (contextRoots != null && contextRoots.containsKey(deployment.getName())) {
+                            deploymentContext = contextRoots.getProperty(deployment.getName());
+                        } else {
+                            deploymentContext = deploymentName;
+                        }
+                        if ("ROOT".equals(deploymentContext)) {
+                            deploymentContext = "/";
+                        }
+                        deploymentParams.add("--contextroot=" + deploymentContext);
                     }
 
-                    if (contextRoots != null && contextRoots.containsKey(file.getName())) {
-                        deployContext = contextRoots.getProperty(file.getName());
-                    }
-                    deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled",
-                            "true", "--contextroot",
-                            deployContext, "--name", name, "--force", "true", "--loadOnly", "true");
+                    deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), deploymentParams.toArray(new String[0]));
 
                     deploymentCount++;
                 }
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, "Could not deploy jar entry {0}",
-                        entryName);
+                LOGGER.log(Level.WARNING, "Could not deploy jar entry {0}", entryName);
             }
         } else {
             LOGGER.info("No META-INF/deploy directory");
         }
 
-        // Deploy command line provided files
+        processDeploymentOptions();
+
         if (deployments != null) {
-            for (File deploymentFile : deployments) {
-                if (deploymentFile.exists() && deploymentFile.canRead()) {
-                    String deployContext = null;
-                    if (contextRoots != null && contextRoots.containsKey(deploymentFile.getName())) {
-                        deployContext = contextRoots.getProperty(deploymentFile.getName());
-                    } else if (contextRoot != null) {
-                        deployContext = contextRoot;
-                        //unset so only used once
-                        contextRoot = null;
-                    }
+            for (Map.Entry<String, URI> deploymentEntry : deployments.entrySet()) {
+                String fileName = deploymentEntry.getKey();
+                URI deploymentURI = deploymentEntry.getValue();
 
-                    if (deploymentFile.getName().startsWith("ROOT.")) {
-                        deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
-                    } else {
-                        if (deployContext != null) {
-                            if (deployContext.equals("ROOT")) {
-                                deployContext = "/";
-                            }
+                List<String> deploymentParams = new ArrayList<>();
+                deploymentParams.add("--availabilityenabled=true");
+                deploymentParams.add("--force=true");
+                deploymentParams.add("--loadOnly=true");
 
-                            deployContext = removeJavaArchiveExtension(deployContext);
-
-                            deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
-                        } else if (deploymentFile.isDirectory()) {
-                            deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deploymentFile.getName());
-                        } else {
-                            deployer.deploy(deploymentFile, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
+                String deploymentContext = null;
+                if ("file".equalsIgnoreCase(deploymentURI.getScheme())) {
+                    File deployment = new File(deploymentURI);
+                    if (supportsContextRoot(deployment)) {
+                        String deploymentName = deployment.isFile() ? removeJavaArchiveExtension(fileName) : fileName;
+                        if ("ROOT".equals(deploymentName)) {
+                            deploymentContext = "/";
+                        } else if (contextRoots != null && contextRoots.containsKey(fileName)) {
+                            deploymentContext = contextRoots.getProperty(fileName);
+                        } else if (contextRoot != null) {
+                            deploymentContext = contextRoot;
+                            contextRoot = null; // use only once
+                        } else if (deployment.isDirectory()) {
+                            deploymentContext = fileName;
                         }
                     }
-
-                    deploymentCount++;
                 } else {
-                    LOGGER.log(Level.WARNING, "{0} is not a valid deployment", deploymentFile.getAbsolutePath());
-                }
-            }
-        }
-
-        // Deploy from deployment directory
-        if (deploymentRoot != null) {
-
-            // Get all files in the directory, and sort them by file type
-            List<File> deploymentDirEntries = Arrays.asList(deploymentRoot.listFiles());
-            deploymentDirEntries.sort(new DeploymentComparator());
-
-            for (File entry : deploymentDirEntries) {
-                String entryPath = entry.getAbsolutePath();
-                if (entry.isFile() && entry.canRead() && hasJavaArchiveExtension(entryPath)) {
-                    String deployContext = null;
-                    if (contextRoots != null && contextRoots.containsKey(entry.getName())) {
-                        deployContext = contextRoots.getProperty(entry.getName());
-                    } else if (contextRoot != null) {
-                        deployContext = contextRoot;
-                        // unset so only used once
-                        contextRoot = null;
-                    }
-
-                    if (entry.getName().startsWith("ROOT.")) {
-                        deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--contextroot=/", "--loadOnly", "true");
-                    } else {
-                        if (deployContext != null) {
-                            if (deployContext.equals("ROOT")) {
-                                deployContext = "/";
-                            }
-
-                            deployContext = removeJavaArchiveExtension(deployContext);
-
-                            deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true", "--contextroot", deployContext);
+                    deploymentParams.add("--name=" + removeJavaArchiveExtension(fileName));
+                    if (fileName.endsWith(".war")) {
+                        if (contextRoot != null) {
+                            deploymentContext = contextRoot;
+                            contextRoot = null;
                         } else {
-                            deployer.deploy(entry, "--availabilityenabled=true", "--force=true", "--loadOnly", "true");
+                            deploymentContext = contextRoots.getProperty(fileName);
                         }
                     }
-
-                    deploymentCount++;
                 }
-            }
-        }
 
-        // Deploy from URI only called if GAVs provided
-        if (GAVs != null) {
-            // Convert the provided GAV Strings into target URLs
-            getGAVURLs();
-
-            if (!deploymentURLsMap.isEmpty()) {
-                for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
-                    try {
-                        // Convert the URL to a URI for use with the deploy method
-                        URI artefactURI = deploymentMapEntry.getValue().toURI();
-                        String artefactName = removeJavaArchiveExtension(new File(artefactURI.getPath()).getName());
-
-                        deployer.deploy(artefactURI,
-                                "--availabilityenabled", "true",
-                                "--contextroot", deploymentMapEntry.getKey(),
-                                "--name", artefactName,
-                                "--force=true", "--loadOnly", "true");
-
-                        deploymentCount++;
-                    } catch (URISyntaxException ex) {
-                        LOGGER.log(Level.WARNING, "{0} could not be converted to a URI,"
-                                        + " artefact will be skipped",
-                                deploymentMapEntry.getValue().toString());
+                if (deploymentContext != null) {
+                    if ("ROOT".equals(deploymentContext)) {
+                        deploymentContext = "/";
                     }
+                    deploymentParams.add("--contextroot=" + deploymentContext);
                 }
+
+                deployer.deploy(deploymentURI, deploymentParams.toArray(new String[0]));
+
+                deploymentCount++;
             }
         }
-
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
 
@@ -1685,7 +1721,14 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         if (filePath == null) {
             return false;
         }
-        return filePath.endsWith(".war") || filePath.endsWith(".ear") || filePath.endsWith(".jar") || filePath.endsWith(".rar");
+        return filePath.endsWith(".war") || filePath.endsWith(".jar") || filePath.endsWith(".rar");
+    }
+
+    private boolean supportsContextRoot(File archive) {
+        if (archive == null) {
+            return false;
+        }
+        return archive.isFile() ? archive.getName().endsWith(".war") : archive.isDirectory() && new File(archive.getPath(), "WEB-INF").exists();
     }
 
     private void addShutdownHook() {
@@ -1759,7 +1802,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     currentProps.setProperty("java.util.logging.FileHandler.level", "INFO");
                     currentProps.setProperty("java.util.logging.FileHandler.formatter", "java.util.logging.SimpleFormatter");
                     currentProps.setProperty("java.util.logging.FileHandler.append", "true");
-
                 } catch (IOException ex) {
                     LOGGER.log(Level.SEVERE, "Unable to load the logging properties from the runtime directory", ex);
                 }
@@ -2043,47 +2085,13 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
     }
 
-    /**
-     * Converts the GAVs provided to a URLs, and stores them in the
-     * deploymentURLsMap.
-     */
-    private void getGAVURLs() throws GlassFishException {
+    private Map.Entry<String, URI> getGAVURI(String gav) throws GlassFishException {
         GAVConvertor gavConvertor = new GAVConvertor();
-
-        for (String gav : GAVs) {
-            try {
-                Map.Entry<String, URL> artefactMapEntry = gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
-
-                if (deploymentURLsMap == null) {
-                    deploymentURLsMap = new LinkedHashMap<>();
-                }
-
-                String defaultContext = artefactMapEntry.getKey();
-                if (this.contextRoot == null) {
-                    if ("ROOT".equals(defaultContext)) {
-                        defaultContext = "/";
-                    }
-                } else {
-                    defaultContext = this.contextRoot;
-                    contextRoot = null; // use only once
-                }
-
-                deploymentURLsMap.put(defaultContext, artefactMapEntry.getValue());
-            } catch (MalformedURLException ex) {
-                throw new GlassFishException(ex.getMessage());
-            }
-        }
-
-        if (deploymentURLsMap != null) {
-            if (contextRoots == null) {
-                contextRoots = new Properties();
-            }
-
-            for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
-                String artefactName = new File(deploymentMapEntry.getValue().getPath()).getName();
-                String defaultContext = deploymentMapEntry.getKey();
-                contextRoots.put(artefactName, defaultContext);
-            }
+        try {
+            Map.Entry<String, URL> artefactMapEntry = gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
+            return new AbstractMap.SimpleImmutableEntry<>(artefactMapEntry.getKey(), artefactMapEntry.getValue().toURI());
+        } catch (MalformedURLException | URISyntaxException ex) {
+            throw new GlassFishException(ex.getMessage());
         }
     }
 
@@ -2202,7 +2210,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     private void setArgumentsFromSystemProperties() {
-
         // Set the domain.xml
         String alternateDomainXMLStr = getProperty("payaramicro.domainConfig");
         if (alternateDomainXMLStr != null && !alternateDomainXMLStr.isEmpty()) {
@@ -2277,9 +2284,11 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
     }
 
-    private void packageUberJar() {
+    private void packageUberJar() throws GlassFishException {
+        processDeploymentOptions();
 
         UberJarCreator creator = new UberJarCreator(uberJar);
+
         if (rootDir != null) {
             creator.setDomainDir(rootDir);
         }
@@ -2301,8 +2310,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         }
 
         if (deployments != null) {
-            for (File deployment : deployments) {
-                creator.addDeployment(deployment);
+            for (Map.Entry<String, URI> deployment : deployments.entrySet()) {
+                creator.addDeployment(deployment.getKey(), deployment.getValue());
             }
         }
 
@@ -2312,27 +2321,13 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             }
         }
 
-        if (deploymentRoot != null) {
-            creator.setDeploymentDir(deploymentRoot);
-        }
-
         if (copyDirectory != null) {
             creator.setDirectoryToCopy(copyDirectory);
         }
 
-        if (GAVs != null) {
-            try {
-                // Convert the provided GAV Strings into target URLs
-                getGAVURLs();
-                for (URL deployment : deploymentURLsMap.values()) {
-                    creator.addDeployment(new File(deployment.getPath()).getName(), deployment);
-                }
-            } catch (GlassFishException ex) {
-                LOGGER.log(Level.SEVERE, "Unable to process maven deployment units", ex);
-            }
+        if (contextRoots != null) {
+            creator.setContextRoots(contextRoots);
         }
-
-        creator.setContextRoots(contextRoots);
 
         // write the system properties file
         Properties props = new Properties();

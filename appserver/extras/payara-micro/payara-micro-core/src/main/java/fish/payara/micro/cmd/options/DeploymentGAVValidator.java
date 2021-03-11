@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,46 +39,13 @@
  */
 package fish.payara.micro.cmd.options;
 
-import java.io.File;
-import java.text.MessageFormat;
-
-/**
- *
- * @author Steve Millidge
- */
-public class DeploymentFileValidator extends Validator {
+public class DeploymentGAVValidator extends Validator {
 
     @Override
     boolean validate(String optionValue) throws ValidationException {
-        String filePath = optionValue;
-
-        // first look for a pathSeparator to indicate a context root
-        long separatorCount = filePath.chars().filter(ch -> ch == File.pathSeparatorChar).count();
-
-        if (separatorCount > 1) {
-            throw new ValidationException(filePath + " has an invalid context root");
-        } else if (separatorCount == 1) {
-            filePath = filePath.substring(0, optionValue.indexOf(File.pathSeparator));
+        if (optionValue.split("[,:]").length != 3) {
+            throw new ValidationException(optionValue + " is a not valid maven coordinates");
         }
-
-        File deployment = new File(filePath);
-
-        if (!deployment.exists()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("fileDoesNotExist"), filePath));
-        }
-
-        if (!deployment.canRead()) {
-            throw new ValidationException(MessageFormat.format(RuntimeOptions.commandlogstrings.getString("fileNotReadable"), filePath));
-        }
-
-        if (deployment.isFile() && !(filePath.endsWith(".rar") || filePath.endsWith(".jar") || filePath.endsWith(".war"))) {
-            throw new ValidationException(filePath + " is a not valid type of deployment archive");
-        }
-
-        if (deployment.isDirectory() && !new File(filePath, "WEB-INF").exists()) {
-            throw new ValidationException(filePath + " is a not valid exploded web archive");
-        }
-
         return true;
     }
 }
