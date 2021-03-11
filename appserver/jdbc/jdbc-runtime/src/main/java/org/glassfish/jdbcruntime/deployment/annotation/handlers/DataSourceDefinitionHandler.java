@@ -48,6 +48,7 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
@@ -236,12 +237,12 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
             if (desc.getName().equals(defn.name())) {
 
                 if (desc.getClassName() == null) {
-                    desc.setClassName(defn.className());
+                    desc.setClassName(TranslatedConfigView.expandValue(defn.className()));
                 }
 
                 if (desc.getDescription() == null) {
                     if (defn.description() != null && !defn.description().equals("")) {
-                        desc.setDescription(defn.description());
+                        desc.setDescription(TranslatedConfigView.expandValue(defn.description()));
                     }
                 }
 
@@ -255,7 +256,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                 if (!desc.isServerNameSet() && desc.getUrl() == null) {
                     //localhost is the default value (even in the descriptor)
                     if (defn.serverName() != null && !defn.serverName().equals("localhost")) {
-                        desc.setServerName(defn.serverName());
+                        desc.setServerName(TranslatedConfigView.expandValue(defn.serverName()));
                     }
                 }
 
@@ -269,7 +270,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                 //try only when URL is not set
                 if (desc.getDatabaseName() == null && desc.getUrl() == null) {
                     if (defn.databaseName() != null && !defn.databaseName().equals("")) {
-                        desc.setDatabaseName(defn.databaseName());
+                        desc.setDatabaseName(TranslatedConfigView.expandValue(defn.databaseName()));
                     }
                 }
 
@@ -278,20 +279,20 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                         !(desc.getPortNumber() != -1 && desc.getServerName() != null &&
                                 (desc.getDatabaseName() != null))) {
                     if (defn.url() != null && !defn.url().equals("")) {
-                        desc.setUrl(defn.url());
+                        desc.setUrl(TranslatedConfigView.expandValue(defn.url()));
                     }
 
                 }
 
                 if (desc.getUser() == null) {
                     if (defn.user() != null && !defn.user().equals("")) {
-                        desc.setUser(defn.user());
+                        desc.setUser(TranslatedConfigView.expandValue(defn.user()));
                     }
                 }
 
                 if (desc.getPassword() == null) {
                     if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
-                        desc.setPassword(defn.password());
+                        desc.setPassword(TranslatedConfigView.expandValue(defn.password()));
                     }
                 }
 
@@ -357,7 +358,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                             String value = property.substring(index + 1);
                             //add to properties only when not already present
                             if (properties.get(name) == null) {
-                                properties.put(name, value);
+                                properties.put(name, TranslatedConfigView.expandValue(value));
                             }
                         }
                     }
@@ -374,15 +375,15 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
         DataSourceDefinitionDescriptor desc = new DataSourceDefinitionDescriptor();
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
-        desc.setName(defn.name());
-        desc.setClassName(defn.className());
+        desc.setName(TranslatedConfigView.expandValue(defn.name()));
+        desc.setClassName(TranslatedConfigView.expandValue(defn.className()));
 
         if (defn.description() != null && !defn.description().equals("")) {
-            desc.setDescription(defn.description());
+            desc.setDescription(TranslatedConfigView.expandValue(defn.description()));
         }
 
         if (defn.serverName() != null && !defn.serverName().equals("localhost")) {
-            desc.setServerName(defn.serverName());
+            desc.setServerName(TranslatedConfigView.expandValue(defn.serverName()));
         }
 
         if (defn.portNumber() != -1) {
@@ -391,28 +392,28 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
 
 
         if (defn.databaseName() != null && !defn.databaseName().equals("")) {
-            desc.setDatabaseName(defn.databaseName());
+            desc.setDatabaseName(TranslatedConfigView.expandValue(defn.databaseName()));
         }
 
         if (desc.getPortNumber() != -1 && desc.getDatabaseName() != null && desc.getServerName() != null) {
             //standard properties are set, ignore URL
         } else {
             if (defn.url() != null && !defn.url().equals("")) {
-                desc.setUrl(defn.url());
+                desc.setUrl(TranslatedConfigView.expandValue(defn.url()));
                 desc.setServerName(null); //To prevent serverName overriding the URL, always use the URL if the standard properties are not set
             }
         }
 
         if (defn.user() != null && !defn.user().equals("")) {
-            desc.setUser(defn.user());
+            desc.setUser(TranslatedConfigView.expandValue(defn.user()));
         }
 
         if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
-            desc.setPassword(defn.password());
+            desc.setPassword(TranslatedConfigView.expandValue(defn.password()));
         }
 
         if (defn.isolationLevel() != -1) {
-            desc.setIsolationLevel(String.valueOf(defn.isolationLevel()));
+            desc.setIsolationLevel(TranslatedConfigView.expandValue(String.valueOf(defn.isolationLevel())));
         }
 
         if (defn.transactional()) {
@@ -443,7 +444,6 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
             desc.setLoginTimeout(String.valueOf(defn.loginTimeout()));
         }
 
-
         if (defn.properties() != null) {
             Properties properties = desc.getProperties();
 
@@ -455,7 +455,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                     if (index > -1 && index != 0 && index < property.length() - 1) {
                         String name = property.substring(0, index);
                         String value = property.substring(index + 1);
-                        properties.put(name, value);
+                        properties.put(name, TranslatedConfigView.expandValue(value));
                     }
                 }
             }
