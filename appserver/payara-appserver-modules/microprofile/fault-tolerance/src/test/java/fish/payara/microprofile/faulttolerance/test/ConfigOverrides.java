@@ -45,7 +45,10 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.eclipse.microprofile.config.Config;
+import static org.eclipse.microprofile.config.Config.PROFILE;
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.Converter;
 
 /**
  * A {@link Config} implementations for testing where properties can be set using the
@@ -140,4 +143,57 @@ public final class ConfigOverrides implements Config {
     public Iterable<ConfigSource> getConfigSources() {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public <T> T unwrap(Class<T> type) {
+        throw new UnsupportedOperationException("Unwrap not supported by test config.");
+    }
+
+    @Override
+    public <T> Optional<Converter<T>> getConverter(Class<T> type) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ConfigValue getConfigValue(String string) {
+        return new TestConfigValue(string, getValue(PROFILE, String.class));
+    }
+    
+    class TestConfigValue implements ConfigValue {
+        
+        String name;
+        String value;
+
+        public TestConfigValue(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String getRawValue() {
+            return value;
+        }
+
+        @Override
+        public String getSourceName() {
+            return "test";
+        }
+
+        @Override
+        public int getSourceOrdinal() {
+            return 100;
+        }
+        
+    }
+    
 }

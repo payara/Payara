@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>5.2020.6-SNAPSHOT</version>
+        <version>5.2021.2-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -77,8 +77,8 @@
         <version_prefix />
         <version_suffix>#badassfish</version_suffix>
         <major_version>5</major_version>
-        <minor_version>2020</minor_version>
-        <update_version>6-SNAPSHOT</update_version>
+        <minor_version>2021</minor_version>
+        <update_version>2-SNAPSHOT</update_version>
         <install.dir.name>payara${major_version}</install.dir.name>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
@@ -93,6 +93,8 @@
         <nimbus-jose-jwt.version>8.20</nimbus-jose-jwt.version>
         <accessors-smart.version>1.2.payara-p2</accessors-smart.version>
         <json-smart.version>2.3</json-smart.version>
+        <reactor-core.version>3.4.0</reactor-core.version>
+        <reactive-streams.version>1.0.3</reactive-streams.version>
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
         <!-- Yubico client validation version property -->
         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>

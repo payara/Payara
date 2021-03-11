@@ -64,8 +64,6 @@ public class JsonUtils {
             if (current != null) {
                 if (nameOrIndex.startsWith("[") && nameOrIndex.endsWith("]")) {
                     current = current.get(Integer.parseInt(nameOrIndex.substring(1, nameOrIndex.length() - 1)));
-                } else if (!nameOrIndex.isEmpty() && Character.isDigit(nameOrIndex.charAt(0))) {
-                    current = current.get(Integer.parseInt(nameOrIndex));
                 } else {
                     current = current.get(nameOrIndex);
                 }

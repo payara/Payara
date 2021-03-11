@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -142,8 +142,7 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
             parseResources(deploymentContext, application, appResources);
 
             // Ensure we have a valid component invocation before triggering lookups
-            contextUtil.setEmptyInvocation();
-            try (Context ctx = contextUtil.pushContext()) {
+            try (Context ctx = contextUtil.empty().pushContext()) {
                 validateResources(deploymentContext, application, appResources);
             }
         }

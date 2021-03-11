@@ -139,7 +139,7 @@ public class TracedInterceptor implements Serializable {
         Span parentSpan = tracer.activeSpan();
 
         final Span span = tracer.buildSpan(operationName).start();
-        try (Scope scope = tracer.scopeManager().activate(span, true)) {
+        try (Scope scope = tracer.scopeManager().activate(span)) {
             try {
                 return invocationContext.proceed();
             } catch (final Exception ex) {
@@ -151,6 +151,8 @@ public class TracedInterceptor implements Serializable {
                 span.log(errorInfoMap);
                 throw ex;
             }
+        } finally {
+            span.finish();
         }
     }
 

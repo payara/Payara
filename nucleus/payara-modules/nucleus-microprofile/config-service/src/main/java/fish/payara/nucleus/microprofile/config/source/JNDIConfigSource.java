@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
@@ -68,7 +67,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource {
+public class JNDIConfigSource extends PayaraConfigSource {
 
     @Override
     public Map<String, String> getProperties() {
@@ -77,6 +76,10 @@ public class JNDIConfigSource extends PayaraConfigSource implements ConfigSource
 
     @Override
     public int getOrdinal() {
+        String storedOrdinal = getValue("config_ordinal");
+        if (storedOrdinal != null) {
+            return Integer.parseInt(storedOrdinal);
+        }
         return Integer.parseInt(configService.getMPConfig().getJNDIOrdinality());
     }
 

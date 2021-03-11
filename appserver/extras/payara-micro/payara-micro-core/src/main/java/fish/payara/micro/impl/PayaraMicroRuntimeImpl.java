@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2020 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -140,10 +141,10 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         
         // NEEDS TO HANDLE THE CASE FOR LOCAL RUNNING IF NO CLUSTER ENABLED
         
-        Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(command, args);
+        Map<UUID,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(command, args);
         Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
-        for (Entry<String,Future<ClusterCommandResult>> entry : commandResult.entrySet()) {
-            String uuid = entry.getKey();
+        for (Entry<UUID,Future<ClusterCommandResult>> entry : commandResult.entrySet()) {
+            UUID uuid = entry.getKey();
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
                 result.put(id, entry.getValue());
@@ -164,15 +165,15 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
     @Override
     public Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> run (Collection<InstanceDescriptor> members, String command, String... args ) {
         
-        HashSet<String> memberUUIDs = new HashSet<>(members.size());
+        HashSet<UUID> memberUUIDs = new HashSet<>(members.size());
         for (InstanceDescriptor member : members) {
             memberUUIDs.add(member.getMemberUUID());
         }
         
-        Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(memberUUIDs,command, args);
+        Map<UUID,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(memberUUIDs,command, args);
         Map<InstanceDescriptor, Future<? extends ClusterCommandResult>> result = new HashMap<>(commandResult.size());
-        for (Entry<String,Future<ClusterCommandResult>> entry : commandResult.entrySet()) {
-            String uuid = entry.getKey();
+        for (Entry<UUID,Future<ClusterCommandResult>> entry : commandResult.entrySet()) {
+            UUID uuid = entry.getKey();
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
                 result.put(id, entry.getValue());
@@ -198,10 +199,10 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
         
         // NEEDS TO HANDLE THE CASE FOR LOCAL RUNNING IF NO CLUSTER ENABLED
         
-        Map<String, Future<T>> runCallable = instanceService.runCallable(callable);
+        Map<UUID, Future<T>> runCallable = instanceService.runCallable(callable);
         Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
-        for (Entry<String, Future<T>> entry : runCallable.entrySet()) {
-            String uuid = entry.getKey();
+        for (Entry<UUID, Future<T>> entry : runCallable.entrySet()) {
+            UUID uuid = entry.getKey();
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
                 result.put(id, entry.getValue());
@@ -228,15 +229,15 @@ public class PayaraMicroRuntimeImpl implements PayaraMicroRuntime  {
     @Deprecated
     public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Collection<InstanceDescriptor> members, Callable<T> callable) {
         
-        HashSet<String> memberUUIDs = new HashSet<>(members.size());
+        HashSet<UUID> memberUUIDs = new HashSet<>(members.size());
         for (InstanceDescriptor member : members) {
             memberUUIDs.add(member.getMemberUUID());
         }    
         
-        Map<String, Future<T>> runCallable = instanceService.runCallable(memberUUIDs,callable);
+        Map<UUID, Future<T>> runCallable = instanceService.runCallable(memberUUIDs,callable);
         Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
-        for (Entry<String, Future<T>> entry : runCallable.entrySet()) {
-            String uuid = entry.getKey();
+        for (Entry<UUID, Future<T>> entry : runCallable.entrySet()) {
+            UUID uuid = entry.getKey();
             InstanceDescriptor id = instanceService.getDescriptor(uuid);
             if (id != null) {
                 result.put(id, entry.getValue());

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.full.deployment;
 
@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import org.glassfish.common.util.InstanceCounter;
 
 /**
  * Classloader that is responsible to load the ear libraries (lib/*.jar etc)
@@ -55,8 +56,10 @@ import java.util.List;
  */
 public class EarLibClassLoader extends ASURLClassLoader
 {
+    private final InstanceCounter instanceCounter = new InstanceCounter(this);
+
     public EarLibClassLoader(URL[] urls, ClassLoader classLoader) {
-        super(classLoader); 
+        super(classLoader);
         enableCurrentBeforeParent();
         for (URL url : urls) {
             super.addURL(url);
@@ -67,24 +70,24 @@ public class EarLibClassLoader extends ASURLClassLoader
      * The below loads services from META-INF from the libraries,
      * so we want to take these from the EAR libraries,
      * this does similar to what WebappClassLoader does
-     * 
+     *
      * @param name
      * @return set of resources URLSs
-     * @throws IOException 
+     * @throws IOException
      */
     @Override
     public Enumeration<URL> getResources(String name) throws IOException {
         Enumeration<URL> localResources = super.getResources(name);
         Enumeration<URL> parentResources = getParent().getResources(name);
-        
+
         Enumeration<URL> combined = Collections.emptyEnumeration();
-        
+
         Enumeration<URL> combinedResources = currentBeforeParentEnabled?
                         combineEnumerations(localResources, parentResources):
                         combineEnumerations(parentResources, localResources);
         return combinedResources;
     }
-    
+
     private Enumeration<URL> combineEnumerations(Enumeration<URL> first, Enumeration<URL> second) {
         List<URL> combinedList = new ArrayList<>();
         while (first.hasMoreElements()) {

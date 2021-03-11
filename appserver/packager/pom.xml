@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>5.2020.6-SNAPSHOT</version>
+        <version>5.2021.2-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.packager</groupId>
@@ -154,7 +154,6 @@
         <module>asadmin-recorder</module>
         <module>JMX-Monitoring</module>
         <module>payara-micro</module>
-        <module>zendesk-support</module>
         <module>payara-api</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
@@ -176,6 +175,7 @@
         <findbugs.skip>true</findbugs.skip>
         <zip.excludes>**\/META-INF,META-INF\/*</zip.excludes>
         <pkg_proto.py>src/main/resources/pkg_proto.py</pkg_proto.py>
+        <deploy.skip>true</deploy.skip>
     </properties>
     
     <build>

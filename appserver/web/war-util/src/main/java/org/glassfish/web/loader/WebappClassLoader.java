@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.loader;
 
@@ -115,6 +115,7 @@ import java.util.zip.ZipFile;
 import org.glassfish.api.deployment.GeneratedResourceEntry;
 import org.glassfish.api.deployment.ResourceEntry;
 import org.glassfish.api.deployment.ResourceClassLoader;
+import org.glassfish.common.util.InstanceCounter;
 
 /**
  * Specialized web application class loader.
@@ -402,30 +403,39 @@ public class WebappClassLoader
     private final Application application;
     private final Date creationTime = new Date();
     private boolean hotDeploy = false;
-    
-    private static Class[] CONSTRUCTOR_ARGS_TYPES;
-    private static Object CONSTRUCTOR_ARGUMENTS;
+    private final InstanceCounter instanceCounter = new InstanceCounter(this);
+
+    private static final Class<?>[] CONSTRUCTOR_ARGS_TYPES;
+    private static final Object CONSTRUCTOR_ARGUMENTS;
     private static final boolean IS_JDK_VERSION_HIGHER_THAN_8 = JDK.getMajor() > 8;
-    private static Boolean isMultiReleaseJar;
+    private static final Boolean isMultiReleaseJar;
     private static final Name MULTI_RELEASE = new Name("Multi-Release");
 
     static {
+        Class<?>[] constructorArgsTypes;
+        Object constructorArguments;
 
         if (!IS_JDK_VERSION_HIGHER_THAN_8) {
             isMultiReleaseJar = false;
+            constructorArgsTypes = null;
+            constructorArguments = null;
         } else {
-            isMultiReleaseJar = true;
+            boolean isException = false;
             try {
                 final Class<?> runtimeVersionClass = Class.forName("java.lang.Runtime$Version");
-                CONSTRUCTOR_ARGS_TYPES = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
-                CONSTRUCTOR_ARGUMENTS = Runtime.class.getDeclaredMethod("version").invoke(null);
+                constructorArgsTypes = new Class[]{File.class, boolean.class, int.class, runtimeVersionClass};
+                constructorArguments = Runtime.class.getDeclaredMethod("version").invoke(null);
             } catch (Exception e) {
-                isMultiReleaseJar = false;
+                isException = true;
+                constructorArgsTypes = null;
+                constructorArguments = null;
             }
+            isMultiReleaseJar = !isException;
         }
-
+        CONSTRUCTOR_ARGS_TYPES = constructorArgsTypes;
+        CONSTRUCTOR_ARGUMENTS = constructorArguments;
     }
-      
+
     // ----------------------------------------------------------- Constructors
 
     /**
@@ -1096,16 +1106,18 @@ public class WebappClassLoader
         StringBuilder sb = new StringBuilder();
         sb.append("WebappClassLoader (delegate=");
         sb.append(delegate);
-        if (repositories != null) {
-            sb.append("; repositories=");
-            for (int i = 0; i < repositories.length; i++) {
-                sb.append(repositories[i]);
-                if (i != (repositories.length-1)) {
+        if (repositoryURLs != null) {
+            sb.append("; repositoryURLs=");
+            for (int i = 0; i < repositoryURLs.length; i++) {
+                sb.append(repositoryURLs[i]);
+                if (i != (repositoryURLs.length-1)) {
                     sb.append(",");
                 }
             }
         }
         sb.append(") ");
+        sb.append("JarNames: ").append(jarNames).append("; ");
+        sb.append("canonicalLoaderDir: ").append(canonicalLoaderDir).append("; ");
         sb.append("Object: ").append(Integer.toHexString(System.identityHashCode(this)));
         sb.append(" Created: ").append(SimpleDateFormat.getDateTimeInstance().format(creationTime));
         return (sb.toString());
@@ -1291,7 +1303,7 @@ public class WebappClassLoader
             logger.log(Level.FINER, "    findResources({0})", name);
         }
 
-        List<URL> result = new ArrayList<URL>();
+        List<URL> result = new ArrayList<>();
 
         if (repositories != null) {
             synchronized (jarFilesLock) {
@@ -1846,7 +1858,7 @@ public class WebappClassLoader
 
         try {
 
-            ArrayList<URL> urls = new ArrayList<URL>();
+            ArrayList<URL> urls = new ArrayList<>();
             for (int i = 0; i < length; i++) {
                 if (i < filesLength) {
                     urls.add(i, getURL(files[i]));
@@ -1867,9 +1879,8 @@ public class WebappClassLoader
 
     }
 
-    @SuppressWarnings("unchecked")
     private URL[] removeDuplicate(ArrayList<URL> urls) {
-        HashSet h = new HashSet(urls);
+        Set<URL> h = new HashSet<>(urls);
         urls.clear();
         urls.addAll(h);
         return urls.toArray(new URL[urls.size()]);
@@ -3567,13 +3578,13 @@ public class WebappClassLoader
 
         return jarFile;
     }
-    
+
     public static <T> T newInstance(Class<T> ofClass, Class<?>[] constructorArgTypes, Object[] args) {
         try {
             Constructor<T> constructor = ofClass.getConstructor(constructorArgTypes);
             return constructor.newInstance(args);
         } catch (Exception ex) {
-            return null; 
+            return null;
         }
     }
 

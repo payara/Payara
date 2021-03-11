@@ -41,13 +41,12 @@ package fish.payara.microprofile.faulttolerance.service;
 
 import static java.lang.System.currentTimeMillis;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
@@ -71,26 +70,26 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
-import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState.CircuitState;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 /**
- * The execution context for a FT annotated method. Each {@link Method} for each individual target {@link Object}
- * (instance of the {@link Class} defining the {@link Method}) has its corresponding instance of this
- * {@link FaultToleranceMethodContext}.
- * 
+ * The execution context for a FT annotated method. Each specific {@link Method} on a specific {@link Class} has a
+ * corresponding instance of this {@link FaultToleranceMethodContext}. Multiple instances of that class share a context
+ * (since MP FT 3.0).
+ *
  * When the annotated {@link Method} is invoked this implementation is bound to that context by
- * {@link #in(InvocationContext, FaultTolerancePolicy)} with a fresh instance of this class. It shares all the state
+ * {@link #boundTo(InvocationContext, FaultTolerancePolicy)} with a fresh instance of this class. It shares all the state
  * with other invocations for the same method except the {@link InvocationContext} and the {@link FaultTolerancePolicy}
  * which are specific for each invocation. This way the full FT invocation state for each method invocation is
  * determined at the beginning of applying FT semantics and cannot change during execution (except for those counters
  * and queues that are meant to track the shared state changes of course).
- * 
+ *
  * @author Jan Bernitt
  */
 public final class FaultToleranceMethodContextImpl implements FaultToleranceMethodContext {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceMethodContextImpl.class.getName());
+
 
     static final class FaultToleranceMethodState {
 
@@ -99,7 +98,6 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         final FaultToleranceMetrics metrics;
         final ExecutorService asyncExecution;
         final ScheduledExecutorService delayedExecution;
-        final WeakReference<Object> target;
         final AtomicReference<CircuitBreakerState> circuitBreakerState = new AtomicReference<>();
         final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = new AtomicReference<>();
         final AtomicInteger queuingOrRunningPopulation = new AtomicInteger();
@@ -107,29 +105,13 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         final AtomicLong lastUsed = new AtomicLong(currentTimeMillis());
 
         FaultToleranceMethodState(RequestContextController requestContext, FaultToleranceRequestTracing requestTracing,
-                FaultToleranceMetrics metrics, ExecutorService asyncExecution,
-                ScheduledExecutorService delayedExecution, WeakReference<Object> target) {
+                                  FaultToleranceMetrics metrics, ExecutorService asyncExecution,
+                                  ScheduledExecutorService delayedExecution) {
             this.requestContext = requestContext;
             this.requestTracing = requestTracing;
             this.metrics = metrics;
             this.asyncExecution = asyncExecution;
             this.delayedExecution = delayedExecution;
-            this.target = target;
-        }
-
-        public boolean isExpired(long ttl) {
-            if (target.get() == null) {
-                return true; // target got GC'd - this is not useful any longer
-            }
-            return executingThreadCount.get() == 0 // 
-                    && queuingOrRunningPopulation.get() == 0 //
-                    && lastUsed.get() + ttl < currentTimeMillis() //
-                    && isStabilyClosedCuicuit();
-        }
-
-        private boolean isStabilyClosedCuicuit() {
-            CircuitBreakerState state = circuitBreakerState.get();
-            return state == null || state.getCircuitState() == CircuitState.CLOSED && state.isClosedOutcomeSuccessOnly();
         }
     }
 
@@ -140,27 +122,30 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     private final FaultToleranceMethodState shared;
     private final InvocationContext context;
     private final FaultTolerancePolicy policy;
+    private final String appName;
 
-    public FaultToleranceMethodContextImpl(RequestContextController requestContext, FaultToleranceRequestTracing requestTracing, FaultToleranceMetrics metrics,
-            ExecutorService asyncExecution, ScheduledExecutorService delayedExecution, Object target) {
-        this(new FaultToleranceMethodState(requestContext, requestTracing, metrics, asyncExecution, delayedExecution,
-                new WeakReference<>(target)), null, null);
+    public String getAppName() {
+        return appName;
     }
 
-    private FaultToleranceMethodContextImpl(FaultToleranceMethodState shared, InvocationContext context,
+    public FaultToleranceMethodContextImpl(RequestContextController requestContext, FaultToleranceRequestTracing requestTracing, FaultToleranceMetrics metrics,
+                                           ExecutorService asyncExecution, ScheduledExecutorService delayedExecution, String appName) {
+        this(new FaultToleranceMethodState(requestContext, requestTracing, metrics, asyncExecution, delayedExecution
+        ), appName, null, null);
+    }
+
+    private FaultToleranceMethodContextImpl(FaultToleranceMethodState shared, String appName, InvocationContext context,
             FaultTolerancePolicy policy) {
         this.shared = shared;
         this.context = context;
         this.policy = policy;
+        this.appName = appName;
         shared.lastUsed.accumulateAndGet(currentTimeMillis(), Long::max);
     }
 
-    public boolean isExpired(long ttl) {
-        return shared.isExpired(ttl);
-    }
-
-    public FaultToleranceMethodContextImpl in(InvocationContext context, FaultTolerancePolicy policy) {
-        return new FaultToleranceMethodContextImpl(shared, context, policy);
+    @Override
+    public FaultToleranceMethodContext boundTo(InvocationContext context, FaultTolerancePolicy policy) {
+        return new FaultToleranceMethodContextImpl(shared, appName, context, policy);
     }
 
     @Override
@@ -178,8 +163,8 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     }
 
     @Override
-    public FaultToleranceMetrics getMetrics(boolean enabled) {
-        return enabled ? shared.metrics : FaultToleranceMetrics.DISABLED;
+    public FaultToleranceMetrics getMetrics() {
+        return policy.isMetricsEnabled ? shared.metrics : FaultToleranceMetrics.DISABLED;
     }
 
     /*
@@ -187,14 +172,18 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
      */
 
     @Override
-    public CircuitBreakerState getState(int requestVolumeThreshold) {
-        return requestVolumeThreshold < 0 
+    public CircuitBreakerState getState() {
+        int requestVolumeThreshold = policy.circuitBreaker.requestVolumeThreshold;
+        return requestVolumeThreshold < 0
                 ? shared.circuitBreakerState.get()
-                : shared.circuitBreakerState.updateAndGet(value -> value != null ? value : new CircuitBreakerState(requestVolumeThreshold));
+                : shared.circuitBreakerState.updateAndGet(
+                        value -> value != null ? value :
+                            new CircuitBreakerState(requestVolumeThreshold, policy.circuitBreaker.failureRatio));
     }
 
     @Override
-    public BlockingQueue<Thread> getConcurrentExecutions(int maxConcurrentThreads) {
+    public BlockingQueue<Thread> getConcurrentExecutions() {
+        int maxConcurrentThreads = policy.bulkhead.value;
         return maxConcurrentThreads < 0
                 ? shared.concurrentExecutions.get()
                 : shared.concurrentExecutions.updateAndGet(value -> value != null ? value : new ArrayBlockingQueue<>(maxConcurrentThreads));
@@ -218,27 +207,35 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         }
     }
 
+    /**
+     * OBS! Unit tests implement a stub context with a simplified version of this implementation that needs to be
+     * updated properly whenever this method is changed in order to have comparable behaviour in tests.
+     */
     @Override
-    public void runAsynchronous(CompletableFuture<Object> asyncResult, Callable<Object> task)
+    public void runAsynchronous(AsyncFuture asyncResult, Callable<Object> task)
             throws RejectedExecutionException {
         Runnable completionTask = () -> {
             if (!asyncResult.isCancelled() && !Thread.currentThread().isInterrupted()) {
+                boolean returned = false;
                 try {
                     trace("runAsynchronous");
                     if (shared.requestContext != null) {
                         shared.requestContext.activate();
                     }
-                    Future<?> futureResult = AsynchronousPolicy.toFuture(task.call());
+                    Object res = task.call();
+                    returned = true;
+                    Future<?> futureResult = AsynchronousPolicy.toFuture(res);
                     if (!asyncResult.isCancelled()) { // could be cancelled in the meanwhile
                         if (!asyncResult.isDone()) {
-                            asyncResult.complete(futureResult.get());
+                             asyncResult.complete(futureResult.get());
                         }
                     } else {
                         futureResult.cancel(true);
                     }
                 } catch (Exception | Error ex) {
-                    // Note that even ExecutionException is not unpacked (intentionally)
-                    asyncResult.completeExceptionally(ex); 
+                    // Note that even ExecutionException unpacked to the exception originally used to complete the future
+                    asyncResult.setExceptionThrown(!returned);
+                    asyncResult.completeExceptionally(returned && ex instanceof ExecutionException ? ex.getCause() : ex);
                 } finally {
                     if (shared.requestContext != null) {
                         shared.requestContext.deactivate();
@@ -284,4 +281,8 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
         shared.requestTracing.endSpan();
     }
 
+    @Override
+    public String toString() {
+        return super.toString()+"[method="+context.getMethod()+", target="+ context.getTarget()+", sharedState=" + shared + "]";
+    }
 }

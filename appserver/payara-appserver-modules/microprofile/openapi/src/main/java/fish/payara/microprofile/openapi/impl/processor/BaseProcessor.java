@@ -44,14 +44,20 @@ import fish.payara.microprofile.openapi.impl.config.OpenApiConfiguration;
 import fish.payara.microprofile.openapi.impl.model.PathItemImpl;
 import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
+
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.normaliseUrl;
+
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+
 import java.util.Set;
+
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
+import org.eclipse.microprofile.openapi.models.Paths;
 
 /**
  * A processor to apply any configuration options to the model, and fill any
@@ -78,26 +84,23 @@ public class BaseProcessor implements OASProcessor {
             api.setInfo(new InfoImpl().title("Deployed Resources").version("1.0.0"));
         }
 
-        // Add the config specified servers
-        if (config != null && !config.getServers().isEmpty()) {
-            // Clear all the other servers
-            api.getServers().clear();
-            // Add all the specified ones
-            config.getServers().forEach(serverUrl -> api.addServer(new ServerImpl().url(serverUrl)));
-        }
-
-        // Add the default server if there are none
-        if (api.getServers().isEmpty()) {
-            for (URL baseURL : baseURLs) {
-                api.addServer(new ServerImpl()
-                        .url(baseURL.toString())
-                        .description("Default Server.")
-                );
+        if (config != null) {
+            // Add the config specified servers
+            if (!config.getServers().isEmpty()) {
+                // Clear all the other servers
+                api.setServers(new ArrayList<>());
+                // Add all the specified ones
+                config.getServers().forEach(serverUrl -> api.addServer(new ServerImpl().url(serverUrl)));
             }
-        }
 
-        // Add the path servers
-        if (config != null && !config.getPathServerMap().isEmpty()) {
+            // Add the default server if there are none
+            if (api.getServers().isEmpty()) {
+                for (URL baseURL : baseURLs) {
+                    api.addServer(new ServerImpl().url(baseURL.toString()).description("Default Server."));
+                }
+            }
+
+            // Add the path servers
             for (Entry<String, Set<String>> entry : config.getPathServerMap().entrySet()) {
                 // Get the normalised path
                 String path = normaliseUrl(entry.getKey());
@@ -108,26 +111,24 @@ public class BaseProcessor implements OASProcessor {
                 }
 
                 // Clear the current list of servers
-                api.getPaths().getPathItem(path).getServers().clear();
+                api.getPaths().getPathItem(path).setServers(new ArrayList<>());
 
                 // Add each url
                 for (String serverUrl : entry.getValue()) {
                     api.getPaths().getPathItem(path).addServer(new ServerImpl().url(serverUrl));
                 }
             }
-        }
 
-        // Add the operation servers
-        if (config != null && !config.getOperationServerMap().isEmpty()) {
+            // Add the operation servers
             for (Entry<String, Set<String>> entry : config.getOperationServerMap().entrySet()) {
 
                 // Find the matching operation
-                for (PathItem pathItem : api.getPaths().values()) {
+                for (PathItem pathItem : api.getPaths().getPathItems().values()) {
                     for (Operation operation : pathItem.getOperations().values()) {
                         if (operation.getOperationId().equals(entry.getKey())) {
 
                             // Clear the current list of servers
-                            operation.getServers().clear();
+                            operation.setServers(new ArrayList<>());
 
                             // Add each server url to the operation
                             for (String serverUrl : entry.getValue()) {
@@ -139,13 +140,18 @@ public class BaseProcessor implements OASProcessor {
             }
         }
 
-        removeEmptyPaths(api);
+        removeEmptyPaths(api.getPaths());
 
         return api;
     }
 
-    private static void removeEmptyPaths(OpenAPI api) {
-        PathItem emptyItem = new PathItemImpl();
-        api.getPaths().entrySet().removeIf(entry -> emptyItem.equals(entry.getValue()));
+    private static void removeEmptyPaths(Paths paths) {
+        final PathItem emptyPath = new PathItemImpl();
+        for (Entry<String, PathItem> pathItem : paths.getPathItems().entrySet()) {
+            final String pathName = pathItem.getKey();
+            if (emptyPath.equals(pathItem.getValue())) {
+                paths.removePathItem(pathName);
+            }
+        }
     }
 }

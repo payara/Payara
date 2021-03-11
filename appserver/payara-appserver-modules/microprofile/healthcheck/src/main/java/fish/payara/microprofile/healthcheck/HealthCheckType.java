@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,39 +41,38 @@ package fish.payara.microprofile.healthcheck;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
+
 import javax.enterprise.util.AnnotationLiteral;
-import org.eclipse.microprofile.health.Health;
+
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;
 
 public enum HealthCheckType {
 
-    READINESS("/ready", new AnnotationLiteral<Readiness>() {
-    }),
-    LIVENESS("/live", new AnnotationLiteral<Liveness>() {
-    }),
-    HEALTH(null, new AnnotationLiteral<Health>() {
-    });
+    READINESS("/ready", new Readiness.Literal()),
+    LIVENESS("/live", new Liveness.Literal()),
+    UNKNOWN(null, null);
     
-    String path;
-    AnnotationLiteral literal;
+    private String path;
+    private AnnotationLiteral<?> literal;
 
-    private HealthCheckType(String path, AnnotationLiteral literal) {
+    private HealthCheckType(String path, AnnotationLiteral<?> literal) {
         this.path = path;
         this.literal = literal;
     }
 
-    public AnnotationLiteral getLiteral() {
+    public AnnotationLiteral<?> getLiteral() {
         return literal;
     }
     
     public static HealthCheckType fromPath(String path) {
         for (HealthCheckType value : values()) {
-            if (value.path != null && value.path.equals(path)) {
+            // If the path is equal (with or without the slash)
+            if (value.path != null && (value.path.equals(path) || value.path.substring(1).equals(path))) {
                 return value;
             }
         }
-        return HEALTH;
+        return UNKNOWN;
     }
  
     public static HealthCheckType fromQualifiers(Set<Annotation> qualifiers) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,6 @@
  */
 package fish.payara.micro.cdi.extension;
 
-import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.Utility;
 import fish.payara.micro.cdi.Outbound;
 import fish.payara.micro.cdi.Inbound;
@@ -58,7 +56,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
 import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Initialized;
@@ -71,8 +68,6 @@ import javax.naming.NamingException;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.glassfish.internal.api.JavaEEContextUtil.Context;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 /**
  *
@@ -89,7 +84,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
 
     private ManagedExecutorService managedExecutorService;
 
-    private JavaEEContextUtil ctxUtil;
+    private JavaEEContextUtil.Instance ctxUtil;
 
     private final static String INSTANCE_PROPERTY = "InstanceName";
     
@@ -97,7 +92,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
     
     @PostConstruct
     void postConstruct() {
-        ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+        ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class).currentInvocation();
         try {
             InitialContext ctx = new InitialContext();
             managedExecutorService = (ManagedExecutorService) ctx.lookup("java:comp/DefaultManagedExecutorService");
@@ -144,50 +139,39 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         }
 
         try(Context ctx = ctxUtil.pushContext()) {
-            managedExecutorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    ClassLoader oldCL = Utility.getClassLoader();
-                    try {
-                        ClassLoader invocationClassLoader = ctxUtil.getInvocationClassLoader();
-                        if (invocationClassLoader != null) { // null in case of an event from server such as CDI notifier
-                            Utility.setContextClassLoader(invocationClassLoader);
+            managedExecutorService.submit(() -> {
+                try (final Context ctx1 = ctxUtil.setApplicationClassLoader()) {
+                    // create the set of qualifiers for the event
+                    // first add Inbound qualifier with the correct properties
+                    Set<Annotation> qualifiers = new HashSet<>();
+                    Serializable eventPayload = event.getPayload();
+                    Inbound inbound = new Inbound() {
+                        @Override
+                        public String eventName() {
+                            return event.getProperty(EVENT_PROPERTY);
                         }
                         
-                        // create the set of qualifiers for the event
-                        // first add Inbound qualifier with the correct properties                                                
-                        Set<Annotation> qualifiers = new HashSet<>();
-                        Serializable eventPayload = event.getPayload();
-                        Inbound inbound = new Inbound() {
-                            @Override
-                            public String eventName() {
-                                return event.getProperty(EVENT_PROPERTY);
-                            }
+                        @Override
+                        public Class<? extends Annotation> annotationType() {
+                            return Inbound.class;
+                        }
+                    };
+                    qualifiers.add(inbound);
 
-                            @Override
-                            public Class<? extends Annotation> annotationType() {
-                                return Inbound.class;
-                            }
-                        };
-                        qualifiers.add(inbound);
-                        
-                        // Now create Qualifiers for the sent event qualifiers
-                        Set<Annotation> receivedQualifiers = event.getQualifiers();
-                        for (Annotation receivedQualifier : receivedQualifiers) {
-                            // strip out OutBound as we don't want it even though it was sent over
-                            if (!(receivedQualifier instanceof Outbound)) {
-                                qualifiers.add(receivedQualifier);
-                            }
+                    // Now create Qualifiers for the sent event qualifiers
+                    Set<Annotation> receivedQualifiers = event.getQualifiers();
+                    for (Annotation receivedQualifier : receivedQualifiers) {
+                        // strip out OutBound as we don't want it even though it was sent over
+                        if (!(receivedQualifier instanceof Outbound)) {
+                            qualifiers.add(receivedQualifier);
                         }
-                        Annotation annotations[] = qualifiers.toArray(new Annotation[0]);
-                        bm.fireEvent(eventPayload,annotations);
-                    } catch (IOException | ClassNotFoundException ex) {
-                        Logger.getLogger(ClusteredCDIEventBusImpl.class.getName())
-                                .log(ex.getCause() instanceof IllegalStateException? Level.FINE : Level.INFO,
-                                        "Received Event but could not process it", ex);
-                    } finally {
-                        Utility.setContextClassLoader(oldCL);
                     }
+                    Annotation annotations[] = qualifiers.toArray(new Annotation[0]);
+                    bm.fireEvent(eventPayload,annotations);
+                } catch (IOException | ClassNotFoundException ex) {
+                    Logger.getLogger(ClusteredCDIEventBusImpl.class.getName())
+                            .log(ex.getCause() instanceof IllegalStateException? Level.FINE : Level.INFO,
+                                    "Received Event but could not process it", ex);
                 }
             });
         }

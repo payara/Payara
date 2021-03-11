@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -121,12 +121,12 @@ class ClusterScopeContext implements Context {
             return beanManager.getContext(ApplicationScoped.class).get(contextual);
         }
     }
-    
+
     /**
      * Get the most appropriate name for a bean. First checks the `@Clustered`
      * annotation key name property, then the bean EL name, then the bean class
      * name.
-     * 
+     *
      * @param bean       the bean to reference.
      * @param annotation the Clustered annotation to reference.
      * @throws IllegalArgumentException if no name can be found for the bean.
@@ -147,7 +147,7 @@ class ClusterScopeContext implements Context {
         return CdiUtils.getAnnotation(beanManager, clazz, Clustered.class).get();
     }
 
-    private static String firstNonNull(String... items) {
+    static String firstNonNull(String... items) {
         for (String i : items) {
             if (i != null && !i.trim().isEmpty()) {
                 return i;

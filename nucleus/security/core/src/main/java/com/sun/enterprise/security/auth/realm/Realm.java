@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+
 package com.sun.enterprise.security.auth.realm;
 
+import com.sun.enterprise.loader.CurrentBeforeParentClassLoader;
 import static com.sun.enterprise.security.SecurityLoggerInfo.realmCreated;
 import static com.sun.enterprise.security.SecurityLoggerInfo.realmDeleted;
 import static com.sun.enterprise.security.SecurityLoggerInfo.realmUpdated;
@@ -61,6 +63,8 @@ import org.jvnet.hk2.annotations.Contract;
 
 import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * @author Harish Prabandham
@@ -360,13 +364,16 @@ public abstract class Realm extends AbstractStatefulRealm implements Comparable<
             Realm realm = serviceLocator.getService(Realm.class, name);
             if (realm == null) {
                 try {
+                    CurrentBeforeParentClassLoader commonClassLoader =
+                            serviceLocator.getService(ClassLoaderHierarchy.class).getCommonClassLoader();
+                    String realmJarPath = props.getProperty("realmJarPath");
+                    if (realmJarPath != null) {
+                        commonClassLoader.addURL(new URL("file://" + realmJarPath));
+                    }
                     // TODO: workaround here. Once fixed in V3 we should be able to use
                     // Context ClassLoader instead.
-                    realm = (Realm) serviceLocator.getService(ClassLoaderHierarchy.class)
-                                                  .getCommonClassLoader()
-                                                  .loadClass(className)
-                                                  .newInstance();
-                } catch (ClassNotFoundException ex) {
+                    realm = (Realm) commonClassLoader.loadClass(className).newInstance();
+                } catch (ClassNotFoundException | MalformedURLException ex) {
                     realm = (Realm) Class.forName(className).newInstance();
                 }
             }
@@ -415,6 +422,4 @@ public abstract class Realm extends AbstractStatefulRealm implements Comparable<
             StatsProviderManager.register("security", SERVER, "security/realm", realmStatsProvier);
         }
     }
-
-
 }

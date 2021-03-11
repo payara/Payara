@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import fish.payara.microprofile.config.extensions.azure.model.Secret;
 import fish.payara.microprofile.config.extensions.azure.model.SecretHolder;
 import fish.payara.microprofile.config.extensions.azure.model.SecretsResponse;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import fish.payara.security.oauth2.OAuth2Client;
 import java.io.File;
 import java.nio.file.Files;
@@ -67,6 +68,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -96,6 +98,9 @@ public class AzureSecretsConfigSource extends ConfiguredExtensionConfigSource<Az
 
     @Inject
     private ServerEnvironment env;
+    
+    @Inject
+    MicroprofileConfigConfiguration mpconfig;
 
     @Override
     public void bootstrap() {
@@ -167,6 +172,11 @@ public class AzureSecretsConfigSource extends ConfiguredExtensionConfigSource<Az
             results.put(secretName, getValue(secretName));
         }
         return results;
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
     }
 
     @Override
@@ -250,8 +260,18 @@ public class AzureSecretsConfigSource extends ConfiguredExtensionConfigSource<Az
     }
 
     @Override
+    public String getSource() {
+        return "cloud";
+    }
+
+    @Override
     public String getName() {
         return "azure";
+    }
+    
+    @Override
+    public int getOrdinal() {
+        return Integer.parseInt(mpconfig.getCloudOrdinality());
     }
 
     private File getPrivateKeyFile() {

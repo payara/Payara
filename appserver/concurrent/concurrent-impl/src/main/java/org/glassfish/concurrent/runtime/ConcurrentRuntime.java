@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.util.Utility;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.LogFacade;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
@@ -65,6 +66,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 
 /**
  * This class provides API to create various Concurrency Utilities objects
@@ -180,16 +182,16 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resource, ManagedExecutorServiceConfig config) {
         String jndiName = config.getJndiName();
-        
+
         if (managedExecutorServiceMap != null && managedExecutorServiceMap.containsKey(jndiName)) {
             return managedExecutorServiceMap.get(jndiName);
         }
-        
-        ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(
+
+        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
                 config.getThreadPriority());
-        
+
         ManagedExecutorServiceImpl mes = new ManagedExecutorServiceImpl(config.getJndiName(),
                 managedThreadFactory,
                 config.getHungAfterSeconds() * 1000L, // in millseconds
@@ -202,17 +204,17 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 createContextService(config.getJndiName() + "-contextservice",
                         config.getContextInfo(), config.getContextInfoEnabled(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
-        
+
         if (managedExecutorServiceMap == null) {
             managedExecutorServiceMap = new HashMap();
         }
-        
+
         managedExecutorServiceMap.put(jndiName, mes);
-        
+
         if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
             scheduleInternalTimer();
         }
-        
+
         return mes;
     }
 
@@ -234,7 +236,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (managedScheduledExecutorServiceMap != null && managedScheduledExecutorServiceMap.containsKey(jndiName)) {
             return managedScheduledExecutorServiceMap.get(jndiName);
         }
-        ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(
+        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
                 config.getThreadPriority());
@@ -275,7 +277,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (managedThreadFactoryMap != null && managedThreadFactoryMap.containsKey(jndiName)) {
             return managedThreadFactoryMap.get(jndiName);
         }
-        ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(config.getJndiName(),
+        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(config.getJndiName(),
                 createContextService(config.getJndiName() + "-contextservice",
                         config.getContextInfo(), config.getContextInfoEnabled(), true),
                 config.getThreadPriority());
@@ -360,7 +362,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     private void scheduleInternalTimer() {
         if (internalScheduler == null) {
             String name = "glassfish-internal";
-            ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(
+            ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                     name + "-managedThreadFactory",
                     null,
                     Thread.NORM_PRIORITY);
@@ -375,6 +377,26 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                             CONTEXT_INFO_CLASSLOADER, "true", false),
                     AbstractManagedExecutorService.RejectPolicy.ABORT);
             internalScheduler.scheduleAtFixedRate(new HungTasksLogger(), 1L, 1L, TimeUnit.MINUTES);
+        }
+    }
+
+    /**
+     * context loader propagation to threads causes memory leaks on redeploy
+     */
+    private static final class ThreadFactoryWrapper extends ManagedThreadFactoryImpl {
+        public ThreadFactoryWrapper(String string, ContextServiceImpl contextService, int threadPriority) {
+            super(string, contextService, threadPriority);
+        }
+
+        @Override
+        protected AbstractManagedThread createThread(Runnable r, ContextHandle contextHandleForSetup) {
+            ClassLoader appClassLoader = Utility.getClassLoader();
+            Utility.setContextClassLoader(null);
+            try {
+                return super.createThread(r, contextHandleForSetup);
+            } finally {
+                Utility.setContextClassLoader(appClassLoader);
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,9 @@
  */
 package fish.payara.nucleus.cluster;
 
-import com.hazelcast.core.Member;
+import com.hazelcast.cluster.Member;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.util.UUID;
 
 /**
  *
@@ -48,22 +49,23 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
  */
 public class MemberEvent {
     
-    public MemberEvent(Member member) {
+    public MemberEvent(HazelcastCore hzCore, Member member) {
+        this.hzCore = hzCore;
         this.member = member;
     }
     
-    public String getUuid() {
+    public UUID getUuid() {
         return member.getUuid();
     }
     
     public String getServer() {
-        return member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        return hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
     }
     
     public String getServerGroup() {
-        return member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+        return member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
     }
     
-    private Member member;
-    
+    private final HazelcastCore hzCore;
+    private final Member member;
 }

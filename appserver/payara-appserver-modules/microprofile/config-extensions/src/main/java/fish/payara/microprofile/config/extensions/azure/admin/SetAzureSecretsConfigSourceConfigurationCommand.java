@@ -68,6 +68,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.source.extension.BaseSetConfigSourceConfigurationCommand;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import org.glassfish.api.ActionReport;
 
 @Service(name = "set-azure-config-source-configuration")
 @PerLookup
@@ -103,8 +104,8 @@ public class SetAzureSecretsConfigSourceConfigurationCommand extends BaseSetConf
     private ServerEnvironment env;
 
     @Override
-    protected void applyValues(AzureSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
-        super.applyValues(configuration);
+    protected void applyValues(ActionReport report, AzureSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(report, configuration);
         if (StringUtils.ok(tenantId)) {
             configuration.setTenantId(tenantId);
         }

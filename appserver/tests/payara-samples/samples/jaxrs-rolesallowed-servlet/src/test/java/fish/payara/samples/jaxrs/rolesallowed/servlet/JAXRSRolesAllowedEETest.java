@@ -39,7 +39,9 @@ public class JAXRSRolesAllowedEETest {
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        ServerOperations.addUserToContainerIdentityStore("test", "a");
+        if (ServerOperations.isServer()) {
+            ServerOperations.addUserToContainerIdentityStore("test", "a");
+        }
 
         WebArchive archive =
             create(WebArchive.class)
@@ -60,6 +62,9 @@ public class JAXRSRolesAllowedEETest {
     @Test
     @RunAsClient
     public void testAuthenticated() throws IOException {
+        if (ServerOperations.isMicro()) {
+            return;
+        }
 
         String response =
                 newClient()

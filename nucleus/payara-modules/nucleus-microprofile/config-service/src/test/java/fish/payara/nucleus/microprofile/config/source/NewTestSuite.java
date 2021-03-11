@@ -47,7 +47,7 @@ import org.junit.runners.Suite;
  * @author steve
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ SecretsDirConfigSourceTest.class })
+@Suite.SuiteClasses({ DirConfigSourceTest.class })
 public class NewTestSuite {
 
 

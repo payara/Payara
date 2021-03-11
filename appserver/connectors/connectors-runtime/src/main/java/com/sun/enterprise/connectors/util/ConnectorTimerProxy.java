@@ -37,11 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.connectors.util;
 
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.logging.LogDomains;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -49,13 +52,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ConnectorTimerProxy extends Timer {
-    
+
     private volatile static ConnectorTimerProxy connectorTimer;
     private Timer timer;
     private boolean timerException = false;
     private final Object getTimerLock = new Object();
-    
-    private final static Logger _logger = LogDomains.getLogger(ConnectorTimerProxy.class, 
+
+    private final static Logger _logger = LogDomains.getLogger(ConnectorTimerProxy.class,
             LogDomains.RSR_LOGGER);
 
     private ConnectorTimerProxy(boolean isDaemon) {
@@ -70,14 +73,15 @@ public class ConnectorTimerProxy extends Timer {
                     loader = Thread.currentThread().getContextClassLoader();
                     Thread.currentThread().setContextClassLoader(
                             ConnectorRuntime.getRuntime().getConnectorClassLoader());
-                    timer = new Timer("connector-timer-proxy", true);
+                    timer = AccessController.doPrivileged((PrivilegedAction<Timer>) () ->
+                            new Timer("connector-timer-proxy", true));
                 } finally {
                     Thread.currentThread().setContextClassLoader(loader);
                     timerException = false;
                 }
             }
         }
-        return timer;        
+        return timer;
     }
 
     public static final ConnectorTimerProxy getProxy() {
@@ -90,7 +94,7 @@ public class ConnectorTimerProxy extends Timer {
         }
         return connectorTimer;
     }
-    
+
     /**
      * Proxy method to schedule a timer task at fixed rate.
      * The unchecked exceptions are caught here and in such cases, the timer
@@ -128,7 +132,7 @@ public class ConnectorTimerProxy extends Timer {
             status = timer.purge();
         } catch(Exception ex) {
             _logger.log(Level.WARNING, "exception_purging_timer",  ex.getMessage());
-        }        
+        }
         return status;
     }
 
@@ -158,7 +162,7 @@ public class ConnectorTimerProxy extends Timer {
      * @param task
      * @param delay
      * @param period
-     */    
+     */
     @Override
     public void schedule(TimerTask task, Date time) {
         timer = getTimer();
@@ -167,11 +171,11 @@ public class ConnectorTimerProxy extends Timer {
         } catch(Exception ex) {
             handleTimerException(ex);
             timer.schedule(task, time);
-        }        
+        }
     }
 
     /**
-     * Proxy method to schedule a timer task for repeated fixed-delay execution, 
+     * Proxy method to schedule a timer task for repeated fixed-delay execution,
      * beginning after the specified delay.
      * The unchecked exceptions are caught here and in such cases, the timer
      * is recreated and task is rescheduled.
@@ -187,11 +191,11 @@ public class ConnectorTimerProxy extends Timer {
         } catch(Exception ex) {
             handleTimerException(ex);
             timer.schedule(task, delay, period);
-        }        
+        }
     }
 
     /**
-     * Proxy method to schedule a timer task for repeated fixed-delay execution, 
+     * Proxy method to schedule a timer task for repeated fixed-delay execution,
      * beginning after the specified delay.
      * The unchecked exceptions are caught here and in such cases, the timer
      * is recreated and task is rescheduled.
@@ -207,11 +211,11 @@ public class ConnectorTimerProxy extends Timer {
         } catch(Exception ex) {
             handleTimerException(ex);
             timer.schedule(task, firstTime, period);
-        }        
+        }
     }
 
     /**
-     * Proxy method to schedule a timer task for repeated fixed-rate execution, 
+     * Proxy method to schedule a timer task for repeated fixed-rate execution,
      * beginning after the specified delay.
      * The unchecked exceptions are caught here and in such cases, the timer
      * is recreated and task is rescheduled.
@@ -227,19 +231,19 @@ public class ConnectorTimerProxy extends Timer {
         } catch(Exception ex) {
             handleTimerException(ex);
             timer.scheduleAtFixedRate(task, firstTime, period);
-        }        
+        }
     }
 
     /**
-     * Handle any exception occured during scheduling timer. 
-     * 
-     * In case of unchecked exceptions, the timer is recreated to be used 
+     * Handle any exception occured during scheduling timer.
+     *
+     * In case of unchecked exceptions, the timer is recreated to be used
      * by the subsequent requests for scheduling.
      * @param ex exception that was caught
      */
     private void handleTimerException(Exception ex) {
         _logger.log(Level.WARNING, "exception_scheduling_timer", ex.getMessage());
-        
+
         //In case of unchecked exceptions, timer needs to recreated.
         _logger.info("Recreating Timer and scheduling at fixed rate");
         timerException = true;

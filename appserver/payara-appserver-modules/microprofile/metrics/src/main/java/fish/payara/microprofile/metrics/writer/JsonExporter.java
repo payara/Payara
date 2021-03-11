@@ -46,12 +46,14 @@ import static java.util.Collections.singletonMap;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonWriter;
 import javax.json.stream.JsonGenerator;
@@ -157,6 +159,7 @@ public class JsonExporter implements MetricExporter {
     public void export(MetricID metricID, Histogram histogram, Metadata metadata) {
         completeOrUpdateGroup(metricID, metadata);
         appendMember(metricID, "count", histogram.getCount());
+        appendMember(metricID, "sum", histogram.getSum());
         exportSampling(metricID, histogram);
     }
 
@@ -193,11 +196,18 @@ public class JsonExporter implements MetricExporter {
         completeOrUpdateGroup(metricID, metadata);
         appendMember(metricID, "count", timer.getCount());
         appendMember(metricID, "elapsedTime", timer.getElapsedTime().toMillis());
+        appendMember(metricID, "maxTimeDuration", millisOrNull(timer.getMaxTimeDuration()));
+        appendMember(metricID, "minTimeDuration", millisOrNull(timer.getMinTimeDuration()));
+    }
+
+    private static Long millisOrNull(Duration d) {
+        return d == null ? null : d.toMillis();
     }
 
     @Override
     public void export(MetricID metricID, Timer timer, Metadata metadata) {
         completeOrUpdateGroup(metricID, metadata);
+        appendMember(metricID, "elapsedTime", millisOrNull(timer.getElapsedTime()));
         exportMetered(metricID, timer);
         exportSampling(metricID, timer);
     }
@@ -216,10 +226,10 @@ public class JsonExporter implements MetricExporter {
         JsonObjectBuilder target = scopeObj != null ? scopeObj : documentObj;
         JsonObjectBuilder metadataObj = Json.createObjectBuilder();
         Metadata metadata = exportedBeforeMetadata;
-        metadataObj.add("unit", metadata.getUnit().orElse(MetricUnits.NONE));
+        metadataObj.add("unit", metadata.unit().orElse(MetricUnits.NONE));
         metadataObj.add("type", metadata.getTypeRaw().toString());
-        if (metadata.getDescription().isPresent()) {
-            String desc = metadata.getDescription().get();
+        if (metadata.description().isPresent()) {
+            String desc = metadata.getDescription();
             if (!desc.isEmpty()) {
                 metadataObj.add("description", desc);
             }
@@ -239,7 +249,10 @@ public class JsonExporter implements MetricExporter {
     private void completeScope() {
         completeGroup(null, null);
         if (scopeObj != null) {
-            documentObj.add(scope.getName(), scopeObj.build());
+            JsonObject obj = scopeObj.build();
+            if (obj.size() > 0) {
+                documentObj.add(scope.getName(), obj);
+            }
         }
     }
 
@@ -304,6 +317,8 @@ public class JsonExporter implements MetricExporter {
             target.add(name, (BigDecimal) value);
         } else if (value instanceof BigInteger) {
             target.add(name, (BigInteger) value);
+        } else if (value == null) {
+            target.addNull(name);
         } else {
             target.add(name, value.longValue());
         }

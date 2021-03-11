@@ -40,7 +40,7 @@
 package fish.payara.nucleus.hazelcast.encryption;
 
 import com.hazelcast.core.HazelcastException;
-import com.hazelcast.nio.IOUtil;
+import com.hazelcast.internal.nio.IOUtil;
 import com.sun.enterprise.security.ssl.impl.MasterPasswordImpl;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import org.glassfish.api.admin.ServerEnvironment;

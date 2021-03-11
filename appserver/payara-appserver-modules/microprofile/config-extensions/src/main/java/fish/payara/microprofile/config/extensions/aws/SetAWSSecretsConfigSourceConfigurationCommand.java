@@ -56,6 +56,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.source.extension.BaseSetConfigSourceConfigurationCommand;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import org.glassfish.api.ActionReport;
 
 @Service(name = "set-aws-config-source-configuration")
 @PerLookup
@@ -77,8 +78,8 @@ public class SetAWSSecretsConfigSourceConfigurationCommand extends BaseSetConfig
     private String secretName;
 
     @Override
-    protected void applyValues(AWSSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
-        super.applyValues(configuration);
+    protected void applyValues(ActionReport report, AWSSecretsConfigSourceConfiguration configuration) throws PropertyVetoException {
+        super.applyValues(report, configuration);
         if (StringUtils.ok(regionName)) {
             configuration.setRegionName(regionName);
         }

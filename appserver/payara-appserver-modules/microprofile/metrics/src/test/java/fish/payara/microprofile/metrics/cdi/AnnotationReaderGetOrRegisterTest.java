@@ -60,10 +60,12 @@ import org.eclipse.microprofile.metrics.Metadata;
 import org.eclipse.microprofile.metrics.Meter;
 import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
+import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
 import org.eclipse.microprofile.metrics.SimpleTimer;
 import org.eclipse.microprofile.metrics.Tag;
 import org.eclipse.microprofile.metrics.Timer;
+import org.eclipse.microprofile.metrics.MetricRegistry.Type;
 import org.eclipse.microprofile.metrics.annotation.ConcurrentGauge;
 import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.metrics.annotation.Gauge;
@@ -86,7 +88,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
  */
 public class AnnotationReaderGetOrRegisterTest {
 
-    private final MetricRegistryImpl registry = new MetricRegistryImpl(this::tick);
+    private final MetricRegistry registry = new MetricRegistryImpl(Type.APPLICATION, this::tick);
     private long clockTime;
 
     /**
@@ -103,7 +105,7 @@ public class AnnotationReaderGetOrRegisterTest {
     }
 
     @Test
-    @Counted(tags = { "a=b", "c=d" }, reusable = true)
+    @Counted(tags = { "a=b", "c=d" })
     public void counterFromName() {
         assertGetsOrRegisters(AnnotationReader.COUNTED, Counter.class, 2);
     }
@@ -120,7 +122,7 @@ public class AnnotationReaderGetOrRegisterTest {
     }
 
     @Test
-    @Metered(tags = { "a=b", "c=d" }, reusable = true)
+    @Metered(tags = { "a=b", "c=d" })
     public void meterFromName() {
         assertGetsOrRegisters(AnnotationReader.METERED, Meter.class, 2);
     }
@@ -137,7 +139,7 @@ public class AnnotationReaderGetOrRegisterTest {
     }
 
     @Test
-    @SimplyTimed(tags = { "a=b", "c=d" }, reusable = true)
+    @SimplyTimed(tags = { "a=b", "c=d" })
     public void simpleTimerFromName() {
         assertGetsOrRegisters(AnnotationReader.SIMPLY_TIMED, SimpleTimer.class, 2);
     }
@@ -154,7 +156,7 @@ public class AnnotationReaderGetOrRegisterTest {
     }
 
     @Test
-    @Timed(tags = { "a=b", "c=d" }, reusable = true)
+    @Timed(tags = { "a=b", "c=d" })
     public void timerFromName() {
         assertGetsOrRegisters(AnnotationReader.TIMED, Timer.class, 2);
     }
@@ -171,7 +173,7 @@ public class AnnotationReaderGetOrRegisterTest {
     }
 
     @Test
-    @ConcurrentGauge(tags = { "a=b", "c=d" }, reusable = true)
+    @ConcurrentGauge(tags = { "a=b", "c=d" })
     public void concurrentGaugeFromName() {
         assertGetsOrRegisters(AnnotationReader.CONCURRENT_GAUGE, org.eclipse.microprofile.metrics.ConcurrentGauge.class, 2);
     }
@@ -196,8 +198,7 @@ public class AnnotationReaderGetOrRegisterTest {
     @Test
     @Gauge(tags = { "a=b", "c=d" }, unit = MetricUnits.HOURS, description = "description")
     public void gaugeFromMetdadata() {
-        Gauge annotation = TestUtils.getTestMethod().getAnnotation(Gauge.class);
-        Metadata annoated = AnnotationReader.GAUGE.metadata(annotation);
+        Metadata annoated = AnnotationReader.GAUGE.metadata(getClass(), TestUtils.getTestMethod());
         String name = getClass().getCanonicalName() + ".gaugeFromMetdadata";
         Metadata expected = Metadata.builder(annoated).withName(name).build();
         org.eclipse.microprofile.metrics.Gauge<Long> gauge = () -> 1L;
@@ -233,7 +234,6 @@ public class AnnotationReaderGetOrRegisterTest {
             // with no annotation, done
             return;
         }
-        assertEquals(reader.reusable(annotation), metadata.isReusable());
         assertEquals(reader.type(), metadata.getTypeRaw());
         String displayName = reader.displayName(annotation);
         if (displayName.isEmpty()) {
@@ -243,15 +243,15 @@ public class AnnotationReaderGetOrRegisterTest {
         }
         String description = reader.description(annotation);
         if (description.isEmpty()) {
-            assertFalse(metadata.getDescription().isPresent());
+            assertFalse(metadata.description().isPresent());
         } else {
-            assertEquals(description, metadata.getDescription().get());
+            assertEquals(description, metadata.getDescription());
         }
         String unit = reader.unit(annotation);
         if (unit.isEmpty()) {
-            assertFalse(metadata.getUnit().isPresent());
+            assertFalse(metadata.unit().isPresent());
         } else {
-            assertEquals(unit, metadata.getUnit().get());
+            assertEquals(unit, metadata.getUnit());
         }
     }
 

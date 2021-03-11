@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 
 package org.glassfish.embeddable;
 
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -74,8 +76,10 @@ public class GlassFishProperties {
      * for the plugged in {@link GlassFishRuntime} (if any)
      *
      * @param props Properties object which will back this GlassFishProperties object.
+     * @throws NullPointerException if props is null
      */
     public GlassFishProperties(Properties props) {
+        Objects.requireNonNull(props, "Properties parameter cannot be null");
         gfProperties = props;
     }
 

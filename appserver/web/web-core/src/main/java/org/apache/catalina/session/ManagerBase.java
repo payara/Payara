@@ -219,7 +219,7 @@ public abstract class ManagerBase implements Manager {
      * The set of currently active Sessions for this Manager, keyed by
      * session identifier.
      */
-    protected Map<String, Session> sessions = new ConcurrentHashMap<String, Session>();
+    protected final Map<String, Session> sessions = new ConcurrentHashMap<>();
     
     // Number of sessions created by this manager
     protected int sessionCounter=0;
@@ -896,19 +896,11 @@ public abstract class ManagerBase implements Manager {
     }    
 
 
-    /**
-     * Return the set of active Sessions associated with this Manager.
-     * If this Manager has no active Sessions, a zero-length array is returned.
-     */
     @Override
-    public Session[] findSessions() {
+    public List<Session> findSessions() {
         // take a snapshot
-        Collection<Session> sessionsValues = sessions.values();
-        List<Session> list = new ArrayList<Session>(sessionsValues.size());
-        for (Session session : sessionsValues) {
-            list.add(session);
-        }
-        return list.toArray(new Session[list.size()]);
+        Collection<Session> sessionsValues = this.sessions.values();
+        return new ArrayList<>(sessionsValues);
     }
 
 

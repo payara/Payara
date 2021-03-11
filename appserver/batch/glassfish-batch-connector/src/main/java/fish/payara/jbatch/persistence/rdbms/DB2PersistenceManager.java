@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,13 +64,11 @@ import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFI
  *
  * DB2 Persistence Manager
  */
-
 public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implements DB2JDBCConstants {
 
-	private static final String CLASSNAME = JBatchJDBCPersistenceManager.class
-			.getName();
+	private static final String CLASSNAME = JBatchJDBCPersistenceManager.class.getName();
 
-	private final static Logger logger = Logger.getLogger(CLASSNAME);
+	private static final Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
 
@@ -78,9 +76,8 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 	protected Map<String, String> createDB2Strings;
 
 	@Override
-	public void init(IBatchConfig batchConfig)
-			throws BatchContainerServiceException {
-		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
+	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
+		logger.log(Level.CONFIG, "Entering CLASSNAME.init(), batchConfig ={0}", batchConfig);
 
 		this.batchConfig = batchConfig;
 
@@ -113,11 +110,10 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 			throw new BatchContainerServiceException(e1);
 		}
 
-		logger.config("JNDI name = " + jndiName);
+		logger.log(Level.CONFIG, "JNDI name = {0}", jndiName);
 
 		if (jndiName == null || jndiName.equals("")) {
-			throw new BatchContainerServiceException(
-					"JNDI name is not defined.");
+			throw new BatchContainerServiceException("JNDI name is not defined.");
 		}
 
 
@@ -221,10 +217,8 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
 						try (ResultSet resultSet = statement.executeQuery(query)) {
 							int rowcount = getTableRowCount(resultSet);
 
-							if (rowcount == 0) {
-								if (!resultSet.next()) {
-									result = false;
-								}
+							if (rowcount == 0 && !resultSet.next()) {
+                                result = false;
 							}
 						}
 
@@ -251,10 +245,11 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager implemen
                 preparedStatement.setString(1, schema);
                 preparedStatement.executeUpdate();
             } finally {
-                logger.finest("Exiting " + CLASSNAME + ".setSchemaOnConnection()");
+                logger.log(Level.FINEST, "Exiting {0}.setSchemaOnConnection()", CLASSNAME);
             }
         }
 
+    @Override
         protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
             queryStrings = super.getSharedQueryMap(batchConfig);
             

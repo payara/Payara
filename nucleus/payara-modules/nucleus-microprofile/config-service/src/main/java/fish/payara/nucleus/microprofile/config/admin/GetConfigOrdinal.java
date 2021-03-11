@@ -40,6 +40,18 @@
 package fish.payara.nucleus.microprofile.config.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.APPLICATION;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLOUD;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CLUSTER;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.CONFIG;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.DOMAIN;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.JDBC;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.JNDI;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.LDAP;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.MODULE;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.PASSWORD;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SECRETS;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SERVER;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,7 +90,7 @@ import org.glassfish.config.support.CommandTarget;
 })
 public class GetConfigOrdinal implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc,cloud", defaultValue = "domain")
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc,cloud,ldap", defaultValue = DOMAIN)
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -94,48 +106,52 @@ public class GetConfigOrdinal implements AdminCommand {
         if (serviceConfig != null) {
             Integer result = -1;
             switch (source) {
-                case "domain": {
+                case DOMAIN: {
                     result = Integer.parseInt(serviceConfig.getDomainOrdinality());
                     break;
                 }
-                case "config": {
+                case CONFIG: {
                     result = Integer.parseInt(serviceConfig.getConfigOrdinality());
                     break;
                 }
-                case "server": {
+                case SERVER: {
                     result = Integer.parseInt(serviceConfig.getServerOrdinality());
                     break;
                 }
-                case "application": {
+                case APPLICATION: {
                     result = Integer.parseInt(serviceConfig.getApplicationOrdinality());
                     break;
                 }
-                case "module": {
+                case MODULE: {
                     result = Integer.parseInt(serviceConfig.getModuleOrdinality());
                     break;
                 }
-                case "cluster": {
+                case CLUSTER: {
                     result = Integer.parseInt(serviceConfig.getClusterOrdinality());
                     break;
                 }
-                case "jndi": {
+                case JNDI: {
                     result = Integer.parseInt(serviceConfig.getJNDIOrdinality());
                     break;
                 }
-                case "secrets": {
+                case SECRETS: {
                     result = Integer.parseInt(serviceConfig.getSecretDirOrdinality());
                     break;
                 }
-                case "password": {
+                case PASSWORD: {
                     result = Integer.parseInt(serviceConfig.getPasswordOrdinality());
                     break;
                 }
-                case "jdbc": {
+                case JDBC: {
                     result = Integer.parseInt(serviceConfig.getJdbcOrdinality());
                     break;
                 }
-                case "cloud": {
+                case CLOUD: {
                     result = Integer.parseInt(serviceConfig.getCloudOrdinality());
+                    break;
+                }
+                case LDAP: {
+                    result = Integer.parseInt(serviceConfig.getLdapOrdinality());
                     break;
                 }
             }

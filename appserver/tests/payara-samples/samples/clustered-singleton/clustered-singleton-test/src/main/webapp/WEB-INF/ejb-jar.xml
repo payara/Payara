@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+        version="3.2"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd">
+    <enterprise-beans>
+        <session>
+            <ejb-name>ClusteredSingletonEjbXml1</ejb-name>
+            <business-local>fish.payara.samples.clustered.singleton.api.SingletonAPI</business-local>
+            <ejb-class>fish.payara.samples.clustered.singleton.ClusteredSingletonEjbXml</ejb-class>
+            <session-type>Singleton</session-type>
+            <transaction-type>Container</transaction-type>
+        </session>
+        <session>
+            <ejb-name>ClusteredSingletonEjbXml2</ejb-name>
+            <business-local>fish.payara.samples.clustered.singleton.api.SingletonAPI</business-local>
+            <ejb-class>fish.payara.samples.clustered.singleton.ClusteredSingletonEjbXml2</ejb-class>
+            <session-type>Singleton</session-type>
+            <transaction-type>Container</transaction-type>
+        </session>
+    </enterprise-beans>
+</ejb-jar>

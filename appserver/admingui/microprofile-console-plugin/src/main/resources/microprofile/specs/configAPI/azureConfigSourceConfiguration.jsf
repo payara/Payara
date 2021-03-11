@@ -136,7 +136,7 @@
                     label="$resource{i18n_microprofile.config.azure.configuration.privateKeyFileLabel}"  
                     helpText="$resource{i18n_microprofile.config.azure.configuration.privateKeyFileHelpText}">
             <sun:textField id="privateKeyFileField" columns="$int{75}" maxLength="255" 
-                        text="#{pageSession.valueMap['privateKeyPath']}" styleClass="required"  
+                        text="#{pageSession.valueMap['privateKeyFile']}" styleClass="required"  
                         required="#{true}"/>
         </sun:property>
     </sun:propertySheetSection>

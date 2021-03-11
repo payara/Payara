@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.StringJoiner;
 
 /**
  * Tag of name/value pair, used for XML unmarshalling
@@ -83,4 +84,12 @@ public class XmlTag {
         public void setValue(String value) {
             this.value = value;
         }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", XmlTag.class.getSimpleName() + "[", "]")
+                .add("name='" + name + "'")
+                .add("value='" + value + "'")
+                .toString();
     }
+}

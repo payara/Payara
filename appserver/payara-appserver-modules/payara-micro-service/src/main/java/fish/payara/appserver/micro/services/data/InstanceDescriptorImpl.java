@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016-2019 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2020 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -46,6 +46,7 @@ import org.glassfish.internal.data.ApplicationInfo;
 import fish.payara.micro.data.ApplicationDescriptor;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.micro.data.ModuleDescriptor;
+import java.util.UUID;
 
 /**
  *
@@ -55,7 +56,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
 
     private static final long serialVersionUID = 1L;
 
-    private final String memberUUID;
+    private final UUID memberUUID;
     private String instanceName;
     private final List<Integer> httpPorts;
     private final List<Integer> httpsPorts;
@@ -68,9 +69,9 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
     private String instanceGroup;
     private long heartBeatTS;
 
-    public InstanceDescriptorImpl(String UUID) throws UnknownHostException {
+    public InstanceDescriptorImpl(UUID uuid) throws UnknownHostException {
         hostName = InetAddress.getLocalHost();
-        memberUUID = UUID;
+        memberUUID = uuid;
         httpPorts = new ArrayList<>();
         httpsPorts = new ArrayList<>();
         heartBeatTS = System.currentTimeMillis();
@@ -106,7 +107,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
      * @return the memberUUID
      */
     @Override
-    public String getMemberUUID() {
+    public UUID getMemberUUID() {
         return memberUUID;
     }
 
@@ -315,7 +316,7 @@ public class InstanceDescriptorImpl implements InstanceDescriptor {
         configBuilder.add("Instance Name", this.instanceName);
         configBuilder.add("Instance Group", this.instanceGroup);
         if (memberUUID != null) {
-            configBuilder.add("Hazelcast Member UUID", this.memberUUID);
+            configBuilder.add("Hazelcast Member UUID", this.memberUUID.toString());
         }
 
         // Create array of applications

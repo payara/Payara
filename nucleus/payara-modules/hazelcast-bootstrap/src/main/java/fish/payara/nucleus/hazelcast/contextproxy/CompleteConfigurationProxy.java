@@ -59,9 +59,9 @@ import javax.cache.integration.CacheWriterException;
  * @author lprimak
  */
 class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
-    public CompleteConfigurationProxy(CompleteConfiguration<K, V> config, JavaEEContextUtil ctxUtil) {
+    public CompleteConfigurationProxy(CompleteConfiguration<K, V> config, JavaEEContextUtil.Instance ctxUtilInst) {
         super(config);
-        this.ctxUtil = ctxUtil;
+        this.ctxUtilInst = ctxUtilInst;
         init();
     }
 
@@ -78,7 +78,7 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         return new Factory<CacheLoader<K, V>>() {
             @Override
             public CacheLoader<K, V> create() {
-                try (Context ctx = ctxUtil.pushContext()) {
+                try (Context ctx = ctxUtilInst.pushContext()) {
                     final CacheLoader<K, V> loader = fact.create();
                     return new CacheLoaderImpl(loader);
                 }
@@ -91,14 +91,14 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
 
                 @Override
                 public V load(K k) throws CacheLoaderException {
-                    try (Context context = ctxUtil.pushRequestContext()) {
+                    try (Context context = ctxUtilInst.pushRequestContext()) {
                         return loader.load(k);
                     }
                 }
 
                 @Override
                 public Map<K, V> loadAll(Iterable<? extends K> itrbl) throws CacheLoaderException {
-                    try (Context context = ctxUtil.pushRequestContext()) {
+                    try (Context context = ctxUtilInst.pushRequestContext()) {
                         return loader.loadAll(itrbl);
                     }
                 }
@@ -114,7 +114,7 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         return new Factory<CacheWriter<? super K, ? super V>>() {
             @Override
             public CacheWriter<K, V> create() {
-                try (Context ctx = ctxUtil.pushContext()) {
+                try (Context ctx = ctxUtilInst.pushContext()) {
                     @SuppressWarnings("unchecked")
                     final CacheWriter<K, V> delegate = (CacheWriter<K, V>) fact.create();
                     return new CacheWriterImpl(delegate);
@@ -124,28 +124,28 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
             class CacheWriterImpl implements CacheWriter<K, V> {
                 @Override
                 public void write(Cache.Entry<? extends K, ? extends V> entry) throws CacheWriterException {
-                    try (Context context = ctxUtil.pushRequestContext()) {
+                    try (Context context = ctxUtilInst.pushRequestContext()) {
                         delegate.write(entry);
                     }
                 }
 
                 @Override
                 public void writeAll(Collection<Cache.Entry<? extends K, ? extends V>> clctn) throws CacheWriterException {
-                    try (Context context = ctxUtil.pushRequestContext()) {
+                    try (Context context = ctxUtilInst.pushRequestContext()) {
                         delegate.writeAll(clctn);
                     }
                 }
 
                 @Override
                 public void delete(Object o) throws CacheWriterException {
-                    try (Context context = ctxUtil.pushRequestContext()) {
+                    try (Context context = ctxUtilInst.pushRequestContext()) {
                         delegate.delete(o);
                     }
                 }
 
                 @Override
                 public void deleteAll(Collection<?> clctn) throws CacheWriterException {
-                    try (Context context = ctxUtil.pushRequestContext()) {
+                    try (Context context = ctxUtilInst.pushRequestContext()) {
                         delegate.deleteAll(clctn);
                     }
                 }
@@ -161,6 +161,6 @@ class CompleteConfigurationProxy<K, V> extends MutableConfiguration<K, V> {
         };
     }
 
-    private final JavaEEContextUtil ctxUtil;
+    private final JavaEEContextUtil.Instance ctxUtilInst;
     private static final long serialVersionUID = 1L;
 }

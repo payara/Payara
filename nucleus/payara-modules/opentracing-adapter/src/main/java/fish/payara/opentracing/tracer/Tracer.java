@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -44,13 +44,15 @@ import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpan.SpanContextRelationshipType;
 import fish.payara.notification.requesttracing.RequestTraceSpanContext;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingScope;
+import fish.payara.opentracing.ScopeManager;
 
 import io.opentracing.Scope;
-import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
+import io.opentracing.tag.Tag;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -84,22 +86,18 @@ import org.glassfish.internal.api.Globals;
 public class Tracer implements io.opentracing.Tracer {
 
     private final String applicationName;
-    private final ScopeManager scopeManager;
-    
+    private final io.opentracing.ScopeManager scopeManager;
+
     private static final String TRACEID_KEY = "traceid";
     private static final String SPANID_KEY = "spanid";
-    
+
     /**
      * Constructor that registers this Tracer to an application.
      *
      * @param applicationName The application to register this tracer to
+     * @param scopeManager The {@link io.opentracing.ScopeManager} to use with this Tracer
      */
-    public Tracer(String applicationName) {
-        this.applicationName = applicationName;
-        scopeManager = new fish.payara.opentracing.ScopeManager();
-    }
-
-    public Tracer(String applicationName, ScopeManager scopeManager) {
+    public Tracer(String applicationName, io.opentracing.ScopeManager scopeManager) {
         this.applicationName = applicationName;
         this.scopeManager = scopeManager;
     }
@@ -113,22 +111,22 @@ public class Tracer implements io.opentracing.Tracer {
     public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
         RequestTraceSpanContext payaraSpanContext = (RequestTraceSpanContext) spanContext;
         Iterable<Map.Entry<String, String>> baggageItems = payaraSpanContext.baggageItems();
-        
+
         if (carrier instanceof TextMap) {
             TextMap map = (TextMap) carrier;
-            
-            if (format.equals(Format.Builtin.HTTP_HEADERS)) {          
+
+            if (format.equals(Format.Builtin.HTTP_HEADERS)) {
                 for (Map.Entry<String, String> baggage : baggageItems) {
                     map.put(encodeURLString(baggage.getKey()), encodeURLString(baggage.getValue()));
                 }
-                
+
                 map.put(TRACEID_KEY, encodeURLString(payaraSpanContext.getTraceId().toString()));
                 map.put(SPANID_KEY, encodeURLString(payaraSpanContext.getSpanId().toString()));
             } else if (format.equals(Format.Builtin.TEXT_MAP)) {
                 for (Map.Entry<String, String> baggage : baggageItems) {
                     map.put(baggage.getKey(), baggage.getValue());
                 }
-                
+
                 map.put(TRACEID_KEY, payaraSpanContext.getTraceId().toString());
                 map.put(SPANID_KEY, payaraSpanContext.getSpanId().toString());
             } else {
@@ -146,8 +144,8 @@ public class Tracer implements io.opentracing.Tracer {
                 } catch (IOException ex) {
                     Logger.getLogger(Tracer.class.getName()).log(Level.WARNING, null, ex);
                     throw new UncheckedIOException(ex);
-                }                
-                
+                }
+
             } else {
                 throw new InvalidCarrierFormatException(format, carrier);
             }
@@ -159,12 +157,12 @@ public class Tracer implements io.opentracing.Tracer {
     @Override
     public <C> SpanContext extract(Format<C> format, C carrier) {
         boolean traceIDRecieved = false;
-        
+
         if (carrier instanceof TextMap) {
             TextMap map = (TextMap) carrier;
-            Map<String,String> baggageItems = new HashMap<>();
+            Map<String, String> baggageItems = new HashMap<>();
             Iterator<Map.Entry<String, String>> allEntries = map.iterator();
-            
+
             UUID traceId = null;
             UUID spanId = null;
 
@@ -184,8 +182,8 @@ public class Tracer implements io.opentracing.Tracer {
                             break;
                     }
                 }
-            
-            } else if (format.equals(Format.Builtin.TEXT_MAP)){
+
+            } else if (format.equals(Format.Builtin.TEXT_MAP)) {
                 while (allEntries.hasNext()) {
                     Entry<String, String> entry = allEntries.next();
                     switch (entry.getKey()) {
@@ -205,16 +203,16 @@ public class Tracer implements io.opentracing.Tracer {
                 throw new InvalidCarrierFormatException(format, carrier);
             }
             if (traceIDRecieved) {
-                if (spanId == null){
+                if (spanId == null) {
                     throw new IllegalArgumentException("No SpanId recieved");
                 }
                 return new RequestTraceSpanContext(traceId, spanId, baggageItems);
             } else {
                 return null; //Did not recieve a SpanContext
             }
-        } else if (carrier instanceof ByteBuffer){
+        } else if (carrier instanceof ByteBuffer) {
             ByteBuffer buffer = (ByteBuffer) carrier;
-            if (format.equals(Format.Builtin.BINARY)){
+            if (format.equals(Format.Builtin.BINARY)) {
                 try {
                     ByteArrayInputStream inputStream = new ByteArrayInputStream(buffer.array());
                     ObjectInputStream objectStream = new ObjectInputStream(inputStream);
@@ -232,19 +230,15 @@ public class Tracer implements io.opentracing.Tracer {
     }
 
     @Override
-    public ScopeManager scopeManager() {
+    public io.opentracing.ScopeManager scopeManager() {
         return scopeManager;
     }
 
     @Override
     public Span activeSpan() {
-        Scope activeScope = scopeManager().active();
-        if (activeScope != null) {
-            return activeScope.span();
-        }
-        return null;
+        return scopeManager().activeSpan();
     }
-    
+
     private String decodeURLString(String toDecode) {
         try {
             return URLDecoder.decode(toDecode, StandardCharsets.UTF_8.displayName());
@@ -252,12 +246,24 @@ public class Tracer implements io.opentracing.Tracer {
             throw new IllegalArgumentException(ex);
         }
     }
-    
+
     private String encodeURLString(String toEncode) {
         try {
             return URLEncoder.encode(toEncode, StandardCharsets.UTF_8.displayName());
         } catch (UnsupportedEncodingException ex) {
             throw new IllegalArgumentException(ex);
+        }
+    }
+
+    @Override
+    public Scope activateSpan(Span span) {
+        return scopeManager.activate(span);
+    }
+
+    @Override
+    public void close() {
+        if (scopeManager instanceof ScopeManager) {
+            ((ScopeManager) scopeManager).activeScope().close();
         }
     }
 
@@ -336,45 +342,24 @@ public class Tracer implements io.opentracing.Tracer {
         }
 
         @Override
+        public <T> SpanBuilder withTag(Tag<T> key, T value) {
+            span.setTag(key, value);
+            return this;
+        }
+
+        @Override
         public SpanBuilder withStartTimestamp(long microseconds) {
             microsecondsStartTime = microseconds;
             return this;
         }
 
         @Override
-        public Scope startActive(boolean bln) {
-            Scope origin = scopeManager().active();
-            if (origin != null) {
-                Span parent = origin.span();
-                asChildOf(parent);
-            }
-            origin = scopeManager.activate(span, bln);
-            
-            if (requestTracing != null && !requestTracing.isTraceInProgress()) {
-                if (span.getSpanReferences().isEmpty()) {
-                    span.setEventType(EventType.TRACE_START);
-                } else {
-                    span.setEventType(EventType.PROPAGATED_TRACE);
-                    
-                    // Assume the first parent reference found has the correct traceId - would it ever not be?
-                    span.setTraceId(span.getSpanReferences().get(0).getReferenceSpanContext().getTraceId());
-                }
-                
-                requestTracing.startTrace(span);
-            }
-            
-            return origin;
-            
-        }
-
-        @Override
-        public Span startManual() {
+        public Span start() {
             // If we shouldn't ignore the currently active span, set it as this span's parent
             if (!ignoreActiveSpan) {
                 fish.payara.opentracing.span.Span activeSpan = (fish.payara.opentracing.span.Span) activeSpan();
-
                 if (activeSpan != null) {
-                    span.addSpanReference(activeSpan.getSpanContext(), SpanContextRelationshipType.ChildOf);
+                    asChildOf(activeSpan);
                 }
             }
 
@@ -390,22 +375,16 @@ public class Tracer implements io.opentracing.Tracer {
                     span.setEventType(EventType.TRACE_START);
                 } else {
                     span.setEventType(EventType.PROPAGATED_TRACE);
-                    
+
                     // Assume the first parent reference found has the correct traceId - would it ever not be?
                     span.setTraceId(span.getSpanReferences().get(0).getReferenceSpanContext().getTraceId());
                 }
-                
+
                 requestTracing.startTrace(span);
-            } 
-            
+            }
+
             return span;
         }
-
-        @Override
-        public Span start() {
-            return startManual();
-        }
-
     }
 
 }
