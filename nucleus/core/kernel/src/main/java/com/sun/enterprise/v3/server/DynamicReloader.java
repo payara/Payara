@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -250,7 +251,7 @@ public class DynamicReloader implements Runnable {
         deployParam.set(DeploymentProperties.KEEP_REPOSITORY_DIRECTORY, "true");
 
         Properties reloadFile = appInfo.readReloadFile();
-        boolean hotDeploy = Boolean.parseBoolean(reloadFile.get(DeployCommandParameters.ParameterNames.HOT_DEPLOY));
+        boolean hotDeploy = Boolean.parseBoolean(reloadFile.getProperty(DeployCommandParameters.ParameterNames.HOT_DEPLOY));
         if (hotDeploy) {
             deployParam.set(DeployCommandParameters.ParameterNames.HOT_DEPLOY, "true");
             boolean metadataChanged = Boolean.parseBoolean(reloadFile.getProperty(DeployCommandParameters.ParameterNames.METADATA_CHANGED));
