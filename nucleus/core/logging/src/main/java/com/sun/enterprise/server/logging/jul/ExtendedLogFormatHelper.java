@@ -80,5 +80,5 @@ public class ExtendedLogFormatHelper extends LogFormatHelper {
         } catch (final Exception ex) {
             return false;
         }
-  }
+    }
 }

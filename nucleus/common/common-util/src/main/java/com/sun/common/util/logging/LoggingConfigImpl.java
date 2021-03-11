@@ -86,6 +86,7 @@ public class LoggingConfigImpl implements LoggingConfig {
 
     private static final String HANDLER_SERVER_LOG = "fish.payara.logging.jul.PayaraLogHandler";
     private static final String HANDLER_NOTIFICATION_LOG = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
+    private static final String LOGGER_WEB_CONTAINER = "javax.enterprise.system.container.web";
 
     private static final Logger LOG = Logger.getLogger(LoggingConfigImpl.class.getName());
 
@@ -147,10 +148,10 @@ public class LoggingConfigImpl implements LoggingConfig {
 
     private InputStream getInputStream(File file) throws IOException {
         InputStream fileInputStream;
-        if (!file.exists()) {
-            fileInputStream = getDefaultLoggingPropertiesInputStream();
-        } else {
+        if (file.exists()) {
             fileInputStream = new FileInputStream(file);
+        } else {
+            fileInputStream = getDefaultLoggingPropertiesInputStream();
         }
         return fileInputStream;
     }
@@ -207,7 +208,7 @@ public class LoggingConfigImpl implements LoggingConfig {
         }
         String property = (String) props.setProperty(key, propertyValue);
         // FIXME: remove. No magical surprises, force user to use script or documentation.
-        if (propertyName.contains("javax.enterprise.system.container.web")) {
+        if (propertyName.contains(LOGGER_WEB_CONTAINER)) {
             setWebLoggers(propertyValue);
         }
 
@@ -235,7 +236,7 @@ public class LoggingConfigImpl implements LoggingConfig {
                 key = e.getKey();
             }
             String property = (String) props.setProperty(key, e.getValue());
-            if (e.getKey().contains("javax.enterprise.system.container.web")) {
+            if (e.getKey().contains(LOGGER_WEB_CONTAINER)) {
                 setWebLoggers(new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePlaceholder(e.getValue()));
             }
             //build Map of entries to return

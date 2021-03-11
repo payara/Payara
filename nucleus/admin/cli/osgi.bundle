@@ -44,4 +44,6 @@
                         com.sun.enterprise.admin.cli.schemadoc; \
                         version=${project.osgi.version}
 
-Import-Package: fish.payara.logging.jul.*; resolution:=optional, *
+Import-Package: \
+          fish.payara.logging.jul.*; resolution:=optional, \
+          *

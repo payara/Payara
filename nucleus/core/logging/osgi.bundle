@@ -46,6 +46,10 @@
           com.sun.enterprise.server.logging.diagnostics, \
           com.sun.enterprise.server.logging
 
+Import-Package: \
+          fish.payara.logging.jul.*; resolution:=optional, \
+          *
+
 DynamicImport-Package: \
           org.glassfish.cluster.ssh.launcher, \
           org.glassfish.cluster.ssh.sftp, \
@@ -53,9 +57,4 @@ DynamicImport-Package: \
           com.sun.enterprise.util.cluster.windows.io, \
           com.sun.enterprise.util.cluster.windows.process, \
           org.glassfish.cluster.ssh.util, \
-          javax.json, \
-          !fish.payara.logging.jul.*
-
-Import-Package: \
-          fish.payara.logging.jul.*; resolution:=optional, \
-          *
+          javax.json
