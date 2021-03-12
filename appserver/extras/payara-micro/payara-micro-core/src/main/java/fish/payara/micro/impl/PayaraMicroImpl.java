@@ -1283,7 +1283,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     warmup = true;
                     break;
                 case hotdeploy:
-                    hotDeploy = Boolean.parseBoolean(value);
+                    hotDeploy = true;
                     break;
                 case disablephonehome:
                     disablePhoneHome = true;
