@@ -2,6 +2,10 @@
 set -e
 
 DOCKER_CONTAINER_ID="$(cat /proc/self/cgroup | grep :/docker/  | sed s/\\//\\n/g | tail -1)"
+if [ -z "${DOCKER_CONTAINER_ID}" ]; then
+    echo "Fallback for Docker Container ID"
+    DOCKER_CONTAINER_ID=$HOSTNAME
+fi
 ASADMIN="${PAYARA_DIR}/bin/asadmin"
 echo "Docker Container ID is: ${DOCKER_CONTAINER_ID}"
 
