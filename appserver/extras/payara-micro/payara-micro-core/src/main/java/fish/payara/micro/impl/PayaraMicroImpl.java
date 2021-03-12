@@ -39,34 +39,6 @@
  */
 package fish.payara.micro.impl;
 
-import com.sun.appserv.server.util.Version;
-import com.sun.enterprise.glassfish.bootstrap.Constants;
-import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
-import com.sun.enterprise.server.logging.ODLLogFormatter;
-import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
-import fish.payara.boot.runtime.BootCommand;
-import fish.payara.boot.runtime.BootCommands;
-import fish.payara.deployment.util.GAVConvertor;
-import fish.payara.micro.BootstrapException;
-import fish.payara.micro.PayaraMicroRuntime;
-import fish.payara.micro.boot.AdminCommandRunner;
-import fish.payara.micro.boot.PayaraMicroBoot;
-import fish.payara.micro.boot.PayaraMicroLauncher;
-import fish.payara.micro.boot.loader.OpenURLClassLoader;
-import fish.payara.micro.cmd.options.RUNTIME_OPTION;
-import fish.payara.micro.cmd.options.RuntimeOptions;
-import fish.payara.micro.cmd.options.ValidationException;
-import fish.payara.micro.data.InstanceDescriptor;
-import fish.payara.nucleus.executorservice.PayaraFileWatcher;
-import org.glassfish.embeddable.BootstrapProperties;
-import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.embeddable.Deployer;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFish.Status;
-import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.GlassFishProperties;
-import org.glassfish.embeddable.GlassFishRuntime;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -101,6 +73,36 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.glassfish.bootstrap.Constants;
+import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
+import com.sun.enterprise.server.logging.ODLLogFormatter;
+
+import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.embeddable.Deployer;
+import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFish.Status;
+import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishProperties;
+import org.glassfish.embeddable.GlassFishRuntime;
+
+import fish.payara.appserver.rest.endpoints.config.admin.ListRestEndpointsCommand;
+import fish.payara.boot.runtime.BootCommand;
+import fish.payara.boot.runtime.BootCommands;
+import fish.payara.deployment.util.GAVConvertor;
+import fish.payara.micro.BootstrapException;
+import fish.payara.micro.PayaraMicroRuntime;
+import fish.payara.micro.boot.AdminCommandRunner;
+import fish.payara.micro.boot.PayaraMicroBoot;
+import fish.payara.micro.boot.PayaraMicroLauncher;
+import fish.payara.micro.boot.loader.OpenURLClassLoader;
+import fish.payara.micro.cmd.options.RUNTIME_OPTION;
+import fish.payara.micro.cmd.options.RuntimeOptions;
+import fish.payara.micro.cmd.options.ValidationException;
+import fish.payara.micro.data.InstanceDescriptor;
+import fish.payara.nucleus.executorservice.PayaraFileWatcher;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -199,6 +201,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String publicAddress = "";
     private int initialJoinWait = 1;
     private boolean warmup;
+    private Boolean hotDeploy;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -1279,6 +1282,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 case warmup:
                     warmup = true;
                     break;
+                case hotdeploy:
+                    hotDeploy = Boolean.parseBoolean(value);
+                    break;
                 case disablephonehome:
                     disablePhoneHome = true;
                     break;
@@ -1627,7 +1633,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     deploymentParams.add("--force=true");
                     deploymentParams.add("--loadOnly=true");
                     deploymentParams.add("--name=" + deploymentName);
-
+                    if (hotDeploy) {
+                        deploymentParams.add("--hotDeploy=true");
+                    }
                     if (deployment.getName().endsWith(".war")) {
                         String deploymentContext;
                         if ("ROOT".equals(deploymentName)) {
@@ -1665,7 +1673,9 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 deploymentParams.add("--availabilityenabled=true");
                 deploymentParams.add("--force=true");
                 deploymentParams.add("--loadOnly=true");
-
+                if (hotDeploy) {
+                    deploymentParams.add("--hotDeploy=true");
+                }
                 String deploymentContext = null;
                 if ("file".equalsIgnoreCase(deploymentURI.getScheme())) {
                     File deployment = new File(deploymentURI);
@@ -1700,7 +1710,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     }
                     deploymentParams.add("--contextroot=" + deploymentContext);
                 }
-
                 deployer.deploy(deploymentURI, deploymentParams.toArray(new String[0]));
 
                 deploymentCount++;
