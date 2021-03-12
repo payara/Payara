@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -99,7 +99,7 @@ public class SetAdminAuditConfiguration implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
-    @Param(name = "enabled")
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
     @Param(name = "auditLevel", optional = true, acceptableValues = "MODIFIERS, ACCESSORS, INTERNAL")
@@ -140,8 +140,14 @@ public class SetAdminAuditConfiguration implements AdminCommand {
             ConfigSupport.apply(new SingleConfigCode<AdminAuditConfiguration>() {
                 @Override
                 public Object run(AdminAuditConfiguration proxy) throws PropertyVetoException, TransactionFailure {
-                    proxy.enabled(enabled.toString());
-                    proxy.setAuditLevel(auditLevel);
+                    if (enabled != null) {
+                        proxy.enabled(enabled.toString());
+                    }
+
+                    if (auditLevel != null) {
+                        proxy.setAuditLevel(auditLevel);
+                    }
+
 
                     List<String> notifiers = proxy.getNotifierList();
                     if (enableNotifiers != null) {
