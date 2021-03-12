@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,42 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.rest.management.extension;
+package org.glassfish.jdbcruntime.deployment.annotation.handlers;
 
-import java.lang.annotation.Annotation;
-import java.net.URL;
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.Map;
 
-import org.jboss.arquillian.container.test.impl.enricher.resource.ContainerURLResourceProvider;
-import org.jboss.arquillian.core.api.annotation.Observes;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.test.spi.event.suite.AfterClass;
-import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
-
-public class TemporaryInstanceProvider extends ContainerURLResourceProvider {
-
-    private static TemporaryInstance instance;
-
-    @Override
-    public boolean canProvide(Class<?> type) {
-        return type.isAssignableFrom(TemporaryInstance.class);
-    }
-
-    @Override
-    public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
-        if (!instance.isInitialized()) {
-            instance.initialise((URL) super.lookup(resource, qualifiers));
+class EnvironmentUtil {
+    static void setEnv(Map<String, String> newenv) throws Exception {
+        try {
+            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
+            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
+            theEnvironmentField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
+            env.putAll(newenv);
+            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
+            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, String> cienv = (Map<String, String>)     theCaseInsensitiveEnvironmentField.get(null);
+            cienv.putAll(newenv);
+        } catch (NoSuchFieldException e) {
+            Class[] classes = Collections.class.getDeclaredClasses();
+            Map<String, String> env = System.getenv();
+            for(Class cl : classes) {
+                if("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+                    Field field = cl.getDeclaredField("m");
+                    field.setAccessible(true);
+                    Object obj = field.get(env);
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> map = (Map<String, String>) obj;
+                    map.clear();
+                    map.putAll(newenv);
+                }
+            }
         }
-        return instance;
-    }
-
-    public void beforeClassEvent(@Observes BeforeClass event) {
-        instance = new TemporaryInstance();
-    }
-
-    public void afterClassEvent(@Observes AfterClass event) {
-        if (instance.isCreated()) {
-            instance.destroy();
-        }
-        instance = null;
     }
 }

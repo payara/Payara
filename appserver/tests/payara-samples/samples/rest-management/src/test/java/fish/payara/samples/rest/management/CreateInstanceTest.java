@@ -37,72 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.microprofile.openapi.activation;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package fish.payara.samples.rest.management;
 
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+import fish.payara.samples.CliCommands;
+import fish.payara.samples.NotMicroCompatible;
+import fish.payara.samples.PayaraArquillianTestRunner;
+import fish.payara.samples.PayaraTestShrinkWrap;
+import static fish.payara.samples.rest.management.RestManagementTest.INSTANCE_NAME;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import fish.payara.microprofile.connector.MicroProfileSniffer;
-
-@Service
-@PerLookup
-public class OpenApiSniffer extends MicroProfileSniffer {
-
-    private static final Logger LOGGER = Logger.getLogger(OpenApiSniffer.class.getName());
-
-    public static final String[] OPENAPI_YAML_FILE_PATHS = {
-        "META-INF/openapi.json",
-        "WEB-INF/classes/META-INF/openapi.json",
-        "META-INF/openapi.yaml",
-        "WEB-INF/classes/META-INF/openapi.yaml",
-        "META-INF/openapi.yml",
-        "WEB-INF/classes/META-INF/openapi.yml",
-    };
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends Annotation>[] getAnnotationTypes() {
-        return new Class[] {
-            // All JAX-RS applications are valid applications for OpenAPI
-            javax.ws.rs.Path.class,
-            javax.ws.rs.ApplicationPath.class,
-            // OpenAPI detector classes
-            org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition.class
-        };
+/**
+ *
+ * @author lprimak
+ */
+@RunWith(PayaraArquillianTestRunner.class)
+@NotMicroCompatible
+public class CreateInstanceTest {
+    @Deployment
+    public static WebArchive deploy() {
+        return PayaraTestShrinkWrap.getWebArchive();
     }
 
-    @Override
-    public boolean handles(ReadableArchive archive) {
-        
-        // Check for metrics.xml files
-        try {
-            for (String openApiFile : OPENAPI_YAML_FILE_PATHS) {
-                if (archive.exists(openApiFile)) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Error reading archive", e);
-            return false;
+    @Test
+    public void createInstance() {
+        List<String> output = new ArrayList<>();
+        CliCommands.payaraGlassFish(Arrays.asList("list-instances"), output);
+        List<String> instances = output.stream().map(CreateInstanceTest::firstWord).collect(Collectors.toList());
+        if (!instances.contains(INSTANCE_NAME)) {
+            output.clear();
+            CliCommands.payaraGlassFish(Arrays.asList("list-nodes"), output);
+            String node = output.stream().map(CreateInstanceTest::firstWord).findFirst().get();
+            CliCommands.payaraGlassFish("create-instance", "--node", node, INSTANCE_NAME, "--terse");
         }
-
-        return super.handles(archive);
     }
 
-    @Override
-    protected Class<?> getContainersClass() {
-        return OpenApiContainer.class;
+    static String firstWord(String line) {
+        if (line == null) {
+            return line;
+        }
+        return line.split(" ")[0];
     }
-
-    @Override
-    public String getModuleType() {
-        return "openapi";
-    }
-    
 }

@@ -69,9 +69,8 @@ public class SetHealthCheckNotifierConfigurationTest extends AsadminTest {
     }
 
     @Test
-    public void enabledIsMandatory() {
-        assertMissingParameter("enabled", asadmin("set-healthcheck-configuration",
-                "--setNotifiers", "log-notifier"));
+    public void enabledIsOptional() {
+        assertSuccess(asadmin("set-healthcheck-configuration"));
     }
 
     @Test

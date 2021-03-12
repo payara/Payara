@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -73,6 +73,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
+import static org.glassfish.web.loader.NonCachedJarStreamHandler.forceNonCachedJarURL;
 import static org.glassfish.weld.WeldDeployer.WELD_BOOTSTRAP;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
@@ -675,7 +676,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                 // use a throwaway classloader to load the application's beans.xml
                 ClassLoader throwAwayClassLoader =
                                       new URLClassLoader(new URL[]{archive.getURI().toURL()}, null);
-                URL beansXmlUrl = throwAwayClassLoader.getResource(entry);
+                URL beansXmlUrl = forceNonCachedJarURL(throwAwayClassLoader.getResource(entry));
                 if (beansXmlUrl != null && !beansXmlURLs.contains(beansXmlUrl)) { // http://java.net/jira/browse/GLASSFISH-17157
                     beansXmlURLs.add(beansXmlUrl);
                 }
