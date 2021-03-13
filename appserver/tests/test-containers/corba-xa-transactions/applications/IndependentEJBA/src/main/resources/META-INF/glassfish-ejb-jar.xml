@@ -3,7 +3,7 @@
 <glassfish-ejb-jar>
     <enterprise-beans>
         <ejb>
-            <ejb-name>PackageProcesserService</ejb-name>
+            <ejb-name>PackageProcessorService</ejb-name>
             <ejb-ref>
                 <ejb-ref-name>ejb/CrossPackageWrapper</ejb-ref-name>
                 <jndi-name>corbaname:iiop:${MPCONFIG=fish.payara.test.containers.app.xatxcorba.packagewrapper.remote.host}:${MPCONFIG=fish.payara.test.containers.app.xatxcorba.packagewrapper.remote.port}#java:global/ServiceAssemblyB/ServiceApplicationB/PackageWrapperService!fish.payara.test.containers.app.xatxcorba.interfaces.CrossPackageWrapper</jndi-name>

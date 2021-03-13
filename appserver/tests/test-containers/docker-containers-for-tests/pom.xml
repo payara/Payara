@@ -9,7 +9,7 @@
     <artifactId>docker-containers-for-tests</artifactId>
     <packaging>pom</packaging>
     <name>Payara Test Containers - Base Container for Tests</name>
-    <description>Does not contain Payara, but contains tools used in tests</description>
+    <description>This special container does not contain Payara, but contains tools used in tests</description>
 
     <properties>
         <docker.hostname>localhost</docker.hostname>
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>fish.payara.distributions</groupId>
             <artifactId>payara</artifactId>
-            <!-- Don't remove, allows to override the dependency! -->
+            <!-- Allows to override the dependency, so developer can run tests against different version! -->
             <version>${docker.payara.version}</version>
             <type>zip</type>
             <scope>provided</scope>

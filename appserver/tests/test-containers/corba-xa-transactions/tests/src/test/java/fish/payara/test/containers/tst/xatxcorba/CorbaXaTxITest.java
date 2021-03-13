@@ -52,7 +52,6 @@ import fish.payara.test.containers.tools.container.TestablePayaraPort;
 import fish.payara.test.containers.tools.properties.Properties;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import javax.ws.rs.client.Entity;
@@ -81,6 +80,41 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
+ * This test verifies Payara's processing of XA transactions in CORBA distributed environment.
+ *
+ * The test was originally created to reproduce issue reported as CUSTCOM-148.
+ * <p>
+ * <ul>
+ * <li>The test uses three domains:
+ * <ul>
+ * <li>A has it's own machine
+ * <li>B and C are on another machine
+ * </ul>
+ *
+ * <li>Each domain has a different application deployed on it, all of them deployed on the server
+ * instance (DAS):
+ * <ul>
+ * <li>ServiceAssemblyA (EAR w/ WAR+EJB-JAR) deployed on domain_a
+ * <li>ServiceAssemblyB (EAR w/ EJB-JAR) deployed on domain_b
+ * <li>ServiceAssemblyC (EAR w/ EJB-JAR) deployed on domain_c
+ * </ul>
+ *
+ * <li>An EJB that is located in application A calls an EJB on application B, which in tandem calls
+ * a third EJB on application C.
+ * <li>All EJB definitions are pretty simple and use the default transaction attribute demarcation
+ * (REQUIRED).
+ * </ul>
+ *
+ * <li>See also:
+ * <ul>
+ * <li>PackageProcessorService
+ * <li>PackageWrapperService
+ * <li>PackageGeneratorService
+ * <li>glassfish-ejb-jar.xml files
+ * </ul>
+ *
+ * <li>Note: Don't refactor this monster to a different architecture, it may affect the behavior!
+ *
  * @author David Matejcek
  */
 @Testcontainers
@@ -133,7 +167,7 @@ public class CorbaXaTxITest {
 
 
     @BeforeEach
-    public void deployApplication() throws Throwable {
+    public void deployApplications() throws Throwable {
         assertAll( //
             () -> assertTrue(dasA.isRunning(), "server is running"), //
             () -> assertTrue(dasBC.isRunning(), "server is running") //
@@ -184,16 +218,16 @@ public class CorbaXaTxITest {
 
     @AfterEach
     public void log() throws Throwable {
-//        final ExecResult resultA = dasBC.execInContainer(StandardCharsets.UTF_8, "ls -la /proc/*/fd");
-//        LOG.info("dasBC notify: \n {}", resultA.getStdout());
-//        Thread.sleep(600000L);
-//        final ExecResult resultA = dasA.execInContainer(StandardCharsets.UTF_8, "cat",
+        // The commented out code may help to understand what happened.
+//        final ExecResult resultA = dasA.execInContainer("cat",
 //            dasA.getConfiguration().getPayaraServerLogInDocker().getAbsolutePath());
 //        LOG.info("domainA log: \n {}", resultA.getStdout());
-//        final ExecResult resultB = dasBC.execInContainer(StandardCharsets.UTF_8, "cat",
+
+//        final ExecResult resultB = dasBC.execInContainer("cat",
 //            dasBC.getConfiguration().getPayaraServerLogInDocker().getAbsolutePath());
 //        LOG.info("domainB log: \n {}", resultB.getStdout());
-        final ExecResult resultC = dasBC.execInContainer(StandardCharsets.UTF_8, "tail", "-n", "20",
+
+        final ExecResult resultC = dasBC.execInContainer("tail", "-n", "20",
             CFG_DAS2.getPayaraMainDirectoryInDocker().getAbsolutePath() + "/glassfish/domains/domainC/logs/server.log");
         LOG.info("domainC log: \n {}", resultC.getStdout());
     }
@@ -253,17 +287,8 @@ public class CorbaXaTxITest {
         command.append(" && (env | sort) && locale");
         command.append(" && lsb_release -a");
         command.append(" && ulimit -a");
-        // TODO: move to docker image for testing
-        // TODO: apply to Payara's use case
-//        command.append(" && fixEclipseJars.sh ").append(this.cfg.getMainApplicationDirectoryInDocker()).append("/*")
-//            .append(' ').append(REPACKED_JAR_NAMEADDON);
-//        for (final NetworkTarget hostAndPort : getTargetsToCheck()) {
-//            command.append(" && nc -v -z -w 1 ") //
-//                .append(hostAndPort.getHost()).append(' ').append(hostAndPort.getPort());
-//        }
         command.append(" && cat /etc/hosts && cat /etc/resolv.conf && hostname && netstat -r -n && netstat -ln");
         command.append(" && java -version");
-        // useful to have access to the application state after the container is stopped.
         command.append(" && pwd");
         command.append(" && (rm -rf /host-shared/payara || true)");
         command.append(" && mv /opt/payara/appserver /host-shared/payara");
@@ -273,13 +298,6 @@ public class CorbaXaTxITest {
 
         command.append(" && ls -la ").append(cfg.getMainApplicationDirectoryInDocker());
         command.append(" && ls -la ").append(cfg.getPayaraDomainDirectoryInDocker().getParentFile());
-        if (cfg.isJaCoCoEnabled()) {
-            // FIXME: apply to payara's use case, probably move to lib or domain directory!
-            command.append(" && unzip -o ").append(cfg.getMainApplicationDirectoryInDocker())
-                .append("/org.jacoco.agent-").append(cfg.getJaCoCoVersion()).append(".jar")
-                .append(" \"jacocoagent.jar\" -d ").append(cfg.getMainApplicationDirectoryInDocker()); //
-        }
-
         final File asadmin = cfg.getAsadminFileInDocker();
         command.append(" && ").append(asadmin).append(" --user admin --passwordfile ")
             .append("/opt/payara/passwordFile").append(" create-domain ").append(cfg.getPayaraDomainName());
