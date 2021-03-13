@@ -14,7 +14,6 @@
     <modules>
         <module>docker-containers-for-tests</module>
         <module>tools</module>
-        <module>tools-arquillian</module>
         <module>manual</module>
         <module>cloud</module>
         <module>corba-xa-transactions</module>
