@@ -113,8 +113,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Note: use <code>-Djavax.net.debug=all</code> from the command line to watch whole fun under it
- * all!
+ * This test was created to verify functionalities implemented under PAYARA-3793 - role name mapping
+ * based on a Distinguished Names of a client certificate. Covers also several other related
+ * features.
+ * <p>
+ * This test also reproduces CUSTCOM-106 - see comments in
+ * {@link #setRealmProperties(String, boolean)}
+ * <p>
+ * Note: use <code>-Djavax.net.debug=all</code> from the command line to watch the whole fun under
+ * the hood!
  *
  * @author David Matejcek
  */
@@ -168,24 +175,6 @@ public class CertificateRealmITest {
         clientTrustStore = createClientTrustStore(serverCertificateChain[0]);
         clientTrustStoreFile = File.createTempFile("trust-store", clientTrustStore.getKeyStoreType().name());
         clientTrustStore.save(clientTrustStoreFile);
-    }
-
-
-    private static WebArchive createDeployment() throws Exception {
-        LOG.info("createDeployment()");
-
-        final File webInfDir = testConfiguration.getClassDirectory().toPath()
-            .resolve(Paths.get("security", "war", "servlets", "WEB-INF")).toFile();
-        final WebArchive war = ShrinkWrap.create(WebArchive.class) //
-            .addPackage(PublicServlet.class.getPackage()) //
-            .addAsWebInfResource(new File(webInfDir, "web.xml")) //
-            // glassfish-web.xml must be ignored by the server, because of payara-web.xml
-            .addAsWebInfResource(new File(webInfDir, "glassfish-web.xml")) //
-            .addAsWebInfResource(new File(webInfDir, "payara-web.xml")) //
-            ;
-
-        LOG.info(war.toString(true));
-        return war;
     }
 
 
@@ -400,6 +389,24 @@ public class CertificateRealmITest {
         if (clientTrustStoreFile != null) {
             clientTrustStoreFile.delete();
         }
+    }
+
+
+    private static WebArchive createDeployment() throws Exception {
+        LOG.info("createDeployment()");
+
+        final File webInfDir = testConfiguration.getClassDirectory().toPath()
+            .resolve(Paths.get("security", "war", "servlets", "WEB-INF")).toFile();
+        final WebArchive war = ShrinkWrap.create(WebArchive.class) //
+            .addPackage(PublicServlet.class.getPackage()) //
+            .addAsWebInfResource(new File(webInfDir, "web.xml")) //
+            // glassfish-web.xml must be ignored by the server, because of payara-web.xml
+            .addAsWebInfResource(new File(webInfDir, "glassfish-web.xml")) //
+            .addAsWebInfResource(new File(webInfDir, "payara-web.xml")) //
+            ;
+
+        LOG.info(war.toString(true));
+        return war;
     }
 
 

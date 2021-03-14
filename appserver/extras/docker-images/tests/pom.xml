@@ -104,13 +104,13 @@
                 </property>
             </activation>
             <build>
-
                 <pluginManagement>
                     <plugins>
                         <plugin>
                             <artifactId>maven-surefire-plugin</artifactId>
                             <configuration>
                                 <excludes>
+                                    <!-- Because payara-web is not built with QuickBuild profile -->
                                     <exclude>**/PayaraServerWebTest.java</exclude>
                                 </excludes>
                             </configuration>

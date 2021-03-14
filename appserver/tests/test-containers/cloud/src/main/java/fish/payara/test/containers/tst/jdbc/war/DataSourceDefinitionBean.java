@@ -95,9 +95,9 @@ public class DataSourceDefinitionBean {
     @Resource(name = JdbcDsName.JDBC_DS_2)
     private DataSource dsa2;
 
-    @Resource(name = JdbcDsName.JDBC_DS_3)
+    @Resource(name = JdbcDsName.JDBC_DS_POOL_A)
     private DataSource dsd1;
-    @Resource(name = JdbcDsName.JDBC_DS_4)
+    @Resource(name = JdbcDsName.JDBC_DS_POOL_B)
     private DataSource dsd2;
 
     @PostConstruct

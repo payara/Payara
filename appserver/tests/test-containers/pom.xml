@@ -17,9 +17,6 @@
         <module>manual</module>
         <module>cloud</module>
         <module>corba-xa-transactions</module>
-<!--         <module>mysql</module> -->
-<!--         <module>jmh</module> -->
-<!--         <module>primefaces</module> -->
     </modules>
 
     <properties>
@@ -150,19 +147,42 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-manifest</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>false</addClasspath>
+                            <classpathLayoutType>simple</classpathLayoutType>
+                        </manifest>
+                        <manifestFile>${null}</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <excludes>
-                            <exclude>**/*ITest.java</exclude>
-                            <exclude>**/*PTest.java</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <configuration>

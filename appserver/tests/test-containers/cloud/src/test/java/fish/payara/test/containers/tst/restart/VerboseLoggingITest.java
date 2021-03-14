@@ -52,7 +52,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -65,7 +64,6 @@ import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
  * @author David Matejcek
  */
 @ExtendWith(DockerITestExtension.class)
-@Disabled("Fixed under CUSTCOM-55 - the logging is too slow and unreliable without that.")
 public class VerboseLoggingITest {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(120L);

@@ -277,8 +277,8 @@
                     <version>${maven.failsafe.plugin.version}</version>
                     <configuration>
                         <encoding>${project.build.sourceEncoding}</encoding>
-                        <useSystemClassLoader>false</useSystemClassLoader>
                         <trimStackTrace>false</trimStackTrace>
+                        <useSystemClassLoader>false</useSystemClassLoader>
                         <verbose>true</verbose>
                         <includes>
                            <include>**/*ITest.java</include>
@@ -1125,7 +1125,6 @@ Parent is ${project.parent}</echo>
                 <module>tests</module>
             </modules>
         </profile>
-
 
         <profile>
             <id>default</id>

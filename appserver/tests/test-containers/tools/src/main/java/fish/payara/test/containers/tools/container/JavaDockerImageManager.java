@@ -186,19 +186,18 @@ public abstract class JavaDockerImageManager<T extends GenericContainer<T>, C ex
                 this.cfg.getJaCoCoReportDirectoryInDocker().getAbsolutePath(), READ_WRITE);
         }
         container.withNetwork(getNetwork()); //
-        container.withExposedPorts(getExposedInternalPorts().stream().toArray(Integer[]::new)); //
-        container.withEnv("TZ", "UTC").withEnv("LC_ALL", "en_US.UTF-8"); //
+        container.withExposedPorts(getExposedInternalPorts().stream().toArray(Integer[]::new));
+        container.withEnv("TZ", "UTC").withEnv("LC_ALL", "en_US.UTF-8");
         container.withCreateContainerCmdModifier(cmd -> {
-            // see https://github.com/zpapez/docker-java/wiki
-            cmd.getHostConfig().withMemory(this.cfg.getSystemMemoryInBytes()); //
-            cmd.getHostConfig().withUlimits(new Ulimit[] {new Ulimit("nofile", 4096L, 8192L)}); //
             cmd.withHostName(this.cfg.getHost());
             cmd.withUser(USERNAME);
+            // see https://github.com/zpapez/docker-java/wiki
             final HostConfig hostConfig = cmd.getHostConfig();
+            hostConfig.withMemory(this.cfg.getSystemMemoryInBytes());
             hostConfig.withMemorySwappiness(0L);
-//            cmd.getHostConfig().withCpuQuota(30_000L).withCpuPeriod(200_000L); // 100_000/150_000
-        }); //
-        container.withCommand("/bin/sh", "-c", getCommand().toString()); //
+            hostConfig.withUlimits(new Ulimit[] {new Ulimit("nofile", 4096L, 8192L)});
+        });
+        container.withCommand("/bin/sh", "-c", getCommand().toString());
     }
 
 

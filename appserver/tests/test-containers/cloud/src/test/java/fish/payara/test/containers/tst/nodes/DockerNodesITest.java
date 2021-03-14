@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -88,7 +89,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * TODO should be in separate module for cluster environment.
+ * This test verifies the docker node management, both via asadmin commands and via docker command.
+ * <p>
+ * The test detected also several minor issues, see comments.
+ * <p>
+ * The test is also an example of a way how to test even really complicated architecture.
  *
  * @author David Matejcek
  */
@@ -118,6 +123,11 @@ public class DockerNodesITest {
     }
 
 
+    /**
+     * Deletes docker containers created by the test.
+     *
+     * @throws Exception
+     */
     @AfterEach
     public void deleteDeadContainers() throws Exception {
         if (environment == null) {
@@ -128,12 +138,20 @@ public class DockerNodesITest {
             return;
         }
         final Set<DockerContainerId> containersAfterTests = getDockerIds();
+        final AtomicReference<Exception> failure = new AtomicReference<>();
         for (DockerContainerId id : containersAfterTests) {
             if (containersToPreserve.contains(id)) {
                 LOG.info("Tolerating container already existing before this test: {}", id);
                 continue;
             }
-            domain.docker("DELETE", "containers/" + id.id + "?v=true&force=true", "");
+            try {
+                domain.docker("DELETE", "containers/" + id.id + "?v=true&force=true", "");
+            } catch (final Exception e) {
+                failure.compareAndSet(null, e);
+            }
+        }
+        if (failure.get() != null) {
+            throw failure.get();
         }
     }
 

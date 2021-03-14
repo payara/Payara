@@ -39,14 +39,20 @@
  */
 package fish.payara.test.containers.tst.jdbc.war;
 
+import javax.annotation.sql.DataSourceDefinition;
 
 /**
  * @author David Matejcek
  */
 public class JdbcDsName {
+    /** DataSource created by {@link DataSourceDefinition}, no pool */
     public static final String JDBC_DS_1 = "jdbc/dsa1";
+
+    /** DataSource created by {@link DataSourceDefinition}, no pool, same definition as {@link #JDBC_DS_1} */
     public static final String JDBC_DS_2 = "jdbc/dsa2";
 
-    public static final String JDBC_DS_3 = "jdbc/dsd1";
-    public static final String JDBC_DS_4 = "jdbc/dsd2";
+    /** DataSource using the database pool domain-pool-1 */
+    public static final String JDBC_DS_POOL_A = "jdbc/dsPoolA";
+    /** DataSource using the database pool domain-pool-2 */
+    public static final String JDBC_DS_POOL_B = "jdbc/dsPoolB";
 }

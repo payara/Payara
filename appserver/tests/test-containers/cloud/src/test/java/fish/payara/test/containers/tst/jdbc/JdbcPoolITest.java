@@ -64,6 +64,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
@@ -76,10 +77,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
+ * This test covers several ways of creation of JDBC pools and resources, and using them.
+ * <p>
+ * Also provides an example of how to use Payara with TestContainers and {@link DBUnitExtension}.
+ *
+ * Note: If you would need to initialize the database once and share it between tests, you would
+ * just move the initialization to the {@link DockerEnvironment}, or you can also create your own
+ * extension with more complicated logic.
+ *
  * @author David Matejcek
  */
 @ExtendWith(DockerITestExtension.class)
@@ -133,10 +144,8 @@ public class JdbcPoolITest {
         // file is ignored by classloaders until server restart
         payara.asAdmin("restart-domain", payaraConfiguration.getPayaraDomainName());
 
-        final String poolNameBase = "domain-pool-";
-        int counter = 1;
-        for (String jndiName : new String[] {JdbcDsName.JDBC_DS_3, JdbcDsName.JDBC_DS_4}) {
-            final String poolName = poolNameBase + counter++;
+        for (String jndiName : new String[] {JdbcDsName.JDBC_DS_POOL_A, JdbcDsName.JDBC_DS_POOL_B}) {
+            final String poolName = "domain-pool-" + StringUtils.right(jndiName, 1);
             payara.asAdmin("create-jdbc-connection-pool", "--ping", "--restype", "javax.sql.DataSource", //
                 "--datasourceclassname", MysqlDataSource.class.getName(), //
                 "--steadypoolsize", "0", "--maxpoolsize", "20", //
@@ -154,13 +163,17 @@ public class JdbcPoolITest {
         }
 
         applicationName = payara.deploy("/", getArchiveToDeploy());
-        payara.asAdmin("list-jdbc-connection-pools");
+        final String response = payara.asAdmin("list-jdbc-connection-pools");
+        assertThat("list-jdbc-connection-pools response", response,
+            stringContainsInOrder("__TimerPool", "H2Pool", "domain-pool-A", "domain-pool-B"));
     }
 
 
     @AfterAll
     public static void cleanup() {
-        payara.undeploy(applicationName);
+        if (applicationName != null) {
+            payara.undeploy(applicationName);
+        }
     }
 
 

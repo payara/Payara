@@ -79,12 +79,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
+ * This test verifies Metrics security. Anonymous user should not be able to access the Payara Metrics.
+ * <p>
+ * This test was originally created to reproduce issue reported as PAYARA-3515.
+ *
  * @author David Matejcek
- * <pre>
- * mvn clean install -Ptest-containers -pl :test-containers -Ddocker.payara.version=4.1.2.191.17 -Ppayara4 -Dit.test=MetricsSecurityITest
- * </pre>
  */
-// PAYARA-3515
 @ExtendWith(DockerITestExtension.class)
 public class MetricsSecurityITest {
 
@@ -104,17 +104,6 @@ public class MetricsSecurityITest {
         payara = DockerEnvironment.getInstance().getPayaraContainer();
         payara.asLocalAdmin("stop-domain", TEST_CFG.getPayaraDomainName());
         payara.asLocalAdmin("backup-domain", TEST_CFG.getPayaraDomainName());
-    }
-
-
-    private static SSLContext createSslContext() {
-        try {
-            final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-            sslContext.init(null, new TrustManager[]{new NaiveTrustManager()}, new SecureRandom());
-            return sslContext;
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw new IllegalStateException("Could not initialize SSL context.", e);
-        }
     }
 
 
@@ -157,6 +146,16 @@ public class MetricsSecurityITest {
             this::checkAuthorizedJerseyTextRequest, this::checkAuthorizedJerseyJsonRequest), 60000L);
     }
 
+
+    private static SSLContext createSslContext() {
+        try {
+            final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+            sslContext.init(null, new TrustManager[]{new NaiveTrustManager()}, new SecureRandom());
+            return sslContext;
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new IllegalStateException("Could not initialize SSL context.", e);
+        }
+    }
 
     private void checkAnonymousCurlRequest() throws Exception {
         final ExecResult result = payara.execInContainer("curl", "-s", "-G", "--http1.1", "--insecure", "--verbose",

@@ -52,12 +52,12 @@ import org.glassfish.jersey.server.ResourceConfig;
 @ApplicationPath("")
 public class RestAppConfig extends ResourceConfig {
 
-  /**
-   * Instantiates a new rest app config.
-   */
-  public RestAppConfig() {
-    packages(//
-        RestAppConfig.class.getPackage().getName() //
-    );
-  }
+    /**
+     * Instantiates a new rest app config.
+     */
+    public RestAppConfig() {
+        packages(//
+            RestAppConfig.class.getPackage().getName() //
+        );
+    }
 }

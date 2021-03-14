@@ -45,7 +45,6 @@ import fish.payara.test.containers.tools.container.PayaraServerFiles;
 import fish.payara.test.containers.tools.env.DockerEnvironment;
 import fish.payara.test.containers.tools.env.TestConfiguration;
 import fish.payara.test.containers.tools.junit.DockerITestExtension;
-import fish.payara.test.containers.tools.rs.RestClientCache;
 import fish.payara.test.containers.tst.security.jar.jaspic.CustomSAM;
 import fish.payara.test.containers.tst.security.war.jaspic.servlet.PublicServlet;
 
@@ -90,13 +89,12 @@ public class JaspicSamAuthenticationITest {
     private static final Logger LOG = LoggerFactory.getLogger(JaspicSamAuthenticationITest.class);
 
     private static final String DOMAIN_NAME = JaspicSamAuthenticationITest.class.getSimpleName() + "Domain";
+    private static final String SSH_NODE_NAME = JaspicSamAuthenticationITest.class.getSimpleName() + "SshNode";
     private static final String WAR_ROOT_CTX = "/jaspic-lifecycle";
 
     private static final TestConfiguration TEST_CFG = TestConfiguration.getInstance();
     private static final Class<CustomSAM> CLASS_AUTHMODULE = CustomSAM.class;
     private static final Class<PublicServlet> CLASS_WAR = PublicServlet.class;
-
-    private static final RestClientCache RS_CLIENTS = new RestClientCache();
 
     private static File jarFileOnHost;
     private static File jarFileOnServer;
@@ -141,7 +139,6 @@ public class JaspicSamAuthenticationITest {
 
     @AfterEach
     public void destroyDomain() throws Exception {
-        RS_CLIENTS.close();
         payara.asLocalAdmin("stop-domain", DOMAIN_NAME);
     }
 
@@ -168,10 +165,10 @@ public class JaspicSamAuthenticationITest {
             warFileOnServer.getAbsolutePath());
 
         payara.asLocalAdmin("start-domain", DOMAIN_NAME);
-        payara.asLocalAdmin("create-node-ssh", "--nodehost=localhost", "local-node-ssh");
+        payara.asLocalAdmin("create-node-ssh", "--nodehost=localhost", SSH_NODE_NAME);
         payara.asLocalAdmin("copy-config", "default-config", "cluster-config");
         payara.asLocalAdmin("create-cluster", "--config=cluster-config", "cluster");
-        payara.asLocalAdmin("create-instance", "--cluster=cluster", "--node=local-node-ssh", "inst1");
+        payara.asLocalAdmin("create-instance", "--cluster=cluster", "--node=" + SSH_NODE_NAME, "inst1");
         payara.asLocalAdmin("start-cluster", "cluster");
         payara.asLocalAdmin("create-message-security-provider", "--classname=" + CLASS_AUTHMODULE.getName(),
             "--isdefaultprovider=true", "--layer=HttpServlet", "--providertype=server", "--target=cluster-config",

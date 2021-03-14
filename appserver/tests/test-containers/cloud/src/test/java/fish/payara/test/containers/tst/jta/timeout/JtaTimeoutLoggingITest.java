@@ -84,6 +84,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
+ * This test verifies log messages in server.log file after JTA exceptions.
+ * They have to be in correct order and must contain expected log messages.
+ * <p>
+ * The test is disabled, because this branch contains just the first part of the fix:
+ * <ul>
+ * <li>PAYARA-4197 fixed sending messages and useful info to the logging system
+ * <li>CUSTCOM-55 fixed race conditions in the logging system
+ * </lu>
+ * </p>
+ *
  * @author David Matejcek
  */
 @ExtendWith(DockerITestExtension.class)
@@ -158,23 +168,8 @@ public class JtaTimeoutLoggingITest {
     }
 
 
-    private static WebArchive getArchiveToDeploy() throws Exception {
-        LOG.info("createDeployment()");
-        final String cpPrefix = "jta/timeout/war";
-        final WebArchive war = ShrinkWrap.create(WebArchive.class) //
-            .addPackages(true, ASYNCJOB_CLASS.getPackage()) //
-            .addAsWebInfResource(cpPrefix + "/WEB-INF/classes/META-INF/persistence.xml",
-                "classes/META-INF/persistence.xml") //
-            .addAsWebInfResource(cpPrefix + "/WEB-INF/beans.xml", "beans.xml") //
-            .addAsWebInfResource(cpPrefix + "/WEB-INF/payara-web.xml", "payara-web.xml") //
-        ;
-        LOG.info(war.toString(true));
-        return war;
-    }
-
-
     @Test
-    public void testTimeoutOnly() throws Throwable {
+    public void timeoutOnly() throws Throwable {
         callService("1");
         waitFor(() -> assertThat("log entries count", domainLog.getSize(), equalTo(2)), 5000L);
         final Matcher<String> matchers = Matchers.allOf(getPatternForRollbackMessage(STATUS_MARKED_ROLLBACK));
@@ -186,7 +181,7 @@ public class JtaTimeoutLoggingITest {
 
 
     @Test
-    public void testTimeoutWithError() throws Throwable {
+    public void timeoutWithError() throws Throwable {
         callService("2");
         waitFor(() -> assertThat("log entries count", domainLog.getSize(), equalTo(5)), 5000L);
 
@@ -206,7 +201,7 @@ public class JtaTimeoutLoggingITest {
 
 
     @Test
-    public void testTimeoutWithCatchedErrorAndRedo() throws Throwable {
+    public void timeoutWithCatchedErrorAndRedo() throws Throwable {
         callService("3");
         waitFor(() -> assertThat("log entries count", domainLog.getSize(), equalTo(6)), 5000L);
 
@@ -223,6 +218,21 @@ public class JtaTimeoutLoggingITest {
             () -> assertThat("log entry 4", domainLog.pop().getMessage().toString(), matchesPattern(sysExceptionJ)),
             () -> assertThat("log entry 5", domainLog.pop().getMessage().toString(), matchesPattern(P_EXCEPTION_TX)) //
         );
+    }
+
+
+    private static WebArchive getArchiveToDeploy() throws Exception {
+        LOG.info("createDeployment()");
+        final String cpPrefix = "jta/timeout/war";
+        final WebArchive war = ShrinkWrap.create(WebArchive.class) //
+            .addPackages(true, ASYNCJOB_CLASS.getPackage()) //
+            .addAsWebInfResource(cpPrefix + "/WEB-INF/classes/META-INF/persistence.xml",
+                "classes/META-INF/persistence.xml") //
+            .addAsWebInfResource(cpPrefix + "/WEB-INF/beans.xml", "beans.xml") //
+            .addAsWebInfResource(cpPrefix + "/WEB-INF/payara-web.xml", "payara-web.xml") //
+        ;
+        LOG.info(war.toString(true));
+        return war;
     }
 
 

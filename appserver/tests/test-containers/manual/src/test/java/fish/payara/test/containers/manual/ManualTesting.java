@@ -49,6 +49,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Starts one or more docker containers and keeps them running until user stops this application.
+ * <p>
+ * Useful for local manual testing of the application server.
  *
  * @author David Matějček
  */
