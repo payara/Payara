@@ -201,7 +201,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private String publicAddress = "";
     private int initialJoinWait = 1;
     private boolean warmup;
-    private Boolean hotDeploy;
+    private boolean hotDeploy;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -1283,7 +1283,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     warmup = true;
                     break;
                 case hotdeploy:
-                    hotDeploy = Boolean.parseBoolean(value);
+                    hotDeploy = true;
                     break;
                 case disablephonehome:
                     disablePhoneHome = true;
