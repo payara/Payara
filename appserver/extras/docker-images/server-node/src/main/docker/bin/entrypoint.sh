@@ -152,7 +152,7 @@ function createNewInstance {
         fi
     fi
 
-    if [ -z "${DOCKER_CONTAINER_ID}" ]; then
+    if [ ! -z "${DOCKER_CONTAINER_ID}" ]; then
        # Register Docker container ID to DAS
        echo "Setting Docker Container ID for instance ${PAYARA_INSTANCE_NAME}: ${DOCKER_CONTAINER_ID}"
        ASADMIN_COMMAND="${ASADMIN} -I false -H ${PAYARA_DAS_HOST} -p ${PAYARA_DAS_PORT} -W ${PAYARA_PASSWORD_FILE} _set-docker-container-id --instance ${PAYARA_INSTANCE_NAME} --id ${DOCKER_CONTAINER_ID}"
