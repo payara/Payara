@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,14 +44,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
 
 /**
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class ClusterConfigSource extends PayaraConfigSource implements ConfigSource {
+public class ClusterConfigSource extends PayaraConfigSource {
     
     public final static String CLUSTERED_CONFIG_STORE = "payara.microprofile.config";
     private final ClusteredStore clusterStore;
@@ -72,6 +71,10 @@ public class ClusterConfigSource extends PayaraConfigSource implements ConfigSou
 
     @Override
     public int getOrdinal() {
+        String storedOrdinal = getValue("config_ordinal");
+        if (storedOrdinal != null) {
+            return Integer.parseInt(storedOrdinal);
+        }
         return Integer.parseInt(configService.getMPConfig().getClusterOrdinality());
     }
 

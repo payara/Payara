@@ -39,28 +39,28 @@
  */
 package fish.payara.batch;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ServiceConfigurationError;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
+import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
 import javax.batch.runtime.BatchRuntime;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
-import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.ServiceConfigurationError;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Cleans the records of job executions from the repository.
@@ -77,7 +77,7 @@ public class CleanJbatchRepository implements AdminCommand {
     @Param(acceptableValues = "ALL,COMPLETED", defaultValue = "COMPLETED", optional = true)
     String status;
 
-    @Param(optional = true)
+    @Param(optional = false)
     int days;
 
     @Param(name = "jobname", primary = true, optional = false)
@@ -88,7 +88,7 @@ public class CleanJbatchRepository implements AdminCommand {
     
     @Inject
     BatchRuntimeConfiguration config;
-    
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
@@ -102,60 +102,28 @@ public class CleanJbatchRepository implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        
+
+        if (days < 1) {
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage("The value for parameter --day must be 1 or higher.");
+
+            return;
+        }
+
         try {
             String dataSourceName = batchRuntimeHelper.getDataSourceLookupName();
             InitialContext ctx = new InitialContext();
             Object object = ctx.lookup(dataSourceName);
             if (object instanceof DataSource) {
                 DataSource datasource = (DataSource) object;
+                Feedback feedback = new Feedback();
                 try (Connection conn = datasource.getConnection()) {
-                    String prefix = config.getTablePrefix();
-                    String suffix = config.getTableSuffix();
-                    
-                    PreparedStatement deleteStatement = conn.prepareStatement("DELETE FROM " + prefix + "stepstatus" + suffix +
-                            " WHERE id IN (SELECT seid.stepexecid "
-                            + "FROM jobinstancedata jid, executioninstancedata eid, stepexecutioninstancedata seid "
-                            + "WHERE jid.jobinstanceid = eid.jobinstanceid AND eid.jobexecid = seid.jobexecid "
-                            + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND (eid.batchstatus = ? OR ? = 'ALL'))");
-                    
-                    deleteStatement.setString(1, jobname);
-                    deleteStatement.setInt(2, -days);
-                    deleteStatement.setString(3, status);
-                    deleteStatement.setString(4, status);
-                    deleteStatement.execute();
 
-                    deleteStatement = conn.prepareStatement("DELETE FROM " + prefix + "stepexecutioninstancedata" + suffix +
-                            " WHERE jobexecid IN (SELECT eid.jobexecid "
-                            + "FROM jobinstancedata jid, executioninstancedata eid WHERE jid.jobinstanceid = eid.jobinstanceid "
-                            + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND (eid.batchstatus = ? OR ? = 'ALL'))");
-                    deleteStatement.setString(1, jobname);
-                    deleteStatement.setInt(2, -days);
-                    deleteStatement.setString(3, status);
-                    deleteStatement.setString(4, status);
-                    deleteStatement.execute();
-
-                    deleteStatement = conn.prepareStatement("DELETE FROM " + prefix + "executioninstancedata" + suffix +
-                            " WHERE jobinstanceid IN (SELECT jid.jobinstanceid "
-                            + "FROM jobinstancedata jid, executioninstancedata eid WHERE jid.jobinstanceid = eid.jobinstanceid "
-                            + "AND jid.name = ? AND eid.endtime < DATEADD('DAY',?, NOW()) AND (eid.batchstatus = ? OR ? = 'ALL'))");
-                    deleteStatement.setString(1, jobname);
-                    deleteStatement.setInt(2, -days);
-                    deleteStatement.setString(3, status);
-                    deleteStatement.setString(4, status);
-                    deleteStatement.execute();
-
-                    deleteStatement = conn.prepareStatement("DELETE FROM " + prefix + "jobstatus" + suffix
-                            + " WHERE id NOT IN (SELECT DISTINCT jobinstanceid FROM executioninstancedata)");
-                    deleteStatement.execute();
-
-                    deleteStatement = conn.prepareStatement("DELETE FROM " + prefix + "jobinstancedata " + suffix
-                            + " WHERE jobinstanceid NOT IN (SELECT DISTINCT jobinstanceid FROM executioninstancedata)");
-                    deleteStatement.execute();
+                    cleanTables(conn, feedback);
                 } catch (SQLException ex) {
-                    Logger.getLogger("fish.payara.batch").log(Level.SEVERE, "Error cleaning repository", ex);
+                    Logger.getLogger("fish.payara.batch").log(Level.SEVERE, "Error cleaning repository with table " + feedback.tableToClean, ex);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    report.setMessage("Error cleaning repository");
+                    report.setMessage("Error cleaning repository" );
                     report.setFailureCause(ex);
                 }
 
@@ -169,6 +137,88 @@ public class CleanJbatchRepository implements AdminCommand {
             report.setMessage("Unable to get data source for JBatch");
             report.setFailureCause(ex);
         }
+    }
+
+    private void cleanTables(Connection connection, Feedback feedback) throws SQLException {
+        try {
+            connection.setAutoCommit(false);
+
+            Timestamp threshold = determineEndTime();
+            String prefix = config.getTablePrefix();
+            String suffix = config.getTableSuffix();
+
+            String tableStepStatus = prefix + "STEPSTATUS" + suffix;
+            String tableJobInstanceData = prefix + "JOBINSTANCEDATA" + suffix;
+            String tableExecutionInstanceData = prefix + "EXECUTIONINSTANCEDATA" + suffix;
+            String tableStepExecutionInstanceData = prefix + "STEPEXECUTIONINSTANCEDATA" + suffix;
+            String tableJobStatus = prefix + "JOBSTATUS" + suffix;
+
+            String statusCheck1 = "";
+            String statusCheck2 = "";
+            if (status.equals("COMPLETED")) {
+                statusCheck1 = " AND eid.batchstatus = 'COMPLETED'";
+                statusCheck2 = " AND batchstatus = 'COMPLETED'";
+                // This is not supported by IBM DB2
+                // (eid.batchstatus = ? OR ? = 'ALL')
+            }
+
+            feedback.tableToClean = tableStepStatus;
+            String sql = "DELETE FROM " + tableStepStatus +
+                    " WHERE id IN (SELECT seid.stepexecid "
+                    + "FROM " + tableJobInstanceData + " jid, " + tableExecutionInstanceData + " eid, " + tableStepExecutionInstanceData + " seid "
+                    + "WHERE jid.jobinstanceid = eid.jobinstanceid AND eid.jobexecid = seid.jobexecid "
+                    + "AND jid.name = ? AND eid.endtime < ? " + statusCheck1 + " )";
+            PreparedStatement deleteStatement = connection.prepareStatement(sql);
+
+            deleteStatement.setString(1, jobname);
+            deleteStatement.setTimestamp(2, threshold);
+            deleteStatement.execute();
+
+            feedback.tableToClean = tableStepExecutionInstanceData;
+            sql = "DELETE FROM " + tableStepExecutionInstanceData +
+                    " WHERE jobexecid IN (SELECT eid.jobexecid "
+                    + "FROM " + tableJobInstanceData + " jid, " + tableExecutionInstanceData + " eid WHERE jid.jobinstanceid = eid.jobinstanceid "
+                    + "AND jid.name = ? AND eid.endtime < ? " + statusCheck1 + " )";
+            deleteStatement = connection.prepareStatement(sql);
+
+            deleteStatement.setString(1, jobname);
+            deleteStatement.setTimestamp(2, threshold);
+            deleteStatement.execute();
+
+            feedback.tableToClean = tableExecutionInstanceData;
+            sql = "DELETE FROM " + tableExecutionInstanceData +
+                    " WHERE jobinstanceid IN (SELECT jid.jobinstanceid "
+                    + "FROM " + tableJobInstanceData + " jid WHERE jid.name = ?) "
+                    + "AND endtime < ? " + statusCheck2;
+            deleteStatement = connection.prepareStatement(sql);
+
+            deleteStatement.setString(1, jobname);
+            deleteStatement.setTimestamp(2, threshold);
+            deleteStatement.execute();
+
+            feedback.tableToClean = tableJobStatus;
+            deleteStatement = connection.prepareStatement("DELETE FROM " + tableJobStatus
+                    + " WHERE id NOT IN (SELECT DISTINCT jobinstanceid FROM " + tableExecutionInstanceData + ")");
+            deleteStatement.execute();
+
+            feedback.tableToClean = tableJobInstanceData;
+            deleteStatement = connection.prepareStatement("DELETE FROM " + tableJobInstanceData
+                    + " WHERE jobinstanceid NOT IN (SELECT DISTINCT jobinstanceid FROM " + tableExecutionInstanceData + ")");
+            deleteStatement.execute();
+
+            connection.commit();
+        } finally {
+            connection.rollback();
+        }
+    }
+
+    private Timestamp determineEndTime() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(days);
+        return java.sql.Timestamp.valueOf(threshold);
+    }
+
+    private static class Feedback {
+        String tableToClean;
     }
 
 }

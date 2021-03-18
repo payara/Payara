@@ -40,25 +40,37 @@
 
 package org.glassfish.javaee.full.deployment;
 
-import org.glassfish.api.deployment.*;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.Deployer;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.MetaData;
+import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.event.Events;
-import org.glassfish.api.admin.*;
 import org.glassfish.api.container.Sniffer;
-import org.glassfish.deployment.common.*;
+import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.deployment.common.DeploymentException;
+import org.glassfish.deployment.common.DummyApplication;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.EngineInfo;
+import org.glassfish.internal.data.ModuleInfo;
+import org.glassfish.internal.data.ProgressTracker;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.internal.data.*;
-import org.glassfish.internal.deployment.SnifferManager;
-import org.glassfish.hk2.classmodel.reflect.*;
 import org.jvnet.hk2.annotations.Service;
+
 import javax.inject.Inject;
 
 import org.glassfish.hk2.api.PerLookup;
-import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -66,12 +78,16 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
 import java.io.File;
-import java.net.URI;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -87,7 +103,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 @PerLookup
 public class EarDeployer implements Deployer {
 
-//    private static final Class GLASSFISH_APPCLIENT_GROUP_FACADE_CLASS =
+    //    private static final Class GLASSFISH_APPCLIENT_GROUP_FACADE_CLASS =
 //            org.glassfish.appclient.client.AppClientGroupFacade.class;
 // Currently using a string instead of a Class constant to avoid a circular
 // dependency.  
@@ -96,12 +112,6 @@ public class EarDeployer implements Deployer {
 
     @Inject
     ServerEnvironment env;
-
-    @Inject
-    ApplicationRegistry appRegistry;
-
-    @Inject
-    protected SnifferManager snifferManager;
 
     @Inject
     ArchiveFactory archiveFactory;
@@ -114,22 +124,22 @@ public class EarDeployer implements Deployer {
 
     // Reserve this range [AS-DEPLOYMENT-02001, AS-DEPLOYMENT-04000]
     // for message ids used in this deployment javaee-full module
-    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment logger for javaee-full module", publish=true)
+    @LoggerInfo(subsystem = "DEPLOYMENT", description = "Deployment logger for javaee-full module", publish = true)
     private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.javaeefull";
 
     public static final Logger deplLogger =
         Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
-    @LogMessageInfo(message = "Skipped processing for module {0} as its module type was not recognized", level="WARNING")
+    @LogMessageInfo(message = "Skipped processing for module {0} as its module type was not recognized", level = "WARNING")
     private static final String UNRECOGNIZED_MODULE_TYPE = "AS-DEPLOYMENT-02015";
 
-    @LogMessageInfo(message = "Error occurred", level="WARNING")
+    @LogMessageInfo(message = "Error occurred", level = "WARNING")
     private static final String ERROR_OCCURRED = "AS-DEPLOYMENT-02016";
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarDeployer.class);
 
     public MetaData getMetaData() {
-        return new MetaData(false, null, new Class[] { Application.class});
+        return new MetaData(false, null, new Class[]{Application.class});
     }
 
     public Object loadMetaData(Class type, DeploymentContext context) {
@@ -142,43 +152,40 @@ public class EarDeployer implements Deployer {
 
         DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
         final String appName = deployParams.name();
-        
-        final ApplicationInfo appInfo = new CompositeApplicationInfo(events, application, context.getSource(), appName);
+
+        final CompositeApplicationInfo appInfo =
+            new CompositeApplicationInfo(events, application, context.getSource(), appName, archiveFactory, env);
         for (Object m : context.getModuleMetadata()) {
             appInfo.addMetaData(m);
         }
 
         try {
-            doOnAllBundles(application, new BundleBlock<ModuleInfo>() {
-                public ModuleInfo doBundle(ModuleDescriptor bundle) throws Exception {
-                    ExtendedDeploymentContext sContext = subContext(application, context, bundle.getArchiveUri());
-                    ModuleInfo info = prepareBundle(bundle, application, 
-                        sContext);
-                    if (info == null) {
-                        sContext.getActionReport().setActionExitCode(ActionReport.ExitCode.WARNING);
-                        String msg = localStrings.getLocalString("skipmoduleprocessing", "Skipped processing for module {0} as its module type was not recognized", bundle.getArchiveUri());
-                        sContext.getActionReport().setMessage(msg);
-                        deplLogger.log(Level.WARNING,
-                                       UNRECOGNIZED_MODULE_TYPE,
-                                       bundle.getArchiveUri());
-                        return null;
-                    }
-                    info.addMetaData(application);
-                    BundleDescriptor bundleDesc = application.getModuleByUri(
+            doOnAllBundles(application, (BundleBlock<ModuleInfo>) bundle -> {
+                ExtendedDeploymentContext sContext = appInfo.subContext(application, context, bundle.getArchiveUri());
+                ModuleInfo info = prepareBundle(bundle, application, sContext);
+                if (info == null) {
+                    sContext.getActionReport().setActionExitCode(ExitCode.WARNING);
+                    String msg = localStrings.getLocalString("skipmoduleprocessing", "Skipped processing for module {0} as its module type was not recognized", bundle.getArchiveUri());
+                    sContext.getActionReport().setMessage(msg);
+                    deplLogger.log(Level.WARNING,
+                        UNRECOGNIZED_MODULE_TYPE,
                         bundle.getArchiveUri());
-                    info.addMetaData(bundleDesc);
-                    for (RootDeploymentDescriptor ext : 
-                        bundleDesc.getExtensionsDescriptors()) {
-                        info.addMetaData(ext);
-                    }
-                    appInfo.addModule(info);
-                    return info;
+                    return null;
                 }
-
+                info.addMetaData(application);
+                BundleDescriptor bundleDesc = application.getModuleByUri(
+                    bundle.getArchiveUri());
+                info.addMetaData(bundleDesc);
+                for (RootDeploymentDescriptor ext :
+                    bundleDesc.getExtensionsDescriptors()) {
+                    info.addMetaData(ext);
+                }
+                appInfo.addModule(info);
+                return info;
             });
-        } catch(DeploymentException dde) {
+        } catch (DeploymentException dde) {
             throw dde;
-        } catch(Exception e) {
+        } catch (Exception e) {
             DeploymentException de = new DeploymentException(e.getMessage());
             de.initCause(e);
             throw de;
@@ -199,43 +206,29 @@ public class EarDeployer implements Deployer {
          * facade.
          */
     }
-        
-    
-    private class CompositeApplicationInfo extends ApplicationInfo {
-
-        final Application application;
-
-        private CompositeApplicationInfo(Events events, Application application, ReadableArchive source, String name) {
-            super(events, source, name);
-            this.application = application;
-        }
-
-        @Override
-        protected ExtendedDeploymentContext getSubContext(ModuleInfo module, ExtendedDeploymentContext context) {
-            return subContext(application, context, module.getName());
-        }
-
-     }
 
 
     /**
      * Performs the same runnable task on each specified bundle.
      *
-     * @param bundles the bundles on which to perform the task
+     * @param bundles  the bundles on which to perform the task
      * @param runnable the task to perform
      * @throws Exception
      */
     private void doOnBundles(
-            final Collection<ModuleDescriptor<BundleDescriptor>> bundles,
-            final BundleBlock runnable) throws Exception {
+        final Collection<ModuleDescriptor<BundleDescriptor>> bundles,
+        final BundleBlock runnable) throws Exception {
         for (ModuleDescriptor module : bundles) {
             runnable.doBundle(module);
         }
     }
 
-    private Collection<ModuleDescriptor<BundleDescriptor>>
-                doOnAllTypedBundles(Application application, ArchiveType type, BundleBlock runnable)
-                    throws Exception {
+    private Collection<ModuleDescriptor<BundleDescriptor>> doOnAllTypedBundles(
+        Application application,
+        ArchiveType type,
+        BundleBlock runnable
+    )
+        throws Exception {
 
         final Collection<ModuleDescriptor<BundleDescriptor>> typedBundles = application.getModuleDescriptorsByType(type);
         doOnBundles(typedBundles, runnable);
@@ -244,7 +237,7 @@ public class EarDeployer implements Deployer {
 
     private void doOnAllBundles(Application application, BundleBlock runnable) throws Exception {
 
-        Collection<ModuleDescriptor> bundles = 
+        Collection<ModuleDescriptor> bundles =
             new LinkedHashSet<ModuleDescriptor>();
         bundles.addAll(application.getModules());
 
@@ -255,7 +248,7 @@ public class EarDeployer implements Deployer {
                 runnable.doBundle(bundle);
             }
         }
-        
+
         // otherwise we load modules by default order: connector, ejb, web and
         // saving app client for last (because other submodules might generated
         // artifacts that should be included in the generated app client JAR
@@ -271,9 +264,9 @@ public class EarDeployer implements Deployer {
 
             // extract the app client bundles to take care of later
             Collection<ModuleDescriptor<BundleDescriptor>> appClientBundles =
-                    application.getModuleDescriptorsByType(DOLUtils.carType());
+                application.getModuleDescriptorsByType(DOLUtils.carType());
             bundles.removeAll(appClientBundles);
-            
+
             // now ther remaining bundles
             for (final ModuleDescriptor bundle : bundles) {
                 runnable.doBundle(bundle);
@@ -281,13 +274,13 @@ public class EarDeployer implements Deployer {
 
             // Last, deal with the app client bundles
             doOnBundles(appClientBundles, runnable);
-        } 
+        }
     }
 
     private ModuleInfo prepareBundle(final ModuleDescriptor md, Application application, final ExtendedDeploymentContext bundleContext)
         throws Exception {
 
-        List<EngineInfo> orderedContainers = null;
+        List<EngineInfo> orderedContainers;
 
         ProgressTracker tracker = bundleContext.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
 
@@ -300,10 +293,10 @@ public class EarDeployer implements Deployer {
             if (orderedContainers == null) {
                 return null;
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             deplLogger.log(Level.WARNING,
-                           ERROR_OCCURRED,
-                           e);  
+                ERROR_OCCURRED,
+                e);
             throw e;
         }
         return deployment.prepareModule(orderedContainers, md.getArchiveUri(), bundleContext, tracker);
@@ -324,153 +317,10 @@ public class EarDeployer implements Deployer {
 
     private interface BundleBlock<T> {
 
-        public T doBundle(ModuleDescriptor bundle) throws Exception;
-    }
-    
-    private ExtendedDeploymentContext subContext(final Application application, final DeploymentContext context, final String moduleUri) {
-                
-                ExtendedDeploymentContext moduleContext = ((ExtendedDeploymentContext)context).getModuleDeploymentContexts().get(moduleUri);
-                if (moduleContext != null) {
-                    return moduleContext;
-                }
-
-
-                final ReadableArchive subArchive;
-                try {
-                    subArchive = context.getSource().getSubArchive(moduleUri);
-                    subArchive.setParentArchive(context.getSource());
-                } catch(IOException ioe) {
-                    deplLogger.log(Level.WARNING,
-                                   ERROR_OCCURRED,
-                                   ioe);  
-                    return null;
-                }
-                
-                final Properties moduleProps = 
-                    getModuleProps(context, moduleUri);
-
-                ActionReport subReport = 
-                    context.getActionReport().addSubActionsReport();
-                moduleContext = new DeploymentContextImpl(subReport, context.getSource(),
-                        context.getCommandParameters(OpsParams.class), env) {
-
-                    @Override
-                    public ClassLoader getClassLoader() {
-                        try {
-                            if (context.getClassLoader() == null) { 
-                                return null;
-                            }
-                            EarClassLoader appCl = EarClassLoader.class.cast(context.getClassLoader());
-                            if (((ExtendedDeploymentContext)context).
-                                getPhase() == Phase.PREPARE) {
-                                return appCl;
-                            } else {
-                                return appCl.getModuleClassLoader(moduleUri);
-                            }
-                        } catch (ClassCastException e) {
-                            return context.getClassLoader();
-                        }                        
-                    }
-
-                    @Override
-                    public ClassLoader getFinalClassLoader() {
-                        try {
-                            EarClassLoader finalEarCL = (EarClassLoader) context.getFinalClassLoader();
-                            return finalEarCL.getModuleClassLoader(moduleUri);
-                        } catch (ClassCastException e) {
-                            return context.getClassLoader();
-                        }
-                    } 
-                    @Override
-                    public ReadableArchive getSource() {
-                        return subArchive;
-                    }
-
-                    @Override
-                    public Properties getAppProps() {
-                        return context.getAppProps();
-                    }
-
-                    @Override
-                    public <U extends OpsParams> U getCommandParameters(Class<U> commandParametersType) {
-                        return context.getCommandParameters(commandParametersType);
-                    }
-
-                    @Override
-                    public void addTransientAppMetaData(String metaDataKey, 
-                        Object metaData) {
-                        context.addTransientAppMetaData(metaDataKey, 
-                            metaData);
-                    }
-
-                    @Override
-                    public  <T> T getTransientAppMetaData(String metaDataKey, 
-                        Class<T> metadataType) {
-                        return context.getTransientAppMetaData(metaDataKey, 
-                            metadataType);
-                    }
-
-                    @Override
-                    public Properties getModuleProps() {
-                        return moduleProps;
-                    }
-
-                    @Override
-                    public ReadableArchive getOriginalSource() {
-                        try {
-                            File appRoot = context.getSourceDir();
-                            File origModuleFile = new File(appRoot, moduleUri); 
-                            return archiveFactory.openArchive(
-                                origModuleFile);
-                        } catch (IOException ioe) {
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    public File getScratchDir(String subDirName) {
-                        String modulePortion = Util.getURIName(
-                            getSource().getURI());
-                        return (new File(super.getScratchDir(subDirName), 
-                            modulePortion));
-                    }
-
-                    @Override
-                    public <T> T getModuleMetaData(Class<T> metadataType) {
-                        try {
-                            return metadataType.cast(application.getModuleByUri(moduleUri));
-                        } catch (Exception e) {
-                            // let's first try the extensions mechanisms...
-                            if (RootDeploymentDescriptor.class.isAssignableFrom(metadataType)) {
-                                for (RootDeploymentDescriptor extension  : application.getModuleByUri(moduleUri).getExtensionsDescriptors((Class<RootDeploymentDescriptor>) metadataType)) {
-                                    // we assume there can only be one type of
-                                    if (extension!=null) {
-                                        try {
-                                            return metadataType.cast(extension);
-                                        } catch (Exception e1) {
-                                            // next one...
-                                        }
-                                    }
-                                }
-                                
-                            }
-
-                            return context.getModuleMetaData(metadataType);
-                        }
-                    }
-                };
-
-                ((ExtendedDeploymentContext)context).getModuleDeploymentContexts().put(moduleUri, moduleContext);
-                moduleContext.setParentContext((ExtendedDeploymentContext)context);
-                moduleContext.setModuleUri(moduleUri);
-                ArchiveHandler subHandler = context.getModuleArchiveHandlers().get(moduleUri);
-                moduleContext.setArchiveHandler(subHandler);
-
-                return moduleContext;
+        T doBundle(ModuleDescriptor bundle) throws Exception;
     }
 
-    private Properties getModuleProps(DeploymentContext context, 
-        String moduleUri) {
+    private static Properties getModuleProps(DeploymentContext context, String moduleUri) {
         Map<String, Properties> modulePropsMap = context.getModulePropsMap();
         Properties moduleProps = modulePropsMap.get(moduleUri);
         if (moduleProps == null) {
@@ -478,5 +328,194 @@ public class EarDeployer implements Deployer {
             modulePropsMap.put(moduleUri, moduleProps);
         }
         return moduleProps;
+    }
+
+    private static class CompositeApplicationInfo extends ApplicationInfo {
+
+        private final Application application;
+        private ArchiveFactory archiveFactory;
+        private ServerEnvironment env;
+
+        private CompositeApplicationInfo(
+            final Events events,
+            final Application application,
+            final ReadableArchive source,
+            final String name,
+            final ArchiveFactory archiveFactory,
+            final ServerEnvironment env
+        ) {
+            super(events, source, name);
+            this.application = application;
+            this.archiveFactory = archiveFactory;
+            this.env = env;
+        }
+
+        @Override
+        protected ExtendedDeploymentContext getSubContext(ModuleInfo module, ExtendedDeploymentContext context) {
+            return subContext(application, context, module.getName());
+        }
+
+        private ExtendedDeploymentContext subContext(final Application application, final DeploymentContext context, final String moduleUri) {
+
+            ExtendedDeploymentContext moduleContext = ((ExtendedDeploymentContext) context).getModuleDeploymentContexts().get(moduleUri);
+            if (moduleContext != null) {
+                return moduleContext;
+            }
+
+
+            final ReadableArchive subArchive;
+            try {
+                subArchive = context.getSource().getSubArchive(moduleUri);
+                subArchive.setParentArchive(context.getSource());
+            } catch (IOException ioe) {
+                deplLogger.log(Level.WARNING,
+                    ERROR_OCCURRED,
+                    ioe);
+                return null;
+            }
+
+            ActionReport subReport =
+                context.getActionReport().addSubActionsReport();
+            moduleContext = new EarDeployerDeploymentContextImpl(subReport, context, moduleUri, subArchive, env, archiveFactory, application);
+
+            ((ExtendedDeploymentContext) context).getModuleDeploymentContexts().put(moduleUri, moduleContext);
+            moduleContext.setParentContext((ExtendedDeploymentContext) context);
+            moduleContext.setModuleUri(moduleUri);
+            ArchiveHandler subHandler = context.getModuleArchiveHandlers().get(moduleUri);
+            moduleContext.setArchiveHandler(subHandler);
+
+            return moduleContext;
+        }
+    }
+
+    private static class EarDeployerDeploymentContextImpl extends DeploymentContextImpl {
+        private final DeploymentContext context;
+        private final String moduleUri;
+        private final ReadableArchive subArchive;
+        private final ArchiveFactory archiveFactory;
+        private final Application application;
+
+        public EarDeployerDeploymentContextImpl(
+            final ActionReport subReport,
+            final DeploymentContext context,
+            final String moduleUri,
+            final ReadableArchive subArchive,
+            final ServerEnvironment env,
+            final ArchiveFactory archiveFactory,
+            final Application application
+        ) {
+            super(subReport, context.getSource(), context.getCommandParameters(OpsParams.class), env);
+            this.context = context;
+            this.moduleUri = moduleUri;
+            this.subArchive = subArchive;
+            this.archiveFactory = archiveFactory;
+            this.application = application;
+        }
+
+
+        @Override
+        public ClassLoader getClassLoader() {
+            try {
+                if (context.getClassLoader() == null) {
+                    return null;
+                }
+                EarClassLoader appCl = EarClassLoader.class.cast(context.getClassLoader());
+                if (((ExtendedDeploymentContext) context).getPhase() == Phase.PREPARE) {
+                    return appCl;
+                } else {
+                    return appCl.getModuleClassLoader(moduleUri);
+                }
+            } catch (ClassCastException e) {
+                return context.getClassLoader();
+            }
+        }
+
+        @Override
+        public ClassLoader getFinalClassLoader() {
+            try {
+                EarClassLoader finalEarCL = (EarClassLoader) context.getFinalClassLoader();
+                return finalEarCL.getModuleClassLoader(moduleUri);
+            } catch (ClassCastException e) {
+                return context.getClassLoader();
+            }
+        }
+
+        @Override
+        public ReadableArchive getSource() {
+            return subArchive;
+        }
+
+        @Override
+        public Properties getAppProps() {
+            return context.getAppProps();
+        }
+
+        @Override
+        public <U extends OpsParams> U getCommandParameters(Class<U> commandParametersType) {
+            return context.getCommandParameters(commandParametersType);
+        }
+
+        @Override
+        public void addTransientAppMetaData(String metaDataKey,
+                                            Object metaData) {
+            context.addTransientAppMetaData(metaDataKey,
+                metaData);
+        }
+
+        @Override
+        public <T> T getTransientAppMetaData(String metaDataKey,
+                                             Class<T> metadataType) {
+            return context.getTransientAppMetaData(metaDataKey,
+                metadataType);
+        }
+
+        @Override
+        public Properties getModuleProps() {
+            return EarDeployer.getModuleProps(context, moduleUri);
+        }
+
+        @Override
+        public ReadableArchive getOriginalSource() {
+            try {
+                File appRoot = context.getSourceDir();
+                File origModuleFile = new File(appRoot, moduleUri);
+                return archiveFactory.openArchive(
+                    origModuleFile);
+            } catch (IOException ioe) {
+                return null;
+            }
+        }
+
+        @Override
+        public File getScratchDir(String subDirName) {
+            String modulePortion = Util.getURIName(
+                getSource().getURI());
+            return (new File(super.getScratchDir(subDirName),
+                modulePortion));
+        }
+
+        @Override
+        public <T> T getModuleMetaData(Class<T> metadataType) {
+            try {
+                return metadataType.cast(application.getModuleByUri(moduleUri));
+            } catch (Exception e) {
+                // let's first try the extensions mechanisms...
+                if (RootDeploymentDescriptor.class.isAssignableFrom(metadataType)) {
+                    for (RootDeploymentDescriptor extension : application.getModuleByUri(moduleUri).getExtensionsDescriptors((Class<RootDeploymentDescriptor>) metadataType)) {
+                        // we assume there can only be one type of
+                        if (extension != null) {
+                            try {
+                                return metadataType.cast(extension);
+                            } catch (Exception e1) {
+                                // next one...
+                            }
+                        }
+                    }
+
+                }
+
+                return context.getModuleMetaData(metadataType);
+            }
+        }
     }
 }

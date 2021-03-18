@@ -43,6 +43,7 @@ package org.glassfish.config.support;
 
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -146,13 +147,17 @@ public class TranslatedConfigView implements ConfigView {
                 String matchValue = envValue[0];
                 String defaultValue = envValue.length > 1 ? envValue[1] : null;
                 Config config = configResolver().getConfig();
-                Optional<String> newValue = config.getOptionalValue(matchValue, String.class);
-                if (newValue != null && newValue.isPresent()) {
-                    stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue.get() + m3.group(3)));
+                ConfigValue configValue = config.getConfigValue(matchValue);
+                String newValue = configValue.getValue();
+                if (newValue != null && !newValue.isEmpty()) {
+                    stringValue = m3.replaceFirst(Matcher.quoteReplacement(m3.group(1) + newValue + m3.group(3)));
                     m3.reset(stringValue);
+                    Logger.getAnonymousLogger().fine("Found property '" + matchValue + "' in source '" + configValue.getSourceName() + "' with ordinal '" + configValue.getSourceOrdinal() + "'");
                 } else if (defaultValue != null) {
                     stringValue = defaultValue;
                     break;
+                } else {
+                    Logger.getAnonymousLogger().warning("MicroProfile Config: property '" + matchValue + "': no value found, no default given.");
                 }
                 i++;
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,12 +44,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.glassfish.internal.api.Globals;
 
 import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
 
-public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource {
+public class JDBCConfigSource extends PayaraConfigSource {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCConfigSource.class.getName());
 
@@ -78,6 +77,10 @@ public class JDBCConfigSource extends PayaraConfigSource implements ConfigSource
 
     @Override
     public int getOrdinal() {
+        String storedOrdinal = getValue("config_ordinal");
+        if (storedOrdinal != null) {
+            return Integer.parseInt(storedOrdinal);
+        }
         return Integer.parseInt(configService.getMPConfig().getJdbcOrdinality());
     }
 

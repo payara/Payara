@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -57,21 +57,21 @@ public interface Applications extends ConfigBeanProxy  {
      * Gets the value of the MbeanorApplication property.
      * Objects of the following type(s) are allowed in the list
      * {@link Application }
-     * @return 
-     */             
+     * @return
+     */
     @Element("*")
     @RestRedirect(opType= RestRedirect.OpType.PUT, commandName="deploy")
     public List<ApplicationName> getModules();
-            
+
     /**
      * Gets a subset of {@link #getModules()} that has the given type.
      * @param <T>
      * @param type
-     * @return 
+     * @return
      */
     @DuckTyped
     <T> List<T> getModules(Class<T> type);
-    
+
     @DuckTyped
     <T> T getModule(Class<T> type, String moduleID);
 
@@ -93,7 +93,7 @@ public interface Applications extends ConfigBeanProxy  {
 
     @DuckTyped
     List<Application> getApplicationsWithSnifferType(String snifferType, boolean onlyStandaloneModules);
-    
+
     public class Duck {
         public static <T> List<T> getModules(Applications apps, Class<T> type) {
             List<T> modules = new ArrayList<T>();
@@ -106,14 +106,14 @@ public interface Applications extends ConfigBeanProxy  {
             // is not the real list of elements as maintained by this config bean
             return Collections.unmodifiableList(modules);
         }
-                                                                                              
+
         public static <T> T getModule(Applications apps, Class<T> type, String moduleID) {
             if (moduleID == null) {
                 return null;
             }
 
             for (ApplicationName module : apps.getModules())
-                if (type.isInstance(module) && module.getName().equals(moduleID))
+                if (type.isInstance(module) && moduleID.equals(module.getName()))
                     return type.cast(module);
 
             return null;
@@ -129,9 +129,11 @@ public interface Applications extends ConfigBeanProxy  {
                 return null;
             }
 
-            for (ApplicationName module : apps.getModules())
-                if (module instanceof Application && module.getName().equals(moduleID))
+            for (ApplicationName module : apps.getModules()) {
+                if (module instanceof Application && moduleID.equals(module.getName())) {
                     return (Application)module;
+                }
+            }
 
             return null;
         }
@@ -142,14 +144,14 @@ public interface Applications extends ConfigBeanProxy  {
         }
 
         public static List<Application> getApplicationsWithSnifferType(
-            Applications apps, String snifferType, 
+            Applications apps, String snifferType,
             boolean onlyStandaloneModules) {
             List <Application> result = new ArrayList<Application>() {
 
             };
 
-            List<Application> applications = 
-                getModules(apps, Application.class);      
+            List<Application> applications =
+                getModules(apps, Application.class);
 
             for (Application app : applications) {
                 if (app.containsSnifferType(snifferType)) {

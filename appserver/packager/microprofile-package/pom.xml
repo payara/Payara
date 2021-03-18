@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>5.2020.8-SNAPSHOT</version>
+        <version>5.2021.2-SNAPSHOT</version>
     </parent>
     
     <artifactId>microprofile-package</artifactId>
@@ -304,6 +304,16 @@
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
             <version>${json-smart.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>${reactor-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <version>${reactive-streams.version}</version>
         </dependency>
     </dependencies>
         

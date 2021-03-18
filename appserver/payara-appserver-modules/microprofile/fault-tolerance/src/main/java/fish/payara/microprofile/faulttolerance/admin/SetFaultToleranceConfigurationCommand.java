@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,19 @@ package fish.payara.microprofile.faulttolerance.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.microprofile.faulttolerance.FaultToleranceServiceConfiguration;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.glassfish.api.Param;
+import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
@@ -59,74 +69,97 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- *
  * @author Andrew Pielage (initial)
  * @author Jan Bernitt (change to pool size)
  */
 @Service(name = "set-fault-tolerance-configuration")
 @PerLookup
-@ExecuteOn({RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, 
-    CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn({ RuntimeType.DAS })
+@TargetType(value = { CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
+        CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG })
 @RestEndpoints({
-    @RestEndpoint(configBean = FaultToleranceServiceConfiguration.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "set-fault-tolerance-configuration",
-            description = "Sets the Fault Tolerance Configuration")
-})
+        @RestEndpoint(configBean = FaultToleranceServiceConfiguration.class, opType = RestEndpoint.OpType.POST, path = "set-fault-tolerance-configuration", description = "Sets the Fault Tolerance Configuration") })
 public class SetFaultToleranceConfigurationCommand implements AdminCommand {
 
-    private static final Logger logger = Logger.getLogger(SetFaultToleranceConfigurationCommand.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SetFaultToleranceConfigurationCommand.class.getName());
 
     @Inject
     private Target targetUtil;
 
-    @Param(optional = true, alias = "managedexecutorservicename", obsolete = true)
+    @Param(optional = true, alias = "managedexecutorservicename")
     private String managedExecutorServiceName;
 
-    @Param(optional = true, alias = "managedscheduledexecutorservicename", obsolete = true)
+    @Param(optional = true, alias = "managedscheduledexecutorservicename")
     private String managedScheduledExecutorServiceName;
-
-    @Param(optional = true, alias = "async-max-pool-size")
-    private Integer asyncMaxPoolSize;
-
-    @Param(optional = true, alias = "delay-max-pool-size")
-    private Integer delayMaxPoolSize;
-
-    @Param(optional = true, alias = "async-pool-keep-alive")
-    private Integer _asyncPoolKeepAliveInSeconds;
-
-    @Param(optional = true, alias = "cleanup-interval")
-    private Integer _cleanupIntervalInMinutes;
 
     @Param(optional = true, defaultValue = "server-config")
     private String target;
 
     @Override
     public void execute(AdminCommandContext acc) {
-        Config targetConfig = targetUtil.getConfig(target);
-        FaultToleranceServiceConfiguration faultToleranceServiceConfiguration = targetConfig
+        final ActionReport report = acc.getActionReport();
+
+        final Config targetConfig = targetUtil.getConfig(target);
+
+        if (targetConfig == null) {
+            report.setMessage("No such config name: " + targetUtil);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
+        final FaultToleranceServiceConfiguration faultToleranceServiceConfiguration = targetConfig
                 .getExtensionByType(FaultToleranceServiceConfiguration.class);
 
         try {
             ConfigSupport.apply((FaultToleranceServiceConfiguration configProxy) -> {
-                if (asyncMaxPoolSize != null) {
-                    configProxy.setAsyncMaxPoolSize(asyncMaxPoolSize <= 0 ? null : asyncMaxPoolSize.toString());
+                if (managedExecutorServiceName != null
+                        && validateManagedExecutor(managedExecutorServiceName, report)) {
+                    configProxy.setManagedExecutorService(managedExecutorServiceName);
                 }
-                if (delayMaxPoolSize != null) {
-                    configProxy.setDelayMaxPoolSize(delayMaxPoolSize <= 0 ? null : delayMaxPoolSize.toString());
-                }
-                if (_asyncPoolKeepAliveInSeconds != null) {
-                    configProxy.setAsyncPoolKeepAliveInSeconds(_asyncPoolKeepAliveInSeconds.toString());
-                }
-                if (_cleanupIntervalInMinutes != null) {
-                    configProxy.setCleanupIntervalInMinutes(_cleanupIntervalInMinutes.toString());
+                if (managedScheduledExecutorServiceName != null
+                        && validateManagedScheduledExecutor(managedScheduledExecutorServiceName, report)) {
+                    configProxy.setManagedScheduledExecutorService(managedScheduledExecutorServiceName);
                 }
                 return null;
             }, faultToleranceServiceConfiguration);
         } catch (TransactionFailure ex) {
-            acc.getActionReport().failure(logger, "Failed to update Fault Tolerance configuration", ex);
+            report.failure(LOGGER, "Failed to update Fault Tolerance configuration", ex);
         }
+    }
+
+    private static boolean validateManagedScheduledExecutor(String name, ActionReport report) {
+        return validateLookup(name, report, ManagedScheduledExecutorService.class);
+    }
+
+    private static boolean validateManagedExecutor(String name, ActionReport report) {
+        return validateLookup(name, report, ManagedExecutorService.class);
+    }
+
+    private static boolean validateLookup(String name, ActionReport report, Class<?> type) {
+        try {
+            // Lookup the object
+            final InitialContext ctx = new InitialContext();
+            final Object result = ctx.lookup(name);
+
+            // Type check the object
+            if (!type.isInstance(result)) {
+                throw new IllegalArgumentException(String.format("Invalid object type for: %s. Was: %s Expected: %s.",
+                        name, result.getClass().getName(), type.getName()));
+            }
+        } catch (NamingException ex) {
+            // Error finding the object
+            LOGGER.log(Level.WARNING, "Cannot find referenced object: " + name, ex);
+            report.failure(LOGGER, "Cannot find referenced object: " + name);
+            report.setActionExitCode(ExitCode.FAILURE);
+            return false;
+        } catch (Exception ex) {
+            // Error performing extra checks (such as the type check)
+            LOGGER.log(Level.WARNING, "Invalid object: " + name, ex);
+            report.failure(LOGGER, ex.getMessage());
+            report.setActionExitCode(ExitCode.FAILURE);
+            return false;
+        }
+        return true;
     }
 
 }

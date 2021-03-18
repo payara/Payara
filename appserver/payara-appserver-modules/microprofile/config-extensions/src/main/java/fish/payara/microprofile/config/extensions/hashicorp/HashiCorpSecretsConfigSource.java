@@ -49,9 +49,11 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonException;
 import javax.json.stream.JsonParser;
@@ -74,11 +76,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fish.payara.microprofile.config.extensions.hashicorp.model.SecretHolder;
 import fish.payara.nucleus.microprofile.config.source.extension.ConfiguredExtensionConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 @Service(name = "hashicorp-secrets-config-source")
 public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSource<HashiCorpSecretsConfigSourceConfiguration> {
 
     private static final Logger LOGGER = Logger.getLogger(HashiCorpSecretsConfigSource.class.getName());
+    
+    @Inject
+    MicroprofileConfigConfiguration mpconfig;
 
     private Client client = ClientBuilder.newClient();
     protected String hashiCorpVaultToken;
@@ -147,6 +153,11 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
     }
 
     @Override
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
+    }
+
+    @Override
     public String getValue(String propertyName) {
         if (hashiCorpVaultToken == null) {
             printMisconfigurationMessage();
@@ -166,7 +177,7 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
         properties.put(secretName, secretValue);
         return modifySecret(properties);
     }
-
+    
     private boolean modifySecret(Map<String, String> properties) {
         //Use version 2 of API by default
         String secretsURL = vaultAddress + "/v1/" + secretsEnginePath + "/data/" + secretsPath;
@@ -180,7 +191,7 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
 
         Object payload;
         if (apiVersion == 1) {
-            Map<String, Object> secrets = (Map) properties;
+            Map<String, Object> secrets = new HashMap<>(properties);
             payload = Json.createObjectBuilder(secrets).build().toString();
         } else {
             payload = new SecretHolder(properties);
@@ -246,7 +257,12 @@ public class HashiCorpSecretsConfigSource extends ConfiguredExtensionConfigSourc
     public String getName() {
         return "hashicorp";
     }
-
+    
+    @Override
+    public int getOrdinal() {
+        return Integer.parseInt(mpconfig.getCloudOrdinality());
+    }
+    
     private static void printMisconfigurationMessage() {
         LOGGER.warning("HashiCorp Secrets Config Source isn't configured correctly. "
                 + "Make sure that the password aliases HASHICORP_VAULT_TOKEN exist.");

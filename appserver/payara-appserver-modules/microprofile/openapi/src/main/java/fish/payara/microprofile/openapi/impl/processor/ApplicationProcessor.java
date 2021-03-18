@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -538,7 +538,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (schema != null) {
             SchemaImpl.merge(schema, newSchema, true, context);
         }
-        if (schema == null || schema.getEnumeration().isEmpty()) {
+        if (schema == null || schema.getEnumeration() == null || schema.getEnumeration().isEmpty()) {
             //if the schema annotation does not specify enums, then all enum fields will be added
             for (FieldModel enumField : enumType.getStaticFields()) {
                 final String enumValue = enumField.getName();

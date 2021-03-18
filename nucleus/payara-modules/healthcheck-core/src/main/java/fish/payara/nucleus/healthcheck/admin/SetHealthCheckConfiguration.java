@@ -1,5 +1,5 @@
 /*
- * Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -119,7 +119,7 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server-config")
     private String target;
 
-    @Param(name = "enabled")
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
     @Param(name = "historical-trace-enabled", optional = true)
@@ -166,7 +166,10 @@ public class SetHealthCheckConfiguration implements AdminCommand {
         try {
             final Set<String> notifierNames = NotifierUtils.getNotifierNames(serviceLocator);
             ConfigSupport.apply(configProxy -> {
-                    configProxy.enabled(enabled.toString());
+                    if (enabled != null) {
+                        configProxy.enabled(enabled.toString());
+                    }
+
                     configProxy.setHistoricalTraceStoreSize(String.valueOf(historicalTraceStoreSize));
                     if (historicalTraceEnabled != null) {
                         configProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
@@ -223,7 +226,9 @@ public class SetHealthCheckConfiguration implements AdminCommand {
     }
 
     private void configureDynamically() {
-        healthCheck.setEnabled(enabled);
+        if (enabled != null) {
+            healthCheck.setEnabled(enabled);
+        }
         healthCheck.setHistoricalTraceStoreSize(historicalTraceStoreSize);
         if (historicalTraceEnabled != null) {
             healthCheck.setHistoricalTraceEnabled(historicalTraceEnabled);

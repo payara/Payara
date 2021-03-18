@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,8 +78,7 @@ public final class ArrayConverter<T> implements Converter<Object> {
         Object array = Array.newInstance(elementType, sourceValues.length);
         int j = 0;
         IllegalArgumentException lastConversionException = null;
-        for (int i = 0; i < sourceValues.length; i++) {
-            String sourceValue = sourceValues[i];
+        for (String sourceValue : sourceValues) {
             if (sourceValue != null && !sourceValue.isEmpty()) {
                 try {
                     T elementValue = elementConverter.convert(sourceValue);

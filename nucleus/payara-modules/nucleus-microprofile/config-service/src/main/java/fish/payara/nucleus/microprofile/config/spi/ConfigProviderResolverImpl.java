@@ -52,6 +52,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -63,6 +66,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
@@ -83,6 +87,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
+import fish.payara.nucleus.microprofile.config.converters.ByteConverter;
 import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
 import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
 import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
@@ -90,6 +95,9 @@ import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
 import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
 import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
 import fish.payara.nucleus.microprofile.config.converters.LongConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalDoubleConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalIntConverter;
+import fish.payara.nucleus.microprofile.config.converters.OptionalLongConverter;
 import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
 import fish.payara.nucleus.microprofile.config.converters.StringConverter;
 import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
@@ -104,7 +112,7 @@ import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
 import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
-import fish.payara.nucleus.microprofile.config.source.SecretsDirConfigSource;
+import fish.payara.nucleus.microprofile.config.source.DirConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
 import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
 import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSourceService;
@@ -135,6 +143,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
 
     @Inject
     private ServerContext context;
+    
+    // Some sources might want to execute background tasks in a controlled fashion
+    @Inject
+    private PayaraExecutorService executorService;
 
     // Gives access to deployed applications
     @Inject
@@ -280,7 +292,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
                 sources.addAll(getDiscoveredSources(appInfo));
                 converters.putAll(getDefaultConverters());
                 converters.putAll(getDiscoveredConverters(appInfo));
-                result = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
+                PayaraConfig appresult = new PayaraConfig(sources, converters, TimeUnit.SECONDS.toMillis(getCacheDurationSeconds()));
+                addProfileSource(appresult, appInfo.getAppClassLoader());
+                result = appresult;
                 appInfo.addTransientAppMetaData(METADATA_KEY, result);
             }
         }
@@ -297,6 +311,10 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
         return new PayaraConfigBuilder(this);
     }
 
+    public PayaraExecutorService getExecutor() {
+        return this.executorService;
+    }
+    
     Config getNamedConfig(String applicationName) {
         Config result = null;
         ApplicationInfo info = applicationRegistry.get(applicationName);
@@ -322,7 +340,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
         sources.add(new SystemPropertyConfigSource());
         sources.add(new JNDIConfigSource());
         sources.add(new PayaraServerProperties());
-        sources.add(new SecretsDirConfigSource());
+        sources.add(new DirConfigSource());
         sources.add(new PasswordAliasConfigSource());
         sources.add(new JDBCConfigSource());
         if (appName != null) {
@@ -442,6 +460,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
     Map<Class<?>,Converter<?>> getDefaultConverters() {
         Map<Class<?>,Converter<?>> result = new HashMap<>();
         result.put(Boolean.class, new BooleanConverter());
+        result.put(Byte.class, new ByteConverter());
         result.put(Integer.class, new IntegerConverter());
         result.put(Long.class, new LongConverter());
         result.put(Float.class, new FloatConverter());
@@ -451,6 +470,9 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
         result.put(String.class, new StringConverter());
         result.put(Character.class, new CharacterConverter());
         result.put(Short.class, new ShortConverter());
+        result.put(OptionalInt.class, new OptionalIntConverter());
+        result.put(OptionalDouble.class, new OptionalDoubleConverter());
+        result.put(OptionalLong.class, new OptionalLongConverter());
         return result;
     }
 
@@ -505,6 +527,25 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
             props.add(p);
         }
         return props;
+    }
+    
+    private static void addProfileSource(PayaraConfig config, ClassLoader appClassLoader) {
+        String profile = config.getProfile();
+        if (profile == null) {
+            return;
+        }
+        ArrayList<Properties> appConfigProperties = new ArrayList<>();
+        try {
+            appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "META-INF/microprofile-config-" + profile + ".properties"));
+            appConfigProperties.addAll(getPropertiesFromFile(appClassLoader, "../../META-INF/microprofile-config-" + profile + ".properties"));
+            for (Properties props : appConfigProperties) {
+                props.putIfAbsent("config_ordinal", "101");
+                PropertiesConfigSource configSource = new PropertiesConfigSource(props);
+                config.addConfigSource(configSource);
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

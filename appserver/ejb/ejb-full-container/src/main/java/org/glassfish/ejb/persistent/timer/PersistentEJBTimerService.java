@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -221,7 +221,7 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
         TransactionManager tm = ejbContainerUtil.getTransactionManager();
 
         Set toRestore = null;
-	int totalTimersMigrated = 0;
+	    int totalTimersMigrated = 0;
 
         try {
 
@@ -1234,13 +1234,11 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
                 // the current server
                 if( ! ( timer.getOwnerId().equals(
                         ownerIdOfThisServer_) ) ) {
-                    logger.log(Level.WARNING,
+                    logger.log(Level.INFO,
                             "The timer (" + timerId + ") is not owned by " +
                             "server (" + ownerIdOfThisServer_ + ") that " +
                             "initiated the ejbTimeout. This timer is now " +
-                            "owned by (" + timer.getOwnerId() + "). \n" +
-                            "Hence delete the timer from " +
-                            ownerIdOfThisServer_ + "'s cache.");
+                            "owned by (" + timer.getOwnerId() + ").");
 
                     result = false;
                 }

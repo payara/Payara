@@ -41,13 +41,12 @@ package fish.payara.nucleus.microprofile.config.source;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class DottedNamesConfigSource extends PayaraConfigSource implements ConfigSource{
+public class DottedNamesConfigSource extends PayaraConfigSource {
 
     @Override
     public Map<String, String> getProperties() {

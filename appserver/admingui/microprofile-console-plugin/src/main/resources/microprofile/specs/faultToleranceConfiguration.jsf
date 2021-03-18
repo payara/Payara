@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -85,19 +85,19 @@
 <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
     <sun:propertySheetSection id="faultToleranceProps">
-        <sun:property id="asyncMaxPoolSizeProp" labelAlign="left" 
+        <sun:property id="managedExecutorServiceNameProp" labelAlign="left" 
                       noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18n_microprofile.faultTolerance.configuration.asyncExecutorPoolMaxSize}"  
-                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.asyncExecutorPoolMaxSizeHelp}">
-            <sun:textField id="asyncMaxPoolSize" columns="$int{20}" maxLength="5" 
-                      text="#{pageSession.valueMap['asyncMaxPoolSize']}"/>
+                      label="$resource{i18n_microprofile.faultTolerance.configuration.managedExecutorServiceName}"  
+                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.managedExecutorServiceNameHelp}">
+            <sun:textField id="managedExecutorServiceName" columns="$int{60}"
+                      text="#{pageSession.valueMap['managedExecutorServiceName']}"/>
         </sun:property>
-        <sun:property id="delayMaxPoolSizeProp" labelAlign="left" 
+        <sun:property id="managedScheduledExecutorServiceNameProp" labelAlign="left" 
                       noWrap="#{true}" overlapLabel="#{false}" 
-                      label="$resource{i18n_microprofile.faultTolerance.configuration.delayExecutorMaxPoolSize}"  
-                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.delayExecutorMaxPoolSizeHelp}">
-            <sun:textField id="delayMaxPoolSize" columns="$int{20}" maxLength="5" 
-                      text="#{pageSession.valueMap['delayMaxPoolSize']}"/>
+                      label="$resource{i18n_microprofile.faultTolerance.configuration.managedScheduledExecutorServiceName}"  
+                      helpText="$resource{i18n_microprofile.faultTolerance.configuration.managedScheduledExecutorServiceNameHelp}">
+            <sun:textField id="managedScheduledExecutorServiceName" columns="$int{60}"
+                      text="#{pageSession.valueMap['managedScheduledExecutorServiceName']}"/>
         </sun:property>
     </sun:propertySheetSection>
    </sun:propertySheet>

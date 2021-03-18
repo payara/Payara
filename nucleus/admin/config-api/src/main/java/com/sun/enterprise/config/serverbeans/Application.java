@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -68,7 +68,7 @@ import fish.payara.api.admin.config.ApplicationDeploymentTime;
 
 /**
  * Interface to hold details of an application
- * 
+ *
  * @see com.sun.enterprise.deployment.Application
  */
 @Configured
@@ -79,7 +79,7 @@ import fish.payara.api.admin.config.ApplicationDeploymentTime;
 @ContextRootCheck(message="{contextroot.duplicate}", payload=Application.class)
 public interface Application extends ApplicationName, ApplicationDeploymentTime, PropertyBag {
 
-    public static final String APP_LOCATION_PROP_NAME = "appLocation";           
+    public static final String APP_LOCATION_PROP_NAME = "appLocation";
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";
     public static final String ARCHIVE_TYPE_PROP_NAME = "archiveType";
     public static final String ALT_DD_LOCATION_PROP_NAME = "altDDLocation";
@@ -245,7 +245,7 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
      * @throws PropertyVetoException
      */
     void setDeploymentOrder(String value) throws PropertyVetoException;
-    
+
     @Element
     List<Module> getModule();
 
@@ -267,7 +267,7 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
      * <p/>
      * <p/>
      * Objects of the following type(s) are allowed in the list {@link Engine }
-     * @return 
+     * @return
      */
     @Element
     List<Engine> getEngine();
@@ -350,7 +350,10 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
                     deploymentProps.put(prop.getName(), prop.getValue());
                 }
             }
-            deploymentProps.setProperty(ServerTags.OBJECT_TYPE, instance.getObjectType());
+            String objectType = instance.getObjectType();
+            if (objectType != null) {
+                deploymentProps.setProperty(ServerTags.OBJECT_TYPE, objectType);
+            }
             if (instance.getContextRoot() != null) {
                 deploymentProps.setProperty(ServerTags.CONTEXT_ROOT,
                         instance.getContextRoot());

@@ -37,14 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.gjc.spi;
 
+import com.sun.enterprise.util.Utility;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionRequestInfo;
@@ -106,6 +110,10 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactoryImpl {
         java.sql.Connection dsConn = null;
         ManagedConnectionImpl mc = null;
 
+        ClassLoader appClassLoader = Utility.getClassLoader();
+        // do not propagate application class loader to the database driver
+        // may cause memory leaks in embedded databases
+        Utility.setContextClassLoader(null);
         try {
             /* For the case where the user/passwd of the connection pool is
             * equal to the PasswordCredential for the connection request
@@ -114,12 +122,14 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactoryImpl {
             */
             String user = getUser();
             if (user == null || isEqual(pc, user, getPassword())) {
-                dsConn = dataSource.getConnection();
+                dsConn = AccessController.doPrivileged((PrivilegedExceptionAction<java.sql.Connection>) dataSource::getConnection);
             } else {
-                dsConn = dataSource.getConnection(pc.getUserName(),
-                        new String(pc.getPassword()));
+                dsConn = AccessController.doPrivileged((PrivilegedExceptionAction<java.sql.Connection>) () ->
+                        dataSource.getConnection(pc.getUserName(),
+                        new String(pc.getPassword())));
             }
-        } catch (java.sql.SQLException sqle) {
+        } catch (PrivilegedActionException ex) {
+            java.sql.SQLException sqle = (SQLException)ex.getCause();
             //_logger.log(Level.WARNING, "jdbc.exc_create_conn", sqle.getMessage());
             if(_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "jdbc.exc_create_conn", sqle.getMessage());
@@ -131,6 +141,8 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactoryImpl {
             ResourceAllocationException rae = new ResourceAllocationException(msg);
             rae.initCause(sqle);
             throw rae;
+        } finally {
+            Utility.setContextClassLoader(appClassLoader);
         }
 
         try {
