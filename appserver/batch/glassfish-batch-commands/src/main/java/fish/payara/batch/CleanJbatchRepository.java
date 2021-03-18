@@ -77,7 +77,7 @@ public class CleanJbatchRepository implements AdminCommand {
     @Param(acceptableValues = "ALL,COMPLETED", defaultValue = "COMPLETED", optional = true)
     String status;
 
-    @Param(optional = false)
+    @Param(optional = true, defaultValue = "1")
     int days;
 
     @Param(name = "jobname", primary = true, optional = false)
