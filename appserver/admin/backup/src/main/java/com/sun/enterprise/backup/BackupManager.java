@@ -43,8 +43,10 @@ package com.sun.enterprise.backup;
 import com.sun.enterprise.backup.util.BackupUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  *
@@ -70,10 +72,20 @@ public class BackupManager extends BackupRestoreManager {
             mesg.append(StringHelper.get("backup-res.SuccessfulBackup",
                                     request.domainName, backupTime));
         }
-        
+
+        boolean deleteBackup = false;
         try {
-            ZipStorage zs = new ZipStorage(request);
-            zs.store();
+            try {
+                ZipStorage zs = new ZipStorage(request);
+                zs.store();
+            } catch (BackupException backupException) {
+                deleteBackup = true;
+                LoggerHelper.severe("Could not create domain backup zip: "
+                        + request.backupFile.toString()
+                        + "\n{0}", backupException.getCause().toString());
+                throw backupException;
+            }
+
             // TODO: RSH - Recycle files. I'm not sure if this is the precise
             // place to do the recycling, but we probably need to do it somewhere
             // in this module since BackupFilenameManager is module private. We
@@ -114,7 +126,21 @@ public class BackupManager extends BackupRestoreManager {
         }
         finally {
             status.delete();
-            BackupUtils.protect(request.backupFile);
+
+            // deleteBackup should only be true if an error was encountered creating the zip file
+            // If one was encountered, we want to delete it rather than leaving a broken backup around
+            if (deleteBackup) {
+                try {
+                    Files.deleteIfExists(request.backupFile.toPath());
+                } catch (IOException ioException) {
+                    LoggerHelper.severe("Could not delete corrupt domain backup zip: "
+                            + request.backupFile.toString()
+                            + "\n{0}", ioException.toString());
+                }
+
+            } else {
+                BackupUtils.protect(request.backupFile);
+            }
         }
     }
     
