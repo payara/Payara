@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright 2021 Payara Foundation and/or its affiliates.
+
 package com.sun.enterprise.backup;
 
 import com.sun.enterprise.backup.util.BackupUtils;
