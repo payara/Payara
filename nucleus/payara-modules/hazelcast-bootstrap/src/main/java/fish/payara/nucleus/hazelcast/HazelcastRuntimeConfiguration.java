@@ -115,10 +115,6 @@ public interface HazelcastRuntimeConfiguration
     String getClusterGroupName();
     public void setClusterGroupName(String value);
     
-    @Attribute(defaultValue = "D3v3l0pm3nt")
-    String getClusterGroupPassword();
-    public void setClusterGroupPassword(String value);
-
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getHostAwarePartitioning();
     public void setHostAwarePartitioning(String value);

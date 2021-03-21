@@ -157,9 +157,6 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "clusterName", optional = true)
     private String hzClusterName;
 
-    @Param(name = "clusterPassword", optional = true)
-    private String hzClusterPassword;
-
     @Param(name = "jndiName", shortName = "j", optional = true)
     private String jndiName;
 
@@ -253,9 +250,6 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         }
                         if (hzClusterName != null) {
                             hazelcastRuntimeConfigurationProxy.setClusterGroupName(hzClusterName);
-                        }
-                        if (hzClusterPassword != null) {
-                            hazelcastRuntimeConfigurationProxy.setClusterGroupPassword(hzClusterPassword);
                         }
                         if (licenseKey != null) {
                             hazelcastRuntimeConfigurationProxy.setLicenseKey(licenseKey);
