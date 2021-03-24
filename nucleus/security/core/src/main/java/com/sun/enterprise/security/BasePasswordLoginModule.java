@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.noPwdCredentialProvidedError;
@@ -82,7 +82,7 @@ import com.sun.enterprise.util.i18n.StringManager;
  */
 public abstract class BasePasswordLoginModule implements LoginModule {
     
-    protected static final Logger _logger = SecurityLoggerInfo.getLogger();
+    protected static final Logger LOGGER = SecurityLoggerInfo.getLogger();
     protected static final StringManager sm = StringManager.getManager(LoginCallbackHandler.class);
 
     // The _subject, _sharedState and _options satisfy LoginModule and are
@@ -116,8 +116,8 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         _sharedState = sharedState;
         _options = options;
         
-        if (_logger.isLoggable(FINE)) {
-            _logger.log(FINE, "Login module initialized: " + getClass());
+        if (LOGGER.isLoggable(FINE)) {
+            LOGGER.log(FINE, "Login module initialized: " + getClass());
         }
     }
 
@@ -141,7 +141,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
 
         // Delegate the actual authentication to subclass.
         authenticateUser();
-        _logger.fine("JAAS login complete.");
+        LOGGER.fine("JAAS login complete.");
         
         return true;
     }
@@ -204,7 +204,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         setPasswordChar(null);
         _commitSucceeded = true;
         
-        _logger.fine("JAAS authentication committed.");
+        LOGGER.fine("JAAS authentication committed.");
         
         return true;
     }
@@ -215,7 +215,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      */
     @Override
     public final boolean abort() throws LoginException {
-        _logger.fine("JAAS authentication aborted.");
+        LOGGER.fine("JAAS authentication aborted.");
 
         if (!_succeeded) {
             return false;
@@ -247,8 +247,8 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      */
     @Override
     public final boolean logout() throws LoginException {
-        if (_logger.isLoggable(FINE)) {
-            _logger.log(FINE, "JAAS logout for: " + _subject);
+        if (LOGGER.isLoggable(FINE)) {
+            LOGGER.log(FINE, "JAAS logout for: " + _subject);
         }
 
         _subject.getPrincipals().clear();
@@ -311,7 +311,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     public final void extractCredentials() throws LoginException {
         if (_subject == null) {
             String msg = sm.getString("pwdlm.noinfo");
-            _logger.log(SEVERE, msg);
+            LOGGER.log(SEVERE, msg);
             throw new LoginException(msg);
         }
 
@@ -326,11 +326,11 @@ public abstract class BasePasswordLoginModule implements LoginModule {
                 }
             }
         } catch (Exception e) {
-            _logger.log(WARNING, privateSubjectCredentialsError, e.toString());
+            LOGGER.log(WARNING, privateSubjectCredentialsError, e.toString());
         }
 
         if (passwordCredential == null) {
-            _logger.log(SEVERE, noPwdCredentialProvidedError);
+            LOGGER.log(SEVERE, noPwdCredentialProvidedError);
             throw new LoginException(sm.getString("pwdlm.nocreds"));
         }
 
@@ -343,7 +343,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
 
         } catch (Exception e) {
             String msg = sm.getString("pwdlm.norealm", realm);
-            _logger.log(Level.SEVERE, msg);
+            LOGGER.log(Level.SEVERE, msg);
             throw new LoginException(msg);
         }
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Services Ltd.
 
 package com.sun.enterprise.security.admin.cli;
 
@@ -149,7 +150,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
     @Inject
     private MasterPassword masterPassword;
 
-    private Map<String,Config> writableConfigs = new HashMap<String,Config>();
+    private final Map<String,Config> writableConfigs = new HashMap<>();
 
     @Override
     public void postConstruct() {
@@ -329,10 +330,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
          }
 
 
-         if ((ssl = p.getSsl()) == null) {
-             return false;
-         }
-         return true;
+         return (ssl = p.getSsl()) != null;
     }
 
     private void ensureKeyPairForInstanceAlias() throws IOException, NoSuchAlgorithmException, CertificateException, KeyStoreException, UnrecoverableKeyException, ProcessManagerException {
@@ -417,14 +415,8 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
     private void reload(final KeyStore keystore, final File keystoreFile, final String pw) throws
             FileNotFoundException, IOException, NoSuchAlgorithmException, CertificateException {
 
-        InputStream is = null;
-        try {
-            is = new BufferedInputStream(new FileInputStream(keystoreFile));
+        try (InputStream is = new BufferedInputStream(new FileInputStream(keystoreFile))) {
             keystore.load(is, pw.toCharArray());
-        } finally {
-            if (is != null) {
-                is.close();
-            }
         }
     }
 
@@ -449,22 +441,16 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
 
     private Properties pwProps(final String pwFilePath) throws IOException {
         Properties result = new Properties();
-        InputStream is = null;
-        try {
-            is = new BufferedInputStream(new FileInputStream(pwFilePath));
+        try (InputStream is = new BufferedInputStream(new FileInputStream(pwFilePath))) {
             result.load(is);
         } finally {
-            if (is != null) {
-                is.close();
-            }
             return result;
         }
     }
 
-    private static String CERTIFICATE_DN_PREFIX = "CN=";
+    private static final String CERTIFICATE_DN_PREFIX = "CN=";
 
-    private static String CERTIFICATE_DN_SUFFIX =
-        ",OU=GlassFish,O=Oracle Corporation,L=Santa Clara,ST=California,C=US";
+    private static final String CERTIFICATE_DN_SUFFIX = ",OU=GlassFish,O=Oracle Corporation,L=Santa Clara,ST=California,C=US";
 
     private static final String INSTANCE_CN_SUFFIX = "-instance";
 

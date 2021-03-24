@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.security.auth.login;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
@@ -85,7 +86,7 @@ import com.sun.enterprise.security.common.ClientSecurityContext;
  */
 public class LoginContextDriver {
 
-    private static final Logger _logger = SecurityLoggerInfo.getLogger();
+    private static final Logger LOGGER = SecurityLoggerInfo.getLogger();
 
     public static final ServerLoginCallbackHandler dummyCallback = new ServerLoginCallbackHandler();
     public static final String CERT_REALMNAME = "certificate";
@@ -116,43 +117,41 @@ public class LoginContextDriver {
         // The subject will actually be filled in with a credential as required by the csiv2 layer in the LoginModule.
         Subject subject = new Subject();
 
-        if (type == USERNAME_PASSWORD) {
-
-            // Store a PasswordCredential with the username and password obtained from UsernamePasswordStore into the
-            // passed in subject.
-            //
-            // This assumes com.sun.enterprise.security.auth.login.ClientPasswordLoginModule is configured.
-            //
-            // ClientPasswordLoginModule will add a PasswordCredential with the username and password
-            // obtained from primarily UsernamePasswordStore into the subject. The handler is used
-            // when UsernamePasswordStore does not contain the username and password.
-            privileged(() -> addCredentialToSubject(CLIENT_JAAS_PASSWORD, subject, handler));
-
-            // Read PasswordCredential from Subject and put it in the security context
-            postClientAuth(subject, PasswordCredential.class);
-
-            return subject;
-        } else if (type == CERTIFICATE) {
-
-            privileged(() -> addCredentialToSubject(CLIENT_JAAS_CERTIFICATE, subject, handler));
-
-            postClientAuth(subject, X509CertificateCredential.class);
-
-            return subject;
-        } else if (type == ALL) {
-
-            privileged(() -> addCredentialToSubject(CLIENT_JAAS_PASSWORD, subject, handler));
-            postClientAuth(subject, PasswordCredential.class);
-
-            privileged(() -> addCredentialToSubject(CLIENT_JAAS_PASSWORD, subject, handler));
-            postClientAuth(subject, X509CertificateCredential.class);
-
-            return subject;
-        } else {
-            privileged(() -> addCredentialToSubject(CLIENT_JAAS_PASSWORD, subject, handler));
-            postClientAuth(subject, PasswordCredential.class);
-
-            return subject;
+        switch (type) {
+            case USERNAME_PASSWORD:
+                // Store a PasswordCredential with the username and password obtained from UsernamePasswordStore into the
+                // passed in subject.
+                //
+                // This assumes com.sun.enterprise.security.auth.login.ClientPasswordLoginModule is configured.
+                //
+                // ClientPasswordLoginModule will add a PasswordCredential with the username and password
+                // obtained from primarily UsernamePasswordStore into the subject. The handler is used
+                // when UsernamePasswordStore does not contain the username and password.
+                privileged(() -> addCredentialToSubject(CLIENT_JAAS_PASSWORD, subject, handler));
+                
+                // Read PasswordCredential from Subject and put it in the security context
+                postClientAuth(subject, PasswordCredential.class);
+                
+                return subject;
+            case CERTIFICATE:
+                privileged(() -> addCredentialToSubject(CLIENT_JAAS_CERTIFICATE, subject, handler));
+                
+                postClientAuth(subject, X509CertificateCredential.class);
+                
+                return subject;
+            case ALL:
+                privileged(() -> addCredentialToSubject(CLIENT_JAAS_PASSWORD, subject, handler));
+                postClientAuth(subject, PasswordCredential.class);
+                
+                privileged(() -> addCredentialToSubject(CLIENT_JAAS_PASSWORD, subject, handler));
+                postClientAuth(subject, X509CertificateCredential.class);
+                
+                return subject;
+            default:
+                privileged(() -> addCredentialToSubject(CLIENT_JAAS_PASSWORD, subject, handler));
+                postClientAuth(subject, PasswordCredential.class);
+                
+                return subject;
         }
     }
     
@@ -177,7 +176,7 @@ public class LoginContextDriver {
         try {
             tryJaasLogin(jaasCtx, subject);
         } catch (Exception e) {
-            _logger.log(INFO, auditAtnRefusedError, username);
+            LOGGER.log(INFO, auditAtnRefusedError, username);
 
             auditAuthenticate(username, realm, false);
 
@@ -249,7 +248,7 @@ public class LoginContextDriver {
         if (e instanceof LoginException) {
             throw (LoginException) e;
         } else {
-            throw (LoginException) new LoginException(exceptionStringFn.apply(e)).initCause(e);
+            throw new LoginException(exceptionStringFn.apply(e), e);
         }
     }
 
@@ -265,8 +264,8 @@ public class LoginContextDriver {
      *
      */
     private static void postClientAuth(Subject subject, Class<?> clazz) {
-        if (_logger.isLoggable(FINEST)) {
-            _logger.log(FINEST, "LoginContextDriver post login subject :" + subject);
+        if (LOGGER.isLoggable(FINEST)) {
+            LOGGER.log(FINEST, "LoginContextDriver post login subject :{0}", subject);
         }
 
         Iterator<?> credentialsIterator = privileged(() -> subject.getPrivateCredentials(clazz)).iterator();
@@ -278,15 +277,15 @@ public class LoginContextDriver {
                 credential = privileged(() -> credentialsIterator.next());
             } catch (Exception e) {
                 // Should never come here
-                _logger.log(SEVERE, securityAccessControllerActionError, e);
+                LOGGER.log(SEVERE, securityAccessControllerActionError, e);
             }
 
             if (credential instanceof PasswordCredential) {
                 PasswordCredential passwordCredential = (PasswordCredential) credential;
                 String user = passwordCredential.getUser();
 
-                if (_logger.isLoggable(FINEST)) {
-                    _logger.log(FINEST, "In LoginContextDriver user-pass login:" + user + " realm :" + passwordCredential.getRealm());
+                if (LOGGER.isLoggable(FINEST)) {
+                    LOGGER.log(FINEST, "In LoginContextDriver user-pass login:{0} realm :{1}", new Object[]{user, passwordCredential.getRealm()});
                 }
 
                 setClientSecurityContext(user, subject);
@@ -296,8 +295,8 @@ public class LoginContextDriver {
                 X509CertificateCredential certificateCredential = (X509CertificateCredential) credential;
                 String user = certificateCredential.getAlias();
 
-                if (_logger.isLoggable(FINEST)) {
-                    _logger.log(FINEST, "In LoginContextDriver cert-login::" + user + " realm :" + certificateCredential.getRealm());
+                if (LOGGER.isLoggable(FINEST)) {
+                    LOGGER.log(FINEST, "In LoginContextDriver cert-login::{0} realm :{1}", new Object[]{user, certificateCredential.getRealm()});
                 }
 
                 setClientSecurityContext(user, subject);
