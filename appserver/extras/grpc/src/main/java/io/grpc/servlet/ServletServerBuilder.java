@@ -16,14 +16,11 @@
 
 package io.grpc.servlet;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static io.grpc.servlet.Preconditions.checkArgument;
+import static io.grpc.servlet.Preconditions.checkNotNull;
+import static io.grpc.servlet.Preconditions.checkState;
 import static io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.ExperimentalApi;
 import io.grpc.InternalChannelz.SocketStats;
 import io.grpc.InternalInstrumented;
@@ -42,9 +39,12 @@ import io.grpc.internal.SharedResourceHolder;
 import java.io.File;
 import java.io.IOException;
 import java.net.SocketAddress;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.concurrent.NotThreadSafe;
+
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * Builder to build a gRPC server that can run as a servlet. This is for advanced custom settings.
@@ -118,7 +118,7 @@ public final class ServletServerBuilder extends AbstractServerImplBuilder<Servle
     checkNotNull(streamTracerFactories, "streamTracerFactories");
     this.streamTracerFactories = streamTracerFactories;
     internalServer = new InternalServerImpl();
-    return ImmutableList.of(internalServer);
+    return Arrays.asList(internalServer);
   }
 
   /**
@@ -183,7 +183,6 @@ public final class ServletServerBuilder extends AbstractServerImplBuilder<Servle
     }
   }
 
-  @VisibleForTesting
   static final class ServerTransportImpl implements ServerTransport {
 
     private final InternalLogId logId = InternalLogId.allocate(ServerTransportImpl.class, null);

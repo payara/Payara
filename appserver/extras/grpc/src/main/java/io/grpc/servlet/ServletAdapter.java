@@ -16,13 +16,12 @@
 
 package io.grpc.servlet;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static io.grpc.servlet.Preconditions.checkArgument;
+import static io.grpc.servlet.Preconditions.checkNotNull;
 import static io.grpc.internal.GrpcUtil.TIMEOUT_KEY;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 
-import com.google.common.io.BaseEncoding;
 import io.grpc.Attributes;
 import io.grpc.ExperimentalApi;
 import io.grpc.Grpc;
@@ -42,6 +41,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -173,7 +173,7 @@ public final class ServletAdapter {
         String value = values.nextElement();
         if (headerName.endsWith(Metadata.BINARY_HEADER_SUFFIX)) {
           byteArrays.add(headerName.getBytes(StandardCharsets.US_ASCII));
-          byteArrays.add(BaseEncoding.base64().decode(value));
+          byteArrays.add(Base64.getDecoder().decode(value));
         } else {
           byteArrays.add(headerName.getBytes(StandardCharsets.US_ASCII));
           byteArrays.add(value.getBytes(StandardCharsets.US_ASCII));

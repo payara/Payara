@@ -20,12 +20,12 @@ import static io.grpc.internal.GrpcUtil.CONTENT_TYPE_GRPC;
 import static io.grpc.internal.GrpcUtil.CONTENT_TYPE_KEY;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.util.Arrays.copyOfRange;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.WARNING;
+import static javax.xml.bind.DatatypeConverter.printHexBinary;
 
-import com.google.common.io.BaseEncoding;
-import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.Attributes;
 import io.grpc.InternalLogId;
 import io.grpc.Metadata;
@@ -40,10 +40,12 @@ import io.grpc.internal.TransportTracer;
 import io.grpc.internal.WritableBuffer;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -51,6 +53,7 @@ import javax.annotation.Nullable;
 import javax.servlet.AsyncContext;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
 
 final class ServletServerStream extends AbstractServerStream {
 
@@ -134,7 +137,7 @@ final class ServletServerStream extends AbstractServerStream {
   final class ServletTransportState extends TransportState {
 
     private final SerializingExecutor transportThreadExecutor =
-        new SerializingExecutor(MoreExecutors.directExecutor());
+        new SerializingExecutor(Executors.newSingleThreadExecutor());
 
     private ServletTransportState(
         int maxMessageSize, StatsTraceContext statsTraceCtx, TransportTracer transportTracer) {
@@ -329,13 +332,13 @@ final class ServletServerStream extends AbstractServerStream {
   }
 
   static String toHexString(byte[] bytes, int length) {
-    String hex = BaseEncoding.base16().encode(bytes, 0, min(length, 64));
+    String hex = printHexBinary(copyOfRange(bytes, 0, min(length, 64)));
     if (length > 80) {
       hex += "...";
     }
     if (length > 64) {
       int offset = max(64, length - 16);
-      hex += BaseEncoding.base16().encode(bytes, offset, length - offset);
+      hex += printHexBinary(copyOfRange(bytes, offset, length - offset));
     }
     return hex;
   }
