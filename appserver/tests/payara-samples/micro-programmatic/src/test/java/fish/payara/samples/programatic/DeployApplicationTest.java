@@ -47,7 +47,10 @@ import java.util.Scanner;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Before;
 import org.junit.Test;
 
 public class DeployApplicationTest {
@@ -56,12 +59,25 @@ public class DeployApplicationTest {
     private static final String WEBAPP_CONTEXT = "/" + WAR_FILE.getName().substring(0, WAR_FILE.getName().length() - 4);
     private static final String HOST_NAME = System.getProperty("payara.adminHost", "localhost");
 
+    private PayaraMicroServer server;
+
+    @Before
+    public void startMicroInstance() {
+        server = PayaraMicroServer.newInstance();
+    }
+
     @Test
     public void deployApplicationInVanillaMode() throws Exception {
-        PayaraMicroServer server = PayaraMicroServer.newInstance();
+        assertNotNull(server);
         server.start("--autobindhttp", "--nocluster", "--deploy", WAR_FILE.getAbsolutePath());
         assertEquals(TestServlet.RESPONSE_TEXT, download(HOST_NAME, server.getHttpPort()));
-        server.stop();
+    }
+
+    @After
+    public void stopMicroInstance() {
+        if (server != null) {
+            server.stop();
+        }
     }
 
     private String download(String hostName, int hostPort) throws Exception {
