@@ -267,6 +267,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
+                        <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                         <trimStackTrace>false</trimStackTrace>
                         <useSystemClassLoader>true</useSystemClassLoader>
                         <excludes>
@@ -284,6 +285,7 @@
                     <version>${maven.failsafe.plugin.version}</version>
                     <configuration>
                         <encoding>${project.build.sourceEncoding}</encoding>
+                        <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                         <trimStackTrace>false</trimStackTrace>
                         <useSystemClassLoader>false</useSystemClassLoader>
                         <verbose>true</verbose>
