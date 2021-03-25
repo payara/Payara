@@ -127,7 +127,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private int hzPort = Integer.MIN_VALUE;
     private int hzStartPort = Integer.MIN_VALUE;
     private String hzClusterName;
-    private String hzClusterPassword;
     private int httpPort = Integer.MIN_VALUE;
     private int sslPort = Integer.MIN_VALUE;
     private int maxHttpThreads = Integer.MIN_VALUE;
@@ -950,29 +949,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     /**
-     * Gets the password of the Hazelcast cluster group
-     *
-     * @return
-     */
-    @Override
-    public String getHzClusterPassword() {
-        return hzClusterPassword;
-    }
-
-    /**
-     * Sets the Hazelcast cluster group password. For two clusters to work
-     * together then the group name and password must be the same
-     *
-     * @param hzClusterPassword The password to set
-     * @return
-     */
-    @Override
-    public PayaraMicroImpl setHzClusterPassword(String hzClusterPassword) {
-        this.hzClusterPassword = hzClusterPassword;
-        return this;
-    }
-
-    /**
      * Gets the name of the instance group
      *
      * @return The name of the instance group
@@ -1185,9 +1161,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     break;
                 case clustername:
                     hzClusterName = value;
-                    break;
-                case clusterpassword:
-                    hzClusterPassword = value;
                     break;
                 case hostaware: {
                     hostAware = true;
@@ -2006,10 +1979,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName));
             }
 
-            if (hzClusterPassword != null) {
-                preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.cluster-group-password=" + hzClusterPassword));
-            }
-
             if (instanceName != null) {
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-config-specific-configuration.member-name=" + instanceName));
                 preBootCommands.add(new BootCommand("set", "hazelcast-runtime-configuration.generate-names=false"));
@@ -2256,7 +2225,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         hostAware = getBooleanProperty("payaramicro.hostAware", "true");
         hzStartPort = getIntegerProperty("payaramicro.startPort", Integer.MIN_VALUE);
         hzClusterName = getProperty("payaramicro.clusterName");
-        hzClusterPassword = getProperty("payaramicro.clusterPassword");
         liteMember = getBooleanProperty("payaramicro.lite");
         maxHttpThreads = getIntegerProperty("payaramicro.maxHttpThreads", Integer.MIN_VALUE);
         minHttpThreads = getIntegerProperty("payaramicro.minHttpThreads", Integer.MIN_VALUE);
@@ -2381,10 +2349,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (hzClusterName != null) {
             props.setProperty("payaramicro.clusterName", hzClusterName);
-        }
-
-        if (hzClusterPassword != null) {
-            props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
         }
 
         if (clustermode != null) {
