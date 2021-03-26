@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,37 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.hazelcast.contextproxy;
+package fish.payara.nucleus.hazelcast;
 
-import java.io.Serializable;
+import com.hazelcast.spi.tenantcontrol.TenantControl;
+import com.hazelcast.spi.tenantcontrol.TenantControlFactory;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
-import org.glassfish.internal.api.JavaEEContextUtil.Context;
-import javax.cache.processor.EntryProcessor;
-import javax.cache.processor.EntryProcessorException;
-import javax.cache.processor.MutableEntry;
 
 /**
- * push Java EE environment before invoking delegate
+ * Java EE Context and class loading support for Hazelcast objects and thread-based callbacks
  *
  * @author lprimak
- * @param <K>
- * @param <V>
- * @param <T>
  */
-public class EntryProcessorProxy<K, V, T> implements EntryProcessor<K, V, T>, Serializable {
+public class PayaraHazelcastTenantFactory implements TenantControlFactory {
+    private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
+    private final InvocationManager invocationMgr = Globals.getDefaultHabitat().getService(InvocationManager.class);
+
     @Override
-    public T process(MutableEntry<K, V> me, Object... os) throws EntryProcessorException {
-        try (Context ctx = ctxUtilInst.pushContext()) {
-            return delegate.process(me, os);
+    public TenantControl saveCurrentTenant() {
+        ComponentInvocation invocation = invocationMgr.getCurrentInvocation();
+        TenantControl tenantControl = TenantControl.NOOP_TENANT_CONTROL;
+        if (invocation != null) {
+            tenantControl = invocation.getRegistryFor(TenantControl.class);
+            if (tenantControl == null && ctxUtil.isInvocationLoaded()) {
+                tenantControl = new PayaraHazelcastTenant();
+                invocation.setRegistryFor(TenantControl.class, tenantControl);
+            } else if (tenantControl == null) {
+                tenantControl = TenantControl.NOOP_TENANT_CONTROL;
+            }
         }
+        return tenantControl;
     }
 
-    public EntryProcessorProxy(EntryProcessor<K, V, T> delegate, JavaEEContextUtil.Instance ctxUtilInst) {
-        this.delegate = delegate;
-        this.ctxUtilInst = ctxUtilInst;
+    @Override
+    public boolean isClassesAlwaysAvailable() {
+        return false;
     }
-
-    private final EntryProcessor<K, V, T> delegate;
-    private final JavaEEContextUtil.Instance ctxUtilInst;
-    private static final long serialVersionUID = 1L;
 }
