@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -146,11 +146,14 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
                 : compEnvMgr.getJndiNameEnvironment(componentId);
         if (env != null) {
             ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
-            Collection<ModuleInfo> modules = appInfo.getModuleInfos();
-            String moduleName = DOLUtils.getModuleName(env);
-            if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
-                    .anyMatch(moduleInfo -> !moduleInfo.isLoaded())) {
-                return false;
+            if (appInfo != null) {
+                // Check if deployed vs. Payara internal application
+                Collection<ModuleInfo> modules = appInfo.getModuleInfos();
+                String moduleName = DOLUtils.getModuleName(env);
+                if (modules.stream().filter(mod -> mod.getName().equals(moduleName))
+                        .anyMatch(moduleInfo -> !moduleInfo.isLoaded())) {
+                    return false;
+                }
             }
         }
         return env != null;
