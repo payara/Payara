@@ -62,7 +62,6 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import static com.hazelcast.spi.properties.ClusterProperty.WAIT_SECONDS_BEFORE_JOIN;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.events.HazelcastEvents;
-import fish.payara.nucleus.hazelcast.contextproxy.CachingProviderProxy;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.ServerEnvironment.Status;
@@ -534,7 +533,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             }
             setAttribute(theInstance.getCluster().getLocalMember().getUuid(), INSTANCE_ATTRIBUTE, memberName);
             setAttribute(theInstance.getCluster().getLocalMember().getUuid(), INSTANCE_GROUP_ATTRIBUTE, memberGroup);
-            hazelcastCachingProvider = new CachingProviderProxy(new HazelcastServerCachingProvider(theInstance), context);
+            hazelcastCachingProvider = new HazelcastServerCachingProvider(theInstance);
             bindToJNDI();
             if(env.getStatus() == Status.started) {
                 // only issue this event if the server is already running,
