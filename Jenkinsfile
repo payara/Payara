@@ -5,9 +5,6 @@ def DOMAIN_NAME
 def payaraBuildNumber
 pipeline {
     agent any
-    options {
-        disableConcurrentBuilds()
-    }
     environment {
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
