@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.grpc.servlet;
 
 import static io.grpc.servlet.Preconditions.checkArgument;
@@ -57,7 +56,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * An adapter that transforms {@link HttpServletRequest} into gRPC request and lets a gRPC server
  * process it, and transforms the gRPC response into {@link HttpServletResponse}. An adapter can be
- * instantiated by {@link ServletServerBuilder#buildServletAdapter()}.
+ * instantiated by {@link ServletAdapterBuilder#buildServletAdapter()}.
  *
  * <p>In a servlet, calling {@link #doPost(HttpServletRequest, HttpServletResponse)} inside {@link
  * javax.servlet.http.HttpServlet#doPost(HttpServletRequest, HttpServletResponse)} makes the servlet

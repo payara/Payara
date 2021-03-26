@@ -16,35 +16,34 @@
 
 package io.grpc.servlet;
 
-import static io.grpc.servlet.Preconditions.checkArgument;
+import static io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
 import static io.grpc.servlet.Preconditions.checkNotNull;
 import static io.grpc.servlet.Preconditions.checkState;
-import static io.grpc.internal.GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+
+import javax.annotation.concurrent.NotThreadSafe;
+
+import io.grpc.BindableService;
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
 import io.grpc.ExperimentalApi;
-import io.grpc.InternalChannelz.SocketStats;
-import io.grpc.InternalInstrumented;
-import io.grpc.InternalLogId;
+import io.grpc.HandlerRegistry;
 import io.grpc.Server;
+import io.grpc.ServerBuilder;
+import io.grpc.ServerServiceDefinition;
 import io.grpc.ServerStreamTracer;
 import io.grpc.ServerStreamTracer.Factory;
-import io.grpc.Status;
 import io.grpc.internal.AbstractServerImplBuilder;
 import io.grpc.internal.GrpcUtil;
 import io.grpc.internal.InternalServer;
-import io.grpc.internal.ServerListener;
-import io.grpc.internal.ServerTransport;
 import io.grpc.internal.ServerTransportListener;
 import io.grpc.internal.SharedResourceHolder;
-import java.io.File;
-import java.io.IOException;
-import java.net.SocketAddress;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import javax.annotation.concurrent.NotThreadSafe;
-
-import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * Builder to build a gRPC server that can run as a servlet. This is for advanced custom settings.
@@ -56,7 +55,20 @@ import com.google.common.util.concurrent.ListenableFuture;
  */
 @ExperimentalApi("https://github.com/grpc/grpc-java/issues/5066")
 @NotThreadSafe
-public final class ServletServerBuilder extends AbstractServerImplBuilder<ServletServerBuilder> {
+public final class ServletAdapterBuilder extends ServerBuilder<ServletAdapterBuilder> {
+
+  @SuppressWarnings("rawtypes")
+  private AbstractServerImplBuilder delegate = new AbstractServerImplBuilder() {
+    @SuppressWarnings("unchecked")
+    protected List<? extends InternalServer> buildTransportServers(List streamTracerFactories) {
+        return ServletAdapterBuilder.this.buildTransportServers(streamTracerFactories);
+    }
+    @Override
+    public AbstractServerImplBuilder<?> useTransportSecurity(File certChain, File privateKey) {
+      throw new UnsupportedOperationException("TLS should be configured by the servlet container");
+    }
+  };
+
   List<? extends ServerStreamTracer.Factory> streamTracerFactories;
   int maxInboundMessageSize = DEFAULT_MAX_MESSAGE_SIZE;
 
@@ -79,7 +91,7 @@ public final class ServletServerBuilder extends AbstractServerImplBuilder<Servle
   @Override
   public Server build() {
     checkState(internalCaller, "build() method should not be called directly by an application");
-    return super.build();
+    return delegate.build();
   }
 
   /**
@@ -112,7 +124,6 @@ public final class ServletServerBuilder extends AbstractServerImplBuilder<Servle
     return internalServer.serverListener.transportCreated(serverTransport);
   }
 
-  @Override
   protected List<? extends InternalServer> buildTransportServers(
       List<? extends Factory> streamTracerFactories) {
     checkNotNull(streamTracerFactories, "streamTracerFactories");
@@ -122,105 +133,73 @@ public final class ServletServerBuilder extends AbstractServerImplBuilder<Servle
   }
 
   /**
-   * Throws {@code UnsupportedOperationException}. TLS should be configured by the servlet
-   * container.
-   */
-  @Override
-  public ServletServerBuilder useTransportSecurity(File certChain, File privateKey) {
-    throw new UnsupportedOperationException("TLS should be configured by the servlet container");
-  }
-
-  @Override
-  public ServletServerBuilder maxInboundMessageSize(int bytes) {
-    checkArgument(bytes >= 0, "bytes must be >= 0");
-    maxInboundMessageSize = bytes;
-    return this;
-  }
-
-  /**
    * Provides a custom scheduled executor service to the server builder.
    *
    * @return this
    */
-  public ServletServerBuilder scheduledExecutorService(ScheduledExecutorService scheduler) {
+  public ServletAdapterBuilder scheduledExecutorService(ScheduledExecutorService scheduler) {
     this.scheduler = checkNotNull(scheduler, "scheduler");
     usingCustomScheduler = true;
     return this;
   }
 
-  private static final class InternalServerImpl implements InternalServer {
-
-    ServerListener serverListener;
-
-    InternalServerImpl() {}
-
-    @Override
-    public void start(ServerListener listener) {
-      serverListener = listener;
-    }
-
-    @Override
-    public void shutdown() {
-      if (serverListener != null) {
-        serverListener.serverShutdown();
-      }
-    }
-
-    @Override
-    public SocketAddress getListenSocketAddress() {
-      return new SocketAddress() {
-        @Override
-        public String toString() {
-          return "ServletServer";
-        }
-      };
-    }
-
-    @Override
-    public InternalInstrumented<SocketStats> getListenSocketStats() {
-      // sockets are managed by the servlet container, grpc is ignorant of that
-      return null;
-    }
+  /**
+   * Throws {@code UnsupportedOperationException}. TLS should be configured by the servlet
+   * container.
+   */
+  @Override
+  public ServletAdapterBuilder useTransportSecurity(File certChain, File privateKey) {
+    delegate.useTransportSecurity(certChain, privateKey);
+    return this;
   }
 
-  static final class ServerTransportImpl implements ServerTransport {
-
-    private final InternalLogId logId = InternalLogId.allocate(ServerTransportImpl.class, null);
-    private final ScheduledExecutorService scheduler;
-    private final boolean usingCustomScheduler;
-
-    ServerTransportImpl(
-        ScheduledExecutorService scheduler, boolean usingCustomScheduler) {
-      this.scheduler = checkNotNull(scheduler, "scheduler");
-      this.usingCustomScheduler = usingCustomScheduler;
-    }
-
-    @Override
-    public void shutdown() {
-      if (!usingCustomScheduler) {
-        SharedResourceHolder.release(GrpcUtil.TIMER_SERVICE, scheduler);
-      }
-    }
-
-    @Override
-    public void shutdownNow(Status reason) {
-      shutdown();
-    }
-
-    @Override
-    public ScheduledExecutorService getScheduledExecutorService() {
-      return scheduler;
-    }
-
-    @Override
-    public ListenableFuture<SocketStats> getStats() {
-      // does not support instrumentation
-      return null;
-    }
-
-    @Override
-    public InternalLogId getLogId() {
-      return logId;
-    }
+  @Override
+  public ServletAdapterBuilder maxInboundMessageSize(int bytes) {
+    delegate.maxInboundMessageSize(bytes);
+    maxInboundMessageSize = bytes;
+    return this;
   }
+
+  @Override
+  public ServletAdapterBuilder directExecutor() {
+    delegate.directExecutor();
+    return this;
+  }
+
+  @Override
+  public ServletAdapterBuilder executor(Executor executor) {
+    delegate.executor(executor);
+    return this;
+  }
+
+  @Override
+  public ServletAdapterBuilder addService(ServerServiceDefinition service) {
+    delegate.addService(service);
+    return this;
+  }
+
+  @Override
+  public ServletAdapterBuilder addService(BindableService bindableService) {
+    delegate.addService(bindableService);
+    return this;
+  }
+
+  @Override
+  public ServletAdapterBuilder fallbackHandlerRegistry(HandlerRegistry registry) {
+    delegate.fallbackHandlerRegistry(registry);
+    return this;
+  }
+
+  @Override
+  public ServletAdapterBuilder decompressorRegistry(DecompressorRegistry registry) {
+    delegate.decompressorRegistry(registry);
+    return this;
+  }
+
+  @Override
+  public ServletAdapterBuilder compressorRegistry(CompressorRegistry registry) {
+    delegate.compressorRegistry(registry);
+    return this;
+  }
+
 }
