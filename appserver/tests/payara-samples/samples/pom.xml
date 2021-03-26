@@ -21,6 +21,7 @@
         <module>sfsb-passivation</module>
         <module>dynamic-roles</module>
         <module>formauth</module>
+        <module>grpc</module>
         <module>jacc-per-app</module>
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
