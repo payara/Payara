@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -38,50 +38,30 @@
  *  holder.
  */
 
-package fish.payara.logging.jul;
+package fish.payara.logging.jul.cfg;
 
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 /**
  * @author David Matejcek
  */
-public class PayaraLogManagerConfigurationParser {
+public class PayaraLoggingConstants {
 
-    public PayaraLogManagerConfiguration parse(final File file) throws IOException {
-        return new PayaraLogManagerConfiguration(load(file));
-    }
+    // do not reference the class from here, it would be initialized.
+    public static final String CLASS_LOG_MANAGER_JUL = "java.util.logging.LogManager";
+    public static final String CLASS_LOG_MANAGER_PAYARA = "fish.payara.logging.jul.PayaraLogManager";
 
+    public static final String JVM_OPT_LINE_SEPARATOR = "line.separator";
+    public static final String JVM_OPT_LOGGING_MANAGER = "java.util.logging.manager";
+    public static final String JVM_OPT_LOGGING_CFG_FILE = "java.util.logging.config.file";
+    public static final String JVM_OPT_LOGGING_CFG_USE_DEFAULTS = "java.util.logging.config.useDefaults";
+    public static final String JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL = "java.util.logging.config.defaultLevel";
 
-    public PayaraLogManagerConfiguration parse(final InputStream stream) throws IOException {
-        final Properties properties = new Properties();
-        properties.load(stream);
-        PayaraLoggingTracer.trace(PayaraLogManagerConfigurationParser.class, "Creating PayaraLogManagerConfiguration with properties: \n" + properties);
-        return new PayaraLogManagerConfiguration(properties);
-    }
+    // FIXME: respect formatter's class name and move to property file
+    public static final String JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE = "com.sun.aas.logging.keyvalue.logsource";
+    public static final String JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER = "com.sun.aas.logging.keyvalue.recordnumber";
+    // FIXME: why? What about -Duser.name? Or delete it (log once on startup, worthless on each line)
+    public static final String JVM_OPT_LOGGING_USERID = "com.sun.aas.logging.userID";
+    // FIXME: what is it? Delete it?
+    public static final String JVM_OPT_LOGGING_ECID = "com.sun.aas.logging.ecID";
 
-
-    public InputStream toInputStream(final Properties properties) throws IOException {
-        final ByteArrayOutputStream outputstream = new ByteArrayOutputStream(32768);
-        properties.store(outputstream, null);
-        return new ByteArrayInputStream(outputstream.toByteArray());
-    }
-
-    public Properties load(final File file) throws IOException {
-        if (!file.canRead()) {
-            return null;
-        }
-        try (InputStream input = new FileInputStream(file)) {
-            final Properties properties = new Properties();
-            properties.load(input);
-            return properties;
-        }
-    }
 }

@@ -28,6 +28,7 @@ class LogDomainsLogger extends PayaraLogger {
     LogDomainsLogger(final String loggerName, final ResourceBundle resourceBundle) {
         super(loggerName);
         if (resourceBundle != null) {
+            // The bundle is directly accessed internally in Logger class
             super.setResourceBundle(resourceBundle);
         }
         this.resourceBundle = resourceBundle;

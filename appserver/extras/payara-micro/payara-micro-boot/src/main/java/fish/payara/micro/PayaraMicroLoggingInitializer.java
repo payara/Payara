@@ -55,7 +55,7 @@ public class PayaraMicroLoggingInitializer {
     private static final Properties CFG;
     static {
         CFG = new Properties();
-        CFG.setProperty("handlers", "java.util.logging.ConsoleHandler");
+        CFG.setProperty("handlers", "fish.payara.logging.jul.handler.SimpleLogHandler");
         CFG.setProperty("systemRootLoggerLevel", Level.INFO.getName());
         CFG.setProperty(".level", Level.INFO.getName());
         // useful to track any startup race conditions etc. Logging is always in game.

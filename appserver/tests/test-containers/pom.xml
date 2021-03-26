@@ -22,7 +22,7 @@
     <properties>
         <docker.images.timeoutInSeconds>900</docker.images.timeoutInSeconds>
 
-        <docker.payara.cfg.logging.newImplementation>false</docker.payara.cfg.logging.newImplementation>
+        <docker.payara.cfg.logging.newImplementation>true</docker.payara.cfg.logging.newImplementation>
         <docker.payara.directory.shared>${project.build.directory}/shared</docker.payara.directory.shared>
         <docker.payara.domainName>test</docker.payara.domainName>
 

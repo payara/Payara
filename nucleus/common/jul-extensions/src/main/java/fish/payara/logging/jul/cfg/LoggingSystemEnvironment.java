@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -38,12 +38,55 @@
  *  holder.
  */
 
-package fish.payara.logging.jul;
+package fish.payara.logging.jul.cfg;
 
+import java.io.PrintStream;
 
 /**
+ * This class holds informations detected on the logging system startup, so whatever you will
+ * change, this class should always have access to original values, interesting for the logging
+ * system:
+ * <ul>
+ * <li>STDOUT
+ * <li>STDERR
+ * </ul>
+ *
  * @author David Matejcek
  */
-public interface ExternallyManagedLogHandler {
+public class LoggingSystemEnvironment {
 
+    private static final PrintStream originalStdErr = System.err;
+    private static final PrintStream originalStdOut = System.out;
+
+    /**
+     * Call this method before you do any changes in global JVM objects like {@link System#out}!
+     */
+    public static synchronized void initialize() {
+        // this is a rather psychological trick to force developer to touch this class.
+    }
+
+
+    /**
+     * @return the STDOUT {@link PrintStream} used at startup.
+     */
+    public static PrintStream getOriginalStdErr() {
+        return originalStdErr;
+    }
+
+
+    /**
+     * @return the STDOUT {@link PrintStream} used at startup.
+     */
+    public static PrintStream getOriginalStdOut() {
+        return originalStdOut;
+    }
+
+
+    /**
+     * Sets original values of the STDOUT and STDERR print streams back.
+     */
+    public static void resetStandardOutputs() {
+        System.setOut(originalStdOut);
+        System.setErr(originalStdErr);
+    }
 }

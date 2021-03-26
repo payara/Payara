@@ -43,5 +43,8 @@ Bundle-SymbolicName: ${project.groupId}.${project.artifactId}
 
 -exportcontents: \
           fish.payara.logging.jul, \
+          fish.payara.logging.jul.cfg, \
           fish.payara.logging.jul.event, \
-          fish.payara.logging.jul.formatter
+          fish.payara.logging.jul.formatter, \
+          fish.payara.logging.jul.handler, \
+          fish.payara.logging.jul.record

@@ -41,9 +41,9 @@ package com.sun.enterprise.server.logging.jul;
 
 import fish.payara.logging.jul.event.LogEventImpl;
 import fish.payara.logging.jul.formatter.BroadcastingFormatter;
+import fish.payara.logging.jul.formatter.ExcludeFieldsSupport;
 import fish.payara.logging.jul.i18n.MessageResolver;
-import fish.payara.logging.jul.internal.EnhancedLogRecord;
-import fish.payara.logging.jul.internal.ExcludeFieldsSupport;
+import fish.payara.logging.jul.record.EnhancedLogRecord;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.DecimalStyle;

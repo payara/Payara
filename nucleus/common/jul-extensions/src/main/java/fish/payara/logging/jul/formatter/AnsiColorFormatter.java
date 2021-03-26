@@ -39,41 +39,80 @@
  */
 package fish.payara.logging.jul.formatter;
 
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
+
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
-import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.NANO_OF_SECOND;
+import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 
 /**
+ * {@link BroadcastingFormatter} which is able to print colored logs.
+ *
  * @since 4.1.1.173
  * @author Steve Millidge (Payara Foundation)
+ * @author David Matejcek
  */
 public abstract class AnsiColorFormatter extends BroadcastingFormatter {
 
-    private final HashMap<Level,AnsiColor> colors;
-    private boolean ansiColor;
+    // This was required, because we need 3 decimal numbers of the second fraction
+    // DateTimeFormatter.ISO_LOCAL_DATE_TIME prints just nonzero values
+    private static final DateTimeFormatter iSO_LOCAL_TIME = new DateTimeFormatterBuilder()
+        .appendValue(HOUR_OF_DAY, 2).appendLiteral(':')
+        .appendValue(MINUTE_OF_HOUR, 2).optionalStart().appendLiteral(':')
+        .appendValue(SECOND_OF_MINUTE, 2).optionalStart()
+        .appendFraction(NANO_OF_SECOND, 3, 3, true)
+        .toFormatter(Locale.ROOT);
+
+    private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = new DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .append(DateTimeFormatter.ISO_LOCAL_DATE)
+        .appendLiteral('T')
+        .append(iSO_LOCAL_TIME)
+        .toFormatter(Locale.ROOT);
+
+    private static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = new DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .append(ISO_LOCAL_DATE_TIME)
+        .appendOffsetId()
+        .toFormatter(Locale.ROOT);
+
     private AnsiColor loggerColor;
+    private HashMap<Level,AnsiColor> colors;
+    private boolean ansiColor;
     private DateTimeFormatter dateTimeFormatter;
     private FormatterDelegate delegate;
 
+    /**
+     * Creates the formatter, initialized from (starting from highest priority)
+     * <ul>
+     * <li>logging configuration.
+     * <li>JVM options
+     * </ul>
+     */
     public AnsiColorFormatter() {
-        LogManager manager = LogManager.getLogManager();
-        String color = manager.getProperty(this.getClass().getCanonicalName() + ".ansiColor");
-        if ("true".equals(color)) {
+        final LogManager manager = LogManager.getLogManager();
+        final String color = manager.getProperty(this.getClass().getCanonicalName() + ".ansiColor");
+        if (Boolean.TRUE.toString().equalsIgnoreCase(color)) {
             ansiColor = true;
         }
         colors = new HashMap<>();
         colors.put(Level.INFO, AnsiColor.BOLD_INTENSE_GREEN);
         colors.put(Level.WARNING, AnsiColor.BOLD_INTENSE_YELLOW);
         colors.put(Level.SEVERE, AnsiColor.BOLD_INTENSE_RED);
-        loggerColor = AnsiColor.BOLD_INTENSE_BLUE;
-        String infoColor = manager.getProperty(this.getClass().getCanonicalName() + ".infoColor");
+        final String infoColor = manager.getProperty(this.getClass().getCanonicalName() + ".infoColor");
         if (infoColor != null) {
             try {
                 colors.put(Level.INFO, AnsiColor.valueOf(infoColor));
-            } catch (IllegalArgumentException iae) {
+            } catch (final IllegalArgumentException iae) {
                 colors.put(Level.INFO, AnsiColor.BOLD_INTENSE_GREEN);
             }
         }
@@ -81,7 +120,7 @@ public abstract class AnsiColorFormatter extends BroadcastingFormatter {
         if (colorProp != null) {
             try {
                 colors.put(Level.WARNING, AnsiColor.valueOf(colorProp));
-            } catch (IllegalArgumentException iae) {
+            } catch (final IllegalArgumentException iae) {
                 colors.put(Level.WARNING, AnsiColor.BOLD_INTENSE_YELLOW);
             }
         }
@@ -89,66 +128,117 @@ public abstract class AnsiColorFormatter extends BroadcastingFormatter {
         if (colorProp != null) {
             try {
                 colors.put(Level.SEVERE, AnsiColor.valueOf(colorProp));
-            } catch (IllegalArgumentException iae) {
+            } catch (final IllegalArgumentException iae) {
                 colors.put(Level.SEVERE, AnsiColor.BOLD_INTENSE_RED);
             }
         }
 
-        colorProp = manager.getProperty(this.getClass().getCanonicalName() + ".loggerColor");
-        if (colorProp != null) {
-            try {
-                loggerColor = AnsiColor.valueOf(colorProp);
-            } catch (IllegalArgumentException iae) {
-                loggerColor = AnsiColor.BOLD_INTENSE_BLUE;
-            }
-        }
-        dateTimeFormatter = ISO_OFFSET_DATE_TIME;
+        loggerColor = getLoggerColor(manager);
+        dateTimeFormatter = DEFAULT_DATETIME_FORMATTER;
     }
 
 
+    private AnsiColor getLoggerColor(final LogManager manager) {
+        final String key = this.getClass().getCanonicalName() + ".loggerColor";
+        final String colorProp = manager.getProperty(key);
+        if (colorProp != null) {
+            try {
+                return AnsiColor.valueOf(colorProp);
+            } catch (final IllegalArgumentException e) {
+                PayaraLoggingTracer.error(getClass(), "Invalid property: " + key + ": " + e);
+            }
+        }
+        return AnsiColor.BOLD_INTENSE_BLUE;
+    }
+
+    /**
+     * Enables/disables ANSI coloring in logs
+     *
+     * @param ansiColor true to enable
+     */
+    public void setAnsiColor(final boolean ansiColor) {
+        this.ansiColor = ansiColor;
+    }
+
+    /**
+     * @return true if ANSI coloring is enabled (default: true)
+     */
+    protected boolean isAnsiColor() {
+        return ansiColor;
+    }
+
+    /**
+     * @param loggerColor {@link AnsiColor} used for the logger name.
+     */
+    public void setLoggerColor(final AnsiColor loggerColor) {
+        this.loggerColor = loggerColor;
+    }
+
+    /**
+     * @return {@link AnsiColor} for the logger name value
+     */
     public AnsiColor getLoggerColor() {
         return loggerColor;
     }
 
-
-    protected boolean color() {
-        return ansiColor;
+    /**
+     * @param mapping colors used for log levels
+     */
+    public void setLevelColors(final Map<Level, AnsiColor> mapping) {
+        this.colors = new HashMap<>(mapping);
     }
 
-
-    public void noAnsi() {
-        ansiColor = false;
-    }
-
-
-    protected AnsiColor getColor(Level level) {
-        AnsiColor result = colors.get(level);
-        if (result == null) {
-            result = AnsiColor.NOTHING;
+    /**
+     * @param level
+     * @return {@link AnsiColor} for the level value or null if {@link #isAnsiColor()} returns false.
+     */
+    protected AnsiColor getLevelColor(final Level level) {
+        if (!isAnsiColor()) {
+            return null;
         }
-        return result;
+        return colors.get(level);
     }
 
-    protected AnsiColor getReset() {
-        return AnsiColor.RESET;
-    }
-
-
-    public DateTimeFormatter getDateTimeFormatter() {
+    /**
+     * @return {@link DateTimeFormatter} used for timestamps
+     */
+    public final DateTimeFormatter getDateTimeFormatter() {
         return dateTimeFormatter;
     }
 
-    public void setDateTimeFormatter(DateTimeFormatter dateTimeFormatter) {
-        this.dateTimeFormatter = dateTimeFormatter;
+    /**
+     * @param dateTimeFormatter {@link DateTimeFormatter} used for timestamps
+     */
+    public final void setDateTimeFormatter(final DateTimeFormatter dateTimeFormatter) {
+        this.dateTimeFormatter = dateTimeFormatter == null ? DEFAULT_DATETIME_FORMATTER : dateTimeFormatter;
     }
 
-    public void setDelegate(FormatterDelegate delegate) {
+    /**
+     * @param format The date format to set for records. See {@link DateTimeFormatter} for details.
+     */
+    public final void setDateTimeFormatter(final String format) {
+        setDateTimeFormatter(format == null ? DEFAULT_DATETIME_FORMATTER : DateTimeFormatter.ofPattern(format));
+    }
+
+    /**
+     * @param delegate {@link FormatterDelegate} adding useful information to the formatter output
+     */
+    public void setDelegate(final FormatterDelegate delegate) {
+        PayaraLoggingTracer.trace(getClass(), () -> "Delegate set: " + delegate);
         this.delegate = delegate;
     }
 
-    protected void formatDelegatePart(StringBuilder output, Level level) {
+    /**
+     * Calls the {@link FormatterDelegate} if it is set. The formatter can add some useful information.
+     *
+     * @param output
+     * @param level
+     */
+    // FIXME: Give it a lifecycle, and write test,because I don't know how it works with undeploys (another thread)
+    protected void formatDelegatePart(final StringBuilder output, final Level level, final String pathSeparator,
+        final String valueSeparator) {
         if (delegate != null) {
-            delegate.format(output, level);
+            delegate.format(output, level, pathSeparator, valueSeparator);
         }
     }
 }

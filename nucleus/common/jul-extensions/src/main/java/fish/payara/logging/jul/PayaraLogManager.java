@@ -40,15 +40,19 @@
 
 package fish.payara.logging.jul;
 
+import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
+import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
+import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.logging.jul.cfg.PayaraLogManagerConfigurationParser;
+import fish.payara.logging.jul.handler.ExternallyManagedLogHandler;
+import fish.payara.logging.jul.handler.PayaraLogHandler;
 import fish.payara.logging.jul.handler.SimpleLogHandler;
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
-import fish.payara.logging.jul.internal.StartupQueue;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,14 +73,27 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static fish.payara.logging.jul.LoggingConfigurationHelper.PRINT_TO_STDERR;
-import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL;
-import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
-import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_USE_DEFAULTS;
+import static fish.payara.logging.jul.cfg.LoggingConfigurationHelper.PRINT_TO_STDERR;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_USE_DEFAULTS;
 import static java.util.logging.Logger.GLOBAL_LOGGER_NAME;
 
 
 /**
+ * The custom {@link LogManager} implementation.
+ * Main differences:
+ * <ul>
+ * <li>Well defined lifecycle, see {@link PayaraLoggingStatus}
+ * <li>{@link #reset()} method is not available except internal usage.
+ * <li>You can use {@link #reconfigure(PayaraLogManagerConfiguration)} method instead.
+ * <li>Or you can use {@link #reconfigure(PayaraLogManagerConfiguration, Action, Action)} method,
+ * which provides a way to add programatical extension points.
+ * </ul>
+ * <p>
+ * Note: Some methods have complicated implementation, the reason is that JDK {@link LogManager} is
+ * not an example of well usable and well extensible class at all.
+ *
  * @author David Matejcek
  */
 public class PayaraLogManager extends LogManager {
@@ -94,15 +111,11 @@ public class PayaraLogManager extends LogManager {
     private static PayaraLogManager payaraLogManager;
     private static final AtomicBoolean protectBeforeReset = new AtomicBoolean(true);
 
-    // Cannot be static, log manager is initialized very early
-    private final PrintStream originalStdOut;
-    private final PrintStream originalStdErr;
-
     private volatile PayaraLogger systemRootLogger;
     private volatile PayaraLogger userRootLogger;
     private volatile PayaraLogger globalLogger;
 
-    private PayaraLogManagerConfiguration cfg;
+    private PayaraLogManagerConfiguration configuration;
 
 
     static synchronized boolean initialize(final Properties configuration) {
@@ -120,6 +133,10 @@ public class PayaraLogManager extends LogManager {
         // Therefore status is now moved directly to UNCONFIGURED
         status = PayaraLoggingStatus.UNCONFIGURED;
         final PayaraLogManager logManager = getLogManager();
+        if (logManager == null) {
+            // oh no, another LogManager implementation is already used.
+            return false;
+        }
         logManager.doFirstInitialization(configuration == null ? provideProperties() : configuration);
         return true;
     }
@@ -136,6 +153,13 @@ public class PayaraLogManager extends LogManager {
     }
 
 
+    /**
+     * Returns current {@link PayaraLogManager} instance.
+     * <p>
+     * If it is not initialized yet, starts the initialization.
+     *
+     * @return null if the current {@link LogManager} is not an instance of this class.
+     */
     public static PayaraLogManager getLogManager() {
         if (payaraLogManager != null) {
             return payaraLogManager;
@@ -146,47 +170,35 @@ public class PayaraLogManager extends LogManager {
                 payaraLogManager = (PayaraLogManager) logManager;
                 return payaraLogManager;
             }
-            PayaraLoggingTracer.error(PayaraLogManager.class, "PayaraLogManager not available, using " + logManager);
-            PayaraLoggingTracer.error(PayaraLogManager.class, "Classloader used:" //
-                + "\n here:  " + PayaraLogManager.class.getClassLoader() //
-                + "\n there: " + logManager.getClass().getClassLoader());
+            // If the tracing is off and another LogManager implementation is used,
+            // we don't need to spam stderr so much
+            // But it the tracing is on, do spam a lot, because even tracing is not much useful
+            // except this message.
+            if (PayaraLoggingTracer.isTracingEnabled()) {
+                PayaraLoggingTracer.stacktrace(PayaraLogManager.class,
+                    "PayaraLogManager not available, using " + logManager + ". Classloader used:" //
+                        + "\n here:  " + PayaraLogManager.class.getClassLoader() //
+                        + "\n there: " + logManager.getClass().getClassLoader());
+            }
             return null;
         }
     }
 
 
     /**
-     * @deprecated call this constructor directly. Use {@link LogManager#getLogManager()} instead.
+     * @deprecated Don't call this constructor directly. Use {@link LogManager#getLogManager()} instead.
      * See {@link LogManager} javadoc for more.
      */
     @Deprecated
     public PayaraLogManager() {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "new PayaraLogManager()");
-        this.originalStdOut = System.out;
-        this.originalStdErr = System.err;
-    }
-
-
-    private void doFirstInitialization(final Properties configuration) {
-        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "Initializing logManager: " + this);
-        try {
-            protectBeforeReset.set(false);
-            setLoggingStatus(PayaraLoggingStatus.UNCONFIGURED);
-            this.cfg = new PayaraLogManagerConfiguration(configuration);
-            initializeRootLoggers();
-            reconfigure(this.cfg);
-        } catch (final Exception e) {
-            PayaraLoggingTracer.error(PayaraLogManager.class, "Initialization of " + this + " failed!", e);
-            throw e;
-        } finally {
-            protectBeforeReset.set(true);
-        }
+        LoggingSystemEnvironment.initialize();
     }
 
 
     @Override
     public String getProperty(final String name) {
-        return this.cfg == null ? null : this.cfg.getProperty(name);
+        return this.configuration == null ? null : this.configuration.getProperty(name);
     }
 
     /**
@@ -196,6 +208,7 @@ public class PayaraLogManager extends LogManager {
     @Override
     public boolean addLogger(final Logger logger) {
         Objects.requireNonNull(logger, "logger is null");
+        Objects.requireNonNull(logger.getName(), "logger.name is null");
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "addLogger(logger.name=" + logger.getName() + ")");
 
         if (getLoggingStatus().ordinal() < PayaraLoggingStatus.CONFIGURING.ordinal()) {
@@ -266,10 +279,11 @@ public class PayaraLogManager extends LogManager {
 
 
     /**
-     * Don't call this method. It is used by {@link LogManager} and removes all handlers, so
-     * Payara logging will not work after that.
+     * Don't use this method, it will not do anything in most cases.
+     * It is used just by the {@link LogManager} on startup and removes all handlers.
      */
     @Override
+    @Deprecated
     public synchronized void reset() {
         // reset causes closing of current handlers
         // reset is invoked automatically also in the begining of super.readConfiguration(is).
@@ -284,63 +298,59 @@ public class PayaraLogManager extends LogManager {
 
 
     /**
-     * Ignored. Does nothing!
+     * Does nothing!
      */
     @Override
+    @Deprecated
     public synchronized void readConfiguration() throws SecurityException, IOException {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "readConfiguration() ignored.");
     }
 
 
+    /**
+     * Don't use this method, it is here just for the {@link LogManager}.
+     * Use {@link #reconfigure(PayaraLogManagerConfiguration)} instead.
+     */
     @Override
+    @Deprecated
     public synchronized void readConfiguration(final InputStream input) throws SecurityException, IOException {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "readConfiguration(ins=" + input + ")");
-        this.cfg = new PayaraLogManagerConfigurationParser().parse(input);
+        this.configuration = new PayaraLogManagerConfigurationParser().parse(input);
         PayaraLoggingTracer.trace(PayaraLogManager.class, "readConfiguration(input) done.");
     }
 
 
-    public synchronized void resetAndReadConfiguration(final InputStream input) throws SecurityException, IOException {
-        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "resetAndReadConfiguration(ins=" + input + ")");
-        try {
-            protectBeforeReset.set(false);
-            reset();
-            readConfiguration(input);
-        } finally {
-            protectBeforeReset.set(true);
-        }
-    }
-
-
-    public synchronized void resetAndReadConfiguration(final File loggingProperties) throws SecurityException, IOException {
-        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "resetAndReadConfiguration(file=" + loggingProperties + ")");
-        try (InputStream is = new FileInputStream(loggingProperties)) {
-            resetAndReadConfiguration(is);
-        }
-    }
-
+    /**
+     * @return {@link PayaraLoggingStatus}, never null
+     */
     public PayaraLoggingStatus getLoggingStatus() {
         return status;
     }
 
 
-    private void setLoggingStatus(final PayaraLoggingStatus status) {
-        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "setLoggingStatus(status=" + status + ")");
-        PayaraLogManager.status = status;
-    }
-
-
+    /**
+     * Asks the root logger for his {@link PayaraLogHandler} instance. If no such handler used,
+     * returns null.
+     *
+     * @return null or {@link PayaraLogHandler} instance
+     */
     public PayaraLogHandler getPayaraLogHandler() {
         return getRootLogger().getHandler(PayaraLogHandler.class);
     }
 
 
+    /**
+     * @return all loggers currently managed by thus log manager (only from user context)
+     */
     public List<PayaraLogger> getAllLoggers() {
         return Collections.list(getLoggerNames()).stream().map(this::getLogger).filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
 
 
+    /**
+     * @return all handlers currently managed by this log manager (only from user context)
+     */
     public List<Handler> getAllHandlers() {
         final Function<PayaraLogger, Stream<Handler>> toHandler = logger -> Arrays.stream(logger.getHandlers());
         return Collections.list(getLoggerNames()).stream().map(this::getLogger).filter(Objects::nonNull)
@@ -356,37 +366,33 @@ public class PayaraLogManager extends LogManager {
     }
 
 
-    public void resetStandardOutputs() {
-        System.setOut(originalStdOut);
-        System.setErr(originalStdErr);
-    }
-
-
-    public PrintStream getOriginalStdOut() {
-        return originalStdOut;
-    }
-
-
-    public PrintStream getOriginalStdErr() {
-        return originalStdErr;
-    }
-
-
+    /**
+     * Reconfigures the logging system.
+     *
+     * @param cfg
+     */
     public void reconfigure(final PayaraLogManagerConfiguration cfg) {
         reconfigure(cfg, null, null);
     }
 
 
+    /**
+     * Reconfigures the logging system.
+     *
+     * @param cfg
+     * @param reconfigureAction - a callback executed after the reconfiguration of logger levels is finished.
+     * @param flushAction -  FIXME: always null? Why I implemented it?
+     */
     public synchronized void reconfigure(final PayaraLogManagerConfiguration cfg, final Action reconfigureAction,
         final Action flushAction) {
         PayaraLoggingTracer.trace(PayaraLogManager.class,
             () -> "reconfigure(cfg, action, action); Configuration:\n" + cfg);
         if (cfg.isTracingEnabled()) {
-            // if enabled, start immediately
+            // if enabled, start immediately. If not, don't change it yet, it could be set by JVM option.
             PayaraLoggingTracer.setTracing(cfg.isTracingEnabled());
         }
         setLoggingStatus(PayaraLoggingStatus.CONFIGURING);
-        this.cfg = cfg;
+        this.configuration = cfg;
         // it is used to configure new objects in LogManager class
         final Thread currentThread = Thread.currentThread();
         final ClassLoader originalCL = currentThread.getContextClassLoader();
@@ -396,8 +402,8 @@ public class PayaraLogManager extends LogManager {
             while (existingLoggerNames.hasMoreElements()) {
                 final String existingLoggerName = existingLoggerNames.nextElement();
                 if (ROOT_LOGGER_NAME.equals(existingLoggerName)) {
-                    this.systemRootLogger.setLevel(getLevel(KEY_SYS_ROOT_LOGGER_LEVEL, Level.INFO));
-                    this.userRootLogger.setLevel(getLevel(KEY_USR_ROOT_LOGGER_LEVEL, Level.INFO));
+//                    this.systemRootLogger.setLevel(getLevel(KEY_SYS_ROOT_LOGGER_LEVEL, Level.INFO));
+//                    this.userRootLogger.setLevel(getLevel(KEY_USR_ROOT_LOGGER_LEVEL, Level.INFO));
                     continue;
                 }
                 final PayaraLogger logger = getLogger(existingLoggerName);
@@ -411,6 +417,7 @@ public class PayaraLogManager extends LogManager {
             }
             PayaraLoggingTracer.trace(PayaraLogManager.class, "Updated logger levels successfully.");
 
+            initializeRootLoggers();
             if (reconfigureAction != null) {
                 try {
                     currentThread.setContextClassLoader(reconfigureAction.getClassLoader());
@@ -420,8 +427,8 @@ public class PayaraLogManager extends LogManager {
                 }
             }
 
-            final Predicate<Handler> isReadyPredicate = h -> !PayaraLogHandler.class.isInstance(h)
-                || PayaraLogHandler.class.cast(h).isReady();
+            final Predicate<Handler> isReadyPredicate = h -> !ExternallyManagedLogHandler.class.isInstance(h)
+                || ExternallyManagedLogHandler.class.cast(h).isReady();
             final List<Handler> handlers = getAllHandlers();
             if (handlers.isEmpty() || handlers.stream().allMatch(isReadyPredicate)) {
                 setLoggingStatus(PayaraLoggingStatus.FLUSHING_BUFFERS);
@@ -445,6 +452,11 @@ public class PayaraLogManager extends LogManager {
     }
 
 
+    /**
+     * Closes all {@link ExternallyManagedLogHandler} instances managed by this log manager.
+     * Should be called ie. by shutdown hooks to release all injected dependencies.
+     * Handlers must stop processing records after that.
+     */
     public void closeAllExternallyManagedLogHandlers() {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "closeAllExternallyManagedLogHandlers()");
         final List<PayaraLogger> loggers = getAllLoggers();
@@ -461,6 +473,12 @@ public class PayaraLogManager extends LogManager {
     }
 
 
+    private void setLoggingStatus(final PayaraLoggingStatus status) {
+        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "setLoggingStatus(status=" + status + ")");
+        PayaraLogManager.status = status;
+    }
+
+
     private static PayaraLogger replaceWithPayaraLogger(final Logger logger) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "replaceWithPayaraLogger(" + logger.getName() + ")");
         if (logger instanceof PayaraLogger) {
@@ -471,11 +489,12 @@ public class PayaraLogManager extends LogManager {
 
 
     /**
-     * This is a fialsafe method to wrapp any logger which would miss standard mechanisms.
+     * This is a failsafe method to wrapp any logger which would miss standard mechanisms.
      * Invocation of this method would mean that something changed in JDK implementation
      * and this module must be updated.
      * <p>
-     * Prints error to STDERR if
+     * Prints error to STDERR if the logger is not a {@link PayaraLogger} instance and wraps
+     * it to {@link PayaraLoggerWrapper}.
      *
      * @param logger
      * @return {@link PayaraLogger} or {@link PayaraLoggerWrapper}
@@ -489,35 +508,60 @@ public class PayaraLogManager extends LogManager {
     }
 
 
+    private void doFirstInitialization(final Properties properties) {
+        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "Initializing logManager: " + this);
+        try {
+            protectBeforeReset.set(false);
+            setLoggingStatus(PayaraLoggingStatus.UNCONFIGURED);
+            this.configuration = new PayaraLogManagerConfiguration(properties);
+            this.globalLogger.setParent(this.userRootLogger);
+            initializeRootLoggers();
+            reconfigure(this.configuration);
+        } catch (final Exception e) {
+            PayaraLoggingTracer.error(PayaraLogManager.class, "Initialization of " + this + " failed!", e);
+            throw e;
+        } finally {
+            protectBeforeReset.set(true);
+        }
+    }
+
+
     private void initializeRootLoggers() {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "initializeRootLoggers()");
-        this.globalLogger.setParent(getRootLogger());
         final PayaraLogger referenceLogger = getRootLogger();
         final LoggingConfigurationHelper parser = new LoggingConfigurationHelper(PRINT_TO_STDERR);
-        final List<String> requestedHandlers = parser.getList(KEY_ROOT_HANDLERS, null);
+        final List<String> requestedHandlerNames = parser.getList(KEY_ROOT_HANDLERS, null);
         final List<Handler> currentHandlers = Arrays.asList(referenceLogger.getHandlers());
 
-        // this is to have a single handler for both loggers without common parent logger.
         final List<Handler> handlersToAdd = new ArrayList<>();
-        for (final String handlerClass : requestedHandlers) {
+        final List<Handler> handlersToRemove = new ArrayList<>();
+        for (final String handlerClass : requestedHandlerNames) {
             if (currentHandlers.stream().noneMatch(h -> h.getClass().getName().equals(handlerClass))) {
                 final Handler newHandler = create(handlerClass);
                 if (newHandler != null) {
                     handlersToAdd.add(newHandler);
                 }
             }
+            final List<Handler> existingToReinstantiate = currentHandlers.stream()
+                .filter(h -> h.getClass().getName().equals(handlerClass)
+                    && !ExternallyManagedLogHandler.class.isAssignableFrom(h.getClass()))
+                .collect(Collectors.toList());
+            handlersToRemove.addAll(existingToReinstantiate);
+            final Function<Handler, Handler> mapper = h -> create(h.getClass().getName());
+            handlersToAdd.addAll(
+                existingToReinstantiate.stream().map(mapper).filter(Objects::nonNull).collect(Collectors.toList()));
         }
 
         final Level systemRootLevel = getLevel(KEY_SYS_ROOT_LOGGER_LEVEL, Level.INFO);
-        configureRootLogger(systemRootLogger, systemRootLevel, requestedHandlers, handlersToAdd);
-
         final Level rootLoggerLevel = getLevel(KEY_USR_ROOT_LOGGER_LEVEL, Level.INFO);
-        configureRootLogger(userRootLogger, rootLoggerLevel, requestedHandlers, handlersToAdd);
-        setUserRootLoggerMissingParents(userRootLogger);
+        // both loggers use same handler set.
+        configureRootLogger(systemRootLogger, systemRootLevel, requestedHandlerNames, handlersToRemove, handlersToAdd);
+        configureRootLogger(userRootLogger, rootLoggerLevel, requestedHandlerNames, handlersToRemove, handlersToAdd);
+        setMissingParentToRootLogger(userRootLogger);
         // TODO: probably check for system root loggers as parents and move them to user?
     }
 
-    private void setUserRootLoggerMissingParents(final PayaraLogger rootParentLogger) {
+    private void setMissingParentToRootLogger(final PayaraLogger rootParentLogger) {
         final Enumeration<String> names = getLoggerNames();
         while (names.hasMoreElements()) {
             final String name = names.nextElement();
@@ -530,18 +574,22 @@ public class PayaraLogManager extends LogManager {
     }
 
 
-    private void configureRootLogger(final PayaraLogger rootLogger, final Level level, final List<String> requestedHandlers, final List<Handler> handlersToAdd) {
-        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "configureRootLogger(rootLogger=" + rootLogger + ", level=" + level
-            + ", requestedHandlers=" + requestedHandlers + ")");
+    private void configureRootLogger(final PayaraLogger rootLogger, final Level level,
+        final List<String> requestedHandlers, final List<Handler> handlersToRemove, final List<Handler> handlersToAdd) {
+        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "configureRootLogger(rootLogger=" + rootLogger
+            + ", level=" + level + ", requestedHandlers=" + requestedHandlers + ")");
         rootLogger.setLevel(level);
         final List<Handler> currentHandlers = Arrays.asList(rootLogger.getHandlers());
         if (requestedHandlers == null || requestedHandlers.isEmpty()) {
             PayaraLoggingTracer.error(PayaraLogManager.class, "No handlers set for the root logger!");
             return;
         }
+        for (final Handler handler : handlersToRemove) {
+            rootLogger.removeHandler(handler);
+            handler.close();
+        }
         for (final Handler handler : currentHandlers) {
             if (requestedHandlers.stream().noneMatch(name -> name.equals(handler.getClass().getName()))) {
-                // FIXME: does not respect handlerServices, will remove them, but they are in separate property and configured by different Action
                 rootLogger.removeHandler(handler);
                 handler.close();
             }
@@ -549,7 +597,6 @@ public class PayaraLogManager extends LogManager {
         for (final Handler handler : handlersToAdd) {
             rootLogger.addHandler(handler);
         }
-        // handlers which are already registered will not be removed and added again.
     }
 
 
@@ -572,6 +619,8 @@ public class PayaraLogManager extends LogManager {
     private static <T> T create(final String clazz) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "create(clazz=" + clazz + ")");
         try {
+            // FIXME: JUL uses SystemClassloader, so with custom formatters always fallbacks to defaults
+            //        Don't use ConsoleHandler, use SimpleLogHandler
             return (T) Class.forName(clazz).newInstance();
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             PayaraLoggingTracer.error(PayaraLogManager.class, "Could not create " + clazz, e);
@@ -608,8 +657,8 @@ public class PayaraLogManager extends LogManager {
         final String level = System.getProperty(JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL, Level.INFO.getName());
         cfg.setProperty(KEY_SYS_ROOT_LOGGER_LEVEL, level);
         cfg.setProperty(KEY_USR_ROOT_LOGGER_LEVEL, level);
-        cfg.setProperty(KEY_ROOT_HANDLERS, SimpleLogHandler.class.getCanonicalName());
-        cfg.setProperty(SimpleLogHandler.class.getCanonicalName() + ".level", level);
+        cfg.setProperty(KEY_ROOT_HANDLERS, SimpleLogHandler.class.getName());
+        cfg.setProperty(SimpleLogHandler.class.getName() + ".level", level);
         return cfg;
     }
 

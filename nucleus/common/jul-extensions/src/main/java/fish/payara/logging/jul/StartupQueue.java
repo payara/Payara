@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -38,18 +38,24 @@
  *  holder.
  */
 
-package fish.payara.logging.jul.internal;
-
-import fish.payara.logging.jul.PayaraLogger;
+package fish.payara.logging.jul;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
+ * This queue collects all {@link LogRecord} instances until the {@link PayaraLogManager} is fully
+ * configured and flushes this queue, which means that all collected records will be processed
+ * with respect to the configuration of the logging system.
+ * <p>
+ * This is possible because {@link Logger} instances are respected in reconfigurations of
+ * the logging system, so we can bind them and log records for a while.
+ *
  * @author David Matejcek
  */
-public class StartupQueue {
+class StartupQueue {
 
     private static final StartupQueue INSTANCE = new StartupQueue();
     private final ConcurrentLinkedQueue<DeferredRecord> queue = new ConcurrentLinkedQueue<>();
@@ -58,25 +64,43 @@ public class StartupQueue {
         // hidden
     }
 
+    /**
+     * @return a singleton instance.
+     */
     public static StartupQueue getInstance() {
         return INSTANCE;
     }
 
-    public void add(PayaraLogger logger, LogRecord record) {
+    /**
+     * Adds the record to the queue.
+     *
+     * @param logger - logger used to log the record.
+     * @param record
+     */
+    public void add(final PayaraLogger logger, final LogRecord record) {
         queue.add(new DeferredRecord(logger, record));
     }
 
-
+    /**
+     * @return a sorted {@link Stream} of {@link DeferredRecord} instances
+     */
     public Stream<DeferredRecord> toStream() {
         return queue.stream().sorted();
     }
 
 
+    /**
+     * Clears content of the queue.
+     */
     public void reset() {
         this.queue.clear();
     }
 
 
+    /**
+     * This class is used to bind the {@link LogRecord} and the {@link PayaraLogger}.
+     * Instances are comparable by their sequence numbers.
+     */
     public static final class DeferredRecord implements Comparable<DeferredRecord> {
         private final PayaraLogger logger;
         private final LogRecord record;
@@ -87,11 +111,17 @@ public class StartupQueue {
         }
 
 
+        /**
+         * @return logger used to log the record
+         */
         public PayaraLogger getLogger() {
             return logger;
         }
 
 
+        /**
+         * @return record containing informations to log.
+         */
         public LogRecord getRecord() {
             return record;
         }

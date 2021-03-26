@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2019-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,9 +37,7 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.logging.jul.internal;
-
-import fish.payara.logging.jul.PayaraLogger;
+package fish.payara.logging.jul.record;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -174,8 +172,8 @@ public class EnhancedLogRecord extends LogRecord {
 
 
     @Override
-    public void setSourceClassName(final String sourceClassName) {
-        this.record.setSourceClassName(sourceClassName);
+    public void setSourceClassName(final String className) {
+        this.record.setSourceClassName(className == null || className.isEmpty() ? null : className);
     }
 
 
@@ -186,8 +184,8 @@ public class EnhancedLogRecord extends LogRecord {
 
 
     @Override
-    public void setSourceMethodName(final String sourceMethodName) {
-        this.record.setSourceMethodName(sourceMethodName);
+    public void setSourceMethodName(final String methodName) {
+        this.record.setSourceMethodName(methodName == null || methodName.isEmpty() ? null : methodName);
     }
 
 
@@ -199,7 +197,7 @@ public class EnhancedLogRecord extends LogRecord {
 
     @Override
     public void setMessage(final String message) {
-        this.record.setMessage(message);
+        this.record.setMessage(message == null || message.isEmpty() ? null : message);
     }
 
 
@@ -306,16 +304,16 @@ public class EnhancedLogRecord extends LogRecord {
     }
 
 
-    protected boolean detectClassAndMethod(final LogRecord wrappedRecord) {
+    private boolean detectClassAndMethod(final LogRecord wrappedRecord) {
         final StackTraceElement[] stack = new Throwable().getStackTrace();
         boolean found = false;
         for (StackTraceElement element : stack) {
             final String className = element.getClassName();
             if (!found) {
-                found = isLoggerImplFrame(className);
+                found = isIgnoredStackTraceElement(className);
                 continue;
             }
-            if (!isLoggerImplFrame(className)) {
+            if (!isIgnoredStackTraceElement(className)) {
                 wrappedRecord.setSourceClassName(className);
                 wrappedRecord.setSourceMethodName(element.getMethodName());
                 return true;
@@ -326,14 +324,17 @@ public class EnhancedLogRecord extends LogRecord {
     }
 
 
-    protected boolean isLoggerImplFrame(final String sourceClassName) {
-        // TODO: make it configurable from logging.properties, allow to use custom loggers
-        return sourceClassName.equals(PayaraLogger.class.getName())
+    protected boolean isIgnoredStackTraceElement(final String sourceClassName) {
+        // FIXME: make it configurable from logging.properties, allow to use custom loggers. This is fragile.
+        return "fish.payara.logging.jul.PayaraLogger".equals(sourceClassName)
             // see LogDomains in Payara sources
-            || sourceClassName.equals("com.sun.logging.LogDomainsLogger")
-            // remaining classes are in parent in JDK8
-            || sourceClassName.equals("java.util.logging.Logger")
+            || "com.sun.logging.LogDomainsLogger".equals(sourceClassName)
+            // remaining classes are in JDK
+            || "java.util.logging.Logger".equals(sourceClassName)
+            // FIXME: are those following necessary? (The less the better)
             || sourceClassName.startsWith("java.util.logging.LoggingProxyImpl")
-            || sourceClassName.startsWith("sun.util.logging.");
+            || sourceClassName.startsWith("java.lang.reflect.")
+            || sourceClassName.startsWith("sun.util.logging.")
+            || sourceClassName.startsWith("sun.reflect.");
     }
 }

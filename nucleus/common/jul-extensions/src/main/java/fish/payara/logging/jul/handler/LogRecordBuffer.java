@@ -37,7 +37,9 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.logging.jul.internal;
+package fish.payara.logging.jul.handler;
+
+import fish.payara.logging.jul.record.EnhancedLogRecord;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +48,7 @@ import java.util.logging.Level;
 /**
  * @author David Matejcek
  */
-public class LogRecordBuffer {
+class LogRecordBuffer {
 
     private final int capacity;
     private final int maxWait;
@@ -126,7 +128,9 @@ public class LogRecordBuffer {
         }
     }
 
-
+    /**
+     * @return null if there are no pending records, first in the buffer otherwise.
+     */
     public EnhancedLogRecord poll() {
         return this.pendingRecords.poll();
     }
@@ -150,7 +154,6 @@ public class LogRecordBuffer {
             if (this.pendingRecords.offer(record)) {
                 return;
             }
-            Thread.yield();
             if (this.pendingRecords.offer(record, this.maxWait, TimeUnit.SECONDS)) {
                 return;
             }

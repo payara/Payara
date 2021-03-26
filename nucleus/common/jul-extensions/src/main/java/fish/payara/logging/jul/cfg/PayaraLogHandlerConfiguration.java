@@ -38,9 +38,10 @@
  *  holder.
  */
 
-package fish.payara.logging.jul;
+package fish.payara.logging.jul.cfg;
 
 import fish.payara.logging.jul.formatter.FormatterDelegate;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -51,7 +52,7 @@ import java.util.logging.Level;
 /**
  * @author David Matejcek
  */
-public class PayaraLogHandlerConfiguration {
+public class PayaraLogHandlerConfiguration implements Cloneable {
 
     public static final int DEFAULT_ROTATION_LIMIT_BYTES = 2_000_000;
     public static final int DEFAULT_BUFFER_CAPACITY = 10_000;
@@ -76,7 +77,6 @@ public class PayaraLogHandlerConfiguration {
 
     private boolean logStandardStreams;
 
-    // FIXME: change to JulFormatterConfiguration and it's children
     private Formatter formatterConfiguration;
     private FormatterDelegate formatterDelegate;
     private String productId;
@@ -233,6 +233,7 @@ public class PayaraLogHandlerConfiguration {
 
 
     public void setFormatterDelegate(final FormatterDelegate formatterDelegate) {
+        PayaraLoggingTracer.trace(getClass(), () -> "setFormatterDelegate: " + formatterDelegate);
         this.formatterDelegate = formatterDelegate;
     }
 
@@ -244,5 +245,15 @@ public class PayaraLogHandlerConfiguration {
 
     public void setProductId(final String productId) {
         this.productId = productId;
+    }
+
+
+    @Override
+    public PayaraLogHandlerConfiguration clone() {
+        try {
+            return (PayaraLogHandlerConfiguration) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException("Clone failed.", e);
+        }
     }
 }

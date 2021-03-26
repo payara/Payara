@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,41 @@
 
 package fish.payara.logging.jul;
 
+import java.util.logging.Logger;
+
+/**
+ * This enum represents states of the Payara Logging lifecycle.
+ *
+ * @author David Matejcek
+ */
 public enum PayaraLoggingStatus {
+    /**
+     * The logging is not available, requires initialization first.
+     * The initialization usually starts by the first usage of any {@link Logger} instance
+     * or by the first LogManager.getManager call.
+     */
     UNINITIALIZED,
+    /**
+     * The initialization is done - the global LogManager instance is set and cannot be changed
+     * any more, but it's configuration is not completed.
+     */
     UNCONFIGURED,
+    /**
+     * Payara Logging reconfiguration is executed.
+     * <p>
+     * This part is extremely fragile - if your logging configuration is incorrect, it is not
+     * guaranteed that the logging will work.
+     */
     CONFIGURING,
+    /**
+     * The reconfiguration is finished.
+     * <p>
+     * Now it is time to flush all buffers in logging.
+     */
     FLUSHING_BUFFERS,
+    /**
+     * Logging is configured and provides full service.
+     */
     FULL_SERVICE,
     ;
 }

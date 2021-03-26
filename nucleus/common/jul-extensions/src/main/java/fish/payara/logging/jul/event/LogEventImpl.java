@@ -41,38 +41,59 @@
 
 package fish.payara.logging.jul.event;
 
+import fish.payara.logging.jul.record.EnhancedLogRecord;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.LogRecord;
 
 /**
  * @author sanshriv
  */
 public class LogEventImpl implements LogEvent {
 
-    private String componentId = "";
-    private String ecId = "";
-    private String level = "";
-    private int levelValue = 0;
-    private String logger = "";
-    private String message = "";
-    private String messageId = "";
     private final Map<String,Object> suppAttrs = new HashMap<>();
-    private long threadId = 0L;
-    private String threadName = "";
-    private long timeMillis = 0L;
-    private String timestamp = "";
-    private String user = "";
+    private String componentId;
+    private String ecId;
+    private String level;
+    private int levelValue;
+    private String logger;
+    private String message;
+    private String messageId;
+    private long threadId;
+    private String threadName;
+    private long timeMillis;
+    private String timestamp;
+    private String user;
 
-    public LogEventImpl() {}
+    public LogEventImpl() {
+        this.logger = "";
+        this.level = "";
+        this.levelValue = 0;
+        this.message = "";
+        this.messageId = "";
+        this.threadId = 0L;
+        this.threadName = "";
+        this.timeMillis = 0L;
+        this.timestamp = "";
 
-    public LogEventImpl(LogRecord rec) {
-        level = rec.getLevel().getName();
-        logger = rec.getLoggerName();
-        message = rec.getMessage();
-        threadId = rec.getThreadID();
-        timeMillis = rec.getMillis();
-        levelValue = rec.getLevel().intValue();
+        this.componentId = "";
+        this.ecId = "";
+        this.user = "";
+    }
+
+    public LogEventImpl(final EnhancedLogRecord rec) {
+        this.logger = rec.getLoggerName();
+        this.level = rec.getLevel().getName();
+        this.levelValue = rec.getLevel().intValue();
+        this.message = rec.getMessage();
+        this.messageId = rec.getMessageKey();
+        this.threadId = rec.getThreadID();
+        this.threadName = rec.getThreadName();
+        this.timeMillis = rec.getMillis();
+
+        this.componentId = "";
+        this.ecId = "";
+        this.user = "";
     }
 
     @Override
@@ -115,6 +136,12 @@ public class LogEventImpl implements LogEvent {
         return suppAttrs;
     }
 
+    public void addSupplementalAttribute(final String key, final Object value) {
+        if (key != null && value != null) {
+            this.suppAttrs.put(key, value);
+        }
+    }
+
     @Override
     public long getThreadId() {
         return threadId;
@@ -143,84 +170,84 @@ public class LogEventImpl implements LogEvent {
     /**
      * @param componentId the componentId to set
      */
-    public void setComponentId(String componentId) {
+    public void setComponentId(final String componentId) {
         this.componentId = componentId;
     }
 
     /**
      * @param ecId the ecId to set
      */
-    public void setECId(String ecId) {
+    public void setECId(final String ecId) {
         this.ecId = ecId;
     }
 
     /**
      * @param level the level to set
      */
-    public void setLevel(String level) {
+    public void setLevel(final String level) {
         this.level = level;
     }
 
     /**
      * @param levelValue the levelValue to set
      */
-    public void setLevelValue(int levelValue) {
+    public void setLevelValue(final int levelValue) {
         this.levelValue = levelValue;
     }
 
     /**
      * @param logger the logger to set
      */
-    public void setLogger(String logger) {
+    public void setLogger(final String logger) {
         this.logger = logger;
     }
 
     /**
      * @param message the message to set
      */
-    public void setMessage(String message) {
+    public void setMessage(final String message) {
         this.message = message;
     }
 
     /**
      * @param messageId the messageId to set
      */
-    public void setMessageId(String messageId) {
+    public void setMessageId(final String messageId) {
         this.messageId = messageId;
     }
 
     /**
      * @param threadId the threadId to set
      */
-    public void setThreadId(long threadId) {
+    public void setThreadId(final long threadId) {
         this.threadId = threadId;
     }
 
     /**
      * @param threadName the threadName to set
      */
-    public void setThreadName(String threadName) {
+    public void setThreadName(final String threadName) {
         this.threadName = threadName;
     }
 
     /**
      * @param timeMillis the timeMillis to set
      */
-    public void setTimeMillis(long timeMillis) {
+    public void setTimeMillis(final long timeMillis) {
         this.timeMillis = timeMillis;
     }
 
     /**
      * @param timestamp the timestamp to set
      */
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(final String timestamp) {
         this.timestamp = timestamp;
     }
 
     /**
      * @param user the user to set
      */
-    public void setUser(String user) {
+    public void setUser(final String user) {
         this.user = user;
     }
 

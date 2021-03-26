@@ -23,8 +23,8 @@
  * questions.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation and/or affiliates]
-package fish.payara.logging.jul.internal;
+// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
+package fish.payara.logging.jul.rotation;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * <li>keeps track of how many bytes have been written
  * </ul>
  */
-public final class MeteredStream extends OutputStream {
+final class MeteredStream extends OutputStream {
 
     private final OutputStream out;
     private final AtomicLong written;

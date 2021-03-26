@@ -87,9 +87,9 @@ OPERANDS
                Default is false.
 
            handlers
-               Default is java.util.logging.ConsoleHandler.
+               Default is fish.payara.logging.jul.handler.SimpleLogHandler.
 
-           java.util.logging.ConsoleHandler.formatter
+           fish.payara.logging.jul.handler.SimpleLogHandler.formatter
                Default is
                fish.payara.logging.jul.formatter.UniformLogFormatter.
 
@@ -105,8 +105,8 @@ OPERANDS
            java.util.logging.FileHandler.pattern
                Default is %h/java%u.log.
 
-           log4j.logger.org.hibernate.validator.util.Version
-               Default is warn.
+           org.hibernate.validator.util.Version.level
+               Default is WARNING.
 
 EXAMPLES
        Example 1, Setting the Maximum Number of Log History Files to Maintain

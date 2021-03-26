@@ -40,18 +40,33 @@
 
 package fish.payara.logging.jul;
 
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.util.Properties;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
-import static fish.payara.logging.jul.PayaraLoggingConstants.CLASS_LOG_MANAGER;
-import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_MANAGER;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.CLASS_LOG_MANAGER_PAYARA;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_MANAGER;
 
 /**
+ * This class tries to set the {@link PayaraLogManager} as the default {@link LogManager}
+ * implementation.
+ * <p>
+ * The result is <b>not guaranteed</b>, because the first access to any {@link Logger} instance
+ * in the JVM starts the initialization.
+ * <p>
+ * Simply said - this must be the first thing application must execute.
+ *
  * @author David Matejcek
  */
 public class PayaraLogManagerInitializer {
 
+    /**
+     * Tries
+     *
+     * @return true if the initialization was successful.
+     */
     public static synchronized boolean tryToSetAsDefault() {
         return tryToSetAsDefault(null);
     }
@@ -65,7 +80,7 @@ public class PayaraLogManagerInitializer {
         }
         // will not work if anyone already called LogManager.getLogManager in the same context!
         final Thread currentThread = Thread.currentThread();
-        final ClassLoader old = currentThread.getContextClassLoader();
+        final ClassLoader originalContectClassLoader = currentThread.getContextClassLoader();
         try {
 
             // context classloader is used to load the class if not found by system cl.
@@ -74,8 +89,8 @@ public class PayaraLogManagerInitializer {
 
             // avoid any direct references to prevent static initializer of LogManager class
             // until everything is set.
-            System.setProperty(JVM_OPT_LOGGING_MANAGER, CLASS_LOG_MANAGER);
-            final Class<?> logManagerClass = newClassLoader.loadClass(CLASS_LOG_MANAGER);
+            System.setProperty(JVM_OPT_LOGGING_MANAGER, CLASS_LOG_MANAGER_PAYARA);
+            final Class<?> logManagerClass = newClassLoader.loadClass(CLASS_LOG_MANAGER_PAYARA);
             PayaraLoggingTracer.trace(PayaraLogManagerInitializer.class,
                 () -> "Will initialize log manager " + logManagerClass);
 
@@ -83,7 +98,7 @@ public class PayaraLogManagerInitializer {
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Could not initialize logging system.", e);
         } finally {
-            currentThread.setContextClassLoader(old);
+            currentThread.setContextClassLoader(originalContectClassLoader);
         }
     }
 }

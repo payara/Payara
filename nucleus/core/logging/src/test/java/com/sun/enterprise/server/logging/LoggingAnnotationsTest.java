@@ -37,9 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.server.logging;
+
+import fish.payara.logging.jul.PayaraLogManager;
+import fish.payara.logging.jul.PayaraLoggingStatus;
+import fish.payara.logging.jul.formatter.ODLLogFormatter;
+import fish.payara.logging.jul.formatter.UniformLogFormatter;
+import fish.payara.logging.jul.handler.SimpleLogHandler;
+import fish.payara.logging.jul.record.EnhancedLogRecord;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -49,17 +65,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fish.payara.logging.jul.PayaraLogManager;
-import fish.payara.logging.jul.PayaraLoggingStatus;
-import fish.payara.logging.jul.formatter.ODLLogFormatter;
-import fish.payara.logging.jul.formatter.UniformLogFormatter;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.logging.*;
-
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -104,7 +111,7 @@ public class LoggingAnnotationsTest {
     private static Logger LOGGER;
     private static FileHandler uniformFormatHandler;
     private static FileHandler odlFormatHandler;
-    private static ConsoleHandler consoleHandler;
+    private static SimpleLogHandler consoleHandler;
 
     @BeforeClass
     public static void initializeLoggingAnnotationsTest() throws Exception {
@@ -117,13 +124,17 @@ public class LoggingAnnotationsTest {
 
         uniformFormatHandler = new FileHandler(ULF_LOG);
         uniformFormatHandler.setLevel(Level.FINE);
-        uniformFormatHandler.setFormatter(new UniformLogFormatter());
+        UniformLogFormatter uniformLogFormatter = new UniformLogFormatter();
+        uniformLogFormatter.setPrintSource(true);
+        uniformFormatHandler.setFormatter(uniformLogFormatter);
 
         odlFormatHandler = new FileHandler(ODL_LOG);
         odlFormatHandler.setLevel(Level.FINE);
-        odlFormatHandler.setFormatter(new ODLLogFormatter());
+        ODLLogFormatter odlLogFormatter = new ODLLogFormatter();
+        odlLogFormatter.setPrintSource(true);
+        odlFormatHandler.setFormatter(odlLogFormatter);
 
-        consoleHandler = new ConsoleHandler();
+        consoleHandler = new SimpleLogHandler();
         consoleHandler.setLevel(Level.ALL);
         consoleHandler.setFormatter(new UniformLogFormatter());
 
@@ -170,7 +181,7 @@ public class LoggingAnnotationsTest {
     public void testFineLevelMessageWithoutSourceInfo() throws IOException {
         System.err.println("ccccccccccccccccccccccccc");
         String msg = "Hello FINE World";
-        LogRecord rec = new LogRecord(Level.FINE, msg);
+        LogRecord rec = new EnhancedLogRecord(Level.FINE, msg);
         rec.setLoggerName(LOGGER_NAME);
         rec.setSourceClassName(null);
         rec.setSourceMethodName(null);
@@ -206,8 +217,7 @@ public class LoggingAnnotationsTest {
             }
             String contents = buf.toString();
             for (String msg : messages) {
-                assertEquals("File " + file + " does not contain expected log message:" + msg,
-                        true, contents.contains(msg));
+                assertThat("File " + file + " does not contain expected log message:" + msg, contents, containsString(msg));
             }
             return contents;
         } finally {

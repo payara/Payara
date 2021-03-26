@@ -56,16 +56,17 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 
 import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
-import fish.payara.logging.jul.LoggingConfigurationHelper;
-import fish.payara.logging.jul.PayaraLogHandler;
-import fish.payara.logging.jul.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.PayaraLogManager;
 import fish.payara.logging.jul.PayaraLogManager.Action;
-import fish.payara.logging.jul.PayaraLogManagerConfiguration;
-import fish.payara.logging.jul.PayaraLogManagerConfigurationParser;
 import fish.payara.logging.jul.PayaraLogger;
+import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
+import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
+import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
+import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.logging.jul.cfg.PayaraLogManagerConfigurationParser;
 import fish.payara.logging.jul.formatter.AnsiColorFormatter;
 import fish.payara.logging.jul.formatter.FormatterDelegate;
+import fish.payara.logging.jul.handler.PayaraLogHandler;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -115,9 +116,9 @@ import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import static com.sun.enterprise.util.PropertyPlaceholderHelper.ENV_REGEX;
-import static fish.payara.logging.jul.JulConfigurationFactory.MINIMUM_ROTATION_LIMIT_VALUE;
-import static fish.payara.logging.jul.LoggingConfigurationHelper.PRINT_TO_STDERR;
-import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
+import static fish.payara.logging.jul.cfg.JulConfigurationFactory.MINIMUM_ROTATION_LIMIT_VALUE;
+import static fish.payara.logging.jul.cfg.LoggingConfigurationHelper.PRINT_TO_STDERR;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
 
 /**
  * Reinitialise the log manager using our logging.properties file.
@@ -132,13 +133,13 @@ import static fish.payara.logging.jul.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG
 @Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
 public final class LogManagerService implements PostConstruct, PreDestroy, org.glassfish.internal.api.LogManager {
 
-    private static final String H_CONSOLE_HANDLER = "java.util.logging.ConsoleHandler";
+    private static final String H_CONSOLE_HANDLER = "fish.payara.logging.jul.handler.SimpleLogHandler";
     private static final String H_FILE_HANDLER = "java.util.logging.FileHandler";
 
     private static final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
     private static final String HANDLERS_PROPERTY = "handlers";
     private static final String HANDLER_SERVICES_PROPERTY = "handlerServices";
-    private static final String CONSOLEHANDLER_FORMATTER_PROPERTY = "java.util.logging.ConsoleHandler.formatter";
+    private static final String CONSOLEHANDLER_FORMATTER_PROPERTY = "fish.payara.logging.jul.handler.SimpleLogHandler.formatter";
     private static final String GFFILEHANDLER_FORMATTER_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.formatter";
     private static final String ROTATIONTIMELIMITINMINUTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes";
     private static final String BATCHSIZE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.flushFrequency";
@@ -205,12 +206,12 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
 
     /**
-     * Initialize the loggers
+     * Initializes the automatic reconfiguration of the logging system.
      */
     @Override
     public void postConstruct() {
         if (!PayaraLogManager.isPayaraLogManager()) {
-            LOG.info(() -> "LogManagerService does not support log manager different than PayaraLogManager."
+            LOG.info(() -> "LogManagerService does not support any other log manager than PayaraLogManager."
                 + " Used log manager: " + LogManager.getLogManager());
             // Used different implementation, Payara will not touch it.
             // HK2 services will run, but will not reconfigure logging from file.
@@ -226,7 +227,9 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         LOG.log(Level.INFO, LogFacade.GF_VERSION_INFO, Version.getFullVersion());
     }
 
-
+    /**
+     * @return a file used as the main server log file
+     */
     public File getCurrentLogFile() {
         final PayaraLogManager logManager = PayaraLogManager.getLogManager();
         final PayaraLogHandler payaraLogHandler = logManager == null ? null : logManager.getPayaraLogHandler();
@@ -334,12 +337,12 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
     @Override
     public PrintStream getErrStream() {
-        return PayaraLogManager.getLogManager().getOriginalStdErr();
+        return LoggingSystemEnvironment.getOriginalStdErr();
     }
 
     @Override
     public PrintStream getOutStream() {
-        return PayaraLogManager.getLogManager().getOriginalStdOut();
+        return LoggingSystemEnvironment.getOriginalStdOut();
     }
 
 
@@ -620,12 +623,12 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
     private void reconfigure(final File configFile) {
         final PayaraLogManager manager = PayaraLogManager.getLogManager();
-        manager.getOriginalStdErr().println("reconfigure(" + configFile + ")");
+        LoggingSystemEnvironment.getOriginalStdErr().println("reconfigure(" + configFile + ")");
         LOG.info(() -> "Using property file: " + configFile);
         try {
             final PayaraLogManagerConfiguration cfg = getRuntimeConfiguration();
             if (cfg == null) {
-                manager.getOriginalStdErr().println("null logging properties!");
+                LoggingSystemEnvironment.getOriginalStdErr().println("null logging properties!");
                 return;
             }
             final ReconfigurationAction reconfig = new ReconfigurationAction(manager, cfg);
@@ -1053,7 +1056,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 //                if (checkPayaraNotificationHandler(key, value, pnFileHandler, reconfigurePnFormatter)) {
 //                    continue;
 //                }
-        } // for
+            } // for
 //
 //            if (reconfigurePayaraLogHandlerFormatter.get() && payaraLogHandler != null) {
 //                payaraLogHandler.reconfigure(null);configureLogFormatter(configuration.getGfhFormatterClass());

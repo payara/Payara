@@ -41,9 +41,8 @@
 package fish.payara.logging.jul;
 
 import fish.payara.logging.jul.i18n.MessageResolver;
-import fish.payara.logging.jul.internal.EnhancedLogRecord;
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
-import fish.payara.logging.jul.internal.StartupQueue;
+import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,14 +78,14 @@ public class PayaraLogger extends Logger {
     public PayaraLogger(final Logger logger) {
         // resource bundle name is taken from the set resource bundle
         super(requireNonNull(logger, "logger is null!").getName(), null);
-        this.setLevel(logger.getLevel());
-        this.setUseParentHandlers(logger.getUseParentHandlers());
-        this.setFilter(logger.getFilter());
+        setLevel(logger.getLevel());
+        setUseParentHandlers(logger.getUseParentHandlers());
+        setFilter(logger.getFilter());
         if (logger.getParent() != null) {
-            this.setParent(logger.getParent());
+            setParent(logger.getParent());
         }
         if (logger.getResourceBundle() != null) {
-            this.setResourceBundle(logger.getResourceBundle());
+            setResourceBundle(logger.getResourceBundle());
         }
         for (final Handler handler : logger.getHandlers()) {
             addHandler(handler);
@@ -105,6 +104,13 @@ public class PayaraLogger extends Logger {
     public void addHandler(final Handler handler) throws SecurityException {
         PayaraLoggingTracer.trace(PayaraLogger.class, "addHandler(" + handler + "); this: " + this);
         super.addHandler(handler);
+    }
+
+
+    @Override
+    public void removeHandler(final Handler handler) throws SecurityException {
+        PayaraLoggingTracer.trace(PayaraLogger.class, "removeHandler(" + handler + "); this: " + this);
+        super.removeHandler(handler);
     }
 
 

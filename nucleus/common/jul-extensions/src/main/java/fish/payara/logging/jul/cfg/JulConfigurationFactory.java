@@ -38,24 +38,20 @@
  *  holder.
  */
 
-package fish.payara.logging.jul;
+package fish.payara.logging.jul.cfg;
 
-import fish.payara.logging.jul.LoggingConfigurationHelper.LoggingPropertyErrorHandler;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
+import fish.payara.logging.jul.handler.PayaraLogHandler;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.nio.charset.StandardCharsets;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DecimalStyle;
-import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 
-import static fish.payara.logging.jul.PayaraLogHandlerConfiguration.DEFAULT_BUFFER_CAPACITY;
-import static fish.payara.logging.jul.PayaraLogHandlerConfiguration.DEFAULT_BUFFER_TIMEOUT;
-import static fish.payara.logging.jul.PayaraLogHandlerConfiguration.DEFAULT_ROTATION_LIMIT_BYTES;
-import static java.time.format.DateTimeFormatter.ofPattern;
+import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.DEFAULT_BUFFER_CAPACITY;
+import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.DEFAULT_BUFFER_TIMEOUT;
+import static fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration.DEFAULT_ROTATION_LIMIT_BYTES;
 
 /**
  * @author David Matejcek
@@ -64,30 +60,9 @@ public class JulConfigurationFactory {
 
     public static final int MINIMUM_ROTATION_LIMIT_VALUE = 500_000;
 
-    private static final String RECORD_BEGIN_MARKER = "[#|";
-    private static final String RECORD_END_MARKER = "|#]";
-    private static final String RECORD_FIELD_SEPARATOR = "|";
-    private static final DateTimeFormatter RECORD_DATE_FORMAT = ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-        .withDecimalStyle(DecimalStyle.STANDARD.withDecimalSeparator('0'));
-
-    private final LoggingPropertyErrorHandler errorHandler;
-
-
-    public JulConfigurationFactory() {
-        this.errorHandler = //
-            (key, value, cause) -> new ErrorManager().error( //
-                "Invalid property value: key='" + key + "', value='" + value + "'", null, ErrorManager.GENERIC_FAILURE);
-    }
-
-
-    public JulConfigurationFactory(final LoggingPropertyErrorHandler errorHandler) {
-        this.errorHandler = errorHandler;
-    }
-
-
     public PayaraLogHandlerConfiguration createPayaraLogHandlerConfiguration(
         final Class<? extends PayaraLogHandler> handlerClass, final String defaultLogFileName) {
-        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(handlerClass, this.errorHandler);
+        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(handlerClass);
         final PayaraLogHandlerConfiguration configuration = new PayaraLogHandlerConfiguration();
         configuration.setLevel(helper.getLevel("level", Level.ALL));
         configuration.setEncoding(helper.getCharset("encoding", StandardCharsets.UTF_8));
@@ -141,21 +116,21 @@ public class JulConfigurationFactory {
 
     private void configureUniformLogFormatter(final UniformLogFormatter formatter,
         final LoggingConfigurationHelper helper) {
-        formatter.noAnsi();
-        formatter.setDateTimeFormatter(helper.getDateTimeFormatter("logFormatDateFormat", RECORD_DATE_FORMAT));
+        formatter.setAnsiColor(helper.getBoolean("ansiColor", Boolean.FALSE));
+        formatter.setDateTimeFormatter(helper.getDateTimeFormatter("logFormatDateFormat", null));
         formatter.setExcludeFields(helper.getString("excludeFields", null));
-        formatter.setMultiLineMode(helper.getBoolean("multiLineMode", Boolean.FALSE));
-        formatter.setRecordFieldSeparator(helper.getString("logFormatFieldSeparator", RECORD_FIELD_SEPARATOR));
-        formatter.setRecordBeginMarker(helper.getString("logFormatBeginMarker", RECORD_BEGIN_MARKER));
-        formatter.setRecordEndMarker(helper.getString("logFormatEndMarker", RECORD_END_MARKER));
+        formatter.setMultiLineMode(helper.getBoolean("multiLineMode", Boolean.TRUE));
+        formatter.setRecordFieldSeparator(helper.getCharacter("logFormatFieldSeparator", null));
+        formatter.setRecordBeginMarker(helper.getString("logFormatBeginMarker", null));
+        formatter.setRecordEndMarker(helper.getString("logFormatEndMarker", null));
     }
 
 
     private void configureODLFormatter(final ODLLogFormatter formatter,
         final LoggingConfigurationHelper helper) {
-        formatter.noAnsi();
-        formatter.setDateTimeFormatter(helper.getDateTimeFormatter("logFormatDateFormat", RECORD_DATE_FORMAT));
+        formatter.setAnsiColor(helper.getBoolean("ansiColor", Boolean.FALSE));
+        formatter.setDateTimeFormatter(helper.getDateTimeFormatter("logFormatDateFormat", null));
         formatter.setExcludeFields(helper.getString("excludeFields", null));
-        formatter.setMultiLineMode(helper.getBoolean("multiLineMode", Boolean.FALSE));
+        formatter.setMultiLineMode(helper.getBoolean("multiLineMode", Boolean.TRUE));
     }
 }

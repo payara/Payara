@@ -121,9 +121,12 @@ public class GlassFishMain {
         // PayaraLogHandler collects log records until it will be completely configured with
         // an instance configuration so it will have complete information about filtering
         // and formatting those records
-        cfg.setProperty("handlers", "java.util.logging.ConsoleHandler,fish.payara.logging.jul.PayaraLogHandler");
+        cfg.setProperty("handlers",
+            "fish.payara.logging.jul.handler.SimpleLogHandler,fish.payara.logging.jul.handler.PayaraLogHandler");
+        cfg.setProperty("fish.payara.logging.jul.handler.SimpleLogHandler.formatter",
+            "fish.payara.logging.jul.formatter.UniformLogFormatter");
         // useful to track any startup race conditions etc. Logging is always in game.
-        cfg.setProperty("fish.payara.logging.jul.tracingEnabled", "false");
+//        cfg.setProperty("fish.payara.logging.jul.tracingEnabled", "true");
         // warning: there is no other way to force HK2 loggers or any other loggers, created
         // via new Logger(..) constructor to wait until logging would be completely configured.
         // These instances make decisions about log loggability immediately.

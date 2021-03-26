@@ -138,12 +138,12 @@ public class JsonLogFormatIT {
         boolean foundFile = false;
         boolean foundConsole = false;
         for (final String keyValue : output) {
-            if (keyValue.startsWith("com.sun.enterprise.server.logging.GFFileHandler.formatter")) {
+            if (keyValue.startsWith("fish.payara.logging.jul.handler.PayaraLogHandler.formatter")) {
                 originalFileHandlerFormatter = keyValue.substring(keyValue.indexOf("\t<") + 2, keyValue.length() - 1);
                 foundFile = true;
                 continue;
             }
-            if (keyValue.startsWith("java.util.logging.ConsoleHandler.formatter")) {
+            if (keyValue.startsWith("fish.payara.logging.jul.handler.SimpleLogHandler.formatter")) {
                 originalConsoleHandlerFormatter = keyValue.substring(keyValue.indexOf("\t<") + 2, keyValue.length() - 1);
                 foundConsole = true;
                 continue;
@@ -167,8 +167,8 @@ public class JsonLogFormatIT {
         final ArrayList<String> output = new ArrayList<>();
         command.add("set-log-attributes");
         command.add(
-            "java.util.logging.ConsoleHandler.formatter='" + originalConsoleHandlerFormatter + "'"
-         + ":com.sun.enterprise.server.logging.GFFileHandler.formatter='" + originalFileHandlerFormatter + "'");
+            "fish.payara.logging.jul.handler.SimpleLogHandler.formatter='" + originalConsoleHandlerFormatter + "'"
+         + ":fish.payara.logging.jul.handler.PayaraLogHandler.formatter='" + originalFileHandlerFormatter + "'");
         final int result = CliCommands.payaraGlassFish(command, output);
         assertEquals("set-log-attributes result", 0, result);
         assertEquals("Command set-log-attributes executed successfully.", output.get(output.size() - 1));
@@ -181,8 +181,8 @@ public class JsonLogFormatIT {
         final ArrayList<String> output = new ArrayList<>();
         command.add("set-log-attributes");
         command.add(
-            "java.util.logging.ConsoleHandler.formatter='fish.payara.enterprise.server.logging.JSONLogFormatter'"
-         + ":com.sun.enterprise.server.logging.GFFileHandler.formatter='fish.payara.enterprise.server.logging.JSONLogFormatter'");
+            "fish.payara.logging.jul.handler.SimpleLogHandler.formatter='fish.payara.enterprise.server.logging.JSONLogFormatter'"
+         + ":fish.payara.logging.jul.handler.PayaraLogHandler.formatter='fish.payara.enterprise.server.logging.JSONLogFormatter'");
         final int result = CliCommands.payaraGlassFish(command, output);
         assertEquals("set-log-attributes result", 0, result);
         assertEquals("Command set-log-attributes executed successfully.", output.get(output.size() - 1));

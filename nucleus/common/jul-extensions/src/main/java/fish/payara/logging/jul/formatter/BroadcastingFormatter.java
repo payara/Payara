@@ -42,36 +42,94 @@ package fish.payara.logging.jul.formatter;
 
 import fish.payara.logging.jul.event.LogEvent;
 import fish.payara.logging.jul.event.LogEventBroadcaster;
+import fish.payara.logging.jul.record.EnhancedLogRecord;
 
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER;
+
 
 /**
+ * A special {@link Formatter} able to notify some delegate about the {@link LogRecord} which passed
+ * through this instance.
+ *
  * @author David Matejcek
  */
-public abstract class BroadcastingFormatter extends Formatter implements LogEventBroadcaster {
+public abstract class BroadcastingFormatter extends Formatter {
+
+    private static final boolean LOG_SOURCE_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE);
+    private static final boolean RECORD_NUMBER_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER);
 
     private LogEventBroadcaster logEventBroadcasterDelegate;
     private String productId;
+    private boolean printRecordNumber;
+    private boolean printSource;
 
-    protected abstract BroadcastingFormatterOutput formatRecord(LogRecord record);
-
-
-    public final String getProductId() {
-        return productId;
+    public BroadcastingFormatter() {
+        this.printRecordNumber = RECORD_NUMBER_IN_KEY_VALUE;
+        this.printSource = LOG_SOURCE_IN_KEY_VALUE;
     }
 
+    /**
+     * Formats the record and if {@link #isLogEventBroadcasterSet()}, prepares also log event.
+     *
+     * @param record
+     * @return {@link BroadcastingFormatterOutput}
+     */
+    protected abstract BroadcastingFormatterOutput formatRecord(LogRecord record);
 
+    /**
+     * @param printRecordNumber true enables printing the log record sequence number
+     */
+    public void setPrintRecordNumber(final boolean printRecordNumber) {
+        this.printRecordNumber = printRecordNumber;
+    }
+
+    /**
+     * @return true enables printing the log record sequence number
+     */
+    public boolean isPrintRecordNumber() {
+        return printRecordNumber;
+    }
+
+    /**
+     * @param printSource if true, the source class and method will be printed to the output (but
+     *            only if they are set)
+     */
+    public void setPrintSource(final boolean printSource) {
+        this.printSource = printSource;
+    }
+
+    /**
+     * @return if true, the source class and method will be printed to the output (but
+     *         only if they are set)
+     */
+    public boolean isPrintSource() {
+        return printSource;
+    }
+
+    /**
+     * @param productId some meaningful identification of the application; default is null.
+     */
     public final void setProductId(final String productId) {
         this.productId = productId;
     }
 
+    /**
+     * @return Usually some meaningful identification of the application; default is null.
+     */
+    public final String getProductId() {
+        return productId;
+    }
 
+    /**
+     * @param logEventBroadcaster {@link LogEventBroadcaster} consuming {@link LogEvent}s
+     */
     public void setLogEventBroadcaster(final LogEventBroadcaster logEventBroadcaster) {
         logEventBroadcasterDelegate = logEventBroadcaster;
     }
-
 
     @Override
     public String formatMessage(final LogRecord record) {
@@ -82,23 +140,45 @@ public abstract class BroadcastingFormatter extends Formatter implements LogEven
     @Override
     public final String format(final LogRecord record) {
         final BroadcastingFormatterOutput output = formatRecord(record);
-        informLogEventListeners(output.logEvent);
+        if (isLogEventBroadcasterSet() && output.logEvent != null) {
+            logEventBroadcasterDelegate.informLogEventListeners(output.logEvent);
+        }
         return output.formattedRecord;
     }
 
 
     /**
-     * @deprecated this method is called only internally. Don't call it.
+     * @return true if the delegate is set
      */
-    @Deprecated
-    @Override
-    public void informLogEventListeners(LogEvent logEvent) {
-        if (logEventBroadcasterDelegate != null && logEvent != null) {
-            logEventBroadcasterDelegate.informLogEventListeners(logEvent);
-        }
+    protected boolean isLogEventBroadcasterSet() {
+        return logEventBroadcasterDelegate != null;
     }
 
 
+    /**
+     * @param record
+     * @return a record's message plus printed stacktrace if some throwable is present.
+     */
+    protected String getPrintedMessage(final EnhancedLogRecord record) {
+        final String message = record.getMessage();
+        final String stackTrace = record.getThrownStackTrace();
+        if (message == null || message.isEmpty()) {
+            return stackTrace == null ? null : stackTrace;
+        }
+        if (stackTrace == null) {
+            return message;
+        }
+        return message + System.lineSeparator() + stackTrace;
+    }
+
+
+    /**
+     * Contains the output of the formatter.
+     * <ul>
+     * <li>formattedRecord for the output file of stdout or whatever
+     * <li>logEvent for a delegate, if there is some set.
+     * </ul>
+     */
     protected static final class BroadcastingFormatterOutput {
 
         /**

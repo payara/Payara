@@ -38,17 +38,25 @@
  * holder.
  */
 
-// Portions Copyright [2020] [Payara Foundation]
+// Portions Copyright [2020-2021] [Payara Foundation]
 package fish.payara.logging.jul.formatter;
 
 
 import java.util.logging.Level;
 
 /**
- * Extension point for the UniformLogFormatter
+ * Extension point for a formatter, which can add useful info to the log message.
  *
  * @author Jerome Dochez
+ * @author David Matejcek
  */
+@FunctionalInterface
+// FIXME: the only delegate impl is AgentFormatterDelegate and strongly depends on syntax of the real formatter
+// TLDR:
+// possible perfect solution:
+// - move both here and transform agent to a provider of information.
+// - change all formatters to use same principles
+// - reduce logic, formatters must not think.
 public interface FormatterDelegate {
 
     /**
@@ -57,6 +65,8 @@ public interface FormatterDelegate {
      *
      * @param logRecordOutput - output to be appended by this formatter delegate
      * @param level - log record's level
+     * @param pairSeparator - it is between pairs, so it is the <code>;</code> in <code>a=b;c=d;</code>
+     * @param valueSeparator - it is between key and value, so it is the <code>=</code> in <code>a=b;c=d;</code>
      */
-    void format(StringBuilder logRecordOutput, Level level);
+    void format(StringBuilder logRecordOutput, Level level, String pairSeparator, String valueSeparator);
 }

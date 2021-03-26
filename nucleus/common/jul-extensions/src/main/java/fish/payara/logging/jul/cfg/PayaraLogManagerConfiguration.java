@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -38,31 +38,45 @@
  *  holder.
  */
 
-package com.sun.enterprise.server.logging;
+package fish.payara.logging.jul.cfg;
 
-import fish.payara.logging.jul.rotation.DailyLogRotationTimerTask;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.Properties;
 
 /**
  * @author David Matejcek
  */
-public class DailyLogRotationTimerTaskTest {
+// FIXME: make it more user friendly
+public class PayaraLogManagerConfiguration {
+
+    public static final String KEY_TRACING_ENABLED = "fish.payara.logging.jul.tracingEnabled";
+    private final Properties properties;
 
 
-    private static final String MESSAGE = "Hi, it works!";
-
-    @Test
-    public void test() {
-        final StringBuilder message = new StringBuilder();
-        final DailyLogRotationTimerTask task = new DailyLogRotationTimerTask(() -> message.append(MESSAGE));
-        assertTrue("delay must be positive", task.computeDelayInMillis() >= 0L);
-        assertEquals("task is not scheduled yet", 0L, task.scheduledExecutionTime());
-        task.run();
-        assertEquals("run() did not execute the action", MESSAGE, message.toString());
+    public PayaraLogManagerConfiguration(final Properties properties) {
+        this.properties = (Properties) properties.clone();
     }
 
+
+    public Properties getProperties() {
+        return this.properties;
+    }
+
+
+    public String getProperty(final String name) {
+        PayaraLoggingTracer.trace(PayaraLogManagerConfiguration.class, () -> "getProperty(" + name + ")");
+        return getProperties().getProperty(name);
+    }
+
+
+    public boolean isTracingEnabled() {
+        return Boolean.parseBoolean(this.properties.getProperty(KEY_TRACING_ENABLED));
+    }
+
+
+    @Override
+    public String toString() {
+        return this.properties.toString();
+    }
 }

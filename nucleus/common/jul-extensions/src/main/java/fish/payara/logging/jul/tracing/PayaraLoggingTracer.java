@@ -38,7 +38,7 @@
  *  holder.
  */
 
-package fish.payara.logging.jul.internal;
+package fish.payara.logging.jul.tracing;
 
 import java.io.PrintStream;
 import java.util.function.Supplier;
@@ -51,9 +51,10 @@ import java.util.function.Supplier;
  */
 public final class PayaraLoggingTracer {
 
+    private static final String JVM_OPT_LOGGING_TRACING_ENABLED = "fish.payara.logging.jul.tracingEnabled";
     private static final PrintStream OUT = System.out;
     private static final PrintStream ERR = System.err;
-    private static volatile boolean tracingEnabled = Boolean.getBoolean("fish.payara.logging.jul.tracingEnabled");
+    private static volatile boolean tracingEnabled = Boolean.getBoolean(JVM_OPT_LOGGING_TRACING_ENABLED);
 
     private PayaraLoggingTracer() {
         // hidden constructor
@@ -139,11 +140,11 @@ public final class PayaraLoggingTracer {
      *
      * @param source
      * @param message
-     * @param e
+     * @param cause
      */
-    public static synchronized void error(final Class<?> source, final String message, final Throwable t) {
+    public static synchronized void error(final Class<?> source, final String message, final Throwable cause) {
         ERR.println(source.getCanonicalName() + ": " + message);
-        t.printStackTrace(ERR);
+        cause.printStackTrace(ERR);
         ERR.flush();
     }
 }

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -38,51 +38,86 @@
  *  holder.
  */
 
-package fish.payara.logging.jul;
+package fish.payara.logging.jul.handler;
 
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
+import fish.payara.logging.jul.i18n.MessageResolver;
+import fish.payara.logging.jul.record.EnhancedLogRecord;
 
-import java.util.Properties;
-
-import static fish.payara.logging.jul.LoggingConfigurationHelper.PRINT_TO_STDERR;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
+ * This special {@link Handler} can be used for testing purposes.
+ * It collects log records passing through the given {@link Logger} instance.
+ *
  * @author David Matejcek
  */
-public class PayaraLogManagerConfiguration {
+public class LogCollectorHandler extends Handler {
 
-    private final Properties properties;
+    private static final MessageResolver RESOLVER = new MessageResolver();
+    private final LogRecordBuffer buffer;
+    private final Logger logger;
 
-
-    public PayaraLogManagerConfiguration(final Properties properties) {
-        this.properties = properties;
-    }
-
-
-    public Properties getProperties() {
-        return this.properties;
-    }
-
-
-    public String getProperty(final String name) {
-        PayaraLoggingTracer.trace(PayaraLogManagerConfiguration.class, () -> "getProperty(" + name + ")");
-        return getProperties().getProperty(name);
-    }
-
-
-    public boolean isCacheUntilPayaraLogHandlerReady() {
-        return new LoggingConfigurationHelper(PayaraLogManager.class, PRINT_TO_STDERR)
-            .getBoolean("cacheUntilPayaraLogHandlerReady", false);
+    /**
+     * @param loggerToFollow this handler will be added to this logger.
+     */
+    public LogCollectorHandler(final Logger loggerToFollow) {
+        this.buffer = new LogRecordBuffer(100, 5);
+        logger = loggerToFollow;
+        logger.addHandler(this);
     }
 
 
     @Override
-    public String toString() {
-        return this.properties.toString();
+    public void publish(LogRecord record) {
+        if (isLoggable(record)) {
+            this.buffer.add(RESOLVER.resolve(record));
+        }
     }
 
 
-    public boolean isTracingEnabled() {
-        return Boolean.parseBoolean(this.properties.getProperty("fish.payara.logging.jul.tracingEnabled"));
+    @Override
+    public void flush() {
+        // nothing
+    }
+
+
+    @Override
+    public void close() throws SecurityException {
+        this.logger.removeHandler(this);
+        reset();
+    }
+
+
+    /**
+     * @return the first {@link EnhancedLogRecord} in the buffer.
+     */
+    public EnhancedLogRecord pop() {
+        return this.buffer.poll();
+    }
+
+
+    /**
+     * @return all collected records
+     */
+    public List<EnhancedLogRecord> getAll() {
+        final List<EnhancedLogRecord> list = new ArrayList<>(this.buffer.getSize());
+        while (!this.buffer.isEmpty()) {
+            list.add(this.buffer.poll());
+        }
+        return list;
+    }
+
+
+    /**
+     * Drops all collected records.
+     */
+    public void reset() {
+        while (!this.buffer.isEmpty()) {
+            this.buffer.poll();
+        }
     }
 }

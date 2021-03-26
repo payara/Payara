@@ -398,7 +398,7 @@ public class LogFilter {
                 if (!instanceLogFile.exists()) {
                     instanceLogFile = new File(loggingDir + File.separator + "server.log");
                 } else if (!instanceLogFile.exists()) {
-                    // this code is used when user changes the attributes value(fish.payara.logging.jul.PayaraLogHandler.file) in
+                    // this code is used when user changes the attributes value(fish.payara.logging.jul.handler.PayaraLogHandler.file) in
                     // logging.properties file to something else.
                     loggingDir = instanceLogFileName.substring(0, instanceLogFileName.lastIndexOf(File.separator));
                     instanceLogFile = new File(loggingDir + File.separator + logFileName);
@@ -780,8 +780,9 @@ public class LogFilter {
         while (nvListTokenizer.hasMoreTokens()) {
             String nameandvalue = nvListTokenizer.nextToken();
             StringTokenizer nvToken = new StringTokenizer(nameandvalue, "=");
-            if (nvToken.countTokens() < 2)
+            if (nvToken.countTokens() < 2) {
                 continue;
+            }
             String loggedName = nvToken.nextToken();
             String loggedValue = nvToken.nextToken();
 
@@ -841,7 +842,7 @@ public class LogFilter {
             System.getProperty("com.sun.aas.verboseMode", "false");
     private static String defaultLogFile =
             System.getProperty("com.sun.aas.defaultLogFile");
-    private LogFile _logFile =
+    private final LogFile _logFile =
             (pL != null && !verboseMode.equals("true") && defaultLogFile != null) ?
                     new LogFile(defaultLogFile) :
                     new LogFile(StringUtils.makeFilePath(serverLogElements, false));

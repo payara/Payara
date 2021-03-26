@@ -40,9 +40,9 @@
 
 package com.sun.enterprise.server.logging.jul;
 
-import fish.payara.logging.jul.JulConfigurationFactory;
-import fish.payara.logging.jul.LoggingConfigurationHelper;
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
+import fish.payara.logging.jul.cfg.JulConfigurationFactory;
+import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.util.logging.Formatter;
 

@@ -41,22 +41,19 @@
 
 package com.sun.enterprise.server.logging;
 
-import com.sun.enterprise.admin.monitor.callflow.Agent;
-
-import fish.payara.logging.jul.PayaraLogHandler;
 import fish.payara.logging.jul.PayaraLogManager;
+import fish.payara.logging.jul.handler.PayaraLogHandler;
 
 import java.io.File;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 /**
  * GFFileHandler publishes formatted log Messages to a FILE.
+ * FIXME: no, it doesn't any more, it just knows how to roll the server.log file
  *
  * @author Jerome Dochez
  * @author Carla Mott
@@ -66,10 +63,6 @@ import org.jvnet.hk2.annotations.Service;
 @Singleton
 @ContractsProvided({GFFileHandler.class, LoggingRuntime.class})
 public class GFFileHandler implements LoggingRuntime {
-
-    @Inject
-    @Optional
-    private Agent agent;
 
 
     @Override

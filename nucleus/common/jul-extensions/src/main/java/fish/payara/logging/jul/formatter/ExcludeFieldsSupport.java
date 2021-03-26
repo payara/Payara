@@ -40,41 +40,81 @@
 
 // Portions Copyright [2020] [Payara Foundation and/or affiliates]
 
-package fish.payara.logging.jul.internal;
+package fish.payara.logging.jul.formatter;
 
 import java.util.BitSet;
+import java.util.logging.Level;
 
 /**
  * @author sanshriv
+ * @author David Matejcek
  */
 public class ExcludeFieldsSupport {
 
-    public enum SupplementalAttribute {TID, USERID, ECID, TIME_MILLIS, LEVEL_VALUE}
+    /**
+     * Additional log record attributes.
+     */
+    public enum SupplementalAttribute {
+        /** Thread id and name */
+        TID("tid"),
+        /** User id */
+        USERID("userId"),
+        /** ECID */
+        // FIXME: what is that?
+        ECID("ecid"),
+        /** Milliseconds since 1970 */
+        TIME_MILLIS("timeMillis"),
+        /** Integer value of the log level. See {@link Level#intValue()} */
+        LEVEL_VALUE("levelValue"),
+        ;
 
-    private final BitSet excludeSuppAttrsBits = new BitSet();
+        private final String id;
 
-    public void setExcludeFields(String excludeFields) {
-        excludeSuppAttrsBits.clear();
+        SupplementalAttribute(final String id) {
+            this.id = id;
+        }
+
+        public String getId() {
+            return this.id;
+        }
+    }
+
+    private final BitSet excludedAttributes = new BitSet(SupplementalAttribute.values().length);
+
+    /**
+     * @param id
+     * @return {@link SupplementalAttribute} if such exists with the same id.
+     */
+    public static SupplementalAttribute getById(final String id) {
+        for (SupplementalAttribute value : SupplementalAttribute.values()) {
+            if (value.getId().equals(id)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param excludeFields comma-separated list of {@link SupplementalAttribute} names.
+     */
+    public void setExcludeFields(final String excludeFields) {
+        excludedAttributes.clear();
         if (excludeFields != null) {
-            String[] fields = excludeFields.split(",");
-            for (String field : fields) {
-                if (field.equals("tid")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.TID.ordinal());
-                } else if (field.equals("userId")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.USERID.ordinal());
-                } else if (field.equals("ecid")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.ECID.ordinal());
-                } else if (field.equals("timeMillis")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.TIME_MILLIS.ordinal());
-                } else if (field.equals("levelValue")) {
-                    excludeSuppAttrsBits.set(SupplementalAttribute.LEVEL_VALUE.ordinal());
+            final String[] fields = excludeFields.split(",");
+            for (final String field : fields) {
+                final SupplementalAttribute found = getById(field);
+                if (found != null) {
+                    excludedAttributes.set(found.ordinal());
                 }
             }
         }
     }
 
-    public boolean isSet(SupplementalAttribute attr) {
-        return excludeSuppAttrsBits.get(attr.ordinal());
+    /**
+     * @param attribute
+     * @return true if the attribute should be excluded.
+     */
+    public boolean isSet(final SupplementalAttribute attribute) {
+        return excludedAttributes.get(attribute.ordinal());
     }
-
 }

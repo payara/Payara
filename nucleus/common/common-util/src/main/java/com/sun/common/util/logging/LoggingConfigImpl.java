@@ -84,7 +84,7 @@ import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
 @Contract
 public class LoggingConfigImpl implements LoggingConfig {
 
-    private static final String HANDLER_SERVER_LOG = "fish.payara.logging.jul.PayaraLogHandler";
+    private static final String HANDLER_SERVER_LOG = "fish.payara.logging.jul.handler.PayaraLogHandler";
     private static final String HANDLER_NOTIFICATION_LOG = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
     private static final String LOGGER_WEB_CONTAINER = "javax.enterprise.system.container.web";
 
@@ -448,12 +448,12 @@ public class LoggingConfigImpl implements LoggingConfig {
             // Convert the name in domain.xml to the name in logging.properties if needed
             key = xmltoPropsMap.getOrDefault(key, key);
 
-            if (key != null && key.equals("fish.payara.logging.jul.PayaraLogHandler.file")) {
+            if (key != null && key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.file")) {
                 return props.getProperty(key);
             }
         }
 
-        // If "fish.payara.logging.jul.PayaraLogHandler.file" not found, check "java.util.logging.FileHandler.pattern"
+        // If "fish.payara.logging.jul.handler.PayaraLogHandler.file" not found, check "java.util.logging.FileHandler.pattern"
         // This property can have been set by Payara Micro when using the --logtofile
         return props.getProperty("java.util.logging.FileHandler.pattern");
     }

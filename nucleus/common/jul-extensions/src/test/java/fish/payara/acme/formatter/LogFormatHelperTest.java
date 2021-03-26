@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,19 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.logging.jul;
+package fish.payara.acme.formatter;
 
+import fish.payara.logging.jul.formatter.LogFormatHelper;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test to ensure that the LogForatHelper correctly works out the log type
+ *
  * @author jonathan coustick
  */
 public class LogFormatHelperTest {
@@ -60,6 +62,10 @@ public class LogFormatHelperTest {
     private static final String ULF_RECORD = "[#|2020-04-20T22:02:35.314+0100|INFO|Payara 5.202|javax.enterprise.logging|_ThreadID=21;"
             + "_ThreadName=RunLevelControllerThread-1587416555246;_TimeMillis=1587416555314;_LevelValue=800;"
             + "_MessageID=NCLS-LOGGING-00009;|";
+    private static final String ONELINE_RECORD = "[#|2020-04-20T22:02:35.314+0100|INFO|Payara 5.202|javax.enterprise.logging|_ThreadID=21;"
+        + "_ThreadName=RunLevelControllerThread-1587416555246;_TimeMillis=1587416555314;_LevelValue=800;"
+        + "_MessageID=NCLS-LOGGING-00009;|";
+
 
     private static final String RANDOM_RECORD = "liuasudhfuk fhuashfu hiufh fueqrhfuqrehf qufhr uihuih uih jj";
 

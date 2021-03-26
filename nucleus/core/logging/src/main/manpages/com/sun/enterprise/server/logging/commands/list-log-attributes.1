@@ -49,8 +49,8 @@ EXAMPLES
                com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes <2000000>
                com.sun.enterprise.server.logging.GFFileHandler.rotationTimelimitInMinutes <0>
                com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging <false>
-               handlers <java.util.logging.ConsoleHandler>
-               java.util.logging.ConsoleHandler.formatter \
+               handlers <fish.payara.logging.jul.handler.SimpleLogHandler>
+               fish.payara.logging.jul.handler.SimpleLogHandler.formatter \
                <fish.payara.logging.jul.formatter.UniformLogFormatter>
                java.util.logging.FileHandler.count <1>
                java.util.logging.FileHandler.formatter <java.util.logging.XMLFormatter>

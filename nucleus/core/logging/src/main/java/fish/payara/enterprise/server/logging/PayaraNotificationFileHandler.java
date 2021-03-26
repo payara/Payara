@@ -39,9 +39,9 @@
  */
 package fish.payara.enterprise.server.logging;
 
-import fish.payara.logging.jul.JulConfigurationFactory;
-import fish.payara.logging.jul.PayaraLogHandler;
-import fish.payara.logging.jul.PayaraLogHandlerConfiguration;
+import fish.payara.logging.jul.cfg.JulConfigurationFactory;
+import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
+import fish.payara.logging.jul.handler.PayaraLogHandler;
 
 /**
  * Handler which is created and initialised by @{code fish.payara.nucleus.notification.log.LogNotifierService}

@@ -39,19 +39,85 @@
  */
 package fish.payara.logging.jul.handler;
 
+import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
+import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.formatter.OneLineFormatter;
 
-import java.util.logging.ConsoleHandler;
+import java.io.PrintStream;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.StreamHandler;
 
 
 /**
+ * The simplest possible log handler.
+ * <p>
+ * Similar to {@link java.util.logging.ConsoleHandler} except
+ * <ul>
+ * <li>it uses STDOUT instead of STDERR by default, but you can use also different {@link PrintStream}.
+ * <li>uses {@link OneLineFormatter} by default
+ * </ul>
+ *
  * @author David Matejcek
  */
-public class SimpleLogHandler extends ConsoleHandler {
+public class SimpleLogHandler extends StreamHandler {
 
+    /**
+     * Configures the instance with properties prefixed by the name of this class.
+     */
     public SimpleLogHandler() {
-        super();
-        setOutputStream(System.out);
-        setFormatter(new OneLineFormatter());
+        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(getClass());
+        if (helper.getBoolean("useErrorStream", false)) {
+            setOutputStream(new UncloseablePrintStream(LoggingSystemEnvironment.getOriginalStdErr()));
+        } else {
+            setOutputStream(new UncloseablePrintStream(LoggingSystemEnvironment.getOriginalStdOut()));
+        }
+        setFormatter(helper.getFormatter("formatter", OneLineFormatter.class.getName()));
+    }
+
+
+    /**
+     * Configures the instance with properties prefixed by the name of this class
+     * and sets the explicit {@link PrintStream}
+     *
+     * @param printStream
+     */
+    public SimpleLogHandler(final PrintStream printStream) {
+        super(printStream, new OneLineFormatter());
+    }
+
+
+    /**
+     * Publishes the record and calls {@link #flush()}
+     */
+    @Override
+    public void publish(LogRecord record) {
+        super.publish(record);
+        flush();
+    }
+
+    /**
+     * Executes {@link #flush()}
+     */
+    @Override
+    public void close() {
+        flush();
+    }
+
+
+    /**
+     * {@link Handler#close()} closes also stream it used for the output, but we don't want to close
+     * STDOUT and STDERR
+     */
+    private static class UncloseablePrintStream extends PrintStream {
+
+        private UncloseablePrintStream(PrintStream out) {
+            super(out, false);
+        }
+
+        @Override
+        public void close() {
+            // don't close
+        }
     }
 }

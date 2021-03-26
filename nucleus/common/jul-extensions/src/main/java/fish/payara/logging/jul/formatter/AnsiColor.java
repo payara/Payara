@@ -40,7 +40,10 @@
 package fish.payara.logging.jul.formatter;
 
 /**
+ * Named ANSI Color codes used in logging.
+ *
  * @author steve
+ * @see <a href="https://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape code on Wikipedia</a>
  */
 public enum AnsiColor {
 
@@ -68,18 +71,24 @@ public enum AnsiColor {
     BOLD_INTENSE_CYAN("\u001B[1;96m"),
     BOLD_INTENSE_WHITE("\u001B[1;97m"),
     BOLD_INTENSE_GREEN("\u001B[1;92m"),
+
+    /** Resets the color after some colored string */
     RESET("\u001b[0m"),
-    NOTHING("");
+    ;
+
+    private final String colorString;
 
     AnsiColor(String color) {
         colorString = color;
     }
 
+    /**
+     * Returns the ANSI escape sequence.
+     *
+     * @return the ANSI escape sequence.
+     */
     @Override
     public String toString() {
         return colorString;
     }
-
-    private final String colorString;
-
 }

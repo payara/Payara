@@ -40,7 +40,7 @@
 
 package fish.payara.logging.jul;
 
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.util.ResourceBundle;
 import java.util.logging.Filter;

@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.server.logging.parser;
 
-import fish.payara.logging.jul.LogFormatHelper;
+import fish.payara.logging.jul.formatter.LogFormatHelper;
 
 import java.io.BufferedReader;
 import java.io.File;

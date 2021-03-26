@@ -58,7 +58,6 @@
 
     <properties>
         <test.logManager>fish.payara.logging.jul.PayaraLogManager</test.logManager>
-<!--         <test.logManager>java.util.logging.LogManager</test.logManager> -->
     </properties>
 
     <dependencies>
@@ -135,7 +134,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemProperties>
-                        <fish.payara.logging.jul.tracingEnabled>true</fish.payara.logging.jul.tracingEnabled>
+                        <fish.payara.logging.jul.tracingEnabled>false</fish.payara.logging.jul.tracingEnabled>
                     </systemProperties>
                 </configuration>
             </plugin>

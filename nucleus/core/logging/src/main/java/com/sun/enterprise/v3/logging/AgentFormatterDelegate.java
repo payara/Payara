@@ -49,8 +49,6 @@ import fish.payara.logging.jul.formatter.FormatterDelegate;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import static fish.payara.logging.jul.formatter.UniformLogFormatter.NVPAIR_SEPARATOR;
-import static fish.payara.logging.jul.formatter.UniformLogFormatter.NV_SEPARATOR;
 
 /**
  * @author dochez, May 29, 2007
@@ -59,69 +57,34 @@ public class AgentFormatterDelegate implements FormatterDelegate {
 
     private final Agent agent;
 
-    public AgentFormatterDelegate(Agent agent) {
+    public AgentFormatterDelegate(final Agent agent) {
         this.agent = Objects.requireNonNull(agent, "agent");
     }
 
     @Override
-    public void format(StringBuilder buf, Level level) {
-
-
-        ThreadLocalData tld = agent.getThreadLocalData();
-        if (tld==null) {
+    public void format(final StringBuilder out, final Level level, final String pairSeparator, final String valueSeparator) {
+        final ThreadLocalData tld = agent.getThreadLocalData();
+        if (tld == null) {
             return;
         }
-
         if (level.equals(Level.INFO) || level.equals(Level.CONFIG)) {
+            add(out, "_ApplicationName", tld.getApplicationName(), pairSeparator, valueSeparator);
+            return;
+        }
+        add(out, "_RequestID", tld.getRequestId(), pairSeparator, valueSeparator);
+        add(out, "_ApplicationName", tld.getApplicationName(), pairSeparator, valueSeparator);
+        add(out, "_ModuleName", tld.getModuleName(), pairSeparator, valueSeparator);
+        add(out, "_ComponentName", tld.getComponentName(), pairSeparator, valueSeparator);
+        add(out, "_ComponentType", tld.getComponentType(), pairSeparator, valueSeparator);
+        add(out, "_MethodName", tld.getMethodName(), pairSeparator, valueSeparator);
+        add(out, "_TransactionId", tld.getTransactionId(), pairSeparator, valueSeparator);
+        add(out, "_CallerId", tld.getSecurityId(), pairSeparator, valueSeparator);
+    }
 
-            if (tld.getApplicationName() != null) {
-                buf.append("_ApplicationName").append(NV_SEPARATOR).
-                        append(tld.getApplicationName()).
-                        append(NVPAIR_SEPARATOR);
-            }
 
-        } else {
-
-            if (tld.getRequestId() != null) {
-                buf.append("_RequestID").append(NV_SEPARATOR).
-                        append(tld.getRequestId()).append(NVPAIR_SEPARATOR);
-            }
-
-            if (tld.getApplicationName() != null) {
-                buf.append("_ApplicationName").append(NV_SEPARATOR).
-                        append(tld.getApplicationName()).
-                        append(NVPAIR_SEPARATOR);
-            }
-
-            if (tld.getModuleName() != null) {
-                buf.append("_ModuleName").append(NV_SEPARATOR).
-                        append(tld.getModuleName()).append(NVPAIR_SEPARATOR);
-            }
-
-            if (tld.getComponentName() != null) {
-                buf.append("_ComponentName").append(NV_SEPARATOR).
-                        append(tld.getComponentName()).append(NVPAIR_SEPARATOR);
-            }
-
-            if (tld.getComponentType() != null) {
-                buf.append("_ComponentType").append(NV_SEPARATOR).
-                        append(tld.getComponentType()).append(NVPAIR_SEPARATOR);
-            }
-
-            if (tld.getMethodName() != null) {
-                buf.append("_MethodName").append(NV_SEPARATOR).
-                        append(tld.getMethodName()).append(NVPAIR_SEPARATOR);
-            }
-
-            if (tld.getTransactionId() != null) {
-                buf.append("_TransactionId").append(NV_SEPARATOR).
-                        append(tld.getTransactionId()).append(NVPAIR_SEPARATOR);
-            }
-
-            if (tld.getSecurityId() != null) {
-                buf.append("_CallerId").append(NV_SEPARATOR).
-                        append(tld.getSecurityId()).append(NVPAIR_SEPARATOR);
-            }
+    private void add(final StringBuilder out, final String key, final String val, final String pairSep, final String valSep) {
+        if (val != null) {
+            out.append(key).append(valSep).append(val).append(pairSep);
         }
     }
 }

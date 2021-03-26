@@ -38,18 +38,25 @@
  *  holder.
  */
 
-package fish.payara.logging.jul;
+package fish.payara.logging.jul.handler;
 
+import fish.payara.logging.jul.PayaraLogManager;
+
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
+ * {@link Handler} which can be initialized just partially by the {@link PayaraLogManager},
+ * so it is capable to start collecting {@link LogRecord} instances, but it cannot process
+ * them without additional configuration.
+ *
  * @author David Matejcek
  */
-public class PayaraLoggingConstants {
+public interface ExternallyManagedLogHandler {
 
-    public static final String JVM_OPT_LOGGING_MANAGER = "java.util.logging.manager";
-    public static final String JVM_OPT_LOGGING_CFG_FILE = "java.util.logging.config.file";
-    public static final String JVM_OPT_LOGGING_CFG_USE_DEFAULTS = "java.util.logging.config.useDefaults";
-    public static final String JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL = "java.util.logging.config.defaultLevel";
-    public static final String CLASS_LOG_MANAGER = "fish.payara.logging.jul.PayaraLogManager";
-
+    /**
+     * @return true if the configuration is complete and the handler is capable to immediately start
+     *         processing the data.
+     */
+    boolean isReady();
 }

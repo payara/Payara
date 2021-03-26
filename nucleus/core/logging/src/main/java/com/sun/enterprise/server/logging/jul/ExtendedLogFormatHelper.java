@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.server.logging.jul;
 
-import fish.payara.logging.jul.LogFormatHelper;
+import fish.payara.logging.jul.formatter.LogFormatHelper;
 
 import java.io.StringReader;
 

@@ -76,7 +76,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
 
-/*
+/**
  * Set log file format command.
  * Updates the formatter for the log file to either ODL, ULF or a custom name.
  */
@@ -90,13 +90,13 @@ import fish.payara.logging.jul.formatter.UniformLogFormatter;
 public class SetLogFileFormat implements AdminCommand {
 
     private static final String ODL_FORMATTER_NAME = "ODL";
-    
+
     private static final String ULF_FORMATTER_NAME = "ULF";
 
     @Param(optional = true)
     @I18n("set.log.file.format.target")
     String target = SystemPropertyConstants.DAS_SERVER_NAME;
-    
+
     @Param(optional = true, defaultValue=ODL_FORMATTER_NAME, primary=true)
     @I18n("set.log.file.format.formatter")
     String formatter = ODL_FORMATTER_NAME;
@@ -112,15 +112,16 @@ public class SetLogFileFormat implements AdminCommand {
 
     @Inject
     Clusters clusters;
-    
+
     @Inject
     ServerEnvironment env;
 
     final private static LocalStringManagerImpl LOCAL_STRINGS = new LocalStringManagerImpl(
             SetLogFileFormat.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
-        
+
         String formatterClassName = null;
         if (formatter.equalsIgnoreCase(ODL_FORMATTER_NAME)) {
             formatterClassName = ODLLogFormatter.class.getName();
@@ -129,28 +130,28 @@ public class SetLogFileFormat implements AdminCommand {
         } else {
             formatterClassName = formatter;
         }
-        
+
         if (formatterClassName == null || formatter.isEmpty()) {
             formatterClassName = ODLLogFormatter.class.getName();
         }
 
-        Map<String, String> loggingProperties = new HashMap<String, String>();
-        loggingProperties.put("com.sun.enterprise.server.logging.GFFileHandler.formatter", formatterClassName);
-        
+        Map<String, String> loggingProperties = new HashMap<>();
+        loggingProperties.put("fish.payara.logging.jul.handler.PayaraLogHandler.formatter", formatterClassName);
+
         final ActionReport report = context.getActionReport();
         boolean isCluster = false;
         boolean isDas = false;
         boolean isInstance = false;
         boolean isConfig = false;
         String targetConfigName = "";
-                
+
         try {
             Config config = domain.getConfigNamed(target);
             if (config != null) {
                 targetConfigName = target;
                 isConfig = true;
             } else {
-                Server targetServer = domain.getServerNamed(target);                    
+                Server targetServer = domain.getServerNamed(target);
                 if (targetServer != null) {
                     if (targetServer.isDas()) {
                         isDas = true;
@@ -174,7 +175,7 @@ public class SetLogFileFormat implements AdminCommand {
 
             if (isDas) {
                 loggingConfigFactory.provide(targetConfigName).setLoggingProperties(loggingProperties);
-            } else if ((targetConfigName != null && !targetConfigName.isEmpty()) && 
+            } else if ((targetConfigName != null && !targetConfigName.isEmpty()) &&
                     (isCluster || isInstance || isConfig)) {
                         loggingConfigFactory.provide(targetConfigName).setLoggingProperties(loggingProperties);
             } else {
@@ -186,13 +187,13 @@ public class SetLogFileFormat implements AdminCommand {
                 report.setMessage(msg);
                 return;
             }
-            
+
             String successMsg = LOCAL_STRINGS.getLocalString("set.log.file.format.success",
                     "The log file formatter is set to {0} for {1}.",
                     formatterClassName,
                     env.getInstanceName());
            report.setMessage(successMsg);
-           report.setActionExitCode(ActionReport.ExitCode.SUCCESS);            
+           report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
         } catch (IOException e) {
             report.setMessage(LOCAL_STRINGS.getLocalString(
@@ -201,5 +202,5 @@ public class SetLogFileFormat implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
     }
-    
+
 }

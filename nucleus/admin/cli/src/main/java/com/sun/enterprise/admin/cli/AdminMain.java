@@ -49,6 +49,8 @@ import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import fish.payara.logging.jul.PayaraLogManagerInitializer;
+import fish.payara.logging.jul.handler.SimpleLogHandler;
+
 import java.io.File;
 import java.io.PrintStream;
 import java.security.AccessController;
@@ -79,9 +81,9 @@ public class AdminMain {
 
     static {
         final Properties cfg = new Properties();
-        cfg.setProperty("handlers", ConsoleHandler.class.getName());
-        cfg.setProperty(ConsoleHandler.class.getName() + ".level", Level.INFO.getName());
-        cfg.setProperty(ConsoleHandler.class.getName() + ".formatter", SimpleFormatter.class.getName());
+        cfg.setProperty("handlers", SimpleLogHandler.class.getName());
+        cfg.setProperty(SimpleLogHandler.class.getName() + ".level", Level.INFO.getName());
+        cfg.setProperty(SimpleLogHandler.class.getName() + ".formatter", SimpleFormatter.class.getName());
         cfg.setProperty(SimpleFormatter.class.getName() + ".format", "%5$s%6$s%n");
         cfg.setProperty(".level", Level.INFO.getName());
 

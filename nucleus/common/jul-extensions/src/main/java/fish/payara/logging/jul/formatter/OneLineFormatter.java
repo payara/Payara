@@ -39,17 +39,11 @@
  */
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.internal.EnhancedLogRecord;
+import fish.payara.logging.jul.i18n.MessageResolver;
+import fish.payara.logging.jul.record.EnhancedLogRecord;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.MessageFormat;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.logging.Formatter;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -64,6 +58,7 @@ public class OneLineFormatter extends Formatter {
 
     private static final DateTimeFormatter TS_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
     private static final String LINE_SEPARATOR = System.lineSeparator();
+    private static final MessageResolver MSG_RESOLVER = new MessageResolver();
 
     private final int sizeOfLevel;
     private final int sizeOfThread;
@@ -95,42 +90,29 @@ public class OneLineFormatter extends Formatter {
 
     @Override
     public String format(final LogRecord record) {
+        return formatEnhancedLogRecord(MSG_RESOLVER.resolve(record));
+    }
+
+    @Override
+    public String formatMessage(final LogRecord record) {
+        throw new UnsupportedOperationException("String formatMessage(LogRecord record)");
+    }
+
+    private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
         final StringBuilder sb = new StringBuilder(256);
-        sb.append(TS_FORMAT.format(LocalTime.now()));
+        sb.append(TS_FORMAT.format(record.getTime()));
         addPadded(record.getLevel(), this.sizeOfLevel, sb);
-        addPadded(getThreadName(record), this.sizeOfThread, sb);
+        addPadded(record.getThreadName(), this.sizeOfThread, sb);
         addPadded(record.getSourceClassName(), this.sizeOfClass, sb);
         sb.append('.').append(record.getSourceMethodName());
-        sb.append(' ').append(formatMessage(record));
+        sb.append(' ').append(record.getMessage());
 
         if (record.getThrown() != null) {
             sb.append(LINE_SEPARATOR);
-            sb.append(getStackTrace(record.getThrown()));
+            sb.append(record.getThrownStackTrace());
         }
 
         return sb.append(LINE_SEPARATOR).toString();
-    }
-
-
-    /**
-     * This method overrides the original {@link Formatter#formatMessage(LogRecord)} method - it is
-     * null-safe and faster.
-     */
-    @Override
-    public String formatMessage(final LogRecord record) {
-        if (record == null) {
-            return null;
-        }
-        final String template = getTemplateFromResourceBundle(record.getResourceBundle(), record.getMessage());
-        final Object[] parameters = record.getParameters();
-        if (template == null || parameters == null || parameters.length == 0) {
-            return template;
-        }
-        try {
-            return MessageFormat.format(template, parameters);
-        } catch (final Exception ex) {
-            return template;
-        }
     }
 
 
@@ -151,46 +133,5 @@ public class OneLineFormatter extends Formatter {
         final char[] spaces = new char[countOfSpaces];
         Arrays.fill(spaces, ' ');
         return spaces;
-    }
-
-
-    /**
-     * @param record
-     * @return a thread name for logging purposes
-     */
-    protected String getThreadName(final LogRecord record) {
-        if (record instanceof EnhancedLogRecord) {
-            return ((EnhancedLogRecord) record).getThreadName();
-        }
-        return Thread.currentThread().getName();
-    }
-
-
-    /**
-     * @param throwable
-     * @return null or a stack trace printed to a string
-     */
-    protected String getStackTrace(final Throwable throwable) {
-        if (throwable == null) {
-            return null;
-        }
-        try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
-            throwable.printStackTrace(pw);
-            return sw.getBuffer().toString();
-        } catch (final IOException e) {
-            return "ERR: "+ getClass().getSimpleName() + " failed to generate the stacktrace.";
-        }
-    }
-
-
-    private String getTemplateFromResourceBundle(final ResourceBundle bundle, final String key) {
-        if (bundle == null || key == null) {
-            return key;
-        }
-        try {
-            return bundle.getString(key);
-        } catch (final MissingResourceException ex) {
-            return key;
-        }
     }
 }

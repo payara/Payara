@@ -40,7 +40,7 @@
 
 package fish.payara.logging.jul.i18n;
 
-import fish.payara.logging.jul.internal.EnhancedLogRecord;
+import fish.payara.logging.jul.record.EnhancedLogRecord;
 
 import java.text.MessageFormat;
 import java.util.MissingResourceException;

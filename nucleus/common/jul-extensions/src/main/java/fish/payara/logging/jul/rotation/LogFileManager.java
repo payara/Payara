@@ -40,8 +40,7 @@
 
 package fish.payara.logging.jul.rotation;
 
-import fish.payara.logging.jul.internal.MeteredStream;
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

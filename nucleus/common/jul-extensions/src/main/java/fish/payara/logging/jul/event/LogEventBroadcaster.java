@@ -37,13 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2020-2021] [Payara Foundation and/or its affiliates]
 
 package fish.payara.logging.jul.event;
 
 /**
+ * Used to invoke some reaction to a logging event.
+ * Use wisely, because logging may significantly affect the performance.
+ *
  * @author sanshriv
+ * @author David Matejcek
  */
+@FunctionalInterface
 public interface LogEventBroadcaster {
 
     /**

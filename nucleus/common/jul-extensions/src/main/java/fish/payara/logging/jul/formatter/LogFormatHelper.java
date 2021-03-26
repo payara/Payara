@@ -37,17 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
-package fish.payara.logging.jul;
+package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.formatter.ODLLogFormatter;
-import fish.payara.logging.jul.formatter.UniformLogFormatter;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.logging.ErrorManager;
 import java.util.regex.Pattern;
 
 /**
@@ -73,7 +71,7 @@ public class LogFormatHelper {
         try (BufferedReader br = new BufferedReader(new FileReader(configuredLogFile))) {
             firstLine = br.readLine();
         } catch (Exception e) {
-            new ErrorManager().error(e.getMessage(), e, ErrorManager.GENERIC_FAILURE);
+            PayaraLoggingTracer.error(getClass(), e.getMessage(), e);
             return null;
         }
 
@@ -81,7 +79,7 @@ public class LogFormatHelper {
     }
 
 
-    protected String detectFormatter(final String firstLine) {
+    public String detectFormatter(final String firstLine) {
         if (firstLine == null || firstLine.isEmpty()) {
             return null;
         }

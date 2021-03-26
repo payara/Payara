@@ -38,23 +38,25 @@
  *  holder.
  */
 
-package fish.payara.logging.jul;
+package fish.payara.logging.jul.handler;
 
+import fish.payara.logging.jul.cfg.JulConfigurationFactory;
+import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
+import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.event.LogEvent;
 import fish.payara.logging.jul.event.LogEventBroadcaster;
 import fish.payara.logging.jul.event.LogEventImpl;
 import fish.payara.logging.jul.event.LogEventListener;
 import fish.payara.logging.jul.formatter.AnsiColorFormatter;
 import fish.payara.logging.jul.formatter.BroadcastingFormatter;
+import fish.payara.logging.jul.formatter.LogFormatHelper;
 import fish.payara.logging.jul.i18n.MessageResolver;
-import fish.payara.logging.jul.internal.EnhancedLogRecord;
-import fish.payara.logging.jul.internal.LogRecordBuffer;
+import fish.payara.logging.jul.record.EnhancedLogRecord;
 import fish.payara.logging.jul.rotation.DailyLogRotationTimerTask;
 import fish.payara.logging.jul.rotation.LogFileManager;
 import fish.payara.logging.jul.rotation.LogRotationTimerTask;
 import fish.payara.logging.jul.rotation.PeriodicalLogRotationTimerTask;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -63,19 +65,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.logging.Formatter;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
-import static fish.payara.logging.jul.internal.PayaraLoggingTracer.error;
-import static fish.payara.logging.jul.internal.PayaraLoggingTracer.trace;
+
+import static fish.payara.logging.jul.tracing.PayaraLoggingTracer.error;
+import static fish.payara.logging.jul.tracing.PayaraLoggingTracer.trace;
 import static java.security.AccessController.doPrivileged;
 import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
 
 /**
+ * Payara log handler
+ * <ul>
+ * <li>can redirect output going through STDOUT and STDERR
+ * <li>buffers log records
+ * </ul>
+ * <b>WARNING</b>: If you configure this handler to redirect standard output, you have to prevent
+ * the situation when any other handler would use it.
+ *
  * @author David Matejcek
  */
-// FIXME: uses the file until the end, but another run is already starting. _ThreadName=FelixStartLevel vs _ThreadName=main - verify if it is still a problem!
+// FIXME: uses the file until the end, but another run is already starting.
+//        _ThreadName=FelixStartLevel vs _ThreadName=main - verify if it is still a problem!
 public class PayaraLogHandler extends StreamHandler implements LogEventBroadcaster, ExternallyManagedLogHandler {
 
     private static final String LOGGER_NAME_STDOUT = "javax.enterprise.logging.stdout";
@@ -84,8 +96,8 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     private static final Logger STDERR_LOGGER = Logger.getLogger(LOGGER_NAME_STDERR);
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
 
-    private LoggingOutputStream stdoutOutputStream;
-    private LoggingOutputStream stderrOutputStream;
+    private LoggingPrintStream stdoutStream;
+    private LoggingPrintStream stderrStream;
 
     private final LogRecordBuffer logRecordBuffer;
     private LogRotationTimerTask rotationTimerTask;
@@ -117,10 +129,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     }
 
 
-    /**
-     * @return true if the configuration is complete and the handler is capable to immediately start
-     *         processing the data.
-     */
+    @Override
     public boolean isReady() {
         return status == PayaraLogHandlerStatus.ON;
     }
@@ -136,11 +145,11 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
 
     public PayaraLogHandlerConfiguration getConfiguration() {
-        return this.configuration;
+        return this.configuration.clone();
     }
 
 
-    public boolean addLogEventListener(LogEventListener listener) {
+    public boolean addLogEventListener(final LogEventListener listener) {
         if (logEventListeners.contains(listener)) {
             return false;
         }
@@ -148,13 +157,13 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     }
 
 
-    public boolean removeLogEventListener(LogEventListener listener) {
+    public boolean removeLogEventListener(final LogEventListener listener) {
         return logEventListeners.remove(listener);
     }
 
 
     public synchronized void reconfigure(final PayaraLogHandlerConfiguration newConfiguration) {
-        trace(PayaraLogHandler.class, () -> "reconfigure(configuration=" + configuration + ")");
+        trace(PayaraLogHandler.class, () -> "reconfigure(configuration=" + newConfiguration + ")");
         // stop using output, but allow collecting records. Logging system can continue to work.
         this.status = PayaraLogHandlerStatus.ACCEPTING;
         if (this.rotationTimerTask != null) {
@@ -182,7 +191,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
     // this is only to be able to provide the handle to the LogFileManager
     @Override
-    public void setOutputStream(OutputStream out) throws SecurityException {
+    public void setOutputStream(final OutputStream out) throws SecurityException {
         super.setOutputStream(out);
     }
 
@@ -207,11 +216,11 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
             return;
         }
 
-        final EnhancedLogRecord recordWrapper = MSG_RESOLVER.resolve(record);
-        logRecordBuffer.add(recordWrapper);
-        // if we have formatter with this capability, it will do that.
+        final EnhancedLogRecord enhancedLogRecord = MSG_RESOLVER.resolve(record);
+        logRecordBuffer.add(enhancedLogRecord);
+        // if we don't have a formatter with this capability, we will do that.
         if (!LogEventBroadcaster.class.isInstance(getFormatter())) {
-            final LogEvent logEvent = new LogEventImpl(recordWrapper);
+            final LogEvent logEvent = new LogEventImpl(enhancedLogRecord);
             informLogEventListeners(logEvent);
         }
     }
@@ -227,7 +236,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
     @Override
     public void informLogEventListeners(final LogEvent logEvent) {
-        for (LogEventListener listener : logEventListeners) {
+        for (final LogEventListener listener : logEventListeners) {
             listener.messageLogged(logEvent);
         }
     }
@@ -243,6 +252,20 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
 
     /**
+     * Explicitly rolls the log file.
+     */
+    public synchronized void roll() {
+        trace(PayaraLogHandler.class, "roll()");
+        final PrivilegedAction<Void> action = () -> {
+            this.logFileManager.roll();
+            updateRollSchedule();
+            return null;
+        };
+        doPrivileged(action);
+    }
+
+
+    /**
      * First stops all dependencies using this handler (changes status to
      * {@link PayaraLogHandlerStatus#OFF}, then closes all resources managed
      * by this handler and finally closes the output stream.
@@ -253,19 +276,17 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
         this.status = PayaraLogHandlerStatus.OFF;
         stopPump();
         try {
-            if (PayaraLogManager.isPayaraLogManager()) {
-                PayaraLogManager.getLogManager().resetStandardOutputs();
-            }
-            if (this.stdoutOutputStream != null) {
-                this.stdoutOutputStream.close();
-                this.stdoutOutputStream = null;
+            LoggingSystemEnvironment.resetStandardOutputs();
+            if (this.stdoutStream != null) {
+                this.stdoutStream.close();
+                this.stdoutStream = null;
             }
 
-            if (this.stderrOutputStream != null) {
-                this.stderrOutputStream.close();
-                this.stderrOutputStream = null;
+            if (this.stderrStream != null) {
+                this.stderrStream.close();
+                this.stderrStream = null;
             }
-        } catch (IOException e) {
+        } catch (final RuntimeException e) {
             error(PayaraLogHandler.class, "close partially failed!", e);
         }
 
@@ -319,8 +340,8 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
         // something would break and we would redirect STDOUT+STDERR
         if (this.configuration.isLogStandardStreams()) {
             initStandardStreamsLogging();
-        } else if (PayaraLogManager.isPayaraLogManager()) {
-            PayaraLogManager.getLogManager().resetStandardOutputs();
+        } else {
+            LoggingSystemEnvironment.resetStandardOutputs();
         }
 
         this.pump = new LoggingPump("PayaraLogHandler log pump");
@@ -350,28 +371,13 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     }
 
 
-    // FIXME move to a class responsible for maintaining stderr/stdout
     private void initStandardStreamsLogging() {
         trace(PayaraLogHandler.class, "initStandardStreamsLogging()");
-        this.stdoutOutputStream = new LoggingOutputStream(STDOUT_LOGGER, INFO, 5000);
-        LoggingOutputStream.LoggingPrintStream pout = stdoutOutputStream.new LoggingPrintStream(stdoutOutputStream);
-        System.setOut(pout);
-
-        // FIXME: capacity not configurable
-        this.stderrOutputStream = new LoggingOutputStream(STDERR_LOGGER, Level.SEVERE, 1000);
-        LoggingOutputStream.LoggingPrintStream perr = stderrOutputStream.new LoggingPrintStream(stderrOutputStream);
-        System.setErr(perr);
-    }
-
-
-    public synchronized void roll() {
-        trace(PayaraLogHandler.class, "roll()");
-        final PrivilegedAction<Void> action = () -> {
-            this.logFileManager.roll();
-            updateRollSchedule();
-            return null;
-        };
-        doPrivileged(action);
+        // FIXME: capacity should be configurable
+        this.stdoutStream = new LoggingPrintStream(STDOUT_LOGGER, INFO, 5000);
+        this.stderrStream = new LoggingPrintStream(STDERR_LOGGER, SEVERE, 1000);
+        System.setOut(this.stdoutStream);
+        System.setErr(this.stderrStream);
     }
 
 
@@ -414,7 +420,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
     private final class LoggingPump extends Thread {
 
-        private LoggingPump(String threadName) {
+        private LoggingPump(final String threadName) {
             super(threadName);
             setDaemon(true);
             setPriority(Thread.MAX_PRIORITY);
@@ -427,7 +433,7 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
             while (configuration.isLogToFile() && isReady()) {
                 try {
                     publishBatchFromBuffer();
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     // Continue the loop without exiting
                     // Something is broken, but we cannot log it
                 }
@@ -460,5 +466,4 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
         ACCEPTING,
         ON
     }
-
 }

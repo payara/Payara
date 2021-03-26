@@ -38,9 +38,9 @@
  *  holder.
  */
 
-package fish.payara.logging.jul;
+package fish.payara.logging.jul.cfg;
 
-import fish.payara.logging.jul.internal.PayaraLoggingTracer;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -57,6 +57,11 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 /**
+ * This is a tool to help with parsing the logging.properties file.
+ * It respects JUL configuration standards, so ie. each formatter knows best how to configure itself,
+ * but still can use this helper to parse properties directly to objects instead of plain strings.
+ * Helper also supports custom error handlers.
+ *
  * @author David Matejcek
  */
 public class LoggingConfigurationHelper {
@@ -67,6 +72,8 @@ public class LoggingConfigurationHelper {
     public static final LoggingPropertyErrorHandler PRINT_TO_STDERR = (k, v, e) -> {
         PayaraLoggingTracer.error(LoggingConfigurationHelper.class, "Invalid value for the key: " + k + ": " + v, e);
     };
+
+    private static final Function<String, Character> STR_TO_CHAR = v -> v == null || v.isEmpty() ? null : v.charAt(0);
 
     private static final Function<String, Integer> STR_TO_POSITIVE_INT = v -> {
         final Integer value = Integer.valueOf(v);
@@ -128,9 +135,18 @@ public class LoggingConfigurationHelper {
     private final String prefix;
     private final LoggingPropertyErrorHandler errorHandler;
 
+    public LoggingConfigurationHelper() {
+        this((String) null, PRINT_TO_STDERR);
+    }
+
 
     public LoggingConfigurationHelper(final LoggingPropertyErrorHandler errorHandler) {
         this((String) null, errorHandler);
+    }
+
+
+    public LoggingConfigurationHelper(final Class<?> clazz) {
+        this(clazz.getName(), PRINT_TO_STDERR);
     }
 
 
@@ -139,6 +155,15 @@ public class LoggingConfigurationHelper {
     }
 
 
+    public LoggingConfigurationHelper(final String prefix) {
+        this(prefix, PRINT_TO_STDERR);
+    }
+
+
+    /**
+     * @param prefix Usually a canonical class name
+     * @param errorHandler
+     */
     public LoggingConfigurationHelper(final String prefix, final LoggingPropertyErrorHandler errorHandler) {
         this.manager = LogManager.getLogManager();
         this.prefix = prefix == null ? "" : prefix + ".";
@@ -150,6 +175,9 @@ public class LoggingConfigurationHelper {
         return parse(key, defaultValue, Function.identity());
     }
 
+    public Character getCharacter(final String key, final Character defaultValue) {
+        return parse(key, defaultValue, STR_TO_CHAR);
+    }
 
     public Integer getInteger(final String key, final Integer defaultValue) {
         return parse(key, defaultValue, Integer::valueOf);
@@ -240,8 +268,16 @@ public class LoggingConfigurationHelper {
     }
 
 
+    /**
+     * Allows custom error handling (ie. throwing a runtime exception or collecting errors)
+     */
     @FunctionalInterface
     public interface LoggingPropertyErrorHandler {
+        /**
+         * @param key the whole key used
+         * @param value found string value
+         * @param e exception thrown
+         */
         void handle(String key, Object value, Exception e);
     }
 }
