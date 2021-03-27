@@ -141,11 +141,7 @@
         <!-- With that we must have META-INF/beans.xml in src/test/resources -->
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-cdi2-se</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.weld.se</groupId>
-            <artifactId>weld-se-core</artifactId>
+            <artifactId>jersey-hk2</artifactId>
         </dependency>
     </dependencies>
 
