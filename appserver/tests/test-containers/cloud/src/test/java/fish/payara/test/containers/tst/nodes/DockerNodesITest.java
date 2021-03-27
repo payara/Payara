@@ -70,6 +70,8 @@ import javax.json.JsonValue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.slf4j.Logger;
@@ -98,6 +100,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author David Matejcek
  */
 @ExtendWith(DockerITestExtension.class)
+@DisabledOnOs(OS.WINDOWS)
 public class DockerNodesITest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DockerNodesITest.class);
