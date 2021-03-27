@@ -234,7 +234,7 @@ public class MiniXmlParser {
         String logFilename = null;
 
         try {
-            loggingConfig.initialize(configRef);
+            loggingConfig.setTarget(configRef);
             Map<String, String> map = loggingConfig.getLoggingProperties();
             String logFileContains = "${com.sun.aas.instanceName}";
             logFilename = map.get(LoggingPropertyNames.file);

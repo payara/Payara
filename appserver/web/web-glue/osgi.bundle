@@ -72,11 +72,12 @@
                         org.glassfish.web.deployment.util;version=${project.osgi.version}, \
                         org.glassfish.web.deployment.xml;version=${project.osgi.version}, \
                         org.glassfish.web.deployment.node.runtime.wls;version=${project.osgi.version} \
-                        
+
                         version=${project.osgi.version}
 
 Import-Package: \
                         com.sun.logging.enterprise.system.container.web, \
+                        fish.payara.logging.jul; resolution:=optional, \
                         *
 
 # This is required because WebContainer requires JavaEEUtils service which is provided by ejb-container.

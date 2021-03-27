@@ -38,7 +38,11 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation and/or affiliates]
+
 package com.sun.enterprise.admin.launcher;
+
+import fish.payara.logging.jul.PayaraLogManagerInitializer;
 
 import org.glassfish.api.admin.RuntimeType;
 
@@ -47,6 +51,13 @@ import org.glassfish.api.admin.RuntimeType;
  * @author bnevins
  */
 public class GFLauncherMain {
+
+    static {
+        // The PayaraLogManager must be set before the first usage of any JUL component,
+        // it cannot be done later.
+        PayaraLogManagerInitializer.tryToSetAsDefault();
+    }
+
 
     /**
      * JAVADOC IS PENDING FINAL API OF THE ARGS
@@ -58,8 +69,7 @@ public class GFLauncherMain {
             GFLauncher launcher = GFLauncherFactory.getInstance(RuntimeType.DAS);
             launcher.getInfo().addArgs(args);
             launcher.launch();
-        }
-        catch (GFLauncherException ex) {
+        } catch (GFLauncherException ex) {
             GFLauncherLogger.severe(GFLauncherLogger.LAUNCH_FAILURE, ex);
         }
     }

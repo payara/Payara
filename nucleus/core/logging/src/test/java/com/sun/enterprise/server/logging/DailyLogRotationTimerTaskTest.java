@@ -40,6 +40,8 @@
 
 package com.sun.enterprise.server.logging;
 
+import fish.payara.logging.jul.rotation.DailyLogRotationTimerTask;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

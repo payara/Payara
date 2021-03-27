@@ -106,7 +106,7 @@ public class LoggingHandlers {
     public static void changeLoggerLevels(HandlerContext handlerCtx) {
         String newLogLevel = (String) handlerCtx.getInputValue("newLogLevel");
         List obj = (List) handlerCtx.getInputValue("allRows");
-        List<Map> allRows = (List) obj;
+        List<Map> allRows = obj;
         if (GuiUtil.isEmpty(newLogLevel)){
             handlerCtx.setOutputValue("newList",  allRows);
             return;
@@ -140,7 +140,7 @@ public class LoggingHandlers {
                     if (loggerName.contains(":")) {
                         loggerName = loggerName.replace(":", "\\:");
                     }
-                    
+
                     sb.append(sep).append(loggerName).append("=").append(oneRow.get("level"));
                     sep=":";
                 }
@@ -161,7 +161,7 @@ public class LoggingHandlers {
      }
 
     public static void deleteLoggers(List<Map<String, Object>> allRows, String configName) {
-        ArrayList<String> newLoggers = new ArrayList<String>();
+        ArrayList<String> newLoggers = new ArrayList<>();
         HashMap attrs = new HashMap();
         attrs.put("target", configName);
         Map result = RestUtil.restRequest((String)GuiUtil.getSessionValue("REST_URL") + "/list-log-levels.json",
@@ -174,7 +174,7 @@ public class LoggingHandlers {
         StringBuilder sb = new StringBuilder();
         String sep = "";
         for (String logger : oldLoggers) {
-            if (!newLoggers.contains(logger)) {  
+            if (!newLoggers.contains(logger)) {
                 if (logger.contains(":")) {
                     logger = logger.replace(":", "\\:");
                 }

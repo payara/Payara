@@ -42,7 +42,7 @@ EXAMPLES
                <${com.sun.aas.instanceRoot}/logs/server.log>
                com.sun.enterprise.server.logging.GFFileHandler.flushFrequency <1>
                com.sun.enterprise.server.logging.GFFileHandler.formatter \
-               <com.sun.enterprise.server.logging.UniformLogFormatter>
+               <fish.payara.logging.jul.formatter.UniformLogFormatter>
                com.sun.enterprise.server.logging.GFFileHandler.logtoConsole <false>
                com.sun.enterprise.server.logging.GFFileHandler.maxHistoryFiles <0>
                com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours <0>
@@ -51,7 +51,7 @@ EXAMPLES
                com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging <false>
                handlers <java.util.logging.ConsoleHandler>
                java.util.logging.ConsoleHandler.formatter \
-               <com.sun.enterprise.server.logging.UniformLogFormatter>
+               <fish.payara.logging.jul.formatter.UniformLogFormatter>
                java.util.logging.FileHandler.count <1>
                java.util.logging.FileHandler.formatter <java.util.logging.XMLFormatter>
                java.util.logging.FileHandler.limit <50000>

@@ -40,6 +40,10 @@
 package com.sun.enterprise.server.logging;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.enterprise.server.logging.test.GlobalStatus;
+
+import fish.payara.logging.jul.PayaraLogHandler;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -73,8 +77,10 @@ import static org.junit.Assert.assertNull;
 @RunWith(MockitoJUnitRunner.class)
 public class LoggingPropertiesTest {
 
+    private static final String LOG_STANDARD_STREAMS_PROPERTY = PayaraLogHandler.class.getName()
+        + ".logStandardStreams";
+
     private final Properties props = new Properties();
-    private static final String LOG_STANDARD_STREAMS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logStandardStreams";
     private Map<String, String> properties;
 
     @Rule
@@ -87,9 +93,11 @@ public class LoggingPropertiesTest {
 
     @Before
     public void initialise() throws IOException, NoSuchFieldException {
+        GlobalStatus.initialize();
         loggingFile = tempLoggingfolder.newFile("logging.properties");
         loggingConfigImpl = new LoggingConfigImpl(loggingFile.getParentFile(), loggingFile.getParentFile());
-        FieldSetter.setField(loggingConfigImpl, loggingConfigImpl.getClass().getDeclaredField("fileMonitoring"), fileMonitoring);
+        FieldSetter.setField(loggingConfigImpl, loggingConfigImpl.getClass().getDeclaredField("fileMonitoring"),
+            fileMonitoring);
     }
 
     @Test
@@ -111,7 +119,7 @@ public class LoggingPropertiesTest {
         properties = new HashMap<>();
         properties.put("test", "properties");
         loggingConfigImpl.setLoggingProperties(properties);
-        loggingConfigImpl.deleteLoggingProperties(properties);
+        loggingConfigImpl.deleteLoggingProperties(properties.keySet());
         loadProperties();
 
         assertNull("Property couldn't be deleted", props.get("test"));

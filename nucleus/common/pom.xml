@@ -51,18 +51,19 @@
     <groupId>fish.payara.server.internal.common</groupId>
     <artifactId>nucleus-common</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Nucleus Common modules</name>  
+    <name>GlassFish Nucleus Common modules</name>
     <modules>
+        <module>jul-extensions</module>
+        <module>common-util</module>
         <module>simple-glassfish-api</module>
-    	<module>internal-api</module>
-    	<module>common-util</module>
-    	<module>glassfish-api</module>
+        <module>internal-api</module>
+        <module>glassfish-api</module>
         <module>mbeanserver</module>
-    	<module>scattered-archive-api</module>
-    	<module>amx-core</module>
-    	<module>common-util-l10n</module>
-    	<module>internal-api-l10n</module>
-    	<module>glassfish-api-l10n</module>
-    	<module>mbeanserver-l10n</module>
+        <module>scattered-archive-api</module>
+        <module>amx-core</module>
+        <module>common-util-l10n</module>
+        <module>internal-api-l10n</module>
+        <module>glassfish-api-l10n</module>
+        <module>mbeanserver-l10n</module>
     </modules>
 </project>

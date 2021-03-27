@@ -39,12 +39,10 @@
  */
 package com.sun.common.util.logging;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -58,7 +56,7 @@ import org.jvnet.hk2.annotations.Service;
 @Singleton
 public class LoggingConfigFactory implements Factory<LoggingConfig> {
 
-    private static final Logger LOGGER = Logger.getLogger(LoggingConfigFactory.class.getName());
+    private static final Logger LOG = Logger.getLogger(LoggingConfigFactory.class.getName());
 
     @Inject
     private ServiceLocator locator;
@@ -84,6 +82,7 @@ public class LoggingConfigFactory implements Factory<LoggingConfig> {
     }
 
     public LoggingConfig provide(String target) {
+        LOG.fine(() -> String.format("provide(target=%s)", target));
         // Try and fetch from the map
         LoggingConfig config = configs.get(target);
         if (config != null) {
@@ -92,12 +91,7 @@ public class LoggingConfigFactory implements Factory<LoggingConfig> {
 
         // Create a new one
         config = locator.createAndInitialize(LoggingConfigImpl.class);
-        try {
-            config.initialize(target);
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "An error occurred while reading from the logs for the target '" + target + "'.", ex);
-            return null;
-        }
+        config.setTarget(target);
         configs.put(target, config);
         return config;
     }

@@ -40,7 +40,6 @@
 
 package org.glassfish.admingui.common.test;
 
-import java.util.List;
 import java.util.Map;
 
 import org.glassfish.admingui.common.util.RestResponse;

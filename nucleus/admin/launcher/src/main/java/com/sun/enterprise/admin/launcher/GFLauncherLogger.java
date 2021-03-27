@@ -42,14 +42,20 @@
 
 package com.sun.enterprise.admin.launcher;
 
-import com.sun.enterprise.server.logging.ODLLogFormatter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
+import fish.payara.logging.jul.formatter.ODLLogFormatter;
+
 import java.io.IOException;
-import java.util.logging.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  * A POL (plain old LOGGER).
@@ -57,8 +63,8 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  * @author bnevins
  */
 public class GFLauncherLogger {
-    
-        private GFLauncherLogger() {
+
+    private GFLauncherLogger() {
     }
     // The resourceBundle name to be used for the module's log messages
     @LogMessagesResourceBundle
@@ -68,7 +74,7 @@ public class GFLauncherLogger {
     private static final Logger LOGGER;
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(GFLauncherLogger.class);
     private static FileHandler logfileHandler;
-    
+
     // use LocalStrings for < INFO level...
 
     public static void warning(String msg, Object... objs) {
@@ -84,8 +90,9 @@ public class GFLauncherLogger {
     }
 
     public static void fine(String msg, Object... objs) {
-        if(LOGGER.isLoggable(Level.FINE))
+        if(LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(STRINGS.get(msg, objs));
+        }
     }
 
     /////////////////////////  non-public below  //////////////////////////////
@@ -188,7 +195,7 @@ public class GFLauncherLogger {
     action = "NA",
     level = "INFO")
     public static final String COMMAND_LINE = "NCLS-GFLAUNCHER-00005";
-    
+
     @LogMessageInfo(
             message =
     "Using Payara default value \"{1}\" for JVM option: {0}",

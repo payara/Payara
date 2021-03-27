@@ -40,31 +40,34 @@
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
-import com.sun.enterprise.glassfish.bootstrap.MainHelper;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
-import org.glassfish.embeddable.BootstrapProperties;
-import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.GlassFishRuntime;
-import org.glassfish.embeddable.spi.RuntimeBuilder;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.launch.Framework;
+import com.sun.enterprise.glassfish.bootstrap.LogFacade;
+import com.sun.enterprise.glassfish.bootstrap.MainHelper;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.embeddable.BootstrapProperties;
+import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.embeddable.spi.RuntimeBuilder;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.launch.Framework;
+
 import static com.sun.enterprise.glassfish.bootstrap.Constants.HK2_CACHE_DIR;
 import static com.sun.enterprise.glassfish.bootstrap.Constants.INHABITANTS_CACHE;
-import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.*;
+import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.BUNDLEIDS_FILENAME;
+import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.PROVISIONING_OPTIONS_FILENAME;
 import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.PROVISIONING_OPTIONS_PREFIX;
 import static org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN;
 import static org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT;
-
-import com.sun.enterprise.glassfish.bootstrap.LogFacade;
 
 /**
  * This RuntimeBuilder can only handle GlassFish_Platform of following types:
@@ -103,7 +106,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
 
     private Framework framework;
 
-    private Logger logger = LogFacade.BOOTSTRAP_LOGGER;
+    private final Logger logger = LogFacade.BOOTSTRAP_LOGGER;
 
     private Properties oldProvisioningOptions;
     private Properties newProvisioningOptions;
@@ -116,6 +119,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
      */
     public OSGiGlassFishRuntimeBuilder() {}
 
+    @Override
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         try {
             MainHelper.buildStartupContext(bsProps.getProperties());
@@ -171,6 +175,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         }
     }
 
+    @Override
     public boolean handles(BootstrapProperties bsProps) {
         // See GLASSFISH-16743 for the reason behind additional check
         final String builderName = bsProps.getProperty(Constants.BUILDER_NAME_PROPERTY);
@@ -199,10 +204,10 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
     }
 
     private GlassFishRuntime getGlassFishRuntime() throws GlassFishException {
-        final ServiceReference reference =
-                framework.getBundleContext().getServiceReference(GlassFishRuntime.class.getName());
+        final ServiceReference<GlassFishRuntime> reference = framework.getBundleContext()
+            .getServiceReference(GlassFishRuntime.class);
         if (reference != null) {
-            GlassFishRuntime embeddedGfr = (GlassFishRuntime) framework.getBundleContext().getService(reference);
+            GlassFishRuntime embeddedGfr = framework.getBundleContext().getService(reference);
             return new OSGiGlassFishRuntime(embeddedGfr, framework);
         }
         throw new GlassFishException("No GlassFishRuntime available");
@@ -217,7 +222,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
             File inhabitantsCache = new File(cacheDir, INHABITANTS_CACHE);
             if (inhabitantsCache.exists()) {
                 if (!inhabitantsCache.delete()) {
-                    throw new GlassFishException("cannot delete cache:" + 
+                    throw new GlassFishException("cannot delete cache:" +
                             inhabitantsCache.getAbsolutePath());
                 }
             }

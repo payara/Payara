@@ -43,6 +43,7 @@
 package com.sun.common.util.logging;
 
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -53,16 +54,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
 import javax.inject.Inject;
+
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Contract;
@@ -75,37 +80,41 @@ import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
  *
  * @author Naman Mehta
  */
-
 @Service
 @Contract
 public class LoggingConfigImpl implements LoggingConfig {
-  
-    static final String GF_FILE_HANDLER = "com.sun.enterprise.server.logging.GFFileHandler";
-    static final String PY_FILE_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
+
+    private static final String HANDLER_SERVER_LOG = "fish.payara.logging.jul.PayaraLogHandler";
+    private static final String HANDLER_NOTIFICATION_LOG = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
+
+    private static final Logger LOG = Logger.getLogger(LoggingConfigImpl.class.getName());
 
     protected static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
     static {
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logtoFile", "true");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".logtoFile", "true");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationOnDateChange", "false");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationTimelimitInMinutes", "0");
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".maxHistoryFiles", "0");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".compressOnRotation", "false");
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logStandardStreams", "true");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".logtoFile", "true");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".file", "${com.sun.aas.instanceRoot}/logs/server.log");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".rotationLimitInBytes", "2000000");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".logStandardStreams", "true");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_SERVER_LOG + ".formatter", "fish.payara.logging.jul.formatter.ODLLogFormatter");
+
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".logtoFile", "true");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".rotationOnDateChange", "false");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".rotationTimelimitInMinutes", "0");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".rotationLimitInBytes", "2000000");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".maxHistoryFiles", "0");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".compressOnRotation", "false");
+        DEFAULT_LOG_PROPERTIES.put(HANDLER_NOTIFICATION_LOG + ".formatter", "fish.payara.logging.jul.formatter.ODLLogFormatter");
     }
 
     @Inject
     private FileMonitoring fileMonitoring;
 
-    private String target;
     private final Properties props = new Properties();
     private final String loggingPropertiesName;
     private final File loggingConfigDir;
     private final File defaultLogFile;
+    private String target;
 
     @Inject
     public LoggingConfigImpl(ServerEnvironmentImpl env) {
@@ -113,14 +122,15 @@ public class LoggingConfigImpl implements LoggingConfig {
     }
 
     public LoggingConfigImpl(File defaultConfigDir, File configDir) {
-        loggingConfigDir = configDir;
-        loggingPropertiesName = ServerEnvironmentImpl.kLoggingPropertiesFileName;
-        this.defaultLogFile = new File(defaultConfigDir,
-                ServerEnvironmentImpl.kDefaultLoggingPropertiesFileName);
+        LOG.config(
+            () -> String.format("LoggingConfigImpl(defaultConfigDir=%s, configDir=%s)", defaultConfigDir, configDir));
+        this.loggingConfigDir = configDir;
+        this.loggingPropertiesName = ServerEnvironmentImpl.kLoggingPropertiesFileName;
+        this.defaultLogFile = new File(defaultConfigDir, ServerEnvironmentImpl.kDefaultLoggingPropertiesFileName);
     }
 
     @Override
-    public void initialize(String target) throws IOException {
+    public void setTarget(String target) {
         this.target = target;
     }
 
@@ -157,17 +167,22 @@ public class LoggingConfigImpl implements LoggingConfig {
         return new FileInputStream(defaultLogFile);
     }
 
-    private void closePropFile() throws IOException {
+    private void rewritePropertiesFileAndNotifyMonitoring() throws IOException {
+        LOG.info("rewritePropertiesFileAndNotifyMonitoring");
         File file = getLoggingPropertiesFile();
         File parentFile = file.getParentFile();
         if (!parentFile.exists() && !parentFile.mkdirs()) {
-            throw new IOException();
+            throw new IOException(
+                "Directory '" + parentFile + "' does not exist, cannot create logging.properties file!");
         }
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(file))) {
-            props.store(os, "GlassFish logging.properties list");
-            os.flush();
-            fileMonitoring.fileModified(file);
+            try {
+                new SortedProperties(props).store(os, "GlassFish logging.properties list");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+        fileMonitoring.fileModified(file);
     }
 
     private void setWebLoggers(String value) {
@@ -182,18 +197,21 @@ public class LoggingConfigImpl implements LoggingConfig {
     public synchronized String setLoggingProperty(String propertyName, String propertyValue) throws IOException {
         loadLoggingProperties();
         // update the property
-        if (propertyValue == null) return null;
+        if (propertyValue == null) {
+            return null;
+        }
         // may need to map the domain.xml name to the new name in logging.properties file
         String key = LoggingXMLNames.xmltoPropsMap.get(propertyName);
         if (key == null) {
             key = propertyName;
         }
         String property = (String) props.setProperty(key, propertyValue);
+        // FIXME: remove. No magical surprises, force user to use script or documentation.
         if (propertyName.contains("javax.enterprise.system.container.web")) {
             setWebLoggers(propertyValue);
         }
 
-        closePropFile();
+        rewritePropertiesFileAndNotifyMonitoring();
         return property;
     }
 
@@ -202,14 +220,16 @@ public class LoggingConfigImpl implements LoggingConfig {
         loadLoggingProperties();
         // need to map the name given to the new name in logging.properties file
         Map<String, String> m = getMap(properties);
-        closePropFile();
+        rewritePropertiesFileAndNotifyMonitoring();
         return m;
     }
 
     private Map<String, String> getMap(Map<String, String> properties) {
         Map<String, String> m = new HashMap<>();
         for (Map.Entry<String, String> e : properties.entrySet()) {
-            if (e.getValue() == null) continue;
+            if (e.getValue() == null) {
+                continue;
+            }
             String key = LoggingXMLNames.xmltoPropsMap.get(e.getKey());
             if (key == null) {
                 key = e.getKey();
@@ -229,26 +249,14 @@ public class LoggingConfigImpl implements LoggingConfig {
         return getLoggingProperties().get(propertyName);
     }
 
-    /* Return a Map of all the properties and corresponding values in the logging.properties file.
-      * @throws  IOException
-      */
 
-    @Override
-    public synchronized Map<String, String> getLoggingProperties() throws IOException {
-        return getLoggingProperties(true);
-    }
-
-    /**
-     * @param usePlaceholderReplacement - true for placeholder replacement, false returns original property value
-     * @return a Map of all the properties and corresponding values in the logging.properties file.
-     * @throws IOException 
-     */
     @Override
     public synchronized Map<String, String> getLoggingProperties(boolean usePlaceholderReplacement) throws IOException {
+        LOG.finest(() -> String.format("getLoggingProperties(usePlaceholderReplacement=%s)", usePlaceholderReplacement));
         loadLoggingProperties();
         Enumeration<?> e = props.propertyNames();
         Map<String, String> m = getMap(e, usePlaceholderReplacement);
-        return checkForLoggingProperties(m);
+        return setMissingDefaults(m);
     }
 
     private Map<String, String> getMap(Enumeration<?> e, boolean usePlaceholderReplacement) {
@@ -259,54 +267,46 @@ public class LoggingConfigImpl implements LoggingConfig {
             if (LoggingXMLNames.xmltoPropsMap.get(key) != null) {
                 key = LoggingXMLNames.xmltoPropsMap.get(key);
             }
-            String value = usePlaceholderReplacement ? new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePlaceholder(props.getProperty(key)) : props.getProperty(key);
+            String value = usePlaceholderReplacement
+                ? new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX)
+                    .replacePlaceholder(props.getProperty(key))
+                : props.getProperty(key);
             m.put(key, value);
         }
         return m;
     }
 
-    public synchronized Map<String, String> checkForLoggingProperties(Map<String, String> loggingProperties) throws IOException {
+    @Override
+    public synchronized Map<String, String> deleteLoggingProperties(final Collection<String> properties)
+        throws IOException {
+        LOG.log(Level.INFO, "deleteLoggingProperties(properties=%s)", properties);
+        loadLoggingProperties();
+        remove(properties);
+        rewritePropertiesFileAndNotifyMonitoring();
+        return setMissingDefaults(getLoggingProperties());
+    }
 
+    private void remove(final Collection<String> keys) {
+        final Consumer<String> toRealKeyAndDelete = k -> props.remove(xmltoPropsMap.getOrDefault(k, k));
+        keys.stream().forEach(toRealKeyAndDelete);
+    }
+
+
+    private Map<String, String> setMissingDefaults(Map<String, String> loggingProperties) throws IOException {
         for (Entry<String, String> entry : DEFAULT_LOG_PROPERTIES.entrySet()) {
             if (!loggingProperties.containsKey(entry.getKey())) {
                 loggingProperties.put(entry.getKey(), entry.getValue());
-                setLoggingProperty(entry.getKey(), entry.getValue());
             }
         }
-
         return loggingProperties;
     }
 
-    @Override
-    public synchronized Map<String, String> deleteLoggingProperties(Map<String, String> properties) throws IOException {
-        loadLoggingProperties();
-        // need to map the name given to the new name in logging.properties file
-        remove(properties);
-        closePropFile();
-        checkForLoggingProperties(getLoggingProperties());
-        return properties;
-    }
 
-    private void remove(Map<String, String> properties) {
-        for (Map.Entry<String, String> e : properties.entrySet()) {
-            String key = LoggingXMLNames.xmltoPropsMap.get(e.getKey());
-            if (key == null) {
-                key = e.getKey();
-            }
-            if (key.contains("\\:")) {
-                key = key.replace("\\:", ":");
-            }
-            props.remove(key);
-        }
-    }
-
-    /*
-      * Returns the zip File Name to create for collection log files
-      *
-      * @param sourceDir Directory underneath zip file should be created.
-      *
-      */
-
+    /**
+     * Returns the zip File Name to create for collection log files
+     *
+     * @param sourceDir Directory underneath zip file should be created.
+     */
     private String getZipFileName(String sourceDir) {
 
         final String DATE_FORMAT_NOW = "yyyy-MM-dd_HH-mm-ss";
@@ -336,13 +336,6 @@ public class LoggingConfigImpl implements LoggingConfig {
         return sourceDir + File.separator + fileName + "-" + currentTime + ".zip";
     }
 
-    /*
-      * Creating zip file for given log files
-      *
-      * @param sourceDir Source directory from which needs to create zip
-      *
-      * @throws  IOException
-      */
     @Override
     public String createZipFile(String sourceDir) throws IOException {
         String zipFile = getZipFileName(sourceDir);
@@ -442,6 +435,7 @@ public class LoggingConfigImpl implements LoggingConfig {
       */
     @Override
     public synchronized String getLoggingFileDetails() throws IOException {
+        LOG.finest("getLoggingFileDetails()");
         loadLoggingProperties();
 
         @SuppressWarnings("unchecked")

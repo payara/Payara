@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -162,7 +162,6 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.security.web.GlassFishSingleSignOn;
-import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.admin.report.PlainTextActionReporter;
 import com.sun.enterprise.v3.services.impl.GrizzlyProxy;
@@ -173,6 +172,10 @@ import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
+
+import fish.payara.logging.jul.PayaraLogHandler;
+import fish.payara.logging.jul.PayaraLogManager;
+import fish.payara.logging.jul.PayaraLogger;
 
 /**
  * Standard implementation of a virtual server (aka virtual host) in the Payara Server.
@@ -895,6 +898,8 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
      * @param logServiceFile the file used for the log service.
      */
     synchronized void setLogFile(String logFile, String logLevel, String logServiceFile) {
+        _logger.log(Level.CONFIG, "setLogFile(logFile={0}, logLevel={1}, logServiceFile={2})",
+            new Object[] {logFile, logLevel, logServiceFile});
 
         /*
          * Configure separate logger for this virtual server only if 'log-file' attribute of this <virtual-server> and 'file'
@@ -939,7 +944,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             }
             newLogger = LogManager.getLogManager().getLogger(lname);
             if (newLogger == null) {
-                newLogger = new Logger(lname, null) {
+                newLogger = new PayaraLogger(lname) {
                     // set thread id, see LogDomains.getLogger method
                     @Override
                     public void log(LogRecord record) {
@@ -990,9 +995,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                     }
                 };
 
-                synchronized (Logger.class) {
-                    LogManager.getLogManager().addLogger(newLogger);
-                }
+                LogManager.getLogManager().addLogger(newLogger);
             }
 
             // remove old handlers if necessary
@@ -1003,13 +1006,15 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 }
             }
 
-            // add handlers from root that is not GFFileHandler
-            Logger rootLogger = Logger.global.getParent();
+            // add all handlers from root which are not PayaraLogHandlers
+            LogManager logManager = LogManager.getLogManager();
+            Logger rootLogger = logManager.getLogger(PayaraLogManager.ROOT_LOGGER_NAME);
+            _logger.finest(() -> "rootLogger=" + rootLogger);
             if (rootLogger != null) {
                 Handler[] rootHandlers = rootLogger.getHandlers();
                 if (rootHandlers != null) {
                     for (Handler h : rootHandlers) {
-                        if (!(h instanceof GFFileHandler)) {
+                        if (!(h instanceof PayaraLogHandler)) {
                             newLogger.addHandler(h);
                         }
                     }

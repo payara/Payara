@@ -42,14 +42,25 @@
 package com.sun.enterprise.server.logging.logviewer.backend;
 
 import com.sun.enterprise.server.logging.LogFacade;
-import com.sun.enterprise.server.logging.LogFormatHelper;
 import com.sun.enterprise.server.logging.parser.LogParser;
 import com.sun.enterprise.server.logging.parser.LogParserFactory;
 import com.sun.enterprise.server.logging.parser.LogParserListener;
 import com.sun.enterprise.server.logging.parser.ParsedLogRecord;
 
-import java.io.*;
-import java.util.*;
+import fish.payara.logging.jul.LogFormatHelper;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 
@@ -245,9 +256,11 @@ public class LogFile implements java.io.Serializable {
             if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
                 LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error reading from file: " + getLogFileName(), ex);
             }
-            if (file != null) try { file.close(); } catch (Exception ex2) {
-                if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
-                    LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error closing file: " + getLogFileName(), ex2);
+            if (file != null) {
+                try { file.close(); } catch (Exception ex2) {
+                    if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
+                        LogFacade.LOGGING_LOGGER.log(Level.FINE, "Error closing file: " + getLogFileName(), ex2);
+                    }
                 }
             }
         }
@@ -421,6 +434,7 @@ public class LogFile implements java.io.Serializable {
             this.recordNumber = recordNumber;
         }
 
+        @Override
         public String toString() {
             return getRecordNumber() + ":" + getLoggedMessage();
         }

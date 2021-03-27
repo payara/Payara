@@ -38,13 +38,13 @@
  * holder.
  */
 
+// Portions Copyright [2020] [Payara Foundation and/or affiliates]
 package com.sun.enterprise.glassfish.bootstrap;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ import java.util.regex.Pattern;
  * @author Kohsuke Kawaguchi
  */
 public final class ClassPathBuilder {
-    private final List<URL> urls = new ArrayList<URL>();
+    private final List<URL> urls = new ArrayList<>();
     private final ClassLoader parent;
 
     public ClassPathBuilder(ClassLoader parent) {
@@ -68,8 +68,9 @@ public final class ClassPathBuilder {
      * Adds a single jar.
      */
     public void addJar(File jar) throws IOException {
-        if(!jar.exists())
+        if(!jar.exists()) {
             throw new IOException("No such file: "+jar);
+        }
         urls.add(jar.toURI().toURL());
     }
 
@@ -89,21 +90,27 @@ public final class ClassPathBuilder {
      *      List of jars to be excluded
      */
     public void addJarFolder(File folder, final String... excludes) throws IOException {
-        if(!folder.isDirectory())
+        if(!folder.isDirectory()) {
             throw new IOException("Not a directory "+folder);
+        }
 
         File[] children = folder.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 for (String name : excludes) {
                     if(pathname.getName().equals(name))
+                     {
                         return false;   // excluded
+                    }
                 }
                 return pathname.getPath().endsWith(".jar");
             }
         });
 
         if(children==null)
+         {
             return; // in a very rare race condition, the directory can disappear after we checked.
+        }
 
         for (File child : children) {
             addJar(child);
@@ -117,7 +124,9 @@ public final class ClassPathBuilder {
     public void addGlob(File folder, String... masks) throws IOException {
         StringBuilder regexp = new StringBuilder();
         for (String mask : masks) {
-            if(regexp.length()>0)   regexp.append('|');
+            if(regexp.length()>0) {
+                regexp.append('|');
+            }
             regexp.append("(\\Q");
             regexp.append(mask.replace("?","\\E.\\Q").replace("*","\\E.*\\Q"));
             regexp.append("\\E)");
@@ -125,10 +134,13 @@ public final class ClassPathBuilder {
         Pattern p = Pattern.compile(regexp.toString());
 
         File[] children = folder.listFiles();
-        if(children==null)  return;
+        if(children==null) {
+            return;
+        }
         for (File child : children) {
-            if(p.matcher(child.getName()).matches())
+            if(p.matcher(child.getName()).matches()) {
                 addJar(child);
+            }
         }
     }
 
@@ -136,7 +148,7 @@ public final class ClassPathBuilder {
         return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
             @Override
             public ClassLoader run() {
-                return new URLClassLoader(urls.toArray(new URL[urls.size()]),parent);
+                return new GlassfishUrlClassLoader(urls.toArray(new URL[urls.size()]),parent);
             }
         });
     }

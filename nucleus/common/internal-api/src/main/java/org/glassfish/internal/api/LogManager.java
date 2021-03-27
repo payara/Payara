@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016-2020] [Payara Foundation]
 
 package org.glassfish.internal.api;
 
@@ -48,20 +48,31 @@ import java.util.Map;
 import java.util.logging.Handler;
 import org.jvnet.hk2.annotations.Contract;
 
-/**
- */@Contract
+@Contract
 public interface LogManager {
-    Map<String, String> getLoggingProperties() throws IOException;
-
-    File getLoggingFile() throws IOException;
 
     /**
-     * Adds a new handler to the root logger
+     * @return logging.properties unresolved content
+     * @throws IOException
+     */
+    Map<String, String> getLoggingProperties() throws IOException;
+
+
+    /**
+     * @return logging.properties absolute path.
+     * @throws IOException
+     */
+    File getLoggingPropertiesFile() throws IOException;
+
+
+    /**
+     * Adds a new handler to the root logger. If the handler of the same class is already
+     * registered, this new handler will be ignored.
      *
      * @param handler handler to be iadded.
      */
     void addHandler(Handler handler);
-    
+
     PrintStream getErrStream();
     PrintStream getOutStream();
 }

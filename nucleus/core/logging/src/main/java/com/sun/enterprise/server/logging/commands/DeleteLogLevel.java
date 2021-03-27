@@ -97,6 +97,7 @@ public class DeleteLogLevel implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteLogLevel.class);
 
+    @Override
     public void execute(AdminCommandContext context) {
 
 
@@ -109,7 +110,7 @@ public class DeleteLogLevel implements AdminCommand {
         boolean success = false;
         String targetConfigName = "";
 
-        Map<String, String> m = new HashMap<String, String>();
+        Map<String, String> m = new HashMap<>();
         try {
 
             String loggerNames[] = properties.split("(?<!\\\\):");
@@ -155,14 +156,14 @@ public class DeleteLogLevel implements AdminCommand {
             }
 
             if (isCluster || isInstance) {
-                loggingConfigFactory.provide(targetConfigName).deleteLoggingProperties(m);
+                loggingConfigFactory.provide(targetConfigName).deleteLoggingProperties(m.keySet());
                 success = true;
             } else if (isDas) {
-                loggingConfigFactory.provide().deleteLoggingProperties(m);
+                loggingConfigFactory.provide().deleteLoggingProperties(m.keySet());
                 success = true;
             } else if (isConfig) {
                 // This loop is for the config which is not part of any target
-                loggingConfigFactory.provide(targetConfigName).deleteLoggingProperties(m);
+                loggingConfigFactory.provide(targetConfigName).deleteLoggingProperties(m.keySet());
                 success = true;
             } else {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);

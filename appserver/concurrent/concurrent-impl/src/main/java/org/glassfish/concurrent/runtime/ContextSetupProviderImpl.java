@@ -300,7 +300,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                         transactionManager.rollback();
                     }
                 } catch (Exception ex) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, ex.toString());
+                    Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, ex.toString(), ex);
                 }
             }
           transactionManager.clearThreadTx();
