@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,19 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import com.sun.enterprise.util.OS;
 import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.AssumptionViolatedException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -239,7 +242,12 @@ public class DirConfigSourceTest {
         
         for (int i = 0; i < propFile.chars().filter(ch -> ch == '.').count(); i++) {
             // when
-            String newPath = propFile.replaceFirst("\\.", File.separator);
+            String newPath = "";
+            if (OS.isWindows()) {
+                newPath = propFile.replaceFirst("\\.", "\\\\");
+            } else {
+                newPath = propFile.replaceFirst("\\.", File.separator);
+            }
             
             // then
             assertTrue(DirConfigSource.isLongestMatchForPath(testDirectory, subpath(propFile), subpath(newPath)));
@@ -397,7 +405,14 @@ public class DirConfigSourceTest {
         for (Map.Entry<Path, String> ex : examples.entrySet()) {
             writeFile(ex.getKey(), "foobar");
         }
-        Files.createSymbolicLink(subpath( "init-watcher", "foo.hello"), subpath("init-watcher", ".foo", "ex"));
+
+        try {
+            Files.createSymbolicLink(subpath( "init-watcher", "foo.hello"), subpath("init-watcher", ".foo", "ex"));
+        } catch (FileSystemException fileSystemException) {
+            if (OS.isWindows() && fileSystemException.getReason().contains("A required privilege is not held by the client")) {
+                throw new AssumptionViolatedException("Permissions to create Symbolic Links not granted", fileSystemException);
+            }
+        }
         
         // when
         DirConfigSource.DirPropertyWatcher watcher = source.createWatcher(subpath("init-watcher"));
@@ -414,7 +429,15 @@ public class DirConfigSourceTest {
         // given
         writeFile(subpath("watcher-files", "foobar"), "test");
         writeFile(subpath("watcher-files", ".hidden", "foobar"), "hidden");
-        Files.createSymbolicLink(subpath("watcher-files", "revealed"), subpath("watcher-files", ".hidden", "foobar"));
+
+        try {
+            Files.createSymbolicLink(subpath("watcher-files", "revealed"), subpath("watcher-files", ".hidden", "foobar"));
+        } catch (FileSystemException fileSystemException) {
+            if (OS.isWindows() && fileSystemException.getReason().contains("A required privilege is not held by the client")) {
+                throw new AssumptionViolatedException("Permissions to create Symbolic Links not granted", fileSystemException);
+            }
+        }
+
         
         DirConfigSource.DirPropertyWatcher watcher = source.createWatcher(subpath("watcher-files"));
         exec.scheduleWithFixedDelay(watcher, 0, 10, TimeUnit.MILLISECONDS);
