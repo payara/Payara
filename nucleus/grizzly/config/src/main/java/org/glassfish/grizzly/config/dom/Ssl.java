@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package org.glassfish.grizzly.config.dom;
 
@@ -62,6 +62,7 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     boolean TLS12_ENABLED = true;
     boolean TLS13_ENABLED = false;
     boolean TLS_ROLLBACK_ENABLED = true;
+    boolean HSTS_ENABLED = true;
     boolean RENEGOTIATE_ON_CLIENT_AUTH_WANT = true;
     int MAX_CERT_LENGTH = 5;
     int DEFAULT_SSL_INACTIVITY_TIMEOUT = 30;
@@ -236,6 +237,13 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     String getTlsRollbackEnabled();
 
     void setTlsRollbackEnabled(String value);
+    
+    /**
+     * Determines whether Strict Transport Security is set
+     */
+    @Attribute(defaultValue = "" + HSTS_ENABLED, dataType = Boolean.class)
+    String getHstsEnabled();
+    void setHstsEnabled(String value);
 
     @Attribute
     String getTrustAlgorithm();

@@ -88,6 +88,10 @@
      <sun:property id="TLSProp13"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.tlsLabel13}" helpText="$resource{i18n.ssl.tlsLabel13Help}" rendered="#{pageSession.showTLS13Prop}">
         <sun:checkbox id="TLS13" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['tls13Enabled']}" selectedValue="true"/>
      </sun:property>
+     
+     <sun:property id="HSTSProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.hstsLabel}" helpText="$resource{i18n.ssl.hstsLabelHelp}">
+        <sun:checkbox id="HSTS" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['hstsEnabled']}" selectedValue="true"/>
+     </sun:property>
 
      <sun:property id="ClientAuthProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.clientAuthLabel}" helpText="$resource{i18n.ssl.clientAuthHelp}" >
         <sun:checkbox id="ClientAuth" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['clientAuthEnabled']}" selectedValue="true" />

@@ -38,7 +38,7 @@
  * holder.
  * 
  * 
- * Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates] 
  */
 package org.glassfish.grizzly.config;
 
@@ -505,7 +505,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         final Filter addedSSLFilter = configureSsl(
                                 habitat, getSsl(subProtocol),
                                 subProtocolFilterChainBuilder);
-                        
+                        final Filter hstsFilter = configureHSTSSupport(habitat, getSsl(subProtocol), filterChainBuilder);
                         subProtocolFilterChainBuilder.add(extraSslPUFilter);
                         final FilterChainBuilder extraSslPUFilterChainBuilder =
                             extraSslPUFilter.getPUFilterChainBuilder();
@@ -514,11 +514,13 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                             // temporary add SSL Filter, so subprotocol
                             // will see it
                             extraSslPUFilterChainBuilder.add(addedSSLFilter);
+                            extraSslPUFilterChainBuilder.add(hstsFilter);
                             configureSubProtocol(habitat, networkListener,
                                     subProtocol, extraSslPUFilterChainBuilder);
                         } finally {
                             // remove SSL Filter
                             extraSslPUFilterChainBuilder.remove(addedSSLFilter);
+                            extraSslPUFilterChainBuilder.remove(hstsFilter);
                         }
                         
                         extraSslPUFilter.register(protocolFinder,
@@ -768,6 +770,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 //        fileCache.getMonitoringConfig().addProbes(
 //                serverConfig.getMonitoringConfig().getFileCacheConfig().getProbes());
         filterChainBuilder.add(fileCacheFilter);
+        configureHSTSSupport(habitat, http.getParent().getSsl(), filterChainBuilder);
         final HttpServerFilter webServerFilter = new HttpServerFilter(
                 getHttpServerFilterConfiguration(http),
                 obtainDelayedExecutor());
@@ -787,6 +790,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         configureWebSocketSupport(habitat, networkListener, http, filterChainBuilder);
 
         configureAjpSupport(habitat, networkListener, http, filterChainBuilder);
+        
+        
     }
 
     private int getTimeoutSeconds(final Http http) {
@@ -905,6 +910,16 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 isAjpEnabled = true;
             }
         }
+    }
+    
+    protected Filter configureHSTSSupport(ServiceLocator habitat, Ssl ssl, FilterChainBuilder filterChainBuilder) {
+        if (ssl != null && Boolean.parseBoolean(ssl.getHstsEnabled())) {
+            HSTSFilter hstsFilter = new HSTSFilter();
+            hstsFilter.configure(habitat, null, ssl);
+            filterChainBuilder.add(hstsFilter);
+            return hstsFilter;
+        }
+        return null;
     }
 
     
