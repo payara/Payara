@@ -69,6 +69,7 @@ public class OneLineFormatter extends Formatter {
      * Configures the formatter.
      */
     public OneLineFormatter() {
+        // FIXME: use factory/helper
         this.sizeOfLevel = getIntPropertyValue("sizeOfLevel", 7);
         this.sizeOfThread = getIntPropertyValue("sizeOfThread", 20);
         this.sizeOfClass = getIntPropertyValue("sizeOfClass", 60);
@@ -99,12 +100,18 @@ public class OneLineFormatter extends Formatter {
     }
 
     private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
+        if (record.getMessage() == null) {
+            return "";
+        }
         final StringBuilder sb = new StringBuilder(256);
         sb.append(TS_FORMAT.format(record.getTime()));
         addPadded(record.getLevel(), this.sizeOfLevel, sb);
         addPadded(record.getThreadName(), this.sizeOfThread, sb);
         addPadded(record.getSourceClassName(), this.sizeOfClass, sb);
-        sb.append('.').append(record.getSourceMethodName());
+        sb.append('.');
+        if (record.getSourceMethodName() != null) {
+            sb.append(record.getSourceMethodName());
+        }
         sb.append(' ').append(record.getMessage());
 
         if (record.getThrown() != null) {
@@ -117,7 +124,7 @@ public class OneLineFormatter extends Formatter {
 
 
     private StringBuilder addPadded(final Object value, final int size, final StringBuilder sb) {
-        final String text = String.valueOf(value);
+        final String text = value == null ? "" : String.valueOf(value);
         sb.append(' ');
         sb.append(getPad(text, size));
         sb.append(text);

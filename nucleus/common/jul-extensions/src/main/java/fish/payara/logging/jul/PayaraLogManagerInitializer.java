@@ -63,15 +63,26 @@ import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING
 public class PayaraLogManagerInitializer {
 
     /**
-     * Tries
+     * Tries to set the {@link PayaraLogManager}as the JVM's {@link LogManager} implementation.
+     * This must be done before any JUL component is used and remains set until JVM shutdown.
+     * The {@link PayaraLogManager} will try to find the configuration automatically, use defaults,
+     * or will throw an exception, which depends on JVM options.
      *
-     * @return true if the initialization was successful.
+     * @return true if the operation was successful
      */
     public static synchronized boolean tryToSetAsDefault() {
         return tryToSetAsDefault(null);
     }
 
 
+    /**
+     * Tries to set the {@link PayaraLogManager}as the JVM's {@link LogManager} implementation.
+     * This must be done before any JUL component is used and remains set until JVM shutdown.
+     *
+     * @param configuration - logging.properties file content, if null, {@link PayaraLogManager}
+     *            will try to resolve it, the solution depends on JVM options.
+     * @return true if the operation was successful
+     */
     public static synchronized boolean tryToSetAsDefault(final Properties configuration) {
         PayaraLoggingTracer.stacktrace(PayaraLogManagerInitializer.class, "tryToSetAsDefault(" + configuration + ")");
         if (System.getProperty(JVM_OPT_LOGGING_MANAGER) != null) {

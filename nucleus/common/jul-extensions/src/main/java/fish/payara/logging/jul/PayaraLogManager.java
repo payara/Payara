@@ -69,6 +69,7 @@ import java.util.function.Predicate;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -380,8 +381,10 @@ public class PayaraLogManager extends LogManager {
      * Reconfigures the logging system.
      *
      * @param cfg
-     * @param reconfigureAction - a callback executed after the reconfiguration of logger levels is finished.
-     * @param flushAction -  FIXME: always null? Why I implemented it?
+     * @param reconfigureAction - a callback executed after the reconfiguration of logger levels is
+     *            finished. This action may perform some programmatic configuration.
+     * @param flushAction - a callback executed after reconfigureAction to flush program's
+     *            {@link LogRecord} buffers waiting until the reconfiguration is completed.
      */
     public synchronized void reconfigure(final PayaraLogManagerConfiguration cfg, final Action reconfigureAction,
         final Action flushAction) {
