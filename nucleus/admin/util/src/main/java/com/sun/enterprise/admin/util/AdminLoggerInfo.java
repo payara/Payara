@@ -54,10 +54,10 @@ import org.glassfish.logging.annotation.LoggerInfo;
 /* Module private */
 public class AdminLoggerInfo {
     public static final String LOGMSG_PREFIX = "NCLS-ADMIN";
-    
+
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.admin.util.LogMessages";
-    
+
     @LoggerInfo(subsystem = "ADMIN", description = "Administration Services", publish = true)
     public static final String ADMIN_LOGGER = "javax.enterprise.system.tools.admin";
     private static final Logger adminLogger = Logger.getLogger(
@@ -66,70 +66,70 @@ public class AdminLoggerInfo {
     public static Logger getLogger() {
         return adminLogger;
     }
-    
+
     @LogMessageInfo(
             message = "Could not find state of instance registered in the state service",
             cause = "unknown",
             action = "unknown",
             level = "SEVERE")
     static final String stateNotFound = LOGMSG_PREFIX + "-00001";
-    
+
     @LogMessageInfo(
             message = "Error during command replication: {0}",
             cause = "unknown",
             action = "unknown",
             level = "SEVERE")
     static final String replicationError = LOGMSG_PREFIX + "-00002";
-    
+
     @LogMessageInfo(
             message = "unable to read instance state file {0}, recreating",
             level = "FINE")
     static final String mISScannotread = LOGMSG_PREFIX + "-00003";
-    
+
     @LogMessageInfo(
             message = "unable to create instance state file: {0}, exception: {1}",
-            cause = "The instance state file is missing and the system is trying to" + 
+            cause = "The instance state file is missing and the system is trying to" +
                     "recreated it but and exception was raised.",
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     static final String mISScannotcreate = LOGMSG_PREFIX + "-00004";
-    
+
     @LogMessageInfo(
             message = "error while adding new server state to instance state: {0}",
-            cause = "An attempt to add a new server to the instance state file failed.", 
+            cause = "An attempt to add a new server to the instance state file failed.",
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     static final String mISSaddstateerror = LOGMSG_PREFIX + "-00005";
-    
+
     @LogMessageInfo(
             message = "error while adding failed command to instance state: {0}",
-            cause = "An attempt to add a failed command to the instance state file failed.", 
+            cause = "An attempt to add a failed command to the instance state file failed.",
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     static final String mISSaddcmderror = LOGMSG_PREFIX + "-00006";
-    
+
     @LogMessageInfo(
             message = "error while removing failed commands from instance state: {0}",
-            cause = "An attempt to remove a failed command from the instance state file failed.", 
+            cause = "An attempt to remove a failed command from the instance state file failed.",
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     static final String mISSremcmderror = LOGMSG_PREFIX + "-00007";
-    
+
     @LogMessageInfo(
             message = "error while setting instance state: {0}",
-            cause = "An attempt to set the state of a server in the instance state file failed.", 
+            cause = "An attempt to set the state of a server in the instance state file failed.",
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     final static String mISSsetstateerror = LOGMSG_PREFIX + "-00008";
-    
+
     @LogMessageInfo(
             message = "error while removing instance: {0}",
-            cause = "An attempt to remove a server from the instance state file failed.", 
+            cause = "An attempt to remove a server from the instance state file failed.",
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
@@ -137,15 +137,15 @@ public class AdminLoggerInfo {
 
     @LogMessageInfo(
             message = "An unexpected exception occurred.",
-            cause = "An unexpected exception occurred.", 
+            cause = "An unexpected exception occurred.",
             action = "Check the server logs and contact Payara Support",
             publish = true,
             level = "SEVERE")
     public static final String mUnexpectedException = LOGMSG_PREFIX + "-00011";
-    
+
     @LogMessageInfo(
             message = "The server requires a valid admin password to be set before it can start. Please set a password using the change-admin-password command.",
-            cause = "For security reason, the server requires a valid admin password before it can start.", 
+            cause = "For security reason, the server requires a valid admin password before it can start.",
             action = "Set a password using the change-admin-password command.",
             publish = true,
             level = "SEVERE")
@@ -168,7 +168,7 @@ public class AdminLoggerInfo {
             publish = true,
             level = "WARNING")
     public static final String mAdminUserSearchError = LOGMSG_PREFIX + "-00015";
-    
+
     @LogMessageInfo(
             message = "Cannot read admin cache file for {0}",
             cause = "An error occured while reading the admin command model cache file.",
@@ -176,7 +176,7 @@ public class AdminLoggerInfo {
             publish = true,
             level = "WARNING")
     public static final String mCannotReadCache = LOGMSG_PREFIX + "-00016";
-    
+
     @LogMessageInfo(
             message = "Cannot write data to cache file for {0}",
             cause = "An error occured while writing the admin command model cache file.",
@@ -184,7 +184,7 @@ public class AdminLoggerInfo {
             publish = true,
             level = "WARNING")
     public static final String mCannotWriteCache = LOGMSG_PREFIX + "-00017";
-    
+
     @LogMessageInfo(
             message = "Unexpected exception from command event listener.",
             cause = "An error occured while calling registered listener.",
@@ -199,7 +199,7 @@ public class AdminLoggerInfo {
             action = "Edit the system property to use a supported protocol.",
             level = "INFO")
     public static final String unrecognisedHttpsProtocol = LOGMSG_PREFIX + "-00019";
-    
+
     @LogMessageInfo(
             message = "Using default HTTPS protocol: {0}",
             cause = "No protocol provided.",
@@ -207,7 +207,7 @@ public class AdminLoggerInfo {
                     + "to set an alternative protocol to use.",
             level = "FINE")
     public static final String usingDefaultHttpsProtocol = LOGMSG_PREFIX + "-00020";
-    
+
     @LogMessageInfo(
             message = "Setting HTTPS protocol to: {0}",
             cause = "Protocol set using fish.payara.clientHttpsProtocol system property.",

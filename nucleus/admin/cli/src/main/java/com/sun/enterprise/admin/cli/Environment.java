@@ -37,13 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Formatter;
 
 /**
  * The environment variables for CLI commands.  An instance of this class
@@ -248,5 +252,14 @@ public final class Environment {
 
     public File getDebugLogfile() {
         return logfile;
+    }
+
+    public Formatter getLogFormatter() {
+        final String formatterClass = env.get(PREFIX + "LOG_FORMATTER");
+        try {
+            return formatterClass == null ? null : (Formatter) Class.forName(formatterClass).newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            throw new IllegalStateException("This is not a formatter: " + formatterClass, e);
+        }
     }
 }

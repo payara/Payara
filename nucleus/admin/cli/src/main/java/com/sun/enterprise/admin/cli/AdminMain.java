@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli;
 
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
@@ -49,7 +49,8 @@ import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import fish.payara.logging.jul.PayaraLogManagerInitializer;
-import fish.payara.logging.jul.handler.SimpleLogHandler;
+import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -62,6 +63,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -74,22 +76,27 @@ import org.glassfish.api.admin.InvalidCommandException;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.AsadminInput;
 
+import static fish.payara.logging.jul.PayaraLogManager.getLogManager;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.FINEST;
+
 /**
- * The admin main program (nadmin).
+ * The admin main program (asadmin).
+ * <p>
+ * If you need tracing of what it does, set AS_TRACE to true
  */
 public class AdminMain {
 
+    private static final Properties LOGGING_CFG;
     static {
-        final Properties cfg = new Properties();
-        cfg.setProperty("handlers", SimpleLogHandler.class.getName());
-        cfg.setProperty(SimpleLogHandler.class.getName() + ".level", Level.INFO.getName());
-        cfg.setProperty(SimpleLogHandler.class.getName() + ".formatter", SimpleFormatter.class.getName());
-        cfg.setProperty(SimpleFormatter.class.getName() + ".format", "%5$s%6$s%n");
-        cfg.setProperty(".level", Level.INFO.getName());
-
-        // The PayaraLogManager must be set before the first usage of any JUL component,
-        // otherwise it cannot be done.
-        PayaraLogManagerInitializer.tryToSetAsDefault(cfg);
+        PayaraLoggingTracer.trace(AdminMain.class, "Preconfiguring logging for asadmin.");
+        // The logging is explicitly configured in doMain method
+        LOGGING_CFG = new Properties();
+        LOGGING_CFG.setProperty("handlers", "fish.payara.logging.jul.handler.BlockingExternallyManagedLogHandler");
+        if (!PayaraLogManagerInitializer.tryToSetAsDefault(LOGGING_CFG)) {
+            throw new IllegalStateException("PayaraLogManager is not set as the default LogManager!");
+        }
     }
 
     private String classPath;
@@ -106,7 +113,7 @@ public class AdminMain {
     private final static int WARNING = 4;
     private final static String ADMIN_CLI_LOGGER = "com.sun.enterprise.admin.cli";
 
-    private static final String[] copyProps = {
+    private static final String[] SYS_PROPERTIES_TO_SET_FROM_ASENV = {
         SystemPropertyConstants.INSTALL_ROOT_PROPERTY,
         SystemPropertyConstants.CONFIG_ROOT_PROPERTY,
         SystemPropertyConstants.PRODUCT_ROOT_PROPERTY
@@ -115,9 +122,9 @@ public class AdminMain {
 
     static {
         Map<String, String> systemProps = new ASenvPropertyReader().getProps();
-        for (String prop : copyProps) {
+        for (String prop : SYS_PROPERTIES_TO_SET_FROM_ASENV) {
             String val = systemProps.get(prop);
-            if (ok(val)) {
+            if (isNotEmpty(val)) {
                 System.setProperty(prop, val);
             }
         }
@@ -145,14 +152,6 @@ public class AdminMain {
         return AccessController.doPrivileged(action);
     }
 
-    /*
-     * Skinning Methods
-     *
-     * The AdminMain class can be "skinned" to present different CLI interface
-     * for different products. Skinning is achieved by extending AdminMain and
-     * redefining the methods in this section.
-     */
-
     /** Get set of JAR files that is used to locate local commands (CLICommand).
      * Results can contain JAR files or directories where all JAR files are
      * used. It must return all JARs or directories
@@ -168,7 +167,7 @@ public class AdminMain {
         if (ext.exists() && ext.isDirectory()) {
             result.add(ext);
         } else {
-            if (logger.isLoggable(Level.FINER)) {
+            if (logger.isLoggable(FINER)) {
                 logger.finer(strings.get("ExtDirMissing", ext));
             }
         }
@@ -190,8 +189,8 @@ public class AdminMain {
      */
     private static class CLILoggerHandler extends ConsoleHandler {
 
-        private CLILoggerHandler() {
-            setFormatter(new CLILoggerFormatter());
+        private CLILoggerHandler(final Formatter formatter) {
+            setFormatter(formatter);
         }
 
         @Override
@@ -200,7 +199,8 @@ public class AdminMain {
                 return;
             }
             final PrintStream ps = (logRecord.getLevel() == Level.SEVERE) ? System.err : System.out;
-            ps.println(getFormatter().format(logRecord));
+            ps.print(getFormatter().format(logRecord));
+            ps.flush();
         }
     }
 
@@ -208,7 +208,8 @@ public class AdminMain {
 
         @Override
         public synchronized String format(LogRecord record) {
-            return formatMessage(record);
+            // this formatter adds blank lines between records
+            return formatMessage(record) + System.lineSeparator();
         }
     }
 
@@ -221,67 +222,31 @@ public class AdminMain {
     protected int doMain(String[] args) {
         int minor = JDK.getMinor();
         int major = JDK.getMajor();
-        //In case of JDK1 to JDK8 the major version would be 1 always.Starting from
-        //JDK9 the major verion would be the real major version e.g in case
+        // In case of JDK1 to JDK8 the major version would be 1 always.Starting from
+        // JDK9 the major verion would be the real major version e.g in case
         // of JDK9 major version is 9.So in that case checking the major version only.
-        if (major<9) {
-            if (minor < 6) {
-                System.err.println(strings.get( "OldJdk", "" + minor));
-                return ERROR;
-            }
+        if (major < 9 && minor < 6) {
+            System.err.println(strings.get("OldJdk", major, minor));
+            return ERROR;
         }
 
-        boolean trace = env.trace();
-        boolean debug = env.debug();
+        getLogManager().reconfigure(new PayaraLogManagerConfiguration(LOGGING_CFG), this::reconfigureLogging, null);
 
-        /*
-         * Use a logger associated with the top-most package that we expect all
-         * admin commands to share. Only this logger and its children obey the
-         * conventions that map terse=false to the INFO level and terse=true to
-         * the FINE level.
-         */
-        logger = Logger.getLogger(ADMIN_CLI_LOGGER);
-        if (trace) {
-            logger.setLevel(Level.FINEST);
-        } else if (debug) {
-            logger.setLevel(Level.FINER);
-        } else {
-            logger.setLevel(Level.FINE);
+        if (env.debug()) {
+            System.setProperty(CLIConstants.WALL_CLOCK_START_PROP, Long.toString(System.currentTimeMillis()));
+            logger.log(FINER, "CLASSPATH= {0}\nCommands: {1}",
+                new Object[] {System.getProperty("java.class.path"), Arrays.toString(args)});
         }
-        logger.setUseParentHandlers(false);
-        Handler h = new CLILoggerHandler();
-        h.setLevel(logger.getLevel());
-        logger.addHandler(h);
 
-        // make sure the root logger uses our handler as well
-        Logger rlogger = Logger.getLogger("");
-        rlogger.setUseParentHandlers(false);
-        for (Handler lh : rlogger.getHandlers()) {
-            rlogger.removeHandler(lh);
-        }
-        rlogger.addHandler(h);
-
-        if (debug) {
-            System.setProperty(CLIConstants.WALL_CLOCK_START_PROP, "" + System.currentTimeMillis());
-            logger.log(Level.FINER, "CLASSPATH= {0}\nCommands: {1}", new Object[]{System.getProperty("java.class.path"), Arrays.toString(args)});
-        }
-        /*
-         * Set the thread's context class loader so that everyone can load from
-         * our extension directory.
-         */
+        // Set the thread's context class loader so that everyone can load from our extension directory.
         Set<File> extensions = getExtensions();
         ClassLoader ecl = getExtensionClassLoader(extensions);
         Thread.currentThread().setContextClassLoader(ecl);
 
-        /*
-         * It helps a little with CLI performance
-         */
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ProprietaryReaderFactory.getReader(Class.class, "not/defined");
-                ProprietaryWriterFactory.getWriter(Class.class);
-            }
+         // It helps a little with CLI performance
+        Thread thread = new Thread(() -> {
+            ProprietaryReaderFactory.getReader(Class.class, "not/defined");
+            ProprietaryWriterFactory.getWriter(Class.class);
         });
         thread.setDaemon(true);
         thread.start();
@@ -291,18 +256,12 @@ public class AdminMain {
         classPath = SmartFile.sanitizePaths(System.getProperty("java.class.path"));
         className = AdminMain.class.getName();
 
-        /*
-         * Special case: no arguments is the same as "multimode".
-         */
         if (args.length == 0) {
-            args = new String[]{"multimode"};
-        }
-
-        /*
-         * Special case: -V argument is the same as "version".
-         */
-        if (args[0].equals("-V")) {
-            args = new String[]{"version"};
+            // Special case: no arguments is the same as "multimode".
+            args = new String[] {"multimode"};
+        } else if (args[0].equals("-V")) {
+            // Special case: -V argument is the same as "version".
+            args = new String[] {"version"};
         }
 
         command = args[0];
@@ -310,18 +269,15 @@ public class AdminMain {
 
         switch (exitCode) {
             case SUCCESS:
-                if (!po.isTerse()) {
-                    logger.fine(strings.get((po.isDetachedCommand() ?
-                                                "CommandSuccessfulStarted" :
-                                                "CommandSuccessful"),
-                                            command));
+                if (!po.isTerse() && logger.isLoggable(FINE)) {
+                    String key = po.isDetachedCommand() ? "CommandSuccessfulStarted" : "CommandSuccessful";
+                    logger.fine(strings.get(key, command));
                 }
                 break;
 
             case WARNING:
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine(
-                        strings.get("CommandSuccessfulWithWarnings", command));
+                if (logger.isLoggable(FINE)) {
+                    logger.fine(strings.get("CommandSuccessfulWithWarnings", command));
                 }
                 exitCode = SUCCESS;
                 break;
@@ -330,23 +286,23 @@ public class AdminMain {
             case INVALID_COMMAND_ERROR:
             case CONNECTION_ERROR:
             default:
-                logger.fine(
-                        strings.get("CommandUnSuccessful", command));
+                if (logger.isLoggable(FINE)) {
+                    logger.fine(strings.get("CommandUnSuccessful", command));
+                }
                 break;
         }
         CLIUtil.writeCommandToDebugLog(getCommandName(), env, args, exitCode);
         return exitCode;
     }
 
+
     public int executeCommand(String[] argv) {
         CLICommand cmd = null;
         try {
             // if the first argument is an option, we're using the new form
             if (argv.length > 0 && argv[0].startsWith("-")) {
-                /*
-                 * Parse all the admin options, stopping at the first
-                 * non-option, which is the command name.
-                 */
+                // Parse all the admin options, stopping at the first
+                // non-option, which is the command name.
                 Parser rcp = new Parser(argv, 0, ProgramOptions.getValidOptions(), false);
                 ParameterMap params = rcp.getOptions();
                 po = new ProgramOptions(params, env);
@@ -413,18 +369,52 @@ public class AdminMain {
         }
     }
 
-    private static void readAndMergeOptionsFromAuxInput(final ProgramOptions progOpts) throws CommandException {
+    private void reconfigureLogging() {
+        PayaraLoggingTracer.trace(AdminMain.class, "Configuring logging for asadmin.");
+        boolean trace = env.trace();
+        boolean debug = env.debug();
+
+        // Use a logger associated with the top-most package that we expect all
+        // admin commands to share. Only this logger and its children obey the
+        // conventions that map terse=false to the INFO level and terse=true to
+        // the FINE level.
+        logger = Logger.getLogger(ADMIN_CLI_LOGGER);
+        if (trace) {
+            logger.setLevel(FINEST);
+        } else if (debug) {
+            logger.setLevel(FINER);
+        } else {
+            logger.setLevel(FINE);
+        }
+        logger.setUseParentHandlers(false);
+        Formatter formatter = env.getLogFormatter();
+        Handler cliHandler = new CLILoggerHandler(formatter == null ? new CLILoggerFormatter() : formatter);
+        cliHandler.setLevel(logger.getLevel());
+        logger.addHandler(cliHandler);
+
+        // make sure the root logger uses our handler as well
+        Logger rootLogger = Logger.getLogger("");
+        rootLogger.setUseParentHandlers(false);
+        if (trace) {
+            rootLogger.setLevel(logger.getLevel());
+        }
+        for (Handler handler : rootLogger.getHandlers()) {
+            rootLogger.removeHandler(handler);
+            handler.close();
+        }
+        rootLogger.addHandler(cliHandler);
+    }
+
+    private static void readAndMergeOptionsFromAuxInput(final ProgramOptions progOpts) {
         final String auxInput = progOpts.getAuxInput();
         if (auxInput == null || auxInput.length() == 0) {
             return;
         }
-        final ParameterMap newParamMap = new ParameterMap();
-        /*
-         * We will place the options passed via the aux. input on the command
-         * line and we do not want to repeat the read from stdin again, so
-         * remove the aux input setting.
-         */
+        // We will place the options passed via the aux. input on the command
+        // line and we do not want to repeat the read from stdin again, so
+        // remove the aux input setting.
         progOpts.setAuxInput(null);
+        final ParameterMap newParamMap = new ParameterMap();
         try {
             final AsadminInput.InputReader reader = AsadminInput.reader(auxInput);
             final Properties newOptions = reader.settings().get("option");
@@ -433,7 +423,7 @@ public class AdminMain {
             }
             progOpts.updateOptions(newParamMap);
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new IllegalArgumentException(ex);
         }
     }
 
@@ -445,7 +435,7 @@ public class AdminMain {
         logger.severe(strings.get("Usage.full", getCommandName()));
     }
 
-    private static boolean ok(String s) {
-        return s != null && s.length() > 0;
+    private static boolean isNotEmpty(String s) {
+        return s != null && !s.isEmpty();
     }
 }
