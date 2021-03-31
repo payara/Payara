@@ -41,8 +41,6 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
-import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -58,7 +56,7 @@ import org.jvnet.hk2.config.types.Property;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * Adds the needed message-security-config information to domain.xml
@@ -67,6 +65,7 @@ import java.util.logging.LogRecord;
  */
 @Service
 public class AdminConsoleConfigUpgrade implements ConfigurationUpgrade, PostConstruct {
+    private static final Logger LOG = Logger.getLogger(AdminConsoleConfigUpgrade.class.getName());
 
     private static final String AUTH_LAYER = "HttpServlet";
     private static final String PROVIDER_TYPE = "server";
@@ -101,11 +100,7 @@ public class AdminConsoleConfigUpgrade implements ConfigurationUpgrade, PostCons
                 try {
                     ConfigSupport.apply(new AdminConsoleConfigCode(), s);
                 } catch (TransactionFailure tf) {
-                    LogRecord lr = new LogRecord(Level.SEVERE,
-                        "Could not upgrade security service for admin console: " +
-                        tf);
-                    lr.setLoggerName(getClass().getName());
-                    EarlyLogHandler.earlyMessages.add(lr);
+                    LOG.log(Level.SEVERE, "Could not upgrade security service for admin console.", tf);
                 }
             }
         }
@@ -155,14 +150,8 @@ public class AdminConsoleConfigUpgrade implements ConfigurationUpgrade, PostCons
             // get admin port property from config
             Config parent = service.getParent(Config.class);
             if (parent.getAdminListener() == null) {
-                LogRecord lr = new LogRecord(Level.WARNING, 
-                        String.format(
-                            "Couldn't get admin port from config '%s'. Using default %s",
-                            parent.getName(),
-                            DEFAULT_ADMIN_PORT)
-                );
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);                
+                LOG.log(Level.WARNING, "Couldn't get admin port from config '{0}'. Using default {1}",
+                    new Object[] {parent.getName(), DEFAULT_ADMIN_PORT});
             }
 
             // add properties

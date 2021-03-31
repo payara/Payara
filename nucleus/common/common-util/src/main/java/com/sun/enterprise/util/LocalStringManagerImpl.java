@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util;
 
@@ -45,8 +45,6 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-//END OF IASRI 4660742
 
 
 /**
@@ -55,13 +53,6 @@ import java.util.logging.Logger;
  */
 
 public class LocalStringManagerImpl implements LocalStringManager {
-
-    // START OF IASRI 4660742
-    //WARNING: _logger must be initialized upon demand in this case. The
-    //reason is that this static init happens before the ServerContext
-    //is initialized
-    private static final Logger _logger = null;
-    // END OF IASRI 4660742
 
     private final Class defaultClass;
 

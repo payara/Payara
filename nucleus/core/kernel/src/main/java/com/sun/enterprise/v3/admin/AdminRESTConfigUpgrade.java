@@ -41,24 +41,23 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
-import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
-import org.glassfish.grizzly.config.dom.Http;
-import org.glassfish.grizzly.config.dom.Protocol;
-import org.glassfish.grizzly.config.dom.Protocols;
-import org.glassfish.api.admin.config.ConfigurationUpgrade;
+import java.beans.PropertyVetoException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.glassfish.api.admin.config.ConfigurationUpgrade;
+import org.glassfish.grizzly.config.dom.Http;
+import org.glassfish.grizzly.config.dom.Protocol;
+import org.glassfish.grizzly.config.dom.Protocols;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-
-import java.beans.PropertyVetoException;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 /**
  * Adds the needed http.setEncodedSlashEnabled  to domain.xml
@@ -66,8 +65,8 @@ import java.util.logging.LogRecord;
  * https://glassfish.dev.java.net/issues/show_bug.cgi?id=13627
  */
 @Service
-public class AdminRESTConfigUpgrade
-        implements ConfigurationUpgrade, PostConstruct {
+public class AdminRESTConfigUpgrade implements ConfigurationUpgrade, PostConstruct {
+    private static final Logger LOG = Logger.getLogger(AdminRESTConfigUpgrade.class.getName());
 
     @Inject
     Configs configs;
@@ -84,11 +83,7 @@ public class AdminRESTConfigUpgrade
             // we only want to handle configs that have an admin listener
             try {
                 if (config.getAdminListener() == null) {
-                    LogRecord lr = new LogRecord(Level.FINE, String.format(
-                            "Skipping config %s. No admin listener.",
-                            config.getName()));
-                    lr.setLoggerName(getClass().getName());
-                    EarlyLogHandler.earlyMessages.add(lr);
+                    LOG.log(Level.FINE, "Skipping config {0}. No admin listener.", config.getName());
                     continue;
                 }
             } catch (IllegalStateException ise) {
@@ -99,11 +94,7 @@ public class AdminRESTConfigUpgrade
                  * <server-config>, but we'll proceed if any
                  * config has an admin listener.
                  */
-                LogRecord lr = new LogRecord(Level.FINE, String.format(
-                        "Skipping config %s. getAdminListener threw: %s",
-                        config.getName(), ise.getLocalizedMessage()));
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);                
+                LOG.log(Level.FINE, "Skipping config {0}. getAdminListener threw exception", ise);
                 continue;
             }
             Protocols ps = config.getNetworkConfig().getProtocols();
@@ -115,15 +106,10 @@ public class AdminRESTConfigUpgrade
                         try {
                             ConfigSupport.apply(new HttpConfigCode(), h);
                         } catch (TransactionFailure tf) {
-                            LogRecord lr = new LogRecord(Level.SEVERE,
-                                    "Could not upgrade http element for admin console: "+ tf);
-                            lr.setLoggerName(getClass().getName());
-                            EarlyLogHandler.earlyMessages.add(lr);
+                            LOG.log(Level.SEVERE, "Could not upgrade http element for admin console.", tf);
                         }
                     }
                 }
-
-
             }
         }
     }

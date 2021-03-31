@@ -632,10 +632,21 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
                 return;
             }
             final ReconfigurationAction reconfig = new ReconfigurationAction(manager, cfg);
-            manager.reconfigure(cfg, reconfig, null);
+            manager.reconfigure(cfg, reconfig, this::flushEarlyMessages);
 
         } catch (Exception e) {
             LOG.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
+        }
+    }
+
+
+    private void flushEarlyMessages() {
+        final ArrayBlockingQueue<LogRecord> catchEarlyMessage = EarlyLogHandler.earlyMessages;
+        while (!catchEarlyMessage.isEmpty()) {
+            LogRecord logRecord = catchEarlyMessage.poll();
+            if (logRecord != null) {
+                LOG.log(logRecord);
+            }
         }
     }
 
@@ -1067,14 +1078,6 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 //            }
             for (Handler handler : rootHandlers) {
                 handler.setLevel(handlerLevels.getOrDefault(handler.getClass().getName(), Level.INFO));
-            }
-
-            final ArrayBlockingQueue<LogRecord> catchEarlyMessage = EarlyLogHandler.earlyMessages;
-            while (!catchEarlyMessage.isEmpty()) {
-                LogRecord logRecord = catchEarlyMessage.poll();
-                if (logRecord != null) {
-                    LOG.log(logRecord);
-                }
             }
         }
     }

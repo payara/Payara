@@ -38,7 +38,7 @@
  * holder.
  *
  */
-// Portions Copyright [2017-2020] Payara Foundation and/or affilates
+// Portions Copyright [2017-2021] Payara Foundation and/or affilates
 
 package com.sun.enterprise.glassfish.bootstrap;
 
@@ -91,7 +91,7 @@ public class GlassFishMain {
         final ClassLoader jdkExtensionCL = ClassLoader.getSystemClassLoader().getParent();
         final File installRoot = MainHelper.findInstallRoot();
         final GlassfishMainClassLoader gfMainCL = new GlassfishMainClassLoader(installRoot, jdkExtensionCL);
-        final Class<?> plm = gfMainCL.loadClass("fish.payara.logging.jul.PayaraLogManagerInitializer") ;
+        final Class<?> plm = gfMainCL.loadClass("fish.payara.logging.jul.PayaraLogManagerInitializer");
         final Properties loggingCfg = createDefaultLoggingProperties();
         plm.getMethod("tryToSetAsDefault", Properties.class).invoke(plm, loggingCfg);
 
