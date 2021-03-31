@@ -37,14 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
-import com.sun.enterprise.config.serverbeans.customvalidators.*;
+import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefConstraint;
+import com.sun.enterprise.config.serverbeans.customvalidators.ConfigRefValidator;
+import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
+import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
+import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.validation.Payload;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -62,24 +82,24 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.quality.ToDo;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
+import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
-import javax.inject.Inject;
-import javax.validation.Payload;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.clusterGSMBroadCast;
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.clusterGSMDeliveryURI;
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.clusterMustNotContainInstance;
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.deleteConfigFailed;
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.noDefaultConfigFound;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 /**
@@ -87,7 +107,6 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
  * applications, resources, and configuration.
  */
 @Configured
-@SuppressWarnings("unused")
 @ConfigRefConstraint(message="{configref.invalid}", payload= ConfigRefValidator.class)
 @NotDuplicateTargetName(message="{cluster.duplicate.name}", payload=Cluster.class)
 @ReferenceConstraint(skipDuringCreation=true, payload=Cluster.class)
@@ -99,13 +118,11 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
      * @throws PropertyVetoException if a listener vetoes the change
      */
     @Param(name="name", primary = true)
-    @Override
-    public void setName(String value) throws PropertyVetoException;
+    @Override void setName(String value) throws PropertyVetoException;
 
     @NotTargetKeyword(message="{cluster.reserved.name}", payload=Cluster.class)
     @Pattern(regexp=NAME_SERVER_REGEX, message="{cluster.invalid.name}", payload=Cluster.class)
-    @Override
-    public String getName();
+    @Override String getName();
 
     /**
      * points to a named config. All server instances in the cluster
@@ -381,8 +398,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @DuckTyped
     List<Server> getInstances();
 
-    @DuckTyped
-    public ServerRef getServerRefByRef(String ref);
+    @DuckTyped ServerRef getServerRefByRef(String ref);
 
     // five trivial methods that ReferenceContainer's need to implement
     @DuckTyped
@@ -450,7 +466,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             Domain domain =
                     clusterDom.getHabitat().getService(Domain.class);
 
-            ArrayList<Server> instances = new ArrayList<Server>();
+            ArrayList<Server> instances = new ArrayList<>();
             for (ServerRef sRef : cluster.getServerRef()) {
                 Server svr =  domain.getServerNamed(sRef.getRef());
                 // the instance's domain.xml only has its own server
@@ -500,6 +516,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             if (ref != null) {
                 ConfigSupport.apply(new SingleConfigCode<Cluster>() {
 
+                    @Override
                     public Object run(Cluster param) {
                         return param.getResourceRef().remove(ref);
                     }
@@ -524,7 +541,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
         }
 
         public static <T extends ClusterExtension> List<T> getExtensionsByType(Cluster cluster, Class<T> type) {
-            List<T> extensions = new ArrayList<T>();
+            List<T> extensions = new ArrayList<>();
             for (ClusterExtension ce : cluster.getExtensions()) {
                 try {
                     type.cast(ce);
@@ -633,8 +650,8 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                 Config config = habitat.getService(Config.class, "default-config");
                 if (config==null) {
                     config = habitat.<Config>getAllServices(Config.class).iterator().next();
-                    logger.log(Level.WARNING,ConfigApiLoggerInfo.noDefaultConfigFound,
-                            new Object[]{config.getName(), instance.getName()});
+                    logger.log(Level.WARNING, noDefaultConfigFound,
+                        new Object[] {config.getName(), instance.getName()});
                 }
 
                 Configs configs = domain.getConfigs();
@@ -680,8 +697,8 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                 broadcastProtocol = "tcp";
             }
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE,ConfigApiLoggerInfo.clusterGSMBroadCast, instance.getBroadcast());
-                logger.log(Level.FINE, ConfigApiLoggerInfo.clusterGSMDeliveryURI , discoveryUriList);
+                logger.log(Level.FINE, clusterGSMBroadCast, instance.getBroadcast());
+                logger.log(Level.FINE, clusterGSMDeliveryURI, discoveryUriList);
             }
             if (DEFAULT_BROADCAST.equals(broadcastProtocol)) {
 
@@ -853,8 +870,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             // check to see if the clustering software is installed
             AdminCommand command = runner.getCommand("copy-config", report, context.getLogger());
             if (command == null) {
-                String msg = localStrings.getLocalString("cannot.execute.command",
-                        "Cluster software is not installed");
+                String msg = localStrings.getLocalString("cannot.execute.command", "Cluster software is not installed");
                 throw new TransactionFailure(msg);
             }
 
@@ -869,23 +885,22 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
             StringBuilder namesOfServers = new StringBuilder();
             if (serverRefs.size() > 0) {
                 for (ServerRef serverRef: serverRefs){
-                    namesOfServers.append(new StringBuilder( serverRef.getRef()).append( ','));
+                    namesOfServers.append(new StringBuilder(serverRef.getRef()).append(','));
                 }
 
                 final String msg = localStrings.getLocalString(
                         "Cluster.hasInstances",
-                        "Cluster {0} contains server instances {1} and must not contain any instances"
-                        ,child.getName() ,namesOfServers.toString()
+                        "Cluster {0} contains server instances {1} and must not contain any instances",
+                        child.getName(), namesOfServers
                 );
 
-                logger.log(Level.SEVERE, ConfigApiLoggerInfo.clusterMustNotContainInstance,new Object[]{child.getName() ,namesOfServers.toString()});
+                logger.log(Level.SEVERE, clusterMustNotContainInstance, new Object[] {child.getName(), namesOfServers});
                 throw new TransactionFailure(msg);
             }
 
             // remove GMS_LISTENER_PORT-clusterName prop from server config
             Config serverConfig = configs.getConfigByName("server-config");
-            String propName = String.format(
-                "GMS_LISTENER_PORT-%s", child.getName());
+            String propName = String.format("GMS_LISTENER_PORT-%s", child.getName());
             SystemProperty gmsProp = serverConfig.getSystemProperty(propName);
             if (gmsProp != null && t != null) {
                 Config c = t.enroll(serverConfig);
@@ -895,8 +910,9 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
             // check if the config is null or still in use by some other
             // ReferenceContainer or is not <cluster-name>-config -- if so just return...
-            if(config == null || domain.getReferenceContainersOf(config).size() > 1 || !instanceConfig.equals(child.getName() + "-config"))
+            if(config == null || domain.getReferenceContainersOf(config).size() > 1 || !instanceConfig.equals(child.getName() + "-config")) {
                 return;
+            }
 
 
             try {
@@ -914,10 +930,9 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                     configList.remove(config);
                 }
             } catch (TransactionFailure ex) {
-                logger.log(Level.SEVERE, ConfigApiLoggerInfo.deleteConfigFailed, new Object[]{instanceConfig, ex});
+                logger.log(Level.SEVERE, deleteConfigFailed, new Object[] {instanceConfig, ex});
                 String msg = ex.getMessage() != null ? ex.getMessage()
-                        : localStrings.getLocalString("deleteConfigFailed",
-                        "Unable to remove config {0}", instanceConfig);
+                    : localStrings.getLocalString("deleteConfigFailed", "Unable to remove config {0}", instanceConfig);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setFailureCause(ex);

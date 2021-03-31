@@ -37,7 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 package org.glassfish.security.services.impl.authorization;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.net.URI;
 import java.security.AccessController;
@@ -45,15 +49,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.security.auth.Subject;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.security.auth.Subject;
 
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
-
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.security.services.api.authorization.AzAttributeResolver;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzSubject;
@@ -63,226 +66,230 @@ import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.impl.ServiceFactory;
-import org.glassfish.security.services.impl.ServiceLogging;
 import org.glassfish.security.services.spi.authorization.RoleMappingProvider;
+import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import static org.glassfish.security.services.impl.ServiceLogging.SEC_SVCS_LOGGER;
+import static org.glassfish.security.services.impl.ServiceLogging.SHARED_LOGMESSAGE_RESOURCE;
 
 /**
- * <code>RoleMappingServiceImpl</code> implements
- * <code>{@link org.glassfish.security.services.api.authorization.RoleMappingService}</code>
- * by delegating role mapping decisions to configured
- * <code>{@link org.glassfish.security.services.spi.RoleMappingProvider}</code>
+ * <code>RoleMappingServiceImpl</code> implements <code>{@link RoleMappingService}</code> by
+ * delegating role mapping decisions to configured <code>{@link RoleMappingProvider}</code>
  * instances.
  */
 @Service
 @Singleton
 @Secure(accessPermissionName="security/service/rolemapper")
 public final class RoleMappingServiceImpl implements RoleMappingService, PostConstruct {
-	private static final Level DEBUG_LEVEL = Level.FINER;
-	private static final Logger logger =
-			Logger.getLogger(ServiceLogging.SEC_SVCS_LOGGER,ServiceLogging.SHARED_LOGMESSAGE_RESOURCE);
-	private static LocalStringManagerImpl localStrings =
-			new LocalStringManagerImpl(RoleMappingServiceImpl.class);
+    private static final Level DEBUG_LEVEL = Level.FINER;
+    private static final Logger logger = Logger.getLogger(SEC_SVCS_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RoleMappingServiceImpl.class);
 
-	@Inject
-	private Domain domain;
+    @Inject
+    private Domain domain;
 
-	@Inject
-	private ServiceLocator serviceLocator;
+    @Inject
+    private ServiceLocator serviceLocator;
 
-	// Role Mapping Service Configuration Information
-	private org.glassfish.security.services.config.RoleMappingService config;
-	private RoleMappingProvider provider;
+    // Role Mapping Service Configuration Information
+    private org.glassfish.security.services.config.RoleMappingService config;
+    private RoleMappingProvider provider;
 
-	// Service lifecycle
-	enum InitializationState {
-		NOT_INITIALIZED,
-		SUCCESS_INIT,
-		FAILED_INIT
-	}
-	private volatile InitializationState initialized = InitializationState.NOT_INITIALIZED;
-	private volatile String reasonInitFailed = 
-			localStrings.getLocalString("service.role.not_config","The Role Mapping Service was not configured properly.");
+    // Service lifecycle
+    enum InitializationState {
+        NOT_INITIALIZED,
+        SUCCESS_INIT,
+        FAILED_INIT
+    }
+    private volatile InitializationState initialized = InitializationState.NOT_INITIALIZED;
+    private volatile String reasonInitFailed =
+            localStrings.getLocalString("service.role.not_config","The Role Mapping Service was not configured properly.");
 
-	final InitializationState getInitializationState() {
-		return initialized;
-	}
+    InitializationState getInitializationState() {
+        return initialized;
+    }
 
-	final String getReasonInitializationFailed() {
-		return reasonInitFailed;
-	}
+    String getReasonInitializationFailed() {
+        return reasonInitFailed;
+    }
 
-	final void checkServiceAvailability() {
-		if (InitializationState.SUCCESS_INIT != getInitializationState()) {
-			throw new IllegalStateException(
-					localStrings.getLocalString("service.role.not_avail","The Role Mapping Service is not available.")
-					+ getReasonInitializationFailed());
-		}
-	}
+    void checkServiceAvailability() {
+        if (InitializationState.SUCCESS_INIT != getInitializationState()) {
+            throw new IllegalStateException(
+                    localStrings.getLocalString("service.role.not_avail","The Role Mapping Service is not available.")
+                    + getReasonInitializationFailed());
+        }
+    }
 
-	private final List<AzAttributeResolver> attributeResolvers =
-			Collections.synchronizedList(new java.util.ArrayList<AzAttributeResolver>());
+    private final List<AzAttributeResolver> attributeResolvers =
+            Collections.synchronizedList(new java.util.ArrayList<AzAttributeResolver>());
 
-	private boolean isDebug() {
-		return logger.isLoggable(DEBUG_LEVEL);
-	}
+    private boolean isDebug() {
+        return logger.isLoggable(DEBUG_LEVEL);
+    }
 
-	// Helpers
-	private AzSubject makeAzSubject(final Subject subject) {
-		AzSubject azs = new AzSubjectImpl(subject);
-		return azs;
-	}
+    // Helpers
+    private AzSubject makeAzSubject(final Subject subject) {
+        AzSubject azs = new AzSubjectImpl(subject);
+        return azs;
+    }
 
-	private AzResource makeAzResource(final URI resource) {
-		AzResource azr = new AzResourceImpl(resource);
-		return azr;
-	}
+    private AzResource makeAzResource(final URI resource) {
+        AzResource azr = new AzResourceImpl(resource);
+        return azr;
+    }
 
-	/**
-	 * Initialize the Role Mapping service with the configured role mapping provider.
-	 */
-	@Override
-	public void initialize(SecurityConfiguration securityServiceConfiguration) {
-		if (InitializationState.NOT_INITIALIZED != initialized) {
-			return;
-		}
-		try {
-			// Get the Role Mapping Service configuration
-			config = (org.glassfish.security.services.config.RoleMappingService) securityServiceConfiguration;
-			if (config != null) {
-				// Get the role mapping provider configuration
-				// Consider only one provider for now and take the first provider found!
-				List<SecurityProvider> providersConfig = config.getSecurityProviders();
-				SecurityProvider roleProviderConfig = null;
-				if (providersConfig != null) roleProviderConfig = providersConfig.get(0);
-				if (roleProviderConfig != null) {
-					// Get the provider
-					String providerName = roleProviderConfig.getName();
-					if (isDebug()) {
-						logger.log(DEBUG_LEVEL, "Attempting to get Role Mapping Provider \"{0}\".", providerName );
-					}
-					provider = AccessController.doPrivileged(
-					        new PrivilegedLookup<RoleMappingProvider>(serviceLocator, RoleMappingProvider.class, providerName) );    
-							
-					if (provider == null) {
-						throw new IllegalStateException(localStrings.getLocalString("service.role.not_provider",
-								"Role Mapping Provider {0} not found.", providerName));
-					}
+    /**
+     * Initialize the Role Mapping service with the configured role mapping provider.
+     */
+    @Override
+    public void initialize(SecurityConfiguration securityServiceConfiguration) {
+        if (InitializationState.NOT_INITIALIZED != initialized) {
+            return;
+        }
+        try {
+            // Get the Role Mapping Service configuration
+            config = (org.glassfish.security.services.config.RoleMappingService) securityServiceConfiguration;
+            if (config != null) {
+                // Get the role mapping provider configuration
+                // Consider only one provider for now and take the first provider found!
+                List<SecurityProvider> providersConfig = config.getSecurityProviders();
+                SecurityProvider roleProviderConfig = null;
+                if (providersConfig != null) {
+                    roleProviderConfig = providersConfig.get(0);
+                }
+                if (roleProviderConfig != null) {
+                    // Get the provider
+                    String providerName = roleProviderConfig.getName();
+                    if (isDebug()) {
+                        logger.log(DEBUG_LEVEL, "Attempting to get Role Mapping Provider \"{0}\".", providerName );
+                    }
+                    provider = AccessController
+                        .doPrivileged(new PrivilegedLookup<>(serviceLocator, RoleMappingProvider.class, providerName));
 
-					// Initialize the provider
-					provider.initialize(roleProviderConfig);
+                    if (provider == null) {
+                        throw new IllegalStateException(localStrings.getLocalString("service.role.not_provider",
+                            "Role Mapping Provider {0} not found.", providerName));
+                    }
 
-					// Service setup complete
-					initialized = InitializationState.SUCCESS_INIT;
-					reasonInitFailed = null;
+                    // Initialize the provider
+                    provider.initialize(roleProviderConfig);
 
-					// Log initialized
-					logger.log(Level.INFO, ROLEMAPSVC_INITIALIZED);
-				}
-			}
-		} catch (Exception e) {
-			String eMsg = e.getMessage();
-			String eClass = e.getClass().getName();
-			reasonInitFailed = localStrings.getLocalString("service.role.init_failed",
-					"Role Mapping Service initialization failed, exception {0}, message {1}", eClass, eMsg);
-			logger.log(Level.WARNING, ROLEMAPSVC_INIT_FAILED, new Object[] {eClass, eMsg});
-			throw new RuntimeException(reasonInitFailed, e);
-		} finally {
-			if (InitializationState.SUCCESS_INIT != initialized) {
-				initialized = InitializationState.FAILED_INIT;
-			}
-		}
-	}
+                    // Service setup complete
+                    initialized = InitializationState.SUCCESS_INIT;
+                    reasonInitFailed = null;
 
-	/**
-	 * Determine the user's role by converting arguments into security authorization data types.
-	 * 
-	 * @see <code>{@link org.glassfish.security.services.api.authorization.RoleMappingService}</code>
-	 */
-	@Override
-	public boolean isUserInRole(String appContext, Subject subject, URI resource, String role) {
-		// Validate inputs
-		if (subject == null) throw new IllegalArgumentException(
-				localStrings.getLocalString("service.subject_null", "The supplied Subject is null."));
-		if (resource == null) throw new IllegalArgumentException(
-				localStrings.getLocalString("service.resource_null", "The supplied Resource is null."));
+                    // Log initialized
+                    logger.log(Level.INFO, ROLEMAPSVC_INITIALIZED);
+                }
+            }
+        } catch (Exception e) {
+            String eMsg = e.getMessage();
+            String eClass = e.getClass().getName();
+            reasonInitFailed = localStrings.getLocalString("service.role.init_failed",
+                    "Role Mapping Service initialization failed, exception {0}, message {1}", eClass, eMsg);
+            logger.log(Level.WARNING, ROLEMAPSVC_INIT_FAILED, new Object[] {eClass, eMsg});
+            throw new RuntimeException(reasonInitFailed, e);
+        } finally {
+            if (InitializationState.SUCCESS_INIT != initialized) {
+                initialized = InitializationState.FAILED_INIT;
+            }
+        }
+    }
 
-		// Convert arguments
-		return isUserInRole(appContext, makeAzSubject(subject), makeAzResource(resource), role);
-	}
+    /**
+     * Determine the user's role by converting arguments into security authorization data types.
+     * <p>
+     * See {@link RoleMappingService}
+     */
+    @Override
+    public boolean isUserInRole(String appContext, Subject subject, URI resource, String role) {
+        // Validate inputs
+        if (subject == null) {
+            throw new IllegalArgumentException(
+                    localStrings.getLocalString("service.subject_null", "The supplied Subject is null."));
+        }
+        if (resource == null) {
+            throw new IllegalArgumentException(
+                    localStrings.getLocalString("service.resource_null", "The supplied Resource is null."));
+        }
 
-	/**
-	 * Determine if the user's is in the specified role.
-	 * 
-	 * @see <code>{@link org.glassfish.security.services.api.authorization.RoleMappingService}</code>
-	 */
-	@Override
-	public boolean isUserInRole(String appContext, AzSubject subject, AzResource resource, String role) {
-		boolean result = false;
+        // Convert arguments
+        return isUserInRole(appContext, makeAzSubject(subject), makeAzResource(resource), role);
+    }
 
-		// Validate inputs
-		if (subject == null) throw new IllegalArgumentException(
-				localStrings.getLocalString("service.subject_null", "The supplied Subject is null."));
-		if (resource == null) throw new IllegalArgumentException(
-				localStrings.getLocalString("service.resource_null", "The supplied Resource is null."));
+    /**
+     * Determine if the user's is in the specified role.
+     * <p>
+     * See {@link RoleMappingService}
+     */
+    @Override
+    public boolean isUserInRole(String appContext, AzSubject subject, AzResource resource, String role) {
+        boolean result = false;
 
-		// Make sure provider and config have been setup...
-		checkServiceAvailability();
+        // Validate inputs
+        if (subject == null) {
+            throw new IllegalArgumentException(
+                    localStrings.getLocalString("service.subject_null", "The supplied Subject is null."));
+        }
+        if (resource == null) {
+            throw new IllegalArgumentException(
+                    localStrings.getLocalString("service.resource_null", "The supplied Resource is null."));
+        }
 
-		// Call provider - AzEnvironment and AzAttributeResolver are placeholders
-		result = provider.isUserInRole(appContext, subject, resource, role, new AzEnvironmentImpl(), attributeResolvers);
+        // Make sure provider and config have been setup...
+        checkServiceAvailability();
 
-		// Display and return results
-		if (isDebug()) {
-			logger.log(DEBUG_LEVEL, "Role Mapping Service result {0}"
-					+ " for role {1} with resource {2} using subject {3} in context {4}.",
-					new String[]{ Boolean.toString(result), role,
-						resource.toString(), subject.toString(), appContext});
-		}
-		return result;
-	}
+        // Call provider - AzEnvironment and AzAttributeResolver are placeholders
+        result = provider.isUserInRole(appContext, subject, resource, role, new AzEnvironmentImpl(), attributeResolvers);
 
-	/**
-	 * Find an existing <code>RoleDeploymentContext</code>, or create a new one if one does not
-	 * already exist for the specified application context.
-	 * 
-	 * @see <code>{@link org.glassfish.security.services.api.authorization.RoleMappingService}</code>
-	 */
-	@Override
-	public RoleMappingService.RoleDeploymentContext findOrCreateDeploymentContext(String appContext) {
-		checkServiceAvailability();
-		return provider.findOrCreateDeploymentContext(appContext);
-	}
+        // Display and return results
+        if (isDebug()) {
+            logger.log(DEBUG_LEVEL, "Role Mapping Service result {0}"
+                    + " for role {1} with resource {2} using subject {3} in context {4}.",
+                    new String[]{ Boolean.toString(result), role,
+                        resource.toString(), subject.toString(), appContext});
+        }
+        return result;
+    }
 
-	/**
-	 * Handle lookup of role mapping service configuration and initialization.
-	 * If no service or provider is configured the service run-time will throw exceptions.
-	 * 
-	 * Addresses alternate configuration handling until adopt @Proxiable support. 
-	 */
-	@Override
-	public void postConstruct() {
-		org.glassfish.security.services.config.RoleMappingService roleConfiguration =
-				ServiceFactory.getSecurityServiceConfiguration(
-						domain, org.glassfish.security.services.config.RoleMappingService.class);
-		initialize(roleConfiguration);
-	}
+    /**
+     * Find an existing <code>RoleDeploymentContext</code>, or create a new one if one does not
+     * already exist for the specified application context.
+     * <p>
+     * See {@link RoleMappingService}
+     */
+    @Override
+    public RoleMappingService.RoleDeploymentContext findOrCreateDeploymentContext(String appContext) {
+        checkServiceAvailability();
+        return provider.findOrCreateDeploymentContext(appContext);
+    }
 
-	//
-	// Log Messages
-	//
+    /**
+     * Handle lookup of role mapping service configuration and initialization.
+     * If no service or provider is configured the service run-time will throw exceptions.
+     *
+     * Addresses alternate configuration handling until adopt @Proxiable support.
+     */
+    @Override
+    public void postConstruct() {
+        org.glassfish.security.services.config.RoleMappingService roleConfiguration =
+                ServiceFactory.getSecurityServiceConfiguration(
+                        domain, org.glassfish.security.services.config.RoleMappingService.class);
+        initialize(roleConfiguration);
+    }
 
-	@LogMessageInfo(
-			message = "Role Mapping Service has successfully initialized.",
-			level = "INFO")
-	private static final String ROLEMAPSVC_INITIALIZED = "SEC-SVCS-00150";
+    //
+    // Log Messages
+    //
 
-	@LogMessageInfo(
-			message = "Role Mapping Service initialization failed, exception {0}, message {1}",
-			level = "WARNING")
-	private static final String ROLEMAPSVC_INIT_FAILED = "SEC-SVCS-00151";
+    @LogMessageInfo(
+            message = "Role Mapping Service has successfully initialized.",
+            level = "INFO")
+    private static final String ROLEMAPSVC_INITIALIZED = "SEC-SVCS-00150";
+
+    @LogMessageInfo(
+            message = "Role Mapping Service initialization failed, exception {0}, message {1}",
+            level = "WARNING")
+    private static final String ROLEMAPSVC_INIT_FAILED = "SEC-SVCS-00151";
 }

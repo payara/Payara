@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2021] Payara Foundation and/or affiliates
 package org.glassfish.security.services.common;
 
 import java.security.AccessController;
@@ -55,57 +55,38 @@ public class SecurityAccessFilter implements Filter {
     private static final Logger LOG = SecurityAccessValidationService._theLog;
 
     private static boolean javaPolicySet =
-        AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-
-            @Override
-            public Boolean run() {
-                Boolean rtn = Boolean.FALSE;
-                
-                String wlsName = System.getProperty(SYS_PROP_JAVA_SEC_POLICY);
-                
-                if ( wlsName != null && !wlsName.isEmpty() )
-                        rtn = Boolean.TRUE;
-                
-                return rtn;
+        AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> {
+            final String wlsName = System.getProperty(SYS_PROP_JAVA_SEC_POLICY);
+            if (wlsName != null && !wlsName.isEmpty()) {
+                return Boolean.TRUE;
             }
+            LOG.config(SYS_PROP_JAVA_SEC_POLICY + " is not set, so no validation for security services.");
+            return Boolean.FALSE;
         });
-    
-    
+
+
     @Override
-    public boolean matches(Descriptor d) {
-
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Descripter: " + d );
-        }
-
+    public boolean matches(final Descriptor d) {
         if (!javaPolicySet) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("java security policy is not set, so no validation for security servies.");
-            }
-
             return false;
         }
-        
-        if (d == null)
-            return false;
 
-        Set<String> qualifiers = d.getQualifiers();
-        if (qualifiers != null && qualifiers.size() != 0) {
-            for (String s : qualifiers) {
-                if (Secure.class.getCanonicalName().equals(s)) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("The instance is annotated with \'Secure\': " + s);                                
-                    }
+        if (d == null) {
+            return false;
+        }
+
+        LOG.log(Level.FINEST, "Checking if the descriptor matches security rules: {0}", d);
+        final Set<String> qualifiers = d.getQualifiers();
+        if (qualifiers != null) {
+            for (final String qualifier : qualifiers) {
+                if (Secure.class.getCanonicalName().equals(qualifier)) {
+                    LOG.log(Level.FINE, "The instance `{0}` is annotated with `Secure`.", d.getImplementation());
                     return true;
                 }
             }
         }
 
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("The instance has no \'Secure\' annotated ");
-        }
-
+        LOG.log(Level.FINE, "The instance `{0}` has no 'Secure' annotatation", d.getImplementation());
         return false;
     }
-
 }

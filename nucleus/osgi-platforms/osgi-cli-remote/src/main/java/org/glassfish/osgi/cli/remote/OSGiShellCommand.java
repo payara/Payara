@@ -94,17 +94,16 @@ import org.osgi.framework.ServiceReference;
 @TargetType({CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.POST, 
+        opType=RestEndpoint.OpType.POST,
         path="osgi",
         description="Remote OSGi Shell Access")
 })
 @AccessRequired(resource="domain/osgi/shell", action="execute")
 public class OSGiShellCommand implements AdminCommand, PostConstruct {
 
-    private static final Logger log = Logger.getLogger(OSGiShellCommand.class.getPackage().getName());
+    private static final Logger log = Logger.getLogger(OSGiShellCommand.class.getName());
 
-    private static final Map<String, RemoteCommandSession> sessions =
-            new ConcurrentHashMap<String, RemoteCommandSession>();
+    private static final Map<String, RemoteCommandSession> sessions = new ConcurrentHashMap<>();
 
     @Param(name = "command-line", primary = true, optional = true, multiple = true, defaultValue = "help")
     private Object commandLine;
@@ -117,7 +116,7 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
 
     @Param(name = "instance", optional = true)
     private String instance;
-    
+
     protected BundleContext ctx;
 
     @Inject
@@ -133,8 +132,7 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
         if(instance != null) {
             Server svr = domain.getServerNamed(instance);
             if(svr == null) {
-                report.setMessage("No server target found for "
-                        + instance);
+                report.setMessage("No server target found for " + instance);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -175,8 +173,7 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 return;
             } catch(CommandException x) {
-                report.setMessage("Remote execution failed: "
-                        + x.getMessage());
+                report.setMessage("Remote execution failed: " + x.getMessage());
                 report.setFailureCause(x);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
@@ -213,8 +210,7 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
             }
         } else {
             // shouldn't happen...
-            report.setMessage("Unable to deal with argument list of type "
-                    + commandLine.getClass().getName());
+            report.setMessage("Unable to deal with argument list of type " + commandLine.getClass().getName());
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
             return;
         }
@@ -293,8 +289,7 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                     CommandSession session = cp.createSession(in, out, err);
                     RemoteCommandSession remote = new RemoteCommandSession(session);
 
-                    log.log(Level.FINE, "Remote session established: {0}",
-                            remote.getId());
+                    log.log(Level.FINE, "Remote session established: {0}", remote.getId());
 
                     sessions.put(remote.getId(), remote);
                     out.println(remote.getId());
@@ -312,8 +307,7 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                     CommandSession session = remote.attach(in, out, err);
                     session.close();
 
-                    log.log(Level.FINE, "Remote session closed: {0}",
-                            remote.getId());
+                    log.log(Level.FINE, "Remote session closed: {0}", remote.getId());
                 }
             }
 

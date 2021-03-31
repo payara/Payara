@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.util;
 
@@ -742,20 +742,19 @@ public class ConfigApiLoggerInfo {
 
 
     @LogMessageInfo(
-            message = "Startup class : ",
-
+            message = "Startup class: {0}",
             level = "FINE")
     public final static String startupClass = LOGMSG_PREFIX + "-00083";
 
 
     @LogMessageInfo(
-            message = "Successful cleaned domain.xml with ",
+            message = "Successful cleaned domain.xml with {0}",
             level = "FINE")
     public final static String successfulCleanupWith = LOGMSG_PREFIX + "-00084";
 
 
     @LogMessageInfo(
-            message = " cleaning domain.xml failed ",
+            message = "Cleaning domain.xml failed, service: {0}, exception: {1}",
             cause = "unknown",
             action = "unknown",
             publish = true,
@@ -774,14 +773,13 @@ public class ConfigApiLoggerInfo {
 
     @LogMessageInfo(
             message = "Successful Upgrade domain.xml with ",
-
             publish = true,
             level = "FINE")
     public final static String successfulUpgrade = LOGMSG_PREFIX + "-00087";
 
 
     @LogMessageInfo(
-            message = " upgrading domain.xml failed ",
+            message = "Upgrading domain.xml failed, service: {0}, exception: {1}",
             cause = "unknown",
             action = "unknown",
             publish = true,
@@ -799,7 +797,7 @@ public class ConfigApiLoggerInfo {
 
 
     @LogMessageInfo(
-            message = "Problem parsing system-property element in domain.xml template",
+            message = "Problem parsing system-property element in domain.xml template {0}",
             cause = "unknown",
             action = "unknown",
             publish = true,
@@ -808,7 +806,7 @@ public class ConfigApiLoggerInfo {
 
 
     @LogMessageInfo(
-            message = "Total time to parse domain.xml: ",
+            message = "Total time to parse domain.xml: {0} ns",
             level = "FINE")
     public final static String totalTimeToParseDomain = LOGMSG_PREFIX + "-00092";
 
@@ -860,7 +858,7 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "SEVERE")
     public final static String transactionException = LOGMSG_PREFIX + "-00098";
-    
+
     @LogMessageInfo(
             message = "Exception while persisting domain.xml, changes will not be available on server restart.",
             cause = "unknown",
@@ -948,56 +946,56 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "INFO")
     public final static String cannotGetExtnType = LOGMSG_PREFIX + "-00111";
-    
-    @LogMessageInfo(message = "Failed to execute the command create-module-config", 
+
+    @LogMessageInfo(message = "Failed to execute the command create-module-config",
             publish = true, level = "INFO")
     public final static String CREATE_MODULE_CONFIG_FAILURE = "NCLS-CFGAPI-00112";
 
-    @LogMessageInfo(message = "Failed to show all default configurations not merged with domain configuration under target {0}.", 
+    @LogMessageInfo(message = "Failed to show all default configurations not merged with domain configuration under target {0}.",
             publish = true, level = "INFO")
     public final static String CREATE_MODULE_CONFIG_SHOW_ALL_FAILED = "NCLS-CFGAPI-00113";
-    
-    @LogMessageInfo(message = "Failed to create all default configuration elements that are not present in the domain.xml under target {0}.", 
+
+    @LogMessageInfo(message = "Failed to create all default configuration elements that are not present in the domain.xml under target {0}.",
             publish = true, level = "INFO")
     public final static String CREATE_MODULE_CONFIG_CREATING_ALL_FAILED = "NCLS-CFGAPI-00114";
 
-    @LogMessageInfo(message = "Failed to create module configuration for {0} under the target {1}", 
+    @LogMessageInfo(message = "Failed to create module configuration for {0} under the target {1}",
             publish = true, level = "INFO")
     public final static String CREATE_MODULE_CONFIG_CREATING_FOR_SERVICE_NAME_FAILED = "NCLS-CFGAPI-00119";
-    
-    @LogMessageInfo(message = "Failed to remove all configuration elements related to your service form domain.xml. You can use create-module-config --dryRun with your module name to see all relevant configurations and try removing the config elements.", 
+
+    @LogMessageInfo(message = "Failed to remove all configuration elements related to your service form domain.xml. You can use create-module-config --dryRun with your module name to see all relevant configurations and try removing the config elements.",
             publish = true, level = "INFO")
     public final static String DELETE_MODULE_CONFIG_FAILED_DELETING_DEPENDENT = "NCLS-CFGAPI-00120";
-    
-    @LogMessageInfo(message = "Failed to get active configuration for {0} under the target {1}", 
+
+    @LogMessageInfo(message = "Failed to get active configuration for {0} under the target {1}",
             publish = true, level = "INFO")
     public final static String GET_ACTIVE_CONFIG_FOR_SERVICE_FAILED = "NCLS-CFGAPI-00121";
 
-    @LogMessageInfo(message = "Failed to create a ClassLoader for modules directory.", 
-            publish = true, level = "SEVERE", 
+    @LogMessageInfo(message = "Failed to create a ClassLoader for modules directory.",
+            publish = true, level = "SEVERE",
             cause="The modules directory ClassLoader could not be created due to an I/O error.",
             action="Take appropriate action based on the error stack trace reported.")
     public final static String MODULES_CL_FAILED = "NCLS-CFGAPI-00122";
 
-    @LogMessageInfo(message = "Cannot add new configuration extension to the extension point.", 
-            publish = true, level = "SEVERE", 
+    @LogMessageInfo(message = "Cannot add new configuration extension to the extension point.",
+            publish = true, level = "SEVERE",
             cause="An I/O error occurred during configuration extension addition.",
             action="Take appropriate action based on the error stack trace reported.")
     public final static String CFG_EXT_ADD_FAILED = "NCLS-CFGAPI-00123";
 
-    @LogMessageInfo(message = "Can not read default configuration.", 
+    @LogMessageInfo(message = "Can not read default configuration.",
             publish = true, level = "SEVERE",
             cause="An I/O error occurred.",
             action="Take appropriate action based on the error stack trace reported.")
     public final static String DEFAULT_CFG_READ_FAILED = "NCLS-CFGAPI-00124";
 
-    @LogMessageInfo(message = "Exception while creating the command model for the generic command {0}.", 
+    @LogMessageInfo(message = "Exception while creating the command model for the generic command {0}.",
             publish = true, level = "SEVERE",
             cause="An error occurred.",
             action="Take appropriate action based on the error details in the log.")
     public final static String GENERIC_CREATE_CMD_FAILED = "NCLS-CFGAPI-00125";
 
-    @LogMessageInfo(message = "The Config Bean {0} cannot be loaded by the generic command implementation.", 
+    @LogMessageInfo(message = "The Config Bean {0} cannot be loaded by the generic command implementation.",
             publish = true, level = "SEVERE",
             cause="The config bean class could not be loaded.",
             action="Take appropriate action based on the error stack trace reported.")
@@ -1045,25 +1043,25 @@ public class ConfigApiLoggerInfo {
             action="Take appropriate action based on the error message details in the log.")
     public final static String TARGET_OBJ_NOT_FOUND = "NCLS-CFGAPI-00133";
 
-    @LogMessageInfo(message = "Exception while creating access checks for generic command {0}.", 
+    @LogMessageInfo(message = "Exception while creating access checks for generic command {0}.",
             publish = true, level = "SEVERE",
             cause="An error occurred.",
             action="Take appropriate action based on the error details in the log.")
     public final static String ACCESS_CHK_CREATE_FAILED = "NCLS-CFGAPI-00134";
 
-    @LogMessageInfo(message = "Cannot identify getter method for ListingColumn", 
+    @LogMessageInfo(message = "Cannot identify getter method for ListingColumn",
             publish = true, level = "SEVERE",
             cause="An error occurred.",
             action="Take appropriate action based on the error details in the log.")
     public final static String CANNOT_IDENTIFY_LIST_COL_GETTER = "NCLS-CFGAPI-00135";
 
-    @LogMessageInfo(message = "An error occurred while invoking getter {0} on ConfigBeanProxy.", 
+    @LogMessageInfo(message = "An error occurred while invoking getter {0} on ConfigBeanProxy.",
             publish = true, level = "SEVERE",
             cause="An error occurred.",
             action="Take appropriate action based on the error details in the log.")
     public final static String ERR_INVOKE_GETTER = "NCLS-CFGAPI-00136";
 
-    @LogMessageInfo(message = "Failure while upgrading http-service properties.", 
+    @LogMessageInfo(message = "Failure while upgrading http-service properties.",
             publish = true, level = "SEVERE",
             cause="An error occurred.",
             action="Take appropriate action based on the error details in the log.")

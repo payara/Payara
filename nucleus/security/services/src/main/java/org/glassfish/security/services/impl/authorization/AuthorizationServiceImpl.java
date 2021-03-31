@@ -41,55 +41,54 @@
 
 package org.glassfish.security.services.impl.authorization;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import java.net.URI;
+import java.security.AccessController;
+import java.security.CodeSigner;
+import java.security.CodeSource;
 import java.security.Permission;
+import java.security.Policy;
+import java.security.Principal;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.security.AccessController;
-import java.security.Principal;
-import java.security.ProtectionDomain;
-import java.security.Policy;
-import java.security.CodeSource;
-import java.security.CodeSigner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.security.auth.Subject;
 
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.glassfish.security.services.api.authorization.AzAction;
+import org.glassfish.security.services.api.authorization.AzAttributeResolver;
+import org.glassfish.security.services.api.authorization.AzEnvironment;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzResult;
 import org.glassfish.security.services.api.authorization.AzSubject;
+import org.glassfish.security.services.api.common.Attributes;
 import org.glassfish.security.services.api.context.SecurityContextService;
 import org.glassfish.security.services.common.PrivilegedLookup;
 import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.config.SecurityConfiguration;
+import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.impl.ServiceFactory;
 import org.glassfish.security.services.impl.ServiceLogging;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import com.sun.enterprise.config.serverbeans.Domain;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.logging.annotation.LogMessageInfo;
-
-import org.glassfish.security.services.api.authorization.*;
-import org.glassfish.security.services.api.common.Attributes;
-import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.spi.authorization.AuthorizationProvider;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * <code>AuthorizationServiceImpl</code> implements
  * <code>{@link org.glassfish.security.services.api.authorization.AuthorizationService}</code>
  * by delegating authorization decisions to configured
- * <code>{@link org.glassfish.security.services.spi.AuthorizationProvider}</code>
+ * <code>{@link org.glassfish.security.services.spi.authorization.AuthorizationProvider}</code>
  * instances.
  */
 @Service
@@ -106,16 +105,16 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
 
     @Inject
     private volatile ServiceLocator serviceLocator;
-    
+
     private volatile org.glassfish.security.services.config.AuthorizationService atzSvCfg;
 
     @Inject
     private volatile SecurityContextService securityContextService;
 
     private volatile SecurityProvider atzPrvConfig;
-    
+
     private volatile AuthorizationProvider provider;
-    
+
     private static final CodeSource NULL_CODESOURCE = new CodeSource(null, (CodeSigner[])null);
 
     enum InitializationState {
@@ -168,8 +167,8 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
                 logger.log(DEBUG_LEVEL, "Attempting to get Authorization provider \"{0}\".", providerName );
             }
             provider =  AccessController.doPrivileged(
-                            new PrivilegedLookup<AuthorizationProvider>(
-                                    serviceLocator, AuthorizationProvider.class, providerName)); 
+                            new PrivilegedLookup<>(
+                                    serviceLocator, AuthorizationProvider.class, providerName));
             if (provider == null) {
                 throw new IllegalStateException(
                     localStrings.getLocalString("service.atz.not_provider","Authorization Provider {0} not found.", providerName));
@@ -230,7 +229,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
 
         Set<Principal> principalset = subject.getPrincipals();
         Principal[] principalAr = (principalset.isEmpty()) ? null : principalset.toArray(new Principal[principalset.size()]);
-        ProtectionDomain pd = new ProtectionDomain(NULL_CODESOURCE, null, null, principalAr); 
+        ProtectionDomain pd = new ProtectionDomain(NULL_CODESOURCE, null, null, principalAr);
         Policy policy = Policy.getPolicy();
         boolean result = policy.implies(pd, permission);
 
@@ -515,7 +514,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
      */
     @Override
     public List<AzAttributeResolver> getAttributeResolvers() {
-        return new ArrayList<AzAttributeResolver>( attributeResolvers );
+        return new ArrayList<>( attributeResolvers );
     }
 
 
@@ -544,7 +543,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
      * Determines whether this service has been initialized.
      * @return The initialization state
      */
-    final InitializationState getInitializationState() {
+    InitializationState getInitializationState() {
         return initialized;
     }
 
@@ -554,7 +553,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
      * @return The reason why the service failed to initialize,
      * null if initialization was successful or the failure reason was unknown.
      */
-    final String getReasonInitializationFailed() {
+    String getReasonInitializationFailed() {
         return reasonInitFailed;
     }
 
@@ -563,7 +562,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
      * Checks whether this service is available.
      * @throws IllegalStateException This service is not available.
      */
-    final void checkServiceAvailability() {
+    void checkServiceAvailability() {
         if ( InitializationState.SUCCESS_INIT != getInitializationState() ) {
             throw new IllegalStateException(
                 localStrings.getLocalString("service.atz.not_avail","The Authorization service is not available.") +
