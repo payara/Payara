@@ -248,12 +248,12 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     void setHstsEnabled(String value);
     
     @Attribute(defaultValue = "" + HSTS_SUBDOMAINS, dataType = Boolean.class)
-    String getHstsSubdomainsEnabled();
-    void setHstsSubdomainsEnabled();
+    String getHstsSubdomains();
+    void setHstsSubdomains();
     
     @Attribute(defaultValue = "" + HSTS_PRELOAD, dataType = Boolean.class)
-    String getHstsPreloadEnabled();
-    void setHstsPreloadEnabled(String value);
+    String getHstsPreload();
+    void setHstsPreload(String value);
 
     @Attribute
     String getTrustAlgorithm();

@@ -505,7 +505,6 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         final Filter addedSSLFilter = configureSsl(
                                 habitat, getSsl(subProtocol),
                                 subProtocolFilterChainBuilder);
-                        final Filter hstsFilter = configureHSTSSupport(habitat, getSsl(subProtocol), filterChainBuilder);
                         subProtocolFilterChainBuilder.add(extraSslPUFilter);
                         final FilterChainBuilder extraSslPUFilterChainBuilder =
                             extraSslPUFilter.getPUFilterChainBuilder();
@@ -513,14 +512,12 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         try {
                             // temporary add SSL Filter, so subprotocol
                             // will see it
-                            extraSslPUFilterChainBuilder.add(addedSSLFilter);
-                            extraSslPUFilterChainBuilder.add(hstsFilter);
+                            extraSslPUFilterChainBuilder.add(addedSSLFilter);;
                             configureSubProtocol(habitat, networkListener,
                                     subProtocol, extraSslPUFilterChainBuilder);
                         } finally {
                             // remove SSL Filter
                             extraSslPUFilterChainBuilder.remove(addedSSLFilter);
-                            extraSslPUFilterChainBuilder.remove(hstsFilter);
                         }
                         
                         extraSslPUFilter.register(protocolFinder,

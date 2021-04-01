@@ -40,69 +40,74 @@
 package org.glassfish.grizzly.config;
 
 import java.io.IOException;
-import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Ssl;
-import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
-import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.http.HttpContent;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.grizzly.http.HttpHeader;
+import org.glassfish.grizzly.http.ProcessingState;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
- * Filter that adds HSTS header to all requests
+ *
  * @author jonathan coustick
  * @since 5.28.0
  */
-public class HSTSFilter extends BaseFilter implements ConfigAwareElement<Ssl> {
+public class HSTSFilterTest {
     
     private static final String HSTS_HEADER = "Strict-Transport-Security";
-    private static final String MAX_AGE = "max-age=31536000"; //1 year
-    private static final String SUBDOMAINS_HEADER = "; includeSubDomains";
-    private static final String PRELOAD_HEADER = "; preload";
+    private static final String EXPECTED_MAX = "max-age=31536000";
+    private static final String EXPECTED_ALL = "max-age=31536000; includeSubDomains; preload";
     
-    
-    private boolean enabled;
-    private boolean includeSubdomains;
-    private boolean preload;
-    
-    private String header;
-
-
-    @Override
-    public void configure(ServiceLocator habitat, NetworkListener networkListener, Ssl configuration) {
-        enabled = Boolean.parseBoolean(configuration.getHstsEnabled());
-        includeSubdomains = Boolean.parseBoolean(configuration.getHstsSubdomains());
-        preload = Boolean.parseBoolean(configuration.getHstsPreload());
+    @Test
+    public void headerTestJustMax() throws IOException {
+        Ssl mockedSsl = Mockito.mock(Ssl.class);
+        Mockito.when(mockedSsl.getHstsEnabled()).thenReturn("true");
+        Mockito.when(mockedSsl.getHstsPreload()).thenReturn("false");
+        Mockito.when(mockedSsl.getHstsSubdomains()).thenReturn("false");
         
-        header = MAX_AGE;
-        if (includeSubdomains) {
-            header += SUBDOMAINS_HEADER;
-        }
-        if (preload) {
-            header += PRELOAD_HEADER;
-        }
+        HttpHeader header = processFilter(mockedSsl);
+        Assert.assertEquals(EXPECTED_MAX, header.getHeader(HSTS_HEADER));
+        
     }
-
-    @Override
-    public NextAction handleRead(FilterChainContext ctx) throws IOException {
-        Object message = ctx.getMessage();
-        if (message instanceof HttpContent && enabled) {
-            HttpContent content = (HttpContent) message;
-            content.getHttpHeader().addHeader(HSTS_HEADER, header);
-        }     
+    
+    @Test
+    public void headerTestAllTrue() throws IOException {
+        Ssl mockedSsl = Mockito.mock(Ssl.class);
+        Mockito.when(mockedSsl.getHstsEnabled()).thenReturn("true");
+        Mockito.when(mockedSsl.getHstsPreload()).thenReturn("true");
+        Mockito.when(mockedSsl.getHstsSubdomains()).thenReturn("true");
         
-        return ctx.getInvokeAction();
+        HttpHeader header = processFilter(mockedSsl);
+        Assert.assertEquals(EXPECTED_ALL, header.getHeader(HSTS_HEADER));
+        
     }
-
-    @Override
-    public NextAction handleWrite(FilterChainContext ctx) throws IOException {
-        Object message = ctx.getMessage();
-        if (message instanceof HttpContent && enabled) {
-            HttpContent content = (HttpContent) message;
-            content.getHttpHeader().addHeader(HSTS_HEADER, header);
-        }     
+    
+    private HttpHeader processFilter(Ssl config) throws IOException {
+        HSTSFilter filter = new HSTSFilter();
+        filter.configure(null, null, config);
         
-        return ctx.getInvokeAction();
+        FilterChainContext context = new FilterChainContext();
+        context.setMessage(HttpContent.create(new TestHttpHeader()));
+        
+        filter.handleRead(context);
+        return ((HttpContent) context.getMessage()).getHttpHeader();
+        
+    }
+    
+    private class TestHttpHeader extends HttpHeader {
+
+        @Override
+        public boolean isRequest() {
+            return true;
+        }
+
+        @Override
+        public ProcessingState getProcessingState() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        
     }
     
 }
