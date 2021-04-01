@@ -88,6 +88,8 @@ public class SSLParams {
     private Boolean tlsEnabled=true;
     private Boolean tlsRollBackEnabled=false;
     private Boolean hstsEnabled = false;
+    private Boolean hstsSubDomains = false;
+    private Boolean hstsPreload = false;
 
 
 
@@ -347,6 +349,22 @@ public class SSLParams {
 
     public void setHstsEnabled(String hstsEnabled) {
         this.hstsEnabled = Boolean.parseBoolean(hstsEnabled);
+    }
+
+    public Boolean getHstsSubDomains() {
+        return hstsSubDomains;
+    }
+
+    public void setHstsSubDomains(Boolean hstsSubDomains) {
+        this.hstsSubDomains = hstsSubDomains;
+    }
+
+    public Boolean getHstsPreload() {
+        return hstsPreload;
+    }
+
+    public void setHstsPreload(Boolean hstsPreload) {
+        this.hstsPreload = hstsPreload;
     }
 
 }

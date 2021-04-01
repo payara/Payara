@@ -62,7 +62,9 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     boolean TLS12_ENABLED = true;
     boolean TLS13_ENABLED = false;
     boolean TLS_ROLLBACK_ENABLED = true;
-    boolean HSTS_ENABLED = true;
+    boolean HSTS_ENABLED = false;
+    boolean HSTS_SUBDOMAINS = false;
+    boolean HSTS_PRELOAD = false;
     boolean RENEGOTIATE_ON_CLIENT_AUTH_WANT = true;
     int MAX_CERT_LENGTH = 5;
     int DEFAULT_SSL_INACTIVITY_TIMEOUT = 30;
@@ -244,6 +246,14 @@ public interface Ssl extends ConfigBeanProxy, PropertyBag {
     @Attribute(defaultValue = "" + HSTS_ENABLED, dataType = Boolean.class)
     String getHstsEnabled();
     void setHstsEnabled(String value);
+    
+    @Attribute(defaultValue = "" + HSTS_SUBDOMAINS, dataType = Boolean.class)
+    String getHstsSubdomainsEnabled();
+    void setHstsSubdomainsEnabled();
+    
+    @Attribute(defaultValue = "" + HSTS_PRELOAD, dataType = Boolean.class)
+    String getHstsPreloadEnabled();
+    void setHstsPreloadEnabled(String value);
 
     @Attribute
     String getTrustAlgorithm();

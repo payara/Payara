@@ -40,16 +40,12 @@
 package org.glassfish.grizzly.config;
 
 import java.io.IOException;
-import org.glassfish.grizzly.Buffer;
-import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Ssl;
+import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.http.HttpContent;
-import org.glassfish.grizzly.http.HttpHeader;
-import org.glassfish.grizzly.http.HttpServerFilter;
-import org.glassfish.grizzly.http.util.HeaderValue;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
@@ -57,27 +53,42 @@ import org.glassfish.hk2.api.ServiceLocator;
  * @author jonathan coustick
  * @since 5.28.0
  */
-public class HSTSFilter extends HttpServerFilter implements ConfigAwareElement<Ssl> {
+public class HSTSFilter extends BaseFilter implements ConfigAwareElement<Ssl> {
     
     private static final String HSTS_HEADER = "Strict-Transport-Security";
     private static final String MAX_AGE = "max-age=31536000"; //1 year
+    private static final String SUBDOMAINS_HEADER = "; includeSubDomains";
+    private static final String PRELOAD_HEADER = "; preload";
+    
     
     private boolean enabled;
-
+    private boolean includeSubdomains;
+    private boolean preload;
+    
+    private String header;
 
 
     @Override
     public void configure(ServiceLocator habitat, NetworkListener networkListener, Ssl configuration) {
         enabled = Boolean.parseBoolean(configuration.getHstsEnabled());
+        includeSubdomains = Boolean.parseBoolean(configuration.getHstsSubdomainsEnabled());
+        preload = Boolean.parseBoolean(configuration.getHstsPreloadEnabled());
+        
+        header = MAX_AGE;
+        if (includeSubdomains) {
+            header += MAX_AGE;
+        }
+        if (preload) {
+            header += PRELOAD_HEADER;
+        }
     }
 
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
         Object message = ctx.getMessage();
-        if (message instanceof HttpContent) {
+        if (message instanceof HttpContent && enabled) {
             HttpContent content = (HttpContent) message;
-            content.getHttpHeader().addHeader(HSTS_HEADER, MAX_AGE);
-            
+            content.getHttpHeader().addHeader(HSTS_HEADER, header);
         }     
         
         return ctx.getInvokeAction();
@@ -86,22 +97,12 @@ public class HSTSFilter extends HttpServerFilter implements ConfigAwareElement<S
     @Override
     public NextAction handleWrite(FilterChainContext ctx) throws IOException {
         Object message = ctx.getMessage();
-        if (message instanceof HttpContent) {
+        if (message instanceof HttpContent && enabled) {
             HttpContent content = (HttpContent) message;
-            content.getHttpHeader().addHeader(HSTS_HEADER, MAX_AGE);
-            
+            content.getHttpHeader().addHeader(HSTS_HEADER, header);
         }     
         
         return ctx.getInvokeAction();
     }
-    
-
-    @Override
-    protected boolean onHttpHeaderParsed(HttpHeader httpHeader, Buffer buffer, FilterChainContext ctx) {
-        httpHeader.addHeader(HSTS_HEADER, MAX_AGE);
-        return false;
-    }
-    
-    
     
 }
