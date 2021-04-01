@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2017-2021] Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.launcher.GFLauncher;
@@ -50,6 +50,7 @@ import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.ObjectAnalyzer;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +70,6 @@ import static com.sun.enterprise.admin.cli.CLIConstants.WALL_CLOCK_START_PROP;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINER;
 import static org.glassfish.api.admin.RuntimeType.DAS;
 
 /**
@@ -150,9 +150,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
 
     @Override
     protected int executeCommand() throws CommandException {
-        if (logger.isLoggable(FINER)) {
-            logger.finer(toString());
-        }
+        logger.finer(() -> toString());
 
         if (sync.equals("none")) {
             logger.info(Strings.get("Instance.nosync"));
@@ -213,12 +211,9 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
                             break;
                         default:
                             return returnValue;
-                        }
-
-                    if (env.debug()) {
-                        System.setProperty(WALL_CLOCK_START_PROP, Long.toString(System.currentTimeMillis()));
                     }
 
+                    System.setProperty(WALL_CLOCK_START_PROP, Instant.now().toString());
                     getLauncher().relaunch();
                 }
 

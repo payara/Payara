@@ -43,6 +43,7 @@ package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
 import java.io.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.logging.*;
 
@@ -197,15 +198,11 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                             return returnValue;
                     }
 
-                    if (env.debug())
-                        System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
-                                "" + System.currentTimeMillis());
-
+                    System.setProperty(CLIConstants.WALL_CLOCK_START_PROP, Instant.now().toString());
                     launcher.relaunch();
                 }
 
-            }
-            else {
+            } else {
                 helper.waitForServer();
                 helper.report();
                 return SUCCESS;

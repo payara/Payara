@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -57,6 +57,7 @@ public class CLIConstants {
     public static final int     RESTART_NORMAL                  = 10;
     public static final int     RESTART_DEBUG_ON                = 11;
     public static final int     RESTART_DEBUG_OFF               = 12;
+    /** System property containing ISO-8601 formatted timestamp of the server instance start command execution. */
     public static final String  WALL_CLOCK_START_PROP           = "WALL_CLOCK_START";
     public static final String  MASTER_PASSWORD                 = "AS_ADMIN_MASTERPASSWORD";
     public static final int     SUCCESS                         = 0;

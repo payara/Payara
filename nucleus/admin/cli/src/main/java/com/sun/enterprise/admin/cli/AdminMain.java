@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -230,13 +231,8 @@ public class AdminMain {
             return ERROR;
         }
 
+        System.setProperty(CLIConstants.WALL_CLOCK_START_PROP, Instant.now().toString());
         getLogManager().reconfigure(new PayaraLogManagerConfiguration(LOGGING_CFG), this::reconfigureLogging, null);
-
-        if (env.debug()) {
-            System.setProperty(CLIConstants.WALL_CLOCK_START_PROP, Long.toString(System.currentTimeMillis()));
-            logger.log(FINER, "CLASSPATH= {0}\nCommands: {1}",
-                new Object[] {System.getProperty("java.class.path"), Arrays.toString(args)});
-        }
 
         // Set the thread's context class loader so that everyone can load from our extension directory.
         Set<File> extensions = getExtensions();
@@ -255,6 +251,10 @@ public class AdminMain {
 
         classPath = SmartFile.sanitizePaths(System.getProperty("java.class.path"));
         className = AdminMain.class.getName();
+
+        if (logger.isLoggable(FINER)) {
+            logger.log(FINER, "Classpath: {0}\nArguments: {1}", new Object[] {classPath, Arrays.toString(args)});
+        }
 
         if (args.length == 0) {
             // Special case: no arguments is the same as "multimode".

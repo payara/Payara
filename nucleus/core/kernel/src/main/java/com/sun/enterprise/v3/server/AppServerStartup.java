@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.enterprise.v3.server;
@@ -50,13 +50,13 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.Result;
-import com.sun.enterprise.admin.report.DoNothingActionReporter;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -69,7 +69,6 @@ import javax.inject.Singleton;
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener.Event;
@@ -96,7 +95,6 @@ import org.glassfish.hk2.runlevel.RunLevelFuture;
 import org.glassfish.hk2.runlevel.RunLevelListener;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
-import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
@@ -117,7 +115,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     enum State {
         INITIAL, STARTING, STARTED, SHUTDOWN_REQUESTED, SHUTTING_DOWN, SHUT_DOWN;
     }
-    
+
     StartupContext context;
 
     final static Logger logger = KernelLoggerInfo.getLogger();
@@ -147,18 +145,18 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
 
     @Inject
     SystemTasks pidWriter;
-    
+
     @Inject
     RunLevelController runLevelController;
 
     @Inject
     Provider<CommandRunner> commandRunnerProvider;
-    
+
     @Inject
     private AppInstanceListener appInstanceListener;
-    
+
     private MasterRunLevelListener masterListener;
-    
+
     private long platformInitTime;
 
     private String platform = System.getProperty("GlassFish_Platform");
@@ -168,18 +166,18 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
      * as long as GlassFish kernel is up.
      */
     private Thread serverThread;
-    private AtomicReference<State> state = new AtomicReference<>(State.INITIAL);
-    
+    private final AtomicReference<State> state = new AtomicReference<>(State.INITIAL);
+
     private final static String THREAD_POLICY_PROPERTY = "org.glassfish.startupThreadPolicy";
     private final static String MAX_STARTUP_THREAD_PROPERTY = "org.glassfish.maxStartupThreads";
-    
+
     private final static String POLICY_FULLY_THREADED = "FULLY_THREADED";
     private final static String POLICY_USE_NO_THREADS = "USE_NO_THREADS";
-    
+
     private final static int DEFAULT_STARTUP_THREADS = 4;
     private final static String FELIX_PLATFORM = "Felix";
     private final static String STATIC_PLATFORM = "Static";
-    
+
     @Override
     public void postConstruct() {
         masterListener = new MasterRunLevelListener(runLevelController);
@@ -203,7 +201,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 runLevelController.setThreadingPolicy(RunLevelController.ThreadingPolicy.USE_NO_THREADS);
             }
         }
-        
+
         int numThreads = Integer.getInteger(MAX_STARTUP_THREAD_PROPERTY, DEFAULT_STARTUP_THREADS);
         if (numThreads > 0) {
             logger.fine("Startup controller will use " + numThreads + " + threads");
@@ -212,7 +210,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         else {
             logger.fine("Startup controller will use infinite threads");
         }
-        
+
     }
 
     @Override
@@ -248,7 +246,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
 
         //if (appInstanceListener.)
-        
+
         final CountDownLatch latch = new CountDownLatch(1);
 
         // spwan a non-daemon thread that waits indefinitely for shutdown request.
@@ -273,7 +271,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                         }
                     }
                 }
-                
+
                 logger.logp(level, "AppServerStartup", "run",
                         "[{0}] exiting", new Object[]{this});
             }
@@ -295,12 +293,12 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     }
 
     /**
-     * 
+     *
      * @return True is startup succeeded, false if an error occurred preventing
      * the server from starting
      */
     public boolean run() {
-        
+
         if (context==null) {
             System.err.println("Startup context not provided, cannot continue");
             return false;
@@ -330,20 +328,20 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 new ProcessEnvironment(ProcessEnvironment.ProcessType.Embedded):
                 new ProcessEnvironment(ProcessEnvironment.ProcessType.Server)));
         config.commit();
-        
-        
+
+
 
         // activate the run level services
         masterListener.reset();
-        
+
         long initFinishTime = 0L;
         long startupFinishTime = 0L;
-        
+
         if (!proceedTo(InitRunLevel.VAL)) {
             appInstanceListener.stopRecordingTimes();
             return false;
         }
-        
+
         if (!logger.isLoggable(level)) {
             // Stop recording the times, no-one cares
             appInstanceListener.stopRecordingTimes();
@@ -353,41 +351,41 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             logger.log(level, "Init level done in " +
                 (initFinishTime - context.getCreationTime()) + " ms");
         }
-        
+
         appInstanceListener.startRecordingFutures();
         if (!proceedTo(StartupRunLevel.VAL)) {
             appInstanceListener.stopRecordingTimes();
             return false;
         }
-        
+
         if (!postStartupJob()) {
             appInstanceListener.stopRecordingTimes();
             return false;
         }
-        
+
         if (logger.isLoggable(level)) {
-            
+
             startupFinishTime = System.currentTimeMillis();
             logger.log(level, "Startup level done in " +
                 (startupFinishTime - initFinishTime) + " ms");
         }
-        
+
         if (!proceedTo(PostStartupRunLevel.VAL)) {
             appInstanceListener.stopRecordingTimes();
             return false;
         }
-        
+
         if (logger.isLoggable(level)) {
-            
+
             long postStartupFinishTime = System.currentTimeMillis();
             logger.log(level, "PostStartup level done in " +
                 (postStartupFinishTime - startupFinishTime) + " ms");
         }
         return true;
     }
-    
+
     /**
-     * 
+     *
      * @return True if started successfully, false otherwise
      */
     private boolean postStartupJob() {
@@ -405,18 +403,6 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 nowTime - context.getCreationTime()});
 
         printModuleStatus(systemRegistry, level);
-
-        String wallClockStart = System.getProperty("WALL_CLOCK_START");
-        if (wallClockStart != null) {
-            try {
-                // it will only be set when called from AsadminMain and the env. variable AS_DEBUG is set to true
-                long realstart = Long.parseLong(wallClockStart);
-                logger.log(Level.INFO, KernelLoggerInfo.startupTotalTime, (System.currentTimeMillis() - realstart));
-            }
-            catch(Exception e) {
-                // do nothing.
-            }
-        }
 
         for (Future<Result<Thread>> future : futures) {
             try {
@@ -436,19 +422,36 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             }
         }
 
+        logStartupTime();
         env.setStatus(ServerEnvironment.Status.started);
         events.send(new Event(EventTypes.SERVER_READY), false);
         pidWriter.writePidFile();
-        
+
         return true;
     }
 
+    private void logStartupTime() {
+        if (!logger.isLoggable(Level.CONFIG)) {
+            return;
+        }
+        String wallClockStart = System.getProperty("WALL_CLOCK_START");
+        if (wallClockStart != null) {
+            try {
+                final Instant realstart = Instant.parse(wallClockStart);
+                logger.log(Level.CONFIG, KernelLoggerInfo.startupTotalTime,
+                    realstart.until(Instant.now(), ChronoUnit.MILLIS));
+            } catch(Exception e) {
+                // do nothing.
+            }
+        }
+    }
+
     public static void printModuleStatus(ModulesRegistry registry, Level level) {
-    	
+
         if (!logger.isLoggable(level) || registry == null) {
             return;
         }
-        
+
         StringBuilder sb = new StringBuilder("Module Status Report Begins\n");
         // first started :
 
@@ -549,7 +552,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
      * @return false if an error occurred that required server shutdown; true otherwise
      */
     private boolean proceedTo(int runLevel) {
-        
+
         try {
             runLevelController.proceedTo(runLevel);
         } catch (Exception e) {
@@ -557,30 +560,32 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             shutdown();
             return false;
         }
-        
+
         return !masterListener.isForcedShutdown();
     }
-    
+
     @Service
     public static class AppInstanceListener implements InstanceLifecycleListener {
         private static final Filter FILTER = new Filter() {
 
             @Override
             public boolean matches(Descriptor d) {
-                if (d.getScope() != null && d.getScope().equals(RunLevel.class.getName())) return true;
-                
+                if (d.getScope() != null && d.getScope().equals(RunLevel.class.getName())) {
+                    return true;
+                }
+
                 return false;
             }
-            
+
         };
-        
+
         @Inject
         private Provider<RunLevelController> controllerProvider;
-        
+
         private volatile RunLevelController controller;
-        
-        private Map<String, Long> startTimes = new HashMap<String, Long>();
-        private LinkedHashMap<String, Long> recordedTimes = new LinkedHashMap<String, Long>();
+
+        private Map<String, Long> startTimes = new HashMap<>();
+        private LinkedHashMap<String, Long> recordedTimes = new LinkedHashMap<>();
         private LinkedList<Future<Result<Thread>>> futures = null;
 
         @Override
@@ -594,123 +599,131 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 doPreProduction(lifecycleEvent.getActiveDescriptor());
                 return;
             }
-            
+
             if (InstanceLifecycleEventType.POST_PRODUCTION.equals(lifecycleEvent.getEventType())) {
                 doPostProduction(lifecycleEvent);
                 return;
             }
-            
+
             if (InstanceLifecycleEventType.PRE_DESTRUCTION.equals(lifecycleEvent.getEventType())) {
                 doPreDestruction(lifecycleEvent.getActiveDescriptor());
                 return;
             }
-            
+
             // All other events ignored
         }
-        
+
         private RunLevelController getController() {
-            if (controller != null) return controller;
-            
+            if (controller != null) {
+                return controller;
+            }
+
             synchronized (this) {
-                if (controller != null) return controller;
-                
+                if (controller != null) {
+                    return controller;
+                }
+
                 controller = controllerProvider.get();
                 return controller;
             }
         }
-        
+
         private void stopRecordingTimes() {
             startTimes = null;
             recordedTimes = null;
         }
-        
+
         private void startRecordingFutures() {
-            futures = new LinkedList<Future<Result<Thread>>>();
+            futures = new LinkedList<>();
         }
-        
+
         private LinkedList<Future<Result<Thread>>> getFutures() {
             LinkedList<Future<Result<Thread>>> retVal = futures;
             futures = null;
             return retVal;
         }
-        
+
         private void doPreProduction(ActiveDescriptor<?> descriptor) {
             if (startTimes != null) {
                 startTimes.put(descriptor.getImplementation(), System.currentTimeMillis());
             }
-            
+
             if ((getController().getCurrentRunLevel() > InitRunLevel.VAL) && logger.isLoggable(level)) {
                 logger.log(level, "Running service " + descriptor.getImplementation());
             }
         }
-        
+
         @SuppressWarnings("unchecked")
         private void doPostProduction(InstanceLifecycleEvent event) {
             ActiveDescriptor<?> descriptor = event.getActiveDescriptor();
-            
+
             if (startTimes != null && recordedTimes != null) {
-            
+
                 Long startupTime = startTimes.remove(descriptor.getImplementation());
-                if (startupTime == null) return;
-            
+                if (startupTime == null) {
+                    return;
+                }
+
                 recordedTimes.put(descriptor.getImplementation(),
                     (System.currentTimeMillis() - startupTime));
             }
-            
+
             if ((getController().getCurrentRunLevel() > InitRunLevel.VAL) && logger.isLoggable(level)) {
                 logger.log(level, "Service " + descriptor.getImplementation() + " finished " +
                     event.getLifecycleObject());
             }
-            
+
             if (futures != null) {
                 Object startup = event.getLifecycleObject();
                 if (startup instanceof FutureProvider) {
                     FutureProvider<Result<Thread>> futureProvider = (FutureProvider<Result<Thread>>) startup;
-                
+
                     futures.addAll(futureProvider.getFutures());
                 }
             }
         }
-        
+
         private void doPreDestruction(ActiveDescriptor<?> descriptor) {
             if (logger.isLoggable(level)) {
                 logger.log(level, "Releasing service {0}", descriptor.getImplementation());
             }
         }
-        
+
         private LinkedHashMap<String, Long> getAllRecordedTimes() {
             LinkedHashMap<String, Long> retVal = recordedTimes;
-            
+
             stopRecordingTimes();  // Do not hold onto data that will never be needed again
-            
+
             return retVal;
         }
-        
+
     }
-    
+
     @Singleton
     private class MasterRunLevelListener implements RunLevelListener {
         private final RunLevelController controller;
-        
+
         private volatile boolean forcedShutdown = false;
-        
+
         private MasterRunLevelListener(RunLevelController controller) {
             this.controller = controller;
         }
-        
+
         private void reset() {
             forcedShutdown = false;
         }
-        
+
         private boolean isForcedShutdown() { return forcedShutdown; }
 
         @Override
         public void onCancelled(RunLevelFuture future,
                 int previousProceedTo) {
             logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested);
-            
-            if (future.isDown()) return;
-            
+
+            if (future.isDown()) {
+                return;
+            }
+
             forcedShutdown = true;
             shutdown();
         }
@@ -722,13 +735,13 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 logger.log(Level.WARNING, "An error occured when the system was coming down", info.getError());
                 return;
             }
-            
+
             logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested, info.getError());
-            
+
             if (controller.getCurrentRunLevel() >= InitRunLevel.VAL) {
                 logger.log(Level.SEVERE, KernelLoggerInfo.startupFailure, info.getError());
             }
-            
+
             forcedShutdown = true;
             shutdown();
         }
@@ -738,9 +751,9 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             if (achievedLevel == PostStartupRunLevel.VAL) {
                 if (logger.isLoggable(level)) {
                     printModuleStatus(systemRegistry, level);
-                    
+
                     LinkedHashMap<String, Long> recordedTimes = appInstanceListener.getAllRecordedTimes();
-                    
+
                     int lcv = 0;
                     if (recordedTimes != null) {
                         for (Map.Entry<String, Long> service : recordedTimes.entrySet()) {
@@ -750,6 +763,6 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 }
             }
         }
-        
+
     }
 }

@@ -664,26 +664,23 @@ public abstract class GFLauncher {
         addIgnoreNull(cmdLine, getClasspath());
         addIgnoreNull(cmdLine, debugOptions);
 
-        String CLIStartTime = System.getProperty("WALL_CLOCK_START");
-
-        if (CLIStartTime != null && CLIStartTime.length() > 0) {
-            cmdLine.add("-DWALL_CLOCK_START=" + CLIStartTime);
+        String cliStartInstant = System.getProperty("WALL_CLOCK_START");
+        if (cliStartInstant != null && !cliStartInstant.isEmpty()) {
+            cmdLine.add("-DWALL_CLOCK_START=" + cliStartInstant);
         }
 
-        if (jvmOptions != null)
+        if (jvmOptions != null) {
             addIgnoreNull(cmdLine, jvmOptions.toStringArray());
-
+        }
         GFLauncherNativeHelper nativeHelper = new GFLauncherNativeHelper(info, javaConfig, jvmOptions, profiler);
         addIgnoreNull(cmdLine, nativeHelper.getCommands());
         addIgnoreNull(cmdLine, getMainClass());
 
         try {
             addIgnoreNull(cmdLine, getInfo().getArgsAsList());
-        }
-        catch (GFLauncherException gfle) {
+        } catch (GFLauncherException gfle) {
             throw gfle;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             //harmless
         }
     }
