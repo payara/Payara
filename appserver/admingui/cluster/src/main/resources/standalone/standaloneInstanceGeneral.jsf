@@ -70,7 +70,9 @@
             if ("#{pageSession.status}=REQUIRES_RESTART"){
                 setAttribute(key="isRestartRequired" value="#{true}");
             }
-            gfr.getInstanceDebugInfo();
+            if (! #{pageSession.isStopped}){
+                gfr.getInstanceDebugInfo();
+            }
 
        />
     </event>

@@ -107,7 +107,7 @@ public class ListInstancesCommand implements AdminCommand {
     InstanceStateService stateService;
     @Param(optional = true, defaultValue = "false", name = "long", shortName = "l")
     private boolean long_opt;
-    @Param(optional = true, defaultValue = "60000")
+    @Param(optional = true, defaultValue = "-1")
     private String timeoutmsec;
     @Param(optional = true, defaultValue = "false")
     private boolean standaloneonly;
@@ -125,16 +125,40 @@ public class ListInstancesCommand implements AdminCommand {
     private ActionReport report;
     private ActionReport.MessagePart top = null;
     private static final String EOL = "\n";
+    private static final String READ_TIMEOUT_KEY = "AS_ADMIN_READTIMEOUT";
+    private static final String LIST_INSTANCES_TIMEOUT_KEY = "AS_ADMIN_LISTINSTANCESTIMEOUT";
 
+    private int getDefaultTimeout() {
+        String ct = System.getProperty(LIST_INSTANCES_TIMEOUT_KEY);
+        if (ct == null) {
+            ct = System.getenv(LIST_INSTANCES_TIMEOUT_KEY);
+        }
+        if (ct == null) {
+            ct = System.getProperty(READ_TIMEOUT_KEY);
+        }
+        if (ct == null) {
+            ct = System.getenv(READ_TIMEOUT_KEY);
+        }
+        if (ct != null) {
+            return Integer.parseInt(ct);
+        } else {
+            return 10 * 1000;       // 10 seconds
+        }
+
+    }
+    
     @Override
     public void execute(AdminCommandContext context) {
         // setup
         int timeoutInMsec;
         try {
             timeoutInMsec = Integer.parseInt(timeoutmsec);
+            if (timeoutInMsec < 0) {
+                timeoutInMsec = getDefaultTimeout();
+            }
         }
         catch (Exception e) {
-            timeoutInMsec = 60000;
+            timeoutInMsec = getDefaultTimeout();
         }
 
         report = context.getActionReport();

@@ -282,6 +282,8 @@ public final class InstanceInfo {
             InstanceRestCommandExecutor ice =
                     new InstanceRestCommandExecutor(habitat, "__locations", FailurePolicy.Error, FailurePolicy.Error,
                     svr, host, port, logger, map, aReport, aResult);
+            ice.setConnectTimeout(timeoutInMsec);
+            ice.setReadTimeout(timeoutInMsec);
             return stateService.submitJob(svr, ice, aResult);
             /*
             String ret = rac.executeCommand(map).trim();
