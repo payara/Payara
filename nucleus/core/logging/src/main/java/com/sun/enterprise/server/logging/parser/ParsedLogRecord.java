@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.server.logging.parser;
-
-import fish.payara.logging.jul.event.LogEvent;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,11 +48,9 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- *
  * @author sanshriv
- *
  */
-public final class ParsedLogRecord implements LogEvent {
+public final class ParsedLogRecord {
 
     public static final String DATE_TIME = "timestamp";
     public static final String LOG_LEVEL_NAME = "level";
@@ -96,7 +92,7 @@ public final class ParsedLogRecord implements LogEvent {
 
     private boolean matchedLogQuery;
 
-    private Map<String, Object> fields = new HashMap<String,Object>();
+    private final Map<String, Object> fields = new HashMap<>();
 
     public ParsedLogRecord() {
         fields.put(SUPP_ATTRS, new Properties());
@@ -209,9 +205,10 @@ public final class ParsedLogRecord implements LogEvent {
         fields.put(name, value);
     }
 
+    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("Log record: <"+fields + ">" + LogParserFactory.NEWLINE);
+        buffer.append("Log record: <" + fields + ">" + LogParserFactory.NEWLINE);
         return buffer.toString();
     }
 

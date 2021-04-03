@@ -40,8 +40,6 @@
 
 package fish.payara.acme.formatter;
 
-import fish.payara.logging.jul.event.LogEvent;
-import fish.payara.logging.jul.event.LogEventBroadcaster;
 import fish.payara.logging.jul.formatter.AnsiColor;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
@@ -227,40 +225,6 @@ public class ODLLogFormatterTest {
                 "] [levelValue: 1000] [[")),
             () -> assertThat(lines[1], equalTo("  Failure!")),
             () -> assertThat(lines[2], equalTo("java.lang.RuntimeException: Ooops!"))
-        );
-    }
-
-    @Test
-    public void broadcaster() {
-        final LogRecord record = new LogRecord(Level.WARNING, "XYZ");
-        record.setSourceClassName(getClass().getSimpleName());
-        record.setSourceMethodName("broadcaster");
-        record.setLoggerName("TheLoggerName");
-        final ODLLogFormatter formatter = new ODLLogFormatter();
-        formatter.setProductId("TheTest");
-        final AtomicReference<LogEvent> eventRef = new AtomicReference<>();
-        final LogEventBroadcaster broadcaster = e -> eventRef.set(e);
-        formatter.setLogEventBroadcaster(broadcaster);
-        final String log = formatter.format(record);
-        assertAll(
-            () -> assertNotNull(log, "log"),
-            () -> assertNotNull(eventRef.get(), "event")
-        );
-        final LogEvent event = eventRef.get();
-        assertAll(
-            () -> assertEquals("TheTest", event.getComponentId(), "getComponentId"),
-            () -> assertNull(event.getECId(), "getECId"),
-            () -> assertEquals("WARNING", event.getLevel(), "getLevel"),
-            () -> assertEquals(900, event.getLevelValue(), "getLevelValue"),
-            () -> assertEquals("TheLoggerName", event.getLogger(), "getLogger"),
-            () -> assertEquals("XYZ", event.getMessage(), "getMessage"),
-            () -> assertNull(event.getMessageId(), "getMessageId"),
-            () -> assertThat("getSupplementalAttributes", event.getSupplementalAttributes().entrySet(), hasSize(3)),
-            () -> assertEquals(1L, event.getThreadId(), "getThreadId"),
-            () -> assertEquals("main", event.getThreadName(), "getThreadName"),
-            () -> assertThat("getTimeMillis", event.getTimeMillis(), greaterThan(System.currentTimeMillis() - 100)),
-            () -> assertThat("getTimestamp", event.getTimestamp(), matchesPattern(P_TIMESTAMP)),
-            () -> assertNull(event.getUser(), "getUser")
         );
     }
 

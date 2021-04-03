@@ -42,7 +42,6 @@
 
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.event.LogEventImpl;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
@@ -94,7 +93,7 @@ public class UniformLogFormatter extends AnsiColorFormatter {
     }
 
     @Override
-    public BroadcastingFormatterOutput formatRecord(final LogRecord record) {
+    public String formatRecord(final LogRecord record) {
         return formatEnhancedLogRecord(MSG_RESOLVER.resolve(record));
     }
 
@@ -134,34 +133,15 @@ public class UniformLogFormatter extends AnsiColorFormatter {
     }
 
 
-    private BroadcastingFormatterOutput formatEnhancedLogRecord(final EnhancedLogRecord record) {
+    private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
         try {
             final String message = getPrintedMessage(record);
             if (message == null) {
-                return new BroadcastingFormatterOutput("", null);
+                return "";
             }
 
             final String timestamp = getDateTimeFormatter().format(record.getTime());
             final Level logLevel = record.getLevel();
-            final LogEventImpl logEvent;
-            if (isLogEventBroadcasterSet()) {
-                logEvent = new LogEventImpl();
-                logEvent.setTimestamp(timestamp);
-                logEvent.setComponentId(getProductId());
-                logEvent.setLevel(logLevel.getName());
-                logEvent.setMessageId(record.getMessageKey());
-                logEvent.setLogger(record.getLoggerName());
-                logEvent.setThreadName(record.getThreadName());
-                logEvent.setThreadId(record.getThreadID());
-                logEvent.setTimeMillis(record.getMillis());
-                logEvent.setLevelValue(logLevel.intValue());
-                logEvent.addSupplementalAttribute(LABEL_RECORDNUMBER, record.getSequenceNumber());
-                logEvent.addSupplementalAttribute(LABEL_CLASSNAME, record.getSourceClassName());
-                logEvent.addSupplementalAttribute(LABEL_METHODNAME, record.getSourceMethodName());
-                logEvent.setMessage(message);
-            } else {
-                logEvent = null;
-            }
             final StringBuilder output = new StringBuilder(REC_BUFFER_CAPACITY).append(recordBeginMarker);
             appendTimestamp(output, timestamp);
             appendLogLevel(output, logLevel);
@@ -176,10 +156,10 @@ public class UniformLogFormatter extends AnsiColorFormatter {
             output.append(message);
             output.append(recordEndMarker);
             output.append(lineSeparator()).append(lineSeparator());
-            return new BroadcastingFormatterOutput(output.toString(), logEvent);
+            return output.toString();
         } catch (final Exception e) {
             new ErrorManager().error("Error in formatting Logrecord", e, ErrorManager.FORMAT_FAILURE);
-            return new BroadcastingFormatterOutput(record.getMessage(), null);
+            return record.getMessage();
         }
     }
 

@@ -40,8 +40,6 @@
 
 package fish.payara.acme.formatter;
 
-import fish.payara.logging.jul.event.LogEvent;
-import fish.payara.logging.jul.event.LogEventBroadcaster;
 import fish.payara.logging.jul.formatter.AnsiColor;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
@@ -217,21 +215,6 @@ public class UniformLogFormatterTest {
             () -> assertThat(lines[0], stringContainsInOrder(
                     "0|SEVERE|||_ThreadID=",";_ThreadName=","_TimeMillis=", "LevelValue=1000;|Failure!")),
             () -> assertThat(lines[1], equalTo("java.lang.RuntimeException: Ooops!"))
-        );
-    }
-
-    @Test
-    public void broadcaster() {
-        final LogRecord record = new LogRecord(Level.INFO, "XYZ");
-        final UniformLogFormatter formatter = new UniformLogFormatter();
-        formatter.setMultiLineMode(false);
-        final AtomicReference<LogEvent> event = new AtomicReference<>();
-        final LogEventBroadcaster broadcaster = e -> event.set(e);
-        formatter.setLogEventBroadcaster(broadcaster);
-        final String log = formatter.format(record);
-        assertAll(
-            () -> assertNotNull(log, "log"),
-            () -> assertNotNull(event.get(), "event")
         );
     }
 

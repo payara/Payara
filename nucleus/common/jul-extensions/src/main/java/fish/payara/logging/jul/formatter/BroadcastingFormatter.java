@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,6 @@
 
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.event.LogEvent;
-import fish.payara.logging.jul.event.LogEventBroadcaster;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 
 import java.util.logging.Formatter;
@@ -62,7 +60,6 @@ public abstract class BroadcastingFormatter extends Formatter {
     private static final boolean LOG_SOURCE_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE);
     private static final boolean RECORD_NUMBER_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER);
 
-    private LogEventBroadcaster logEventBroadcasterDelegate;
     private String productId;
     private boolean printRecordNumber;
     private boolean printSource;
@@ -73,12 +70,12 @@ public abstract class BroadcastingFormatter extends Formatter {
     }
 
     /**
-     * Formats the record and if {@link #isLogEventBroadcasterSet()}, prepares also log event.
+     * Formats the record.
      *
      * @param record
-     * @return {@link BroadcastingFormatterOutput}
+     * @return formatted record, final record for output
      */
-    protected abstract BroadcastingFormatterOutput formatRecord(LogRecord record);
+    protected abstract String formatRecord(LogRecord record);
 
     /**
      * @param printRecordNumber true enables printing the log record sequence number
@@ -124,12 +121,6 @@ public abstract class BroadcastingFormatter extends Formatter {
         return productId;
     }
 
-    /**
-     * @param logEventBroadcaster {@link LogEventBroadcaster} consuming {@link LogEvent}s
-     */
-    public void setLogEventBroadcaster(final LogEventBroadcaster logEventBroadcaster) {
-        logEventBroadcasterDelegate = logEventBroadcaster;
-    }
 
     @Override
     public String formatMessage(final LogRecord record) {
@@ -139,19 +130,7 @@ public abstract class BroadcastingFormatter extends Formatter {
 
     @Override
     public final String format(final LogRecord record) {
-        final BroadcastingFormatterOutput output = formatRecord(record);
-        if (isLogEventBroadcasterSet() && output.logEvent != null) {
-            logEventBroadcasterDelegate.informLogEventListeners(output.logEvent);
-        }
-        return output.formattedRecord;
-    }
-
-
-    /**
-     * @return true if the delegate is set
-     */
-    protected boolean isLogEventBroadcasterSet() {
-        return logEventBroadcasterDelegate != null;
+        return formatRecord(record);
     }
 
 
@@ -169,36 +148,5 @@ public abstract class BroadcastingFormatter extends Formatter {
             return message;
         }
         return message + System.lineSeparator() + stackTrace;
-    }
-
-
-    /**
-     * Contains the output of the formatter.
-     * <ul>
-     * <li>formattedRecord for the output file of stdout or whatever
-     * <li>logEvent for a delegate, if there is some set.
-     * </ul>
-     */
-    protected static final class BroadcastingFormatterOutput {
-
-        /**
-         * String message - can be formatted as JSON, YAML, XML, single line or whatever
-         * the formatter does.
-         */
-        public final String formattedRecord;
-
-        /**
-         * {@link LogEvent} used to broadcast the logging event to other objects.
-         */
-        public final LogEvent logEvent;
-
-        /**
-         * @param formattedRecord nullable
-         * @param logEvent nullable
-         */
-        public BroadcastingFormatterOutput(final String formattedRecord, final LogEvent logEvent) {
-            this.formattedRecord = formattedRecord;
-            this.logEvent = logEvent;
-        }
     }
 }

@@ -43,10 +43,6 @@ package fish.payara.logging.jul.handler;
 import fish.payara.logging.jul.cfg.JulConfigurationFactory;
 import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
-import fish.payara.logging.jul.event.LogEvent;
-import fish.payara.logging.jul.event.LogEventBroadcaster;
-import fish.payara.logging.jul.event.LogEventImpl;
-import fish.payara.logging.jul.event.LogEventListener;
 import fish.payara.logging.jul.formatter.BroadcastingFormatter;
 import fish.payara.logging.jul.formatter.LogFormatHelper;
 import fish.payara.logging.jul.i18n.MessageResolver;
@@ -87,7 +83,7 @@ import static java.util.logging.Level.SEVERE;
  */
 // FIXME: uses the file until the end, but another run is already starting.
 //        _ThreadName=FelixStartLevel vs _ThreadName=main - verify if it is still a problem!
-public class PayaraLogHandler extends StreamHandler implements LogEventBroadcaster, ExternallyManagedLogHandler {
+public class PayaraLogHandler extends StreamHandler implements ExternallyManagedLogHandler {
 
     private static final String LOGGER_NAME_STDOUT = "javax.enterprise.logging.stdout";
     private static final String LOGGER_NAME_STDERR = "javax.enterprise.logging.stderr";
@@ -104,7 +100,6 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
     private PayaraLogHandlerConfiguration configuration;
 
     private final Timer rotationTimer = new Timer("log-rotation-timer-for-" + getClass().getSimpleName());
-    private final List<LogEventListener> logEventListeners = new ArrayList<>();
 
     private volatile PayaraLogHandlerStatus status;
     private LoggingPump pump;
@@ -145,19 +140,6 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
     public PayaraLogHandlerConfiguration getConfiguration() {
         return this.configuration.clone();
-    }
-
-
-    public boolean addLogEventListener(final LogEventListener listener) {
-        if (logEventListeners.contains(listener)) {
-            return false;
-        }
-        return logEventListeners.add(listener);
-    }
-
-
-    public boolean removeLogEventListener(final LogEventListener listener) {
-        return logEventListeners.remove(listener);
     }
 
 
@@ -217,11 +199,6 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
 
         final EnhancedLogRecord enhancedLogRecord = MSG_RESOLVER.resolve(record);
         logRecordBuffer.add(enhancedLogRecord);
-        // if we don't have a formatter with this capability, we will do that.
-        if (!LogEventBroadcaster.class.isInstance(getFormatter())) {
-            final LogEvent logEvent = new LogEventImpl(enhancedLogRecord);
-            informLogEventListeners(logEvent);
-        }
     }
 
 
@@ -230,14 +207,6 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
         // pump might be closed, super.isLoggable would refuse all records then.
         return this.configuration.isLogToFile()
             && (this.status == PayaraLogHandlerStatus.ACCEPTING || super.isLoggable(record));
-    }
-
-
-    @Override
-    public void informLogEventListeners(final LogEvent logEvent) {
-        for (final LogEventListener listener : logEventListeners) {
-            listener.messageLogged(logEvent);
-        }
     }
 
 
@@ -322,7 +291,6 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
         if (BroadcastingFormatter.class.isInstance(formatter)) {
             final BroadcastingFormatter broadcast = (BroadcastingFormatter) formatter;
             broadcast.setProductId(this.configuration.getProductId());
-            broadcast.setLogEventBroadcaster(this);
         }
         final String detectedFormatterName = new LogFormatHelper().detectFormatter(configuration.getLogFile());
         if (detectedFormatterName != null && !formatter.getClass().getName().equals(detectedFormatterName)) {

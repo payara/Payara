@@ -42,7 +42,6 @@
 
 package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.event.LogEventImpl;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
@@ -100,7 +99,7 @@ public class ODLLogFormatter extends AnsiColorFormatter {
     }
 
     @Override
-    public BroadcastingFormatterOutput formatRecord(final LogRecord record) {
+    public String formatRecord(final LogRecord record) {
         return formatEnhancedLogRecord(MSG_RESOLVER.resolve(record));
     }
 
@@ -128,11 +127,11 @@ public class ODLLogFormatter extends AnsiColorFormatter {
         this.ecId = ecId;
     }
 
-    private BroadcastingFormatterOutput formatEnhancedLogRecord(final EnhancedLogRecord record) {
+    private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
         try {
             final String message = getPrintedMessage(record);
             if (message == null) {
-                return new BroadcastingFormatterOutput("", null);
+                return "";
             }
             final boolean multiLine = multiLineMode || message.contains(lineSeparator());
             final String timestamp = getDateTimeFormatter().format(record.getTime());
@@ -140,27 +139,6 @@ public class ODLLogFormatter extends AnsiColorFormatter {
             final String msgId = record.getMessageKey();
             final String loggerName = record.getLoggerName();
             final String threadName = record.getThreadName();
-            final LogEventImpl logEvent;
-            if (isLogEventBroadcasterSet()) {
-                logEvent = new LogEventImpl();
-                logEvent.setTimestamp(timestamp);
-                logEvent.setComponentId(getProductId());
-                logEvent.setLevel(logLevel.getName());
-                logEvent.setMessageId(msgId);
-                logEvent.setLogger(loggerName);
-                logEvent.setThreadName(threadName);
-                logEvent.setThreadId(record.getThreadID());
-                logEvent.setUser(this.userId);
-                logEvent.setECId(this.ecId);
-                logEvent.setTimeMillis(record.getMillis());
-                logEvent.setLevelValue(logLevel.intValue());
-                logEvent.addSupplementalAttribute(LABEL_RECORDNUMBER, record.getSequenceNumber());
-                logEvent.addSupplementalAttribute(LABEL_CLASSNAME, record.getSourceClassName());
-                logEvent.addSupplementalAttribute(LABEL_METHODNAME, record.getSourceMethodName());
-                logEvent.setMessage(message);
-            } else {
-                logEvent = null;
-            }
             final StringBuilder output = new StringBuilder(REC_BUFFER_CAPACITY);
             appendTimestamp(output, timestamp);
             appendProductId(output);
@@ -185,10 +163,10 @@ public class ODLLogFormatter extends AnsiColorFormatter {
                 output.append(FIELD_END_MARKER).append(FIELD_END_MARKER);
             }
             output.append(lineSeparator()).append(lineSeparator());
-            return new BroadcastingFormatterOutput(output.toString(), logEvent);
+            return output.toString();
         } catch (final Exception e) {
             new ErrorManager().error("Error in formatting Logrecord", e, ErrorManager.FORMAT_FAILURE);
-            return new BroadcastingFormatterOutput("", null);
+            return record.getMessage();
         }
     }
 

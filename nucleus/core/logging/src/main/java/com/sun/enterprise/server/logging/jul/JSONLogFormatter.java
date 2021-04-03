@@ -39,7 +39,6 @@
  */
 package com.sun.enterprise.server.logging.jul;
 
-import fish.payara.logging.jul.event.LogEventImpl;
 import fish.payara.logging.jul.formatter.BroadcastingFormatter;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport;
 import fish.payara.logging.jul.i18n.MessageResolver;
@@ -56,6 +55,8 @@ import java.util.logging.LogRecord;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_ECID;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_USERID;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 /**
@@ -81,7 +82,6 @@ public class JSONLogFormatter extends BroadcastingFormatter {
         RECORD_NUMBER_IN_KEY_VALUE = "true".equals(recordCount);
     }
 
-    private long recordNumber = 0;
     private DateTimeFormatter recordDateFormat;
 
     // Event separator
@@ -114,6 +114,8 @@ public class JSONLogFormatter extends BroadcastingFormatter {
      */
     @Deprecated
     private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
+    private static final String ECID = System.getProperty(JVM_OPT_LOGGING_ECID);
+    private static final String USER_ID = System.getProperty(JVM_OPT_LOGGING_USERID);
 
     public JSONLogFormatter() {
         this.recordDateFormat = ISO_OFFSET_DATE_TIME.withDecimalStyle(DecimalStyle.STANDARD.withZeroDigit('0'));
@@ -146,28 +148,24 @@ public class JSONLogFormatter extends BroadcastingFormatter {
      * @return BroadcastingFormatterOutput with event and JSON formatted record.
      */
     @Override
-    public BroadcastingFormatterOutput formatRecord(LogRecord record) {
+    public String formatRecord(LogRecord record) {
         return formatLogRecord(record);
     }
 
-    private BroadcastingFormatterOutput formatLogRecord(LogRecord record) {
+    private String formatLogRecord(LogRecord record) {
         return formatEnhancedLogRecord(messageResolver.resolve(record));
     }
 
-    private BroadcastingFormatterOutput formatEnhancedLogRecord(final EnhancedLogRecord record) {
+    private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
         try {
-            LogEventImpl logEvent = new LogEventImpl();
             JsonObjectBuilder eventObject = Json.createObjectBuilder();
 
             String timestampValue = recordDateFormat.format(record.getTime());
-            logEvent.setTimestamp(timestampValue);
             eventObject.add(TIMESTAMP_KEY, timestampValue);
 
             Level eventLevel = record.getLevel();
-            logEvent.setLevel(eventLevel.getName());
             eventObject.add(LOG_LEVEL_KEY, eventLevel.getLocalizedName());
 
-            logEvent.setComponentId(getProductId());
             eventObject.add(PRODUCT_ID_KEY, getProductId());
 
             String loggerName = record.getLoggerName();
@@ -175,50 +173,42 @@ public class JSONLogFormatter extends BroadcastingFormatter {
                 loggerName = "";
             }
 
-            logEvent.setLogger(loggerName);
             eventObject.add(LOGGER_NAME_KEY, loggerName);
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
                 // Thread ID
                 int threadId = record.getThreadID();
-                logEvent.setThreadId(threadId);
                 eventObject.add(THREAD_ID_KEY, String.valueOf(threadId));
 
                 String threadName = record.getThreadName();
-                logEvent.setThreadName(threadName);
                 eventObject.add(THREAD_NAME_KEY, threadName);
             }
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID)) {
-                String userId = logEvent.getUser();
-                if (null != userId && !userId.isEmpty()) {
-                    eventObject.add(USER_ID_KEY, userId);
+                if (USER_ID != null && !USER_ID.isEmpty()) {
+                    eventObject.add(USER_ID_KEY, USER_ID);
                 }
             }
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID)) {
-                String ecid = logEvent.getECId();
-                if (null != ecid && !ecid.isEmpty()) {
-                    eventObject.add(ECID_KEY, ecid);
+                if (ECID != null && !ECID.isEmpty()) {
+                    eventObject.add(ECID_KEY, ECID);
                 }
             }
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
                 long timestamp = record.getMillis();
-                logEvent.setTimeMillis(timestamp);
                 eventObject.add(TIME_MILLIS_KEY, String.valueOf(timestamp));
             }
 
             Level level = record.getLevel();
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
                 int levelValue = level.intValue();
-                logEvent.setLevelValue(levelValue);
                 eventObject.add(LEVEL_VALUE_KEY, String.valueOf(levelValue));
             }
 
             String messageId = record.getMessageKey();
             if (messageId != null && !messageId.isEmpty()) {
-                logEvent.setMessageId(messageId);
                 eventObject.add(MESSAGE_ID_KEY, messageId);
             }
 
@@ -226,21 +216,17 @@ public class JSONLogFormatter extends BroadcastingFormatter {
                 String sourceClassName = record.getSourceClassName();
 
                 if (sourceClassName != null && !sourceClassName.isEmpty()) {
-                    logEvent.getSupplementalAttributes().put(CLASS_NAME, sourceClassName);
                     eventObject.add(CLASS_NAME, sourceClassName);
                 }
 
                 String sourceMethodName = record.getSourceMethodName();
                 if (sourceMethodName != null && !sourceMethodName.isEmpty()) {
-                    logEvent.getSupplementalAttributes().put(METHOD_NAME, sourceMethodName);
                     eventObject.add(METHOD_NAME, sourceMethodName);
                 }
             }
 
             if (RECORD_NUMBER_IN_KEY_VALUE) {
-                recordNumber++;
-                logEvent.getSupplementalAttributes().put(RECORD_NUMBER, recordNumber);
-                eventObject.add(RECORD_NUMBER, String.valueOf(recordNumber));
+                eventObject.add(RECORD_NUMBER, String.valueOf(record.getSequenceNumber()));
             }
 
             Object[] parameters = record.getParameters();
@@ -249,18 +235,18 @@ public class JSONLogFormatter extends BroadcastingFormatter {
                     if (parameter instanceof Map) {
                         for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) parameter).entrySet()) {
                             // there are implementations that allow <null> keys...
-                            String key;
-                            if (entry.getKey() != null) {
-                                key = entry.getKey().toString();
-                            } else {
+                            final String key;
+                            if (entry.getKey() == null) {
                                 key = "null";
+                            } else {
+                                key = entry.getKey().toString();
                             }
 
                             // also handle <null> values...
-                            if (entry.getValue() != null) {
-                                eventObject.add(key, entry.getValue().toString());
-                            } else {
+                            if (entry.getValue() == null) {
                                 eventObject.add(key, "null");
+                            } else {
+                                eventObject.add(key, entry.getValue().toString());
                             }
                         }
                     }
@@ -281,26 +267,23 @@ public class JSONLogFormatter extends BroadcastingFormatter {
                     }
                     final String stackTrace = record.getThrownStackTrace();
                     traceObject.add(STACK_TRACE_KEY, stackTrace);
-                    logEvent.setMessage(stackTrace);
                     eventObject.add(THROWABLE_KEY, traceObject.build());
                 }
             } else {
                 final String stackTrace = record.getThrownStackTrace();
                 if (stackTrace == null) {
-                    logEvent.setMessage(logMessage);
                     eventObject.add(LOG_MESSAGE_KEY, logMessage);
                 } else {
                     JsonObjectBuilder traceObject =Json.createObjectBuilder();
                     traceObject.add(EXCEPTION_KEY, logMessage);
                     traceObject.add(STACK_TRACE_KEY, stackTrace);
-                    logEvent.setMessage(stackTrace);
                     eventObject.add(THROWABLE_KEY, traceObject.build());
                 }
             }
-            return new BroadcastingFormatterOutput(eventObject.build().toString() + LINE_SEPARATOR, logEvent);
+            return eventObject.build().toString() + LINE_SEPARATOR;
         } catch (Exception ex) {
             new ErrorManager().error("Error in formatting Logrecord", ex, ErrorManager.FORMAT_FAILURE);
-            return new BroadcastingFormatterOutput(record.getMessage(), null);
+            return record.getMessage();
         }
     }
 
