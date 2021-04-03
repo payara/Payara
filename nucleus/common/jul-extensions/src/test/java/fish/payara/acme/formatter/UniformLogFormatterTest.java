@@ -43,7 +43,6 @@ package fish.payara.acme.formatter;
 import fish.payara.logging.jul.event.LogEvent;
 import fish.payara.logging.jul.event.LogEventBroadcaster;
 import fish.payara.logging.jul.formatter.AnsiColor;
-import fish.payara.logging.jul.formatter.FormatterDelegate;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
@@ -234,18 +233,6 @@ public class UniformLogFormatterTest {
             () -> assertNotNull(log, "log"),
             () -> assertNotNull(event.get(), "event")
         );
-    }
-
-    @Test
-    public void delegate() {
-        final LogRecord record = new LogRecord(Level.FINE, "XYZ");
-        final UniformLogFormatter formatter = new UniformLogFormatter();
-        formatter.setMultiLineMode(false);
-        final FormatterDelegate delegate = (output, level, x, z) -> output.append("Hi! Level=").append(level).append(";");
-        formatter.setDelegate(delegate);
-        final String log = formatter.format(record);
-        assertNotNull(log, "log");
-        assertThat(log, stringContainsInOrder("|FINE|", "Hi! Level=FINE;|XYZ|#]"));
     }
 
 

@@ -175,9 +175,6 @@ public class ODLLogFormatter extends AnsiColorFormatter {
             appendSequenceNumber(output, record.getSequenceNumber());
             appendSource(output, record.getSourceClassName(), record.getSourceMethodName());
 
-            // FIXME: Why it is not going to logEvent too?
-            formatDelegatePart(output, logLevel, recordFieldSeparator, ": ");
-
             if (multiLine) {
                 output.append(FIELD_BEGIN_MARKER).append(FIELD_BEGIN_MARKER);
                 output.append(lineSeparator());

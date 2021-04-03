@@ -43,7 +43,6 @@ package fish.payara.acme.formatter;
 import fish.payara.logging.jul.event.LogEvent;
 import fish.payara.logging.jul.event.LogEventBroadcaster;
 import fish.payara.logging.jul.formatter.AnsiColor;
-import fish.payara.logging.jul.formatter.FormatterDelegate;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
@@ -263,18 +262,6 @@ public class ODLLogFormatterTest {
             () -> assertThat("getTimestamp", event.getTimestamp(), matchesPattern(P_TIMESTAMP)),
             () -> assertNull(event.getUser(), "getUser")
         );
-    }
-
-    @Test
-    public void delegate() {
-        final LogRecord record = new LogRecord(Level.FINE, "XYZ");
-        final ODLLogFormatter formatter = new ODLLogFormatter();
-        formatter.setMultiLineMode(false);
-        final FormatterDelegate delegate = (output, level, x, z) -> output.append("[Hi! Level=").append(level).append("] ");
-        formatter.setDelegate(delegate);
-        final String log = formatter.format(record);
-        assertNotNull(log, "log");
-        assertThat(log, stringContainsInOrder("[FINE]", "[Hi! Level=FINE] XYZ"));
     }
 
 

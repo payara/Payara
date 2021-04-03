@@ -89,7 +89,6 @@ public abstract class AnsiColorFormatter extends BroadcastingFormatter {
     private HashMap<Level,AnsiColor> colors;
     private boolean ansiColor;
     private DateTimeFormatter dateTimeFormatter;
-    private FormatterDelegate delegate;
 
     /**
      * Creates the formatter, initialized from (starting from highest priority)
@@ -218,27 +217,5 @@ public abstract class AnsiColorFormatter extends BroadcastingFormatter {
      */
     public final void setDateTimeFormatter(final String format) {
         setDateTimeFormatter(format == null ? DEFAULT_DATETIME_FORMATTER : DateTimeFormatter.ofPattern(format));
-    }
-
-    /**
-     * @param delegate {@link FormatterDelegate} adding useful information to the formatter output
-     */
-    public void setDelegate(final FormatterDelegate delegate) {
-        PayaraLoggingTracer.trace(getClass(), () -> "Delegate set: " + delegate);
-        this.delegate = delegate;
-    }
-
-    /**
-     * Calls the {@link FormatterDelegate} if it is set. The formatter can add some useful information.
-     *
-     * @param output
-     * @param level
-     */
-    // FIXME: Give it a lifecycle, and write test,because I don't know how it works with undeploys (another thread)
-    protected void formatDelegatePart(final StringBuilder output, final Level level, final String pathSeparator,
-        final String valueSeparator) {
-        if (delegate != null) {
-            delegate.format(output, level, pathSeparator, valueSeparator);
-        }
     }
 }

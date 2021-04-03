@@ -40,9 +40,6 @@
 
 package fish.payara.logging.jul.cfg;
 
-import fish.payara.logging.jul.formatter.FormatterDelegate;
-import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
-
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -78,7 +75,6 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
     private boolean logStandardStreams;
 
     private Formatter formatterConfiguration;
-    private FormatterDelegate formatterDelegate;
     private String productId;
 
     public Level getLevel() {
@@ -224,17 +220,6 @@ public class PayaraLogHandlerConfiguration implements Cloneable {
 
     public void setFormatterConfiguration(final Formatter formatterConfiguration) {
         this.formatterConfiguration = formatterConfiguration;
-    }
-
-
-    public FormatterDelegate getFormatterDelegate() {
-        return formatterDelegate;
-    }
-
-
-    public void setFormatterDelegate(final FormatterDelegate formatterDelegate) {
-        PayaraLoggingTracer.trace(getClass(), () -> "setFormatterDelegate: " + formatterDelegate);
-        this.formatterDelegate = formatterDelegate;
     }
 
 

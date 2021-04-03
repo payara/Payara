@@ -47,7 +47,6 @@ import fish.payara.logging.jul.event.LogEvent;
 import fish.payara.logging.jul.event.LogEventBroadcaster;
 import fish.payara.logging.jul.event.LogEventImpl;
 import fish.payara.logging.jul.event.LogEventListener;
-import fish.payara.logging.jul.formatter.AnsiColorFormatter;
 import fish.payara.logging.jul.formatter.BroadcastingFormatter;
 import fish.payara.logging.jul.formatter.LogFormatHelper;
 import fish.payara.logging.jul.i18n.MessageResolver;
@@ -320,9 +319,6 @@ public class PayaraLogHandler extends StreamHandler implements LogEventBroadcast
             this.configuration.getMaxHistoryFiles(), this::setOutputStream, super::close);
 
         final Formatter formatter = configuration.getFormatterConfiguration();
-        if (formatter instanceof AnsiColorFormatter) {
-            ((AnsiColorFormatter) formatter).setDelegate(this.configuration.getFormatterDelegate());
-        }
         if (BroadcastingFormatter.class.isInstance(formatter)) {
             final BroadcastingFormatter broadcast = (BroadcastingFormatter) formatter;
             broadcast.setProductId(this.configuration.getProductId());

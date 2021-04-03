@@ -43,68 +43,62 @@ package com.sun.ejb.containers;
 
 import com.sun.ejb.base.io.EJBObjectInputStreamHandler;
 import com.sun.ejb.base.io.EJBObjectOutputStreamHandler;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.transaction.api.JavaEETransaction;
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.admin.monitor.callflow.Agent;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.transaction.api.JavaEETransaction;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
+
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-import org.glassfish.ejb.spi.CMPDeployer;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
-import org.glassfish.api.admin.ProcessEnvironment;
-import org.glassfish.api.admin.config.ReferenceContainer;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.server.ServerEnvironmentImpl;
-import org.glassfish.flashlight.provider.ProbeProviderFactory;
-
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.Vector;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.transaction.RollbackException;
+import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import javax.transaction.Synchronization;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Vector;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
-
+import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.config.ReferenceContainer;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbTimerService;
+import org.glassfish.ejb.spi.CMPDeployer;
+import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.flashlight.provider.ProbeProviderFactory;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author Mahesh Kannan
@@ -127,8 +121,8 @@ public class EjbContainerUtilImpl
     @Inject
     JavaEEIOUtils javaEEIOUtils;
 
-    private  Map<Long, BaseContainer> id2Container
-            = new ConcurrentHashMap<Long, BaseContainer>();
+    private final  Map<Long, BaseContainer> id2Container
+            = new ConcurrentHashMap<>();
 
     private  Timer _timer;
 
@@ -160,9 +154,6 @@ public class EjbContainerUtilImpl
     @Inject
     private ServerEnvironmentImpl env;
 
-    @Inject @Optional
-    private Agent callFlowAgent;
-
     @Inject
     private ProcessEnvironment processEnv;
 
@@ -188,16 +179,6 @@ public class EjbContainerUtilImpl
         ejbContainer = serverConfig.getExtensionByType(EjbContainer.class);
 
         ClassLoader ejbImplClassLoader = EjbContainerUtilImpl.class.getClassLoader();
-        if (callFlowAgent == null) {
-            callFlowAgent = (Agent) Proxy.newProxyInstance(ejbImplClassLoader,
-                    new Class[] {Agent.class},
-                    new InvocationHandler() {
-                        @Override
-                        public Object invoke(Object proxy, Method m, Object[] args) {
-                            return null;
-                        }
-                    });
-        }
 
         defaultThreadPoolExecutor = createThreadPoolExecutor(DEFAULT_THREAD_POOL_NAME);
 
@@ -441,10 +422,6 @@ public class EjbContainerUtilImpl
         txData.activeTxCache = cache;
     }
 
-    @Override
-    public Agent getCallFlowAgent() {
-        return callFlowAgent;
-    }
 
     @Override
     public void addWork(Runnable task) {

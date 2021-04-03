@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -45,7 +45,6 @@ import com.sun.appserv.server.util.Version;
 import com.sun.common.util.logging.LoggingConfig;
 import com.sun.common.util.logging.LoggingConfigFactory;
 import com.sun.common.util.logging.LoggingPropertyNames;
-import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
@@ -53,7 +52,6 @@ import com.sun.enterprise.server.logging.jul.ExtendedJulConfigurationFactory;
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 
 import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 import fish.payara.logging.jul.PayaraLogManager;
@@ -64,8 +62,6 @@ import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfigurationParser;
-import fish.payara.logging.jul.formatter.AnsiColorFormatter;
-import fish.payara.logging.jul.formatter.FormatterDelegate;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
 
 import java.beans.PropertyChangeEvent;
@@ -75,7 +71,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -110,7 +105,6 @@ import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
@@ -184,9 +178,6 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
     @Inject
     private ServiceLocator serviceLocator;
-
-    @Inject @Optional
-    private Agent agent;
 
     @Inject
     private FileMonitoring fileMonitoring;
@@ -418,13 +409,12 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         }
     }
 
-    private void createOrUpdatePayaraLogHandler(final FormatterDelegate agentDelegate) {
+    private void createOrUpdatePayaraLogHandler() {
         final PayaraLogManager manager = PayaraLogManager.getLogManager();
         final PayaraLogHandler payaraLogHandler = manager.getPayaraLogHandler();
         final ExtendedJulConfigurationFactory factory = new ExtendedJulConfigurationFactory();
         final PayaraLogHandlerConfiguration payaraLogHandlerCfg = factory
             .createPayaraLogHandlerConfiguration(PayaraLogHandler.class, "server.log");
-        payaraLogHandlerCfg.setFormatterDelegate(agentDelegate);
         payaraLogHandlerCfg.setProductId(resolveProductId());
         if (payaraLogHandler == null) {
            addHandler(new PayaraLogHandler(payaraLogHandlerCfg));
@@ -995,8 +985,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
         @Override
         public void run() {
-            final FormatterDelegate agentDelegate = agent == null ? null : new AgentFormatterDelegate(agent);
-            createOrUpdatePayaraLogHandler(agentDelegate);
+            createOrUpdatePayaraLogHandler();
             final List<Handler> handlerServicesToSet = getHandlerServices(cfg);
             for (Handler handlerService : handlerServicesToSet) {
                 addHandler(handlerService);
@@ -1011,24 +1000,6 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
                 final Filter filter = serviceLocator.getService(Filter.class, filterClassName);
                 if (rootLogger != null && rootLogger.getFilter() == null) {
                     rootLogger.setFilter(filter);
-                }
-            }
-            if (agentDelegate != null) {
-                final Enumeration<String> loggerNames = manager.getLoggerNames();
-                LOG.config(() -> "Configuring formatters of handlers of existing non-root loggers ... \n" + loggerNames);
-                while (loggerNames.hasMoreElements()) {
-                    String loggerName = loggerNames.nextElement();
-                    Logger logger = manager.getLogger(loggerName);
-                    if (logger == null || logger.getName().isEmpty()) {
-                        // skip root logger (managed by createOrUpdatePayaraLogHandler)
-                        continue;
-                    }
-                    for (Handler handler : logger.getHandlers()) {
-                        Formatter formatter = handler.getFormatter();
-                        if (formatter != null && formatter instanceof AnsiColorFormatter) {
-                            ((AnsiColorFormatter) formatter).setDelegate(agentDelegate);
-                        }
-                    }
                 }
             }
 

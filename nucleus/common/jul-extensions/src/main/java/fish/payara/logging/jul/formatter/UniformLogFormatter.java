@@ -259,7 +259,6 @@ public class UniformLogFormatter extends AnsiColorFormatter {
             output.append(LABEL_RECORDNUMBER).append(VALUE_SEPARATOR).append(recNumber).append(PAIR_SEPARATOR);
         }
 
-        formatDelegatePart(output, level, PAIR_SEPARATOR, VALUE_SEPARATOR);
         output.append(recordFieldSeparator);
     }
 }

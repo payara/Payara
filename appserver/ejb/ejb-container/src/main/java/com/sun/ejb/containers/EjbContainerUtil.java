@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -52,7 +52,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.server.ServerEnvironmentImpl;
-import com.sun.enterprise.admin.monitor.callflow.Agent;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -81,86 +80,84 @@ public interface EjbContainerUtil {
 	// removed once Deployment teams changes to add ContainerType are complete
 	String EJB_CONTAINER_NAME = "ejb";
 
-    public static final String DEFAULT_THREAD_POOL_NAME = "__ejb-thread-pool";
+    String DEFAULT_THREAD_POOL_NAME = "__ejb-thread-pool";
 
     // Used by the TimerService upgrade
-    public long MINIMUM_TIMER_DELIVERY_INTERVAL = 1000;
+    long MINIMUM_TIMER_DELIVERY_INTERVAL = 1000;
 
     // Used by the TimerService upgrade
-    public String TIMER_SERVICE_UPGRADED = "ejb-timer-service-upgraded";
+    String TIMER_SERVICE_UPGRADED = "ejb-timer-service-upgraded";
 
-    public GlassFishORBHelper getORBHelper();
-    
-    public ServiceLocator getServices();
+    GlassFishORBHelper getORBHelper();
 
-    public  EjbTimerService getEjbTimerService(String target);
+    ServiceLocator getServices();
 
-    public  void registerContainer(BaseContainer container);
+    EjbTimerService getEjbTimerService(String target);
 
-    public  void unregisterContainer(BaseContainer container);
+    void registerContainer(BaseContainer container);
 
-    public  BaseContainer getContainer(long id);
-    public  BaseContainer getContainer(long id, long appUniqueId);
+    void unregisterContainer(BaseContainer container);
 
-    public  EjbDescriptor getDescriptor(long id);
+    BaseContainer getContainer(long id);
+    BaseContainer getContainer(long id, long appUniqueId);
 
-    public  ClassLoader getClassLoader(long id);
+    EjbDescriptor getDescriptor(long id);
 
-    public  Timer getTimer();
+    ClassLoader getClassLoader(long id);
 
-    public  void setInsideContainer(boolean bool);
+    Timer getTimer();
 
-    public  boolean isInsideContainer();
+    void setInsideContainer(boolean bool);
 
-    public  InvocationManager getInvocationManager();
+    boolean isInsideContainer();
 
-    public  InjectionManager getInjectionManager();
+    InvocationManager getInvocationManager();
 
-    public  GlassfishNamingManager getGlassfishNamingManager();
+    InjectionManager getInjectionManager();
 
-    public  ComponentEnvManager getComponentEnvManager();
+    GlassfishNamingManager getGlassfishNamingManager();
 
-    public  ComponentInvocation getCurrentInvocation();
+    ComponentEnvManager getComponentEnvManager();
 
-    public JavaEETransactionManager getTransactionManager();
+    ComponentInvocation getCurrentInvocation();
 
-    public ServerContext getServerContext();
+    JavaEETransactionManager getTransactionManager();
 
-    public  ContainerSynchronization getContainerSync(Transaction jtx)
+    ServerContext getServerContext();
+
+    ContainerSynchronization getContainerSync(Transaction jtx)
         throws RollbackException, SystemException;
 
-    public void removeContainerSync(Transaction tx);
+    void removeContainerSync(Transaction tx);
 
-    public void registerPMSync(Transaction jtx, Synchronization sync)
+    void registerPMSync(Transaction jtx, Synchronization sync)
         throws RollbackException, SystemException;
 
-    public EjbContainer getEjbContainer();
+    EjbContainer getEjbContainer();
 
-    public ServerEnvironmentImpl getServerEnvironment();
+    ServerEnvironmentImpl getServerEnvironment();
 
-    public Agent getCallFlowAgent();
-    
-    public Vector getBeans(Transaction jtx);
-    
-    public Object getActiveTxCache(Transaction jtx);
-    
-    public void setActiveTxCache(Transaction jtx, Object cache);
+    Vector getBeans(Transaction jtx);
 
-    public void addWork(Runnable task);
+    Object getActiveTxCache(Transaction jtx);
 
-    public EjbDescriptor ejbIdToDescriptor(long ejbId);
+    void setActiveTxCache(Transaction jtx, Object cache);
 
-    public boolean isEJBLite();
+    void addWork(Runnable task);
 
-    public boolean isEmbeddedServer();
+    EjbDescriptor ejbIdToDescriptor(long ejbId);
 
-    public ProbeProviderFactory getProbeProviderFactory();
+    boolean isEJBLite();
 
-    public boolean isDas();
-    
-    public ThreadPoolExecutor getThreadPoolExecutor(String poolName);
+    boolean isEmbeddedServer();
 
-    public JavaEEIOUtils getJavaEEIOUtils();
+    ProbeProviderFactory getProbeProviderFactory();
 
-    public Deployment getDeployment();
+    boolean isDas();
+
+    ThreadPoolExecutor getThreadPoolExecutor(String poolName);
+
+    JavaEEIOUtils getJavaEEIOUtils();
+
+    Deployment getDeployment();
 }
