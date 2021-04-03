@@ -60,8 +60,8 @@ final class ODLLogParser implements LogParser {
 
     private static final int ODL_FIXED_FIELD_COUNT = 5;
 
-    private static final Pattern ODL_LINE_HEADER_PATTERN = Pattern
-        .compile("\\[(\\d){4}\\-(\\d){2}\\-(\\d){2}T(\\d){2}\\:(\\d){2}\\:(\\d){2}\\.(\\d){3}[\\+|\\-](\\d){4}\\].*");
+    private static final Pattern ODL_LINE_HEADER_PATTERN = Pattern.compile(
+        "\\[(\\d){4}\\-(\\d){2}\\-(\\d){2}T(\\d){2}\\:(\\d){2}\\:(\\d){2}\\.(\\d){3}[\\+|\\-](\\d){2}(\\:)?(\\d){2}\\].*");
     private static final Pattern ODL_FIELD_PATTERN = Pattern.compile("(\\[[^\\[\\]]*?\\])+?");
 
 
