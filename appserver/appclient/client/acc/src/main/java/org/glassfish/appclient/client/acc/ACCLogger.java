@@ -55,6 +55,9 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import com.sun.enterprise.util.io.FileUtils;
+
+import fish.payara.logging.jul.PayaraLogger;
+
 import org.glassfish.appclient.client.acc.config.LogService;
 
 /**
@@ -74,14 +77,13 @@ import org.glassfish.appclient.client.acc.config.LogService;
  *
  * @author tjquinn
  */
-public class ACCLogger extends Logger {
+public class ACCLogger extends PayaraLogger {
 
     private static final String ACC_LOGGER_NAME = "GlassFish.ACC";
-
     private static final Level DEFAULT_ACC_LOG_LEVEL = Level.INFO;
 
     public ACCLogger(final LogService logService) throws IOException {
-        super(ACC_LOGGER_NAME, null);
+        super(ACC_LOGGER_NAME);
         init(logService);
     }
 
@@ -150,7 +152,7 @@ public class ACCLogger extends Logger {
         if (filePath == null || filePath.equals("")) {
             return null;
         }
-        handler = new FileHandler(filePath, true /* append */);
+        handler = new FileHandler(filePath, true);
         handler.setFormatter(new SimpleFormatter());
         handler.setLevel(level);
         File lockFile = new File(filePath + ".lck");
@@ -158,20 +160,17 @@ public class ACCLogger extends Logger {
         return handler;
     }
 
-    private static void reviseLogger(final Logger logger,
-            final Level level,
-            final Handler handler) {
-            AccessController.doPrivileged(
-                    new PrivilegedAction() {
-                        public Object run() {
-                            if ( ! logger.isLoggable(level)) {
-                                logger.setLevel(level);
-                            }
-                            if (handler != null) {
-                                logger.addHandler(handler);
-                            }
-                            return null;
-                        }
-                    });
-        }
+
+    private static void reviseLogger(final Logger logger, final Level level, final Handler handler) {
+        final PrivilegedAction<Void> action = () -> {
+            if (!logger.isLoggable(level)) {
+                logger.setLevel(level);
+            }
+            if (handler != null) {
+                logger.addHandler(handler);
+            }
+            return null;
+        };
+        AccessController.doPrivileged(action);
     }
+}
