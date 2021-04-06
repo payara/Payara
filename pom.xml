@@ -143,8 +143,8 @@
         <jakarta.validation.version>2.0.2</jakarta.validation.version>
         <hibernate.validator.version>6.1.5.Final</hibernate.validator.version>
         <hibernate.validator-cdi.version>6.1.5.Final</hibernate.validator-cdi.version>
-        <jakarta.el.version>3.0.3.payara-p3</jakarta.el.version>
-        <jakarta.el-api.version>3.0.3</jakarta.el-api.version>
+        <jakarta.el.version>3.0.3.payara-p4</jakarta.el.version>
+        <jakarta.el-api.version>3.0.3.payara-p4</jakarta.el-api.version>
         <jaxb-api.version>2.3.2</jaxb-api.version>
         <javax.cache-api.version>1.1.1</javax.cache-api.version>
         <mail.version>1.6.4.payara-p1</mail.version>
@@ -159,7 +159,7 @@
         <jaxb-api.version>2.3.2</jaxb-api.version>
         <jaxb-impl.version>2.3.2</jaxb-impl.version>
         <jakarta.ejb-api.version>3.2.6</jakarta.ejb-api.version>
-        <jsp-api.version>2.3.6</jsp-api.version>
+        <jsp-api.version>2.3.6.payara-p1</jsp-api.version>
         <jsp-impl.version>2.3.4</jsp-impl.version>
         <jstl-api.version>1.2.7</jstl-api.version>
         <jstl-impl.version>1.2.5</jstl-impl.version>
