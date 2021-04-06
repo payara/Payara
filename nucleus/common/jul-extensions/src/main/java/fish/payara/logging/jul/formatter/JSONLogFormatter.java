@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,54 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.server.logging.jul;
+package fish.payara.logging.jul.formatter;
 
-import fish.payara.logging.jul.formatter.BroadcastingFormatter;
-import fish.payara.logging.jul.formatter.ExcludeFieldsSupport;
 import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.time.format.DateTimeFormatter;
-import java.time.format.DecimalStyle;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.Locale;
 import java.util.Map;
-import java.util.logging.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_ECID;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER;
 import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_USERID;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.NANO_OF_SECOND;
+import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 
 /**
  * Class for converting a {@link LogRecord} to Json format
- * @since 4.1.1.164
+ *
  * @author savage
+ * @author David Matejcek
  */
 public class JSONLogFormatter extends BroadcastingFormatter {
+
+    private static final boolean LOG_SOURCE_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE);
+    private static final boolean RECORD_NUMBER_IN_KEY_VALUE = Boolean.getBoolean(JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER);
 
     private static final String RECORD_NUMBER = "RecordNumber";
     private static final String METHOD_NAME = "MethodName";
     private static final String CLASS_NAME = "ClassName";
 
-    private static final boolean LOG_SOURCE_IN_KEY_VALUE;
-    private static final boolean RECORD_NUMBER_IN_KEY_VALUE;
-
     private final MessageResolver messageResolver;
+    private DateTimeFormatter dateTimeFormatter;
 
-    static {
-        String logSource = System.getProperty("com.sun.aas.logging.keyvalue.logsource");
-        LOG_SOURCE_IN_KEY_VALUE = "true".equals(logSource);
-        String recordCount = System.getProperty("com.sun.aas.logging.keyvalue.recordnumber");
-        RECORD_NUMBER_IN_KEY_VALUE = "true".equals(recordCount);
-    }
-
-    private DateTimeFormatter recordDateFormat;
-
-    // Event separator
     private static final String LINE_SEPARATOR = System.lineSeparator();
 
     // String values for field keys
@@ -117,8 +115,30 @@ public class JSONLogFormatter extends BroadcastingFormatter {
     private static final String ECID = System.getProperty(JVM_OPT_LOGGING_ECID);
     private static final String USER_ID = System.getProperty(JVM_OPT_LOGGING_USERID);
 
+    // This was required, because we need 3 decimal numbers of the second fraction
+    // DateTimeFormatter.ISO_LOCAL_DATE_TIME prints just nonzero values
+    private static final DateTimeFormatter iSO_LOCAL_TIME = new DateTimeFormatterBuilder()
+        .appendValue(HOUR_OF_DAY, 2).appendLiteral(':')
+        .appendValue(MINUTE_OF_HOUR, 2).optionalStart().appendLiteral(':')
+        .appendValue(SECOND_OF_MINUTE, 2).optionalStart()
+        .appendFraction(NANO_OF_SECOND, 3, 3, true)
+        .toFormatter(Locale.ROOT);
+
+    private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = new DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .append(DateTimeFormatter.ISO_LOCAL_DATE)
+        .appendLiteral('T')
+        .append(iSO_LOCAL_TIME)
+        .toFormatter(Locale.ROOT);
+
+    private static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = new DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .append(ISO_LOCAL_DATE_TIME)
+        .appendOffsetId()
+        .toFormatter(Locale.ROOT);
+
     public JSONLogFormatter() {
-        this.recordDateFormat = ISO_OFFSET_DATE_TIME.withDecimalStyle(DecimalStyle.STANDARD.withZeroDigit('0'));
+        this.dateTimeFormatter = DEFAULT_DATETIME_FORMATTER;
         this.messageResolver = new MessageResolver();
 
         LogManager logManager = LogManager.getLogManager();
@@ -141,11 +161,15 @@ public class JSONLogFormatter extends BroadcastingFormatter {
             LOG_MESSAGE_KEY = "_" + LOG_MESSAGE_KEY;
             THROWABLE_KEY = "_" + THROWABLE_KEY;
         }
+
+        // to validate it can work, especially depends on JSON support
+        format(new EnhancedLogRecord(Level.ALL, "msg", false));
     }
+
 
     /**
      * @param record The record to format.
-     * @return BroadcastingFormatterOutput with event and JSON formatted record.
+     * @return JSON formatted record.
      */
     @Override
     public String formatRecord(LogRecord record) {
@@ -157,132 +181,108 @@ public class JSONLogFormatter extends BroadcastingFormatter {
     }
 
     private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
+        if (record == null || (record.getMessage() == null && record.getThrown() == null)) {
+            // nothing useful in the record.
+            return "";
+        }
         try {
-            JsonObjectBuilder eventObject = Json.createObjectBuilder();
+            JsonBuilderWrapper json = new JsonBuilderWrapper();
+            String timestampValue = dateTimeFormatter.format(record.getTime());
+            json.add(TIMESTAMP_KEY, timestampValue);
 
-            String timestampValue = recordDateFormat.format(record.getTime());
-            eventObject.add(TIMESTAMP_KEY, timestampValue);
+            Level level = record.getLevel();
+            json.add(LOG_LEVEL_KEY, level.getLocalizedName());
 
-            Level eventLevel = record.getLevel();
-            eventObject.add(LOG_LEVEL_KEY, eventLevel.getLocalizedName());
+            String productId = getProductId();
+            json.add(PRODUCT_ID_KEY, productId);
 
-            eventObject.add(PRODUCT_ID_KEY, getProductId());
-
-            String loggerName = record.getLoggerName();
-            if (loggerName == null) {
-                loggerName = "";
-            }
-
-            eventObject.add(LOGGER_NAME_KEY, loggerName);
+            json.add(LOGGER_NAME_KEY, record.getLoggerName());
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
-                // Thread ID
                 int threadId = record.getThreadID();
-                eventObject.add(THREAD_ID_KEY, String.valueOf(threadId));
+                json.add(THREAD_ID_KEY, String.valueOf(threadId));
 
                 String threadName = record.getThreadName();
-                eventObject.add(THREAD_NAME_KEY, threadName);
+                json.add(THREAD_NAME_KEY, threadName);
             }
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID)) {
                 if (USER_ID != null && !USER_ID.isEmpty()) {
-                    eventObject.add(USER_ID_KEY, USER_ID);
+                    json.add(USER_ID_KEY, USER_ID);
                 }
             }
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID)) {
                 if (ECID != null && !ECID.isEmpty()) {
-                    eventObject.add(ECID_KEY, ECID);
+                    json.add(ECID_KEY, ECID);
                 }
             }
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
                 long timestamp = record.getMillis();
-                eventObject.add(TIME_MILLIS_KEY, String.valueOf(timestamp));
+                json.add(TIME_MILLIS_KEY, timestamp);
             }
 
-            Level level = record.getLevel();
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
                 int levelValue = level.intValue();
-                eventObject.add(LEVEL_VALUE_KEY, String.valueOf(levelValue));
+                json.add(LEVEL_VALUE_KEY, levelValue);
             }
 
             String messageId = record.getMessageKey();
-            if (messageId != null && !messageId.isEmpty()) {
-                eventObject.add(MESSAGE_ID_KEY, messageId);
-            }
+            json.add(MESSAGE_ID_KEY, messageId);
 
             if (LOG_SOURCE_IN_KEY_VALUE || level.intValue() <= Level.FINE.intValue()) {
                 String sourceClassName = record.getSourceClassName();
-
                 if (sourceClassName != null && !sourceClassName.isEmpty()) {
-                    eventObject.add(CLASS_NAME, sourceClassName);
+                    json.add(CLASS_NAME, sourceClassName);
                 }
 
                 String sourceMethodName = record.getSourceMethodName();
                 if (sourceMethodName != null && !sourceMethodName.isEmpty()) {
-                    eventObject.add(METHOD_NAME, sourceMethodName);
+                    json.add(METHOD_NAME, sourceMethodName);
                 }
             }
 
             if (RECORD_NUMBER_IN_KEY_VALUE) {
-                eventObject.add(RECORD_NUMBER, String.valueOf(record.getSequenceNumber()));
+                json.add(RECORD_NUMBER, String.valueOf(record.getSequenceNumber()));
             }
 
             Object[] parameters = record.getParameters();
             if (parameters != null) {
                 for (Object parameter : parameters) {
+                    // FIXME: parameters cannot be mapped here, they were already resolved in EnhancedLogRecord.
+                    //        possible solution: cfg parameter - release parameters after resolving (default) OR not
+                    //        release -> no maps, just strings
+                    //        not -> still possible to use original parameters in formatter's thread may be affected by concurrent
+                    //        changes of states of objects in the map
                     if (parameter instanceof Map) {
                         for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) parameter).entrySet()) {
                             // there are implementations that allow <null> keys...
-                            final String key;
-                            if (entry.getKey() == null) {
-                                key = "null";
-                            } else {
-                                key = entry.getKey().toString();
-                            }
-
-                            // also handle <null> values...
-                            if (entry.getValue() == null) {
-                                eventObject.add(key, "null");
-                            } else {
-                                eventObject.add(key, entry.getValue().toString());
-                            }
+                            final String key = entry.getKey() == null ? "null" : entry.getKey().toString();
+                            json.add(key, entry.getValue());
                         }
                     }
                 }
             }
 
-            final String logMessage = record.getMessage();
-
-            if (logMessage == null || logMessage.isEmpty()) {
-                final Throwable throwable = record.getThrown();
-                if (throwable != null) {
-                    JsonObjectBuilder traceObject = Json.createObjectBuilder();
-                    if (throwable.getMessage() != null) {
-                        traceObject.add(EXCEPTION_KEY, throwable.getMessage());
-                        if (throwable.getMessage() != null) {
-                            traceObject.add(EXCEPTION_KEY, throwable.getMessage());
-                        }
-                    }
-                    final String stackTrace = record.getThrownStackTrace();
-                    traceObject.add(STACK_TRACE_KEY, stackTrace);
-                    eventObject.add(THROWABLE_KEY, traceObject.build());
+            json.add(LOG_MESSAGE_KEY, record.getMessage());
+            if (record.getThrown() != null) {
+                final JsonBuilderWrapper traceObject = new JsonBuilderWrapper();
+                final String exceptionMessage = record.getThrown().getMessage();
+                if (exceptionMessage != null) {
+                    traceObject.add(EXCEPTION_KEY, exceptionMessage);
                 }
-            } else {
                 final String stackTrace = record.getThrownStackTrace();
-                if (stackTrace == null) {
-                    eventObject.add(LOG_MESSAGE_KEY, logMessage);
-                } else {
-                    JsonObjectBuilder traceObject =Json.createObjectBuilder();
-                    traceObject.add(EXCEPTION_KEY, logMessage);
+                if (stackTrace != null) {
                     traceObject.add(STACK_TRACE_KEY, stackTrace);
-                    eventObject.add(THROWABLE_KEY, traceObject.build());
                 }
+                json.add(THROWABLE_KEY, traceObject.toJsonObject());
             }
-            return eventObject.build().toString() + LINE_SEPARATOR;
-        } catch (Exception ex) {
-            new ErrorManager().error("Error in formatting Logrecord", ex, ErrorManager.FORMAT_FAILURE);
+
+            final String string = json.toString();
+            return string == null || string.isEmpty() ? "" : string + LINE_SEPARATOR;
+        } catch (final Exception e) {
+            PayaraLoggingTracer.error(getClass(), "Error in formatting Logrecord", e);
             return record.getMessage();
         }
     }
@@ -290,15 +290,15 @@ public class JSONLogFormatter extends BroadcastingFormatter {
     /**
      * @return The date format for the record.
      */
-    public final String getRecordDateFormat() {
-        return recordDateFormat.toString();
+    public final String getDateTimeFormatter() {
+        return dateTimeFormatter.toString();
     }
 
     /**
      * @param format The date format to set for records.
      */
-    public void setRecordDateFormat(String format) {
-        this.recordDateFormat = format == null ? ISO_OFFSET_DATE_TIME : DateTimeFormatter.ofPattern(format);
+    public void setDateTimeFormatter(String format) {
+        this.dateTimeFormatter = format == null ? ISO_OFFSET_DATE_TIME : DateTimeFormatter.ofPattern(format);
     }
 
 
@@ -307,5 +307,41 @@ public class JSONLogFormatter extends BroadcastingFormatter {
      */
     public void setExcludeFields(String excludeFields) {
         this.excludeFieldsSupport.setExcludeFields(excludeFields);
+    }
+
+
+    public static final class JsonBuilderWrapper {
+        private final JsonObjectBuilder builder;
+
+        public JsonBuilderWrapper() {
+            this.builder = Json.createObjectBuilder();
+        }
+
+        JsonBuilderWrapper add(final String key, final JsonObject value) {
+            if (key == null) {
+                return this;
+            }
+            this.builder.add(key, value);
+            return this;
+        }
+        JsonBuilderWrapper add(final String key, final Object value) {
+            if (key == null || value == null) {
+                return this;
+            }
+            final String stringValue = value.toString();
+            if (stringValue != null) {
+                this.builder.add(key, stringValue);
+            }
+            return this;
+        }
+
+        public JsonObject toJsonObject() {
+            return this.builder.build();
+        }
+
+        @Override
+        public String toString() {
+            return toJsonObject().toString();
+        }
     }
 }

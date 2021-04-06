@@ -40,6 +40,7 @@
 
 package fish.payara.logging.jul.cfg;
 
+import fish.payara.logging.jul.formatter.JSONLogFormatter;
 import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.UniformLogFormatter;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
@@ -110,6 +111,10 @@ public class JulConfigurationFactory {
             configureODLFormatter((ODLLogFormatter) formatter, helper);
             return true;
         }
+        if (formatter instanceof JSONLogFormatter) {
+            configureJSONFormatter((JSONLogFormatter) formatter, helper);
+            return true;
+        }
         return false;
     }
 
@@ -132,5 +137,11 @@ public class JulConfigurationFactory {
         formatter.setDateTimeFormatter(helper.getDateTimeFormatter("logFormatDateFormat", null));
         formatter.setExcludeFields(helper.getString("excludeFields", null));
         formatter.setMultiLineMode(helper.getBoolean("multiLineMode", Boolean.TRUE));
+    }
+
+
+    private void configureJSONFormatter(final JSONLogFormatter formatter,
+        final LoggingConfigurationHelper helper) {
+        formatter.setExcludeFields(helper.getString("excludeFields", null));
     }
 }

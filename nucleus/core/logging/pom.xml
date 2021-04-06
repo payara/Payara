@@ -75,6 +75,12 @@
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.json</groupId>
+                    <artifactId>jakarta.json-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.cluster</groupId>
@@ -97,13 +103,7 @@
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- required only when using JSONLogFormatter -->
-        <dependency>
-            <groupId>jakarta.json</groupId>
-            <artifactId>jakarta.json-api</artifactId>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
+
         <!-- Used only for LogFilterForInstance -->
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
@@ -113,11 +113,6 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.json</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>

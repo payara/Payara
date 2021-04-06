@@ -41,13 +41,12 @@
 package fish.payara.acme.formatter;
 
 import fish.payara.logging.jul.formatter.AnsiColor;
-import fish.payara.logging.jul.formatter.UniformLogFormatter;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
+import fish.payara.logging.jul.formatter.UniformLogFormatter;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.regex.Pattern;

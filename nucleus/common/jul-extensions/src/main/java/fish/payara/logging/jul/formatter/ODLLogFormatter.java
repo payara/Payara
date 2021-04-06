@@ -45,12 +45,13 @@ package fish.payara.logging.jul.formatter;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
 import fish.payara.logging.jul.i18n.MessageResolver;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
-import java.util.logging.ErrorManager;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.*;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_ECID;
+import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_USERID;
 import static java.lang.System.lineSeparator;
 
 /**
@@ -165,7 +166,7 @@ public class ODLLogFormatter extends AnsiColorFormatter {
             output.append(lineSeparator()).append(lineSeparator());
             return output.toString();
         } catch (final Exception e) {
-            new ErrorManager().error("Error in formatting Logrecord", e, ErrorManager.FORMAT_FAILURE);
+            PayaraLoggingTracer.error(getClass(), "Error in formatting Logrecord", e);
             return record.getMessage();
         }
     }

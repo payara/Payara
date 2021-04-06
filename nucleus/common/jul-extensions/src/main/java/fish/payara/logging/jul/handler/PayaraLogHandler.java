@@ -56,8 +56,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;

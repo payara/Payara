@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -50,9 +50,13 @@ import java.util.List;
 
 /**
  * This classloader is located between OSGI classloader and system JDK extensions classloader,
- * so it can provide early initialized stateful libraries (befora OSGI startup).
+ * so it can provide early initialized libraries (befora OSGI startup, so even OSGI can use them).
  * <p>
- * Currenlty there is only one such library - Payara Java Util Logging Extensions.
+ * Examples
+ * <ul>
+ * <li>Payara Java Util Logging Extensions
+ * <li>Jakarta EE API classes
+ * </ul>
  *
  * @author David Matejcek
  */
@@ -72,9 +76,9 @@ public class GlassfishMainClassLoader extends GlassfishUrlClassLoader {
 
     private static URL[] createUrls(final File glassfishDir) throws IOException {
         final List<URL> urls = new ArrayList<>();
-        final File modules = new File(glassfishDir, "lib");
-        urls.add(getURL(modules, "payara-jul-extensions"));
-        // urls.add(getURL(modules, "glassfish"));
+        final File libDir = new File(glassfishDir, "lib");
+        urls.add(getURL(libDir, "payara-jul-extensions"));
+        urls.add(getURL(libDir, "javaee"));
         return urls.toArray(new URL[urls.size()]);
     }
 
@@ -83,7 +87,7 @@ public class GlassfishMainClassLoader extends GlassfishUrlClassLoader {
         final File file = new File(dir, jarFileName + ".jar");
         try {
             if (!file.canRead()) {
-                throw new IOException("The module does not exist or cannot be read: " + file);
+                throw new IOException("The jar file does not exist or cannot be read: " + file);
             }
             return new File(dir, jarFileName + ".jar").toURI().toURL();
         } catch (MalformedURLException e) {

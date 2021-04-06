@@ -48,7 +48,6 @@ import com.sun.common.util.logging.LoggingPropertyNames;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
-import com.sun.enterprise.server.logging.jul.ExtendedJulConfigurationFactory;
 import com.sun.enterprise.util.PropertyPlaceholderHelper;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
@@ -57,12 +56,14 @@ import fish.payara.enterprise.server.logging.PayaraNotificationFileHandler;
 import fish.payara.logging.jul.PayaraLogManager;
 import fish.payara.logging.jul.PayaraLogManager.Action;
 import fish.payara.logging.jul.PayaraLogger;
+import fish.payara.logging.jul.cfg.JulConfigurationFactory;
 import fish.payara.logging.jul.cfg.LoggingConfigurationHelper;
 import fish.payara.logging.jul.cfg.LoggingSystemEnvironment;
 import fish.payara.logging.jul.cfg.PayaraLogHandlerConfiguration;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfigurationParser;
 import fish.payara.logging.jul.handler.PayaraLogHandler;
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -111,7 +112,6 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import static com.sun.enterprise.util.PropertyPlaceholderHelper.ENV_REGEX;
 import static fish.payara.logging.jul.cfg.JulConfigurationFactory.MINIMUM_ROTATION_LIMIT_VALUE;
-import static fish.payara.logging.jul.cfg.LoggingConfigurationHelper.PRINT_TO_STDERR;
 import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
 
 /**
@@ -224,7 +224,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
     public File getCurrentLogFile() {
         final PayaraLogManager logManager = PayaraLogManager.getLogManager();
         final PayaraLogHandler payaraLogHandler = logManager == null ? null : logManager.getPayaraLogHandler();
-        return payaraLogHandler == null ?  null : payaraLogHandler.getConfiguration().getLogFile();
+        return payaraLogHandler == null ? null : payaraLogHandler.getConfiguration().getLogFile();
     }
 
 
@@ -412,7 +412,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
     private void createOrUpdatePayaraLogHandler() {
         final PayaraLogManager manager = PayaraLogManager.getLogManager();
         final PayaraLogHandler payaraLogHandler = manager.getPayaraLogHandler();
-        final ExtendedJulConfigurationFactory factory = new ExtendedJulConfigurationFactory();
+        final JulConfigurationFactory factory = new JulConfigurationFactory();
         final PayaraLogHandlerConfiguration payaraLogHandlerCfg = factory
             .createPayaraLogHandlerConfiguration(PayaraLogHandler.class, "server.log");
         payaraLogHandlerCfg.setProductId(resolveProductId());
@@ -576,24 +576,23 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         }
         final List<Handler> hk2HandlerServices = serviceLocator.getAllServices(Handler.class);
         final List<Handler> foundAndRequested = new ArrayList<>();
-        final List<Handler> otherHandlers = new ArrayList<>();
+        final List<Handler> julHandlers = new ArrayList<>();
         for (final Handler handler: hk2HandlerServices) {
             final String handlerClassName = handler.getClass().getName();
             if (requestedHandlerServices.contains(handlerClassName)) {
                 foundAndRequested.add(handler);
             }
             if (!handlerClassName.equals(PayaraNotificationFileHandler.class.getName())) {
-                otherHandlers.add(handler);
+                julHandlers.add(handler);
             }
         }
 
-        for (final Handler handler : otherHandlers) {
-            final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(handler.getClass(),
-                PRINT_TO_STDERR);
+        for (final Handler handler : julHandlers) {
+            final LoggingConfigurationHelper helper = new LoggingConfigurationHelper(handler.getClass());
             final Formatter formatter = helper.getFormatter("formatter", null);
             if (formatter != null) {
                 // if null, default is specified by the handler implementation.
-                final ExtendedJulConfigurationFactory factory = new ExtendedJulConfigurationFactory();
+                final JulConfigurationFactory factory = new JulConfigurationFactory();
                 factory.configureFormatter(formatter, helper);
                 handler.setFormatter(formatter);
             }
@@ -613,17 +612,16 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
     private void reconfigure(final File configFile) {
         final PayaraLogManager manager = PayaraLogManager.getLogManager();
-        LoggingSystemEnvironment.getOriginalStdErr().println("reconfigure(" + configFile + ")");
+        PayaraLoggingTracer.trace(getClass(), () -> "reconfigure(" + configFile + ")");
         LOG.info(() -> "Using property file: " + configFile);
         try {
             final PayaraLogManagerConfiguration cfg = getRuntimeConfiguration();
             if (cfg == null) {
-                LoggingSystemEnvironment.getOriginalStdErr().println("null logging properties!");
+                PayaraLoggingTracer.error(getClass(), "Logging configuration is not available!");
                 return;
             }
-            final ReconfigurationAction reconfig = new ReconfigurationAction(manager, cfg);
+            final ReconfigurationAction reconfig = new ReconfigurationAction(manager, cfg, Thread.currentThread().getContextClassLoader());
             manager.reconfigure(cfg, reconfig, this::flushEarlyMessages);
-
         } catch (Exception e) {
             LOG.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
         }
@@ -970,16 +968,18 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 
         private final PayaraLogManager manager;
         private final PayaraLogManagerConfiguration cfg;
+        private final ClassLoader classLoader;
 
-        private ReconfigurationAction(final PayaraLogManager manager, final PayaraLogManagerConfiguration cfg) {
+        private ReconfigurationAction(final PayaraLogManager manager, final PayaraLogManagerConfiguration cfg, final ClassLoader classLoader) {
             this.manager = manager;
             this.cfg = cfg;
+            this.classLoader = classLoader;
         }
 
 
         @Override
         public ClassLoader getClassLoader() {
-            return LogManagerService.class.getClassLoader();
+            return this.classLoader;
         }
 
 

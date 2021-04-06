@@ -69,7 +69,7 @@ public class LoggingConfigurationHelper {
     /**
      * Logs an error via the {@link PayaraLoggingTracer}
      */
-    public static final LoggingPropertyErrorHandler PRINT_TO_STDERR = (k, v, e) -> {
+    private static final LoggingPropertyErrorHandler PRINT_TO_STDERR = (k, v, e) -> {
         PayaraLoggingTracer.error(LoggingConfigurationHelper.class, "Invalid value for the key: " + k + ": " + v, e);
     };
 
@@ -90,10 +90,10 @@ public class LoggingConfigurationHelper {
         }
         final ClassLoader logManagerCL = LogManager.getLogManager().getClass().getClassLoader();
         if (logManagerCL != null) {
-            try {
+        try {
                 return logManagerCL.loadClass(v).newInstance();
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
-                | NoClassDefFoundError e) {
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
+            | NoClassDefFoundError e) {
                 // still ok, maybe the class is not visible for boot classloader,
                 // but it still might be visible for the thread classloader.
                 PayaraLoggingTracer.trace(LoggingConfigurationHelper.class,
@@ -101,12 +101,13 @@ public class LoggingConfigurationHelper {
                         + " of the thread. Exception: " + e.toString());
             }
         }
+        final ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
         try {
-            return Thread.currentThread().getContextClassLoader().loadClass(v).newInstance();
+            return threadCL.loadClass(v).newInstance();
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoClassDefFoundError e) {
             PayaraLoggingTracer.error(LoggingConfigurationHelper.class,
-                "Classloader: " + Thread.currentThread().getContextClassLoader(), e);
-            throw new IllegalStateException("Formatter instantiation failed!", e);
+                "Classloader: " + threadCL, e);
+            throw new IllegalStateException("Formatter instantiation failed! ClassLoader used: " + threadCL, e);
         }
     };
 
@@ -140,18 +141,8 @@ public class LoggingConfigurationHelper {
     }
 
 
-    public LoggingConfigurationHelper(final LoggingPropertyErrorHandler errorHandler) {
-        this((String) null, errorHandler);
-    }
-
-
     public LoggingConfigurationHelper(final Class<?> clazz) {
         this(clazz.getName(), PRINT_TO_STDERR);
-    }
-
-
-    public LoggingConfigurationHelper(final Class<?> clazz, final LoggingPropertyErrorHandler errorHandler) {
-        this(clazz.getName(), errorHandler);
     }
 
 

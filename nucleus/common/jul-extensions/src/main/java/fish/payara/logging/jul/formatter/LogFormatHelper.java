@@ -46,7 +46,12 @@ import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.StringReader;
 import java.util.regex.Pattern;
+
+import javax.json.Json;
+import javax.json.JsonReader;
+
 
 /**
  * Helper class that provides methods to detect the log format of a record.
@@ -59,6 +64,8 @@ public class LogFormatHelper {
     private static final int ODL_SUBSTRING_LEN = 5;
     private static final String ODL_LINE_BEGIN_REGEX = "\\[[\\-\\:\\d]{4}";
     private static final Pattern ODL_PATTERN = Pattern.compile(ODL_LINE_BEGIN_REGEX);
+
+    private static final String P_TIME = "\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d";
 
 
     public String detectFormatter(final File configuredLogFile) {
@@ -83,22 +90,19 @@ public class LogFormatHelper {
         if (firstLine == null || firstLine.isEmpty()) {
             return null;
         }
-        if (isUniformFormatLogHeader(firstLine)) {
-            return UniformLogFormatter.class.getName();
-        }
         if (isODLFormatLogHeader(firstLine)) {
             return ODLLogFormatter.class.getName();
         }
+        if (isUniformFormatLogHeader(firstLine)) {
+            return UniformLogFormatter.class.getName();
+        }
+        if (isJSONFormatLogHeader(firstLine)) {
+            return JSONLogFormatter.class.getName();
+        }
+        if (isOneLineLFormatLogHeader(firstLine)) {
+            return OneLineFormatter.class.getName();
+        }
         return UNKNOWN_FORMAT;
-    }
-
-
-    /**
-     * @param firstLine
-     * @return true if the given line is probably the beginning of a Uniform log record.
-     */
-    public boolean isUniformFormatLogHeader(final String firstLine) {
-        return firstLine.startsWith("[#|") && countOccurrences(firstLine, '|') > 4;
     }
 
 
@@ -113,6 +117,36 @@ public class LogFormatHelper {
     }
 
 
+    public boolean isOneLineLFormatLogHeader(final String firstLine) {
+        return firstLine.matches(P_TIME + "\\s+[A-Z]{4,10}\\s+[^\\s]+\\s+[^\\s]+\\s+[^\\s]+\\s+.+");
+    }
+
+
+    /**
+     * @param firstLine
+     * @return true if the given line is probably the beginning of a Uniform log record.
+     */
+    public boolean isUniformFormatLogHeader(final String firstLine) {
+        return firstLine.startsWith("[#|") && countOccurrences(firstLine, '|') > 4;
+    }
+
+
+    /**
+     * @param logRecord String to test if json
+     * @return true if the line is a valid JSON log record
+     */
+    public boolean isJSONFormatLogHeader(final String logRecord) {
+        if (logRecord.length() < 10 || !logRecord.startsWith("{\"")) {
+            return false;
+        }
+        try (JsonReader reader = Json.createReader(new StringReader(logRecord))) {
+            reader.read();
+            return true;
+        } catch (final Exception ex) {
+            return false;
+        }
+    }
+
     /**
      * Determines whether the given file is compressed (name ends with .gz).
      *
@@ -124,10 +158,10 @@ public class LogFormatHelper {
     }
 
 
-    protected int countOccurrences(final String haystack, final char needle) {
+    protected int countOccurrences(final String firstLine, final char typicalCharacter) {
         int count = 0;
-        for (int i = 0; i < haystack.length(); i++) {
-            if (haystack.charAt(i) == needle) {
+        for (int i = 0; i < firstLine.length(); i++) {
+            if (firstLine.charAt(i) == typicalCharacter) {
                 count++;
             }
         }

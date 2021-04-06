@@ -96,7 +96,7 @@ public class MessageResolver {
         // implementation. We also use them in isAlreadyResolved to avoid redundant work.
         enhancedLogRecord.setResourceBundle(null);
         enhancedLogRecord.setResourceBundleName(null);
-        enhancedLogRecord.setParameters(null);
+//        enhancedLogRecord.setParameters(null);
         return enhancedLogRecord;
     }
 

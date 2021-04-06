@@ -90,7 +90,7 @@ import static org.junit.Assert.assertNotNull;
 public class JsonLogFormatIT {
 
     private static final String P_TIME = "\\d\\d:\\d\\d:\\d\\d.\\d\\d\\d";
-    private static final String P_TIMEZONE = "[0-9:.+-]{5,6}";
+    private static final String P_TIMEZONE = "[0-9:.+-]{6}";
     private static final String P_TIMESTAMP = "[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}T" + P_TIME + P_TIMEZONE;
     private static final String P_RECORD = "\\{"
         + "\\\"Timestamp\\\"\\:\\\"" + P_TIMESTAMP + "\\\","
@@ -181,8 +181,8 @@ public class JsonLogFormatIT {
         final ArrayList<String> output = new ArrayList<>();
         command.add("set-log-attributes");
         command.add(
-            "fish.payara.logging.jul.handler.SimpleLogHandler.formatter='fish.payara.enterprise.server.logging.JSONLogFormatter'"
-         + ":fish.payara.logging.jul.handler.PayaraLogHandler.formatter='fish.payara.enterprise.server.logging.JSONLogFormatter'");
+            "fish.payara.logging.jul.handler.SimpleLogHandler.formatter='fish.payara.logging.jul.formatter.JSONLogFormatter'"
+         + ":fish.payara.logging.jul.handler.PayaraLogHandler.formatter='fish.payara.logging.jul.formatter.JSONLogFormatter'");
         final int result = CliCommands.payaraGlassFish(command, output);
         assertEquals("set-log-attributes result", 0, result);
         assertEquals("Command set-log-attributes executed successfully.", output.get(output.size() - 1));

@@ -74,7 +74,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static fish.payara.logging.jul.cfg.LoggingConfigurationHelper.PRINT_TO_STDERR;
 import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_DEFAULT_LEVEL;
 import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_FILE;
 import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_CFG_USE_DEFAULTS;
@@ -388,8 +387,8 @@ public class PayaraLogManager extends LogManager {
      */
     public synchronized void reconfigure(final PayaraLogManagerConfiguration cfg, final Action reconfigureAction,
         final Action flushAction) {
-        PayaraLoggingTracer.trace(PayaraLogManager.class,
-            () -> "reconfigure(cfg, action, action); Configuration:\n" + cfg);
+        PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "reconfigure(cfg, action, action); Configuration:\n"
+            + cfg + "\n reconfigureAction: " + reconfigureAction + "\n flushAction: " + flushAction);
         if (cfg.isTracingEnabled()) {
             // if enabled, start immediately. If not, don't change it yet, it could be set by JVM option.
             PayaraLoggingTracer.setTracing(cfg.isTracingEnabled());
@@ -405,8 +404,8 @@ public class PayaraLogManager extends LogManager {
             while (existingLoggerNames.hasMoreElements()) {
                 final String existingLoggerName = existingLoggerNames.nextElement();
                 if (ROOT_LOGGER_NAME.equals(existingLoggerName)) {
-//                    this.systemRootLogger.setLevel(getLevel(KEY_SYS_ROOT_LOGGER_LEVEL, Level.INFO));
-//                    this.userRootLogger.setLevel(getLevel(KEY_USR_ROOT_LOGGER_LEVEL, Level.INFO));
+                    this.systemRootLogger.setLevel(getLevel(KEY_SYS_ROOT_LOGGER_LEVEL, Level.INFO));
+                    this.userRootLogger.setLevel(getLevel(KEY_USR_ROOT_LOGGER_LEVEL, Level.INFO));
                     continue;
                 }
                 final PayaraLogger logger = getLogger(existingLoggerName);
@@ -532,8 +531,8 @@ public class PayaraLogManager extends LogManager {
     private void initializeRootLoggers() {
         PayaraLoggingTracer.trace(PayaraLogManager.class, "initializeRootLoggers()");
         final PayaraLogger referenceLogger = getRootLogger();
-        final LoggingConfigurationHelper parser = new LoggingConfigurationHelper(PRINT_TO_STDERR);
-        final List<String> requestedHandlerNames = parser.getList(KEY_ROOT_HANDLERS, null);
+        final LoggingConfigurationHelper helper = new LoggingConfigurationHelper();
+        final List<String> requestedHandlerNames = helper.getList(KEY_ROOT_HANDLERS, null);
         final List<Handler> currentHandlers = Arrays.asList(referenceLogger.getHandlers());
 
         final List<Handler> handlersToAdd = new ArrayList<>();

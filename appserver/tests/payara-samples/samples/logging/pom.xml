@@ -89,6 +89,12 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>payara-jul-extensions</artifactId>
+            <version>${payara.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

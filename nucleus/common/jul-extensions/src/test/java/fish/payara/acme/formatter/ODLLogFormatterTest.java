@@ -41,13 +41,12 @@
 package fish.payara.acme.formatter;
 
 import fish.payara.logging.jul.formatter.AnsiColor;
-import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.formatter.ExcludeFieldsSupport.SupplementalAttribute;
+import fish.payara.logging.jul.formatter.ODLLogFormatter;
 import fish.payara.logging.jul.record.EnhancedLogRecord;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.regex.Pattern;
@@ -58,14 +57,12 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsArrayWithSize.arrayWithSize;
 import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
