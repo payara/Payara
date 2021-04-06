@@ -82,7 +82,8 @@ public class TargetUtil {
         List<String> result = new ArrayList<>();
         String endpoint = GuiUtil.getSessionValue("REST_URL") + "/list-instances" ;
         Map<String, Object> attrsMap = new HashMap<>();
-        attrsMap.put("standaloneonly", "true"); attrsMap.put("nostatus", "true");
+        attrsMap.put("standaloneonly", "true");
+        attrsMap.put("nostatus", "true");
         try{
             Map<String, Object> responseMap = RestUtil.restRequest( endpoint , attrsMap, "get" , null, false);
             Map<?, ?>  dataMap = (Map<?, ?>) responseMap.get("data");
