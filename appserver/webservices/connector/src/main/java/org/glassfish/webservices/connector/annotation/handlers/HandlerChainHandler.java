@@ -71,8 +71,8 @@ import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.ws.WebServiceProvider;
-import javax.xml.ws.WebServiceRef;
+import jakarta.xml.ws.WebServiceProvider;
+import jakarta.xml.ws.WebServiceRef;
 import org.glassfish.apf.*;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
 import org.glassfish.deployment.common.Descriptor;
@@ -200,7 +200,7 @@ public class HandlerChainHandler extends AbstractHandler {
 
         if (!clientSideHandlerChain && (containers==null || containers.length==0)) {
             for(Annotation ann : annElem.getAnnotations()) {
-                if(ann.annotationType().getPackage().getName().startsWith("javax.ejb")) {
+                if(ann.annotationType().getPackage().getName().startsWith("jakarta.ejb")) {
                     // let EJB handlers handle this processing
                     return HandlerProcessingResultImpl.getDefaultResult(getAnnotationType(), ResultType.UNPROCESSED); 
                 }

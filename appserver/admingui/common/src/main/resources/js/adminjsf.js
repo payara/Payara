@@ -2337,7 +2337,7 @@ admingui.ajax = {
      *	This function handles JSF2 Ajax responses.  It is expected that the
      *	response will replace the innerHTML of an element rather than the whole
      *	page.  If the content contains JSF2 markup, it will attempt to use the
-     *	content defined in the javax.faces.ViewRoot "update" element.  It will
+     *	content defined in the jakarta.faces.ViewRoot "update" element.  It will
      *	also attempt to update the ViewState.  If this is not found in the
      *	response, it will try to use the entire response for the value of
      *	innerHTML.
@@ -2360,17 +2360,17 @@ admingui.ajax = {
         var testString = result.substring(0, len);
         var viewState = null;
         if (testString.indexOf("<changes>") > 0) {
-            // We have a JSF response... if id="javax.faces.ViewRoot", handle it
-            var idx = testString.indexOf('id="javax.faces.ViewRoot"');
+            // We have a JSF response... if id="jakarta.faces.ViewRoot", handle it
+            var idx = testString.indexOf('id="jakarta.faces.ViewRoot"');
             if (idx > 0) {
                 try {
                     var nodes = this.xmlReq.responseXML.getElementsByTagName("partial-response")[0].childNodes[0].childNodes;
                     for (var cnt=0; cnt<nodes.length; cnt++) {
                         var node = nodes[cnt];
-                        if (node.getAttribute('id') === 'javax.faces.ViewRoot') {
+                        if (node.getAttribute('id') === 'jakarta.faces.ViewRoot') {
                             result = node.textContent;
                         }
-                        if (node.getAttribute('id') === 'javax.faces.ViewState') {
+                        if (node.getAttribute('id') === 'jakarta.faces.ViewState') {
                             // NOTE: see jsf.ajax.doUpdate for more info....
                             viewState = node.firstChild;
                         }
@@ -2387,12 +2387,12 @@ admingui.ajax = {
                 admingui.util.log("***** Unable to find form! " + this.context.formid);
                 return;
             }
-            var field = form.elements['javax.faces.ViewState'];
+            var field = form.elements['jakarta.faces.ViewState'];
             if (typeof(field) === 'undefined') {
                 field = document.createElement("input");
                 field.type = "hidden";
-                field.name = "javax.faces.ViewState";
-                field.id = "javax.faces.ViewState";
+                field.name = "jakarta.faces.ViewState";
+                field.id = "jakarta.faces.ViewState";
                 form.appendChild(field);
             }
             field.value = viewState.nodeValue;

@@ -67,7 +67,7 @@ public class LogEventListenerTest {
 
     private static GFFileHandler gfFileHandler;
 
-    private static final String LOGGER_NAME = "javax.enterprise.test.logging.events";
+    private static final String LOGGER_NAME = "jakarta.enterprise.test.logging.events";
 
     private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
 

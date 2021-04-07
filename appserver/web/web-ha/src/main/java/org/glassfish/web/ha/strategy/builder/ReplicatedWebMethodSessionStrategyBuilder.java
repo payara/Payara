@@ -52,7 +52,7 @@ import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.ha.store.util.SimpleMetadata;
 import org.glassfish.web.ha.session.management.*;
 import org.glassfish.web.valve.GlassFishValve;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;

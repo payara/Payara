@@ -134,7 +134,7 @@ public class MaskingClassLoader extends ClassLoader {
     }
     
     protected boolean isDottedNameLoadableByParent(final String name) {
-        if (!(name.startsWith("javax.") || name.startsWith("org."))) {
+        if (!(name.startsWith("javax.") || name.startsWith("jakarta.") || name.startsWith("org."))) {
             return true;
         }
         final String packageName = name.substring(0, name.lastIndexOf('.'));

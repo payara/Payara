@@ -45,7 +45,7 @@ import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import javax.inject.Scope;
+import jakarta.inject.Scope;
 
 /**
  * Internal scope for Clustered Singleton bean

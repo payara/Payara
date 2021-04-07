@@ -43,8 +43,8 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import org.glassfish.api.StartupRunLevel;

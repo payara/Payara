@@ -49,7 +49,7 @@ package com.sun.jdo.spi.persistence.support.sqlstore.ejb;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 import com.sun.jdo.api.persistence.support.PersistenceManager;
 import com.sun.jdo.spi.persistence.support.sqlstore.utility.NumericConverter;

@@ -44,11 +44,11 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.WorkContextHandler;
 import com.sun.logging.LogDomains;
 
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.work.WorkManager;
-import javax.resource.spi.work.WorkContext;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.resource.spi.BootstrapContext;
+import jakarta.resource.spi.XATerminator;
+import jakarta.resource.spi.work.WorkManager;
+import jakarta.resource.spi.work.WorkContext;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import javax.naming.InitialContext;
 
 import java.io.Serializable;

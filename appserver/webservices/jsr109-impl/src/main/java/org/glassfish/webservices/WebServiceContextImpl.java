@@ -47,8 +47,8 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.web.WebModule;
 import org.glassfish.api.invocation.InvocationManager;
 
-import javax.xml.ws.EndpointReference;
-import javax.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.EndpointReference;
+import jakarta.xml.ws.handler.MessageContext;
 import java.security.Principal;
 import java.util.Set;
 import java.util.Iterator;

@@ -190,11 +190,11 @@ public class InjectionPointHelper {
         for(Annotation next : annotations) {
 
             String className = next.annotationType().getName();
-            if( className.equals("javax.ejb.EJB") ||
-                className.equals("javax.annotation.Resource") ||
-                className.equals("javax.persistence.PersistenceContext") ||
-                className.equals("javax.persistence.PersistenceUnit") ||
-                className.equals("javax.xml.ws.WebServiceRef") ) {
+            if( className.equals("jakarta.ejb.EJB") ||
+                className.equals("jakarta.annotation.Resource") ||
+                className.equals("jakarta.persistence.PersistenceContext") ||
+                className.equals("jakarta.persistence.PersistenceUnit") ||
+                className.equals("jakarta.xml.ws.WebServiceRef") ) {
                 envAnnotation = next;
                 break;
             }

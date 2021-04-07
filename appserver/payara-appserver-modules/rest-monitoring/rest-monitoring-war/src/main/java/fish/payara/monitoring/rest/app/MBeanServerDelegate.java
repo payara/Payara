@@ -41,8 +41,8 @@ package fish.payara.monitoring.rest.app;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 
-import javax.ejb.Startup;
-import javax.inject.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.inject.Singleton;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;

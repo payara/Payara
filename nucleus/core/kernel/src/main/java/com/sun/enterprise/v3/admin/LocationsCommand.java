@@ -50,9 +50,9 @@ import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.enterprise.glassfish.bootstrap.StartupContextUtil;
 

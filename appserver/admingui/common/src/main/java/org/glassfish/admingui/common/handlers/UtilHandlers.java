@@ -76,7 +76,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
-import javax.faces.component.UIViewRoot;
+import jakarta.faces.component.UIViewRoot;
 import org.glassfish.admin.rest.utils.JsonUtil;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.JSONUtil;

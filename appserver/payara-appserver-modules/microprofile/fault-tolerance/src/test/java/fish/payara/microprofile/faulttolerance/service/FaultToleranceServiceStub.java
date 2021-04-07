@@ -48,8 +48,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 
-import javax.enterprise.context.control.RequestContextController;
-import javax.interceptor.InvocationContext;
+import jakarta.enterprise.context.control.RequestContextController;
+import jakarta.interceptor.InvocationContext;
 
 import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
 import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;

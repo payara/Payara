@@ -40,9 +40,9 @@
 
 package org.glassfish.webservices;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletContext;
 
 /**
  * Common interface between jaxrpc 1.1 and jax-ws 2.0 for dispatching EJB

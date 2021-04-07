@@ -61,9 +61,9 @@ package org.apache.catalina.connector;
 
 import org.apache.catalina.LogFacade;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 import static java.security.AccessController.doPrivileged;
 import static org.apache.catalina.LogFacade.NULL_RESPONSE_OBJECT;

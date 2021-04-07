@@ -38,8 +38,7 @@
 package fish.payara.nucleus.notification.admin;
 
 import java.util.Properties;
-
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
 

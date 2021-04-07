@@ -42,9 +42,9 @@ package fish.payara.security.openid.api;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
-import javax.json.JsonObject;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.json.JsonObject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * An injectable interface that provides access to access token, identity token,

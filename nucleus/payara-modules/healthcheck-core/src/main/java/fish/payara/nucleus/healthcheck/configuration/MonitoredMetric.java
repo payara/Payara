@@ -40,7 +40,7 @@
 package fish.payara.nucleus.healthcheck.configuration;
 
 import java.beans.PropertyVetoException;
-import javax.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlAttribute;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;

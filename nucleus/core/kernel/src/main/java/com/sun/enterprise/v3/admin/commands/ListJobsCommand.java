@@ -46,7 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Collection;
 import java.util.Date;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.sun.enterprise.v3.admin.JobManagerService;
 import org.glassfish.api.ActionReport;

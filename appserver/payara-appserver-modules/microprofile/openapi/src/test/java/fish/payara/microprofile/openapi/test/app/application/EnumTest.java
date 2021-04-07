@@ -42,8 +42,8 @@ package fish.payara.microprofile.openapi.test.app.application;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import static org.junit.Assert.assertEquals;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;

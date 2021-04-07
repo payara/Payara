@@ -58,7 +58,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 
 @Configured

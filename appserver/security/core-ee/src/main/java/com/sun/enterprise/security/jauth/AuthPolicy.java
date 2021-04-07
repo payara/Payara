@@ -41,10 +41,10 @@
 
 package com.sun.enterprise.security.jauth;
 
-import javax.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.MessagePolicy;
 
-import static javax.security.auth.message.MessagePolicy.ProtectionPolicy;
-import static javax.security.auth.message.MessagePolicy.TargetPolicy;
+import static jakarta.security.auth.message.MessagePolicy.ProtectionPolicy;
+import static jakarta.security.auth.message.MessagePolicy.TargetPolicy;
 
 /*
  * This class is used to define the message authentication policy that informs

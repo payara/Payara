@@ -49,7 +49,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import javax.security.auth.Subject;
 import org.jvnet.hk2.annotations.Service;
 

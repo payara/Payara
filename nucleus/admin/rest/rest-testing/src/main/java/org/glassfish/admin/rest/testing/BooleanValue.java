@@ -40,7 +40,7 @@
 
 package org.glassfish.admin.rest.testing;
 
-import javax.json.JsonValue;
+import jakarta.json.JsonValue;
 
 public class BooleanValue extends ScalarValue {
     private boolean value;

@@ -40,11 +40,11 @@
 // Portions Copyright [2018] Payara Foundation and/or affiliates
 package org.glassfish.cdi.transaction;
 
-import javax.enterprise.context.Destroyed;
-import javax.enterprise.context.Initialized;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.transaction.TransactionScoped;
+import jakarta.enterprise.context.Destroyed;
+import jakarta.enterprise.context.Initialized;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
+import jakarta.transaction.TransactionScoped;
 
 /**
  * @author <a href="mailto:arjav.desai@oracle.com">Arjav Desai</a>

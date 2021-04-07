@@ -39,7 +39,7 @@
  */
 package org.glassfish.apf.test;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.apf.AnnotationHandler;
 import org.glassfish.apf.impl.AnnotationUtils;

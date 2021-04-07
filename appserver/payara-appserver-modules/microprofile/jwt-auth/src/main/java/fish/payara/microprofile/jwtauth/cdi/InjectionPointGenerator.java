@@ -41,14 +41,14 @@ package fish.payara.microprofile.jwtauth.cdi;
 
 import java.beans.Beans;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.inject.Inject;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.inject.Inject;
 
 /**
  * Dummy class used to take the injection point for "InjectionPoint" of, for usage in the
  * implementation of
- * {@link Beans#getCurrentInjectionPoint(javax.enterprise.context.spi.CreationalContext)}.
+ * {@link Beans#getCurrentInjectionPoint(jakarta.enterprise.context.spi.CreationalContext)}.
  * <p>
  * The actual injectionPoint being injected is not used.
  *

@@ -59,11 +59,11 @@ import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.ResourceException;
-import javax.resource.spi.*;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;

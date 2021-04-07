@@ -42,10 +42,10 @@
 package org.glassfish.nucleus.admin.rest;
 
 import java.util.Locale;
-import javax.json.JsonArray;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.resources.composite.Job;

@@ -44,7 +44,7 @@ package org.glassfish.web.deployment.descriptor;
 import com.sun.enterprise.deployment.OrderedSet;
 import org.glassfish.deployment.common.Descriptor;
 
-import javax.servlet.descriptor.JspPropertyGroupDescriptor;
+import jakarta.servlet.descriptor.JspPropertyGroupDescriptor;
 import java.util.Set;
 
 /**

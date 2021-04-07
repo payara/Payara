@@ -56,7 +56,7 @@ import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.jaspic.services.AuthConfigRegistrationWrapper;
 import com.sun.xml.ws.api.pipe.ClientPipeAssemblerContext;
 import com.sun.xml.ws.api.pipe.Pipe;
-import com.sun.xml.ws.assembler.ClientPipelineHook;
+import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
 import com.sun.xml.ws.policy.PolicyMap;
 
 /**

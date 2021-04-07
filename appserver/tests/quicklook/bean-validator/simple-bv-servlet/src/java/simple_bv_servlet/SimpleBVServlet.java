@@ -45,14 +45,14 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.ValidatorContext;
-import javax.validation.ValidatorFactory;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorContext;
+import jakarta.validation.ValidatorFactory;
 
 public class SimpleBVServlet extends HttpServlet {
 
@@ -71,7 +71,7 @@ public class SimpleBVServlet extends HttpServlet {
         out.print("</p>");
         
         ValidatorContext validatorContext = validatorFactory.usingContext();
-        javax.validation.Validator beanValidator = validatorContext.getValidator();
+        jakarta.validation.Validator beanValidator = validatorContext.getValidator();
 
         out.print("<h1>");
         out.print("Validating person class using validateValue with valid property");

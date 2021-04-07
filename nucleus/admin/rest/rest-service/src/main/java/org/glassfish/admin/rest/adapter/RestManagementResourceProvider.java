@@ -57,7 +57,7 @@ import org.glassfish.jersey.media.sse.SseFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.config.Dom;
 
-import javax.ws.rs.core.Feature;
+import jakarta.ws.rs.core.Feature;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

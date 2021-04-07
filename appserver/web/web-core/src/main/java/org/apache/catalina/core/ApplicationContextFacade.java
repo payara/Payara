@@ -63,8 +63,8 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.LogFacade;
 import org.apache.catalina.security.SecurityUtil;
 
-import javax.servlet.*;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.*;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

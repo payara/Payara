@@ -49,8 +49,8 @@ import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerCo
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.validation.constraints.Min;
+import jakarta.inject.Inject;
+import jakarta.validation.constraints.Min;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;

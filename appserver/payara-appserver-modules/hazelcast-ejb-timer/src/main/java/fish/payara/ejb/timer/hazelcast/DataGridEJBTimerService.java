@@ -41,7 +41,7 @@ package fish.payara.ejb.timer.hazelcast;
 
 import com.sun.ejb.PersistentTimerService;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 /**

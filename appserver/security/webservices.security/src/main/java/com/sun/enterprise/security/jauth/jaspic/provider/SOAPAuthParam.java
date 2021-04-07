@@ -43,7 +43,7 @@ package com.sun.enterprise.security.jauth.jaspic.provider;
 import com.sun.enterprise.security.jauth.AuthParam;
 import java.util.Map;
 import java.util.HashMap;
-import javax.xml.soap.*;
+import jakarta.xml.soap.*;
 
 import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Messages;

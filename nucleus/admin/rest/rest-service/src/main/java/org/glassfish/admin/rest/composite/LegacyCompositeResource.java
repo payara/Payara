@@ -42,12 +42,12 @@
 package org.glassfish.admin.rest.composite;
 
 import java.net.URI;
-import javax.json.JsonException;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
+import jakarta.json.JsonException;
+import jakarta.ws.rs.OPTIONS;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;

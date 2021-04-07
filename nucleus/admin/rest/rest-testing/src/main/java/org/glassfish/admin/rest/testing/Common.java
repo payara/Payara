@@ -42,9 +42,9 @@
 
 package org.glassfish.admin.rest.testing;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.ws.rs.core.Response.Status;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.Response.Status;
 
 
 public class Common {

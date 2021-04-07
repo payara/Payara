@@ -57,8 +57,8 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 
-import javax.inject.Inject;
-import javax.resource.spi.work.*;
+import jakarta.inject.Inject;
+import jakarta.resource.spi.work.*;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import java.util.*;

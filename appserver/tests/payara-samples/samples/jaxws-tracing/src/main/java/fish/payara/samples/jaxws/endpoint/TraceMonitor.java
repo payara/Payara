@@ -42,8 +42,8 @@ package fish.payara.samples.jaxws.endpoint;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 
 import fish.payara.micro.cdi.Inbound;
 import fish.payara.notification.eventbus.EventbusMessage;

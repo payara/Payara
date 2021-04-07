@@ -49,9 +49,8 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.PostConstruct;
-
 import org.glassfish.hk2.api.ServiceHandle;
+import jakarta.annotation.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 

@@ -41,11 +41,11 @@
 package org.glassfish.webservices.monitoring;
 
 import static java.util.logging.Level.WARNING;
-import static javax.xml.ws.handler.MessageContext.SERVLET_REQUEST;
+import static jakarta.xml.ws.handler.MessageContext.SERVLET_REQUEST;
 import static org.glassfish.webservices.LogUtils.EXCEPTION_TRACING_REQUEST;
 import static org.glassfish.webservices.LogUtils.EXCEPTION_TRACING_RESPONSE;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.glassfish.webservices.SOAPMessageContext;
 

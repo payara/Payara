@@ -50,8 +50,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-import javax.servlet.http.HttpServletMapping;
-import javax.servlet.http.MappingMatch;
+import jakarta.servlet.http.HttpServletMapping;
+import jakarta.servlet.http.MappingMatch;
 
 import org.glassfish.grizzly.http.server.util.MappingData;
 

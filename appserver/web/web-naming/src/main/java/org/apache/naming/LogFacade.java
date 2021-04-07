@@ -76,7 +76,7 @@ public class LogFacade {
             "org.apache.naming.resources.LogMessages";
 
     @LoggerInfo(subsystem="WEB", description="WEB Naming Logger", publish=true)
-    public static final String WEB_NAMING_LOGGER = "javax.enterprise.web.naming";
+    public static final String WEB_NAMING_LOGGER = "jakarta.enterprise.web.naming";
 
     public static final Logger LOGGER =
             Logger.getLogger(WEB_NAMING_LOGGER, SHARED_LOGMESSAGE_RESOURCE);

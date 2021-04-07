@@ -42,9 +42,9 @@ package fish.payara.security.openid.controller;
 import fish.payara.security.openid.api.OpenIdConstant;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import static fish.payara.security.openid.http.HttpStorageController.getInstance;
 

@@ -42,8 +42,8 @@ package fish.payara.microprofile.metrics.activation;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import javax.enterprise.inject.spi.Extension;
-import javax.inject.Inject;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;

@@ -40,6 +40,6 @@
 
 package org.glassfish.cdi.transaction;
 
-@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.REQUIRES_NEW)
+@jakarta.transaction.Transactional(value = jakarta.transaction.Transactional.TxType.REQUIRES_NEW)
 public class BeanRequiresNew extends BeanBase {
 }

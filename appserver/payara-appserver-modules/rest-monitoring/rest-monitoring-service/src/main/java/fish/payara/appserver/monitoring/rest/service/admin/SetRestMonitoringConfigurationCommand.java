@@ -47,7 +47,7 @@ import fish.payara.appserver.monitoring.rest.service.configuration.RestMonitorin
 import fish.payara.appserver.monitoring.rest.service.security.RestMonitoringAuthModule;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;

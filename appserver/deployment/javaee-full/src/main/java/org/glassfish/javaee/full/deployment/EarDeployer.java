@@ -67,8 +67,7 @@ import org.glassfish.internal.data.ProgressTracker;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.deployment.util.DOLUtils;
@@ -125,7 +124,7 @@ public class EarDeployer implements Deployer {
     // Reserve this range [AS-DEPLOYMENT-02001, AS-DEPLOYMENT-04000]
     // for message ids used in this deployment javaee-full module
     @LoggerInfo(subsystem = "DEPLOYMENT", description = "Deployment logger for javaee-full module", publish = true)
-    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.javaeefull";
+    private static final String DEPLOYMENT_LOGGER = "jakarta.enterprise.system.tools.deployment.javaeefull";
 
     public static final Logger deplLogger =
         Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);

@@ -42,13 +42,13 @@ package org.glassfish.admin.rest.provider;
 
 import org.jvnet.hk2.config.Dom;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.ext.MessageBodyWriter;
+import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
@@ -64,7 +64,7 @@ import java.util.Set;
 @Provider
 public class FormWriter implements MessageBodyWriter<Dom> {
     @Context
-    protected javax.inject.Provider<UriInfo> uriInfo;
+    protected jakarta.inject.Provider<UriInfo> uriInfo;
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {

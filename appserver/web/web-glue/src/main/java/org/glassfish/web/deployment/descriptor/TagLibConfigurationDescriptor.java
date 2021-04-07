@@ -41,7 +41,7 @@
 
 package org.glassfish.web.deployment.descriptor;
 
-import javax.servlet.descriptor.TaglibDescriptor;
+import jakarta.servlet.descriptor.TaglibDescriptor;
 import java.io.Serializable;
 
 /**

@@ -41,7 +41,7 @@ package fish.payara.samples.remote.ejb.tracing;
  */
 
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface EjbRemote {

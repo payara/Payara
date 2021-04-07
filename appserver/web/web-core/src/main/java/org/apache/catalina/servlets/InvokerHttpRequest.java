@@ -59,12 +59,12 @@
 
 package org.apache.catalina.servlets;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 
 
 /**
- * Wrapper around a <code>javax.servlet.http.HttpServletRequest</code>
+ * Wrapper around a <code>jakarta.servlet.http.HttpServletRequest</code>
  * utilized when <code>InvokerServlet</code> processes the initial request
  * for an invoked servlet.  Subsequent requests will be mapped directly
  * to the servlet, because a new servlet mapping will have been created.

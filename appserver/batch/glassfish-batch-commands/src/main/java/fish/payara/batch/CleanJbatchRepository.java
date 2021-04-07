@@ -39,7 +39,6 @@
  */
 package fish.payara.batch;
 
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -48,8 +47,8 @@ import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.batch.runtime.BatchRuntime;
-import javax.inject.Inject;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;

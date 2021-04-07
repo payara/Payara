@@ -49,8 +49,8 @@ import static org.glassfish.deployment.common.DeploymentProperties.DEFAULT_APP_N
 import java.io.File;
 import java.util.Properties;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.deployment.autodeploy.AutoDeployer.AutodeploymentStatus;

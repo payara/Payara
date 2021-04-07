@@ -48,7 +48,7 @@ import com.sun.enterprise.resource.pool.ResourceHandler;
 import com.sun.enterprise.resource.pool.datastructure.DataStructure;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;

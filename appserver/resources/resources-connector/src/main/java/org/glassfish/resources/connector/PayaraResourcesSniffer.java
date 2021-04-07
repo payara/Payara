@@ -44,7 +44,7 @@ package org.glassfish.resources.connector;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.resourcebase.resources.api.ResourceConstants;

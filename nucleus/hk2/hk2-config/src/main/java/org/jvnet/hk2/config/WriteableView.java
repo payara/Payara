@@ -43,8 +43,8 @@ package org.jvnet.hk2.config;
 
 import org.jvnet.hk2.config.ConfigModel.Property;
 
-import javax.validation.*;
-import javax.validation.metadata.ConstraintDescriptor;
+import jakarta.validation.*;
+import jakarta.validation.metadata.ConstraintDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.lang.annotation.ElementType;
@@ -927,7 +927,7 @@ private class ProtectedList<E> extends AbstractList<E> {
                             return null;
                         }
                     });
-                    return new javax.validation.Path() {
+                    return new jakarta.validation.Path() {
                         @Override
                         public Iterator<Node> iterator() {
                             return nodes.iterator();

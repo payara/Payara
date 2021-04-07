@@ -43,7 +43,7 @@
 package org.glassfish.kernel.embedded;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.internal.embedded.LifecycleException;
 import org.glassfish.internal.embedded.Port;
 import org.glassfish.internal.embedded.admin.CommandExecution;

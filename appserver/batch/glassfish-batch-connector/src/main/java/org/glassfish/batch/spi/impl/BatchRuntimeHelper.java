@@ -63,9 +63,9 @@ import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.batch.runtime.BatchRuntime;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

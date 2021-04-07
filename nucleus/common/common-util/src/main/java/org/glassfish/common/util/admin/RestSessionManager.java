@@ -48,7 +48,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.security.auth.Subject;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Manages Rest Sessions.

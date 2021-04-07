@@ -46,9 +46,9 @@ import fish.payara.ejb.http.protocol.InvokeMethodResponse;
 import fish.payara.ejb.http.protocol.MediaTypes;
 import fish.payara.ejb.http.protocol.rs.InvokeMethodResponseJsonBodyReader;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;

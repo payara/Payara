@@ -60,8 +60,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,7 +87,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
 
     @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
 
-    public static final String LOGGER = "javax.enterprise.resources.listener";
+    public static final String LOGGER = "jakarta.enterprise.resources.listener";
     private static final Logger logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
     private static LocalStringManagerImpl localStrings =

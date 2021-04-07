@@ -49,7 +49,7 @@ import java.util.Arrays;
  * @author Binod P.G
  * @version 1.0, 02/07/31
  */
-public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionRequestInfo {
+public class ConnectionRequestInfoImpl implements jakarta.resource.spi.ConnectionRequestInfo {
 
     private String user;
     private char[] password;

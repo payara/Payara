@@ -50,22 +50,22 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.json.JsonArray;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.json.JsonStructure;
-import javax.security.enterprise.SecurityContext;
-import javax.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
-import javax.security.enterprise.identitystore.IdentityStore;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonStructure;
+import jakarta.security.enterprise.SecurityContext;
+import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
+import jakarta.security.enterprise.identitystore.IdentityStore;
 
 import org.eclipse.microprofile.auth.LoginConfig;
 import org.eclipse.microprofile.jwt.Claim;
@@ -80,118 +80,120 @@ import fish.payara.microprofile.jwtauth.jwt.ClaimAnnotationLiteral;
 import fish.payara.microprofile.jwtauth.jwt.ClaimValueImpl;
 import fish.payara.microprofile.jwtauth.jwt.JWTInjectableType;
 import fish.payara.microprofile.jwtauth.jwt.JsonWebTokenImpl;
+import java.lang.reflect.Type;
+import java.util.function.Function;
+import org.glassfish.common.util.PayaraCdiProducer;
 
 /**
- * This class contains most of the actual logic from CdiExtension. Places in a separate
- * class since otherwise the <code>@Observes</code> effectively disappears.
- * 
+ * This class contains most of the actual logic from CdiExtension. Places in a
+ * separate class since otherwise the <code>@Observes</code> effectively
+ * disappears.
+ *
  * @author Arjan Tijms
  */
 public class CdiInitEventHandler {
-    
+
     private final static JsonWebTokenImpl emptyJsonWebToken = new JsonWebTokenImpl(null, emptyMap());
-    
+
     public static void installAuthenticationMechanism(AfterBeanDiscovery afterBeanDiscovery) {
-      
-        afterBeanDiscovery.addBean(new CdiProducer<IdentityStore>()
-                          .scope(ApplicationScoped.class)
-                          .beanClass(IdentityStore.class)
-                          .types(Object.class, IdentityStore.class, SignedJWTIdentityStore.class)
-                          .addToId("store " + LoginConfig.class)
-                          .create(e-> new SignedJWTIdentityStore()));
-      
-        afterBeanDiscovery.addBean(new CdiProducer<HttpAuthenticationMechanism>()
-                          .scope(ApplicationScoped.class)
-                          .beanClass(HttpAuthenticationMechanism.class)
-                          .types(Object.class, HttpAuthenticationMechanism.class, JWTAuthenticationMechanism.class)
-                          .addToId("mechanism " + LoginConfig.class)
-                          .create(e-> new JWTAuthenticationMechanism()));
-      
+
+        afterBeanDiscovery.addBean(new PayaraCdiProducer<IdentityStore>()
+                .scope(ApplicationScoped.class)
+                .beanClass(IdentityStore.class)
+                .types(Object.class, IdentityStore.class, SignedJWTIdentityStore.class)
+                .addToId("store " + LoginConfig.class)
+                .create(e -> new SignedJWTIdentityStore()));
+
+        afterBeanDiscovery.addBean(new PayaraCdiProducer<HttpAuthenticationMechanism>()
+                .scope(ApplicationScoped.class)
+                .beanClass(HttpAuthenticationMechanism.class)
+                .types(Object.class, HttpAuthenticationMechanism.class, JWTAuthenticationMechanism.class)
+                .addToId("mechanism " + LoginConfig.class)
+                .create(e -> new JWTAuthenticationMechanism()));
+
         // MP-JWT 1.0 7.1.1. Injection of JsonWebToken
-        afterBeanDiscovery.addBean(new CdiProducer<JsonWebToken>()
-                          .scope(RequestScoped.class)
-                          .beanClass(JsonWebToken.class)
-                          .types(Object.class, JsonWebToken.class)
-                          .addToId("token " + LoginConfig.class)
-                          .create(e-> getJsonWebToken()));
-      
+        afterBeanDiscovery.addBean(new PayaraCdiProducer<JsonWebToken>()
+                .scope(RequestScoped.class)
+                .beanClass(JsonWebToken.class)
+                .types(Object.class, JsonWebToken.class)
+                .addToId("token " + LoginConfig.class)
+                .create(e -> getJsonWebToken()));
+
         // MP-JWT 1.0 7.1.2
         for (JWTInjectableType injectableType : computeTypes()) {
-          
+
             // Add a new Bean<T>/Dynamic producer for each type that 7.1.2 asks
             // us to support.
-          
-            afterBeanDiscovery.addBean(new CdiProducer<Object>()
-                              .scope(Dependent.class)
-                              .beanClass(CdiInitEventHandler.class)
-                              .types(injectableType.getFullType())
-                              .qualifiers(new ClaimAnnotationLiteral())
-                              .addToId("claim for " + injectableType.getFullType())
-                              .create(creationalContext -> {
-                      
-                                  // Get the qualifier from the injection point
-                                  Claim claim = getQualifier(
-                                                    getCurrentInjectionPoint(
-                                                        CdiUtils.getBeanManager(), 
-                                                        creationalContext), Claim.class);
-                      
-                                  String claimName = getClaimName(claim);
-                                      
-                                  // Obtain the raw named value from the request scoped JsonWebToken's embedded claims and convert
-                                  // it according to the target type for which this Bean<T> was created.
-                                  Object claimObj = injectableType.convert(
-                                                            getJsonWebToken().getClaims()
-                                                                             .get(claimName));
-                          
-                          
-                                  // If the target type has an Optional in it, wrap the converted value
-                                  // into an Optional. I.e. Optional<Long> or ClaimValue<Optional<Long>>
-                                  if (injectableType.isOptional()) {
-                                      claimObj = Optional.ofNullable(claimObj);
-                                  }
-                          
-                                  // If the target type has a ClaimValue in it, wrap the converted value
-                                  // into a ClaimValue, e.g. ClaimValue<Long> or ClaimValue<Optional<Long>>
-                                  if (injectableType.isClaimValue()) {
-                                      claimObj = new ClaimValueImpl<Object>(claimName, claimObj);
-                                  }
-                          
-                                  return claimObj;
+            afterBeanDiscovery.addBean(new PayaraCdiProducer<>()
+                    .scope(Dependent.class)
+                    .beanClass(CdiInitEventHandler.class)
+                    .types(injectableType.getFullType())
+                    .qualifiers(new ClaimAnnotationLiteral())
+                    .addToId("claim for " + injectableType.getFullType())
+                    .create(creationalContext -> {
 
-                              }));
+                        // Get the qualifier from the injection point
+                        Claim claim = getQualifier(
+                                getCurrentInjectionPoint(
+                                        CdiUtils.getBeanManager(),
+                                        (CreationalContext)creationalContext), Claim.class);
+
+                        String claimName = getClaimName(claim);
+
+                        // Obtain the raw named value from the request scoped JsonWebToken's embedded claims and convert
+                        // it according to the target type for which this Bean<T> was created.
+                        Object claimObj = injectableType.convert(
+                                getJsonWebToken().getClaims()
+                                        .get(claimName));
+
+                        // If the target type has an Optional in it, wrap the converted value
+                        // into an Optional. I.e. Optional<Long> or ClaimValue<Optional<Long>>
+                        if (injectableType.isOptional()) {
+                            claimObj = Optional.ofNullable(claimObj);
+                        }
+
+                        // If the target type has a ClaimValue in it, wrap the converted value
+                        // into a ClaimValue, e.g. ClaimValue<Long> or ClaimValue<Optional<Long>>
+                        if (injectableType.isClaimValue()) {
+                            claimObj = new ClaimValueImpl<Object>(claimName, claimObj);
+                        }
+
+                        return claimObj;
+
+                    }));
         }
     }
 
     private static Set<JWTInjectableType> computeTypes() {
         Set<JWTInjectableType> baseTypes = new HashSet<>(asList(
-            new JWTInjectableType(String.class),
-            new JWTInjectableType(new ParameterizedTypeImpl(Set.class, String.class), Set.class),
-            new JWTInjectableType(Long.class), 
-            new JWTInjectableType(Boolean.class),
-            new JWTInjectableType(JsonString.class),
-            new JWTInjectableType(JsonNumber.class),
-            new JWTInjectableType(JsonStructure.class),
-            new JWTInjectableType(JsonArray.class),
-            new JWTInjectableType(JsonObject.class)));
-        
+                new JWTInjectableType(String.class),
+                new JWTInjectableType(new ParameterizedTypeImpl(Set.class, String.class), Set.class),
+                new JWTInjectableType(Long.class),
+                new JWTInjectableType(Boolean.class),
+                new JWTInjectableType(JsonString.class),
+                new JWTInjectableType(JsonNumber.class),
+                new JWTInjectableType(JsonStructure.class),
+                new JWTInjectableType(JsonArray.class),
+                new JWTInjectableType(JsonObject.class)));
+
         Set<JWTInjectableType> optionalTypes = new HashSet<>(baseTypes);
         optionalTypes.addAll(
                 baseTypes.stream()
-                         .map(t -> new JWTInjectableType(new ParameterizedTypeImpl(Optional.class, t.getFullType()), t))
-                         .collect(toSet()));
-        
+                        .map(t -> new JWTInjectableType(new ParameterizedTypeImpl(Optional.class, t.getFullType()), t))
+                        .collect(toSet()));
+
         Set<JWTInjectableType> claimValueTypes = new HashSet<>(optionalTypes);
         claimValueTypes.addAll(
                 optionalTypes.stream()
-                             .map(t -> new JWTInjectableType(new ParameterizedTypeImpl(ClaimValue.class, t.getFullType()), t))
-                             .collect(toSet()));
-        
+                        .map(t -> new JWTInjectableType(new ParameterizedTypeImpl(ClaimValue.class, t.getFullType()), t))
+                        .collect(toSet()));
+
         return claimValueTypes;
     }
 
     public static InjectionPoint getCurrentInjectionPoint(BeanManager beanManager, CreationalContext<?> creationalContext) {
         Bean<InjectionPointGenerator> bean = resolve(beanManager, InjectionPointGenerator.class);
-        
+
         return bean != null
                 ? (InjectionPoint) beanManager.getInjectableReference(bean.getInjectionPoints().iterator().next(), creationalContext)
                 : null;
@@ -215,7 +217,7 @@ public class CdiInitEventHandler {
             return bean;
         }
     }
-    
+
     public static <A extends Annotation> A getQualifier(InjectionPoint injectionPoint, Class<A> qualifierClass) {
         for (Annotation annotation : injectionPoint.getQualifiers()) {
             if (qualifierClass.isAssignableFrom(annotation.getClass())) {
@@ -225,16 +227,16 @@ public class CdiInitEventHandler {
 
         return null;
     }
-    
+
     public static JsonWebTokenImpl getJsonWebToken() {
         JsonWebTokenImpl jsonWebToken = (JsonWebTokenImpl) getBeanReference(SecurityContext.class).getCallerPrincipal();
         if (jsonWebToken == null) {
             jsonWebToken = emptyJsonWebToken;
         }
-        
+
         return jsonWebToken;
     }
-    
+
     public static String getClaimName(Claim claim) {
         if (claim.value().equals("")) {
             return claim.standard().name();

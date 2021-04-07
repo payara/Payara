@@ -74,7 +74,7 @@ public class ProfiledConnectionWrapper30 extends ConnectionHolder30 implements C
      * @param cxRequestInfo  Connection Request Info
      */
     public ProfiledConnectionWrapper30(Connection con, ManagedConnectionImpl mc,
-            javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
+            jakarta.resource.spi.ConnectionRequestInfo cxRequestInfo,
             SQLTraceDelegator delegator) {
         super(con, mc, cxRequestInfo);
         this.sqlTraceDelegator = delegator;

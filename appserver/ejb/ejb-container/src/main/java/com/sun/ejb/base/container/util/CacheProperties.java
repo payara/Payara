@@ -52,8 +52,8 @@ import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 

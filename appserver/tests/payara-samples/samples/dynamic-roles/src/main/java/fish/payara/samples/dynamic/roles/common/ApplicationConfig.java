@@ -41,9 +41,9 @@ package fish.payara.samples.dynamic.roles.common;
 
 import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.ADMIN;
 import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.USER;
-import javax.annotation.security.DeclareRoles;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.core.Application;
 
 /**
  *

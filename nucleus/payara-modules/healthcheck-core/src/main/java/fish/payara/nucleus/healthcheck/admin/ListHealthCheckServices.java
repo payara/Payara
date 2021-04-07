@@ -39,7 +39,7 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;

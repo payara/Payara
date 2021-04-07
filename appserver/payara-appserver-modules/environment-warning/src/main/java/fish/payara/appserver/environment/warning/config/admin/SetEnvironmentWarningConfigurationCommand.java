@@ -45,7 +45,7 @@ import fish.payara.appserver.environment.warning.config.EnvironmentWarningConfig
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;

@@ -57,8 +57,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
-import javax.ejb.EJBException;
-import javax.ejb.EJBLocalHome;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.EJBLocalHome;
 
 /**
  * Handler for EJBLocalHome invocations through EJBLocalHome proxy.
@@ -153,8 +153,8 @@ public class EJBLocalHomeInvocationHandler extends EJBLocalHomeImpl implements I
                 throw new IllegalStateException("Unknown method: " + method);
             }
 
-            if ((methodClass == javax.ejb.EJBLocalHome.class) || invInfo.ejbIntfOverride) {
-                // There is exactly one argument on javax.ejb.EJBLocalHome: primaryKey
+            if ((methodClass == jakarta.ejb.EJBLocalHome.class) || invInfo.ejbIntfOverride) {
+                // There is exactly one argument on jakarta.ejb.EJBLocalHome: primaryKey
                 super.remove(args[0]);
                 return null;
 

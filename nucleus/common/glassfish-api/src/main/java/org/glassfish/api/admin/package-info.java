@@ -49,7 +49,7 @@
  {@link org.jvnet.hk2.annotations.Service#name} attribute.
 
  <p>Commands can be singleton or instantiated at each invocation depending on the {@link org.jvnet.hk2.annotations.Scope}
- annotation. Singleton commands will be injected once for all {@link javax.inject.Inject} dependencies but
+ annotation. Singleton commands will be injected once for all {@link jakarta.inject.Inject} dependencies but
  will have all @{link org.glassfish.api.admin.Param} dependencies injected for each invocation.
 
  <p>more to be added to describe the v3 behaviors.

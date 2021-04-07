@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 import com.sun.logging.LogDomains;
 
 
-import javax.persistence.spi.PersistenceUnitTransactionType;
+import jakarta.persistence.spi.PersistenceUnitTransactionType;
 
 /**
  * SchemaGenerationProcessor that handles schema generation while

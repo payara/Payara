@@ -46,8 +46,8 @@ import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
 import com.sun.gjc.spi.base.AbstractDataSource;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionManager;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionManager;
 import java.util.logging.Level;
 import java.sql.*;
 import java.util.logging.Logger;

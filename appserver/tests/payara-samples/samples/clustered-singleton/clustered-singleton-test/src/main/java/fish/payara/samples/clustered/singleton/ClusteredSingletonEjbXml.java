@@ -42,7 +42,7 @@ package fish.payara.samples.clustered.singleton;
 import fish.payara.samples.clustered.singleton.api.SingletonAPI;
 import java.io.Serializable;
 import java.util.UUID;
-import javax.enterprise.inject.Vetoed;
+import jakarta.enterprise.inject.Vetoed;
 
 /**
  * @author lprimak

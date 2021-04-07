@@ -58,7 +58,7 @@ import com.sun.enterprise.config.serverbeans.MonitoringService;
 import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.hk2.api.PerLookup;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @author Sreenivas Munnangi (3.0)

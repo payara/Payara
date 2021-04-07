@@ -89,7 +89,7 @@ public class ModuleMap {
                 put("com.sun.jersey.jersey-grizzly", 30);
                 put("com.sun.jersey.jersey-json", 31);
                 put("com.sun.jsftemplating", 32);
-                put("com.sun.mail.javax.mail", 33);
+                put("com.sun.mail.jakarta.mail", 33);
                 put("com.sun.pkg.client", 34);
                 put("com.sun.xml.bind.jaxb-osgi", 35);
                 put("commonj.sdo", 36);
@@ -106,8 +106,8 @@ public class ModuleMap {
                 put("jackson-jaxrs", 47);
                 put("jackson-mapper-asl", 48);
                 put("jackson-xc", 49);
-                put("javax.persistence", 50);
-                put("javax.servlet-api", 51);
+                put("jakarta.persistence", 50);
+                put("jakarta.servlet-api", 51);
                 put("javax.xml.jaxrpc-api-osgi", 52);
                 put("jakarta.xml.bind-api", 53);
                 put("org.glassfish.external.management-api", 54);
@@ -122,7 +122,7 @@ public class ModuleMap {
                 put("org.apache.felix.shell.remote", 63);
                 put("org.apache.felix.shell.tui", 64);
                 //put("org.codehaus.jettison.jettison", 65);
-                put("org.eclipse.persistence.antlr", 66);
+//                put("org.eclipse.persistence.antlr", 66);
                 put("org.eclipse.persistence.asm", 67);
                 put("org.eclipse.persistence.core", 68);
                 put("org.eclipse.persistence.jpa", 69);
@@ -216,7 +216,7 @@ public class ModuleMap {
                 put("fish.payara.server.internal.connectors.gf-connectors-connector", 157);
                 put("fish.payara.server.internal.connectors.inbound-runtime", 158);
                 put("fish.payara.server.internal.connectors.internal-api", 159);
-                put("fish.payara.server.internal.connectors.javax.resource", 160);
+                put("fish.payara.server.internal.connectors.jakarta.resource", 160);
                 put("fish.payara.server.internal.connectors.runtime", 161);
                 put("fish.payara.server.internal.connectors.work-management", 162);
                 put("fish.payara.server.internal.core.branding", 163);
@@ -236,7 +236,7 @@ public class ModuleMap {
                 put("fish.payara.server.internal.ejb.ejb-container", 177);
                 put("fish.payara.server.internal.ejb.gf-ejb-connector", 178);
                 put("fish.payara.server.internal.ejb.internal-api", 179);
-                put("fish.payara.server.internal.ejb.javax.ejb", 180);
+                put("fish.payara.server.internal.ejb.jakarta.ejb", 180);
                 put("fish.payara.server.internal.repackage.ant", 181);
                 put("fish.payara.server.internal.repackage.antlr-repackaged", 182);
                 put("fish.payara.server.internal.repackage.dbschema-repackaged", 183);
@@ -253,10 +253,10 @@ public class ModuleMap {
                 put("fish.payara.server.internal.ha.ha-file-store", 194);
                 put("fish.payara.server.internal.ha.shoal-cache-bootstrap", 195);
                 put("fish.payara.server.internal.ha.shoal-cache-store", 196);
-                put("fish.payara.server.internal.javaee-api.javax.annotation", 197);
-                put("fish.payara.server.internal.javaee-api.javax.jms", 198);
-                put("fish.payara.server.internal.javaee-api.javax.servlet.jsp", 199);
-                put("fish.payara.server.internal.javaee-api.javax.servlet.jsp.jstl", 200);
+                put("fish.payara.server.internal.javaee-api.jakarta.annotation", 197);
+                put("fish.payara.server.internal.javaee-api.jakarta.jms", 198);
+                put("fish.payara.server.internal.javaee-api.jakarta.servlet.jsp", 199);
+                put("fish.payara.server.internal.javaee-api.jakarta.servlet.jsp.jstl", 200);
                 put("fish.payara.server.internal.jdbc.admin", 201);
                 put("fish.payara.server.internal.jms.admin", 202);
                 put("fish.payara.server.internal.jms.core", 203);
@@ -283,13 +283,13 @@ public class ModuleMap {
                 put("fish.payara.server.internal.security.ejb.security", 224);
                 put("fish.payara.server.internal.security.inmemory.jacc.provider", 225);
                 put("fish.payara.server.internal.security.jaspic.provider.framework", 226);
-                put("fish.payara.server.internal.security.javax.security.auth.message", 227);
-                put("fish.payara.server.internal.security.javax.security.jacc", 228);
+                put("fish.payara.server.internal.security.jakarta.security.auth.message", 227);
+                put("fish.payara.server.internal.security.jakarta.security.jacc", 228);
                 put("fish.payara.server.internal.security.ssl-impl", 229);
                 put("fish.payara.server.internal.security.websecurity", 230);
                 put("fish.payara.server.internal.security.webservices.security", 231);
                 put("fish.payara.server.internal.transaction.internal-api", 232);
-                put("fish.payara.server.internal.transaction.javax.transaction", 233);
+                put("fish.payara.server.internal.transaction.jakarta.transaction", 233);
                 put("fish.payara.server.internal.transaction.jta", 234);
                 put("fish.payara.server.internal.transaction.jts", 235);
                 put("fish.payara.server.internal.web.cli", 236);

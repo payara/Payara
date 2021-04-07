@@ -52,7 +52,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.Properties;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 import static org.glassfish.batch.BatchConstants.LIST_BATCH_JOBS;
 import static org.glassfish.batch.BatchConstants.LIST_JOBS_COUNT;
 import static org.glassfish.batch.BatchConstants.SIMPLE_MODE;

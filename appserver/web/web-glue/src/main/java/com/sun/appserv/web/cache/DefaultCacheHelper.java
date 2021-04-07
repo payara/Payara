@@ -45,8 +45,8 @@ import com.sun.appserv.web.cache.mapping.ConstraintField;
 import com.sun.appserv.web.cache.mapping.Field;
 import org.glassfish.web.LogFacade;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;

@@ -40,9 +40,9 @@
 
 package org.glassfish.admin.rest.resources;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Context;
 import org.glassfish.admin.rest.adapter.Reloader;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.server.ResourceConfig;

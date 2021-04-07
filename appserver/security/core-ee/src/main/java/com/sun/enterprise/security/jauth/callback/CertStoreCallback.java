@@ -56,7 +56,7 @@ import javax.security.auth.callback.Callback;
  * @version %I%, %G%
  */
 public class CertStoreCallback extends
-        javax.security.auth.message.callback.CertStoreCallback {
+        jakarta.security.auth.message.callback.CertStoreCallback {
 
     /**
      * Set the CertStore.

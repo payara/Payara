@@ -91,7 +91,7 @@
 	<module>atomic</module>
         <module>nucleus</module>
 -->        
-        <module>payara-minimal</module>
+<!--        <module>payara-minimal</module>-->
     </modules>
 
     <build>

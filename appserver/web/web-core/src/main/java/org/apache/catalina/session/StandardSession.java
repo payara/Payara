@@ -69,8 +69,8 @@ import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.tomcat.util.security.PrivilegedSetTccl;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.*;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.*;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.security.AccessController;
@@ -2165,7 +2165,7 @@ public class StandardSession implements HttpSession, Session, Serializable {
             }
              */
             //original Hercules code was next line
-            //else if (value instanceof Serializable || value instanceof javax.ejb.EJBLocalObject || value instanceof javax.naming.Context || value instanceof javax.ejb.EJBLocalHome ) { //Bug 4853798
+            //else if (value instanceof Serializable || value instanceof jakarta.ejb.EJBLocalObject || value instanceof javax.naming.Context || value instanceof jakarta.ejb.EJBLocalHome ) { //Bug 4853798
             //FIXME: IndirectlySerializable includes more than 3 classes in Hercules code
             //need to explore implications of this
 

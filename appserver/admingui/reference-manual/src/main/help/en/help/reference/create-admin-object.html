@@ -229,11 +229,11 @@ for JMS destination resources.</p>
 </div>
 <div class="paragraph">
 <p>In this example, <code>jmsra</code> is a system resource adapter with the admin
-object interfaces, <code>javax.jms.Queue</code> and <code>javax.jms.Topic</code>.</p>
+object interfaces, <code>jakarta.jms.Queue</code> and <code>jakarta.jms.Topic</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-admin-object --restype javax.jms.Queue
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-admin-object --restype jakarta.jms.Queue
 --raname jmsra --description "sample administered object"
 --property Name=sample_jmsqueue jms/samplequeue
 Command create-admin-object executed successfully</code></pre>

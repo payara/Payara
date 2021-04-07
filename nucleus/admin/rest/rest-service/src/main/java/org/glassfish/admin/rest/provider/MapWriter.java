@@ -43,10 +43,10 @@ package org.glassfish.admin.rest.provider;
 
 import java.util.Map;
 import java.util.logging.Level;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.CompositeResource;

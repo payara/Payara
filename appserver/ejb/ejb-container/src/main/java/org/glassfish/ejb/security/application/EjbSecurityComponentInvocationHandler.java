@@ -46,8 +46,8 @@ import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocati
 
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;

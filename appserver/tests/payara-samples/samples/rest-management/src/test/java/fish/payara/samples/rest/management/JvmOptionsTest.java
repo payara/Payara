@@ -41,8 +41,8 @@ package fish.payara.samples.rest.management;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.client.Entity.entity;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -51,9 +51,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.ws.rs.core.Response;
 
 import org.jboss.arquillian.junit.InSequence;
 import org.junit.Test;

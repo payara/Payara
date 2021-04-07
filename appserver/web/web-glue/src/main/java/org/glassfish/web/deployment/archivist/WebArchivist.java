@@ -66,7 +66,7 @@ import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.deployment.io.WebDeploymentDescriptorFile;
 import org.glassfish.web.deployment.util.*;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.xml.sax.SAXParseException;
 
 import java.io.IOException;

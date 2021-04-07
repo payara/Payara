@@ -50,7 +50,7 @@ Can't use things in amx-api, so a few methods are place here.
 public final class Util
 {
     @LoggerInfo(subsystem = "JMX", description="JMX System Logger")
-    private static final String JMX_LOGGER_NAME = "javax.enterprise.system.jmx";
+    private static final String JMX_LOGGER_NAME = "jakarta.enterprise.system.jmx";
     
     @LogMessagesResourceBundle
     private static final String LOG_MESSAGES_RB = "org.glassfish.admin.mbeanserver.LogMessages";

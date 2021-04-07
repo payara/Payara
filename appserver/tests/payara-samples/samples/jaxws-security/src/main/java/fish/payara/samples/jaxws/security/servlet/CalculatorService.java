@@ -40,7 +40,7 @@
 package fish.payara.samples.jaxws.security.servlet;
 
 import fish.payara.cdi.auth.roles.RolesPermitted;
-import javax.enterprise.context.Dependent;
+import jakarta.enterprise.context.Dependent;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 

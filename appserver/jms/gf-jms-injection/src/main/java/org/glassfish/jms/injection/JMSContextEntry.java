@@ -41,7 +41,7 @@
 package org.glassfish.jms.injection;
 
 import java.io.Serializable;
-import javax.jms.JMSContext;
+import jakarta.jms.JMSContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 
 public class JMSContextEntry implements Serializable {

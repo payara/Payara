@@ -51,13 +51,13 @@ import java.io.IOException;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
-import javax.security.auth.message.callback.CertStoreCallback;
-import javax.security.auth.message.callback.GroupPrincipalCallback;
-import javax.security.auth.message.callback.PasswordValidationCallback;
-import javax.security.auth.message.callback.PrivateKeyCallback;
-import javax.security.auth.message.callback.SecretKeyCallback;
-import javax.security.auth.message.callback.TrustStoreCallback;
+import jakarta.security.auth.message.callback.CallerPrincipalCallback;
+import jakarta.security.auth.message.callback.CertStoreCallback;
+import jakarta.security.auth.message.callback.GroupPrincipalCallback;
+import jakarta.security.auth.message.callback.PasswordValidationCallback;
+import jakarta.security.auth.message.callback.PrivateKeyCallback;
+import jakarta.security.auth.message.callback.SecretKeyCallback;
+import jakarta.security.auth.message.callback.TrustStoreCallback;
 
 /**
  * Callback Handler for ServerContainer

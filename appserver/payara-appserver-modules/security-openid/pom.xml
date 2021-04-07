@@ -111,7 +111,7 @@
         
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
-            <artifactId>javax.security.enterprise</artifactId>
+            <artifactId>jakarta.security.enterprise</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -135,7 +135,11 @@
             <artifactId>accessors-smart</artifactId>
             <version>${accessors-smart.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>container-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     
     <build>
@@ -170,7 +174,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/javax.enterprise.inject.spi.Extension</include>
+                    <include>**/jakarta.enterprise.inject.spi.Extension</include>
                 </includes>
             </resource>
         </resources>

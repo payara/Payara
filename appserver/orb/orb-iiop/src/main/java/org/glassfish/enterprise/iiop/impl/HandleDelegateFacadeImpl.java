@@ -42,7 +42,7 @@ package org.glassfish.enterprise.iiop.impl;
 
 import org.glassfish.enterprise.iiop.api.HandleDelegateFacade;
 import org.jvnet.hk2.annotations.Service;
-import javax.ejb.spi.HandleDelegate;
+import jakarta.ejb.spi.HandleDelegate;
 
 @Service
 public class HandleDelegateFacadeImpl implements HandleDelegateFacade {

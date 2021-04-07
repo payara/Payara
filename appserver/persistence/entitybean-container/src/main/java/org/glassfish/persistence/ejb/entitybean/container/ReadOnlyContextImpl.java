@@ -40,7 +40,7 @@
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
-import javax.ejb.EnterpriseBean;
+import jakarta.ejb.EnterpriseBean;
 import com.sun.ejb.containers.BaseContainer;
 
 /**

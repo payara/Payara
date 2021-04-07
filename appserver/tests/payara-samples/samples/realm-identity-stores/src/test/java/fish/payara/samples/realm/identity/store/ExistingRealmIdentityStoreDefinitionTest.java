@@ -49,8 +49,8 @@ import fish.payara.samples.realm.identity.store.common.PersonControllerClient;
 
 import java.net.URL;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -65,8 +65,8 @@ import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstan
 import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.DEFAULT_PASSWORD;
 import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.DEFAULT_USER;
 import static fish.payara.samples.realm.identity.store.common.PersonControllerClientHelper.getBasicPersonControllerClient;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;

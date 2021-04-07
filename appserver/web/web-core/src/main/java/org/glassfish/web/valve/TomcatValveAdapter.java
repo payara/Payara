@@ -44,7 +44,7 @@ package org.glassfish.web.valve;
 import org.apache.catalina.CometEvent;
 import org.apache.catalina.Valve;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 
 /**

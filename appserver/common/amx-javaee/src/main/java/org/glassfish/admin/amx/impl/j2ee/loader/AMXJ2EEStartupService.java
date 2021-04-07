@@ -61,7 +61,7 @@ import org.glassfish.admin.amx.util.FeatureAvailability;
 import org.glassfish.api.amx.AMXLoader;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationRegistry;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 

@@ -40,8 +40,8 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.glassfish.api.admin.ProcessEnvironment;

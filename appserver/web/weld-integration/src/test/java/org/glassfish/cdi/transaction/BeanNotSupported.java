@@ -40,6 +40,6 @@
 
 package org.glassfish.cdi.transaction;
 
-@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.NOT_SUPPORTED)
+@jakarta.transaction.Transactional(value = jakarta.transaction.Transactional.TxType.NOT_SUPPORTED)
 public class BeanNotSupported extends BeanBase {
 }

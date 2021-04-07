@@ -41,10 +41,10 @@
 package com.sun.enterprise.deployment.annotation.introspection;
 
 import com.sun.enterprise.deployment.annotation.factory.SJSASFactory;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.Set;
 
 

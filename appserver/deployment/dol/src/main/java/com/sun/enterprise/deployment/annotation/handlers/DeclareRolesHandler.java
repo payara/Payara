@@ -51,12 +51,12 @@ import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.security.common.Role;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.security.DeclareRoles;
+import jakarta.annotation.security.DeclareRoles;
 import java.lang.annotation.Annotation;
 
 /**
  * This handler is responsible for handling the
- * javax.annotation.security.DeclareRoles.
+ * jakarta.annotation.security.DeclareRoles.
  *
  * @author Shing Wai Chan
  */

@@ -40,7 +40,7 @@
 
 package com.sun.jts.jta;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 import javax.naming.*;
 import java.util.Properties;
 
@@ -48,14 +48,14 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;
 /**
- * This class implements the javax.transaction.UserTransaction interface
+ * This class implements the jakarta.transaction.UserTransaction interface
  * which defines methods that allow an application to explicitly manage
  * transaction boundaries.
  *
  * @author Ram Jeyaraman
  * @version 1.0 Feb 09, 1999
  */
-public class UserTransactionImpl implements javax.transaction.UserTransaction,
+public class UserTransactionImpl implements jakarta.transaction.UserTransaction,
 	javax.naming.Referenceable, java.io.Serializable {
 
 	// Instance variables
@@ -70,7 +70,7 @@ public class UserTransactionImpl implements javax.transaction.UserTransaction,
 
     public UserTransactionImpl() {}
 
-    // Implementation of javax.transaction.UserTransaction interface
+    // Implementation of jakarta.transaction.UserTransaction interface
 
     /**
      * Create a new transaction and associate it with the current thread.

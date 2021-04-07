@@ -66,7 +66,7 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.INFO;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_DESTROY_EVENT;
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_INIT_EVENT;
 import static org.apache.catalina.InstanceEvent.EventType.AFTER_SERVICE_EVENT;
@@ -121,17 +121,17 @@ import java.util.logging.Logger;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.SingleThreadModel;
-import javax.servlet.UnavailableException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.SingleThreadModel;
+import jakarta.servlet.UnavailableException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerServlet;
@@ -795,7 +795,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      *
      * @return Array of names of the methods supported by the underlying
      * servlet
-     * @throws javax.servlet.ServletException
+     * @throws jakarta.servlet.ServletException
      */
     @Override
     public String[] getServletMethods() throws ServletException {

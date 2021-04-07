@@ -45,8 +45,8 @@ import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.jvnet.hk2.config.*;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
 import java.util.List;
 

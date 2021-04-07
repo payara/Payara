@@ -318,10 +318,10 @@
         jakarta.servlet-api.jar
         jakarta.servlet.jsp-api.jar
         jakarta.servlet.jsp.jstl-api.jar
-        javax.servlet.jsp.jstl.jar
+        jakarta.servlet.jsp.jstl.jar
         jakarta.jms-api.jar
         jakarta.faces.jar
-        javax.servlet.jsp.jar
+        jakarta.servlet.jsp.jar
         jspcaching-connector.jar
         web-glue.jar
         bean-validator.jar

@@ -63,14 +63,14 @@ import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.RetryableUnavailableException;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.RetryableUnavailableException;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.Transaction;
 import javax.transaction.xa.XAResource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -627,8 +627,8 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
                 //In this case we are assured that the managedConnection is
                 //of type DissociatableManagedConnection
                 if (h.getResource() != null) {
-                    javax.resource.spi.DissociatableManagedConnection mc
-                            = (javax.resource.spi.DissociatableManagedConnection) h.getResource();
+                    jakarta.resource.spi.DissociatableManagedConnection mc
+                            = (jakarta.resource.spi.DissociatableManagedConnection) h.getResource();
                     if (h.isEnlisted()) {
                         getResourceManager(spec).delistResource(
                                 h, XAResource.TMSUCCESS);

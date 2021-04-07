@@ -41,7 +41,7 @@
 package com.sun.enterprise.security.jauth.jaspic.provider;
 
 import java.util.Map;
-import javax.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPMessage;
 import com.sun.xml.ws.api.message.Packet;
 
 

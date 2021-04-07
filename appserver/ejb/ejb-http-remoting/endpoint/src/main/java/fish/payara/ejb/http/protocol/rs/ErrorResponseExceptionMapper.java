@@ -43,10 +43,10 @@ package fish.payara.ejb.http.protocol.rs;
 import fish.payara.ejb.http.protocol.ErrorResponse;
 import fish.payara.ejb.http.protocol.MediaTypes;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
 @Provider
 @Produces({MediaTypes.JAVA_OBJECT, MediaTypes.JSON})

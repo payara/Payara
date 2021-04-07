@@ -43,7 +43,7 @@ package com.sun.ejb.containers;
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.enterprise.security.SecurityManager;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.jvnet.hk2.annotations.Service;

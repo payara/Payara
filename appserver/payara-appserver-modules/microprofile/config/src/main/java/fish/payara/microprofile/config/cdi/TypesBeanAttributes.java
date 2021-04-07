@@ -41,7 +41,7 @@ package fish.payara.microprofile.config.cdi;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
-import javax.enterprise.inject.spi.BeanAttributes;
+import jakarta.enterprise.inject.spi.BeanAttributes;
 
 /**
  * A simple Bean Attributes delegate that delegates to the passed in BeanAttributes

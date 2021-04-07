@@ -49,7 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Map;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;

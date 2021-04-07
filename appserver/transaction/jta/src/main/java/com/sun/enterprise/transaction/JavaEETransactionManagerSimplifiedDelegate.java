@@ -46,10 +46,10 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 import javax.transaction.xa.*;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.work.WorkException;
+import jakarta.resource.spi.XATerminator;
+import jakarta.resource.spi.work.WorkException;
 
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
@@ -63,7 +63,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  ** Implementation of JavaEETransactionManagerDelegate that supports only
@@ -133,7 +133,7 @@ public class JavaEETransactionManagerSimplifiedDelegate
         if ( tx != null && tx.isLocalTx())
             return tx.getStatus();
         else
-            return javax.transaction.Status.STATUS_NO_TRANSACTION;
+            return jakarta.transaction.Status.STATUS_NO_TRANSACTION;
     }
 
     public Transaction getTransaction() throws SystemException {
@@ -264,7 +264,7 @@ public class JavaEETransactionManagerSimplifiedDelegate
     }
 
     public TransactionAdminBean getTransactionAdminBean(Transaction tran) 
-            throws javax.transaction.SystemException {
+            throws jakarta.transaction.SystemException {
         return ((JavaEETransactionManagerSimplified)tm).getTransactionAdminBean(tran);
     }
 

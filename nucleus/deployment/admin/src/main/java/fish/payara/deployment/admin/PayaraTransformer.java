@@ -68,7 +68,7 @@ public class PayaraTransformer {
         "javax.inject.Inject",
         "javax.servlet.http.HttpServlet",
         "javax.ws.rs.core.Application",
-        "javax.persistence.Entity"
+        "jakarta.persistence.Entity"
     };
     private static final String[] commonJakartaClasses = {
         "jakarta.inject.Inject",

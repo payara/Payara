@@ -56,8 +56,8 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jvnet.hk2.config.*;
 import org.glassfish.api.admin.CommandRunner;

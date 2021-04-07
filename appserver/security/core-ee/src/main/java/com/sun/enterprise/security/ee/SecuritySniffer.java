@@ -59,7 +59,7 @@ import java.io.IOException;
 import com.sun.enterprise.module.HK2Module;
 import java.lang.annotation.Annotation;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * SecuritySniffer for security related activities
@@ -76,8 +76,8 @@ public class SecuritySniffer extends GenericSniffer {
 
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] ejbAnnotations = new Class[] {
-            javax.ejb.Stateless.class, javax.ejb.Stateful.class,
-            javax.ejb.MessageDriven.class, javax.ejb.Singleton.class
+            jakarta.ejb.Stateless.class, jakarta.ejb.Stateful.class,
+            jakarta.ejb.MessageDriven.class, jakarta.ejb.Singleton.class
     };
 
     public SecuritySniffer() {

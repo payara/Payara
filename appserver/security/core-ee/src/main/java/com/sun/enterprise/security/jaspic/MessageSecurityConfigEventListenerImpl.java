@@ -46,8 +46,8 @@ import static com.sun.logging.LogDomains.SECURITY_LOGGER;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;

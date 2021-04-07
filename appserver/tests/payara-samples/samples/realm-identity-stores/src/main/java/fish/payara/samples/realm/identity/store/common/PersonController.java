@@ -42,14 +42,14 @@ package fish.payara.samples.realm.identity.store.common;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import static fish.payara.samples.realm.identity.store.common.AuthoritiesConstants.ADMIN;
 

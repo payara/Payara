@@ -51,8 +51,8 @@ import com.sun.enterprise.resource.pool.datastructure.DataStructure;
 import com.sun.logging.LogDomains;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ManagedConnection;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ManagedConnection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimerTask;

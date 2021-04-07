@@ -41,7 +41,7 @@ package fish.payara.samples.ejb.invoker.security;
 
 import java.io.Serializable;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class Bean implements RemoteBean, Serializable {

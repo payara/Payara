@@ -79,7 +79,7 @@ public class ConnectorsTest extends BaseSeleniumTestClass {
         selectDropdownOption("propertyForm:propertySheet:generalPropertySheet:resAdapterProp:db", "jmsra");
         waitForCondition("document.getElementById('propertyForm:propertySheet:generalPropertySheet:connectionDefProp:db').value != ''", 10000);
 
-        selectDropdownOption("propertyForm:propertySheet:generalPropertySheet:connectionDefProp:db", "javax.jms.QueueConnectionFactory");
+        selectDropdownOption("propertyForm:propertySheet:generalPropertySheet:connectionDefProp:db", "jakarta.jms.QueueConnectionFactory");
         waitForButtonEnabled("propertyForm:title:topButtons:nextButton");
 
         clickAndWait("propertyForm:title:topButtons:nextButton", TRIGGER_NEW_CONNECTOR_CONNECTION_POOL_STEP_2);
@@ -144,7 +144,7 @@ public class ConnectorsTest extends BaseSeleniumTestClass {
         selectDropdownOption("propertyForm:propertySheet:generalPropertySheet:resAdapterProp:db", "jmsra");
         waitForCondition("document.getElementById('propertyForm:propertySheet:generalPropertySheet:connectionDefProp:db').value != ''", 10000);
 
-        selectDropdownOption("propertyForm:propertySheet:generalPropertySheet:connectionDefProp:db", "javax.jms.QueueConnectionFactory");
+        selectDropdownOption("propertyForm:propertySheet:generalPropertySheet:connectionDefProp:db", "jakarta.jms.QueueConnectionFactory");
         waitForButtonEnabled("propertyForm:title:topButtons:nextButton");
 
         clickAndWait("propertyForm:title:topButtons:nextButton", TRIGGER_NEW_CONNECTOR_CONNECTION_POOL_STEP_2);
@@ -242,7 +242,7 @@ public class ConnectorsTest extends BaseSeleniumTestClass {
         selectDropdownOption("propertyForm:propertySheet:generalPropertySheet:resAdapterProp:db", "jmsra");
         waitForCondition("document.getElementById('propertyForm:propertySheet:generalPropertySheet:connectionDefProp:db').value != ''", 10000);
 
-        selectDropdownOption("propertyForm:propertySheet:generalPropertySheet:connectionDefProp:db", "javax.jms.QueueConnectionFactory");
+        selectDropdownOption("propertyForm:propertySheet:generalPropertySheet:connectionDefProp:db", "jakarta.jms.QueueConnectionFactory");
         waitForButtonEnabled("propertyForm:title:topButtons:nextButton");
 
         clickAndWait("propertyForm:title:topButtons:nextButton", TRIGGER_NEW_CONNECTOR_CONNECTION_POOL_STEP_2);

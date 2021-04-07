@@ -44,7 +44,7 @@ import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Logger;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.CharArrayWriter;

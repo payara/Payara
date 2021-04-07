@@ -58,8 +58,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.statistics.Statistic;
 import org.glassfish.external.statistics.CountStatistic;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  *

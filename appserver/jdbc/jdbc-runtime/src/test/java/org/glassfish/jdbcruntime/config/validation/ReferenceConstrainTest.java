@@ -45,7 +45,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
+
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.jdbcruntime.config.ConfigApiTest;

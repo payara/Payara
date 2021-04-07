@@ -42,9 +42,9 @@ package org.glassfish.webservices.deployment;
 
 import org.jvnet.hk2.annotations.Service;
 
-import javax.xml.ws.http.HTTPBinding;
-import javax.xml.ws.soap.SOAPBinding;
-import javax.xml.ws.WebServiceClient;
+import jakarta.xml.ws.http.HTTPBinding;
+import jakarta.xml.ws.soap.SOAPBinding;
+import jakarta.xml.ws.WebServiceClient;
 import javax.xml.namespace.QName;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
@@ -94,7 +94,7 @@ public class WSDolSupportImpl implements WSDolSupport {
     }
 
     public void setServiceRef(Class annotatedClass, ServiceReferenceDescriptor ref) {
-        WebServiceClient wsc = (WebServiceClient)annotatedClass.getAnnotation(javax.xml.ws.WebServiceClient.class);
+        WebServiceClient wsc = (WebServiceClient)annotatedClass.getAnnotation(jakarta.xml.ws.WebServiceClient.class);
         if (wsc != null) {
             ref.setWsdlFileUri(wsc.wsdlLocation());
             //we set the service QName too from the @WebServiceClient annotation

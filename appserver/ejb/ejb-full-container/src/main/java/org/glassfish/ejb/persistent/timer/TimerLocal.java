@@ -45,9 +45,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.TimerConfig;
-import javax.ejb.Local;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.Local;
 
 import com.sun.ejb.containers.EJBTimerSchedule;
 import com.sun.ejb.containers.TimerPrimaryKey;

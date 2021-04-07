@@ -55,8 +55,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import javax.inject.Singleton;
-import javax.security.jacc.PolicyContextException;
+import jakarta.inject.Singleton;
+import jakarta.security.jacc.PolicyContextException;
 
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;

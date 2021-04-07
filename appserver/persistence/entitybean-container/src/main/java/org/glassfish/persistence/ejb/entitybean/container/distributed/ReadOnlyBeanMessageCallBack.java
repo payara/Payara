@@ -43,7 +43,7 @@ package org.glassfish.persistence.ejb.entitybean.container.distributed;
 import com.sun.ejb.containers.EjbContainerUtil;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;

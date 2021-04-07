@@ -40,7 +40,7 @@
 
 package org.glassfish.jms.injection;
 
-import javax.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.RequestScoped;
 
 @RequestScoped
 public class RequestedJMSContextManager extends AbstractJMSContextManager {

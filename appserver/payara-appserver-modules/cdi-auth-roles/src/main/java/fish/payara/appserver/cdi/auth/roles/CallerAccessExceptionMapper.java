@@ -41,10 +41,10 @@
 package fish.payara.appserver.cdi.auth.roles;
 
 import fish.payara.cdi.auth.roles.CallerAccessException;
-import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Response;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  *

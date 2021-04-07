@@ -43,9 +43,9 @@ package org.glassfish.admin.rest.composite;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.ws.rs.GET;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.GET;
 
 import org.glassfish.admin.rest.composite.metadata.Default;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;

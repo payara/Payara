@@ -44,9 +44,9 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 import fish.payara.cluster.Clustered;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import javax.ejb.DependsOn;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -57,7 +57,7 @@ import org.jvnet.hk2.annotations.Service;
 
 
 /**
- * This handler is responsible for handling the javax.ejb.Singleton
+ * This handler is responsible for handling the jakarta.ejb.Singleton
  *
  * @author Shing Wai Chan
  */

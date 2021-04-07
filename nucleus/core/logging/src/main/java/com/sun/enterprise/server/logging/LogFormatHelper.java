@@ -43,9 +43,9 @@ package com.sun.enterprise.server.logging;
 
 import java.io.StringReader;
 import java.util.regex.Pattern;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonReader;
 
 /**
  * Helper class that provides methods to detect the log format of a record. 

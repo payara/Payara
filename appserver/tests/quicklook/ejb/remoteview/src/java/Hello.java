@@ -40,7 +40,7 @@
 
 package remoteview;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 import java.util.concurrent.Future;
 
 @Remote

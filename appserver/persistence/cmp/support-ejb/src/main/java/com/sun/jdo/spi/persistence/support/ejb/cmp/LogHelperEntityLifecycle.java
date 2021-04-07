@@ -52,7 +52,7 @@ public class LogHelperEntityLifecycle {
     
     /** The component name for this component
      */
-    protected static final String componentName = "javax.enterprise.system.container.ejb.entity.lifecycle"; //NOI18N
+    protected static final String componentName = "jakarta.enterprise.system.container.ejb.entity.lifecycle"; //NOI18N
     
     /** The class loader for this component
      */

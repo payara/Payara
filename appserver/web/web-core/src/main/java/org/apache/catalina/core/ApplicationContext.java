@@ -64,8 +64,8 @@ import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.ServerInfo;
 
 import javax.naming.directory.DirContext;
-import javax.servlet.*;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.*;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -213,13 +213,13 @@ public class ApplicationContext implements ServletContext {
      *
      * <p>It is possible that a servlet container may match a context by
      * more than one context path. In such cases the
-     * {@link javax.servlet.http.HttpServletRequest#getContextPath()}
+     * {@link jakarta.servlet.http.HttpServletRequest#getContextPath()}
      * will return the actual context path used by the request and it may
      * differ from the path returned by this method.
      * The context path returned by this method should be considered as the
      * prime or preferred context path of the application.
      *
-     * @see javax.servlet.http.HttpServletRequest#getContextPath()
+     * @see jakarta.servlet.http.HttpServletRequest#getContextPath()
      */
     @Override
     public String getContextPath() {

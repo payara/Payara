@@ -43,10 +43,10 @@ package org.glassfish.ejb.deployment;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.internal.deployment.AnnotationTypesProvider;
 
-import javax.ejb.MessageDriven;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.ejb.Singleton;
+import jakarta.ejb.MessageDriven;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Singleton;
 import java.lang.annotation.Annotation;
 
 /**

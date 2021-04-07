@@ -39,7 +39,7 @@
  */
 package fish.payara.notification.eventbus.core;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;

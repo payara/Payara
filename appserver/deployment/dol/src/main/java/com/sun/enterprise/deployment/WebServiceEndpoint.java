@@ -40,7 +40,7 @@
 // Portions Copyright [2019] Payara Foundation and/or affiliates
 package com.sun.enterprise.deployment;
 
-import static javax.servlet.http.HttpServletRequest.BASIC_AUTH;
+import static jakarta.servlet.http.HttpServletRequest.BASIC_AUTH;
 
 import java.net.MalformedURLException;
 import java.net.URL;

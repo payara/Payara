@@ -138,7 +138,7 @@
                 </dependency>
                 <dependency>
                     <groupId>org.glassfish.soteria</groupId>
-                    <artifactId>javax.security.enterprise</artifactId>
+                    <artifactId>jakarta.security.enterprise</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
@@ -241,7 +241,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.web</groupId>
-            <artifactId>javax.servlet.jsp</artifactId>
+            <artifactId>jakarta.servlet.jsp</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
@@ -249,7 +249,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.web</groupId>
-            <artifactId>javax.servlet.jsp.jstl</artifactId>
+            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
         </dependency>
 
         <!-- Java EE Security -->
@@ -259,7 +259,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
-            <artifactId>javax.security.enterprise</artifactId>
+            <artifactId>jakarta.security.enterprise</artifactId>
         </dependency>
 
         <dependency>

@@ -58,7 +58,7 @@ import org.glassfish.common.util.admin.ParameterMapExtractor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Collection;

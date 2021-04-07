@@ -45,11 +45,11 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.*;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import javax.sql.DataSource;
 import java.util.Map;
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import myapp.test.SimpleTest;
 import myapp.util.HtmlUtil;
 

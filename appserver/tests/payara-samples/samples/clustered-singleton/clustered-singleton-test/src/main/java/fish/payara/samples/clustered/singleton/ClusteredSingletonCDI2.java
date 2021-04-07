@@ -43,9 +43,9 @@ import fish.payara.samples.clustered.singleton.api.Secondary;
 import fish.payara.cluster.Clustered;
 import fish.payara.cluster.DistributedLockType;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author lprimak

@@ -60,8 +60,8 @@ import com.sun.enterprise.container.common.spi.util.InjectionException;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import javax.xml.ws.Provider;
-import javax.xml.ws.WebServiceException;
+import jakarta.xml.ws.Provider;
+import jakarta.xml.ws.WebServiceException;
 
 
 public final class InstanceResolverImpl<T> extends InstanceResolver<T> {

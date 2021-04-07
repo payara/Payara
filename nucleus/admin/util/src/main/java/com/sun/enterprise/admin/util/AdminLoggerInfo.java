@@ -59,7 +59,7 @@ public class AdminLoggerInfo {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.admin.util.LogMessages";
     
     @LoggerInfo(subsystem = "ADMIN", description = "Administration Services", publish = true)
-    public static final String ADMIN_LOGGER = "javax.enterprise.system.tools.admin";
+    public static final String ADMIN_LOGGER = "jakarta.enterprise.system.tools.admin";
     private static final Logger adminLogger = Logger.getLogger(
                 ADMIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

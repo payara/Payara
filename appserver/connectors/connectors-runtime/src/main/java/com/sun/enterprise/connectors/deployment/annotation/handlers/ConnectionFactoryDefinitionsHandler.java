@@ -46,8 +46,8 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.resource.ConnectionFactoryDefinition;
-import javax.resource.ConnectionFactoryDefinitions;
+import jakarta.resource.ConnectionFactoryDefinition;
+import jakarta.resource.ConnectionFactoryDefinitions;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;

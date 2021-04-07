@@ -58,8 +58,8 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.embedded.Port;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 
 import org.jvnet.hk2.annotations.Service;

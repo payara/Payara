@@ -56,8 +56,8 @@ import org.jvnet.hk2.config.types.PropertyBag;
 
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 /**
  *

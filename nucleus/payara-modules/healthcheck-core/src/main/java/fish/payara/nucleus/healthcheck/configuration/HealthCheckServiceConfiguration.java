@@ -41,7 +41,7 @@ package fish.payara.nucleus.healthcheck.configuration;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;

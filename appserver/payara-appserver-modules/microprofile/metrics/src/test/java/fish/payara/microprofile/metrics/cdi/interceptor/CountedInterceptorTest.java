@@ -50,7 +50,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import java.lang.reflect.Method;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.MetricRegistry;

@@ -41,10 +41,10 @@
 package com.sun.enterprise.resource.allocator;
 
 import javax.transaction.xa.XAResource;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.resource.spi.*;
-import javax.resource.ResourceException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.resource.spi.*;
+import jakarta.resource.ResourceException;
 import javax.security.auth.Subject;
 import java.util.logging.*;
 

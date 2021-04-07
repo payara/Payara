@@ -46,8 +46,8 @@ import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.Protocols;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;

@@ -45,8 +45,8 @@ import org.jvnet.hk2.config.*;
 import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
 
-import javax.validation.constraints.Min;
-import javax.validation.Payload;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.Payload;
 import java.beans.PropertyVetoException;
 
 /**

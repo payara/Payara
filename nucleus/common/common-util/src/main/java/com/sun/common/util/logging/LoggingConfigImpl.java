@@ -62,7 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Contract;
@@ -189,7 +189,7 @@ public class LoggingConfigImpl implements LoggingConfig {
             key = propertyName;
         }
         String property = (String) props.setProperty(key, propertyValue);
-        if (propertyName.contains("javax.enterprise.system.container.web")) {
+        if (propertyName.contains("jakarta.enterprise.system.container.web")) {
             setWebLoggers(propertyValue);
         }
 
@@ -215,7 +215,7 @@ public class LoggingConfigImpl implements LoggingConfig {
                 key = e.getKey();
             }
             String property = (String) props.setProperty(key, e.getValue());
-            if (e.getKey().contains("javax.enterprise.system.container.web")) {
+            if (e.getKey().contains("jakarta.enterprise.system.container.web")) {
                 setWebLoggers(new PropertyPlaceholderHelper(System.getenv(), PropertyPlaceholderHelper.ENV_REGEX).replacePlaceholder(e.getValue()));
             }
             //build Map of entries to return

@@ -80,17 +80,17 @@ public class ConfigAlternativeAsynchronousAnnotationsTest {
     private BindableFaultToleranceConfig configFactory = new BindableFaultToleranceConfig(config, null);
 
     /**
-     * Test with a single alternative annotation of type {@link javax.ejb.Asynchronous} set.
+     * Test with a single alternative annotation of type {@link jakarta.ejb.Asynchronous} set.
      */
     @Test
     public void javaxEjbAsynchronous() {
-        config.override(ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY, javax.ejb.Asynchronous.class.getName());
+        config.override(ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY, jakarta.ejb.Asynchronous.class.getName());
         FaultTolerancePolicy policy = getPolicy();
         assertNotNull(policy.asynchronous);
         assertTrue("Should be FUTURE", policy.asynchronous.isSuccessWhenCompletedExceptionally());
     }
 
-    @javax.ejb.Asynchronous
+    @jakarta.ejb.Asynchronous
     public Future<String> javaxEjbAsynchronous_Method() {
         return null;
     }
@@ -101,7 +101,7 @@ public class ConfigAlternativeAsynchronousAnnotationsTest {
     @Test
     public void userDefinedAsynchronousAnnotation() {
         config.override(ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY, 
-                javax.ejb.Asynchronous.class.getName() + "," + OurAsynchronous.class.getName());
+                jakarta.ejb.Asynchronous.class.getName() + "," + OurAsynchronous.class.getName());
         FaultTolerancePolicy policy = getPolicy();
         assertNotNull(policy.asynchronous);
         assertFalse("Should be COMPLETION_STAGE", policy.asynchronous.isSuccessWhenCompletedExceptionally());
@@ -119,7 +119,7 @@ public class ConfigAlternativeAsynchronousAnnotationsTest {
     @Test
     public void asynchronousStillRecognisedWhenSettingAlternativeAnnotations() {
         config.override(ALTERNATIVE_ASYNCHRONOUS_ANNNOTATIONS_PROPERTY, 
-                javax.ejb.Asynchronous.class.getName() + "," + OurAsynchronous.class.getName());
+                jakarta.ejb.Asynchronous.class.getName() + "," + OurAsynchronous.class.getName());
         FaultTolerancePolicy policy = getPolicy();
         assertNotNull(policy.asynchronous);
         assertTrue("Should be FUTURE", policy.asynchronous.isSuccessWhenCompletedExceptionally());

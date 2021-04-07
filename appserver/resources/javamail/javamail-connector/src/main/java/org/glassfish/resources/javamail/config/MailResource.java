@@ -62,7 +62,7 @@ import org.glassfish.api.admin.RestRedirect;
 
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 
@@ -80,7 +80,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 @ResourceTypeOrder(deploymentOrder= ResourceDeploymentOrder.MAIL_RESOURCE)
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=MailResource.class)
 /**
- * The mail-resource element describes a javax.mail.Session resource 
+ * The mail-resource element describes a jakarta.mail.Session resource 
  */
 public interface MailResource extends ConfigBeanProxy, Resource, PropertyBag, BindableResource {
 

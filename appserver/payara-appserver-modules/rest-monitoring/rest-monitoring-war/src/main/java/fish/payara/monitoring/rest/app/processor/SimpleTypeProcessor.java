@@ -42,9 +42,9 @@ package fish.payara.monitoring.rest.app.processor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonValue;
 import javax.management.ObjectName;
 import javax.management.openmbean.SimpleType;
 

@@ -51,7 +51,7 @@ import java.io.Reader;
 
 import java.sql.*;
 import java.util.logging.Level;
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 /**
  * Wrapper for ResultSet

@@ -102,7 +102,7 @@
                     <archive>
                         <manifestEntries>
                             <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                            <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client, jakarta.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.server.internal.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
+                            <HK2-Import-Bundles>fish.payara.server.internal.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.server.internal.admingui.console-plugin-service, fish.payara.server.internal.deployment.deployment-client, jakarta.servlet-api, jakarta.servlet.jsp-api, com.sun.el.jakarta.el, com.sun.jsftemplating, fish.payara.server.internal.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -155,11 +155,12 @@
             <artifactId>prototype</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.woodstock</groupId>
-            <artifactId>webui-jsf</artifactId>
+            <groupId>org.glassfish.woodstock</groupId>
+            <artifactId>woodstock-webui-jsf</artifactId>
+            <version>${woodstox.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.jsftemplating</groupId>
+            <groupId>org.glassfish.jsftemplating</groupId>
             <artifactId>jsftemplating</artifactId>
         </dependency>
     </dependencies>
@@ -173,8 +174,8 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>com.sun.woodstock</groupId>
-                    <artifactId>webui-jsf-suntheme</artifactId>
+                    <groupId>org.glassfish.woodstock</groupId>
+                    <artifactId>woodstock-webui-jsf-suntheme</artifactId>
                 </dependency>
             </dependencies>
             <properties>
@@ -186,8 +187,8 @@
             <id>enterprise</id>
             <dependencies>
                 <dependency>
-                    <groupId>com.sun.woodstock</groupId>
-                    <artifactId>webui-jsf-suntheme</artifactId>
+                    <groupId>org.glassfish.woodstock</groupId>
+                    <artifactId>woodstock-webui-jsf-suntheme</artifactId>
                     <classifier>enterprise</classifier>
                 </dependency>
             </dependencies>

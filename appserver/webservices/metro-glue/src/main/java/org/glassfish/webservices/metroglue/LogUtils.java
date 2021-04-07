@@ -57,7 +57,7 @@ public final class LogUtils {
     public static final String LOG_MESSAGES = "org.glassfish.webservices.metroglue.LogMessages";
 
     @LoggerInfo(subsystem = "WEBSERVICES", description = "Metro Glue Main Logger", publish = true)
-    public static final String LOG_DOMAIN = "javax.enterprise.webservices.metroglue";
+    public static final String LOG_DOMAIN = "jakarta.enterprise.webservices.metroglue";
 
     private static final Logger LOGGER = Logger.getLogger(LOG_DOMAIN, LOG_MESSAGES);
 

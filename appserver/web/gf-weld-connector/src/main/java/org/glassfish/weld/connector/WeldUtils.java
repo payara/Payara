@@ -57,16 +57,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import javax.decorator.Decorator;
-import javax.ejb.MessageDriven;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.enterprise.context.*;
-import javax.enterprise.inject.Model;
-import javax.enterprise.inject.Stereotype;
-import javax.inject.Scope;
-import javax.inject.Singleton;
-import javax.interceptor.Interceptor;
+import jakarta.decorator.Decorator;
+import jakarta.ejb.MessageDriven;
+import jakarta.ejb.Stateful;
+import jakarta.ejb.Stateless;
+import jakarta.enterprise.context.*;
+import jakarta.enterprise.inject.Model;
+import jakarta.enterprise.inject.Stereotype;
+import jakarta.inject.Scope;
+import jakarta.inject.Singleton;
+import jakarta.interceptor.Interceptor;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -99,7 +99,7 @@ public class WeldUtils {
 
     // We don't want this connector module to depend on CDI API, as connector can be present in a distribution
     // which does not have CDI implementation. So, we use the class name as a string.
-    private static final String SERVICES_CLASSNAME = "javax.enterprise.inject.spi.Extension";
+    private static final String SERVICES_CLASSNAME = "jakarta.enterprise.inject.spi.Extension";
     public static final String META_INF_SERVICES_EXTENSION =
         "META-INF" + SEPARATOR_CHAR + SERVICES_DIR + SEPARATOR_CHAR + SERVICES_CLASSNAME;
 
@@ -121,8 +121,8 @@ public class WeldUtils {
         cdiScopeAnnotations = new ArrayList<String>();
         cdiScopeAnnotations.add(Scope.class.getName());
         cdiScopeAnnotations.add(NormalScope.class.getName());
-        cdiScopeAnnotations.add("javax.faces.view.ViewScoped");
-        cdiScopeAnnotations.add("javax.faces.flow.FlowScoped");
+        cdiScopeAnnotations.add("jakarta.faces.view.ViewScoped");
+        cdiScopeAnnotations.add("jakarta.faces.flow.FlowScoped");
         cdiScopeAnnotations.add(ConversationScoped.class.getName());
         cdiScopeAnnotations.add(ApplicationScoped.class.getName());
         cdiScopeAnnotations.add(SessionScoped.class.getName());
@@ -148,7 +148,7 @@ public class WeldUtils {
         cdiEnablingAnnotations.add(MessageDriven.class.getName());
         cdiEnablingAnnotations.add(Stateful.class.getName());
         cdiEnablingAnnotations.add(Stateless.class.getName());
-        cdiEnablingAnnotations.add(javax.ejb.Singleton.class.getName());
+        cdiEnablingAnnotations.add(jakarta.ejb.Singleton.class.getName());
     }
 
     protected static final List<String> excludedAnnotationTypes = new ArrayList<String>();

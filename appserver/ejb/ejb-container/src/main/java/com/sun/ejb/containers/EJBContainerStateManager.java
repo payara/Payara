@@ -40,7 +40,7 @@
 
 package com.sun.ejb.containers;
 
-import javax.ejb.EJBObject;
+import jakarta.ejb.EJBObject;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.EjbInvocation;

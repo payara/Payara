@@ -55,7 +55,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;

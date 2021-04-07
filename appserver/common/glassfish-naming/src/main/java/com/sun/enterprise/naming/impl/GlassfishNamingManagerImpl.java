@@ -51,10 +51,10 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.omg.CORBA.ORB;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;

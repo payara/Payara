@@ -41,7 +41,7 @@
 package fish.payara.security.identitystores;
 
 import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
-import javax.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.util.AnnotationLiteral;
 
 import static fish.payara.security.identitystores.ConfigRetriever.resolveConfigAttribute;
 

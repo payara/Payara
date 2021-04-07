@@ -45,7 +45,7 @@ import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 
-import javax.resource.spi.ActivationSpec;
+import jakarta.resource.spi.ActivationSpec;
 
 
 public interface ActiveInboundResourceAdapter extends ActiveResourceAdapter {

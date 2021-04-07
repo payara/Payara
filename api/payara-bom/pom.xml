@@ -363,19 +363,20 @@
                 <artifactId>jakarta.security.enterprise-api</artifactId>
                 <version>${jakarta.security.enterprise-api.version}</version>
             </dependency>
+            
             <dependency>
-                <groupId>jakarta.security.jacc</groupId>
-                <artifactId>jakarta.security.jacc-api</artifactId>
+                <groupId>jakarta.authorization</groupId>
+                <artifactId>jakarta.authorization-api</artifactId>
                 <version>${jakarta.security.jacc-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.security.auth.message</groupId>
-                <artifactId>jakarta.security.auth.message-api</artifactId>
+                <groupId>jakarta.authentication</groupId>
+                <artifactId>jakarta.authentication-api</artifactId>
                 <version>${jakarta.security.auth.message-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.persistence</groupId>
-                <artifactId>jakarta.persistence</artifactId>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
                 <version>${jakarta-persistence-api.version}</version>
             </dependency>
             <dependency>
@@ -511,8 +512,8 @@
                 <version>${hibernate.validator.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>validation-api</artifactId>
+                        <groupId>jakarta.validation</groupId>
+                        <artifactId>jakarta.validation-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -548,7 +549,7 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
-                <artifactId>javax.security.enterprise</artifactId>
+                <artifactId>jakarta.security.enterprise</artifactId>
                 <version>${jakarta.security.enterprise.version}</version>
             </dependency>
             <dependency>
@@ -648,8 +649,8 @@
 
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.enterprise</groupId>
-                        <artifactId>cdi-api</artifactId>
+                        <groupId>jakarta.enterprise</groupId>
+                        <artifactId>jakarta.enterprise.cdi-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -666,12 +667,12 @@
 
             <dependency>
                 <groupId>org.glassfish.web</groupId>
-                <artifactId>javax.servlet.jsp</artifactId>
+                <artifactId>jakarta.servlet.jsp</artifactId>
                 <version>${jsp-impl.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.servlet.jsp</groupId>
-                        <artifactId>jsp-api</artifactId>
+                        <groupId>jakarta.servlet.jsp</groupId>
+                        <artifactId>jakarta.servlet.jsp-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -688,7 +689,7 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.web</groupId>
-                <artifactId>javax.servlet.jsp.jstl</artifactId>
+                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
                 <version>${jstl-impl.version}</version>
             </dependency>
             <dependency>
@@ -726,7 +727,7 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
-                <artifactId>javax.enterprise.concurrent</artifactId>
+                <artifactId>jakarta.enterprise.concurrent</artifactId>
                 <version>${concurrent.version}</version>
             </dependency>
 

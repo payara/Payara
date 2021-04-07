@@ -42,10 +42,10 @@
 
 package org.glassfish.admin.rest.testing;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 

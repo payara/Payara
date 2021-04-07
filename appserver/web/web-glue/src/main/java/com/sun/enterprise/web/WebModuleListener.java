@@ -61,7 +61,7 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;

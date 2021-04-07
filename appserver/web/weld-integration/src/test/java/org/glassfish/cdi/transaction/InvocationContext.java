@@ -46,14 +46,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 /**
  * User: paulparkinson
  * Date: 12/12/12
  * Time: 1:12 PM
  */
-public class InvocationContext implements javax.interceptor.InvocationContext {
+public class InvocationContext implements jakarta.interceptor.InvocationContext {
 
     private Method method;
     private Exception exceptionFromProceed;

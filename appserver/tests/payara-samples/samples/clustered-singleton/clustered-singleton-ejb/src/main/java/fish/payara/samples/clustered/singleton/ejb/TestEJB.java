@@ -44,9 +44,9 @@ package fish.payara.samples.clustered.singleton.ejb;
 
 import fish.payara.cluster.Clustered;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 import java.io.Serializable;
 
 /**

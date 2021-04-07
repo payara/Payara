@@ -42,7 +42,7 @@
  
 package com.sun.appserv.server.util;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import org.glassfish.api.VersionInfo;
 import org.jvnet.hk2.annotations.Service;

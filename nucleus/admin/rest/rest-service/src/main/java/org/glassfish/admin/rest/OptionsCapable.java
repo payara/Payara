@@ -40,7 +40,7 @@
 
 package org.glassfish.admin.rest;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 /**
  *

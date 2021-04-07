@@ -44,15 +44,15 @@ import fish.payara.ejb.http.endpoint.EjbOverHttpApplication;
 import static java.util.Arrays.asList;
 import java.util.HashSet;
 import java.util.Set;
-import javax.servlet.HttpConstraintElement;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletSecurityElement;
-import static javax.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
+import jakarta.servlet.HttpConstraintElement;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletSecurityElement;
+import static jakarta.servlet.annotation.ServletSecurity.TransportGuarantee.CONFIDENTIAL;
 import org.glassfish.internal.api.Globals;
-import static javax.servlet.http.HttpServletRequest.FORM_AUTH;
+import static jakarta.servlet.http.HttpServletRequest.FORM_AUTH;
 import org.glassfish.jersey.servlet.init.JerseyServletContainerInitializer;
 
 /**

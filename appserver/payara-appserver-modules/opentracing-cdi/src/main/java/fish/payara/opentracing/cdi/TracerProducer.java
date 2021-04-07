@@ -41,7 +41,7 @@ package fish.payara.opentracing.cdi;
 
 import fish.payara.opentracing.OpenTracingService;
 import io.opentracing.Tracer;
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Produces;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
 

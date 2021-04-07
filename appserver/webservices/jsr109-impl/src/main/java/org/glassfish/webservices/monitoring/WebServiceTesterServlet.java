@@ -50,21 +50,21 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.tools.ws.spi.WSToolsObjectFactory;
-import com.sun.xml.bind.api.JAXBRIContext;
+import org.glassfish.jaxb.runtime.api.JAXBRIContext;
 import org.glassfish.webservices.LogUtils;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.ws.Service;
-import javax.xml.ws.WebEndpoint;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebEndpoint;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -154,7 +154,7 @@ public class WebServiceTesterServlet extends HttpServlet {
         // For now support Tester servlet for JAXWS based services only
         try {
             Class seiClass = Thread.currentThread().getContextClassLoader().loadClass(seiClassName);
-            if (seiClass.getAnnotation(javax.jws.WebService.class) == null) {
+            if (seiClass.getAnnotation(jakarta.jws.WebService.class) == null) {
                 testerNotSupportedError(myEndpoint.getDescriptor().getServiceName(), out);
                 return;
             }
@@ -288,7 +288,7 @@ public class WebServiceTesterServlet extends HttpServlet {
                     out.print(localStrings.getLocalString("enterprise.webservice.monitoring.soapReq", "<h4>SOAP Request</h4>"));
                     dumpMessage(listener.getRequest(), out);
                 }
-                if (toInvoke.getAnnotation(javax.jws.Oneway.class) == null && listener.getRespose() != null) {
+                if (toInvoke.getAnnotation(jakarta.jws.Oneway.class) == null && listener.getRespose() != null) {
                     // let's print the SOAP request
                     out.print(localStrings.getLocalString("enterprise.webservice.monitoring.soapResp", "<h4>SOAP Response</h4>"));
                     dumpMessage(listener.getRespose(), out);

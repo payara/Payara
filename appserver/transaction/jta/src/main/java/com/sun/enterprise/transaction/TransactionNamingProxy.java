@@ -47,7 +47,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.transaction.spi.TransactionOperationsManager;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.naming.NamingException;

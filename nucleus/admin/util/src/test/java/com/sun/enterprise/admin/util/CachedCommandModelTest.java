@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.admin.util;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

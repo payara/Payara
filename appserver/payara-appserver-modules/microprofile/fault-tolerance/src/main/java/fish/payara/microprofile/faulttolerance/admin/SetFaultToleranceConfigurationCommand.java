@@ -44,10 +44,9 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceServiceConfiguratio
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.inject.Inject;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import jakarta.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

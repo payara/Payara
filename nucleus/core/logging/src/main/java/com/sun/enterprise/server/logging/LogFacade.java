@@ -49,13 +49,13 @@ import org.glassfish.logging.annotation.LoggerInfo;
 public class LogFacade {
     
     @LoggerInfo(subsystem = "Logging", description="Main logger for core logging component.")
-    public static final String LOGGING_LOGGER_NAME = "javax.enterprise.logging";
+    public static final String LOGGING_LOGGER_NAME = "jakarta.enterprise.logging";
 
     @LoggerInfo(subsystem = "Logging", description="Stdout logger.", publish=false)
-    private static final String STDOUT_LOGGER_NAME = "javax.enterprise.logging.stdout";
+    private static final String STDOUT_LOGGER_NAME = "jakarta.enterprise.logging.stdout";
 
     @LoggerInfo(subsystem = "Logging", description="Stderr logger.", publish=false)
-    private static final String STDERR_LOGGER_NAME = "javax.enterprise.logging.stderr";
+    private static final String STDERR_LOGGER_NAME = "jakarta.enterprise.logging.stderr";
 
     @LogMessagesResourceBundle()
     public static final String LOGGING_RB_NAME = "com.sun.enterprise.server.logging.LogMessages";

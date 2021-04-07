@@ -49,7 +49,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import javax.enterprise.deploy.shared.ModuleType;
 
 

@@ -48,9 +48,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import javax.enterprise.util.Nonbinding;
-import javax.interceptor.InterceptorBinding;
-import javax.validation.constraints.NotNull;
+import jakarta.enterprise.util.Nonbinding;
+import jakarta.interceptor.InterceptorBinding;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Defines a list of roles which a caller must be in to access either methods within an annotated class, or a singular

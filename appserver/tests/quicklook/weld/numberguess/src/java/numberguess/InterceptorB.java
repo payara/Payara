@@ -42,13 +42,13 @@ package numberguess;
 
 import java.io.Serializable;
 
-import javax.interceptor.*;
-import javax.annotation.*;
+import jakarta.interceptor.*;
+import jakarta.annotation.*;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class InterceptorB implements Serializable{
 

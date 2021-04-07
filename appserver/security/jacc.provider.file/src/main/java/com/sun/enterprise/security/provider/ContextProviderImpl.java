@@ -41,7 +41,7 @@ package com.sun.enterprise.security.provider;
 
 import java.security.Policy;
 
-import javax.security.jacc.PolicyConfigurationFactory;
+import jakarta.security.jacc.PolicyConfigurationFactory;
 
 import fish.payara.jacc.ContextProvider;
 

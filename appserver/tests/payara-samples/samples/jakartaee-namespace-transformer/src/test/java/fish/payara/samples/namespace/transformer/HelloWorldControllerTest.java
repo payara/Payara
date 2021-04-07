@@ -84,7 +84,7 @@ public class HelloWorldControllerTest {
             assertTrue("Status code", page.getWebResponse().getStatusCode() == 200);
             assertNotNull("Existing Annotation", jakartaPathAnnotation);
             assertNotNull("Existing Annotation Value", jakartaPathAnnotation.value().equals("/api/hello"));
-            assertTrue("Transformed Annotation", page.getContent().contains("javax.ws.rs.Path"));
+            assertTrue("Transformed Annotation", page.getContent().contains("jakarta.ws.rs.Path"));
         }
     }
 

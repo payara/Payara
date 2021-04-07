@@ -59,7 +59,7 @@ public class ConnectionWrapper30 extends ConnectionHolder30 implements Connectio
      * @param cxRequestInfo Connection Request Info
      */
     public ConnectionWrapper30(Connection con, ManagedConnectionImpl mc,
-                               javax.resource.spi.ConnectionRequestInfo cxRequestInfo) {
+                               jakarta.resource.spi.ConnectionRequestInfo cxRequestInfo) {
         super(con, mc, cxRequestInfo);
     }
 

@@ -45,9 +45,9 @@ import com.sun.enterprise.config.serverbeans.*;
 
 import java.util.Arrays;
 import java.util.List;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.UnexpectedTypeException;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.UnexpectedTypeException;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Dom;

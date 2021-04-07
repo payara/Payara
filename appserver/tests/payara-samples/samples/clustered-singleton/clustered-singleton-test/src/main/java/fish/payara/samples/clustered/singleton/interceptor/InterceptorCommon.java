@@ -40,7 +40,7 @@
 package fish.payara.samples.clustered.singleton.interceptor;
 
 import java.io.Serializable;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author lprimak

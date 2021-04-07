@@ -42,7 +42,7 @@
 
 package org.apache.catalina.core;
 
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;

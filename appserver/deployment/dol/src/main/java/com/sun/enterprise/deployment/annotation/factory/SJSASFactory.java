@@ -52,9 +52,9 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
@@ -135,9 +135,9 @@ public class SJSASFactory extends Factory {
             // In the current set of the annotations processed by the 
             // deployment layer, the only annotation that should be
             // processed even when metadata-complete atribute value is true
-            // is javax.annotation.ManagedBean. If there are more annotations
+            // is jakarta.annotation.ManagedBean. If there are more annotations
             // falling in this category in the future, add them to this list
-            if (annotationTypeName.equals("javax.annotation.ManagedBean")) {
+            if (annotationTypeName.equals("jakarta.annotation.ManagedBean")) {
                 systemProcessorMetaDataComplete.pushAnnotationHandler(annotationTypeName, new LazyAnnotationHandler(descriptor));
                 annotationClassNamesMetaDataComplete.add("L" + annotationTypeName.replace('.', '/') + ";");
             }

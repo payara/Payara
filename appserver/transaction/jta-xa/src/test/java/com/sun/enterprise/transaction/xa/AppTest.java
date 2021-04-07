@@ -45,7 +45,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import java.util.logging.*;
-import javax.transaction.*;
+import jakarta.transaction.*;
 
 import org.glassfish.api.invocation.InvocationManager;
 import com.sun.enterprise.transaction.spi.JavaEETransactionManagerDelegate;

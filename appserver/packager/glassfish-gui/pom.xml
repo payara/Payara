@@ -223,7 +223,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.jsftemplating</groupId>
+            <groupId>org.glassfish.jsftemplating</groupId>
             <artifactId>jsftemplating</artifactId>
             <scope>runtime</scope>
         </dependency>

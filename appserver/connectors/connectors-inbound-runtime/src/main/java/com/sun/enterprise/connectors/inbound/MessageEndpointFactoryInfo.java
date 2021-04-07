@@ -40,8 +40,8 @@
 
 package com.sun.enterprise.connectors.inbound;
 
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.endpoint.MessageEndpointFactory;
 
 /**
  * An instance of this class keeps <code> ActivationSpec <code>

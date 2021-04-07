@@ -190,19 +190,19 @@ public class BtraceClientGenerator {
 
 import com.sun.btrace.annotations.BTrace;
 import com.sun.btrace.annotations.OnMethod;
-import javax.servlet.Servlet;
+import jakarta.servlet.Servlet;
 import org.glassfish.flashlight.provider.ProbeRegistry;
 
 @BTrace
 public final class ServletStatsProvider_BTrace_7_
 {
-  @OnMethod(clazz="org.glassfish.web.admin.monitor.ServletProbeProvider", method="servletInitializedEvent", type="void (javax.servlet.Servlet, java.lang.String, java.lang.String)")
+  @OnMethod(clazz="org.glassfish.web.admin.monitor.ServletProbeProvider", method="servletInitializedEvent", type="void (jakarta.servlet.Servlet, java.lang.String, java.lang.String)")
   public static void __servletInitializedEvent__7_0_(Servlet paramServlet, String paramString1, String paramString2)
   {
     ProbeRegistry.invokeProbe(78, new Object[] { paramServlet, paramString1, paramString2 });
   }
 
-  @OnMethod(clazz="org.glassfish.web.admin.monitor.ServletProbeProvider", method="servletDestroyedEvent", type="void (javax.servlet.Servlet, java.lang.String, java.lang.String)")
+  @OnMethod(clazz="org.glassfish.web.admin.monitor.ServletProbeProvider", method="servletDestroyedEvent", type="void (jakarta.servlet.Servlet, java.lang.String, java.lang.String)")
   public static void __servletDestroyedEvent__7_1_(Servlet paramServlet, String paramString1, String paramString2)
   {
     ProbeRegistry.invokeProbe(79, new Object[] { paramServlet, paramString1, paramString2 });

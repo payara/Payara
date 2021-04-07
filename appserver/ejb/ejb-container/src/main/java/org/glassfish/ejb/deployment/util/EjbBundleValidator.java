@@ -337,11 +337,11 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
             }
 
             if( ejb.getEjbTimeoutMethod() == null && 
-                    provider.getType("javax.ejb.TimedObject").isAssignableFrom(ejbClass) ) {
+                    provider.getType("jakarta.ejb.TimedObject").isAssignableFrom(ejbClass) ) {
                 MethodDescriptor timedObjectMethod =
                         new MethodDescriptor("ejbTimeout",
                                                  "TimedObject timeout method",
-                                                 new String[] {"javax.ejb.Timer"},
+                                                 new String[] {"jakarta.ejb.Timer"},
                                                  MethodDescriptor.TIMER_METHOD);
                 ejb.setEjbTimeoutMethod(timedObjectMethod);
 
@@ -706,12 +706,12 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
             Class ejbClass) throws ClassNotFoundException {
         Method m = timeoutMethodDescOrig.getDeclaredMethod(ejb);
         if (m == null) {
-           // In case deployment descriptor didn't specify "javax.ejb.Timer"
+           // In case deployment descriptor didn't specify "jakarta.ejb.Timer"
            // as the method-params, and we were not relying on it before,
-           // check explicitly for a method with "javax.ejb.Timer" param type.
+           // check explicitly for a method with "jakarta.ejb.Timer" param type.
             Class[] params = new Class[1];
             if (provider!=null) {
-                params[0] = provider.getType("javax.ejb.Timer");
+                params[0] = provider.getType("jakarta.ejb.Timer");
             } else {
                 throw new RuntimeException("Cannot find AnnotationTypesProvider named 'EJB'");
             }

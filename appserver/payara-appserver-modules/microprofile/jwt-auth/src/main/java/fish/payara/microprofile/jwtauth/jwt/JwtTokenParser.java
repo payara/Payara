@@ -45,7 +45,7 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import org.eclipse.microprofile.jwt.Claims;
 
-import javax.json.*;
+import jakarta.json.*;
 import java.io.StringReader;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -57,7 +57,7 @@ import java.util.Optional;
 
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 import static java.util.Arrays.asList;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.eclipse.microprofile.jwt.Claims.*;
 
 /**

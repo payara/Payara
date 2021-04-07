@@ -49,7 +49,7 @@ import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.*;
 import java.util.zip.*;
-import javax.xml.bind.*;
+import jakarta.xml.bind.*;
 
 
 import org.jvnet.hk2.annotations.Service;

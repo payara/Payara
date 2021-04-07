@@ -49,7 +49,7 @@ import fish.payara.admin.amx.config.AMXConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.admin.amx.util.AMXLoggerInfo;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;

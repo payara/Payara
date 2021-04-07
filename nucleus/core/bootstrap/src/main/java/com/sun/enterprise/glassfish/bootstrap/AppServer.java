@@ -42,7 +42,7 @@ package com.sun.enterprise.glassfish.bootstrap;
 
 import org.glassfish.hk2.api.Proxiable;
 
-import javax.inject.Scope;
+import jakarta.inject.Scope;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

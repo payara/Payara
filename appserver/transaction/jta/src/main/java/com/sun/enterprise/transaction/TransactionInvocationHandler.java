@@ -49,7 +49,7 @@ import org.glassfish.api.invocation.ComponentInvocationHandler;
 import org.glassfish.api.invocation.InvocationException;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.ServiceLocator;
 
 @Service

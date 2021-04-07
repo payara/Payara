@@ -53,9 +53,9 @@ import org.glassfish.web.LogFacade;
 import org.glassfish.web.config.serverbeans.ManagerProperties;
 import org.glassfish.web.config.serverbeans.WebContainerAvailability;
 import org.apache.catalina.LifecycleException;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
-import javax.inject.Named;
+import jakarta.inject.Named;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 

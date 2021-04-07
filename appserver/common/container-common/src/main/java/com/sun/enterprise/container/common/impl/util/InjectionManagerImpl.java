@@ -53,8 +53,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.ManagedBean;
-import javax.inject.Inject;
+import jakarta.annotation.ManagedBean;
+import jakarta.inject.Inject;
 import javax.naming.NamingException;
 
 import org.glassfish.api.admin.ProcessEnvironment;

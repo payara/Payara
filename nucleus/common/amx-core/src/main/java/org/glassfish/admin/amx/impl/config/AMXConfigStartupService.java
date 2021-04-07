@@ -50,7 +50,7 @@ import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.util.TimingDelta;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 

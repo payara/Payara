@@ -61,7 +61,7 @@ public class LogFacade {
             "org.glassfish.web.ha.session.management.LogMessages";
 
     @LoggerInfo(subsystem="WEB", description="WEB HA Logger", publish=true)
-    private static final String WEB_HA_LOGGER = "javax.enterprise.web.ha";
+    private static final String WEB_HA_LOGGER = "jakarta.enterprise.web.ha";
 
     private static final Logger LOGGER =
             Logger.getLogger(WEB_HA_LOGGER, SHARED_LOGMESSAGE_RESOURCE);

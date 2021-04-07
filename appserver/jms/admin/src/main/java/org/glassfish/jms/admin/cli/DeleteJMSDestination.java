@@ -57,8 +57,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.config.serverbeans.*;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 

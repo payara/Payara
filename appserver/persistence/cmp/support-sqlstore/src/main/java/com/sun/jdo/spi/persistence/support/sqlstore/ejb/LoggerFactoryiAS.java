@@ -57,7 +57,7 @@ public class LoggerFactoryiAS extends LoggerFactoryJDK14 {
 
     /** The top level of the logger domain for application server.
      */
-    protected String DOMAIN_ROOT = "javax.enterprise.resource.jdo."; //NOI18N
+    protected String DOMAIN_ROOT = "jakarta.enterprise.resource.jdo."; //NOI18N
 
     /** Creates new LoggerFactory */
     public LoggerFactoryiAS() {

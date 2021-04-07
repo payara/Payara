@@ -40,10 +40,10 @@
 
 package com.sun.appserv.web.cache.filter;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -54,8 +54,8 @@ import java.util.Locale;
 
 /**
  * a wrapper to HttpServletResponse to cache the outbound headers and content
- * @see javax.servlet.http.HttpServletResponseWrapper and 
- * @see javax.servlet.http.HttpServletResponse
+ * @see jakarta.servlet.http.HttpServletResponseWrapper and 
+ * @see jakarta.servlet.http.HttpServletResponse
  */
 public class CachingResponseWrapper extends HttpServletResponseWrapper {
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];

@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.provider.*;
 import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
 import org.glassfish.admin.rest.readers.MultipartFDPayloadReader;

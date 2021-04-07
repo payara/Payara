@@ -82,10 +82,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.management.ObjectName;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 // END SJSWS 6324431
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;

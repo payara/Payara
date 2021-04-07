@@ -46,11 +46,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.json.JsonArray;
-import javax.json.JsonNumber;
-import javax.json.JsonString;
-import javax.json.JsonValue;
-import javax.security.enterprise.CallerPrincipal;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.security.enterprise.CallerPrincipal;
 
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;

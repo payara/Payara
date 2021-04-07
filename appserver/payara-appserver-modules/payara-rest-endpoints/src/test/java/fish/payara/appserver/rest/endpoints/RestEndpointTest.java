@@ -40,12 +40,12 @@
  */
 package fish.payara.appserver.rest.endpoints;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.Path;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.HEAD;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.Path;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 

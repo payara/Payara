@@ -41,9 +41,9 @@
 
 AS_INSTALL=`dirname $0`/..
 AS_INSTALL_LIB=$AS_INSTALL/modules
-JSP_IMPL=$AS_INSTALL_LIB/javax.servlet.jsp.jar
-EL_IMPL=$AS_INSTALL_LIB/javax.el.jar
-JSTL_IMPL=$AS_INSTALL_LIB/javax.servlet.jsp.jstl.jar
+JSP_IMPL=$AS_INSTALL_LIB/jakarta.servlet.jsp.jar
+EL_IMPL=$AS_INSTALL_LIB/jakarta.el.jar
+JSTL_IMPL=$AS_INSTALL_LIB/jakarta.servlet.jsp.jstl.jar
 AS_LIB=$AS_INSTALL/lib
 JAVAEE_API=$AS_LIB/javaee.jar
 

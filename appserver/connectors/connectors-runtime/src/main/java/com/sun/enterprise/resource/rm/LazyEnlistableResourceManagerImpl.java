@@ -41,12 +41,12 @@
 
 package com.sun.enterprise.resource.rm;
 
-import javax.transaction.*;
-import javax.resource.spi.ManagedConnection;
+import jakarta.transaction.*;
+import jakarta.resource.spi.ManagedConnection;
 import java.util.logging.Level;
 import java.util.List;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;

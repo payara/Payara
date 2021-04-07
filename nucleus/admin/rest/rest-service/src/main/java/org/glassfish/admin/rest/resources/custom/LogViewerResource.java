@@ -51,18 +51,18 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.*;
 
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.zip.GZIPOutputStream;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
 
 import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.logviewer.CharSpool;

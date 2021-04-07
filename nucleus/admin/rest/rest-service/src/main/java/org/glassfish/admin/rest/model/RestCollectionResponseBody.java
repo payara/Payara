@@ -44,11 +44,11 @@ package org.glassfish.admin.rest.model;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.ws.rs.core.UriInfo;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.utils.JsonUtil;
 

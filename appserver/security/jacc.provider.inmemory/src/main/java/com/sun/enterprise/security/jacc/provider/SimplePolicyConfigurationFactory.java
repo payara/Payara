@@ -40,9 +40,9 @@
 // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.provider;
 
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyConfigurationFactory;
-import javax.security.jacc.PolicyContextException;
+import jakarta.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyConfigurationFactory;
+import jakarta.security.jacc.PolicyContextException;
 
 /**
  * Abstract factory and finder class for obtaining the instance of the class that implements the
@@ -53,8 +53,8 @@ import javax.security.jacc.PolicyContextException;
  * Implementation classes must have a public no argument constructor that may be used to create an operational instance
  * of the factory implementation class.
  *
- * @see javax.security.jacc.PolicyConfiguration
- * @see javax.security.jacc.PolicyContextException
+ * @see jakarta.security.jacc.PolicyConfiguration
+ * @see jakarta.security.jacc.PolicyContextException
  *
  * @author monzillo
  */
@@ -95,7 +95,7 @@ public class SimplePolicyConfigurationFactory extends PolicyConfigurationFactory
      * @throws java.lang.SecurityException
      *             when called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
      *
-     * @throws javax.security.jacc.PolicyContextException
+     * @throws jakarta.security.jacc.PolicyContextException
      *             if the implementation throws a checked exception that has not been accounted for by the
      *             getPolicyConfiguration method signature. The exception thrown by the implementation class will be
      *             encapsulated (during construction) in the thrown PolicyContextException.
@@ -118,7 +118,7 @@ public class SimplePolicyConfigurationFactory extends PolicyConfigurationFactory
      * @throws java.lang.SecurityException
      *             when called by an AccessControlContext that has not been granted the "setPolicy" SecurityPermission.
      *
-     * @throws javax.security.jacc.PolicyContextException
+     * @throws jakarta.security.jacc.PolicyContextException
      *             if the implementation throws a checked exception that has not been accounted for by the inService method
      *             signature. The exception thrown by the implementation class will be encapsulated (during construction) in
      *             the thrown PolicyContextException.

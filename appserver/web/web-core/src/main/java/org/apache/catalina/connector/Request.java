@@ -88,8 +88,8 @@ import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.security.auth.Subject;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -2902,8 +2902,8 @@ public class Request implements HttpRequest, HttpServletRequest {
      * @exception ServletException if the given <tt>clazz</tt> fails to be
      * instantiated
      *
-     * @see javax.servlet.http.HttpUpgradeHandler
-     * @see javax.servlet.http.WebConnection
+     * @see jakarta.servlet.http.HttpUpgradeHandler
+     * @see jakarta.servlet.http.WebConnection
      *
      * @since Servlet 3.1
      */

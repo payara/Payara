@@ -52,10 +52,10 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.stream.JsonParser;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.stream.JsonParser;
 import org.glassfish.api.admin.AdminCommandState;
 
 /**

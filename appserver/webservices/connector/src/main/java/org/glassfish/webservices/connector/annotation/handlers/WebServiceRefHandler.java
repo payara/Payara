@@ -51,11 +51,11 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.Level;
 
-import javax.xml.ws.*;
-import javax.xml.ws.RespectBinding;
-import javax.xml.ws.spi.WebServiceFeatureAnnotation;
-import javax.xml.ws.soap.MTOM;
-import javax.xml.ws.soap.Addressing;
+import jakarta.xml.ws.*;
+import jakarta.xml.ws.RespectBinding;
+import jakarta.xml.ws.spi.WebServiceFeatureAnnotation;
+import jakarta.xml.ws.soap.MTOM;
+import jakarta.xml.ws.soap.Addressing;
 
 import org.glassfish.apf.*;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
@@ -75,7 +75,7 @@ import static com.sun.enterprise.util.StringUtils.ok;
  * @author Jerome Dochez
  */
 @Service
-@AnnotationHandlerFor(javax.xml.ws.WebServiceRef.class)
+@AnnotationHandlerFor(jakarta.xml.ws.WebServiceRef.class)
 public class WebServiceRefHandler extends AbstractHandler  {
 
     /**
@@ -295,7 +295,7 @@ public class WebServiceRefHandler extends AbstractHandler  {
             // default value is "Service".  Check whether the value is one
             // of these default values.
             if (!Object.class.equals(annotation.value()) &&
-                    (!javax.xml.ws.Service.class.equals(annotation.value()))) {
+                    (!jakarta.xml.ws.Service.class.equals(annotation.value()))) {
                 // a value was provided, which should be the Service
                 // interface, the requested injection is therefore on the
                 // port.

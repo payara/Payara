@@ -52,7 +52,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;

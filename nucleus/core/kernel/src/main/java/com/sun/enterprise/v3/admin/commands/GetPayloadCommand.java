@@ -40,7 +40,7 @@
 package com.sun.enterprise.v3.admin.commands;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;

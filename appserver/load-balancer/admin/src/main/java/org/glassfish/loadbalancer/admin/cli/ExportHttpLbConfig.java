@@ -76,7 +76,7 @@ import org.glassfish.loadbalancer.admin.cli.reader.impl.LoadbalancerReaderImpl;
 import org.glassfish.loadbalancer.admin.cli.helper.LbConfigHelper;
 import org.glassfish.loadbalancer.config.LbConfig;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Export load-balancer xml

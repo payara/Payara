@@ -41,7 +41,7 @@
 package org.glassfish.admin.rest;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;

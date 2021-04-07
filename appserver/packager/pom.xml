@@ -163,7 +163,7 @@
         <module>yubikey-authentication</module>
         <module>docker</module>
         <module>microprofile-package</module>
-        <module>opentracing-jaxws-package</module>
+        <!--<module>opentracing-jaxws-package</module>-->
         <module>monitoring-console</module>
     </modules>
     

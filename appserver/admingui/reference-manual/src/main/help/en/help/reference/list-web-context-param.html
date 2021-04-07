@@ -222,15 +222,15 @@ Application</p>
 <p>This example lists all servlet context-initialization parameters of the
 web application <code>basic-ezcomp</code> that have been set by using the
 <code>set-web-context-param</code> subcommand. Because no description was specified
-when the <code>javax.faces.PROJECT_STAGE</code> parameter was set, <code>null</code> is
+when the <code>jakarta.faces.PROJECT_STAGE</code> parameter was set, <code>null</code> is
 displayed instead of a description for this parameter.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; list-web-context-param basic-ezcomp
-javax.faces.STATE_SAVING_METHOD = client ignoreDescriptorItem=false
+jakarta.faces.STATE_SAVING_METHOD = client ignoreDescriptorItem=false
 //The location where the application's state is preserved
-javax.faces.PROJECT_STAGE = null ignoreDescriptorItem=true //null
+jakarta.faces.PROJECT_STAGE = null ignoreDescriptorItem=true //null
 
 Command list-web-context-param executed successfully.</code></pre>
 </div>

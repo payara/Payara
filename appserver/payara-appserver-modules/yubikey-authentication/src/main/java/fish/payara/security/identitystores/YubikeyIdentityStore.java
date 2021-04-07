@@ -40,7 +40,7 @@
 
 package fish.payara.security.identitystores;
 
-import static javax.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
+import static jakarta.security.enterprise.identitystore.IdentityStore.ValidationType.VALIDATE;
 import static fish.payara.security.identitystores.ConfigRetriever.resolveConfigAttribute;
 
 import fish.payara.security.annotations.YubikeyIdentityStoreDefinition;
@@ -56,11 +56,11 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.inject.Typed;
-import javax.inject.Inject;
-import javax.security.enterprise.credential.Credential;
-import javax.security.enterprise.identitystore.CredentialValidationResult;
-import javax.security.enterprise.identitystore.IdentityStore;
+import jakarta.enterprise.inject.Typed;
+import jakarta.inject.Inject;
+import jakarta.security.enterprise.credential.Credential;
+import jakarta.security.enterprise.identitystore.CredentialValidationResult;
+import jakarta.security.enterprise.identitystore.IdentityStore;
 import org.glassfish.internal.api.Globals;
 
 /**

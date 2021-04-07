@@ -63,7 +63,7 @@ import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.List;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static org.glassfish.connectors.admin.cli.CLIConstants.SM.*;
 

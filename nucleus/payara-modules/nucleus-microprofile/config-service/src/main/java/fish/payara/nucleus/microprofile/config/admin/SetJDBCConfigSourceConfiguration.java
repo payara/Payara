@@ -44,7 +44,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;

@@ -47,7 +47,7 @@ Import-Package: \
                        com.sun.enterprise.deployment.*, \
                        com.sun.enterprise.deployment.annotation.*, \
                        com.sun.enterprise.config.serverbeans, \
-                       javax.ejb;resolution:=optional, \
+                       jakarta.ejb;resolution:=optional, \
                        * 
 # dependent flashlight package resolved at runtime
 DynamicImport-Package: org.glassfish.flashlight.provider

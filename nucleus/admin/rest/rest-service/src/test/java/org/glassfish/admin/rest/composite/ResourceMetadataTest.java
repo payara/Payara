@@ -41,7 +41,7 @@
  */
 package org.glassfish.admin.rest.composite;
 
-import javax.json.JsonException;
+import jakarta.json.JsonException;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.composite.resource.DummiesResource;
 import org.glassfish.admin.rest.composite.resource.DummyResource;

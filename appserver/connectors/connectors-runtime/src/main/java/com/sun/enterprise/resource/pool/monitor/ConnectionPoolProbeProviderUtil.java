@@ -45,8 +45,8 @@ import com.sun.enterprise.connectors.ConnectorRuntime;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import java.util.Collection;
 
 /**

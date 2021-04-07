@@ -50,7 +50,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import org.glassfish.api.admin.NamedResource;
 import org.jvnet.hk2.annotations.Service;
 

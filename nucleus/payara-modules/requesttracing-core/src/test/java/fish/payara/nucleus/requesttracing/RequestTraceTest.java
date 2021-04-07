@@ -45,8 +45,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.StringReader;
 
-import javax.json.Json;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
 
 import fish.payara.notification.requesttracing.RequestTrace;
 import org.junit.Before;

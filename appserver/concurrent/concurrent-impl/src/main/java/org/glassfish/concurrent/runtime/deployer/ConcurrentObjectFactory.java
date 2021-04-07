@@ -56,7 +56,7 @@ import java.util.logging.Logger;
 
 public class ConcurrentObjectFactory implements ObjectFactory {
 
-    private static final Logger LOGGER = Logger.getLogger("javax.enterprise.concurrent","org.glassfish.concurrent.LogMessages");
+    private static final Logger LOGGER = Logger.getLogger("jakarta.enterprise.concurrent","org.glassfish.concurrent.LogMessages");
 
     @Override
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {

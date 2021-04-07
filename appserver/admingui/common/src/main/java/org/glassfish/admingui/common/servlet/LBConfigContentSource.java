@@ -60,7 +60,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.glassfish.admingui.common.util.RestUtil;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  *

@@ -160,5 +160,9 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-   </dependencies>
+        <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>jakarta.security.enterprise</artifactId>
+        </dependency>
+    </dependencies>
 </project>

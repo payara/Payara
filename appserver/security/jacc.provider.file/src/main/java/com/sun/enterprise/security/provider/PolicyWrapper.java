@@ -61,7 +61,7 @@ package com.sun.enterprise.security.provider;
  * <p>
  * Although this Policy provider is implemented using another Policy
  * class, this class is not a "delegating Policy provider" as defined by JACC, and as such it SHOULD not be configured
- * using the JACC system property javax.security.jacc.policy.provider.
+ * using the JACC system property jakarta.security.jacc.policy.provider.
  * </p>
  * 
  * @author Harpreet Singh (harpreet.singh@sun.com)

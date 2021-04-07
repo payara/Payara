@@ -42,10 +42,10 @@ package com.sun.enterprise.transaction.spi;
 
 import java.util.concurrent.locks.Lock;
 
-import javax.transaction.*;
+import jakarta.transaction.*;
 import javax.transaction.xa.*;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.work.WorkException;
+import jakarta.resource.spi.XATerminator;
+import jakarta.resource.spi.work.WorkException;
 
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
@@ -304,7 +304,7 @@ public interface JavaEETransactionManagerDelegate {
      * of an active Transaction.
      */
     public TransactionAdminBean getTransactionAdminBean(Transaction t) 
-            throws javax.transaction.SystemException;
+            throws jakarta.transaction.SystemException;
 
     /**
      * Return location of transaction logs

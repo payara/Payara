@@ -40,7 +40,7 @@
 
 package numberguess;
 
-import javax.interceptor.*;
+import jakarta.interceptor.*;
 
 import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.*;

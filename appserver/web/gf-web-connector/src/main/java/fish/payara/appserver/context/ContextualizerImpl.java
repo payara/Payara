@@ -45,7 +45,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.stream.Stream;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.internal.api.JavaEEContextUtil;
 import org.jvnet.hk2.annotations.Service;
 

@@ -42,7 +42,7 @@ package org.glassfish.web.ha.session.management;
 
 import org.apache.catalina.Manager;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 import java.io.Serializable;
 
 /**

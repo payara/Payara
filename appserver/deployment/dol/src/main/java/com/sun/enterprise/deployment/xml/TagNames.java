@@ -174,8 +174,8 @@ public interface TagNames {
     public static final String PERSISTENCE_UNIT_REF = "persistence-unit-ref";
     public static final String PERSISTENCE_UNIT_REF_NAME = "persistence-unit-ref-name";
 
-    public static final String JMS_QUEUE_DEST_TYPE = "javax.jms.Queue";
-    public static final String JMS_TOPIC_DEST_TYPE = "javax.jms.Topic";
+    public static final String JMS_QUEUE_DEST_TYPE = "jakarta.jms.Queue";
+    public static final String JMS_TOPIC_DEST_TYPE = "jakarta.jms.Topic";
 
     public static final String RESOURCE_TYPE = "res-type";
     public static final String RESOURCE_AUTHORIZATION = "res-auth";

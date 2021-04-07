@@ -58,8 +58,8 @@ import org.glassfish.persistence.common.I18NHelper;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.tools.*;
 import java.io.File;
 import java.util.ArrayList;

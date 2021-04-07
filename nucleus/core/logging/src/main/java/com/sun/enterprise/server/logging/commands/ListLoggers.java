@@ -51,7 +51,7 @@ import java.util.Locale;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;

@@ -49,8 +49,8 @@ import com.sun.logging.LogDomains;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.RetryableUnavailableException;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.RetryableUnavailableException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

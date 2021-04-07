@@ -39,8 +39,8 @@
  */
 package org.glassfish.cdi.hk2;
 
-import javax.enterprise.inject.Default;
-import javax.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.util.AnnotationLiteral;
 
 /**
  * @author jwells

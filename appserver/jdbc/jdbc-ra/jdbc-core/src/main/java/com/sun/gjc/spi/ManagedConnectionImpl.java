@@ -72,11 +72,11 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.resource.NotSupportedException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionEvent;
-import javax.resource.spi.ConnectionEventListener;
-import javax.resource.spi.security.PasswordCredential;
+import jakarta.resource.NotSupportedException;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionEvent;
+import jakarta.resource.spi.ConnectionEventListener;
+import jakarta.resource.spi.security.PasswordCredential;
 import javax.security.auth.Subject;
 import javax.sql.PooledConnection;
 import javax.sql.XAConnection;
@@ -95,9 +95,9 @@ import org.glassfish.resourcebase.resources.api.PoolInfo;
  * @author Evani Sai Surya Kiran
  * @version 1.0, 02/07/22
  */
-public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnection,
-        javax.resource.spi.LazyEnlistableManagedConnection,
-        javax.resource.spi.DissociatableManagedConnection {
+public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnection,
+        jakarta.resource.spi.LazyEnlistableManagedConnection,
+        jakarta.resource.spi.DissociatableManagedConnection {
 
     public static final int ISNOTAPOOLEDCONNECTION = 0;
     public static final int ISPOOLEDCONNECTION = 1;
@@ -116,7 +116,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     protected Hashtable connectionHandles;
     protected PrintWriter logWriter;
     protected PasswordCredential passwdCredential;
-    private javax.resource.spi.ManagedConnectionFactory mcf = null;
+    private jakarta.resource.spi.ManagedConnectionFactory mcf = null;
     protected XAResource xar = null;
 
     protected ConnectionHolder myLogicalConnection = null;
@@ -190,7 +190,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      */
     public ManagedConnectionImpl(PooledConnection pooledConn, java.sql.Connection sqlConn,
                              PasswordCredential passwdCred, 
-                             javax.resource.spi.ManagedConnectionFactory mcf,
+                             jakarta.resource.spi.ManagedConnectionFactory mcf,
                              PoolInfo poolInfo,
                              int statementCacheSize, String statementCacheType,
                              SQLTraceDelegator delegator,
@@ -471,12 +471,12 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @return Connection    the connection handle <code>Object</code>
      * @throws ResourceException if there is an error in allocating the
      *                           physical connection from the pooled connection
-     * @throws javax.resource.spi.SecurityException
+     * @throws jakarta.resource.spi.SecurityException
      *                           if there is a mismatch between the
      *                           password credentials or reauthentication is requested
      */
     @Override
-    public Object getConnection(Subject sub, javax.resource.spi.ConnectionRequestInfo cxReqInfo)
+    public Object getConnection(Subject sub, jakarta.resource.spi.ConnectionRequestInfo cxReqInfo)
             throws ResourceException {
         logFine("In getConnection");
         checkIfValid();
@@ -485,7 +485,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
          PasswordCredential passwdCred = SecurityUtils.getPasswordCredential(this.mcf, sub, cxRequestInfo);
 
          if(SecurityUtils.isPasswordCredentialEqual(this.passwdCredential, passwdCred) == false) {
-         throw new javax.resource.spi.SecurityException("Re-authentication not supported");
+         throw new jakarta.resource.spi.SecurityException("Re-authentication not supported");
          }
          **/
 
@@ -614,7 +614,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws ResourceException if the physical connection is not valid
      */
     @Override
-    public javax.resource.spi.LocalTransaction getLocalTransaction() throws ResourceException {
+    public jakarta.resource.spi.LocalTransaction getLocalTransaction() throws ResourceException {
         logFine("In getLocalTransaction");
         checkIfValid();
         return new com.sun.gjc.spi.LocalTransactionImpl(this);
@@ -644,7 +644,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
      * @throws ResourceException if the physical connection is not valid
      */
     @Override
-    public javax.resource.spi.ManagedConnectionMetaData getMetaData() throws ResourceException {
+    public jakarta.resource.spi.ManagedConnectionMetaData getMetaData() throws ResourceException {
         logFine("In getMetaData");
         checkIfValid();
 
@@ -995,7 +995,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         markedForRemoval = flag;
     }
 
-    public javax.resource.spi.ManagedConnectionFactory getMcf() {
+    public jakarta.resource.spi.ManagedConnectionFactory getMcf() {
         return mcf;
     }
 
@@ -1352,7 +1352,7 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         statementCache.purge(preparedStatement);
     }
 
-    private static JdbcConnectionPool getJdbcConnectionPool(javax.resource.spi.ManagedConnectionFactory mcf) {
+    private static JdbcConnectionPool getJdbcConnectionPool(jakarta.resource.spi.ManagedConnectionFactory mcf) {
         if(Globals.getDefaultHabitat().getService(ProcessEnvironment.class).getProcessType() != ProcessEnvironment.ProcessType.Server) {
             // this is only applicatble in the server environment,
             // otherwise we bave no domain to draw upon

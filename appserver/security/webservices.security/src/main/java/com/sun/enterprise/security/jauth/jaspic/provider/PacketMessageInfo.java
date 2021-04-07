@@ -40,7 +40,7 @@
 // Portions Copyright [2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth.jaspic.provider;
 
-import javax.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.MessageInfo;
 import com.sun.xml.ws.api.message.Packet;
 
 /**

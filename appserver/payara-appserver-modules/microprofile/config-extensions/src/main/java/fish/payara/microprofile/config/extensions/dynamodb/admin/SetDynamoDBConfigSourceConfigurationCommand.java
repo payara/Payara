@@ -41,7 +41,7 @@ package fish.payara.microprofile.config.extensions.dynamodb.admin;
 
 import java.beans.PropertyVetoException;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandLock;

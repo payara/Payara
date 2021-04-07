@@ -52,7 +52,7 @@ import com.sun.enterprise.v3.admin.adapter.AdminConsoleAdapter;
 import com.sun.enterprise.v3.server.DomainXmlPersistence;
 import com.sun.enterprise.v3.server.GFDomainXml;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Kernel's decoration for embedded environment.

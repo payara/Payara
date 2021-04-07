@@ -46,8 +46,8 @@ import org.apache.catalina.LogFacade;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;

@@ -65,9 +65,9 @@ import java.util.logging.Logger;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.webservices.LogUtils;
 import org.glassfish.webservices.SOAPMessageContext;
-
 import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import java.util.logging.Level;
 
 /**
  * This class acts as a factory to create TracingSystemHandler instances. It also provides an API to register listeners
@@ -156,13 +156,6 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
 
         return endpointInfo;
     }
-
-    public EndpointImpl createHandler(SystemHandlerDelegate parent, WebServiceEndpoint endpointDesc) {
-        EndpointImpl newEndpoint = createHandler(endpointDesc);
-        JAXRPCEndpointImpl.class.cast(newEndpoint).setParent(parent);
-        
-        return newEndpoint;
-    }
     
     public Collection<AuthenticationListener> getAuthListeners() {
         return authListeners;
@@ -206,34 +199,6 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
     }
 
     /**
-     * Callback when a web service request is received on the endpoint.
-     *
-     * @param messageID returned by preProcessRequest call
-     * @param context the jaxrpc message trace, transport dependent.
-     */
-    public void processRequest(String messageID, com.sun.xml.rpc.spi.runtime.SOAPMessageContext context, TransportInfo info) {
-        if (globalMessageListener == null) {
-            return;
-        }
-
-        globalMessageListener.processRequest(messageID, context, info);
-    }
-
-    /**
-     * Callback when a web service response is received on the endpoint.
-     *
-     * @param messageID returned by the preProcessRequest call
-     * @param context jaxrpc message context
-     */
-    public void processResponse(String messageID, com.sun.xml.rpc.spi.runtime.SOAPMessageContext context) {
-        if (globalMessageListener == null) {
-            return;
-        }
-
-        globalMessageListener.processResponse(messageID, context);
-    }
-
-    /**
      * Callback when a 2.0 web service request is received on the endpoint.
      *
      * @param messageID returned by preProcessRequest call
@@ -266,6 +231,7 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
      * Callback when a web service response has finished being processed by the container and was sent back to the client
      *
      * @param messageID returned by the preProcessRequest call
+     * @param info
      */
     public void postProcessResponse(String messageID, TransportInfo info) {
         if (globalMessageListener == null) {
@@ -278,37 +244,28 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
     public ThreadLocal<ThreadLocalInfo> getThreadLocal() {
         return servletThreadLocal;
     }
-    
+
     private EndpointImpl createEndpointInfo(WebServiceEndpoint endpoint) {
+
         try {
             String endpointURL = endpoint.getEndpointAddressUri();
             EndpointType endpointType;
             ArchiveType moduleType = endpoint.getWebService().getWebServicesDescriptor().getModuleType();
-            
             if (moduleType != null && moduleType.equals(ejbType())) {
                 endpointType = EJB_ENDPOINT;
             } else {
                 endpointType = SERVLET_ENDPOINT;
             }
 
-            EndpointImpl endpointInfo;
-            
-            // At this point, we can depend on presence of mapping file to distinguish between JAXRPC and JAXWS
-            // service
-            if (endpoint.getWebService().hasMappingFile()) {
-                endpointInfo = new JAXRPCEndpointImpl(endpointURL, endpointType);
-            } else {
-                endpointInfo = new JAXWSEndpointImpl(endpointURL, endpointType);
-            }
-
+            EndpointImpl endpointInfo = new JAXWSEndpointImpl(endpointURL, endpointType);
             endpointInfo.setDescriptor(endpoint);
-            
             return endpointInfo;
 
         } catch (Exception e) {
             sLogger.log(SEVERE, EXCEPTION_CREATING_ENDPOINT, e);
         }
-        
         return null;
+
     }
+        
 }

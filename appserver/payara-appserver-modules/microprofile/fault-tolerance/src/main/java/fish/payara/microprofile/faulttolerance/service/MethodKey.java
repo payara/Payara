@@ -1,6 +1,6 @@
 package fish.payara.microprofile.faulttolerance.service;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.util.Objects;
 

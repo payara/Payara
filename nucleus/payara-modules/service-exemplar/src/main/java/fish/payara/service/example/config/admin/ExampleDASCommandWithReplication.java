@@ -19,7 +19,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.service.example.config.ExampleServiceConfiguration;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;

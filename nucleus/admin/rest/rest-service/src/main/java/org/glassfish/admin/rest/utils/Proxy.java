@@ -39,9 +39,9 @@
  */
 package org.glassfish.admin.rest.utils;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.glassfish.hk2.api.ServiceLocator;
 

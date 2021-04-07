@@ -65,10 +65,10 @@ import com.sun.logging.LogDomains;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.*;
-import javax.resource.spi.IllegalStateException;
-import javax.resource.spi.SecurityException;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.*;
+import jakarta.resource.spi.IllegalStateException;
+import jakarta.resource.spi.SecurityException;
 import javax.security.auth.Subject;
 import java.io.Serializable;
 import java.security.Principal;

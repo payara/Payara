@@ -53,7 +53,7 @@ import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Metadata;
@@ -80,7 +80,7 @@ import fish.payara.microprofile.metrics.test.TestUtils;
 
 /**
  * Specifically tests the
- * {@link AnnotationReader#getOrRegister(javax.enterprise.inject.spi.InjectionPoint, Class, org.eclipse.microprofile.metrics.MetricRegistry)}
+ * {@link AnnotationReader#getOrRegister(jakarta.enterprise.inject.spi.InjectionPoint, Class, org.eclipse.microprofile.metrics.MetricRegistry)}
  * method.
  *
  * @author Jan Bernitt

@@ -45,7 +45,7 @@ import java.net.URI;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.ejb.EJBAccessException;
+import jakarta.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

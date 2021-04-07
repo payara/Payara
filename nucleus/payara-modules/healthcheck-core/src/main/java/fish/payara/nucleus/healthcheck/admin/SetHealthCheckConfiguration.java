@@ -45,8 +45,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.validation.constraints.Min;
+import jakarta.inject.Inject;
+import jakarta.validation.constraints.Min;
 
 import com.sun.enterprise.config.serverbeans.Config;
 

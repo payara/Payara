@@ -59,7 +59,7 @@ import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.beans.PropertyVetoException;
 import java.util.List;

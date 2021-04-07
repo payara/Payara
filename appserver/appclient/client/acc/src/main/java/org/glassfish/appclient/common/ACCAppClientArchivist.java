@@ -51,7 +51,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Optional;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 import org.xml.sax.SAXParseException;
 

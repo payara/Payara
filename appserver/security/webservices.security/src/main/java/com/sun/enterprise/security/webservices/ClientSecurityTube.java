@@ -48,10 +48,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
-import javax.security.auth.message.AuthStatus;
-import javax.security.auth.message.config.ClientAuthContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.ws.WebServiceException;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.config.ClientAuthContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.ws.WebServiceException;
 
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
@@ -132,7 +132,7 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl implements Secure
 
             info = new PacketMapMessageInfo(request, new Packet());
             AuthStatus status = AuthStatus.SEND_SUCCESS;
-            info.getMap().put(javax.xml.ws.Endpoint.WSDL_SERVICE, helper.getProperty(PipeConstants.WSDL_SERVICE));
+            info.getMap().put(jakarta.xml.ws.Endpoint.WSDL_SERVICE, helper.getProperty(PipeConstants.WSDL_SERVICE));
 
             Subject locClientSubject = getClientSubject(request);
 

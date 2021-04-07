@@ -52,10 +52,10 @@ import static java.util.Collections.emptySet;
 import static java.util.Objects.isNull;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import static javax.json.JsonValue.ValueType.STRING;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import static jakarta.json.JsonValue.ValueType.STRING;
 
 /**
  * OpenId Connect provider information

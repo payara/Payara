@@ -42,7 +42,7 @@ package org.glassfish.resourcebase.resources.api;
 
 import org.glassfish.hk2.api.Metadata;
 
-import javax.inject.Qualifier;
+import jakarta.inject.Qualifier;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

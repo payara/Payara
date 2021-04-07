@@ -61,7 +61,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * Delete RA Config command

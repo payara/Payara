@@ -59,7 +59,7 @@
 
 package org.apache.catalina.deploy;
 
-import javax.servlet.DispatcherType;
+import jakarta.servlet.DispatcherType;
 import java.util.Set;
 
 /**

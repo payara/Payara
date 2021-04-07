@@ -95,7 +95,7 @@ public abstract class JdbcObjectsFactory implements Serializable {
      * @return DataSource
      */
     public abstract javax.sql.DataSource getDataSourceInstance(ManagedConnectionFactoryImpl mcfObject,
-                                                               javax.resource.spi.ConnectionManager cmObject);
+                                                               jakarta.resource.spi.ConnectionManager cmObject);
 
     /**
      * To get an instance of ConnectionHolder.<br>
@@ -109,7 +109,7 @@ public abstract class JdbcObjectsFactory implements Serializable {
      */
     public abstract ConnectionHolder getConnection(Connection conObject,
                                                    ManagedConnectionImpl mcObject,
-                                                   javax.resource.spi.ConnectionRequestInfo criObject,
+                                                   jakarta.resource.spi.ConnectionRequestInfo criObject,
                                                    boolean statementWrapping,
                                                    SQLTraceDelegator sqlTraceDelegator);
 

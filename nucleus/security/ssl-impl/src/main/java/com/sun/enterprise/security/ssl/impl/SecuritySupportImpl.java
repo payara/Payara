@@ -73,8 +73,8 @@ import java.util.PropertyPermission;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
@@ -114,7 +114,7 @@ public class SecuritySupportImpl extends SecuritySupport {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.security.ssl.LogMessages";
 
     @LoggerInfo(subsystem = "SECURITY - SSL", description = "Security - SSL", publish = true)
-    public static final String SEC_SSL_LOGGER = "javax.enterprise.system.security.ssl";
+    public static final String SEC_SSL_LOGGER = "jakarta.enterprise.system.security.ssl";
 
     protected static final Logger _logger = Logger.getLogger(SEC_SSL_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

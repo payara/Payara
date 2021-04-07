@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.EventTypes;

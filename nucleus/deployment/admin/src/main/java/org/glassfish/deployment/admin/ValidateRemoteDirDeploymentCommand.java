@@ -63,7 +63,7 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.deployment.common.DeploymentUtils;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.AccessRequired;
 
 import org.jvnet.hk2.annotations.Service;

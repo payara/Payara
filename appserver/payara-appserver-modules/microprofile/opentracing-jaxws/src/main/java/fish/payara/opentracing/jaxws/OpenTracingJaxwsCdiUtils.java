@@ -44,7 +44,7 @@ import fish.payara.microprofile.opentracing.cdi.OpenTracingCdiUtils;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import org.glassfish.webservices.monitoring.MonitorContext;
 

@@ -62,8 +62,8 @@ package org.apache.catalina.session;
 import org.apache.catalina.Context;
 import org.apache.catalina.SessionLocker;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
 
 /**
  *

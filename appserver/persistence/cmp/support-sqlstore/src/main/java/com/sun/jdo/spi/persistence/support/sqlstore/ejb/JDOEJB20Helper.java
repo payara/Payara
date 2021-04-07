@@ -49,8 +49,8 @@ package com.sun.jdo.spi.persistence.support.sqlstore.ejb;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBContext;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.EJBContext;
 
 import com.sun.jdo.api.persistence.support.PersistenceManager;
 

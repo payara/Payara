@@ -62,14 +62,14 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.json.Json;
-import javax.json.JsonStructure;
-import javax.json.JsonValue.ValueType;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -152,7 +152,7 @@ public class GuiUtil {
         }
 
         Object request = externalCtx.getRequest();
-        if (request instanceof javax.servlet.ServletRequest){
+        if (request instanceof jakarta.servlet.ServletRequest){
             ServletRequest srequest = (ServletRequest) request;
             sessionMap.put("hostName", srequest.getServerName());
             String restServerName = (String) sessionMap.get(AdminConsoleAuthModule.REST_SERVER_NAME);

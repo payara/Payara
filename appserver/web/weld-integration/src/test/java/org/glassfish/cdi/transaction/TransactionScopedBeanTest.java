@@ -44,8 +44,8 @@ package org.glassfish.cdi.transaction;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Test;
 
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
 
 import static junit.framework.Assert.assertSame;
 import static org.easymock.EasyMock.*;

@@ -41,9 +41,9 @@
 
 package org.jvnet.hk2.config;
 
-import javax.validation.MessageInterpolator;
-import javax.validation.Payload;
-import javax.validation.metadata.ConstraintDescriptor;
+import jakarta.validation.MessageInterpolator;
+import jakarta.validation.Payload;
+import jakarta.validation.metadata.ConstraintDescriptor;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;

@@ -46,7 +46,7 @@ import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.impl.MetricsServiceImpl;
 
 import java.util.logging.Logger;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;

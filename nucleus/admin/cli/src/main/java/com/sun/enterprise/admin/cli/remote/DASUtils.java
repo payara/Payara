@@ -51,7 +51,7 @@ import org.glassfish.api.admin.*;
  * Domain Admin Server utility method.
  */
 public class DASUtils {
-    private static final Logger logger = Logger.getLogger("javax.enterprise.admin.cli.remote");
+    private static final Logger logger = Logger.getLogger("jakarta.enterprise.admin.cli.remote");
 
     public enum Error {
         NONE, AUTHENTICATION, CONNECTION, IO, UNKNOWN

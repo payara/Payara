@@ -49,8 +49,8 @@ import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext
 import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceProperty;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceProperty;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -59,7 +59,7 @@ import java.util.logging.Level;
 
 /**
  * This handler is responsible for handling the 
- * javax.persistence.PersistenceUnit annotation.
+ * jakarta.persistence.PersistenceUnit annotation.
  *
  */
 @Service

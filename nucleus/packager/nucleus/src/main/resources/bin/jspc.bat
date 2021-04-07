@@ -41,9 +41,9 @@ REM
 
 
 set AS_INSTALL_LIB=%~dp0..\modules
-set JSP_IMPL=%AS_INSTALL_LIB%\javax.servlet.jsp.jar
-set EL_IMPL=%AS_INSTALL_LIB%\javax.el.jar
-set JSTL_IMPL=%AS_INSTALL_LIB%\javax.servlet.jsp.jstl.jar
+set JSP_IMPL=%AS_INSTALL_LIB%\jakarta.servlet.jsp.jar
+set EL_IMPL=%AS_INSTALL_LIB%\jakarta.el.jar
+set JSTL_IMPL=%AS_INSTALL_LIB%\jakarta.servlet.jsp.jstl.jar
 set AS_LIB=%~dp0..\lib
 set JAVAEE_API=%AS_LIB%\javaee.jar
 

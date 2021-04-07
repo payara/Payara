@@ -54,9 +54,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.ejb.SessionContext;
-import javax.ejb.TimerService;
-import javax.persistence.EntityManagerFactory;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.TimerService;
+import jakarta.persistence.EntityManagerFactory;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 
@@ -270,7 +270,7 @@ public final class SessionContextImpl extends AbstractSessionContextImpl impleme
             final EjbInvocation ejbInv = (EjbInvocation) inv;
             // If call came through a home/local-home, this can only be create call.
             return ejbInv.isHome
-                && ejbInv.isClientInterfaceAssignableToOneOf(javax.ejb.EJBHome.class, javax.ejb.EJBLocalHome.class);
+                && ejbInv.isClientInterfaceAssignableToOneOf(jakarta.ejb.EJBHome.class, jakarta.ejb.EJBLocalHome.class);
         }
         return false;
     }

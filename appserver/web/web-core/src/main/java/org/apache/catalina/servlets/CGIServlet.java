@@ -77,8 +77,8 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.util.IOTools;
@@ -590,7 +590,7 @@ public final class CGIServlet extends HttpServlet {
      * @exception  ServletException  if a servlet-specific exception occurs
      * @exception  IOException  if a read/write exception occurs
      *
-     * @see javax.servlet.http.HttpServlet
+     * @see jakarta.servlet.http.HttpServlet
      *
      */
     @Override
@@ -610,7 +610,7 @@ public final class CGIServlet extends HttpServlet {
      * @exception  ServletException  if a servlet-specific exception occurs
      * @exception  IOException  if a read/write exception occurs
      *
-     * @see javax.servlet.http.HttpServlet
+     * @see jakarta.servlet.http.HttpServlet
      *
      */
     @Override

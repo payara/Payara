@@ -55,8 +55,8 @@
     <modules>
     	<module>stats77</module>
     	<module>amx-javaee</module>
-	<module>mejb</module>
-	<module>mejb-frag</module>    	
+<!--	<module>mejb</module>
+	<module>mejb-frag</module>    	-->
         <module>glassfish-ee-api</module>
         <module>annotation-framework</module>
         <module>container-common</module>

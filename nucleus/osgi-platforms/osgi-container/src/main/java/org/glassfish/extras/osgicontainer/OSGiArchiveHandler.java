@@ -49,8 +49,8 @@ import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.internal.deployment.GenericHandler;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.*;
 import java.net.*;
 import java.util.Enumeration;
@@ -82,7 +82,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
 public class OSGiArchiveHandler extends GenericHandler implements CompositeHandler {
 
     @LoggerInfo(subsystem = "OSGI", description="OSGI container logger", publish=true)
-    private static final String LOGGER_NAME = "javax.enterprise.osgi.container";
+    private static final String LOGGER_NAME = "jakarta.enterprise.osgi.container";
 
     @LogMessagesResourceBundle()
     public static final String RB_NAME = "org.glassfish.extras.osgicontainer.LogMessages";
@@ -161,9 +161,9 @@ public class OSGiArchiveHandler extends GenericHandler implements CompositeHandl
      * newScheme:embeddedUri?query
      * e.g., when user's input is:
      * deploy --type osgi --properties
-     *     UriScheme=webbundle:Bundle-SymbolicName=foo:Import-Package=javax.servlet:Web-ContextPath=/foo /tmp/foo.war
+     *     UriScheme=webbundle:Bundle-SymbolicName=foo:Import-Package=jakarta.servlet:Web-ContextPath=/foo /tmp/foo.war
      * we create a new URI like this:
-     * webbundle:file:/tmp/foo.war?Bundle-SymbolicName=foo&Import-Package=javax.servlet&Web-ContextPath=/foo
+     * webbundle:file:/tmp/foo.war?Bundle-SymbolicName=foo&Import-Package=jakarta.servlet&Web-ContextPath=/foo
      *
      * Please note two things here:
      * a) We add the URI Scheme provided by user as a prefix.

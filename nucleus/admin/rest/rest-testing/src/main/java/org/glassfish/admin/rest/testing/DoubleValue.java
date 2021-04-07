@@ -42,8 +42,8 @@
 
 package org.glassfish.admin.rest.testing;
 
-import javax.json.Json;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonValue;
 
 public class DoubleValue extends ScalarValue {
 

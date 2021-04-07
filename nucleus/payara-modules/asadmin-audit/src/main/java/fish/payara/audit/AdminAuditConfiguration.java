@@ -44,8 +44,7 @@ package fish.payara.audit;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
-
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;

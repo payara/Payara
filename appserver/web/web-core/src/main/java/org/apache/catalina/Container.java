@@ -60,7 +60,7 @@ package org.apache.catalina;
 
 
 import javax.naming.directory.DirContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 

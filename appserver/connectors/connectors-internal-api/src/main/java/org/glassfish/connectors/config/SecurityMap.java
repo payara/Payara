@@ -49,8 +49,8 @@ import static org.glassfish.config.support.Constants.NAME_REGEX;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 /**
  * Perform mapping from principal received during Servlet/EJB authentication,

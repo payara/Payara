@@ -42,10 +42,10 @@ package fish.payara.samples.clustered.singleton.interceptor;
 import fish.payara.samples.clustered.singleton.ClusteredSingletonInterceptedEJB;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.interceptor.AroundConstruct;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundConstruct;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.AroundTimeout;
+import jakarta.interceptor.InvocationContext;
 
 /**
  * @author lprimak

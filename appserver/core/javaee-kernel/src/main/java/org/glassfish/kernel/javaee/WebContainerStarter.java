@@ -54,9 +54,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Provider;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Sniffer;
@@ -101,7 +101,7 @@ public class WebContainerStarter
     private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.kernel.javaee.LogMessages";
     
     @LoggerInfo(subsystem = "AS-CORE", description = "Java EE Core Kernel", publish = true)
-    private static final String ASCORE_LOGGER = "javax.enterprise.system.core.ee";
+    private static final String ASCORE_LOGGER = "jakarta.enterprise.system.core.ee";
     private static final Logger logger = Logger.getLogger(
                 ASCORE_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
     private static final ResourceBundle rb = logger.getResourceBundle();

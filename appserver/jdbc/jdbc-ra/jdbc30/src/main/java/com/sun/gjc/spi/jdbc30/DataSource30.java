@@ -42,7 +42,7 @@ package com.sun.gjc.spi.jdbc30;
 
 import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
 
-import javax.resource.spi.ConnectionManager;
+import jakarta.resource.spi.ConnectionManager;
 
 
 /**

@@ -58,9 +58,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyConfigurationFactory;
-import javax.security.jacc.PolicyContextException;
+import jakarta.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyConfigurationFactory;
+import jakarta.security.jacc.PolicyContextException;
 
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
@@ -188,7 +188,7 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory i
      * @throws java.lang.SecurityException when called by an AccessControlContext that has not been granted the "setPolicy"
      * SecurityPermission.
      *
-     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * @throws jakarta.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
      * accounted for by the getPolicyConfiguration method signature. The exception thrown by the implementation class will
      * be encapsulated (during construction) in the thrown PolicyContextException.
      */
@@ -222,7 +222,7 @@ public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory i
      * @throws java.lang.SecurityException when called by an AccessControlContext that has not been granted the "setPolicy"
      * SecurityPermission.
      *
-     * @throws javax.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
+     * @throws jakarta.security.jacc.PolicyContextException if the implementation throws a checked exception that has not been
      * accounted for by the inService method signature. The exception thrown by the implementation class will be
      * encapsulated (during construction) in the thrown PolicyContextException.
      */

@@ -49,10 +49,10 @@ import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import com.sun.enterprise.deployment.xml.ConnectorTagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import javax.resource.spi.AuthenticationMechanism;
-import javax.resource.spi.Connector;
-import javax.resource.spi.security.GenericCredential;
-import javax.resource.spi.security.PasswordCredential;
+import jakarta.resource.spi.AuthenticationMechanism;
+import jakarta.resource.spi.Connector;
+import jakarta.resource.spi.security.GenericCredential;
+import jakarta.resource.spi.security.PasswordCredential;
 import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;

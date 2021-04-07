@@ -77,7 +77,7 @@ public class ProfiledConnectionWrapper40 extends ConnectionHolder40 implements C
      * @param delegator
      */
     public ProfiledConnectionWrapper40(Connection con, ManagedConnectionImpl mc,
-            javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
+            jakarta.resource.spi.ConnectionRequestInfo cxRequestInfo,
             boolean jdbc30Connection, SQLTraceDelegator delegator) {
         super(con, mc, cxRequestInfo, jdbc30Connection);
         this.sqlTraceDelegator = delegator;

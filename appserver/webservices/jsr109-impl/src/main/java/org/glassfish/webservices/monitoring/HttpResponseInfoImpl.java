@@ -40,7 +40,7 @@
 
 package org.glassfish.webservices.monitoring;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Implementation of the HttpResponseInfo interface

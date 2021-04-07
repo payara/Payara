@@ -69,12 +69,12 @@ import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.naming.Context;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
-import javax.transaction.TransactionManager;
-import javax.validation.*;
+import jakarta.transaction.TransactionManager;
+import jakarta.validation.*;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

@@ -41,7 +41,7 @@
 
 package fish.payara.security.identitystores;
 
-import javax.security.enterprise.credential.Credential;
+import jakarta.security.enterprise.credential.Credential;
 
 /**
  * Class representing a Yubikey One Time Password (OTP)

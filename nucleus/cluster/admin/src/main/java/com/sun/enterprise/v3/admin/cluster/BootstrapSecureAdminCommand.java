@@ -48,7 +48,7 @@ import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 import java.io.File;
 import java.io.IOException;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;

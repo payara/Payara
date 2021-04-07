@@ -40,8 +40,8 @@
 package fish.payara.microprofile.openapi.test.app.application;
 
 import fish.payara.microprofile.openapi.test.app.OpenApiApplicationTest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;

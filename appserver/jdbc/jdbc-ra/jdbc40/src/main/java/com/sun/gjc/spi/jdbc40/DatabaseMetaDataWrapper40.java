@@ -46,7 +46,7 @@ import com.sun.gjc.spi.base.DatabaseMetaDataWrapper;
 
 import java.sql.*;
 import java.util.logging.Level;
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 /**
  * Wrapper class for DatabaseMetaData for JDBC 4.0 <br>

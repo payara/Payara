@@ -80,15 +80,15 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Extension;
-import javax.inject.Inject;
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpSessionListener;
-import javax.servlet.jsp.tagext.JspTag;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.inject.Inject;
+import jakarta.servlet.Filter;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.http.HttpSessionListener;
+import jakarta.servlet.jsp.tagext.JspTag;
 
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -179,7 +179,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private static final String PROBE_FILTER_URL_PATTERN = "/*";
     private static final String PROBE_FILTER_DISPATCHER_TYPE = "REQUEST";
     private static final String PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE = ".*payara.*|.*glassfish.*";
-    private static final String PROBE_EVENT_MONITOR_EXCLUDE_TYPE = "javax.servlet.http.*";
+    private static final String PROBE_EVENT_MONITOR_EXCLUDE_TYPE = "jakarta.servlet.http.*";
     private static final String PROBE_ALLOW_REMOTE_ADDRESS = "";
 
     private static final String JERSEY_PROCESS_ALL_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.internal.ProcessAllAnnotatedTypes";
@@ -728,9 +728,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     }
 
     private String getDeploymentErrorMsgPrefix(Throwable t) {
-        if (t instanceof javax.enterprise.inject.spi.DefinitionException) {
+        if (t instanceof jakarta.enterprise.inject.spi.DefinitionException) {
             return "CDI definition failure:";
-        } else if (t instanceof javax.enterprise.inject.spi.DeploymentException) {
+        } else if (t instanceof jakarta.enterprise.inject.spi.DeploymentException) {
             return "CDI deployment failure:";
         } else {
             Throwable cause = t.getCause();
@@ -781,7 +781,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     private Class<?> getMessageListenerClass() {
         try {
-            Class<?> messageListenerClass = Thread.currentThread().getContextClassLoader().loadClass("javax.jms.MessageListener");
+            Class<?> messageListenerClass = Thread.currentThread().getContextClassLoader().loadClass("jakarta.jms.MessageListener");
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, JMS_MESSAGElISTENER_AVAILABLE);
             }

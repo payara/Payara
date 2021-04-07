@@ -62,8 +62,8 @@ package org.apache.catalina.connector;
 import org.apache.catalina.LogFacade;
 import org.apache.catalina.security.SecurityUtil;
 
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;

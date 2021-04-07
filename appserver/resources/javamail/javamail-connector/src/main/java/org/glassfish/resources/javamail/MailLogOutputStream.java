@@ -48,7 +48,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
  */
 public class MailLogOutputStream extends LogOutputStream {
     @LoggerInfo(subsystem = "MAIL", description = "Java Mail Logger", publish=true)
-    private static final String JAVAMAIL_DOMAIN = "javax.mail";
+    private static final String JAVAMAIL_DOMAIN = "jakarta.mail";
 
     public MailLogOutputStream() {
         super(JAVAMAIL_DOMAIN, Level.FINE);

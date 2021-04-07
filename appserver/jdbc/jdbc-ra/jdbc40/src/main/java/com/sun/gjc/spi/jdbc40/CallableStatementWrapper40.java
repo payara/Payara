@@ -48,7 +48,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.sql.*;
 import java.util.logging.Level;
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 /**
  * Wrapper for JDBC 4.0 CallableStatement

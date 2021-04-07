@@ -42,7 +42,7 @@ package com.sun.enterprise.security.webservices;
 
 import java.util.HashMap;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import org.jvnet.hk2.annotations.Service;
 

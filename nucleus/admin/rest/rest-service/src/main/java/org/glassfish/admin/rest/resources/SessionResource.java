@@ -46,10 +46,10 @@ package org.glassfish.admin.rest.resources;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.api.ActionReport;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
 import org.glassfish.common.util.admin.RestSessionManager;
 
 /**

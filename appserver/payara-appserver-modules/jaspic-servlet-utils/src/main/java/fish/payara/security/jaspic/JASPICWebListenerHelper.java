@@ -41,9 +41,9 @@ package fish.payara.security.jaspic;
 
 import java.util.Enumeration;
 import java.util.HashMap;
-import javax.security.auth.message.config.AuthConfigFactory;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
+import jakarta.security.auth.message.config.AuthConfigFactory;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
 
 /**
  * This is a helper class used to provide a simple mechanism to deploy a custom

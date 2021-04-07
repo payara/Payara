@@ -42,8 +42,8 @@ package com.sun.ejb;
 
 import org.glassfish.api.invocation.ResourceHandler;
 
-import javax.ejb.EnterpriseBean;
-import javax.transaction.Transaction;
+import jakarta.ejb.EnterpriseBean;
+import jakarta.transaction.Transaction;
 import java.util.List;
 
 /**

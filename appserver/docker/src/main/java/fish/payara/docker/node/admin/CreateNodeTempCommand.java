@@ -55,7 +55,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_TYPE;

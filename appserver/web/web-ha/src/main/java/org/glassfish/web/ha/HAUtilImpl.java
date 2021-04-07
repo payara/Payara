@@ -45,9 +45,9 @@ import com.sun.enterprise.config.serverbeans.Config;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.security.common.HAUtil;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;

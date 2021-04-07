@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.openapi.activation;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;

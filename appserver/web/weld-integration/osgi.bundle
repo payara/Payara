@@ -46,7 +46,7 @@ Bundle-Activator: org.glassfish.weld.WeldActivator
 # Because this module needs to run in web profile which does not have
 # full javaee deployment support, we mark corresponding package as optional.
 Import-Package: org.glassfish.javaee.full.deployment; resolution:= optional, \
-                javax.xml.ws; version=${jaxws-api.version}, \
-                javax.ejb; version=${jakarta.ejb-api.version}, \
-                javax.transaction;, \
+                jakarta.xml.ws; version=${jaxws-api.version}, \
+                jakarta.ejb; version=${jakarta.ejb-api.version}, \
+                jakarta.transaction;, \
                 *

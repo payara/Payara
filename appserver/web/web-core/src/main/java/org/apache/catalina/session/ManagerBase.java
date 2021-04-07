@@ -66,10 +66,10 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 
 import javax.management.ObjectName;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.*;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

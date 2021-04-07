@@ -44,8 +44,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import javax.enterprise.util.Nonbinding;
-import javax.security.enterprise.authentication.mechanism.http.LoginToContinue;
+import jakarta.enterprise.util.Nonbinding;
+import jakarta.security.enterprise.authentication.mechanism.http.LoginToContinue;
 
 /**
  * Used to define a Two IdentityStore Authentication Mechanism with an annotation and provide configuration options

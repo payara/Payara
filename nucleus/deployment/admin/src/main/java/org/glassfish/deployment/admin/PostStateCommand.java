@@ -49,7 +49,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandSecurity;
 

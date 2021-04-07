@@ -40,8 +40,8 @@
 package fish.payara.security.api;
 
 import java.security.cert.X509Certificate;
-import javax.security.enterprise.CallerPrincipal;
-import javax.security.enterprise.credential.Credential;
+import jakarta.security.enterprise.CallerPrincipal;
+import jakarta.security.enterprise.credential.Credential;
 
 /**
  *

@@ -42,7 +42,7 @@ package org.jvnet.hk2.config.provider.internal;
 
 import java.util.Map;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import org.glassfish.hk2.api.Filter;
 import org.glassfish.hk2.api.Injectee;

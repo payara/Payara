@@ -49,9 +49,9 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import static java.util.Objects.requireNonNull;
-import javax.enterprise.context.ApplicationScoped;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.glassfish.common.util.StringHelper;
 
 /**

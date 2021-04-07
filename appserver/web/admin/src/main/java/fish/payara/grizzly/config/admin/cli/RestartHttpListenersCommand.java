@@ -42,7 +42,7 @@ package fish.payara.grizzly.config.admin.cli;
 import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;

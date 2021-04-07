@@ -43,9 +43,9 @@ package org.glassfish.webservices;
 
 import static com.sun.enterprise.deployment.WebServiceEndpoint.PUBLISHING_SUBCONTEXT;
 import static java.util.logging.Level.WARNING;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
-import static javax.xml.ws.http.HTTPBinding.HTTP_BINDING;
+import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static jakarta.xml.ws.http.HTTPBinding.HTTP_BINDING;
 import static org.glassfish.webservices.LogUtils.AUTH_FAILED;
 import static org.glassfish.webservices.LogUtils.EXCEPTION_THROWN;
 import static org.glassfish.webservices.LogUtils.INVALID_REQUEST_SCHEME;
@@ -57,10 +57,10 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.ejb.api.EjbEndpointFacade;

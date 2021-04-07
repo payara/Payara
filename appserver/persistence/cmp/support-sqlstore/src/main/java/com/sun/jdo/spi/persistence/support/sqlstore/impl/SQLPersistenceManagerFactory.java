@@ -694,7 +694,7 @@ public class SQLPersistenceManagerFactory
 
         // Check if we are in managed environment and PersistenceManager is cached
         PersistenceManagerImpl pm = null;
-        javax.transaction.Transaction t = EJBHelper.getTransaction();
+        jakarta.transaction.Transaction t = EJBHelper.getTransaction();
 
         if (t != null) {
             if (debug) {
@@ -774,12 +774,12 @@ public class SQLPersistenceManagerFactory
     /**
      * Registers PersistenceManager in the transactional cache in
      * managed environment in case of BMT with JDO Transaction.
-     * There is no javax.transaction.Transaction
+     * There is no jakarta.transaction.Transaction
      * available before the user starts the transaction.
      */
     public void registerPersistenceManager(
             com.sun.jdo.spi.persistence.support.sqlstore.PersistenceManager pm,
-            javax.transaction.Transaction t) {
+            jakarta.transaction.Transaction t) {
 
         boolean debug = logger.isLoggable(Logger.FINEST);
         if (debug) {
@@ -808,7 +808,7 @@ public class SQLPersistenceManagerFactory
      * Returns an instance of PersistenceManagerImpl from available pool
      * or creates a new one
      */
-    private PersistenceManagerImpl getFromPool(javax.transaction.Transaction tx,
+    private PersistenceManagerImpl getFromPool(jakarta.transaction.Transaction tx,
                                                String username, char[] password) {
 
         boolean debug = logger.isLoggable(Logger.FINEST);
@@ -845,7 +845,7 @@ public class SQLPersistenceManagerFactory
     /** Releases closed PersistenceManager that is not in use
      */
     public void releasePersistenceManager(com.sun.jdo.spi.persistence.support.sqlstore.PersistenceManager pm,
-                                          javax.transaction.Transaction t) {
+                                          jakarta.transaction.Transaction t) {
 
 
         boolean debug = logger.isLoggable(Logger.FINEST);

@@ -46,8 +46,8 @@ import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getAnn
 import static fish.payara.micro.cdi.extension.cluster.ClusterScopeContext.getBeanName;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 /**
  * implements CDI-based clustered singleton lookups

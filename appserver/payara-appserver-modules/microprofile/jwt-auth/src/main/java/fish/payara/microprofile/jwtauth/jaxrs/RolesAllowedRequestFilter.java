@@ -40,25 +40,25 @@
 package fish.payara.microprofile.jwtauth.jaxrs;
 
 import static java.util.Arrays.stream;
-import static javax.security.enterprise.AuthenticationStatus.NOT_DONE;
-import static javax.security.enterprise.AuthenticationStatus.SEND_FAILURE;
-import static javax.security.enterprise.AuthenticationStatus.SUCCESS;
-import static javax.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
-import static javax.ws.rs.Priorities.AUTHORIZATION;
+import static jakarta.security.enterprise.AuthenticationStatus.NOT_DONE;
+import static jakarta.security.enterprise.AuthenticationStatus.SEND_FAILURE;
+import static jakarta.security.enterprise.AuthenticationStatus.SUCCESS;
+import static jakarta.security.enterprise.authentication.mechanism.http.AuthenticationParameters.withParams;
+import static jakarta.ws.rs.Priorities.AUTHORIZATION;
 
 import java.io.IOException;
 
-import javax.annotation.Priority;
-import javax.enterprise.inject.spi.CDI;
-import javax.security.enterprise.AuthenticationStatus;
-import javax.security.enterprise.SecurityContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Response;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.security.enterprise.AuthenticationStatus;
+import jakarta.security.enterprise.SecurityContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.Response;
 
 /**
  * This JAX-RS filter makes sure only callers with the given roles can access the

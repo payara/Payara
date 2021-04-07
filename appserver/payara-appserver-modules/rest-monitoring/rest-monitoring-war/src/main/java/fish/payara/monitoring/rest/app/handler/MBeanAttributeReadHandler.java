@@ -43,18 +43,18 @@ import fish.payara.monitoring.rest.app.RestMonitoringAppResponseToken;
 import fish.payara.monitoring.rest.app.MBeanServerDelegate;
 import fish.payara.monitoring.rest.app.processor.ProcessorFactory;
 import fish.payara.monitoring.rest.app.processor.TypeProcessor;
-import javax.inject.Singleton;
-import javax.json.Json;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.inject.Singleton;
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ReflectionException;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 /**
  *

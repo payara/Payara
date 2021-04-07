@@ -55,7 +55,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;

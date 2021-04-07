@@ -41,8 +41,8 @@
 
 package org.glassfish.ejb.mdb;
 
-import javax.ejb.*;
-import javax.transaction.UserTransaction;
+import jakarta.ejb.*;
+import jakarta.transaction.UserTransaction;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.EjbContainerUtilImpl;

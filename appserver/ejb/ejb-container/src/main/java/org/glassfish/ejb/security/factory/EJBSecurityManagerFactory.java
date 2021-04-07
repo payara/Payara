@@ -47,8 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;

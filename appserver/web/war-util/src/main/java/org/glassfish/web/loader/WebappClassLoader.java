@@ -828,7 +828,7 @@ public class WebappClassLoader
     public void setUseMyFaces(boolean useMyFaces) {
         this.useMyFaces = useMyFaces;
         if (useMyFaces) {
-            addOverridablePackage("javax.faces");
+            addOverridablePackage("jakarta.faces");
             addOverridablePackage("com.sun.faces");
         }
     }
@@ -3202,7 +3202,7 @@ public class WebappClassLoader
     /**
      * Validate a classname. As per SRV.9.7.2, we must restrict loading of
      * classes from J2SE (java.*) and classes of the servlet API
-     * (javax.servlet.*). That should enhance robustness and prevent a number
+     * (jakarta.servlet.*). That should enhance robustness and prevent a number
      * of user error (where an older version of servlet.jar would be present
      * in /WEB-INF/lib).
      *
@@ -3294,12 +3294,12 @@ public class WebappClassLoader
     // START GlassFish Issue 587
     /*
      * Purges all bean classes that were loaded by this WebappClassLoader
-     * from the caches maintained by javax.el.BeanELResolver, in order to
+     * from the caches maintained by jakarta.el.BeanELResolver, in order to
      * avoid this WebappClassLoader from leaking.
      */
     private void purgeELBeanClasses() {
 
-        Field fieldlist[] = javax.el.BeanELResolver.class.getDeclaredFields();
+        Field fieldlist[] = jakarta.el.BeanELResolver.class.getDeclaredFields();
         for (Field fld : fieldlist) {
             if (fld.getName().equals("properties")) {
                 purgeELBeanClasses(fld);
@@ -3552,7 +3552,7 @@ public class WebappClassLoader
     private boolean isResourceDelegate(String name) {
         return (delegate
                 || (name.startsWith("javax") &&
-                    (!name.startsWith("javax.faces") || !useMyFaces))
+                    (!name.startsWith("jakarta.faces") || !useMyFaces))
                 || name.startsWith("sun")
                 || (name.startsWith("com/sun/faces") &&
                     !name.startsWith("com/sun/faces/extensions") &&

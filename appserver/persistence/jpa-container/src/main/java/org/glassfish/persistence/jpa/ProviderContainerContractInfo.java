@@ -40,11 +40,11 @@
 
 package org.glassfish.persistence.jpa;
 
-import javax.persistence.spi.ClassTransformer;
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.spi.ClassTransformer;
+import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import javax.naming.NamingException;
-import javax.validation.ValidatorFactory;
+import jakarta.validation.ValidatorFactory;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;

@@ -40,7 +40,7 @@
 // Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.digest.impl;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 import org.glassfish.security.common.CNonceCache;
 import org.glassfish.security.common.NonceInfo;

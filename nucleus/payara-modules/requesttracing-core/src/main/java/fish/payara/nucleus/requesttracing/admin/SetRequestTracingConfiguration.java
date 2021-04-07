@@ -46,7 +46,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;

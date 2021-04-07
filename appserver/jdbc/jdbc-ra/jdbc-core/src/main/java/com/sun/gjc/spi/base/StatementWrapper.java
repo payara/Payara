@@ -55,7 +55,7 @@ import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 
 /**
  * Abstract class for wrapping Statement<br>

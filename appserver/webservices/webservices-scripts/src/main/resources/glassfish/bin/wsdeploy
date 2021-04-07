@@ -50,7 +50,7 @@ case "`uname`" in
 esac
 
 AS_INSTALL_LIB="$AS_INSTALL/modules"
-JAVAX_MAIL_JAR=$AS_INSTALL_LIB/jakarta.mail.jar
+jakarta.mail_JAR=$AS_INSTALL_LIB/jakarta.mail.jar
 . "${AS_INSTALL}/config/asenv.conf"
 JAVA=java
 

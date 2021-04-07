@@ -48,7 +48,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 import java.beans.PropertyVetoException;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 /**
  * @author mertcaliskan

@@ -55,8 +55,8 @@ import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.config.support.datatypes.NonNegativeInteger;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 @Configured
 public interface HttpService extends ConfigBeanProxy, PropertyBag, ConfigExtension {

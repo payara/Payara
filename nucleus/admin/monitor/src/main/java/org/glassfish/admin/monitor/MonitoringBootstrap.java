@@ -101,8 +101,8 @@ import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.LogManager;
 import org.jvnet.hk2.config.Transactions;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import static org.glassfish.admin.monitor.MLogger.*;
 
 

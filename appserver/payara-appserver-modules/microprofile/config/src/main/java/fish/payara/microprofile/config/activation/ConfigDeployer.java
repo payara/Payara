@@ -42,7 +42,7 @@ package fish.payara.microprofile.config.activation;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.inject.ConfigProperties;

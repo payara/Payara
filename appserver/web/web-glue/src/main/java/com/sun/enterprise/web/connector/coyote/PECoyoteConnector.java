@@ -59,7 +59,7 @@ import org.glassfish.web.LogFacade;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
 
 import javax.management.Notification;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;

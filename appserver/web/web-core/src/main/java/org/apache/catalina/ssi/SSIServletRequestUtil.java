@@ -61,7 +61,7 @@ package org.apache.catalina.ssi;
 
 import org.apache.catalina.util.RequestUtil;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 public class SSIServletRequestUtil {
     /**
      * Return the relative path associated with this servlet. Taken from
@@ -73,12 +73,12 @@ public class SSIServletRequestUtil {
      */
     public static String getRelativePath(HttpServletRequest request) {
         // Are we being processed by a RequestDispatcher.include()?
-        if (request.getAttribute("javax.servlet.include.request_uri") != null) {
+        if (request.getAttribute("jakarta.servlet.include.request_uri") != null) {
             String result = (String)request
-                    .getAttribute("javax.servlet.include.path_info");
+                    .getAttribute("jakarta.servlet.include.path_info");
             if (result == null)
                 result = (String)request
-                        .getAttribute("javax.servlet.include.servlet_path");
+                        .getAttribute("jakarta.servlet.include.servlet_path");
             if ((result == null) || (result.equals(""))) result = "/";
             return (result);
         }

@@ -43,7 +43,7 @@ package com.sun.enterprise.resource.allocator;
 import com.sun.enterprise.resource.ResourceHandle;
 import com.sun.appserv.connectors.internal.api.PoolingException;
 
-import javax.resource.ResourceException;
+import jakarta.resource.ResourceException;
 import java.util.Set;
 
 /**

@@ -46,8 +46,8 @@ import fish.payara.samples.ejbhttp.api.RemoteService;
 import fish.payara.samples.ejbhttp.api.Stuff;
 import fish.payara.samples.ejbhttp.api.User;
 
-import javax.ejb.Remote;
-import javax.ejb.Stateless;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;

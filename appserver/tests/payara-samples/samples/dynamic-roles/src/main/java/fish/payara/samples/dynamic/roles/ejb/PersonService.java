@@ -42,10 +42,10 @@ package fish.payara.samples.dynamic.roles.ejb;
 import fish.payara.cdi.auth.roles.RolesPermitted;
 import static fish.payara.samples.dynamic.roles.common.AuthoritiesConstants.ADMIN;
 import fish.payara.samples.dynamic.roles.common.Person;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
-import javax.inject.Named;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Named;
+import jakarta.validation.constraints.NotNull;
 
 /**
  *

@@ -57,7 +57,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.hk2.api.PerLookup;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * This is a remote command that enables lb-enabled attribute of an application

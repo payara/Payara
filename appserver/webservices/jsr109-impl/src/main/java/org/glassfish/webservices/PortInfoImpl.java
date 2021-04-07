@@ -43,7 +43,7 @@ package org.glassfish.webservices;
 import com.sun.xml.ws.api.BindingID;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.handler.PortInfo;
+import jakarta.xml.ws.handler.PortInfo;
 
 /**
  * Implementation of the PortInfo interface. This is just a simple

@@ -41,7 +41,7 @@ package fish.payara.security.oauth2.api;
 
 import java.io.Serializable;
 import java.util.UUID;
-import javax.enterprise.context.SessionScoped;
+import jakarta.enterprise.context.SessionScoped;
 
 /**
  * Class to hold state of OAuth2

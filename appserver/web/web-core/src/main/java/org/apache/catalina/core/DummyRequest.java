@@ -63,8 +63,8 @@ package org.apache.catalina.core;
 import org.apache.catalina.*;
 import org.glassfish.grizzly.http.util.DataChunk;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

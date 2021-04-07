@@ -48,8 +48,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.management.AttributeList;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;

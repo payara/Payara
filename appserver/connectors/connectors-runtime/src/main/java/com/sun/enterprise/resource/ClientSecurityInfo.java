@@ -42,7 +42,7 @@ package com.sun.enterprise.resource;
 
 import com.sun.enterprise.deployment.ResourcePrincipal;
 
-import javax.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.ConnectionRequestInfo;
 
 /**
  * This class represents the client-specific information associated

@@ -48,14 +48,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
-import javax.xml.bind.JAXBContext;
-import javax.xml.ws.handler.MessageContext.Scope;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.ws.handler.MessageContext.Scope;
 
 import com.sun.xml.ws.api.message.Messages;
 import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Packet;
 
-import javax.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPMessage;
 
 /**
  * Implementation of SOAPMessageContext

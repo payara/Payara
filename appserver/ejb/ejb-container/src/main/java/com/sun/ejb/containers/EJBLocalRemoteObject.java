@@ -43,7 +43,7 @@ package com.sun.ejb.containers;
 
 import java.util.logging.Logger;
 
-import javax.ejb.*;
+import jakarta.ejb.*;
 
 import com.sun.ejb.*;
 

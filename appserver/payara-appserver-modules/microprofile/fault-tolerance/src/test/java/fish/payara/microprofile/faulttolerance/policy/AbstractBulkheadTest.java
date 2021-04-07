@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.faulttolerance.policy;
 
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.InvocationContext;
 
 import org.eclipse.microprofile.faulttolerance.Bulkhead;
 

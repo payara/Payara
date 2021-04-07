@@ -71,7 +71,7 @@ import org.glassfish.deployment.versioning.VersioningException;
 import org.glassfish.deployment.versioning.VersioningService;
 
 import org.glassfish.hk2.api.PerLookup;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandSecurity;

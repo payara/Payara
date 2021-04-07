@@ -46,9 +46,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
 
-import javax.xml.ws.handler.Handler;
-import javax.xml.ws.handler.HandlerResolver;
-import javax.xml.ws.handler.PortInfo;
+import jakarta.xml.ws.handler.Handler;
+import jakarta.xml.ws.handler.HandlerResolver;
+import jakarta.xml.ws.handler.PortInfo;
 import com.sun.xml.ws.api.BindingID;
 
 /**

@@ -64,8 +64,8 @@ import fish.payara.monitoring.collect.MonitoringDataSource;
 
 import org.glassfish.hk2.api.PostConstruct;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  *

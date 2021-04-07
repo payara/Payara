@@ -39,8 +39,8 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
-import javax.enterprise.context.control.RequestContextController;
-import javax.interceptor.InvocationContext;
+import jakarta.enterprise.context.control.RequestContextController;
+import jakarta.interceptor.InvocationContext;
 
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.service.Stereotypes;

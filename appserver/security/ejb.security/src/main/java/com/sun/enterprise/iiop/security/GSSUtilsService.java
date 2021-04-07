@@ -44,7 +44,7 @@ import com.sun.enterprise.common.iiop.security.GSSUtilsContract;
 import java.io.IOException;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import sun.security.util.ObjectIdentifier;
 
 /**

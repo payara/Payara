@@ -61,7 +61,7 @@ public class MLogger {
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.admin.monitor.LogMessages";
     @LoggerInfo(subsystem = "Monitoring", description = "Monitoring Logger", publish = true)
-    public static final String LOGGER_NAME = "javax.enterprise.monitoring";
+    public static final String LOGGER_NAME = "jakarta.enterprise.monitoring";
     private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME, SHARED_LOGMESSAGE_RESOURCE);
     
     // these messages are historical.  We've transitioned to this latest Logging API

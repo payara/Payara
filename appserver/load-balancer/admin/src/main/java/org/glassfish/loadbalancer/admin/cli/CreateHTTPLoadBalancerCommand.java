@@ -72,7 +72,7 @@ import static org.glassfish.config.support.Constants.*;
 
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
   * This method supports the create-http-lb CLI command. It creates a lb-config, cluster-ref, health-checker by using

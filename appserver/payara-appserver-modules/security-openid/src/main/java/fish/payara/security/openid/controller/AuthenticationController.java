@@ -54,13 +54,13 @@ import fish.payara.security.openid.domain.OpenIdNonce;
 import java.io.IOException;
 import static java.util.logging.Level.FINEST;
 import java.util.logging.Logger;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.security.enterprise.AuthenticationStatus;
-import static javax.security.enterprise.AuthenticationStatus.SEND_CONTINUE;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.security.enterprise.AuthenticationStatus;
+import static jakarta.security.enterprise.AuthenticationStatus.SEND_CONTINUE;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.UriBuilder;
 import static org.glassfish.common.util.StringHelper.isEmpty;
 
 /**

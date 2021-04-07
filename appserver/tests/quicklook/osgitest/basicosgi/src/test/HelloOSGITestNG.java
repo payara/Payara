@@ -66,7 +66,7 @@ public class HelloOSGITestNG extends AdminBaseDevTest{
     public boolean retStatus = false;
     final String cname = "osgi";
     final String flag = "true";
-    final String options = "UriScheme=webBundle:Bundle-SymbolicName=bar:Import-Package=javax.servlet;javax.servlet.http:Web-ContextPath=/osgitest";
+    final String options = "UriScheme=webBundle:Bundle-SymbolicName=bar:Import-Package=jakarta.servlet;jakarta.servlet.http:Web-ContextPath=/osgitest";
 
     private String strContextRoot="osgitest";
 

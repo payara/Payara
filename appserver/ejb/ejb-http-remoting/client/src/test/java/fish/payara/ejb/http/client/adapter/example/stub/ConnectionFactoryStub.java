@@ -42,14 +42,14 @@ package fish.payara.ejb.http.client.adapter.example.stub;
 
 import fish.payara.ejb.http.client.adapter.example.stub.NoOpJmsStub.*;
 
-import javax.jms.Connection;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import jakarta.jms.Connection;
+import jakarta.jms.Destination;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Queue;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 class ConnectionFactoryStub extends NoOpConnectionFactory {
 

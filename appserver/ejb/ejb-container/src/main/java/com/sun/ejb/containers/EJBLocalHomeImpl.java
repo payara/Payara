@@ -47,7 +47,7 @@ import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import java.lang.reflect.Method;
 
 
-import javax.ejb.*;
+import jakarta.ejb.*;
 
 import java.util.logging.*;
 
@@ -118,7 +118,7 @@ public abstract class EJBLocalHomeImpl
     }
     
     /**
-     * This is the implementation of the javax.ejb.EJBLocalHome remove method.
+     * This is the implementation of the jakarta.ejb.EJBLocalHome remove method.
      */
     public final void remove(Object primaryKey)
         throws RemoveException, EJBException

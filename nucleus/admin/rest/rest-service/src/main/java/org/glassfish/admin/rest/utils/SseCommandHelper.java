@@ -47,7 +47,7 @@ import com.sun.enterprise.v3.admin.JobManagerService;
 import com.sun.enterprise.admin.report.PropsFileActionReporter;
 import java.io.IOException;
 import java.util.logging.Level;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.resources.admin.CommandResource;
 import org.glassfish.api.ActionReport;

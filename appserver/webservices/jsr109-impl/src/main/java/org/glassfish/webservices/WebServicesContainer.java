@@ -52,7 +52,7 @@ import org.glassfish.webservices.deployment.WebServicesDeploymentMBean;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import javax.management.ObjectName;
 import java.io.IOException;

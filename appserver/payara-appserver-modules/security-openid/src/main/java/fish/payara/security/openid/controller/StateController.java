@@ -43,13 +43,13 @@ import static fish.payara.security.openid.OpenIdUtil.not;
 import fish.payara.security.openid.api.OpenIdState;
 import fish.payara.security.openid.domain.OpenIdConfiguration;
 import static fish.payara.security.openid.http.HttpStorageController.getInstance;
-import javax.enterprise.context.ApplicationScoped;
-import javax.security.enterprise.authentication.mechanism.http.HttpMessageContext;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageContext;
 import org.glassfish.common.util.StringHelper;
 
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Controller to manage OpenId state parameter value

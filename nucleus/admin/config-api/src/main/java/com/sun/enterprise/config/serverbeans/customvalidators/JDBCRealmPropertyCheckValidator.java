@@ -44,8 +44,8 @@ package com.sun.enterprise.config.serverbeans.customvalidators;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.jvnet.hk2.config.types.Property;
 
 /**

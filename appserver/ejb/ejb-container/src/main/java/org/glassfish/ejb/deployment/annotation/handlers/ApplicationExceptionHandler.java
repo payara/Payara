@@ -42,7 +42,7 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
@@ -56,7 +56,7 @@ import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Handles @javax.ejb.ApplicationException 
+ * Handles @jakarta.ejb.ApplicationException 
  */
 @Service
 @AnnotationHandlerFor(ApplicationException.class)

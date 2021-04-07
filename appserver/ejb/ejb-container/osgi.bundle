@@ -56,9 +56,9 @@
 # See issue #10545 to know why we have explicitly added org.glassfish.apf.context
 # in Import-Package
 Import-Package: \
-                        javax.xml.soap;resolution:=optional, \
-                        javax.xml.ws;resolution:=optional, \
-                        javax.xml.ws.handler;resolution:=optional, \
+                        jakarta.xml.soap;resolution:=optional, \
+                        jakarta.xml.ws;resolution:=optional, \
+                        jakarta.xml.ws.handler;resolution:=optional, \
                         javax.jws;resolution:=optional, \
                         org.glassfish.apf.context, \
                         org.glassfish.ejb.deployment.archive, \

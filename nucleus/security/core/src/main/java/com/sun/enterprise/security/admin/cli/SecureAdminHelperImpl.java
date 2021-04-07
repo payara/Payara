@@ -58,8 +58,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import org.glassfish.api.admin.ServerEnvironment;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 
 import org.jvnet.hk2.annotations.Service;

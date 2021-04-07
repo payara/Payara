@@ -54,7 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.MessagePolicy;
 
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.config.types.Property;

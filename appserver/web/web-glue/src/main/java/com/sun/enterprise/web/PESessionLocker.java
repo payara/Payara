@@ -53,8 +53,8 @@ import org.apache.catalina.SessionLocker;
 import org.apache.catalina.session.BaseSessionLocker;
 import org.apache.catalina.session.StandardSession;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
 
 
 /**
@@ -119,9 +119,9 @@ public class PESessionLocker extends BaseSessionLocker {
     }
     
     private Session getSession(ServletRequest request) {
-        javax.servlet.http.HttpServletRequest httpReq = 
-            (javax.servlet.http.HttpServletRequest) request;
-        javax.servlet.http.HttpSession httpSess = httpReq.getSession(false);
+        jakarta.servlet.http.HttpServletRequest httpReq = 
+            (jakarta.servlet.http.HttpServletRequest) request;
+        jakarta.servlet.http.HttpSession httpSess = httpReq.getSession(false);
         if(httpSess == null) {
             return null;
         }

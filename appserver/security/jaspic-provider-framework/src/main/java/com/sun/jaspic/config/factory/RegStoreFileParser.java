@@ -59,7 +59,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.security.auth.message.config.AuthConfigFactory.RegistrationContext;
+import jakarta.security.auth.message.config.AuthConfigFactory.RegistrationContext;
 
 /**
  * Used by ServerConfigProvider to parse the configuration file. If a file does not exist originally, the default

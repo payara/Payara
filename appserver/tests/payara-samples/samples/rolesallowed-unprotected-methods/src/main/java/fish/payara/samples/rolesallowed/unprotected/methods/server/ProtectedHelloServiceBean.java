@@ -42,11 +42,11 @@ package fish.payara.samples.rolesallowed.unprotected.methods.server;
 
 import fish.payara.samples.rolesallowed.unprotected.methods.ProtectedHelloServiceLocal;
 import fish.payara.samples.rolesallowed.unprotected.methods.ProtectedHelloServiceRemote;
-import javax.annotation.Resource;
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 
 @Stateless
 @DeclareRoles("user")

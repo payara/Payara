@@ -43,7 +43,7 @@ package com.sun.enterprise.connectors.work;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 
-import javax.resource.spi.work.Work;
+import jakarta.resource.spi.work.Work;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,7 +95,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
         if (coordinator.proceed()) {
             try {
                 coordinator.setupContext(this);
-                //work-name will be set (if specified via HintsContext "javax.resources.spi.HintsContext.NAME_HINT")
+                //work-name will be set (if specified via HintsContext "jakarta.resources.spi.HintsContext.NAME_HINT")
                 log("Start of Work");
             } catch (Throwable e) {
                 coordinator.setException(e);

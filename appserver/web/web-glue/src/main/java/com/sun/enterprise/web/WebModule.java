@@ -83,21 +83,21 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.security.DeclareRoles;
-import javax.annotation.security.RunAs;
-import javax.security.jacc.PolicyConfigurationFactory;
-import javax.security.jacc.PolicyContextException;
-import javax.servlet.Filter;
-import javax.servlet.HttpMethodConstraintElement;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpUpgradeHandler;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
+import jakarta.security.jacc.PolicyConfigurationFactory;
+import jakarta.security.jacc.PolicyContextException;
+import jakarta.servlet.Filter;
+import jakarta.servlet.HttpMethodConstraintElement;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.ServletSecurity;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpUpgradeHandler;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerListener;
@@ -2441,7 +2441,7 @@ class V3WebappLoader extends WebappLoader {
 }
 
 /**
- * Implementation of javax.servlet.ServletRegistration whose addMapping also
+ * Implementation of jakarta.servlet.ServletRegistration whose addMapping also
  * updates the WebBundleDescriptor from the deployment backend.
  */
 class WebServletRegistrationImpl extends ServletRegistrationImpl {

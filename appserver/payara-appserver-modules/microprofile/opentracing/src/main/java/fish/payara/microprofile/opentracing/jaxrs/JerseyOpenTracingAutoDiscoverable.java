@@ -39,7 +39,7 @@
  */
 package fish.payara.microprofile.opentracing.jaxrs;
 
-import javax.ws.rs.core.FeatureContext;
+import jakarta.ws.rs.core.FeatureContext;
 
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;

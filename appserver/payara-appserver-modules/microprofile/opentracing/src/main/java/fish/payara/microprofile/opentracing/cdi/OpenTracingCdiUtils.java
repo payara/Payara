@@ -50,9 +50,9 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.enterprise.inject.spi.BeanManager;
-import javax.interceptor.InvocationContext;
-import javax.ws.rs.container.ResourceInfo;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.interceptor.InvocationContext;
+import jakarta.ws.rs.container.ResourceInfo;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;

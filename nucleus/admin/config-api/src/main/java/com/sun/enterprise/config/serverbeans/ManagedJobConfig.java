@@ -42,13 +42,13 @@
 package com.sun.enterprise.config.serverbeans;
 
 import org.glassfish.api.Param;
-import javax.validation.Payload;
+import jakarta.validation.Payload;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
 import org.jvnet.hk2.config.types.PropertyBag;
 
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
 
 /**

@@ -67,7 +67,7 @@ import org.jvnet.hk2.annotations.Service;
 @ContractsProvided({AjpAddOnProvider.class, AddOn.class})
 public class AjpAddOnProvider extends AjpAddOn implements ConfigAwareElement<Http> {
 
-    protected static final Logger _logger = Logger.getLogger("javax.enterprise.web");
+    protected static final Logger _logger = Logger.getLogger("jakarta.enterprise.web");
 
     @Override
     public void configure(final ServiceLocator habitat,

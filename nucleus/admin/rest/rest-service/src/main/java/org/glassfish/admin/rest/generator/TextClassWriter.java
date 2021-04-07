@@ -136,8 +136,8 @@ public class TextClassWriter implements ClassWriter {
     }
 
     private void writeImportStatements() throws IOException {
-        writer.write("import javax.ws.rs.Path;\n");
-        writer.write("import javax.ws.rs.PathParam;\n");
+        writer.write("import jakarta.ws.rs.Path;\n");
+        writer.write("import jakarta.ws.rs.PathParam;\n");
         writer.write("import org.glassfish.admin.rest.resources.*;\n");
         writer.write("import org.glassfish.admin.rest.resources.custom.*;\n");
     }

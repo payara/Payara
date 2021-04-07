@@ -39,7 +39,7 @@
  */
 package fish.payara.samples.clustered.singleton.interceptor;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 /**
  * @author lprimak

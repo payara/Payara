@@ -48,8 +48,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.NameNotFoundException;
 
-import javax.ejb.spi.HandleDelegate;
-import javax.ejb.EJBException;
+import jakarta.ejb.spi.HandleDelegate;
+import jakarta.ejb.EJBException;
 
 /**
  * Common code for looking up the java:comp/HandleDelegate.

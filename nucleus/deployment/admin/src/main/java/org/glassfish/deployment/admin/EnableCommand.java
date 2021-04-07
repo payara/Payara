@@ -66,8 +66,8 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 

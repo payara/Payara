@@ -39,8 +39,8 @@
  */
 package fish.payara.samples.jaxws.security.ejb;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.Stateless;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 

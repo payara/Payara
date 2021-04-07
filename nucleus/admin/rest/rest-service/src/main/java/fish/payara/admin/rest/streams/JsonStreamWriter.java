@@ -41,9 +41,9 @@ package fish.payara.admin.rest.streams;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.json.Json;
-import javax.json.stream.JsonGenerationException;
-import javax.json.stream.JsonGenerator;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonGenerationException;
+import jakarta.json.stream.JsonGenerator;
 import org.glassfish.admin.rest.Constants;
 
 /**

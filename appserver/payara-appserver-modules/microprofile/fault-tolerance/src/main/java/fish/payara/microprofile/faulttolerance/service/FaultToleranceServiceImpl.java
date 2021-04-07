@@ -63,12 +63,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.enterprise.context.control.RequestContextController;
-import javax.inject.Inject;
-import javax.interceptor.InvocationContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import jakarta.enterprise.context.control.RequestContextController;
+import jakarta.inject.Inject;
+import jakarta.interceptor.InvocationContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 

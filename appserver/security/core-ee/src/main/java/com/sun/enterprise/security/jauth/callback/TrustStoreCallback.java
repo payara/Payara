@@ -52,7 +52,7 @@ import javax.security.auth.callback.Callback;
  * @version %I%, %G%
  */
 public class TrustStoreCallback
-        extends javax.security.auth.message.callback.TrustStoreCallback {
+        extends jakarta.security.auth.message.callback.TrustStoreCallback {
 
     /**
      * Set the trusted certificate KeyStore.
