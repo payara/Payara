@@ -512,7 +512,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         try {
                             // temporary add SSL Filter, so subprotocol
                             // will see it
-                            extraSslPUFilterChainBuilder.add(addedSSLFilter);;
+                            extraSslPUFilterChainBuilder.add(addedSSLFilter);
                             configureSubProtocol(habitat, networkListener,
                                     subProtocol, extraSslPUFilterChainBuilder);
                         } finally {
