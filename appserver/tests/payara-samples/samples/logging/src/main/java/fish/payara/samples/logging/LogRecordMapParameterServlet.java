@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,19 +39,21 @@
  */
 package fish.payara.samples.logging;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
- * Basic servlet that creates a log record with
+ * Basic servlet that creates a log record with parameters which should be propagated into
+ * JSON formatted server.log
+ *
  * @author Rudy De Busscher
  */
 @WebServlet("/LogRecordMapParameter")
@@ -61,12 +63,13 @@ public class LogRecordMapParameterServlet extends HttpServlet {
     public static String correlationIdValue = "1234-5678";
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
         resp.getOutputStream().print("Hello World");
-
-        LogRecord lr = new LogRecord(Level.INFO, "some message");
-        lr.setParameters(new Object[]{Collections.singletonMap(correlationIdKey, correlationIdValue/*Correlation.getId()*/)});
-        Logger.getLogger(LogRecordMapParameterServlet.class.getName()).log(lr);
-
+        final Logger logger = Logger.getLogger(LogRecordMapParameterServlet.class.getName());
+        final LogRecord record = new LogRecord(Level.INFO, "Message with a map as a parameter: {0}");
+        record.setParameters(new Object[] {Collections.singletonMap(correlationIdKey, correlationIdValue)});
+        record.setLoggerName(logger.getName());
+        logger.log(record);
+        logger.log(Level.INFO, "Another message with single parameter: {0}", "Bye!");
     }
 }

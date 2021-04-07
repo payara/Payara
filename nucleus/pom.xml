@@ -269,6 +269,7 @@
                         <useSystemClassLoader>true</useSystemClassLoader>
                         <excludes>
                            <exclude>**/*ITest.java</exclude>
+                           <exclude>**/*IT.java</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
@@ -282,6 +283,7 @@
                         <verbose>true</verbose>
                         <includes>
                            <include>**/*ITest.java</include>
+                           <include>**/*IT.java</include>
                         </includes>
                     </configuration>
                     <executions>

@@ -50,9 +50,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>logging</artifactId>
+    <artifactId>payara-samples-logging</artifactId>
     <name>Payara Samples - Logging</name>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <payara.home></payara.home>
@@ -85,24 +85,11 @@
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+        </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
     <profiles>
         <profile>
