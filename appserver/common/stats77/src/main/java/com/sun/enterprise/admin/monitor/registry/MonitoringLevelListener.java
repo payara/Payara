@@ -71,7 +71,7 @@ public interface MonitoringLevelListener {
 	 * is guaranteed that it will be unchanged by monitoring framework.
 	 */
 	public void changeLevel(MonitoringLevel from, MonitoringLevel to, 
-		javax.management.j2ee.statistics.Stats handback);
+		org.glassfish.j2ee.statistics.Stats handback);
 
 	/**
 	 * Method to convey the change in monitoring level. The configuration

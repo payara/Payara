@@ -194,7 +194,6 @@
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
         <jakarta.resource-api.version>2.0.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
-        <jakarta.management.j2ee-api.version>1.1.4</jakarta.management.j2ee-api.version>
         <jakarta.activation-api.version>2.0.0</jakarta.activation-api.version>
         <jakarta.activation-impl.version>2.0.0</jakarta.activation-impl.version>
         <istack-commons-runtime.version>3.0.10</istack-commons-runtime.version>

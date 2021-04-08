@@ -450,11 +450,6 @@
                 <version>${jsonp.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.management.j2ee</groupId>
-                <artifactId>jakarta.management.j2ee-api</artifactId>
-                <version>${jakarta.management.j2ee-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.xml.ws</groupId>
                 <artifactId>jakarta.xml.ws-api</artifactId>
                 <version>${jaxws-api.version}</version>

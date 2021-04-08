@@ -465,18 +465,6 @@
                         </spec>
                         <spec>
                             <artifact>
-                                <groupId>jakarta.management.j2ee</groupId>
-                                <artifactId>jakarta.management.j2ee-api</artifactId>
-                                <version>${jakarta.management.j2ee-api.version}</version>
-                            </artifact>
-                            <nonFinal>false</nonFinal>
-                            <jarType>api</jarType>
-                            <specVersion>1.1</specVersion>
-                            <specImplVersion>${jakarta.management.j2ee-api.version}</specImplVersion>
-                            <apiPackage>javax.management.j2ee</apiPackage>
-                        </spec>
-                        <spec>
-                            <artifact>
                                 <groupId>jakarta.servlet.jsp</groupId>
                                 <artifactId>jakarta.servlet.jsp-api</artifactId>
                                 <version>${jsp-api.version}</version>

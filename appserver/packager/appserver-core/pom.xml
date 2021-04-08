@@ -246,10 +246,6 @@
             <artifactId>jakarta.resource-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.management.j2ee</groupId>
-            <artifactId>jakarta.management.j2ee-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>jakarta.authentication</groupId>
             <artifactId>jakarta.authentication-api</artifactId>
         </dependency>

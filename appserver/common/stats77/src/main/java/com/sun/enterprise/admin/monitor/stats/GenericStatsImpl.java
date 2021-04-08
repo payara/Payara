@@ -46,13 +46,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javax.management.j2ee.statistics.Stats;
-import javax.management.j2ee.statistics.Statistic;
+import org.glassfish.j2ee.statistics.Stats;
+import org.glassfish.j2ee.statistics.Statistic;
 
 /** Provides for generic implementation of any Stats interface. This class facilitates
  * composition over inheritance for all the classes that implement their
  * specific Stats interfaces. None of them has to implement the methods defined
- * by the {@link javax.management.j2ee.statistics.Stats} interface. This class
+ * by the {@link org.glassfish.j2ee.statistics.Stats} interface. This class
  * implements the same interface and does that job. All that implementing classes
  * have to do is implement the specific accessing methods in their Stats interfaces
  * and delegate the rest to this class. <b> This class invokes all these methods in
@@ -158,7 +158,7 @@ public class GenericStatsImpl implements Stats {
     }
     
     private boolean extendsStatsInterface(Class i) {
-        final Class statsInterface = javax.management.j2ee.statistics.Stats.class;
+        final Class statsInterface = org.glassfish.j2ee.statistics.Stats.class;
         return ( statsInterface.isAssignableFrom(i) );
     }
     
@@ -209,7 +209,7 @@ public class GenericStatsImpl implements Stats {
     }
     
     private boolean isStatsInterfaceMethod(String name) {
-        final Method[] methods = javax.management.j2ee.statistics.Stats.class.getMethods();
+        final Method[] methods = org.glassfish.j2ee.statistics.Stats.class.getMethods();
         boolean isInterfaceMethod = false;
         for (int i = 0 ; i < methods.length ; i++) {
             if (methods[i].getName().equals(name)) {

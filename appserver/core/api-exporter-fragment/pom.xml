@@ -269,13 +269,6 @@
                                     javax.xml.parsers; \
                                     javax.xml.registry; \
                                     javax.xml.registry.infomodel; \
-                                    javax.xml.rpc; \
-                                    javax.xml.rpc.encoding; \
-                                    javax.xml.rpc.handler; \
-                                    javax.xml.rpc.handler.soap; \
-                                    javax.xml.rpc.holders; \
-                                    javax.xml.rpc.server; \
-                                    javax.xml.rpc.soap; \
                                     jakarta.xml.soap; \
                                     javax.xml.stream; javax.xml.stream.events; javax.xml.stream.util; \
                                     javax.xml.transform; \
@@ -325,6 +318,7 @@
                                     org.w3c.dom.bootstrap; \
                                     org.w3c.dom.events; \
                                     org.w3c.dom.ls; \
+                                    org.w3c.dom.views; \
                                     org.xml.sax; \
                                     org.xml.sax.ext; \
                                     org.xml.sax.helpers; \

@@ -41,7 +41,7 @@
 
 package com.sun.enterprise.admin.monitor.registry;
 
-import javax.management.j2ee.statistics.Stats;
+import org.glassfish.j2ee.statistics.Stats;
 import javax.management.ObjectName;
 import java.util.Collection;
 

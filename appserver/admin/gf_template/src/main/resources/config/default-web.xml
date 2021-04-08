@@ -331,7 +331,6 @@
         jakarta.ejb-api.jar
         jakarta.enterprise.deploy-api.jar
         jakarta.mail.jar
-        jakarta.management.j2ee-api.jar
         jakarta.persistence.jar
         jakarta.resource-api.jar
         jakarta.security.auth.message-api.jar

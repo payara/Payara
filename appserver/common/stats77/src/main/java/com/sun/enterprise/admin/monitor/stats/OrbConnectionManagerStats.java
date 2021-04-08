@@ -41,9 +41,9 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import javax.management.j2ee.statistics.Stats;
-import javax.management.j2ee.statistics.CountStatistic;
-import javax.management.j2ee.statistics.BoundedRangeStatistic;
+import org.glassfish.j2ee.statistics.Stats;
+import org.glassfish.j2ee.statistics.CountStatistic;
+import org.glassfish.j2ee.statistics.BoundedRangeStatistic;
 
 /**
  * Stats interface for the monitorable attributes of the
