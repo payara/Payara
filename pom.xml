@@ -190,7 +190,6 @@
         <webservices.version>3.0.0</webservices.version>
         <woodstox.version>5.0.0</woodstox.version>
         <stax2-api.version>4.2.1</stax2-api.version>
-        <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>
         <jakarta.resource-api.version>2.0.0</jakarta.resource-api.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.activation-api.version>2.0.0</jakarta.activation-api.version>

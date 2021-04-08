@@ -429,18 +429,6 @@
                         </spec>
                         <spec>
                             <artifact>
-                                <groupId>jakarta.xml.registry</groupId>
-                                <artifactId>jakarta.xml.registry-api</artifactId>
-                                <version>${jakarta.xml.registry-api.version}</version>
-                            </artifact>
-                            <nonFinal>false</nonFinal>
-                            <jarType>api</jarType>
-                            <specVersion>1.0</specVersion>
-                            <specImplVersion>${jakarta.xml.registry-api.version}</specImplVersion>
-                            <apiPackage>javax.xml.registry</apiPackage>
-                        </spec>
-                        <spec>
-                            <artifact>
                                 <groupId>jakarta.enterprise.deploy</groupId>
                                 <artifactId>jakarta.enterprise.deploy-api</artifactId>
                                 <version>${jakarta.enterprise.deploy-api.version}</version>

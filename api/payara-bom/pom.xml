@@ -365,11 +365,6 @@
                 <version>${jakarta-persistence-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.xml.registry</groupId>
-                <artifactId>jakarta.xml.registry-api</artifactId>
-                <version>${jakarta.xml.registry-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.jms</groupId>
                 <artifactId>jakarta.jms-api</artifactId>
                 <version>${jms-api.version}</version>

@@ -131,13 +131,7 @@
             <artifactId>sun-as-jsr88-dm-frag</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-        </dependency> 
-       <dependency>
-           <groupId>fish.payara.server.internal.packager</groupId>
-           <artifactId>jaxr-ra</artifactId>
-           <version>${project.version}</version>
-           <type>zip</type>
-       </dependency>
+        </dependency>
        <dependency>
            <groupId>fish.payara.server.internal.admingui</groupId>
 	   <artifactId>console-common-full-plugin</artifactId>
