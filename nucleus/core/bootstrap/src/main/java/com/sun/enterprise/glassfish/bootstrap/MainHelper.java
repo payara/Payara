@@ -529,7 +529,7 @@ public class MainHelper {
             ClassLoaderBuilder clb = new ClassLoaderBuilder(ctx, osgiFWLauncherCL);
             // glassfish.jar - it must be here, because GlassfishRuntime uses this classloader
             // to detect osgi.
-            clb.addLauncherJar();
+            clb.addLauncherDependencies();
             return clb.build();
         } catch (IOException e) {
             throw new Error(e);
@@ -552,19 +552,19 @@ public class MainHelper {
      * class loaders, one should be very careful about adding stuff here, as it not only affects performance, it also
      * affects functionality as explained in GlassFish issue 13287.
      *
-     * @param delegate: Parent class loader for this class loader.
+     * @param delegate Parent class loader for this class loader.
      */
     private static ClassLoader createOSGiFrameworkLauncherCL(Properties ctx, ClassLoader delegate) {
         try {
             ClassLoaderBuilder clb = new ClassLoaderBuilder(ctx, delegate);
-            clb.addFrameworkJars();
-            clb.addBootstrapApiJar(); // simple-glassfish-api.jar
+            clb.addPlatformDependencies();
+            clb.addServerBootstrapDependencies();
             if (JDK.getMajor() < 9) {
                 clb.addJDKToolsJar();
             }
             return clb.build();
         } catch (IOException e) {
-            throw new Error(e);
+            throw new Error("Cannot configure OSGi bootstrap classloader, check your installation!", e);
         }
     }
 
@@ -594,8 +594,9 @@ public class MainHelper {
             case Knopflerfish:
             case Equinox:
                 return true;
+            default:
+                return false;
         }
-        return false;
     }
 
     private static class ClassLoaderBuilder {
@@ -610,7 +611,7 @@ public class MainHelper {
             glassfishDir = new File(ctx.getProperty(Constants.INSTALL_ROOT_PROP_NAME));
         }
 
-        void addFrameworkJars() throws IOException {
+        void addPlatformDependencies() throws IOException {
             PlatformHelper.getPlatformHelper(ctx).addFrameworkJars(cpb);
         }
 
@@ -632,17 +633,21 @@ public class MainHelper {
         }
 
         /**
-         * modules/glassfish.jar
+         * Adds JAR file dependencies required by the launcher
+         *
+         * @throws IOException if the file doesn't exist
          */
-        public void addLauncherJar() throws IOException {
+        void addLauncherDependencies() throws IOException {
             cpb.addJar(new File(glassfishDir, "modules/glassfish.jar"));
             cpb.addJar(new File(glassfishDir, "lib/payara-jul-extensions.jar"));
         }
 
         /**
-         * modules/simple-glassfish-api.jar
+         * Adds JAR file dependencies required by the Server Bootstrap
+         *
+         * @throws IOException if the file doesn't exist
          */
-        public void addBootstrapApiJar() throws IOException {
+        void addServerBootstrapDependencies() throws IOException {
             cpb.addJar(new File(glassfishDir, "modules/simple-glassfish-api.jar"));
             cpb.addJar(new File(glassfishDir, "lib/payara-jul-extensions.jar"));
         }
