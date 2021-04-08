@@ -145,7 +145,12 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         JndiNameEnvironment env = invocation != null ? ((JndiNameEnvironment) invocation.getJNDIEnvironment())
                 : compEnvMgr.getJndiNameEnvironment(componentId);
         if (env != null) {
-            ApplicationInfo appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
+            ApplicationInfo appInfo = null;
+            try {
+                appInfo = appRegistry.get(DOLUtils.getApplicationFromEnv(env).getRegistrationName());
+            } catch (IllegalArgumentException e) {
+                // empty environment, not associated with any app
+            }
             if (appInfo != null) {
                 // Check if deployed vs. Payara internal application
                 Collection<ModuleInfo> modules = appInfo.getModuleInfos();
@@ -241,11 +246,16 @@ public class JavaEEContextUtilImpl implements JavaEEContextUtil, Serializable {
         }
 
         private Context pushEmptyContext() {
-            JndiNameEnvironment env = (JndiNameEnvironment)Proxy.newProxyInstance(Utility.getClassLoader(),
-                    new Class[] { JndiNameEnvironment.class }, (proxy, method, args) -> null);
-            ComponentInvocation newInvocation = createInvocation(env, "___EMPTY___");
-            invocationManager.preInvoke(newInvocation);
-            return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr, Utility.getClassLoader());
+            try {
+                JndiNameEnvironment env = (JndiNameEnvironment) Proxy.newProxyInstance(Utility.getClassLoader(),
+                        new Class<?>[]{JndiNameEnvironment.class}, (proxy, method, args) -> null);
+                ComponentInvocation newInvocation = createInvocation(env, "___EMPTY___");
+                invocationManager.preInvoke(newInvocation);
+                return new ContextImpl.Context(newInvocation, invocationManager, compEnvMgr, Utility.getClassLoader());
+            } catch (IllegalArgumentException e) {
+                // Outside of HK2 / Felix context
+                return new ContextImpl.ClassLoaderContext(null, false);
+            }
         }
 
         @Override
