@@ -106,7 +106,7 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
 
-import static org.glassfish.pfl.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.*;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.MessageInterpolatorImpl;
 
