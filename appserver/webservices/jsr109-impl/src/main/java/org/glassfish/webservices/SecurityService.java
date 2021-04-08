@@ -43,8 +43,6 @@ package org.glassfish.webservices;
 import java.security.Principal;
 
 import jakarta.servlet.http.HttpServletRequest;
-import javax.xml.namespace.QName;
-import javax.xml.rpc.handler.HandlerInfo;
 
 import org.jvnet.hk2.annotations.Contract;
 

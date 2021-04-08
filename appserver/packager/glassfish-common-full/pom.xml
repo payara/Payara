@@ -177,16 +177,6 @@
             <artifactId>payara-jbatch</artifactId>
            <version>${project.version}</version>
         </dependency>
-
-
-       <!-- The following dependencies is for JSR236.  Including this in glassfish-common-full is a temporary solution.  This will be moved
-            to its own package when GLASSFISH-19604 is being worked on.
-         -->
-
-        <dependency>
-            <groupId>jakarta.xml.rpc</groupId>
-            <artifactId>jakarta.xml.rpc-api</artifactId>
-        </dependency>  
     </dependencies>
 </project>
 

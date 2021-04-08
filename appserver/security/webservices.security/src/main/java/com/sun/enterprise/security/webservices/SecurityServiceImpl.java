@@ -40,11 +40,9 @@
 // Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
-import static com.sun.enterprise.security.jauth.AuthConfig.SOAP;
 import static com.sun.enterprise.security.webservices.LogUtils.BASIC_AUTH_ERROR;
 import static com.sun.enterprise.security.webservices.LogUtils.CLIENT_CERT_ERROR;
 import static com.sun.enterprise.security.webservices.LogUtils.EJB_SEC_CONFIG_FAILURE;
-import static com.sun.enterprise.security.webservices.LogUtils.EXCEPTION_THROWN;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
@@ -55,17 +53,13 @@ import java.lang.ref.WeakReference;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.security.jacc.PolicyContext;
 import jakarta.servlet.http.HttpServletRequest;
-import javax.xml.namespace.QName;
-import javax.xml.rpc.handler.HandlerInfo;
 import jakarta.xml.soap.SOAPMessage;
 
 import org.apache.catalina.util.Base64;
@@ -84,7 +78,6 @@ import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.jauth.AuthConfig;
-import com.sun.enterprise.security.jauth.jaspic.provider.ClientAuthConfig;
 import com.sun.enterprise.security.jauth.jaspic.provider.ServerAuthConfig;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.web.WebModule;

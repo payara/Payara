@@ -543,7 +543,6 @@ public class WebServiceTesterServlet extends HttpServlet {
         if (JDK.getMajor() >= 9) {
             String modulesDir = System.getProperty("com.sun.aas.installRoot") + File.separator + "modules" + File.separator;
             wsimportArgs[8] = modulesDir + "jakarta.jws-api.jar";
-            wsimportArgs[9] = modulesDir + "jakarta.xml.rpc-api.jar";
             wsimportArgs[10] = modulesDir + "webservices-osgi.jar";
             wsimportArgs[11] = modulesDir + "jaxb-osgi.jar";
             wsimportArgs[12] = modulesDir + "jakarta.xml.ws-api.jar";

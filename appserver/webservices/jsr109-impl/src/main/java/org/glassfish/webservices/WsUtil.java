@@ -58,11 +58,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import jakarta.servlet.http.*;
 import javax.xml.namespace.QName;
-import javax.xml.rpc.ServiceFactory;
-import javax.xml.rpc.soap.SOAPFaultException;
-import javax.xml.rpc.handler.HandlerInfo;
-import javax.xml.rpc.handler.HandlerRegistry;
-import jakarta.xml.soap.SOAPConstants;
 import java.util.*;
 import java.net.*;
 import java.util.logging.Logger;
@@ -134,16 +129,6 @@ public class WsUtil {
     public WsUtil() {
         config = WebServiceContractImpl.getInstance().getConfig();
     }
-
-    // @@@ These are jaxrpc-implementation specific MessageContextProperties
-    // that should be added to jaxrpc spi
-    private static final String ONE_WAY_OPERATION =
-        "com.sun.xml.rpc.server.OneWayOperation";
-    private static final String CLIENT_BAD_REQUEST =
-        "com.sun.xml.rpc.server.http.ClientBadRequest";
-    
-    private static final String SECURITY_POLICY_NAMESPACE_URI = 
-            "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy";
 
     private static final Logger logger = LogUtils.getLogger();
 
@@ -614,30 +599,6 @@ public class WsUtil {
         return;
     }
 
-    public HandlerInfo createHandlerInfo(WebServiceHandler handler,
-                                         ClassLoader loader) 
-        throws Exception {
-
-        QName[] headers = new QName[handler.getSoapHeaders().size()];
-        int i = 0;
-        for(Iterator iter = handler.getSoapHeaders().iterator();
-            iter.hasNext();) {
-            headers[i] = (QName) iter.next();
-            i++;
-        }
-
-        Map properties = new HashMap();
-        for(Iterator iter = handler.getInitParams().iterator(); 
-            iter.hasNext();) {
-            NameValuePairDescriptor next = (NameValuePairDescriptor) 
-                iter.next();
-            properties.put(next.getName(), next.getValue());
-        }
-
-        Class handlerClass = loader.loadClass(handler.getHandlerClass());
-        return new HandlerInfo(handlerClass, properties, headers);
-    }
-
    /**
      * Accessing wsdl URL might involve file system access, so wrap
      * operation in a doPrivileged block.
@@ -818,73 +779,6 @@ public class WsUtil {
         return jaxwsEndPtFound;
     }
 
-    public javax.xml.rpc.Service createConfiguredService
-        (ServiceReferenceDescriptor desc) throws Exception {
-        
-        final ServiceReferenceDescriptor serviceRef = desc;
-        javax.xml.rpc.Service service = null;
-        try {
-
-            // Configured service can be created with any kind of URL.
-            // Since resolving it might require file system access,
-            // do operation in a doPrivivileged block.  JAXRPC RI should
-            // probably have the doPrivileged as well.
-
-            final URL wsdlFileURL = privilegedGetServiceRefWsdl(serviceRef);
-            final QName serviceName = serviceRef.getServiceName();
-            final ServiceFactory serviceFactory = ServiceFactory.newInstance();
-
-            service = (javax.xml.rpc.Service) 
-                java.security.AccessController.doPrivileged
-                (new java.security.PrivilegedExceptionAction() {
-                        public java.lang.Object run() throws Exception {
-                            return serviceFactory.createService
-                                (wsdlFileURL, serviceName);
-                        }
-                    });
-
-        } catch(PrivilegedActionException pae) {
-            logger.log(Level.WARNING, LogUtils.EXCEPTION_THROWN, pae);
-            Exception e = new Exception();
-            e.initCause(pae.getCause());
-            throw e;
-        }
-
-        return service;
-    }
-
-    public void configureHandlerChain(ServiceReferenceDescriptor serviceRef,
-                                      javax.xml.rpc.Service service, 
-                                      Iterator ports, ClassLoader loader)
-        throws Exception {
-
-        if( !serviceRef.hasHandlers() ) {
-            return;
-        }
-        
-        HandlerRegistry registry = service.getHandlerRegistry();
-        
-        while(ports.hasNext()) {
-            QName nextPort = (QName) ports.next();
-
-            List handlerChain = registry.getHandlerChain(nextPort);
-            Collection soapRoles = new HashSet(); 
-
-            for(Iterator iter = serviceRef.getHandlers().iterator();
-                iter.hasNext();) {
-                WebServiceHandler nextHandler = (WebServiceHandler) iter.next();
-                Collection portNames = nextHandler.getPortNames();
-                if( portNames.isEmpty() || 
-                    portNames.contains(nextPort.getLocalPart()) ) {
-                    soapRoles.addAll(nextHandler.getSoapRoles());
-                    HandlerInfo handlerInfo = 
-                        createHandlerInfo(nextHandler, loader);
-                    handlerChain.add(handlerInfo);
-                }
-            }
-        }
-    }
-
     /**
      * Create an xslt template for transforming the packaged webservice
      * WSDL to a final WSDL.
@@ -1041,79 +935,6 @@ public class WsUtil {
 
         return templates;
     }
-
-    /**
-     * @return Set of service endpoint interface class names supported by
-     * a generated service interface.
-     *
-     * @return Collection of String class names
-     */
-    public Collection getSEIsFromGeneratedService
-        (Class generatedServiceInterface) throws Exception {
-
-        Collection seis = new HashSet();
-
-        Method[] declaredMethods =
-            generatedServiceInterface.getDeclaredMethods();
-
-        // Use naming convention from jaxrpc spec to derive SEI class name.
-        for(int i = 0; i < declaredMethods.length; i++) {
-            Method next = declaredMethods[i];
-            Class returnType = next.getReturnType();
-            if( next.getName().startsWith("get") &&
-                (next.getDeclaringClass() != javax.xml.rpc.Service.class) &&
-                java.rmi.Remote.class.isAssignableFrom(returnType) ) {
-                seis.add(returnType.getName());
-            }
-        }
-
-        return seis;
-    }
-
-   /* *//**
-     * Called from client side deployment object on receipt of final
-     * wsdl from server.  
-     *
-     *@param clientPublishUrl Url of directory on local file system to which
-     * wsdl is published
-     *
-     *@param finalWsdlUri location relative to publish directory where final 
-     * wsdl should be written, in uri form. 
-     *
-     *@return file to which final wsdl was written 
-     *//*
-    public File publishFinalWsdl(URL clientPublishUrl, String finalWsdlUri,
-                                 byte[] finalWsdlBytes)
-        throws Exception 
-    {
-        File finalWsdlFile = null;
-        FileOutputStream fos = null;
-        try {
-            finalWsdlFile = new File
-                (clientPublishUrl.getFile(),
-                 finalWsdlUri.replace('/', File.separatorChar));
-            File parent = finalWsdlFile.getParentFile();
-            if( !parent.exists() ) {
-                boolean madeDirs = parent.mkdirs();
-                if( !madeDirs ) {
-                    throw new IOException("Error creating " + parent);
-                }
-            }
-            fos = new FileOutputStream(finalWsdlFile);
-            fos.write(finalWsdlBytes, 0, finalWsdlBytes.length);
-        } finally {
-            if( fos != null ) {
-                try { 
-                    fos.close();
-                } catch(IOException ioe) {
-                    logger.log(Level.INFO, "", ioe);
-                }
-            }
-        }
-        return finalWsdlFile;
-    }
-
-    */
 
     public static void raiseException(HttpServletResponse resp, String binding, String faultString) {
         

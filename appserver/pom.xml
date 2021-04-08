@@ -441,18 +441,6 @@
                         </spec>
                         <spec>
                             <artifact>
-                                <groupId>jakarta.xml.rpc</groupId>
-                                <artifactId>jakarta.xml.rpc-api</artifactId>
-                                <version>${jakarta.xml.rpc-api.version}</version>
-                            </artifact>
-                            <nonFinal>false</nonFinal>
-                            <jarType>api</jarType>
-                            <specVersion>1.1</specVersion>
-                            <specImplVersion>${jakarta.xml.rpc-api.version}</specImplVersion>
-                            <apiPackage>javax.xml.rpc</apiPackage>
-                        </spec>
-                        <spec>
-                            <artifact>
                                 <groupId>jakarta.enterprise.deploy</groupId>
                                 <artifactId>jakarta.enterprise.deploy-api</artifactId>
                                 <version>${jakarta.enterprise.deploy-api.version}</version>

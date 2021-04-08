@@ -61,7 +61,7 @@ set JAVA=java
 CALL %~dp0jdkcheck.bat
 
 if %ENDORSED_AVAILABLE%==true (
-    %JAVA% %WSIMPORT_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\jakarta.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar" com.sun.tools.ws.WsImport %*
+    %JAVA% %WSIMPORT_OPTS% -Djava.endorsed.dirs="%~dp0..\modules\endorsed" -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\jaxb-osgi.jar" com.sun.tools.ws.WsImport %*
 ) else (
-    %JAVA% %WSIMPORT_OPTS% -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\jakarta.xml.rpc-api.jar;%~dp0..\modules\jaxb-osgi.jar;%~dp0..\modules\jakarta.xml.ws-api.jar;%~dp0..\modules\jakarta.jws-api.jar;%~dp0..\modules\jakarta.jws-api.jar;%~dp0..\modules\webservices-api-osgi.jar;%~dp0..\modules\jakarta.activation-api.jar" com.sun.tools.ws.WsImport %*
+    %JAVA% %WSIMPORT_OPTS% -cp "%~dp0..\modules\webservices-osgi.jar;%~dp0..\modules\jaxb-osgi.jar;%~dp0..\modules\jakarta.xml.ws-api.jar;%~dp0..\modules\jakarta.jws-api.jar;%~dp0..\modules\jakarta.jws-api.jar;%~dp0..\modules\webservices-api-osgi.jar;%~dp0..\modules\jakarta.activation-api.jar" com.sun.tools.ws.WsImport %*
 )

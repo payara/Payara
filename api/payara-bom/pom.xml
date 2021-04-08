@@ -319,11 +319,6 @@
                 <version>${jakarta.transaction-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.xml.rpc</groupId>
-                <artifactId>jakarta.xml.rpc-api</artifactId>
-                <version>${jakarta.xml.rpc-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
                 <version>${cdi-api.version}</version>
