@@ -135,10 +135,13 @@ public abstract class BroadcastingFormatter extends Formatter {
 
 
     /**
-     * @param record
+     * @param record if null, this method returns null too
      * @return a record's message plus printed stacktrace if some throwable is present.
      */
     protected String getPrintedMessage(final EnhancedLogRecord record) {
+        if (record == null) {
+            return null;
+        }
         final String message = record.getMessage();
         final String stackTrace = record.getThrownStackTrace();
         if (message == null || message.isEmpty()) {

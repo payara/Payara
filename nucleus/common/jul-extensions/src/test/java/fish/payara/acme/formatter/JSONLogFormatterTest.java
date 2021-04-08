@@ -60,7 +60,6 @@ import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author David Matejcek
@@ -73,7 +72,7 @@ public class JSONLogFormatterTest {
 
     @Test
     public void nullRecord() {
-        assertThrows(NullPointerException.class, () -> new JSONLogFormatter().format(null));
+        assertEquals("", new JSONLogFormatter().format(null));
     }
 
 

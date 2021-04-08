@@ -201,6 +201,15 @@ public class PayaraLogManager extends LogManager {
         return this.configuration == null ? null : this.configuration.getProperty(name);
     }
 
+
+    /**
+     * @return clone of internal configuration properties
+     */
+    public PayaraLogManagerConfiguration getConfiguration() {
+        return this.configuration.clone();
+    }
+
+
     /**
      * {@inheritDoc}
      * @return false to force caller to refind the new logger, true to inform him that we did not add it.
@@ -560,7 +569,6 @@ public class PayaraLogManager extends LogManager {
         configureRootLogger(systemRootLogger, systemRootLevel, requestedHandlerNames, handlersToRemove, handlersToAdd);
         configureRootLogger(userRootLogger, rootLoggerLevel, requestedHandlerNames, handlersToRemove, handlersToAdd);
         setMissingParentToRootLogger(userRootLogger);
-        // TODO: probably check for system root loggers as parents and move them to user?
     }
 
     private void setMissingParentToRootLogger(final PayaraLogger rootParentLogger) {
@@ -621,8 +629,8 @@ public class PayaraLogManager extends LogManager {
     private static <T> T create(final String clazz) {
         PayaraLoggingTracer.trace(PayaraLogManager.class, () -> "create(clazz=" + clazz + ")");
         try {
-            // FIXME: JUL uses SystemClassloader, so with custom formatters always fallbacks to defaults
-            //        Don't use ConsoleHandler, use SimpleLogHandler
+            // JUL uses SystemClassloader, so with custom formatters always fallbacks to defaults
+            // Don't use ConsoleHandler with custom formatters, use SimpleLogHandler instead
             return (T) Class.forName(clazz).newInstance();
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             PayaraLoggingTracer.error(PayaraLogManager.class, "Could not create " + clazz, e);

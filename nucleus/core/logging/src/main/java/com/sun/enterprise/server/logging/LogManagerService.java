@@ -204,8 +204,6 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         if (!PayaraLogManager.isPayaraLogManager()) {
             LOG.info(() -> "LogManagerService does not support any other log manager than PayaraLogManager."
                 + " Used log manager: " + LogManager.getLogManager());
-            // Used different implementation, Payara will not touch it.
-            // HK2 services will run, but will not reconfigure logging from file.
             return;
         }
 
@@ -322,11 +320,6 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
     }
 
     @Override
-    public void preDestroy() {
-        LOG.config("Completed shutdown of Log manager service");
-    }
-
-    @Override
     public PrintStream getErrStream() {
         return LoggingSystemEnvironment.getOriginalStdErr();
     }
@@ -334,6 +327,11 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
     @Override
     public PrintStream getOutStream() {
         return LoggingSystemEnvironment.getOriginalStdOut();
+    }
+
+    @Override
+    public void preDestroy() {
+        LOG.config("Completed shutdown of Log manager service");
     }
 
 
@@ -419,7 +417,6 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
         if (payaraLogHandler == null) {
            addHandler(new PayaraLogHandler(payaraLogHandlerCfg));
         } else {
-            // could be precreated
             payaraLogHandler.reconfigure(payaraLogHandlerCfg);
         }
     }
@@ -1014,11 +1011,9 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 //            final AtomicBoolean reconfigurePnFormatter = new AtomicBoolean();
 
             // FIXME: does not respect deleted items, they will remain set
-            for (Entry<Object, Object> entry : cfg.getProperties().entrySet()) {
-                final String key = (String) entry.getKey();
-                final String value = (String) entry.getValue();
-                if (checkLevels(key, value, handlerLevels, loggerLevels)) {
-                    continue;
+            cfg.toStream().forEach(entry -> {
+                if (checkLevels(entry.getKey(), entry.getValue(), handlerLevels, loggerLevels)) {
+                    return;
                 }
 //                if (checkHandlers(key, value)) {
 //                    continue;
@@ -1038,7 +1033,7 @@ public final class LogManagerService implements PostConstruct, PreDestroy, org.g
 //                if (checkPayaraNotificationHandler(key, value, pnFileHandler, reconfigurePnFormatter)) {
 //                    continue;
 //                }
-            } // for
+            });
 //
 //            if (reconfigurePayaraLogHandlerFormatter.get() && payaraLogHandler != null) {
 //                payaraLogHandler.reconfigure(null);configureLogFormatter(configuration.getGfhFormatterClass());

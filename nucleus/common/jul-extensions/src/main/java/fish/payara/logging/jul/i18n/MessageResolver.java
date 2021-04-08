@@ -84,6 +84,9 @@ public class MessageResolver {
      * @return {@link EnhancedLogRecord} with final log message.
      */
     public EnhancedLogRecord resolve(final LogRecord record) {
+        if (record == null) {
+            return null;
+        }
         final EnhancedLogRecord enhancedLogRecord = toEnhancedLogRecord(record);
         if (isAlreadyResolved(enhancedLogRecord)) {
             return enhancedLogRecord;

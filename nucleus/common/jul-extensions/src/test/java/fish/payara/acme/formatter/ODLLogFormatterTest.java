@@ -63,7 +63,6 @@ import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author David Matejcek
@@ -104,7 +103,7 @@ public class ODLLogFormatterTest {
 
     @Test
     public void nullRecord() {
-        assertThrows(NullPointerException.class, () -> new ODLLogFormatter().format(null));
+        assertEquals("", new ODLLogFormatter().format(null));
     }
 
 

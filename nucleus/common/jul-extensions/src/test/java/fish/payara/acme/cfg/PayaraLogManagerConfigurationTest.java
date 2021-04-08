@@ -38,59 +38,70 @@
  *  holder.
  */
 
-package fish.payara.acme.handler;
+package fish.payara.acme.cfg;
 
 import fish.payara.logging.jul.PayaraLogManager;
 import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration;
-import fish.payara.logging.jul.handler.SyslogHandler;
-import fish.payara.logging.jul.record.EnhancedLogRecord;
+import fish.payara.logging.jul.cfg.PayaraLogManagerConfiguration.ConfigurationEntry;
 
 import java.util.Properties;
-import java.util.logging.Level;
+import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 
 /**
  * @author David Matejcek
  */
-public class SysLogHandlerTest {
+class PayaraLogManagerConfigurationTest {
 
-    private static PayaraLogManagerConfiguration originalConfig;
-    private SyslogHandler handler;
+    private static PayaraLogManager logManager;
+    private static PayaraLogManagerConfiguration originalCfg;
+
 
     @BeforeAll
     public static void backup() {
-        originalConfig = PayaraLogManager.getLogManager().getConfiguration();
-        System.out.println("Original configuration: " + originalConfig);
+        logManager = PayaraLogManager.getLogManager();
+        originalCfg = logManager.getConfiguration();
+        // just for fun, it is a bit nicer than map.toString
+        System.out.println("Original configuration: "
+            + originalCfg.toStream().map(ConfigurationEntry::toString).collect(Collectors.joining(", ")));
     }
 
 
-    @AfterEach
-    public void closeHandler() {
-        if (handler != null) {
-            handler.close();
-        }
-        PayaraLogManager.getLogManager().reconfigure(originalConfig);
-    }
-
-
-    /**
-     * Ths test is dumb, it just uses the handler and expects it will not throw an exception.
-     */
     @Test
-    void standardUsage() throws Exception {
-        final Properties properties = new Properties();
-        properties.setProperty(SyslogHandler.class.getName() + ".useSystemLogging", "true");
-        final PayaraLogManagerConfiguration cfg = new PayaraLogManagerConfiguration(properties);
-        PayaraLogManager.getLogManager().reconfigure(cfg);
-        handler = new SyslogHandler();
-        final EnhancedLogRecord record = new EnhancedLogRecord(Level.SEVERE, "This should log.");
-        handler.publish(record);
-        handler.publish(null);
-        Thread.yield();
-        handler.close();
+    void testStream() {
+        final Properties properties = originalCfg.toProperties();
+        assertAll(
+            () -> assertEquals(3, originalCfg.toStream().count()),
+            () -> assertEquals(3, properties.size())
+        );
+        originalCfg.toStream().forEach(entry -> {
+            assertEquals(entry.getValue(), originalCfg.getProperty(entry.getKey()));
+        });
     }
+
+
+    @Test
+    void testClone() {
+        final PayaraLogManagerConfiguration clone = originalCfg.clone();
+        assertAll(
+            () -> assertNotSame(originalCfg.getPropertyNames(), clone.getPropertyNames()),
+            () -> assertNotSame(originalCfg, clone),
+            () -> assertThat(clone.getPropertyNames(), contains(originalCfg.getPropertyNames().toArray())),
+            () -> assertThat(clone.getPropertyNames(), hasSize(originalCfg.getPropertyNames().size()))
+        );
+        for (String name : originalCfg.getPropertyNames()) {
+            assertEquals(originalCfg.getProperty(name), clone.getProperty(name));
+        }
+    }
+
 }

@@ -63,7 +63,6 @@ import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author David Matejcek
@@ -98,7 +97,7 @@ public class UniformLogFormatterTest {
 
     @Test
     public void nullRecord() {
-        assertThrows(NullPointerException.class, () -> new UniformLogFormatter().format(null));
+        assertEquals("", new UniformLogFormatter().format(null));
     }
 
 

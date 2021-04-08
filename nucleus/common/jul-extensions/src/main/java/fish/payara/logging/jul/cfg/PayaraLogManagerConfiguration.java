@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,41 +42,130 @@ package fish.payara.logging.jul.cfg;
 
 import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
+import java.io.Serializable;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
+ * Replacement (wrapper) for {@link Properties} used in JUL.
+ *
  * @author David Matejcek
  */
-// FIXME: make it more user friendly
-public class PayaraLogManagerConfiguration {
+public class PayaraLogManagerConfiguration implements Serializable, Cloneable {
 
+    /** If this key is set to true, PJULE will print really detailed tracing info to the standard output */
     public static final String KEY_TRACING_ENABLED = "fish.payara.logging.jul.tracingEnabled";
+    private static final long serialVersionUID = 1L;
     private final Properties properties;
 
 
+    /**
+     * @param properties configuration to clone
+     */
     public PayaraLogManagerConfiguration(final Properties properties) {
         this.properties = (Properties) properties.clone();
     }
 
 
-    public Properties getProperties() {
-        return this.properties;
+    /**
+     * @return all property names used in the current configuration.
+     */
+    public SortedSet<String> getPropertyNames() {
+        return properties.keySet().stream().map(String::valueOf).collect(Collectors.toCollection(TreeSet::new));
     }
 
-
+    /**
+     * @param name proeprty name
+     * @return null or configured value
+     */
     public String getProperty(final String name) {
         PayaraLoggingTracer.trace(PayaraLogManagerConfiguration.class, () -> "getProperty(" + name + ")");
-        return getProperties().getProperty(name);
+        return this.properties.getProperty(name, null);
     }
 
 
+    /**
+     * @return {@link Stream} of configuration entries (key and value)
+     */
+    public Stream<ConfigurationEntry> toStream() {
+        return this.properties.entrySet().stream().map(ConfigurationEntry::new);
+    }
+
+
+    /**
+     * @return cloned {@link Properties}
+     */
+    public Properties toProperties() {
+        return (Properties) this.properties.clone();
+    }
+
+
+    /**
+     * @return true if the logging of logging is enabled in this configuration. Doesn't affect error
+     *         reporting, which is always enabled.
+     */
     public boolean isTracingEnabled() {
         return Boolean.parseBoolean(this.properties.getProperty(KEY_TRACING_ENABLED));
+    }
+
+
+    /**
+     * Creates clone of this instance.
+     */
+    @Override
+    public PayaraLogManagerConfiguration clone() {
+        try {
+            return (PayaraLogManagerConfiguration) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException("Clone failed!", e);
+        }
     }
 
 
     @Override
     public String toString() {
         return this.properties.toString();
+    }
+
+    /**
+     * Configuration entry, pair of a key and a value, both can be null (but it is not very useful).
+     */
+    public static final class ConfigurationEntry {
+
+        private final String key;
+        private final String value;
+
+        ConfigurationEntry(final Entry<Object, Object> entry) {
+            this.key = entry.getKey() == null ? null : entry.getKey().toString();
+            this.value = entry.getValue() == null ? null : entry.getValue().toString();
+        }
+
+        /**
+         * @return property key
+         */
+        public String getKey() {
+            return key;
+        }
+
+
+        /**
+         * @return property value
+         */
+        public String getValue() {
+            return value;
+        }
+
+
+        /**
+         * Returns key:value
+         */
+        @Override
+        public String toString() {
+            return getKey() + ":" + getValue();
+        }
     }
 }

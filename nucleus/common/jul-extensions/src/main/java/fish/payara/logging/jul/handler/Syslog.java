@@ -49,6 +49,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
 /**
@@ -84,7 +85,7 @@ class Syslog {
         final int fl = SYSLOG_FACILITY | level.code();
         final String what = "<" + fl + ">" + msg;
         try (DatagramSocket datagramSocket = new DatagramSocket()) {
-            final byte[] buf = what.getBytes();
+            final byte[] buf = what.getBytes(StandardCharsets.UTF_8);
             final int len = buf.length;
             final DatagramPacket dp = new DatagramPacket(buf, len, addr, SYSLOG_PORT);
             datagramSocket.send(dp);

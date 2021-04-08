@@ -53,6 +53,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -61,6 +63,8 @@ import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.CLASS_LOG_MANAG
 import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_MANAGER;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -71,18 +75,28 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * @author David Matejcek
  */
 @EnabledIfSystemProperty(named = JVM_OPT_LOGGING_MANAGER, matches = CLASS_LOG_MANAGER_PAYARA)
 public class PayaraLogManagerTest {
 
-
     private static PayaraLogManager logManager;
+    private static PayaraLogManagerConfiguration originalCfg;
+
 
     @BeforeAll
-    public static void init() {
+    public static void backup() {
         logManager = PayaraLogManager.getLogManager();
+        originalCfg = logManager.getConfiguration();
+        System.out.println("Original configuration: " + originalCfg);
+    }
+
+
+    @AfterEach
+    public void reset() {
+        logManager.reconfigure(originalCfg);
     }
 
 
@@ -173,10 +187,28 @@ public class PayaraLogManagerTest {
             () -> assertTrue(flushActionCalled.get(), "flush action was executed"),
             () -> assertEquals(PayaraLoggingStatus.FULL_SERVICE, logManager.getLoggingStatus()),
             () -> assertTrue(logManager.getRootLogger().getHandler(TestHandler.class).published,
-                "publish called - maybe another instance!")        );
+                "publish called - maybe another instance!")
+        );
 
         logManager.closeAllExternallyManagedLogHandlers();
         assertNull(logManager.getRootLogger().getHandler(TestHandler.class));
+    }
+
+
+    @Test
+    public void reconfigure() {
+        final PayaraLogManagerConfiguration configuration0 = logManager.getConfiguration();
+        logManager.reconfigure(configuration0);
+        final PayaraLogManagerConfiguration configuration1 = logManager.getConfiguration();
+        assertAll(
+            () -> assertNotSame(configuration0.getPropertyNames(), configuration1.getPropertyNames()),
+            () -> assertNotSame(configuration0, configuration1),
+            () -> assertThat(configuration1.getPropertyNames(), contains(configuration0.getPropertyNames().toArray())),
+            () -> assertThat(configuration1.getPropertyNames(), hasSize(configuration0.getPropertyNames().size()))
+        );
+        for (String name : configuration0.getPropertyNames()) {
+            assertEquals(configuration0.getProperty(name), configuration1.getProperty(name));
+        }
     }
 
 
