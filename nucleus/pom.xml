@@ -122,14 +122,6 @@
         <grizzly.npn.api.version>2.0.0</grizzly.npn.api.version>
         <grizzly.npn.osgi.version>2.0.0</grizzly.npn.osgi.version>
 
-        <!-- Microprofile -->
-        <!-- JAX-RS -->
-        <jax-rs-api.spec.version>2.1.5</jax-rs-api.spec.version>
-        <jakarta.validation.version>2.0.2</jakarta.validation.version>
-
-        <!-- JAX-B -->
-        <jaxb.version>2.3.2</jaxb.version>
-
         <!-- Other -->
         <hk2.plugin.version>3.0.1</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
@@ -844,11 +836,6 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.glassfish.pfl</groupId>
                 <artifactId>pfl-basic-tools</artifactId>
-                <version>${pfl.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.pfl</groupId>
-                <artifactId>pfl-asm</artifactId>
                 <version>${pfl.version}</version>
             </dependency>
             <dependency>

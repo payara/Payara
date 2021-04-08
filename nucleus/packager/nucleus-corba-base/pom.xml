@@ -64,11 +64,6 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.pfl</groupId>
-            <artifactId>pfl-asm</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.pfl</groupId>
             <artifactId>pfl-basic</artifactId>
             <optional>true</optional>
         </dependency>
