@@ -52,11 +52,11 @@ public class ModuleMap {
      * to encode module usage information.
      */
 
-     /* 
+     /*
       * This mapping was generated for the 3.1.2 release.
       */
-    public static final Map<String, Integer> CONSTANT_MAP = 
-            Collections.unmodifiableMap(new HashMap<String, Integer>() {{ 
+    public static final Map<String, Integer> CONSTANT_MAP =
+            Collections.unmodifiableMap(new HashMap<String, Integer>() {{
                 put("GlassFish-Application-Common-Module", 1);
                 put("com.sun.glassfish.admingui.console-custom-branding-plugin", 2);
                 put("com.sun.glassfish.branding-fragment", 3);
@@ -327,9 +327,9 @@ public class ModuleMap {
                 put("com.fasterxml.jackson.dataformat.xml", 268);
                 put("org.objectweb.asm", 269);
                 put("org.objectweb.asm.commons", 270);
-                put("org.objectweb.asm.tree", 271)
+                put("org.objectweb.asm.tree", 271);
                 put("org.objectweb.asm.tree.analysis", 272);
-                put("org.objectweb.asm.util", 273)
+                put("org.objectweb.asm.util", 273);
             }});
 
     public ModuleMap() {
