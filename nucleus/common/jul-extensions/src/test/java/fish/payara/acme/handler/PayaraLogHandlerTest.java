@@ -115,6 +115,7 @@ public class PayaraLogHandlerTest {
         assertTrue(handler.isReady(), "handler.ready");
         final PayaraLogHandlerConfiguration cfg = handler.getConfiguration();
         cfg.setLogStandardStreams(true);
+        cfg.setFlushFrequency(2);
         handler.reconfigure(cfg);
         assertAll(
             () -> assertTrue(handler.isReady(), "handler.ready"),

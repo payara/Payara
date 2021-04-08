@@ -118,7 +118,7 @@ public class SetLogAttributes implements AdminCommand {
 
     String[] validAttributes = { //
             "handlers",
-            "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging",
+            "fish.payara.logging.jul.handler.SyslogHandler.useSystemLogging",
             "fish.payara.logging.jul.handler.PayaraLogHandler.file",
             "fish.payara.logging.jul.handler.PayaraLogHandler.rotationTimelimitInMinutes",
             "fish.payara.logging.jul.handler.PayaraLogHandler.flushFrequency",

@@ -306,7 +306,7 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
             LoggingSystemEnvironment.resetStandardOutputs();
         }
 
-        this.pump = new LoggingPump("PayaraLogHandler log pump");
+        this.pump = new LoggingPump("PayaraLogHandler log pump", this.logRecordBuffer);
         this.pump.start();
         return PayaraLogHandlerStatus.ON;
     }
@@ -379,49 +379,34 @@ public class PayaraLogHandler extends StreamHandler implements ExternallyManaged
         return true;
     }
 
+    private final class LoggingPump extends LoggingPumpThread {
 
-    private final class LoggingPump extends Thread {
-
-        private LoggingPump(final String threadName) {
-            super(threadName);
-            setDaemon(true);
-            setPriority(Thread.MAX_PRIORITY);
+        private LoggingPump(String threadName, LogRecordBuffer buffer) {
+            super(threadName, buffer);
         }
 
 
         @Override
-        public void run() {
-            trace(PayaraLogHandler.class, () -> "Logging pump for " + logRecordBuffer + " started.");
-            while (configuration.isLogToFile() && isReady()) {
-                try {
-                    publishBatchFromBuffer();
-                } catch (final Exception e) {
-                    // Continue the loop without exiting
-                    // Something is broken, but we cannot log it
-                }
-            }
+        protected boolean isShutdownRequested() {
+            return !configuration.isLogToFile() || !isReady();
         }
 
 
-        /**
-         * Retrieves the LogRecord from our Queue and store them in the file
-         */
-        private void publishBatchFromBuffer() {
-            if (!publishRecord(logRecordBuffer.pollOrWait())) {
-                return;
-            }
-            if (configuration.getFlushFrequency() > 1) {
-                // starting from 1, one record was already published
-                for (int i = 1; i < configuration.getFlushFrequency(); i++) {
-                    if (!publishRecord(logRecordBuffer.poll())) {
-                        break;
-                    }
-                }
-            }
+        @Override
+        protected int getFlushFrequency() {
+            return configuration.getFlushFrequency();
+        }
+
+        @Override
+        protected boolean logRecord(final EnhancedLogRecord record) {
+            return publishRecord(record);
+        }
+
+        @Override
+        protected void flushOutput() {
             flush();
         }
     }
-
 
     private enum PayaraLogHandlerStatus {
         OFF,

@@ -74,16 +74,6 @@ public class LogFacade {
             action="Take appropriate action based on the exception message.")
     public static final String ERROR_EXECUTING_LOG_QUERY = "NCLS-LOGGING-00005";
 
-    @LogMessageInfo(message = "The syslog handler could not be initialized.", level="SEVERE",
-            cause="There was an exception thrown while initializing the syslog handler.",
-            action="Take appropriate action based on the exception message.")
-    public static final String ERROR_INIT_SYSLOG = "NCLS-LOGGING-00006";
-
-    @LogMessageInfo(message = "There was an error sending a log message to syslog.", level="SEVERE",
-            cause="There was an exception thrown while sending a log message to the syslog.",
-            action="Take appropriate action based on the exception message.")
-    public static final String ERROR_SENDING_SYSLOG_MSG = "NCLS-LOGGING-00007";
-
     @LogMessageInfo(message = "The log file {0} for the instance does not exist.", level="WARNING")
     public static final String INSTANCE_LOG_FILE_NOT_FOUND = "NCLS-LOGGING-00008";
 

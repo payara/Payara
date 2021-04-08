@@ -195,7 +195,7 @@ public class LoggingHandlers {
         try{
             for (Map.Entry<String, Object> e : attrs.entrySet()) {
                 String key=e.getKey();
-                if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")||
+                if ((key.equals("fish.payara.logging.jul.handler.SyslogHandler.useSystemLogging")||
                       key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.logtoFile") ||
                       key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.logtoConsole") ||
                       key.equals("fish.payara.logging.jul.handler.PayaraLogHandler.multiLineMode") ||

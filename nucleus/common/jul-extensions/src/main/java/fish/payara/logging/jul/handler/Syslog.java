@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
 
-package com.sun.enterprise.server.logging;
+package fish.payara.logging.jul.handler;
 
+
+import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -53,63 +55,78 @@ import java.util.logging.Level;
  * Send a message via syslog.
  */
 // This code is taken from spy.jar and enhanced
-public class Syslog {
+class Syslog {
 
-    public static final int EMERG = 0;
-    public static final int ALERT = 1;
-    public static final int CRIT = 2;
-    public static final int ERR = 3;
-    public static final int WARNING = 4;
-    public static final int NOTICE = 5;
-    public static final int INFO = 6;
-    public static final int DEBUG = 7;
-
-    public static final int KERN = 0;
-    public static final int USER = 8;
-    public static final int MAIL = 16;
-    public static final int DAEMON = 24;
-    public static final int AUTH = 32;
-    public static final int SYSLOG = 40;
-    public static final int LPR = 48;
-    public static final int NEWS = 56;
-    public static final int UUCP = 64;
-    public static final int CRON = 72;
-    public static final int AUTHPRIV = 80;
-    public static final int FTP = 88;
-    public static final int LOCAL0 = 128;
-    public static final int LOCAL1 = 136;
-    public static final int LOCAL2 = 144;
-    public static final int LOCAL3 = 152;
-    public static final int LOCAL4 = 160;
-    public static final int LOCAL5 = 168;
-    public static final int LOCAL6 = 176;
-    public static final int LOCAL7 = 184;
-
-    private static final int SYSLOG_PORT=514;
+    private static final int SYSLOG_FACILITY = 24;
+    private static final int SYSLOG_PORT = 514;
 
     private final InetAddress addr;
 
     /**
      * Log to a particular log host.
+     *
+     * @param loghost
+     * @throws UnknownHostException if no IP address for the host could be found, or if a scope_id
+     *             was specified for a global IPv6 address.
      */
-    public Syslog(String loghost) throws UnknownHostException {
+    Syslog(final String loghost) throws UnknownHostException {
         addr = InetAddress.getByName(loghost);
     }
 
 
     /**
      * Send a log message.
+     *
+     * @param level
+     * @param msg
      */
-    public void log(int facility, int level, String msg) {
-        int fl = facility | level;
-        String what = "<" + fl + ">" + msg;
+    void log(final SyslogLevel level, final String msg) {
+        final int fl = SYSLOG_FACILITY | level.code();
+        final String what = "<" + fl + ">" + msg;
         try (DatagramSocket datagramSocket = new DatagramSocket()) {
-            byte[] buf = what.getBytes();
-            int len = buf.length;
-            DatagramPacket dp = new DatagramPacket(buf, len, addr, SYSLOG_PORT);
+            final byte[] buf = what.getBytes();
+            final int len = buf.length;
+            final DatagramPacket dp = new DatagramPacket(buf, len, addr, SYSLOG_PORT);
             datagramSocket.send(dp);
-        } catch (IOException e) {
-            LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_SENDING_SYSLOG_MSG, e);
+        } catch (final IOException e) {
+            PayaraLoggingTracer.error(getClass(), "Failed to send the log message: " + msg, e);
+        }
+    }
+
+
+    enum SyslogLevel {
+
+        CRIT(2),
+        WARNING(4),
+        INFO(6),
+        DEBUG(7),
+        ;
+
+        private int code;
+
+        SyslogLevel(final int code) {
+            this.code = code;
+        }
+
+
+        public int code() {
+            return this.code;
+        }
+
+        /**
+         * @param level
+         * @return never null, default is {@link #INFO}
+         */
+        public static SyslogLevel of(final Level level) {
+            if (Level.SEVERE.equals(level)) {
+                return CRIT;
+            } else if (Level.WARNING.equals(level)) {
+                return WARNING;
+            } else if (level.intValue() <= Level.FINE.intValue()) {
+                return DEBUG;
+            } else {
+                return INFO;
+            }
         }
     }
 }
