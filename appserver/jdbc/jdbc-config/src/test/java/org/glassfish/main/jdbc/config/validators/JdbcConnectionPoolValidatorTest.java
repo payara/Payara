@@ -49,7 +49,7 @@ import java.util.function.Consumer;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
-import javax.validation.Payload;
+import jakarta.validation.Payload;
 
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.connectors.config.validators.ConnectionPoolErrorMessages;
