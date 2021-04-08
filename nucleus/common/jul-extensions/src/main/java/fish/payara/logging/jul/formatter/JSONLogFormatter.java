@@ -55,10 +55,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_ECID;
 import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE;
 import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER;
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_USERID;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
@@ -112,8 +110,6 @@ public class JSONLogFormatter extends BroadcastingFormatter {
      */
     @Deprecated
     private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
-    private static final String ECID = System.getProperty(JVM_OPT_LOGGING_ECID);
-    private static final String USER_ID = System.getProperty(JVM_OPT_LOGGING_USERID);
 
     // This was required, because we need 3 decimal numbers of the second fraction
     // DateTimeFormatter.ISO_LOCAL_DATE_TIME prints just nonzero values
@@ -141,8 +137,8 @@ public class JSONLogFormatter extends BroadcastingFormatter {
         this.dateTimeFormatter = DEFAULT_DATETIME_FORMATTER;
         this.messageResolver = new MessageResolver();
 
-        LogManager logManager = LogManager.getLogManager();
-        String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
+        final LogManager logManager = LogManager.getLogManager();
+        final String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
         if (Boolean.parseBoolean(underscorePrefix)) {
             TIMESTAMP_KEY = "_" + TIMESTAMP_KEY;
             LOG_LEVEL_KEY = "_" + LOG_LEVEL_KEY;
@@ -172,11 +168,11 @@ public class JSONLogFormatter extends BroadcastingFormatter {
      * @return JSON formatted record.
      */
     @Override
-    public String formatRecord(LogRecord record) {
+    public String formatRecord(final LogRecord record) {
         return formatLogRecord(record);
     }
 
-    private String formatLogRecord(LogRecord record) {
+    private String formatLogRecord(final LogRecord record) {
         return formatEnhancedLogRecord(messageResolver.resolve(record));
     }
 
@@ -186,58 +182,46 @@ public class JSONLogFormatter extends BroadcastingFormatter {
             return "";
         }
         try {
-            JsonBuilderWrapper json = new JsonBuilderWrapper();
-            String timestampValue = dateTimeFormatter.format(record.getTime());
+            final JsonBuilderWrapper json = new JsonBuilderWrapper();
+            final String timestampValue = dateTimeFormatter.format(record.getTime());
             json.add(TIMESTAMP_KEY, timestampValue);
 
-            Level level = record.getLevel();
+            final Level level = record.getLevel();
             json.add(LOG_LEVEL_KEY, level.getLocalizedName());
 
-            String productId = getProductId();
+            final String productId = getProductId();
             json.add(PRODUCT_ID_KEY, productId);
 
             json.add(LOGGER_NAME_KEY, record.getLoggerName());
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TID)) {
-                int threadId = record.getThreadID();
+                final int threadId = record.getThreadID();
                 json.add(THREAD_ID_KEY, String.valueOf(threadId));
 
-                String threadName = record.getThreadName();
+                final String threadName = record.getThreadName();
                 json.add(THREAD_NAME_KEY, threadName);
             }
 
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.USERID)) {
-                if (USER_ID != null && !USER_ID.isEmpty()) {
-                    json.add(USER_ID_KEY, USER_ID);
-                }
-            }
-
-            if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.ECID)) {
-                if (ECID != null && !ECID.isEmpty()) {
-                    json.add(ECID_KEY, ECID);
-                }
-            }
-
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.TIME_MILLIS)) {
-                long timestamp = record.getMillis();
+                final long timestamp = record.getMillis();
                 json.add(TIME_MILLIS_KEY, timestamp);
             }
 
             if (!excludeFieldsSupport.isSet(ExcludeFieldsSupport.SupplementalAttribute.LEVEL_VALUE)) {
-                int levelValue = level.intValue();
+                final int levelValue = level.intValue();
                 json.add(LEVEL_VALUE_KEY, levelValue);
             }
 
-            String messageId = record.getMessageKey();
+            final String messageId = record.getMessageKey();
             json.add(MESSAGE_ID_KEY, messageId);
 
             if (LOG_SOURCE_IN_KEY_VALUE || level.intValue() <= Level.FINE.intValue()) {
-                String sourceClassName = record.getSourceClassName();
+                final String sourceClassName = record.getSourceClassName();
                 if (sourceClassName != null && !sourceClassName.isEmpty()) {
                     json.add(CLASS_NAME, sourceClassName);
                 }
 
-                String sourceMethodName = record.getSourceMethodName();
+                final String sourceMethodName = record.getSourceMethodName();
                 if (sourceMethodName != null && !sourceMethodName.isEmpty()) {
                     json.add(METHOD_NAME, sourceMethodName);
                 }
@@ -247,16 +231,17 @@ public class JSONLogFormatter extends BroadcastingFormatter {
                 json.add(RECORD_NUMBER, String.valueOf(record.getSequenceNumber()));
             }
 
-            Object[] parameters = record.getParameters();
+            final Object[] parameters = record.getParameters();
             if (parameters != null) {
-                for (Object parameter : parameters) {
+                for (final Object parameter : parameters) {
+                    // FIXME: parameter map: conflicts with same keys in other maps are not resolved!
                     // FIXME: parameters cannot be mapped here, they were already resolved in EnhancedLogRecord.
                     //        possible solution: cfg parameter - release parameters after resolving (default) OR not
                     //        release -> no maps, just strings
                     //        not -> still possible to use original parameters in formatter's thread may be affected by concurrent
                     //        changes of states of objects in the map
                     if (parameter instanceof Map) {
-                        for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) parameter).entrySet()) {
+                        for (final Map.Entry<Object, Object> entry : ((Map<Object, Object>) parameter).entrySet()) {
                             // there are implementations that allow <null> keys...
                             final String key = entry.getKey() == null ? "null" : entry.getKey().toString();
                             json.add(key, entry.getValue());
@@ -297,7 +282,7 @@ public class JSONLogFormatter extends BroadcastingFormatter {
     /**
      * @param format The date format to set for records.
      */
-    public void setDateTimeFormatter(String format) {
+    public void setDateTimeFormatter(final String format) {
         this.dateTimeFormatter = format == null ? ISO_OFFSET_DATE_TIME : DateTimeFormatter.ofPattern(format);
     }
 
@@ -305,12 +290,12 @@ public class JSONLogFormatter extends BroadcastingFormatter {
     /**
      * @param excludeFields Fields to exclude.
      */
-    public void setExcludeFields(String excludeFields) {
+    public void setExcludeFields(final String excludeFields) {
         this.excludeFieldsSupport.setExcludeFields(excludeFields);
     }
 
 
-    public static final class JsonBuilderWrapper {
+    private static final class JsonBuilderWrapper {
         private final JsonObjectBuilder builder;
 
         public JsonBuilderWrapper() {

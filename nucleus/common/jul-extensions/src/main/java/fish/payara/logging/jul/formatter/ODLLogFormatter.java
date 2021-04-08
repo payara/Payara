@@ -50,8 +50,6 @@ import fish.payara.logging.jul.tracing.PayaraLoggingTracer;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_ECID;
-import static fish.payara.logging.jul.cfg.PayaraLoggingConstants.JVM_OPT_LOGGING_USERID;
 import static java.lang.System.lineSeparator;
 
 /**
@@ -78,25 +76,14 @@ public class ODLLogFormatter extends AnsiColorFormatter {
 
     private static final MessageResolver MSG_RESOLVER = new MessageResolver();
 
-    private static final String USER_ID;
-    private static final String EC_ID;
-    static {
-        USER_ID = System.getProperty(JVM_OPT_LOGGING_USERID);
-        EC_ID = System.getProperty(JVM_OPT_LOGGING_ECID);
-    }
-
     private final ExcludeFieldsSupport excludeFieldsSupport;
     private final String recordFieldSeparator;
     private boolean multiLineMode;
-    private String userId;
-    private String ecId;
 
     public ODLLogFormatter() {
         this.multiLineMode = true;
         this.excludeFieldsSupport = new ExcludeFieldsSupport();
         this.recordFieldSeparator = FIELD_SEPARATOR;
-        this.userId = USER_ID;
-        this.ecId = EC_ID;
     }
 
     @Override
@@ -118,15 +105,6 @@ public class ODLLogFormatter extends AnsiColorFormatter {
         this.multiLineMode = multiLineMode;
     }
 
-    // FIXME: shouldn't it be -Duser.name?
-    public void setUserId(final String userId) {
-        this.userId = userId;
-    }
-
-    // FIXME: what is it?
-    public void setEcId(final String ecId) {
-        this.ecId = ecId;
-    }
 
     private String formatEnhancedLogRecord(final EnhancedLogRecord record) {
         try {
@@ -147,8 +125,6 @@ public class ODLLogFormatter extends AnsiColorFormatter {
             appendMessageKey(output, msgId);
             appendLoggerName(output, loggerName);
             appendThread(output, record.getThreadID(), threadName);
-            appendUserId(output);
-            appendECID(output);
             appendMillis(output, record.getMillis());
             appendLogLevelAsInt(output, logLevel);
             appendSequenceNumber(output, record.getSequenceNumber());
@@ -224,22 +200,6 @@ public class ODLLogFormatter extends AnsiColorFormatter {
         if (!excludeFieldsSupport.isSet(SupplementalAttribute.TID)) {
             output.append(FIELD_BEGIN_MARKER);
             output.append("tid: ").append("_ThreadID=").append(threadId).append(" _ThreadName=").append(threadName);
-            output.append(FIELD_END_MARKER).append(recordFieldSeparator);
-        }
-    }
-
-    private void appendUserId(final StringBuilder output) {
-        if (!excludeFieldsSupport.isSet(SupplementalAttribute.USERID) && userId != null) {
-            output.append(FIELD_BEGIN_MARKER);
-            output.append("userId: ").append(userId);
-            output.append(FIELD_END_MARKER).append(recordFieldSeparator);
-        }
-    }
-
-    private void appendECID(final StringBuilder output) {
-        if (!excludeFieldsSupport.isSet(SupplementalAttribute.ECID) && EC_ID != null) {
-            output.append(FIELD_BEGIN_MARKER);
-            output.append("ecid: ").append(EC_ID);
             output.append(FIELD_END_MARKER).append(recordFieldSeparator);
         }
     }

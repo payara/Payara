@@ -150,7 +150,7 @@
                 labels="#{pageSession.excludeFieldsOptions}" selected="#{pageSession.excludeFields}" >
                 <!beforeCreate
                     getListBoxOptions(
-                        availableList={ "tid", "userId", "ecid", "timeMillis", "levelValue" },
+                        availableList={ "tid", "timeMillis", "levelValue" },
                         selectedCommaString="#{pageSession.logAttributes['fish.payara.logging.jul.handler.PayaraLogHandler.excludeFields']}",
                         availableListResult="#{pageSession.excludeFieldsOptions}",
                         selectedOptions="#{pageSession.excludeFields}"

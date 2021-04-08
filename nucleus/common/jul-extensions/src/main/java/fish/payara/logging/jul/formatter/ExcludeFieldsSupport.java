@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2020] [Payara Foundation and/or affiliates]
+// Portions Copyright [2020-2021] [Payara Foundation and/or affiliates]
 
 package fish.payara.logging.jul.formatter;
 
@@ -57,11 +57,6 @@ public class ExcludeFieldsSupport {
     public enum SupplementalAttribute {
         /** Thread id and name */
         TID("tid"),
-        /** User id */
-        USERID("userId"),
-        /** ECID */
-        // FIXME: what is that?
-        ECID("ecid"),
         /** Milliseconds since 1970 */
         TIME_MILLIS("timeMillis"),
         /** Integer value of the log level. See {@link Level#intValue()} */

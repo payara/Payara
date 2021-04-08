@@ -58,9 +58,4 @@ public class PayaraLoggingConstants {
     // FIXME: respect formatter's class name and move to property file
     public static final String JVM_OPT_LOGGING_KEYVALUE_LOGSOURCE = "com.sun.aas.logging.keyvalue.logsource";
     public static final String JVM_OPT_LOGGING_KEYVALUE_RECORDNUMBER = "com.sun.aas.logging.keyvalue.recordnumber";
-    // FIXME: why? What about -Duser.name? Or delete it (log once on startup, worthless on each line)
-    public static final String JVM_OPT_LOGGING_USERID = "com.sun.aas.logging.userID";
-    // FIXME: what is it? Delete it?
-    public static final String JVM_OPT_LOGGING_ECID = "com.sun.aas.logging.ecID";
-
 }
